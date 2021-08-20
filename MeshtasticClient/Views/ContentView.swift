@@ -24,11 +24,6 @@ struct ContentView: View {
                     Label("Devices", systemImage: "flipphone")
                 }
                 .tag(Tab.devices)
-            DeviceList()
-                .tabItem {
-                    Label("Device List", systemImage: "list.bullet.rectangle")
-                }
-                .tag(Tab.devices)
             DeviceMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")

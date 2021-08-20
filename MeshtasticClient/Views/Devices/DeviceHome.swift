@@ -36,7 +36,7 @@ struct DeviceHome: View {
                 }
             }
             .navigationTitle("All Devices")
-        }
+        }.navigationViewStyle(StackNavigationViewStyle()) // Force Full screen master details 
     }
 }
 

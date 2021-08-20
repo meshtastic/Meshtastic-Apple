@@ -24,7 +24,6 @@
 		DDC2E1A226CE29AC0042C5E4 /* deviceData.json in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E18A26CE25690042C5E4 /* deviceData.json */; };
 		DDC2E1A426CE2F940042C5E4 /* DeviceBLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
-		DDC2E1A926CF85020042C5E4 /* DeviceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A826CF85020042C5E4 /* DeviceList.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,7 +67,6 @@
 		DDC2E19E26CE27630042C5E4 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceBLE.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
-		DDC2E1A826CF85020042C5E4 /* DeviceList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceList.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,7 +199,6 @@
 				DDC2E19626CE26840042C5E4 /* DeviceRow.swift */,
 				DDC2E19826CE26940042C5E4 /* DeviceMap.swift */,
 				DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */,
-				DDC2E1A826CF85020042C5E4 /* DeviceList.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -300,7 +297,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "MeshtasticClient" */;
+			buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic Client" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -352,7 +349,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DDC2E1A926CF85020042C5E4 /* DeviceList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DDC2E19F26CE27630042C5E4 /* Device.swift in Sources */,
 				DDC2E19926CE26940042C5E4 /* DeviceMap.swift in Sources */,
@@ -647,7 +643,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "MeshtasticClient" */ = {
+		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic Client" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DDC2E17C26CE248F0042C5E4 /* Debug */,

@@ -6,11 +6,13 @@
       "size" : "20x20"
     },
     {
+      "filename" : "play_store_icon_114px-4.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "20x20"
     },
     {
+      "filename" : "play_store_icon_114px-3.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "29x29"
@@ -26,16 +28,19 @@
       "size" : "40x40"
     },
     {
+      "filename" : "play_store_icon_114px-1.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "40x40"
     },
     {
+      "filename" : "play_store_icon_114px.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
+      "filename" : "play_store_icon_114px-2.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "60x60"
@@ -71,6 +76,7 @@
       "size" : "40x40"
     },
     {
+      "filename" : "play_store_icon_114px-5.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "76x76"
