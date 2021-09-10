@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
+		DDAF8C5526EBA0530058C060 /* Bluetooth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5426EBA0530058C060 /* Bluetooth.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -24,6 +26,7 @@
 		DDC2E1A226CE29AC0042C5E4 /* deviceData.json in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E18A26CE25690042C5E4 /* deviceData.json */; };
 		DDC2E1A426CE2F940042C5E4 /* DeviceBLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
+		DDC2E1AB26DD89EC0042C5E4 /* packets.json in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E1AA26DD89EC0042C5E4 /* packets.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +47,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
+		DDAF8C5426EBA0530058C060 /* Bluetooth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bluetooth.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeshtasticClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticClientApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -67,6 +72,7 @@
 		DDC2E19E26CE27630042C5E4 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceBLE.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
+		DDC2E1AA26DD89EC0042C5E4 /* packets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = packets.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E18A26CE25690042C5E4 /* deviceData.json */,
+				DDC2E1AA26DD89EC0042C5E4 /* packets.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -199,6 +206,7 @@
 				DDC2E19626CE26840042C5E4 /* DeviceRow.swift */,
 				DDC2E19826CE26940042C5E4 /* DeviceMap.swift */,
 				DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */,
+				DDAF8C5426EBA0530058C060 /* Bluetooth.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -207,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E19A26CE27150042C5E4 /* CircleImage.swift */,
+				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -325,6 +334,7 @@
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DDC2E1A226CE29AC0042C5E4 /* deviceData.json in Resources */,
+				DDC2E1AB26DD89EC0042C5E4 /* packets.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -354,6 +364,8 @@
 				DDC2E19926CE26940042C5E4 /* DeviceMap.swift in Sources */,
 				DDC2E19526CE26760042C5E4 /* DeviceDetail.swift in Sources */,
 				DDC2E19726CE26840042C5E4 /* DeviceRow.swift in Sources */,
+				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
+				DDAF8C5526EBA0530058C060 /* Bluetooth.swift in Sources */,
 				DDC2E19126CE26290042C5E4 /* Messages.swift in Sources */,
 				DDC2E19D26CE27580042C5E4 /* ModelData.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,

@@ -1,0 +1,149 @@
+[
+   {
+      "from":1133445808,
+      "to":1133445808,
+      "decoded":{
+         "portnum":"ADMIN_APP",
+         "payload":"b"":\\x04\\x08\\x01\\x12\\x00",
+         "requestId":1506683854,
+         "admin":{
+            "getChannelResponse":{
+               "index":1,
+               "settings":{
+                  
+               }
+            },
+            "raw":"get_channel_response"{
+               "index":1 settings{
+                  
+               }
+            }
+         }
+      },
+      "id":1481765942,
+      "rxTime":1630360112,
+      "hopLimit":3,
+      "priority":"RELIABLE",
+      "raw":"from":"1133445808 to":1133445808 decoded{
+         "portnum":"ADMIN_APP payload":":\\004\\010\\001\\022\\000""request_id":1506683854
+      }"id":"1481765942 rx_time":"1630360112 hop_limit":"3 priority":"RELIABLE",
+      "fromId":"!438f02b0",
+      "toId":"!438f02b0"
+   }{
+      "num":1133445808,
+      "user":{
+         "id":"!438f02b0",
+         "longName":"RAK DEV NODE",
+         "shortName":"RDN",
+         "macaddr":"92VDjwKw",
+         "hwModel":"RAK4631",
+         "raw":"id":"!438f02b0""long_name":"RAK DEV NODE""short_name":"RDN""macaddr":"\\367eC\\217\\002\\260""hw_model":RAK4631
+      },
+      "position":{
+         "latitudeI":476021540,
+         "longitudeI":-1221532059,
+         "altitude":111,
+         "time":1630360110,
+         "latitude":47.602154,
+         "longitude":-122.15320589999999
+      },
+      "lastHeard":1630360100,
+      "lastReceived":{
+         "from":1133445808,
+         "to":4294967295,
+         "decoded":{
+            "portnum":"NODEINFO_APP",
+            "payload":"b""\n\t!438f02b0\\x12\\x0cRAK DEV NODE\\x1a\\x03RDN\"\\x06\\xf7eC\\x8f\\x02\\xb00\t",
+            "wantResponse":true,
+            "user":{
+               "id":"!438f02b0",
+               "longName":"RAK DEV NODE",
+               "shortName":"RDN",
+               "macaddr":"92VDjwKw",
+               "hwModel":"RAK4631",
+               "raw":"id":"!438f02b0""long_name":"RAK DEV NODE""short_name":"RDN""macaddr":"\\367eC\\217\\002\\260""hw_model":RAK4631
+            }
+         },
+         "id":1481765939,
+         "rxTime":1630360100,
+         "hopLimit":3,
+         "priority":"BACKGROUND",
+         "raw":"from":"1133445808 to":4294967295 decoded{
+            "portnum":"NODEINFO_APP payload":"\n\t!438f02b0\\022\\014RAK DEV NODE\\032\\003RDN\"\\006\\367eC\\217\\002\\2600\t""want_response":true
+         }"id":"1481765939 rx_time":"1630360100 hop_limit":"3 priority":"BACKGROUND",
+         "fromId":"!438f02b0",
+         "toId":"^all"
+      },
+      "snr":"None",
+      "hopLimit":3
+   }{
+      "num":1000569662,
+      "user":{
+         "id":"!3ba37b3e",
+         "longName":"RAK Solar 1",
+         "shortName":"RS1",
+         "macaddr":"1Kc7o3s+",
+         "hwModel":"RAK4631"
+      },
+      "position":{
+         "latitudeI":476022865,
+         "longitudeI":-1221531705,
+         "altitude":81,
+         "batteryLevel":4,
+         "time":1628091161,
+         "latitude":47.6022865,
+         "longitude":-122.15317049999999
+      },
+      "lastHeard":1630234276,
+      "snr":5.25
+   }{
+      "num":2792101487,
+      "user":{
+         "id":"!a66c166f",
+         "longName":"RAK Solar 2",
+         "shortName":"RS2",
+         "macaddr":"8eambBZv",
+         "hwModel":"RAK4631"
+      },
+      "position":{
+         "batteryLevel":56,
+         "time":1628096176
+      },
+      "lastHeard":1628231149,
+      "snr":4.75
+   }{
+      "num":84682040,
+      "user":{
+         "id":"!050c2538",
+         "longName":"Yellow Beam",
+         "shortName":"YB",
+         "macaddr":"PGEFDCU4",
+         "hwModel":"TBEAM"
+      },
+      "position":{
+         "latitudeI":476020441,
+         "longitudeI":-1221533598,
+         "altitude":65,
+         "batteryLevel":100,
+         "time":1628405738,
+         "latitude":47.6020441,
+         "longitude":-122.15335979999999
+      },
+      "lastHeard":1628405744,
+      "snr":4.5
+   }{
+      "num":2354994191,
+      "user":{
+         "id":"!8c5e5c0f",
+         "longName":"RAK Solar 3",
+         "shortName":"RS3",
+         "macaddr":"+GKMXlwP",
+         "hwModel":"RAK4631"
+      },
+      "position":{
+         "batteryLevel":62
+      },
+      "lastHeard":1630252441,
+      "snr":4.75
+   }
+]

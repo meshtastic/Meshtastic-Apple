@@ -1,14 +1,11 @@
 //
 //  DeviceHome.swift
-//  Landmarks
 //
 //  Created by Garth Vander Houwen on 8/7/21.
-//  See LICENSE folder for app licensing information.
 //
 
 // Abstract:
-//  A view showing devices above a list of devices
-//  grouped by device.
+//  A view showing a list of devices that have been seen on the mesh network
 
 import SwiftUI
 
@@ -36,7 +33,9 @@ struct DeviceHome: View {
                 }
             }
             .navigationTitle("All Devices")
-        }.navigationViewStyle(StackNavigationViewStyle()) // Force Full screen master details 
+
+            
+        }.navigationViewStyle(StackNavigationViewStyle()) // Force Full screen master details
     }
 }
 
