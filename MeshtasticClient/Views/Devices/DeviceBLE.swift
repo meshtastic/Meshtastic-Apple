@@ -24,17 +24,40 @@ struct DeviceBLE: View {
         NavigationView {
            
             VStack {
-            
-                List(bleManager.peripherals) { peripheral in
-                    HStack {
-                        Text(peripheral.name)
-                        Spacer()
-                        Text(String(peripheral.rssi) + " dB")
-                    }
-                }.frame(height: 300)
-     
+                List {
+                    Section(header: Text("Connected Device")) {
+                        if(bleManager.connectedPeripheral != nil){
+                            HStack{
+                                Image(systemName: "dot.radiowaves.left.and.right").imageScale(.medium).foregroundColor(.green)
+                                Text(bleManager.connectedPeripheral.name!)
+                                Spacer()
+                               // print(bleManager.meshtasticPeripheral)
+                            }
+                        }
+                        
+                    }.textCase(nil)
+                    Section(header: Text("Other Meshtastic Devices")) {
+                        ForEach(bleManager.peripherals.sorted(by: { $0.rssi > $1.rssi })) { peripheral in
+                            HStack {
+                                
+                                Image(systemName: "circle.fill").imageScale(.medium).foregroundColor(.gray)
+                              
+                                Button(action: {
+                                    self.bleManager.stopScanning()
+                                    self.bleManager.disconnectDevice()
+                                    self.bleManager.connectToDevice(id: peripheral.id)
+                                }) {
+                                    Text(peripheral.name)
+                                }
+                                Spacer()
+                                Text(String(peripheral.rssi) + " dB")
+                            }
+                        }
+                    }.textCase(nil)
+                }
+                // Image(systemName: "dot.radiowaves.left.and.right").imageScale(.medium).foregroundColor(.green)//.rotationEffect(Angle(degrees: 90))
+             
                 Spacer()
-     
                 HStack {
                     VStack (spacing: 10) {
                         Button(action: {
@@ -60,7 +83,7 @@ struct DeviceBLE: View {
                     Button(action: {
                         self.bleManager.startScanning()
                     }) {
-                        Image(systemName: "arrow.clockwise.circle.fill").imageScale(.large)
+                        Image(systemName: "arrow.clockwise.circle").imageScale(.large)
                     }}, trailing:
                 HStack {
                     if bleManager.isSwitchedOn {
