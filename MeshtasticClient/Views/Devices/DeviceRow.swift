@@ -1,9 +1,11 @@
-/*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-A single row to be displayed in a list of landmarks.
-*/
+//
+//  DeviceMap.swift
+//  MeshtasticClient
+//
+//  Created by Garth Vander Houwen on 8/7/21.
+//
+//  Abstract:
+//  A single row to be displayed in a list of landmarks.
 
 import SwiftUI
 

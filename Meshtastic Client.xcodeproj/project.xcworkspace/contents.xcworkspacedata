@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/garthvanderhouwen/Documents/source/MeshtasticClient/Meshtastic Client.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>

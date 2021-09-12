@@ -63,10 +63,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         // Start Scanning
         print("Start Scanning")
         centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID])
-        // scanningLabel.text = "Scanning..."     }
-        //Timer.scheduledTimer(withTimeInterval: 15, repeats: false) {_ in
-        //    self.stopScanning()
-        //}
     }
         
     //---------------------------------------------------------------------------------------
@@ -74,7 +70,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func stopScanning() {
         print("Stop Scanning")
-        centralManager.stopScan()
+        self.centralManager.stopScan()
     }
     
     //---------------------------------------------------------------------------------------
@@ -82,7 +78,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func connectToDevice(id: String) {
         connectedPeripheral = peripheralArray.filter({ $0.identifier.uuidString == id }).first
-        centralManager?.connect(connectedPeripheral!)
+        self.centralManager?.connect(connectedPeripheral!)
     }
     
     //---------------------------------------------------------------------------------------
@@ -90,7 +86,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func disconnectDevice(){
         if connectedPeripheral != nil {
-            centralManager?.cancelPeripheralConnection(connectedPeripheral!)
+            self.centralManager?.cancelPeripheralConnection(connectedPeripheral!)
         }
     }
     
@@ -169,7 +165,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     // Discover Characteristics Event
     //---------------------------------------------------------------------------------------
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?)
+    {
       guard let characteristics = service.characteristics else { return }
 
       for characteristic in characteristics {
@@ -179,10 +176,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             case TORADIO_UUID:
                 print("TORADIO characteristic OK")
                 TORADIO_characteristic = characteristic
-                // var toRadio: ToRadio = ToRadio()
-                // toRadio.wantConfigID = 32168
-                // let binaryData: Data = try! toRadio.serializedData()
-                // peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
+                var toRadio: ToRadio = ToRadio()
+                toRadio.wantConfigID = 32168
+                let binaryData: Data = try! toRadio.serializedData()
+                peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
                 break
             
             case FROMRADIO_UUID:
@@ -205,15 +202,68 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     
     //---------------------------------------------------------------------------------------
-    // Update Characteristic Event
+    // Data Read / Update Characteristic Event
     //---------------------------------------------------------------------------------------
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic,
-                    error: Error?) {
-      switch characteristic.uuid {
-        case FROMRADIO_UUID:
-          print(characteristic.value ?? "no value")
-        default:
-          print("Unhandled Characteristic UUID: \(characteristic.uuid)")
-      }
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
+    {
+        switch characteristic.uuid
+        {
+            case FROMNUM_UUID:
+                peripheral.readValue(for: FROMRADIO_characteristic)
+                
+            case FROMRADIO_UUID:
+                if (characteristic.value == nil || characteristic.value!.isEmpty)
+                {
+                    return
+                }
+                //print(characteristic.value ?? "no value")
+                //let byteArray = [UInt8](characteristic.value!)
+                //print(characteristic.value?.hexDescription ?? "no value")
+                var decodedInfo = FromRadio()
+                
+                decodedInfo = try! FromRadio(serializedData: characteristic.value!)
+                //print(decodedInfo.myInfo.myNodeNum)
+                
+                if decodedInfo.myInfo.myNodeNum != 0
+                {
+                    print("Save a myInfo")
+                    do {
+                       print(try decodedInfo.myInfo.jsonString())
+                    } catch {
+                        fatalError("Failed to decode json")
+                    }
+                }
+                
+                if decodedInfo.nodeInfo.num != 0
+                {
+                    print("Save a nodeInfo")
+                    do {
+                        print(try decodedInfo.nodeInfo.jsonString())
+                    } catch {
+                        fatalError("Failed to decode json")
+                    }
+                }
+                
+                if decodedInfo.packet.from  != 0
+                {
+                    print("Save a packet")
+                    do {
+                        print(try decodedInfo.packet.jsonString())
+                    } catch {
+                        fatalError("Failed to decode json")
+                    }
+                }
+                
+                if decodedInfo.configCompleteID != 0 {
+                    print(decodedInfo)
+                }
+                        
+            default:
+                print("Unhandled Characteristic UUID: \(characteristic.uuid)")
+        }
+        
+        peripheral.readValue(for: FROMRADIO_characteristic)
     }
 }
+
+

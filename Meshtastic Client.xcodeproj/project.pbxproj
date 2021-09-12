@@ -3,12 +3,23 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
-		DDAF8C5526EBA0530058C060 /* Bluetooth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5426EBA0530058C060 /* Bluetooth.swift */; };
+		DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */; };
+		DDAF8C5B26ED08D30058C060 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */; };
+		DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5C26ED09490058C060 /* portnums.pb.swift */; };
+		DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */; };
+		DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */; };
+		DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6126ED0A230058C060 /* admin.pb.swift */; };
+		DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6426ED0A490058C060 /* channel.pb.swift */; };
+		DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */; };
+		DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */; };
+		DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */; };
+		DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6D26ED19040058C060 /* Extensions.swift */; };
+		DDAF8C7026ED1DD20058C060 /* Device2.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6F26ED1DD20058C060 /* Device2.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -48,7 +59,18 @@
 
 /* Begin PBXFileReference section */
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
-		DDAF8C5426EBA0530058C060 /* Bluetooth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bluetooth.swift; sourceTree = "<group>"; };
+		DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mesh.pb.swift; sourceTree = "<group>"; };
+		DDAF8C5C26ED09490058C060 /* portnums.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = portnums.pb.swift; sourceTree = "<group>"; };
+		DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = radioconfig.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mqtt.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6126ED0A230058C060 /* admin.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = admin.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6426ED0A490058C060 /* channel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = channel.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = remote_hardware.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = deviceonly.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = environmental_measurement.pb.swift; sourceTree = "<group>"; };
+		DDAF8C6D26ED19040058C060 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		DDAF8C6F26ED1DD20058C060 /* Device2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device2.swift; sourceTree = "<group>"; };
+		DDAF8C7126ED2AD80058C060 /* nodeInfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nodeInfo.json; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeshtasticClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticClientApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -80,6 +102,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDAF8C5B26ED08D30058C060 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,6 +123,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DDAF8C5626ED07740058C060 /* Protobufs */ = {
+			isa = PBXGroup;
+			children = (
+				DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */,
+				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
+				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
+				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
+				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
+				DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */,
+				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
+				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
+				DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */,
+			);
+			path = Protobufs;
+			sourceTree = "<group>";
+		};
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -123,6 +162,7 @@
 		DDC2E15626CE248E0042C5E4 /* MeshtasticClient */ = {
 			isa = PBXGroup;
 			children = (
+				DDAF8C5626ED07740058C060 /* Protobufs */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18726CE24E40042C5E4 /* Views */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
@@ -177,6 +217,7 @@
 			children = (
 				DDC2E19C26CE27580042C5E4 /* ModelData.swift */,
 				DDC2E19E26CE27630042C5E4 /* Device.swift */,
+				DDAF8C6F26ED1DD20058C060 /* Device2.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -186,6 +227,7 @@
 			children = (
 				DDC2E18A26CE25690042C5E4 /* deviceData.json */,
 				DDC2E1AA26DD89EC0042C5E4 /* packets.json */,
+				DDAF8C7126ED2AD80058C060 /* nodeInfo.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -206,7 +248,6 @@
 				DDC2E19626CE26840042C5E4 /* DeviceRow.swift */,
 				DDC2E19826CE26940042C5E4 /* DeviceMap.swift */,
 				DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */,
-				DDAF8C5426EBA0530058C060 /* Bluetooth.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -215,7 +256,6 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E19A26CE27150042C5E4 /* CircleImage.swift */,
-				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -223,7 +263,9 @@
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
+				DDAF8C6D26ED19040058C060 /* Extensions.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -244,6 +286,9 @@
 			dependencies = (
 			);
 			name = MeshtasticClient;
+			packageProductDependencies = (
+				DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */,
+			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */;
 			productType = "com.apple.product-type.application";
@@ -315,6 +360,9 @@
 				Base,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
+			packageReferences = (
+				DDAF8C5926ED08D30058C060 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -359,19 +407,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
+				DDAF8C7026ED1DD20058C060 /* Device2.swift in Sources */,
 				DDC2E19F26CE27630042C5E4 /* Device.swift in Sources */,
 				DDC2E19926CE26940042C5E4 /* DeviceMap.swift in Sources */,
 				DDC2E19526CE26760042C5E4 /* DeviceDetail.swift in Sources */,
+				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DDC2E19726CE26840042C5E4 /* DeviceRow.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
-				DDAF8C5526EBA0530058C060 /* Bluetooth.swift in Sources */,
 				DDC2E19126CE26290042C5E4 /* Messages.swift in Sources */,
+				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DDC2E19D26CE27580042C5E4 /* ModelData.swift in Sources */,
+				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
+				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
+				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
+				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
+				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
 				DDC2E19326CE266B0042C5E4 /* DeviceHome.swift in Sources */,
 				DDC2E19B26CE27150042C5E4 /* CircleImage.swift in Sources */,
+				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
 				DDC2E1A426CE2F940042C5E4 /* DeviceBLE.swift in Sources */,
+				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -692,6 +750,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DDAF8C5926ED08D30058C060 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDAF8C5926ED08D30058C060 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
 }

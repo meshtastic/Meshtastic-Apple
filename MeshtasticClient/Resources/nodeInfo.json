@@ -1,0 +1,38 @@
+[{
+    "nodeInfo": {
+        "num":3186677820,
+        "user":{
+            "id":"!bdf0d83c",
+            "longName":"Garth Vander Houwen",
+            "shortName":"GVH",
+            "macaddr":"fJ698Ng8",
+            "hwModel":"TBEAM"
+        },
+        "position":{
+            "latitudeI":476040257,
+            "longitudeI":-1221545412,
+            "altitude":11,
+            "batteryLevel":100,
+            "time":1631384279
+        },
+        "lastHeard":1631384279
+    },
+    {
+        "nodeInfo":{
+            "num":2792101487,
+            "user":{
+                "id":"!a66c166f",
+                "longName":"RAK Solar 2",
+                "shortName":"RS2",
+                "macaddr":"8eambBZv",
+                "hwModel":"RAK4631"
+            },
+            "position":{
+                "batteryLevel":88,
+                "time":1631297585
+            },
+            "lastHeard":1631383493,
+            "snr":12.0
+        }
+    }
+}]
