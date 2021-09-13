@@ -1,4 +1,5 @@
 import Foundation
+import CoreData
 import CoreBluetooth
 
 struct Peripheral: Identifiable {
@@ -222,7 +223,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-                //print(decodedInfo.myInfo.myNodeNum)
+                //print(decodedInfo)
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
@@ -238,13 +239,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     print("Save a nodeInfo")
                     do {
+                        let node =
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")
                     }
                 }
                 
-                if decodedInfo.packet.from  != 0
+                if decodedInfo.packet.id  != 0
                 {
                     print("Save a packet")
                     do {

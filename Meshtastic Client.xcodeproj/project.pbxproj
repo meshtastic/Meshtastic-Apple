@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD8E565A26EE85E3002CD952 /* MeshtasticClient.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD8E565826EE85E3002CD952 /* MeshtasticClient.xcdatamodeld */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */; };
 		DDAF8C5B26ED08D30058C060 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */; };
@@ -58,6 +59,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DD8E565926EE85E3002CD952 /* MeshtasticClient.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticClient.xcdatamodel; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mesh.pb.swift; sourceTree = "<group>"; };
 		DDAF8C5C26ED09490058C060 /* portnums.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = portnums.pb.swift; sourceTree = "<group>"; };
@@ -215,6 +217,7 @@
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				DD8E565826EE85E3002CD952 /* MeshtasticClient.xcdatamodeld */,
 				DDC2E19C26CE27580042C5E4 /* ModelData.swift */,
 				DDC2E19E26CE27630042C5E4 /* Device.swift */,
 				DDAF8C6F26ED1DD20058C060 /* Device2.swift */,
@@ -424,6 +427,7 @@
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
+				DD8E565A26EE85E3002CD952 /* MeshtasticClient.xcdatamodeld in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
 				DDC2E19326CE266B0042C5E4 /* DeviceHome.swift in Sources */,
 				DDC2E19B26CE27150042C5E4 /* CircleImage.swift in Sources */,
@@ -769,6 +773,19 @@
 			productName = SwiftProtobuf;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		DD8E565826EE85E3002CD952 /* MeshtasticClient.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				DD8E565926EE85E3002CD952 /* MeshtasticClient.xcdatamodel */,
+			);
+			currentVersion = DD8E565926EE85E3002CD952 /* MeshtasticClient.xcdatamodel */;
+			path = MeshtasticClient.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
 }
