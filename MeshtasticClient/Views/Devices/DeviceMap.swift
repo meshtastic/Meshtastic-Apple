@@ -40,21 +40,25 @@ struct DeviceMap: View {
             MapLocation(name: devices[3].shortName, coordinate: CLLocationCoordinate2D(latitude: devices[3].position.latitude, longitude: devices[3].position.longitude))
         ]
         
-        ZStack {
-            Map(coordinateRegion: regionBinding,
-                interactionModes: [.all],
-                showsUserLocation: true,
-                userTrackingMode: .constant(.follow), annotationItems: annotations) { location in
-                
-                MapAnnotation(
-                   coordinate: location.coordinate,
-                   content: {
-                    Text(location.name).font(.caption2).foregroundColor(.white)
-                        .background(Circle()
-                            .fill(Color.blue)
-                            .frame(width: 40, height: 40))                       }
-                )
-            }.frame(maxHeight:.infinity)
-        }
+        NavigationView {
+            ZStack {
+                Map(coordinateRegion: regionBinding,
+                    interactionModes: [.all],
+                    showsUserLocation: true,
+                    userTrackingMode: .constant(.follow), annotationItems: annotations) { location in
+                    
+                    MapAnnotation(
+                       coordinate: location.coordinate,
+                       content: {
+                        Text(location.name).font(.caption2).foregroundColor(.white)
+                            .background(Circle()
+                                .fill(Color.blue)
+                                .frame(width: 40, height: 40))                       }
+                    )
+                }.frame(maxHeight:.infinity)
+            }
+            .navigationTitle("Mesh Map")
+            .navigationBarTitleDisplayMode(.inline)
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }

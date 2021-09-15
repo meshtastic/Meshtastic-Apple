@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 extension Data
 {
@@ -8,6 +9,13 @@ extension Data
     }
 }
 
+extension Date
+{
+    static var currentTimeStamp: Int64
+    {
+        return Int64(Date().timeIntervalSince1970 * 1000)
+    }
+}
 
 extension String
 {
@@ -36,11 +44,40 @@ extension String
 
 }
 
+typealias NodeColor = Int
 
-extension Date
-{
-    static var currentTimeStamp: Int64
-    {
-        return Int64(Date().timeIntervalSince1970 * 1000)
+extension NodeColor {
+  // a color to represent an individual meshtastic device
+var color: Color {
+    switch self {
+            case 0:
+                return Color(.red)
+            case 1:
+                return Color(.blue)
+            case 2:
+                return Color(.yellow)
+            case 3:
+                return Color(.green)
+            case 4:
+                return Color(.purple)
+            case 5:
+                return Color(.systemPink)
+            case 6:
+                return Color(.systemTeal)
+            case 7:
+                return Color(.black)
+            case 8:
+                return Color(.gray)
+            case 9:
+                return Color(.brown)
+            case 10:
+                return Color(.magenta)
+            case 11:
+                return Color(.orange)
+            case 12:
+                return Color(.cyan)
+            default:
+                return Color(.blue)
+        }
     }
 }

@@ -4,7 +4,7 @@ import CoreLocation
 
 struct Messages: View {
     var body: some View {
-        ZStack {
+        NavigationView {
            
             List {
                 HStack {
@@ -50,8 +50,8 @@ struct Messages: View {
                         Spacer()
                     }
                 }
-            }
-            .navigationTitle("Broadcast Channel")
-        }
+            }.navigationTitle("Broadcast Channel")
+            .navigationBarTitleDisplayMode(.inline)
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }

@@ -17,7 +17,6 @@ struct DeviceDetail: View {
     var deviceIndex: Int {
         modelData.devices.firstIndex(where: { $0.id == device.id })!
     }
-    
     struct MapLocation: Identifiable {
         let id = UUID()
         let name: String

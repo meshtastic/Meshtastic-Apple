@@ -14,6 +14,7 @@ struct ContentView: View {
         case featured
         case list
         case ble
+        case nodes
     }
 
     var body: some View {
@@ -33,6 +34,11 @@ struct ContentView: View {
                     Label("Devices", systemImage: "flipphone")
                 }
                 .tag(Tab.devices)
+            NodeList()
+                .tabItem {
+                    Label("Nodes", systemImage: "flipphone")
+                }
+                .tag(Tab.nodes)
             DeviceBLE()
                 .tabItem {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")

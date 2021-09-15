@@ -1,6 +1,7 @@
 import Foundation
 import CoreData
 import CoreBluetooth
+import SwiftUI
 
 struct Peripheral: Identifiable {
     let id: String
@@ -20,7 +21,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var peripheralArray = [CBPeripheral]()
     private var rssiArray = [NSNumber]()
     private var timer = Timer()
-    
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
     
@@ -230,6 +230,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     print("Save a myInfo")
                     do {
                        print(try decodedInfo.myInfo.jsonString())
+                     //   let node = MyInfoEntity(context: persistentContainer.viewContext)
+                      //  node.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
+                     
+                        // node.num = Int(decodedInfo.myInfo.myNodeNum)
+                       // node.user?.hwModel = decodedInfo.myInfo.hwModelDeprecated
+                        //node.lastHeard
+                      //  node.snr
+                        
+                      //  node.user?.shortName decodedInfo.myInfo.
+                        
+                       // try persistentContainer.viewContext.save()
                     } catch {
                         fatalError("Failed to decode json")
                     }
@@ -239,7 +250,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     print("Save a nodeInfo")
                     do {
-                        let node =
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")
