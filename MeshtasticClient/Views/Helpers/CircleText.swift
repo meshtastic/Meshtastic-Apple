@@ -14,7 +14,7 @@ struct CircleText: View {
         Text(text).font(.caption2).foregroundColor(.white)
             .background(Circle()
             .fill(color)
-            .frame(width: 36, height: 36, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/))
+            .frame(width: 32, height: 32, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/))
     }
 }
 

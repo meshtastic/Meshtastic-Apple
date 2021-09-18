@@ -96,11 +96,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
 
-        //print(peripheral)
+        print(peripheral)
         if peripheralArray.contains(peripheral) {
           print("Duplicate Found.")
         } else {
-            print("Adding peripheral: " + peripheral.name!);
+            print("Adding peripheral: " + ((peripheral.name != nil) ? peripheral.name! : "(null)"));
             peripheralArray.append(peripheral)
             rssiArray.append(RSSI)
         }
@@ -117,7 +117,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
 
         let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, index: peripherals.count, name: peripheralName, rssi: RSSI.intValue)
-        //print(newPeripheral)
+        print(newPeripheral)
         peripherals.append(newPeripheral)
     }
     

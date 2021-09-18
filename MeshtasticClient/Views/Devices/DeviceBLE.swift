@@ -17,11 +17,7 @@ struct DeviceBLE: View {
     @EnvironmentObject var modelData: ModelData
     
     @ObservedObject var bleManager = BLEManager()
-    
-    var devices: [Device] {
-        modelData.devices
-    }
-    
+        
     var body: some View {
         NavigationView {
             
@@ -33,7 +29,7 @@ struct DeviceBLE: View {
                             if(bleManager.connectedPeripheral != nil){
                                 HStack{
                                     Image(systemName: "dot.radiowaves.left.and.right").imageScale(.large).foregroundColor(.green)
-                                    Text(bleManager.connectedPeripheral.name!).font(.title)
+                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title)
                                 }
                             }
                             else {

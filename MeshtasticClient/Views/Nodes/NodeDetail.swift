@@ -34,7 +34,7 @@ struct NodeDetail: View {
                     
                     let regionBinding = Binding<MKCoordinateRegion>(
                         get: {
-                            MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.002, longitudeDelta: 0.002))
+                            MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
                         },
                         set: { _ in }
                     )
@@ -45,10 +45,7 @@ struct NodeDetail: View {
                         MapAnnotation(
                            coordinate: location.coordinate,
                            content: {
-                            Text(node.user.shortName).font(.subheadline).foregroundColor(.white)
-                                .background(Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 36, height: 36))
+                            CircleText(text: node.user.shortName, color: Color.blue)
                            }
                         )
                     }.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)  

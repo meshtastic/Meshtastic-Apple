@@ -7,13 +7,9 @@ import Foundation
 import Combine
 
 final class ModelData: ObservableObject {
-    @Published var devices: [Device] = load("deviceData.json")
+   // @Published var devices: [Device] = load("deviceData.json")
 
     @Published var nodes: [NodeInfoModel] = load("packets.json")
-    
-    var nearby: [Device] {
-        devices
-    }
 }
 
 func load<T: Decodable>(_ filename: String) -> T {
