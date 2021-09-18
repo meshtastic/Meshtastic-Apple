@@ -5,14 +5,11 @@ Abstract: Default App View
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: Tab = .ble
+    @State private var selection: Tab = .nodes
 
     enum Tab {
         case messages
-        case devices
         case map
-        case featured
-        case list
         case ble
         case nodes
     }
@@ -24,16 +21,11 @@ struct ContentView: View {
                     Label("Messages", systemImage: "message")
                 }
                 .tag(Tab.messages)
-            DeviceMap()
+            NodeMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")
                 }
                 .tag(Tab.map)
-            DeviceHome()
-                .tabItem {
-                    Label("Devices", systemImage: "flipphone")
-                }
-                .tag(Tab.devices)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")

@@ -17,13 +17,21 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth is used to connect an iPhone to a user&apos;s meshtastic device to allow text messaging and location data for the mesh network.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to center maps of the mesh</string>
+	<key>Privacy – Bluetooth Always Usage Description</key>
+	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -37,16 +45,14 @@
 	<array>
 		<string>armv7</string>
 	</array>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>Privacy – Bluetooth Always Usage Description</key>
-	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

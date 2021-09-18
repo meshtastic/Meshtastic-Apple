@@ -1,9 +1,6 @@
-
 /*
-See LICENSE folder for this sample’s licensing information.
-
 Abstract:
-A view showing the details for a device.
+A view showing the details for a node.
 */
 
 import SwiftUI
@@ -16,34 +13,45 @@ struct NodeDetail: View {
     @EnvironmentObject var modelData: ModelData
     var node: NodeInfoModel
     
-    var nodeIndex: Int {
-        modelData.nodes.firstIndex(where: { $0.id == node.id })!
-    }
+    var coord = CLLocationCoordinate2D()
     
     struct MapLocation: Identifiable {
           let id = UUID()
           let name: String
           let coordinate: CLLocationCoordinate2D
-      }
+    }
+    
     var body: some View {
-        let location = LocationHelper.currentLocation
-        let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-        let regionBinding = Binding<MKCoordinateRegion>(
-            get: {
-                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
-            },
-            set: { _ in }
-        )
-        
+
         GeometryReader { bounds in
             
             VStack {
                 
                 // Map or Device Image
-                if(node.position.latitudeI != nil && node.position.latitudeI! > 0) {
-                    Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .constant(.follow))
-                        
-                        .frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
+                if(node.position.coordinate != nil) {
+                    
+                    let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.position.latitude!, longitude: node.position.longitude!)
+                    
+                    let regionBinding = Binding<MKCoordinateRegion>(
+                        get: {
+                            MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.002, longitudeDelta: 0.002))
+                        },
+                        set: { _ in }
+                    )
+                    
+                    let annotations = [MapLocation(name: node.user.shortName, coordinate: node.position.coordinate!)]
+                    
+                    Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .constant(.none), annotationItems: annotations) { location in
+                        MapAnnotation(
+                           coordinate: location.coordinate,
+                           content: {
+                            Text(node.user.shortName).font(.subheadline).foregroundColor(.white)
+                                .background(Circle()
+                                    .fill(Color.blue)
+                                    .frame(width: 36, height: 36))
+                           }
+                        )
+                    }.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)  
                 }
                 else
                 {
@@ -53,34 +61,48 @@ struct NodeDetail: View {
                         .frame(width: bounds.size.width, height: bounds.size.height / 2)
                 }
                 ScrollView {
+                    
                     HStack {
-                        Spacer()
-                        Image(systemName: "flipphone").font(.largeTitle).foregroundColor(.blue)
-                        Text("Model: " + String(node.user.hwModel)).font(.title)
-                        Spacer()
-                    }.padding()
+                        
+                        Image(node.user.hwModel.lowercased())
+                            .resizable()
+                            .frame(width: 70, height: 70)
+                        Text("Model: " + String(node.user.hwModel))
+                            .font(.title)
+                    }
+                    .padding()
                     Divider()
                     HStack {
-                        Image(systemName: "antenna.radiowaves.left.and.right").font(.title2).foregroundColor(.blue)
+                        
                         VStack(alignment: .center) {
-                            
-                            Text("SNR").font(.title3)
-                            Text(String(node.snr!)).font(.title3).foregroundColor(.gray)
-                        }
-                        Divider()
-                        VStack(alignment: .center) {
-                            
                             Text("AKA").font(.title3)
-                            Text(node.user.shortName).font(.title3).foregroundColor(.gray)
+                            CircleText(text: node.user.shortName, color: Color.blue)
+                                .offset(y:10)
+                        }
+                        .padding([.leading, .trailing, .bottom])
+                        Divider()
+                        VStack(alignment: .center) {
+                            
+                            Image(systemName: "waveform.path")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                            Text("SNR").font(.title3)
+                            Text(String(node.snr ?? 0))
+                                .font(.title3)
+                                .foregroundColor(.gray)
                         }
                         Divider()
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .center) {
+                            BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
                             Text("Battery").font(.title3)
-                            Text(String(node.position.batteryLevel!) + "%").font(.title3).foregroundColor(.gray)
+                            Text(String(node.position.batteryLevel!) + "%")
+                                .font(.title3)
+                                .foregroundColor(.gray)
                        }
                     }.padding(4)
                     Divider()
                     HStack{
+                        
                         Image(systemName: "clock").font(.title2).foregroundColor(.blue)
                         let lastHeard = Date(timeIntervalSince1970: node.lastHeard)
                         Text("Last Heard:").font(.title3)
@@ -88,42 +110,58 @@ struct NodeDetail: View {
                         Text("ago").font(.title3)
                     }.padding()
                     Divider()
-                    HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
-                        Image(systemName: "mappin").font(.title).foregroundColor(.blue)
-                        VStack(alignment: .leading) {
-                            Text("Latitude").font(.headline)
-                            Text(String(node.position.latitudeI!)).font(.caption).foregroundColor(.gray)
-                        }
-                        VStack(alignment: .leading) {
-                            Text("Longitude").font(.headline)
-                            Text(String(node.position.longitudeI!)).font(.caption).foregroundColor(.gray)
-                        }
-                        VStack(alignment: .leading) {
-                            Text("Altitude").font(.headline)
-                            Text(String(node.position.altitude!) + " m").font(.caption).foregroundColor(.gray)
-                        }
-                    }.padding()
-                    Divider()
-                    HStack {
-                        Spacer()
-                        Image(systemName: "person").font(.title3).foregroundColor(.blue)
-                        Text("Unique Id: " + String(node.user.id)).font(.headline)
+                    if node.position.latitudeI != nil {
+                        HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
+                            Image(systemName: "mappin").font(.title).foregroundColor(.blue)
+                            VStack(alignment: .leading) {
+                                Text("Latitude").font(.headline)
+                                Text(String(node.position.latitude ?? 0)).font(.caption).foregroundColor(.gray)
+                            }
+                            Divider()
+                            VStack(alignment: .leading) {
+                                Text("Longitude").font(.headline)
+                                Text(String(node.position.longitude ?? 0)).font(.caption).foregroundColor(.gray)
+                            }
+                            Divider()
+                            VStack(alignment: .leading) {
+                                Text("Altitude").font(.headline)
+                                Text(String(node.position.altitude ?? 0) + " m").font(.caption).foregroundColor(.gray)
+                            }
+                        }.padding()
                         Divider()
-                        Image(systemName: "number").font(.title3).foregroundColor(.blue)
-                        Text("Node Num: " + String(node.num)).font(.headline)
-                        Spacer()
+                    }
+                    HStack (alignment: .center) {
+                        VStack {
+                            HStack{
+                                Image(systemName: "person").font(.title3).foregroundColor(.blue)
+                                Text("Unique Id:").font(.title3)
+                            }
+                            Text(node.user.id).font(.headline).foregroundColor(.gray)
+                        }
+                        Divider()
+                        VStack {
+                            HStack {
+                                Image(systemName: "number").font(.title3).foregroundColor(.blue)
+                                Text("Node Number:").font(.title3)
+                            }
+                            Text(String(node.num)).font(.headline).foregroundColor(.gray)
+                        }
                     }.padding()
                 }
             }.navigationTitle(node.user.longName)
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing:
-                HStack {
-                    
-                    CircleText(text: node.user.shortName).offset(y: -2)
-                    
-                }
-            )
         }.ignoresSafeArea(.all, edges: [.leading, .trailing])
-        
+    }
+}
+
+
+struct NodeDetail_Previews: PreviewProvider {
+    static let modelData = ModelData()
+
+    static var previews: some View {
+        Group {
+            NodeDetail(node: modelData.nodes[0]).environmentObject(modelData)
+            NodeDetail(node: modelData.nodes[1]).environmentObject(modelData)
+        }
     }
 }

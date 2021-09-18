@@ -13,23 +13,29 @@ import SwiftUI
 struct NodeList: View {
     @EnvironmentObject var modelData: ModelData
     
+    @State private var showLocationOnly = false
+    
+    var filteredDevices: [NodeInfoModel] {
+        modelData.nodes.filter { node in
+            (!showLocationOnly || node.position.coordinate != nil)
+        }
+    }
 
     var body: some View {
         NavigationView {
            
             List {
-
-
-                ForEach(modelData.nodes) { node in
+                Toggle(isOn: $showLocationOnly) {
+                    Text("Nodes with Location only")
+                }
+                ForEach(filteredDevices.sorted(by: { $0.lastHeard > $1.lastHeard })) { node in
                     NavigationLink(destination: NodeDetail(node: node)) {
-                        NodeRow(node: node)
+                        NodeRow(node: node, index : 0)
                     }
                 }
             }
             .navigationTitle("All Nodes")
-
-            
-        }.navigationViewStyle(StackNavigationViewStyle()) // Force Full screen master details
+        }
     }
 }
 

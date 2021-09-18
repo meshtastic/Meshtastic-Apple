@@ -2,7 +2,7 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-struct Messages: View {
+struct MessageDetail: View {
     
     @State var typingMessage: String = ""
     
@@ -20,7 +20,6 @@ struct Messages: View {
                 HStack (alignment: .bottom) {
                     
                        TextField("Message", text: $typingMessage)
-                        .keyboardType(.asciiCapable)
                           .textFieldStyle(RoundedBorderTextFieldStyle())
                           .frame(minHeight: CGFloat(30))
                         Button(action: sendMessage) {
@@ -31,6 +30,6 @@ struct Messages: View {
             .navigationTitle("Broadcast Channel")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        //.navigationViewStyle//(StackNavigationViewStyle())
     }
 }

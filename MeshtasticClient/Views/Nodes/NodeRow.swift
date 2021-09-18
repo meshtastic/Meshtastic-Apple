@@ -1,37 +1,24 @@
-//
-//  DeviceMap.swift
-//  MeshtasticClient
-//
-//  Created by Garth Vander Houwen on 8/7/21.
-//
-//  Abstract:
-//  A single row to be displayed in a list of landmarks.
-
 import SwiftUI
 
 struct NodeRow: View {
     var node: NodeInfoModel
+    var index: Int
 
     var body: some View {
-        HStack {
-            Image(node.user.hwModel.lowercased()).resizable().frame(width: 150, height: 150)
-            
-            VStack(alignment: .leading) {
+        VStack (alignment: .leading) {
+            HStack() {
                 
-                Text(node.user.longName).font(.title2)
-                HStack {
-                    if node.user.hwModel == "TBEAM" || node.user.hwModel == "TLORA" {
-                        Image(systemName: "wifi")
-                            .foregroundColor(.blue).font(.title3)
-                    }
-                    if false {
-                        Image(systemName: "rectangle.connected.to.line.below")
-                            .foregroundColor(.green).font(.title2)
-                    }
-                }
+                CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
+                Text(node.user.longName).font(.title)
+            }.padding(.bottom, 2)
+            HStack (alignment: .top){
+                
+                Image(systemName: "clock").font(.subheadline).foregroundColor(.blue)
+                let lastHeard = Date(timeIntervalSince1970: node.lastHeard)
+                Text("Last Heard:").font(.subheadline).foregroundColor(.gray)
+                Text(lastHeard, style: .relative).font(.subheadline).foregroundColor(.gray)
             }
-            Spacer()
-        }
+        }.padding([.leading, .top, .bottom])
     }
 }
 
@@ -40,9 +27,7 @@ struct NodeRow_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            NodeRow(node: nodes[0])
-            NodeRow(node: nodes[1])
-            NodeRow(node: nodes[2])
+            NodeRow(node: nodes[0], index: 0)
         }
         .previewLayout(.fixed(width: 300, height: 70))
     }

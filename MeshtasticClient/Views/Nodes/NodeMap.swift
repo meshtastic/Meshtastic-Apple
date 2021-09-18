@@ -10,14 +10,15 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-struct DeviceMap: View {
+struct NodeMap: View {
     
     @EnvironmentObject var modelData: ModelData
 
-    var devices: [Device] {
-        modelData.devices
+    var locationNodes: [NodeInfoModel] {
+        modelData.nodes.filter { node in
+            (node.position.coordinate != nil)
+        }
     }
-    
     struct MapLocation: Identifiable {
         let id = UUID()
         let name: String
@@ -33,27 +34,20 @@ struct DeviceMap: View {
             },
             set: { _ in }
         )
-        let annotations = [
-            MapLocation(name: devices[0].shortName, coordinate: CLLocationCoordinate2D(latitude: devices[0].position.latitude, longitude: devices[0].position.longitude)),
-            MapLocation(name: devices[1].shortName, coordinate: CLLocationCoordinate2D(latitude: devices[1].position.latitude, longitude: devices[1].position.longitude)),
-            MapLocation(name: devices[2].shortName, coordinate: CLLocationCoordinate2D(latitude: devices[2].position.latitude, longitude: devices[2].position.longitude)),
-            MapLocation(name: devices[3].shortName, coordinate: CLLocationCoordinate2D(latitude: devices[3].position.latitude, longitude: devices[3].position.longitude))
-        ]
-        
+                
         NavigationView {
+            
             ZStack {
                 Map(coordinateRegion: regionBinding,
                     interactionModes: [.all],
                     showsUserLocation: true,
-                    userTrackingMode: .constant(.follow), annotationItems: annotations) { location in
+                    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { location in
                     
                     MapAnnotation(
-                       coordinate: location.coordinate,
+                        coordinate: location.position.coordinate!,
                        content: {
-                        Text(location.name).font(.caption2).foregroundColor(.white)
-                            .background(Circle()
-                                .fill(Color.blue)
-                                .frame(width: 40, height: 40))                       }
+                        CircleText(text: location.user.shortName, color: Color.blue)
+                       }
                     )
                 }.frame(maxHeight:.infinity)
             }
