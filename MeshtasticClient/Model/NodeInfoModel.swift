@@ -8,14 +8,15 @@
 import Foundation
 import SwiftUI
 import CoreLocation
+import CoreData
 
-struct NodeInfoModel: Hashable, Codable, Identifiable {
+struct NodeInfoModel: Identifiable, Codable {
     
     let id = UUID()
     var num: UInt32
     
     var user: User
-    struct User: Hashable, Codable, Identifiable {
+    struct User: Identifiable, Codable {
         var id: String
         var longName: String
         var shortName: String
@@ -24,13 +25,13 @@ struct NodeInfoModel: Hashable, Codable, Identifiable {
     }
     
     var position: Position
-    struct Position: Hashable, Codable {
+    struct Position: Codable {
         var latitudeI: Int32?
         var latitude: Double? {
             if let unwrappedLat = latitudeI {
                 let d = Double(unwrappedLat)
                 
-                return d / 10000000
+                return d / 1e7
             }
             else {
                return nil
@@ -41,7 +42,7 @@ struct NodeInfoModel: Hashable, Codable, Identifiable {
             if let unwrappedLong = longitudeI {
                 let d = Double(unwrappedLong)
                 
-                return d / 10000000
+                return d / 1e7
             }
             else {
                return nil

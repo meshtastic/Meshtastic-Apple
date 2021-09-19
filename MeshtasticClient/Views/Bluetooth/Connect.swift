@@ -28,7 +28,7 @@ struct Connect: View {
                         Section(header: Text("Connected Device").font(.largeTitle)) {
                             if(bleManager.connectedPeripheral != nil){
                                 HStack{
-                                    Image(systemName: "dot.radiowaves.left.and.right").imageScale(.large).foregroundColor(.green)
+                                    Image(systemName: "antenna.radiowaves.left.and.right").imageScale(.large).foregroundColor(.green)
                                     Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title)
                                 }
                             }
@@ -94,11 +94,23 @@ struct Connect: View {
             .navigationTitle("Bluetooth Radios")
             .navigationBarItems(trailing:
                 HStack {
-                    Button(action: {
-                        self.bleManager.startScanning()
-                    }) {
-                        Image(systemName: "arrow.clockwise.circle").imageScale(.large)
-                    }}
+                    VStack {
+                        if bleManager.isSwitchedOn && bleManager.connectedPeripheral != nil {
+                            Image(systemName: "antenna.radiowaves.left.and.right")
+                                .imageScale(.large)
+                                .foregroundColor(.green)
+                            Text("CONNECTED").font(.caption2).foregroundColor(.gray)
+                        }
+                        else {
+                    
+                            Image(systemName: "antenna.radiowaves.left.and.right")
+                                .imageScale(.large)
+                                .foregroundColor(.red)
+                            Text("DISCONNECTED").font(.caption).foregroundColor(.gray)
+                            
+                        }
+                    }
+                }.offset(x: 10, y: -10)
             )
         }.navigationViewStyle(StackNavigationViewStyle())
     }

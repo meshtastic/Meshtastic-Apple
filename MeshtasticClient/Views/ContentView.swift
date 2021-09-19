@@ -15,8 +15,9 @@ struct ContentView: View {
     }
 
     var body: some View {
+        
         TabView(selection: $selection) {
-            Messages()
+            MessageList()
                 .tabItem {
                     Label("Messages", systemImage: "message")
                 }

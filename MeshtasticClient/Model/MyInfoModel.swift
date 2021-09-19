@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MyInfoModel: Hashable, Codable, Identifiable {
+struct MyInfoModel: Identifiable, Codable {
     
     let id = UUID()
     var myNodeNum: UInt32
