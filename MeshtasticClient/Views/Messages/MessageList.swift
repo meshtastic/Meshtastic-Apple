@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import CoreBluetooth
 
 struct MessageList: View {
     
@@ -7,7 +8,7 @@ struct MessageList: View {
     
     @ObservedObject var bleManager = BLEManager()
     
-    @EnvironmentObject var modelData: ModelData
+    @State var connectedPeripheral: CBPeripheral!
     
     var body: some View {
         NavigationView {
@@ -21,26 +22,6 @@ struct MessageList: View {
             }
             .navigationTitle("Channels")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing:
-                HStack {
-                    VStack {
-                        if bleManager.isSwitchedOn {
-                            Image(systemName: "antenna.radiowaves.left.and.right")
-                                .imageScale(.large)
-                                .foregroundColor(.green)
-                            Text("CONNECTED").font(.caption2).foregroundColor(.gray)
-                        }
-                        else {
-                    
-                            Image(systemName: "antenna.radiowaves.left.and.right")
-                                .imageScale(.large)
-                                .foregroundColor(.red)
-                            Text("DISCONNECTED").font(.caption).foregroundColor(.gray)
-                            
-                        }
-                    }
-                }.offset(x: 10, y: -10)
-            )
         }
     }
 }

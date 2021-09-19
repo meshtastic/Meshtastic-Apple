@@ -99,14 +99,14 @@ struct Connect: View {
                             Image(systemName: "antenna.radiowaves.left.and.right")
                                 .imageScale(.large)
                                 .foregroundColor(.green)
-                            Text("CONNECTED").font(.caption2).foregroundColor(.gray)
+                            Text("Connected").font(.caption2).foregroundColor(.gray)
                         }
                         else {
                     
                             Image(systemName: "antenna.radiowaves.left.and.right")
                                 .imageScale(.large)
                                 .foregroundColor(.red)
-                            Text("DISCONNECTED").font(.caption).foregroundColor(.gray)
+                            Text("Disconnected").font(.caption2).foregroundColor(.gray)
                             
                         }
                     }

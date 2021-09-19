@@ -3,11 +3,18 @@ import CoreData
 import CoreBluetooth
 import SwiftUI
 
-struct Peripheral: Identifiable {
-    let id: String
-    let index: Int
-    let name: String
-    let rssi: Int
+final class Peripheral: Identifiable, ObservableObject {
+    @Published var id: String
+    @Published var index: Int
+    @Published var name: String
+    @Published var rssi: Int
+    
+    init(id: String, index: Int, name: String, rssi: Int) {
+        self.id = id
+        self.index = index
+        self.name = name
+        self.rssi = rssi
+    }
 }
 
 //---------------------------------------------------------------------------------------
@@ -19,7 +26,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
-    private var rssiArray = [NSNumber]()
+    //private var rssiArray = [NSNumber]()
     private var timer = Timer()
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
@@ -60,7 +67,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         // Remove Existing Data
         peripherals.removeAll()
         peripheralArray.removeAll()
-        rssiArray.removeAll()
+        //rssiArray.removeAll()
         // Start Scanning
         print("Start Scanning")
         centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID])
@@ -102,7 +109,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         } else {
             print("Adding peripheral: " + ((peripheral.name != nil) ? peripheral.name! : "(null)"));
             peripheralArray.append(peripheral)
-            rssiArray.append(RSSI)
+            //rssiArray.append(RSSI)
         }
        
         var peripheralName: String!
@@ -269,7 +276,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 if decodedInfo.configCompleteID != 0 {
                     print(decodedInfo)
                 }
-                        
+                
             default:
                 print("Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
