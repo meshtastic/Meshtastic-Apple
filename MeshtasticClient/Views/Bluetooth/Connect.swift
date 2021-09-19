@@ -92,17 +92,25 @@ struct Connect: View {
                 }
             }
             .navigationTitle("Bluetooth Radios")
-            //.navigationBarItems(leading:
-                //HStack {
-                    //Button(action: {
-                    //    self.bleManager.startScanning()
-                    //}) {
-                    //    Image(systemName: "arrow.clockwise.circle").imageScale(.large)
-                    //}}, trailing:
-                //HStack {
-                    
-                //}
-            //)
+            .navigationBarItems(trailing:
+                HStack {
+                    Button(action: {
+                        self.bleManager.startScanning()
+                    }) {
+                        Image(systemName: "arrow.clockwise.circle").imageScale(.large)
+                    }}
+            )
         }.navigationViewStyle(StackNavigationViewStyle())
+    }
+}
+
+struct Connect_Previews: PreviewProvider {
+    static let modelData = ModelData()
+    static let bleManager = BLEManager()
+
+    static var previews: some View {
+        Connect(bleManager: bleManager)
+            .environmentObject(ModelData())
+            
     }
 }

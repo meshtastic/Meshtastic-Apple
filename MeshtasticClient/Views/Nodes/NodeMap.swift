@@ -56,3 +56,12 @@ struct NodeMap: View {
         }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
+
+struct NodeMap_Previews: PreviewProvider {
+    static let modelData = ModelData()
+
+    static var previews: some View {
+        NodeMap()
+            .environmentObject(modelData)
+    }
+}

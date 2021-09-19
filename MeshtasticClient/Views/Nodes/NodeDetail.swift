@@ -6,14 +6,11 @@ A view showing the details for a node.
 import SwiftUI
 import MapKit
 import CoreLocation
-import CoreBluetooth
 
 struct NodeDetail: View {
     
     @EnvironmentObject var modelData: ModelData
     var node: NodeInfoModel
-    
-    var coord = CLLocationCoordinate2D()
     
     struct MapLocation: Identifiable {
           let id = UUID()
@@ -27,7 +24,6 @@ struct NodeDetail: View {
             
             VStack {
                 
-                // Map or Device Image
                 if(node.position.coordinate != nil) {
                     
                     let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.position.latitude!, longitude: node.position.longitude!)
@@ -63,7 +59,9 @@ struct NodeDetail: View {
                         
                         Image(node.user.hwModel.lowercased())
                             .resizable()
-                            .frame(width: 70, height: 70)
+                            .frame(width:70, height: 70)
+                            .cornerRadius(5)
+                            
                         Text("Model: " + String(node.user.hwModel))
                             .font(.title)
                     }

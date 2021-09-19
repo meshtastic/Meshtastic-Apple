@@ -26,7 +26,7 @@ struct NodeList: View {
            
             List {
                 Toggle(isOn: $showLocationOnly) {
-                    Text("Nodes with Location only")
+                    Text("Nodes with location only")
                 }
                 ForEach(filteredDevices.sorted(by: { $0.lastHeard > $1.lastHeard })) { node in
                     NavigationLink(destination: NodeDetail(node: node)) {
