@@ -7,7 +7,6 @@ import Foundation
 import Combine
 
 final class ModelData: ObservableObject {
-   // @Published var devices: [Device] = load("deviceData.json")
 
     @Published var nodes: [NodeInfoModel] = load("packets.json")
 }

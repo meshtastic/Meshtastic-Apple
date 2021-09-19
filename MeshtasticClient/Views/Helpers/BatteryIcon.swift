@@ -25,7 +25,7 @@ struct BatteryIcon: View {
                 .font(font)
                 .foregroundColor(color)
         }
-        else if batteryLevel! < 50 && batteryLevel! > 24 {
+        else if batteryLevel! < 50 && batteryLevel! > 14 {
             
             Image(systemName: "battery.25")
                 .font(font)
@@ -43,5 +43,14 @@ struct BatteryIcon: View {
 struct BatteryIcon_Previews: PreviewProvider {
     static var previews: some View {
         BatteryIcon(batteryLevel: 100, font: .title2, color: Color.blue)
+            .previewLayout(.fixed(width: 75, height: 75))
+        BatteryIcon(batteryLevel: 99, font: .title2, color: Color.blue)
+            .previewLayout(.fixed(width: 75, height: 75))
+        BatteryIcon(batteryLevel: 74, font: .title2, color: Color.blue)
+            .previewLayout(.fixed(width: 75, height: 75))
+        BatteryIcon(batteryLevel: 49, font: .title2, color: Color.blue)
+            .previewLayout(.fixed(width: 75, height: 75))
+        BatteryIcon(batteryLevel: 14, font: .title2, color: Color.blue)
+            .previewLayout(.fixed(width: 75, height: 75))
     }
 }

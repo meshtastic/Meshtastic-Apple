@@ -12,7 +12,7 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-struct DeviceBLE: View {
+struct Connect: View {
     
     @EnvironmentObject var modelData: ModelData
     

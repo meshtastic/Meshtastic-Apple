@@ -17,6 +17,7 @@
 		DD47E3DD26F390A000029299 /* MessageDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DC26F390A000029299 /* MessageDetail.swift */; };
 		DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */; };
 		DD7AA3F326F05C120077AF76 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7AA3F226F05C120077AF76 /* NodeInfoModel.swift */; };
+		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
@@ -40,7 +41,6 @@
 		DDC2E19126CE26290042C5E4 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E19026CE26290042C5E4 /* Messages.swift */; };
 		DDC2E19B26CE27150042C5E4 /* CircleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E19A26CE27150042C5E4 /* CircleImage.swift */; };
 		DDC2E19D26CE27580042C5E4 /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E19C26CE27580042C5E4 /* ModelData.swift */; };
-		DDC2E1A426CE2F940042C5E4 /* DeviceBLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
 		DDC2E1AB26DD89EC0042C5E4 /* packets.json in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E1AA26DD89EC0042C5E4 /* packets.json */; };
 /* End PBXBuildFile section */
@@ -74,6 +74,7 @@
 		DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoModel.swift; sourceTree = "<group>"; };
 		DD7AA3F226F05C120077AF76 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
 		DD7AA3F426F05D660077AF76 /* nodeInfoModel.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nodeInfoModel.json; sourceTree = "<group>"; };
+		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* MeshtasticClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticClient.entitlements; sourceTree = "<group>"; };
 		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
@@ -104,7 +105,6 @@
 		DDC2E19026CE26290042C5E4 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DDC2E19A26CE27150042C5E4 /* CircleImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleImage.swift; sourceTree = "<group>"; };
 		DDC2E19C26CE27580042C5E4 /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
-		DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceBLE.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		DDC2E1AA26DD89EC0042C5E4 /* packets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = packets.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -146,11 +146,12 @@
 			path = Nodes;
 			sourceTree = "<group>";
 		};
-		DD47E3D726F2F21A00029299 /* BlueTooth */ = {
+		DD47E3D726F2F21A00029299 /* Bluetooth */ = {
 			isa = PBXGroup;
 			children = (
+				DD836AE626F6B38600ABCC23 /* Connect.swift */,
 			);
-			path = BlueTooth;
+			path = Bluetooth;
 			sourceTree = "<group>";
 		};
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
@@ -235,9 +236,8 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				DD47E3D726F2F21A00029299 /* BlueTooth */,
+				DD47E3D726F2F21A00029299 /* Bluetooth */,
 				DD47E3CA26F0E50300029299 /* Nodes */,
-				DDC2E18C26CE25B00042C5E4 /* Devices */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
@@ -273,14 +273,6 @@
 				DD47E3DC26F390A000029299 /* MessageDetail.swift */,
 			);
 			path = Messages;
-			sourceTree = "<group>";
-		};
-		DDC2E18C26CE25B00042C5E4 /* Devices */ = {
-			isa = PBXGroup;
-			children = (
-				DDC2E1A326CE2F940042C5E4 /* DeviceBLE.swift */,
-			);
-			path = Devices;
 			sourceTree = "<group>";
 		};
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
@@ -441,6 +433,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
 				DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
@@ -467,7 +460,6 @@
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
 				DDC2E19B26CE27150042C5E4 /* CircleImage.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
-				DDC2E1A426CE2F940042C5E4 /* DeviceBLE.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DD47E3DD26F390A000029299 /* MessageDetail.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */,
@@ -638,7 +630,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.05;
+				MARKETING_VERSION = 1.06;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
@@ -663,7 +655,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.05;
+				MARKETING_VERSION = 1.06;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;

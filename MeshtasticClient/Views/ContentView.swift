@@ -31,7 +31,7 @@ struct ContentView: View {
                     Label("Nodes", systemImage: "flipphone")
                 }
                 .tag(Tab.nodes)
-            DeviceBLE()
+            Connect()
                 .tabItem {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
                 }

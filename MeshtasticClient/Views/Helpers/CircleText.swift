@@ -21,5 +21,6 @@ struct CircleText: View {
 struct CircleText_Previews: PreviewProvider {
     static var previews: some View {
         CircleText(text: "RDN", color: Color.blue)
+            .previewLayout(.fixed(width: 300, height: 100))
     }
 }
