@@ -81,6 +81,7 @@ struct NodeDetail: View {
                             Image(systemName: "waveform.path")
                                 .font(.title2)
                                 .foregroundColor(.blue)
+                                .symbolRenderingMode(.hierarchical)
                             Text("SNR").font(.title3)
                             Text(String(node.snr ?? 0))
                                 .font(.title3)
@@ -93,6 +94,7 @@ struct NodeDetail: View {
                             Text(String(node.position.batteryLevel!) + "%")
                                 .font(.title3)
                                 .foregroundColor(.gray)
+                                .symbolRenderingMode(.hierarchical)
                        }
                     }.padding(4)
                     Divider()

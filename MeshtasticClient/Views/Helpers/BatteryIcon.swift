@@ -12,30 +12,35 @@ struct BatteryIcon: View {
             Image(systemName: "battery.100")
                 .font(font)
                 .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
         }
         else if batteryLevel! < 100 && batteryLevel! > 74 {
             
             Image(systemName: "battery.75")
                 .font(font)
                 .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
         }
         else if batteryLevel! < 75 && batteryLevel! > 49 {
             
             Image(systemName: "battery.50")
                 .font(font)
                 .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
         }
         else if batteryLevel! < 50 && batteryLevel! > 14 {
             
             Image(systemName: "battery.25")
                 .font(font)
                 .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
         }
         else {
             
             Image(systemName: "battery.0")
                 .font(font)
                 .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
         }
     }
 }

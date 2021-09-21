@@ -16,14 +16,17 @@
 		DD47E3DB26F3901B00029299 /* MessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DA26F3901A00029299 /* MessageList.swift */; };
 		DD47E3DD26F390A000029299 /* MessageDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DC26F390A000029299 /* MessageDetail.swift */; };
 		DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */; };
-		DD7AA3F326F05C120077AF76 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7AA3F226F05C120077AF76 /* NodeInfoModel.swift */; };
+		DD7AA3F326F05C120077AF76 /* NodeInfoModel3.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7AA3F226F05C120077AF76 /* NodeInfoModel3.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD836AEB26F7AF9000ABCC23 /* nodeinfomodel2.json in Resources */ = {isa = PBXBuildFile; fileRef = DD836AEA26F7AF9000ABCC23 /* nodeinfomodel2.json */; };
+		DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEC26F858F900ABCC23 /* MeshData.swift */; };
+		DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */; };
+		DD836AF126F8613500ABCC23 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AF026F8613500ABCC23 /* Color.swift */; };
+		DD8EDE9426F97A2B00A5A10B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD8EDE9326F97A2B00A5A10B /* SwiftProtobuf */; };
 		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */; };
-		DDAF8C5B26ED08D30058C060 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */; };
 		DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5C26ED09490058C060 /* portnums.pb.swift */; };
 		DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */; };
 		DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */; };
@@ -72,10 +75,13 @@
 		DD47E3DA26F3901A00029299 /* MessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageList.swift; sourceTree = "<group>"; };
 		DD47E3DC26F390A000029299 /* MessageDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDetail.swift; sourceTree = "<group>"; };
 		DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoModel.swift; sourceTree = "<group>"; };
-		DD7AA3F226F05C120077AF76 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
+		DD7AA3F226F05C120077AF76 /* NodeInfoModel3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel3.swift; sourceTree = "<group>"; };
 		DD7AA3F426F05D660077AF76 /* nodeinfomodel.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nodeinfomodel.json; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD836AEA26F7AF9000ABCC23 /* nodeinfomodel2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = nodeinfomodel2.json; sourceTree = "<group>"; };
+		DD836AEC26F858F900ABCC23 /* MeshData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshData.swift; sourceTree = "<group>"; };
+		DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
+		DD836AF026F8613500ABCC23 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* MeshtasticClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticClient.entitlements; sourceTree = "<group>"; };
 		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
@@ -114,7 +120,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DDAF8C5B26ED08D30058C060 /* SwiftProtobuf in Frameworks */,
+				DD8EDE9426F97A2B00A5A10B /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +160,13 @@
 			path = Bluetooth;
 			sourceTree = "<group>";
 		};
+		DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
@@ -177,6 +190,7 @@
 				DDC2E16D26CE248F0042C5E4 /* MeshtasticClientTests */,
 				DDC2E17826CE248F0042C5E4 /* MeshtasticClientUITests */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
+				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -249,8 +263,11 @@
 			isa = PBXGroup;
 			children = (
 				DDC2E19C26CE27580042C5E4 /* ModelData.swift */,
-				DD7AA3F226F05C120077AF76 /* NodeInfoModel.swift */,
+				DD7AA3F226F05C120077AF76 /* NodeInfoModel3.swift */,
 				DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */,
+				DD836AEC26F858F900ABCC23 /* MeshData.swift */,
+				DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */,
+				DD836AF026F8613500ABCC23 /* Color.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -314,7 +331,7 @@
 			);
 			name = MeshtasticClient;
 			packageProductDependencies = (
-				DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */,
+				DD8EDE9326F97A2B00A5A10B /* SwiftProtobuf */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */;
@@ -437,8 +454,10 @@
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
 				DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */,
+				DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
-				DD7AA3F326F05C120077AF76 /* NodeInfoModel.swift in Sources */,
+				DD836AF126F8613500ABCC23 /* Color.swift in Sources */,
+				DD7AA3F326F05C120077AF76 /* NodeInfoModel3.swift in Sources */,
 				DD47E3D226F1210600029299 /* HelperFunctions.swift in Sources */,
 				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
@@ -446,6 +465,7 @@
 				DDC2E19126CE26290042C5E4 /* Messages.swift in Sources */,
 				DD47E3DB26F3901B00029299 /* MessageList.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
+				DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */,
 				DDC2E19D26CE27580042C5E4 /* ModelData.swift in Sources */,
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
@@ -619,18 +639,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.06;
+				MARKETING_VERSION = 1.091;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
@@ -644,18 +665,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.06;
+				MARKETING_VERSION = 1.091;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
@@ -801,7 +823,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DDAF8C5A26ED08D30058C060 /* SwiftProtobuf */ = {
+		DD8EDE9326F97A2B00A5A10B /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DDAF8C5926ED08D30058C060 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
 			productName = SwiftProtobuf;

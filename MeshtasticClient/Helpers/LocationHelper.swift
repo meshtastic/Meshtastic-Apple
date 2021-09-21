@@ -1,16 +1,14 @@
 import CoreLocation
 
-struct MyAnnotationItem: Identifiable {
-    var coordinate: CLLocationCoordinate2D
-    let id = UUID()
-}
-
 class LocationHelper: NSObject, ObservableObject {
     
     static let shared = LocationHelper()
-    static let DefaultLocation = CLLocationCoordinate2D(latitude: 51.506520923981554, longitude: -0.10689139236939127)
+    
+    // Mount Rainier
+    static let DefaultLocation = CLLocationCoordinate2D(latitude: 46.879967, longitude: -121.726906)
     
     static var currentLocation: CLLocationCoordinate2D {
+        
         guard let location = shared.locationManager.location else {
             return DefaultLocation
         }
@@ -20,6 +18,7 @@ class LocationHelper: NSObject, ObservableObject {
     private let locationManager = CLLocationManager()
     
     private override init() {
+        
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest

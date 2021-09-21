@@ -11,12 +11,12 @@
 import SwiftUI
 
 struct NodeList: View {
-    @EnvironmentObject var modelData: ModelData
+    @EnvironmentObject var meshData: MeshData
     
     @State private var showLocationOnly = false
     
     var filteredDevices: [NodeInfoModel] {
-        modelData.nodes.filter { node in
+        meshData.nodes.filter { node in
             (!showLocationOnly || node.position.coordinate != nil)
         }
     }

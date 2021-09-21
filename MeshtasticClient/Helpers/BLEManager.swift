@@ -23,6 +23,8 @@ final class Peripheral: Identifiable, ObservableObject {
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
     // Data
+   // @EnvironmentObject var meshData: MeshData
+    @EnvironmentObject private var meshData : MeshData
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
@@ -38,11 +40,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
     let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
-    let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453") //Notify
+    let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
     
     override init() {
+        
         super.init()
- 
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
         
@@ -257,6 +259,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     print("Save a nodeInfo")
                     do {
+                       // meshData.nodes.append(
+                       //     NodeInfoModel(num: decodedInfo.nodeInfo.num,
+                       //                   user: NodeInfoModel.User(id: decodedInfo.nodeInfo.user.id,
+                       //                                            longName: decodedInfo.nodeInfo.user.longName,
+                       //                                            shortName: decodedInfo.nodeInfo.user.shortName
+                                                                   //macaddr: "",
+                                                                   //hwModel: String((HardwareModel)decodedInfo.nodeInfo.user.hwModel)
+                       //                   ),
+                       //                   position: NodeInfoModel.Position(latitudeI:nil,
+                       //                                                    longitudeI: nil,
+                       //                                                    altitude: nil,
+                       //                                                    batteryLevel: 68,
+                       //                                                    time: nil),
+                       //                   lastHeard: 1631593661,
+                       //                   snr: nil)
+                       // )
+                       // meshData.save()
+                        
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")

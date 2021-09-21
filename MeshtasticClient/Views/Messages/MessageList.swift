@@ -16,7 +16,8 @@ struct MessageList: View {
             GeometryReader { bounds in
                 
                 ScrollView {
-                    
+                    Text(String(bleManager.isSwitchedOn))
+                    Text(String(bleManager.connectedPeripheral != nil))
                 }.padding(.all)
                 
             }

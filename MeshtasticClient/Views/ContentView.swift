@@ -19,22 +19,26 @@ struct ContentView: View {
         TabView(selection: $selection) {
             MessageList()
                 .tabItem {
-                    Label("Messages", systemImage: "message")
+                    Label("Messages", systemImage: "text.bubble")
+                        .symbolRenderingMode(.hierarchical)
                 }
                 .tag(Tab.messages)
             NodeMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")
+                        .symbolRenderingMode(.hierarchical)
                 }
                 .tag(Tab.map)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")
+                        .symbolRenderingMode(.hierarchical)
                 }
                 .tag(Tab.nodes)
             Connect()
                 .tabItem {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
+                        .symbolRenderingMode(.hierarchical)
                 }
                 .tag(Tab.ble)
         }

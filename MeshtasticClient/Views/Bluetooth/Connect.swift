@@ -25,20 +25,20 @@ struct Connect: View {
                 if bleManager.isSwitchedOn {
                     
                     List {
-                        Section(header: Text("Connected Device").font(.largeTitle)) {
+                        Section(header: Text("Connected Device").font(.title)) {
                             if(bleManager.connectedPeripheral != nil){
                                 HStack{
                                     Image(systemName: "antenna.radiowaves.left.and.right").imageScale(.large).foregroundColor(.green)
-                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title)
+                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
                                 }
                             }
                             else {
-                                Text("No device connected").font(.title)
+                                Text("No device connected").font(.title2)
                             }
                             
                         }.textCase(nil)
                         
-                        Section(header: Text("Other Meshtastic Devices").font(.title)) {
+                        Section(header: Text("New Devices").font(.title)) {
                             ForEach(bleManager.peripherals.sorted(by: { $0.rssi > $1.rssi })) { peripheral in
                                 HStack {
                                     Image(systemName: "circle.fill").imageScale(.large).foregroundColor(.gray)
@@ -54,6 +54,11 @@ struct Connect: View {
                                 }
                             }
                         }.textCase(nil)
+                        
+                        Section(header: Text("Known Devices").font(.title)) {
+                            
+                        }.textCase(nil)
+                        
                     }
                     
                     HStack (alignment: .center) {

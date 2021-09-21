@@ -9,12 +9,17 @@ import SwiftUI
 
 @main
 struct MeshtasticClientApp: App {
-    @StateObject private var modelData = ModelData()
+
+    @ObservedObject private var meshData = MeshData()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(modelData)
+                .environmentObject(meshData)
+                .onAppear{
+                    meshData.load()
+                }
+                
         }
     }
 }

@@ -5,15 +5,13 @@ Storage for model data.
 
 import Foundation
 import Combine
-import CoreBluetooth
-import CoreData
 
 final class ModelData: ObservableObject {
 
-    @Published var nodes: [NodeInfoModel] = load("packets.json")
+
+    @Published var nodes: [NodeInfoModel] = load("nodeinfomodel.json")
     
-  //  @ObservedObject var connectedPeripheral: CBPeripheral!
-    //@Published var connectedPeripheral: CBPeripheral!
+
 }
 
 func load<T: Decodable>(_ filename: String) -> T {

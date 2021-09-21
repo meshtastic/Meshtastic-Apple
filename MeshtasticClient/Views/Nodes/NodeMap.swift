@@ -12,10 +12,10 @@ import CoreLocation
 
 struct NodeMap: View {
     
-    @EnvironmentObject var modelData: ModelData
+    @EnvironmentObject var meshData: MeshData
 
     var locationNodes: [NodeInfoModel] {
-        modelData.nodes.filter { node in
+        meshData.nodes.filter { node in
             (node.position.coordinate != nil)
         }
     }
