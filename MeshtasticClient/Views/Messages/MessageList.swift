@@ -28,7 +28,7 @@ struct MessageList: View {
 }
 
 struct MessageList_Previews: PreviewProvider {
-    static let modelData = ModelData()
+    static let meshData = MeshData()
 
     static var previews: some View {
         Group {

@@ -9,7 +9,7 @@ import Foundation
 
 struct MyInfoModel: Identifiable, Codable {
     
-    let id = UUID()
+    let id: UUID
     var myNodeNum: UInt32
     var hasGps: Bool
     var numBands: UInt32
@@ -18,5 +18,19 @@ struct MyInfoModel: Identifiable, Codable {
     var rebootCount: UInt32
     var messageTimeoutMsec: UInt32
     var minAppVersion: UInt32
+    
+    init(id: UUID = UUID(), myNodeNum: UInt32, hasGps: Bool, numBands: UInt32, maxChannels: UInt32, firmwareVersion: String, rebootCount: UInt32, messageTimeoutMsec: UInt32, minAppVersion: UInt32) {
+        
+        self.id = id
+        self.myNodeNum = myNodeNum
+        self.hasGps = hasGps
+        self.numBands = numBands
+        self.maxChannels = maxChannels
+        self.firmwareVersion = firmwareVersion
+        self.rebootCount = rebootCount
+        self.messageTimeoutMsec = messageTimeoutMsec
+        self.minAppVersion = minAppVersion
+        
+    }
     
 }

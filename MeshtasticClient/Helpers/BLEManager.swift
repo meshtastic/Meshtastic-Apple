@@ -23,8 +23,7 @@ final class Peripheral: Identifiable, ObservableObject {
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
     // Data
-   // @EnvironmentObject var meshData: MeshData
-    @EnvironmentObject private var meshData : MeshData
+    @ObservedObject private var meshData : MeshData
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
@@ -43,10 +42,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
     
     override init() {
-        
+        self.meshData = MeshData()
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
+        
         
     }
 
@@ -239,17 +239,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     print("Save a myInfo")
                     do {
                        print(try decodedInfo.myInfo.jsonString())
-                     //   let node = MyInfoEntity(context: persistentContainer.viewContext)
-                      //  node.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
-                     
-                        // node.num = Int(decodedInfo.myInfo.myNodeNum)
-                       // node.user?.hwModel = decodedInfo.myInfo.hwModelDeprecated
-                        //node.lastHeard
-                      //  node.snr
-                        
-                      //  node.user?.shortName decodedInfo.myInfo.
-                        
-                       // try persistentContainer.viewContext.save()
+
                     } catch {
                         fatalError("Failed to decode json")
                     }
@@ -259,23 +249,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     print("Save a nodeInfo")
                     do {
-                       // meshData.nodes.append(
-                       //     NodeInfoModel(num: decodedInfo.nodeInfo.num,
-                       //                   user: NodeInfoModel.User(id: decodedInfo.nodeInfo.user.id,
-                       //                                            longName: decodedInfo.nodeInfo.user.longName,
-                       //                                            shortName: decodedInfo.nodeInfo.user.shortName
+                        meshData.nodes.append(
+                            NodeInfoModel(id: UUID(),
+                                          num: decodedInfo.nodeInfo.num,
+                                          user: NodeInfoModel.User(id: decodedInfo.nodeInfo.user.id,
+                                                                   longName: decodedInfo.nodeInfo.user.longName,
+                                                                   shortName: decodedInfo.nodeInfo.user.shortName,
                                                                    //macaddr: "",
-                                                                   //hwModel: String((HardwareModel)decodedInfo.nodeInfo.user.hwModel)
-                       //                   ),
-                       //                   position: NodeInfoModel.Position(latitudeI:nil,
-                       //                                                    longitudeI: nil,
-                       //                                                    altitude: nil,
-                       //                                                    batteryLevel: 68,
-                       //                                                    time: nil),
-                       //                   lastHeard: 1631593661,
-                       //                   snr: nil)
-                       // )
-                       // meshData.save()
+                                                                   hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+                                                                    .capitalized
+                                    
+                                          ),
+                                          position: NodeInfoModel.Position(latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+                                                                           longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+                                                                           altitude: decodedInfo.nodeInfo.position.altitude,
+                                                                           batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+                                                                           time: decodedInfo.nodeInfo.position.time),
+                                          lastHeard: decodedInfo.nodeInfo.lastHeard,
+                                          snr: decodedInfo.nodeInfo.snr)
+                        )
+                        meshData.save()
                         
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {

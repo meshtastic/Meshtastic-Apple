@@ -42,6 +42,6 @@ struct NodeList: View {
 struct NodeList_Previews: PreviewProvider {
     static var previews: some View {
         NodeList()
-            .environmentObject(ModelData())
+            .environmentObject(MeshData())
     }
 }

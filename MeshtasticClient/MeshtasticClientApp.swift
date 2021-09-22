@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct MeshtasticClientApp: App {
 
-    @ObservedObject private var meshData = MeshData()
+    @ObservedObject private var meshData: MeshData = MeshData()
 
     var body: some Scene {
         WindowGroup {

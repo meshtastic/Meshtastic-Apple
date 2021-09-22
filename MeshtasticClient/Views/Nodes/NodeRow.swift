@@ -14,7 +14,7 @@ struct NodeRow: View {
             HStack (alignment: .top){
                 
                 Image(systemName: "clock").font(.subheadline).foregroundColor(.blue)
-                let lastHeard = Date(timeIntervalSince1970: node.lastHeard)
+                let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
                 Text("Last Heard:").font(.subheadline).foregroundColor(.gray)
                 Text(lastHeard, style: .relative).font(.subheadline).foregroundColor(.gray)
             }
@@ -23,7 +23,7 @@ struct NodeRow: View {
 }
 
 struct NodeRow_Previews: PreviewProvider {
-    static var nodes = ModelData().nodes
+    static var nodes = MeshData().nodes
 
     static var previews: some View {
         Group {

@@ -58,10 +58,10 @@ struct NodeMap: View {
 }
 
 struct NodeMap_Previews: PreviewProvider {
-    static let modelData = ModelData()
+    static let meshData = MeshData()
 
     static var previews: some View {
         NodeMap()
-            .environmentObject(modelData)
+            .environmentObject(meshData)
     }
 }

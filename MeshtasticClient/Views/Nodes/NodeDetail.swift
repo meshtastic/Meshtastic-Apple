@@ -9,7 +9,6 @@ import CoreLocation
 
 struct NodeDetail: View {
     
-    @EnvironmentObject var modelData: ModelData
     var node: NodeInfoModel
     
     struct MapLocation: Identifiable {
@@ -101,7 +100,7 @@ struct NodeDetail: View {
                     HStack{
                         
                         Image(systemName: "clock").font(.title2).foregroundColor(.blue)
-                        let lastHeard = Date(timeIntervalSince1970: node.lastHeard)
+                        let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
                         Text("Last Heard:").font(.title3)
                         Text(lastHeard, style: .relative).font(.title3)
                         Text("ago").font(.title3)
@@ -153,12 +152,12 @@ struct NodeDetail: View {
 
 
 struct NodeDetail_Previews: PreviewProvider {
-    static let modelData = ModelData()
+    static let meshData = MeshData()
 
     static var previews: some View {
         Group {
-            NodeDetail(node: modelData.nodes[0]).environmentObject(modelData)
-            NodeDetail(node: modelData.nodes[1]).environmentObject(modelData)
+            NodeDetail(node: meshData.nodes[0]).environmentObject(meshData)
+            NodeDetail(node: meshData.nodes[1]).environmentObject(meshData)
         }
     }
 }

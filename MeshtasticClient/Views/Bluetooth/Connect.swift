@@ -14,7 +14,7 @@ import CoreLocation
 
 struct Connect: View {
     
-    @EnvironmentObject var modelData: ModelData
+    //@EnvironmentObject var meshData: MeshData
     
     @ObservedObject var bleManager = BLEManager()
         
@@ -28,12 +28,21 @@ struct Connect: View {
                         Section(header: Text("Connected Device").font(.title)) {
                             if(bleManager.connectedPeripheral != nil){
                                 HStack{
-                                    Image(systemName: "antenna.radiowaves.left.and.right").imageScale(.large).foregroundColor(.green)
-                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
+                                    Image(systemName: "antenna.radiowaves.left.and.right")
+                                        .symbolRenderingMode(.hierarchical)
+                                        .imageScale(.large).foregroundColor(.green)
+                                        .padding(.trailing)
+                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title3)
                                 }
                             }
                             else {
-                                Text("No device connected").font(.title2)
+                                HStack{
+                                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                                        .symbolRenderingMode(.hierarchical)
+                                        .imageScale(.large).foregroundColor(.red)
+                                        .padding(.trailing)
+                                    Text("No device connected").font(.title3)
+                                }
                             }
                             
                         }.textCase(nil)
@@ -41,13 +50,15 @@ struct Connect: View {
                         Section(header: Text("New Devices").font(.title)) {
                             ForEach(bleManager.peripherals.sorted(by: { $0.rssi > $1.rssi })) { peripheral in
                                 HStack {
-                                    Image(systemName: "circle.fill").imageScale(.large).foregroundColor(.gray)
+                                    Image(systemName: "circle.fill")
+                                        .imageScale(.large).foregroundColor(.gray)
+                                        .padding(.trailing)
                                     Button(action: {
                                         self.bleManager.stopScanning()
                                         self.bleManager.disconnectDevice()
                                         self.bleManager.connectToDevice(id: peripheral.id)
                                     }) {
-                                        Text(peripheral.name).font(.title2)
+                                        Text(peripheral.name).font(.title3)
                                     }
                                     Spacer()
                                     Text(String(peripheral.rssi) + " dB").font(.title3)
@@ -104,13 +115,15 @@ struct Connect: View {
                             Image(systemName: "antenna.radiowaves.left.and.right")
                                 .imageScale(.large)
                                 .foregroundColor(.green)
+                                .symbolRenderingMode(.hierarchical)
                             Text("Connected").font(.caption2).foregroundColor(.gray)
                         }
                         else {
                     
-                            Image(systemName: "antenna.radiowaves.left.and.right")
+                            Image(systemName: "antenna.radiowaves.left.and.right.slash")
                                 .imageScale(.large)
                                 .foregroundColor(.red)
+                                .symbolRenderingMode(.hierarchical)
                             Text("Disconnected").font(.caption2).foregroundColor(.gray)
                             
                         }
@@ -122,12 +135,12 @@ struct Connect: View {
 }
 
 struct Connect_Previews: PreviewProvider {
-    static let modelData = ModelData()
+    static let meshData = MeshData()
     static let bleManager = BLEManager()
 
     static var previews: some View {
         Connect(bleManager: bleManager)
-            .environmentObject(ModelData())
+            .environmentObject(MeshData())
             
     }
 }

@@ -59,9 +59,9 @@ struct NodeInfoModel: Identifiable, Codable {
         }
         var altitude: Int32?
         var batteryLevel: Int32?
-        var time: Int32?
+        var time: UInt32?
         
-        init(latitudeI: Int32?, longitudeI: Int32?, altitude: Int32?, batteryLevel: Int32?, time: Int32? ) {
+        init(latitudeI: Int32?, longitudeI: Int32?, altitude: Int32?, batteryLevel: Int32?, time: UInt32? ) {
             self.latitudeI = latitudeI
             self.longitudeI = longitudeI
             self.altitude = altitude
@@ -70,11 +70,11 @@ struct NodeInfoModel: Identifiable, Codable {
         }
     }
     
-    var lastHeard: Double
-    var snr: Double?
+    var lastHeard: UInt32
+    var snr: Float?
 
 
-    init(id: UUID = UUID(), num: UInt32, user: User, position: Position, lastHeard: Double, snr: Double?) {
+    init(id: UUID = UUID(), num: UInt32, user: User, position: Position, lastHeard: UInt32, snr: Float?) {
         self.id = id
         self.num = num
         self.user = user
@@ -85,15 +85,12 @@ struct NodeInfoModel: Identifiable, Codable {
 }
 
 extension NodeInfoModel {
-    //var user = User(id: "!a66c166f", longName: "RAK Solar 2", shortName: "RS2", macaddr:"8eambBZv", hwModel:"RAK4631")
-    //let position = Position(batteryLevel: 68)
+
     static var data: [NodeInfoModel] {
         [
 
             NodeInfoModel(num: 2792101487, user: User(id: "!a66c166f", longName: "RAK Solar 2", shortName: "RS2", hwModel: "RAK4631"), position: Position(latitudeI:nil, longitudeI: nil, altitude: nil, batteryLevel: 68, time: nil),  lastHeard: 1631593661, snr: nil),
-            NodeInfoModel(num: 1000569662, user: User(id: "!3ba37b3e", longName: "RAK Solar 1", shortName: "RS1", hwModel: "RAK4631"), position: Position(latitudeI:476021390, longitudeI: -1221532609, altitude: 71, batteryLevel: 70, time: 1629314497),  lastHeard: 1629392801, snr: 5.25)
-
-
+            NodeInfoModel(num: 1000569662, user: User(id: "!3ba37b3e", longName: "RAK Solar 1", shortName: "RS1", hwModel: "RAK4631"), position: Position(latitudeI:476021390, longitudeI: -1221532609, altitude: 71, batteryLevel: 70, time: 1632202227),  lastHeard: 1632202227, snr: 5.25)
         ]
     }
 }
@@ -103,8 +100,8 @@ extension NodeInfoModel {
         var num: UInt32 = 0
         var user: User
         var postion: Position
-        var lastHeard: Double
-        var snr: Double?
+        var lastHeard: UInt32
+        var snr: Float?
         
     }
 
