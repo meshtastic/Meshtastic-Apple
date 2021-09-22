@@ -9,14 +9,14 @@ struct NodeRow: View {
             HStack() {
                 
                 CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
-                Text(node.user.longName).font(.title)
+                Text(node.user.longName).font(.title2)
             }.padding(.bottom, 2)
             HStack (alignment: .top){
                 
-                Image(systemName: "clock").font(.subheadline).foregroundColor(.blue)
+                Image(systemName: "clock").font(.caption).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
                 let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                Text("Last Heard:").font(.subheadline).foregroundColor(.gray)
-                Text(lastHeard, style: .relative).font(.subheadline).foregroundColor(.gray)
+                Text("Last Heard:").font(.caption).foregroundColor(.gray)
+                Text(lastHeard, style: .relative).font(.caption).foregroundColor(.gray)
             }
         }.padding([.leading, .top, .bottom])
     }

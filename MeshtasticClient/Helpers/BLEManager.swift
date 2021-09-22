@@ -145,6 +145,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
+        meshData.load()
         if(peripheral.identifier == connectedPeripheral.identifier){
             connectedPeripheral = nil
         }
@@ -249,27 +250,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     print("Save a nodeInfo")
                     do {
-                        meshData.nodes.append(
-                            NodeInfoModel(id: UUID(),
-                                          num: decodedInfo.nodeInfo.num,
-                                          user: NodeInfoModel.User(id: decodedInfo.nodeInfo.user.id,
-                                                                   longName: decodedInfo.nodeInfo.user.longName,
-                                                                   shortName: decodedInfo.nodeInfo.user.shortName,
-                                                                   //macaddr: "",
-                                                                   hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-                                                                    .capitalized
-                                    
-                                          ),
-                                          position: NodeInfoModel.Position(latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-                                                                           longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-                                                                           altitude: decodedInfo.nodeInfo.position.altitude,
-                                                                           batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-                                                                           time: decodedInfo.nodeInfo.position.time),
-                                          lastHeard: decodedInfo.nodeInfo.lastHeard,
-                                          snr: decodedInfo.nodeInfo.snr)
-                        )
-                        meshData.save()
+  
+                        if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
+                        //    it exists, do something
+                        }
+                        else {
                         
+                            meshData.nodes.append(
+                                NodeInfoModel(
+                                    num: decodedInfo.nodeInfo.num,
+                                    user: NodeInfoModel.User(
+                                        id: decodedInfo.nodeInfo.user.id,
+                                        longName: decodedInfo.nodeInfo.user.longName,
+                                        shortName: decodedInfo.nodeInfo.user.shortName,
+                                        //macaddr: decodedInfo.nodeInfo.user.macaddr,
+                                        hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+                                            .uppercased()),
+                                    
+                                    position: NodeInfoModel.Position(
+                                        latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+                                        longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+                                        altitude: decodedInfo.nodeInfo.position.altitude,
+                                        batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+                                        time: decodedInfo.nodeInfo.position.time),
+                                    
+                                    lastHeard: decodedInfo.nodeInfo.lastHeard,
+                                    snr: decodedInfo.nodeInfo.snr)
+                            )
+                            meshData.save()
+                            
+                        }
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")

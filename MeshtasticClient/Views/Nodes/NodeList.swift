@@ -11,6 +11,7 @@
 import SwiftUI
 
 struct NodeList: View {
+    @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var meshData: MeshData
     
     @State private var showLocationOnly = false
@@ -31,6 +32,7 @@ struct NodeList: View {
                 ForEach(filteredDevices.sorted(by: { $0.lastHeard > $1.lastHeard })) { node in
                     NavigationLink(destination: NodeDetail(node: node)) {
                         NodeRow(node: node, index : 0)
+    
                     }
                 }
             }

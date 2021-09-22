@@ -6,14 +6,16 @@ class MeshData: ObservableObject {
             return try FileManager.default.url(for: .documentDirectory,
                                                in: .userDomainMask,
                                                appropriateFor: nil,
-                                               create: false)
+                                               create: true)
         } catch {
             fatalError("Can't find documents directory.")
         }
     }
+    
     private static var fileURL: URL {
-        return documentsFolder.appendingPathComponent("scrums.data")
+        return documentsFolder.appendingPathComponent("nodeinfo.data")
     }
+    
     @Published var nodes: [NodeInfoModel] = []
 
     func load() {

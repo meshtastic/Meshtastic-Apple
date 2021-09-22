@@ -12,8 +12,11 @@ import CoreLocation
 
 struct NodeMap: View {
     
+    
+    
+    @ObservedObject var bleManager = BLEManager()
     @EnvironmentObject var meshData: MeshData
-
+    
     var locationNodes: [NodeInfoModel] {
         meshData.nodes.filter { node in
             (node.position.coordinate != nil)
@@ -30,7 +33,7 @@ struct NodeMap: View {
         let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
             get: {
-                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09))
             },
             set: { _ in }
         )
@@ -59,9 +62,10 @@ struct NodeMap: View {
 
 struct NodeMap_Previews: PreviewProvider {
     static let meshData = MeshData()
+    static let bleManager = BLEManager()
 
     static var previews: some View {
-        NodeMap()
-            .environmentObject(meshData)
+        NodeMap(bleManager: bleManager)
+            .environmentObject(MeshData())
     }
 }

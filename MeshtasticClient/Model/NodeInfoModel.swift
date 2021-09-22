@@ -6,7 +6,7 @@ import CoreLocation
 
 struct NodeInfoModel: Identifiable, Codable {
     
-    let id: UUID
+    var id: UInt32
     var num: UInt32
     
     var user: User
@@ -29,7 +29,9 @@ struct NodeInfoModel: Identifiable, Codable {
         var latitude: Double? {
             if let unwrappedLat = latitudeI {
                 let d = Double(unwrappedLat)
-                
+                if d == 0 {
+                    return nil
+                }
                 return d / 1e7
             }
             else {
@@ -40,7 +42,9 @@ struct NodeInfoModel: Identifiable, Codable {
         var longitude: Double? {
             if let unwrappedLong = longitudeI {
                 let d = Double(unwrappedLong)
-                
+                if d == 0 {
+                    return nil
+                }
                 return d / 1e7
             }
             else {
@@ -48,7 +52,7 @@ struct NodeInfoModel: Identifiable, Codable {
             }
         }
         var coordinate: CLLocationCoordinate2D? {
-            if longitude != nil {
+            if latitude != nil || longitude != nil {
                 let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
                 
                 return coord
@@ -74,8 +78,8 @@ struct NodeInfoModel: Identifiable, Codable {
     var snr: Float?
 
 
-    init(id: UUID = UUID(), num: UInt32, user: User, position: Position, lastHeard: UInt32, snr: Float?) {
-        self.id = id
+    init(num: UInt32, user: User, position: Position, lastHeard: UInt32, snr: Float?) {
+        self.id = num
         self.num = num
         self.user = user
         self.position = position

@@ -14,9 +14,9 @@ import CoreLocation
 
 struct Connect: View {
     
-    //@EnvironmentObject var meshData: MeshData
+    @EnvironmentObject var meshData: MeshData
     
-    @ObservedObject var bleManager = BLEManager()
+    @EnvironmentObject var bleManager: BLEManager
         
     var body: some View {
         NavigationView {
@@ -109,38 +109,25 @@ struct Connect: View {
             }
             .navigationTitle("Bluetooth Radios")
             .navigationBarItems(trailing:
-                HStack {
-                    VStack {
-                        if bleManager.isSwitchedOn && bleManager.connectedPeripheral != nil {
-                            Image(systemName: "antenna.radiowaves.left.and.right")
-                                .imageScale(.large)
-                                .foregroundColor(.green)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("Connected").font(.caption2).foregroundColor(.gray)
-                        }
-                        else {
-                    
-                            Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                                .imageScale(.large)
-                                .foregroundColor(.red)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("Disconnected").font(.caption2).foregroundColor(.gray)
-                            
-                        }
-                    }
-                }.offset(x: 10, y: -10)
+                                  
+                ZStack {
+
+                    ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown")
+           
+                }
             )
         }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
 struct Connect_Previews: PreviewProvider {
-    static let meshData = MeshData()
-    static let bleManager = BLEManager()
+   // static let meshData = MeshData()
+  //  static let bleManager = BLEManager()
 
     static var previews: some View {
-        Connect(bleManager: bleManager)
+        Connect()
             .environmentObject(MeshData())
+            .environmentObject(BLEManager())
             
     }
 }

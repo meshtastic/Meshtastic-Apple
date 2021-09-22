@@ -6,9 +6,9 @@ struct MessageList: View {
     
     @State var typingMessage: String = ""
     
-    @ObservedObject var bleManager = BLEManager()
+    @EnvironmentObject var bleManager: BLEManager
+    @EnvironmentObject var meshData: MeshData
     
-    @State var connectedPeripheral: CBPeripheral!
     
     var body: some View {
         NavigationView {
@@ -22,6 +22,13 @@ struct MessageList: View {
                 
             }
             .navigationTitle("Channels")
+            .navigationBarItems(trailing:
+                                  
+                ZStack {
+
+                    ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown")
+                }
+            )
             .navigationBarTitleDisplayMode(.inline)
         }
     }
