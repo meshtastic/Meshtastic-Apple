@@ -27,6 +27,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
+    @Published var connectedNodeInfo: MyInfoModel!
     //private var rssiArray = [NSNumber]()
     private var timer = Timer()
     @Published var isSwitchedOn = false
@@ -97,6 +98,28 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func disconnectDevice(){
         if connectedPeripheral != nil {
             self.centralManager?.cancelPeripheralConnection(connectedPeripheral!)
+        }
+    }
+    
+    
+    //---------------------------------------------------------------------------------------
+    // Disconnect Device function
+    //---------------------------------------------------------------------------------------
+    public func setOwner(myUser: User)
+    {
+        var toRadio: ToRadio!
+        toRadio = ToRadio()
+//toRadio.setOwner = myUser
+        
+        let binaryData: Data = try! toRadio.serializedData()
+        if (self.connectedPeripheral.state == CBPeripheralState.connected)
+        {
+            connectedPeripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+            //MasterViewController.shared.DebugPrint2View(text: "Owner set to device" + "\n\r")
+        }
+        else
+        {
+            connectToDevice(id: self.connectedPeripheral.identifier.uuidString)
         }
     }
     
@@ -241,6 +264,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     print("Save a myInfo")
                     do {
                        print(try decodedInfo.myInfo.jsonString())
+                       connectedNodeInfo = MyInfoModel(
+                            myNodeNum: decodedInfo.myInfo.myNodeNum,
+                            hasGps: decodedInfo.myInfo.hasGps_p,
+                            numBands: decodedInfo.myInfo.numBands,
+                            maxChannels: decodedInfo.myInfo.maxChannels,
+                            firmwareVersion: decodedInfo.myInfo.firmwareVersion,
+                            rebootCount: decodedInfo.myInfo.rebootCount,
+                            messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
+                            minAppVersion: decodedInfo.myInfo.minAppVersion)
 
                     } catch {
                         fatalError("Failed to decode json")
@@ -293,6 +325,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     print("Save a packet")
                     do {
                         print(try decodedInfo.packet.jsonString())
+                        if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
+                            print(try decodedInfo.packet.jsonString())
+                        }
+                        
                     } catch {
                         fatalError("Failed to decode json")
                     }

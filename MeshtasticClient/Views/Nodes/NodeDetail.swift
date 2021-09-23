@@ -47,7 +47,7 @@ struct NodeDetail: View {
                 }
                 else
                 {
-                    Image(node.user.hwModel.lowercased())
+                    Image(node.user.hwModel)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: bounds.size.width, height: bounds.size.height / 2)
@@ -56,7 +56,7 @@ struct NodeDetail: View {
                     
                     HStack {
                         
-                        Image(node.user.hwModel.lowercased())
+                        Image(node.user.hwModel)
                             .resizable()
                             .frame(width:70, height: 70)
                             .cornerRadius(5)

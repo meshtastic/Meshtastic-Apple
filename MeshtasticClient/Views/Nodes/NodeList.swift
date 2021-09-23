@@ -34,8 +34,20 @@ struct NodeList: View {
                         NodeRow(node: node, index : 0)
     
                     }
+                    .swipeActions {
+                        Button {
+                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == node.id })
+                            meshData.nodes.remove(at: nodeIndex!)
+                            meshData.save()
+                        } label: {
+                            VStack {
+                                Label("Delete from app", systemImage: "trash")
+                            }
+                        }
+                        .tint(.red)
+                    }
                 }
-            }
+             }
             .navigationTitle("All Nodes")
         }
     }

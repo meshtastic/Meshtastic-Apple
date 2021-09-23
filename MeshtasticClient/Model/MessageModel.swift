@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct ChatMessage : Identifiable
+struct MessageModel : Identifiable
 {
     let id: UUID
     var messageId: UInt32

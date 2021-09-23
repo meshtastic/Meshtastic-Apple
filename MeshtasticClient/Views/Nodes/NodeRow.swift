@@ -19,6 +19,7 @@ struct NodeRow: View {
                 Text(lastHeard, style: .relative).font(.caption).foregroundColor(.gray)
             }
         }.padding([.leading, .top, .bottom])
+        
     }
 }
 
