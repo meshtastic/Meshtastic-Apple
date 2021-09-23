@@ -32,7 +32,18 @@ struct Connect: View {
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.green)
                                         .padding(.trailing)
-                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title3)
+                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
+                                }
+                                .padding()
+                                .swipeActions {
+                                    Button {
+                                        bleManager.disconnectDevice()
+                                    } label: {
+                                        VStack {
+                                            Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+                                        }
+                                    }
+                                    .tint(.red)
                                 }
                             }
                             else {
@@ -43,11 +54,12 @@ struct Connect: View {
                                         .padding(.trailing)
                                     Text("No device connected").font(.title3)
                                 }
+                                .padding()
                             }
                             
                         }.textCase(nil)
                         
-                        Section(header: Text("New Devices").font(.title)) {
+                        Section(header: Text("Available Devices").font(.title)) {
                             ForEach(bleManager.peripherals.sorted(by: { $0.rssi > $1.rssi })) { peripheral in
                                 HStack {
                                     Image(systemName: "circle.fill")
@@ -62,12 +74,8 @@ struct Connect: View {
                                     }
                                     Spacer()
                                     Text(String(peripheral.rssi) + " dB").font(.title3)
-                                }
+                                }.padding([.bottom,.top])
                             }
-                        }.textCase(nil)
-                        
-                        Section(header: Text("Known Devices").font(.title)) {
-                            
                         }.textCase(nil)
                         
                     }

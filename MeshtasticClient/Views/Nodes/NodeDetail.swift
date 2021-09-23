@@ -106,7 +106,7 @@ struct NodeDetail: View {
                         Text("ago").font(.title3)
                     }.padding()
                     Divider()
-                    if node.position.latitudeI != nil {
+                    if node.position.coordinate != nil {
                         HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
                             Image(systemName: "mappin").font(.title).foregroundColor(.blue)
                             VStack(alignment: .leading) {

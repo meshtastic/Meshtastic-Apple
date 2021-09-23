@@ -237,6 +237,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
+                    meshData.load()
                     print("Save a myInfo")
                     do {
                        print(try decodedInfo.myInfo.jsonString())
@@ -252,34 +253,35 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     do {
   
                         if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
-                        //    it exists, do something
-                        }
-                        else {
-                        
-                            meshData.nodes.append(
-                                NodeInfoModel(
-                                    num: decodedInfo.nodeInfo.num,
-                                    user: NodeInfoModel.User(
-                                        id: decodedInfo.nodeInfo.user.id,
-                                        longName: decodedInfo.nodeInfo.user.longName,
-                                        shortName: decodedInfo.nodeInfo.user.shortName,
-                                        //macaddr: decodedInfo.nodeInfo.user.macaddr,
-                                        hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-                                            .uppercased()),
-                                    
-                                    position: NodeInfoModel.Position(
-                                        latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-                                        longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-                                        altitude: decodedInfo.nodeInfo.position.altitude,
-                                        batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-                                        time: decodedInfo.nodeInfo.position.time),
-                                    
-                                    lastHeard: decodedInfo.nodeInfo.lastHeard,
-                                    snr: decodedInfo.nodeInfo.snr)
-                            )
-                            meshData.save()
                             
+                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
+                            meshData.nodes.remove(at: nodeIndex!)
+                            meshData.save()
                         }
+
+                        meshData.nodes.append(
+                            NodeInfoModel(
+                                num: decodedInfo.nodeInfo.num,
+                                user: NodeInfoModel.User(
+                                    id: decodedInfo.nodeInfo.user.id,
+                                    longName: decodedInfo.nodeInfo.user.longName,
+                                    shortName: decodedInfo.nodeInfo.user.shortName,
+                                    //macaddr: decodedInfo.nodeInfo.user.macaddr,
+                                    hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+                                        .uppercased()),
+                                
+                                position: NodeInfoModel.Position(
+                                    latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+                                    longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+                                    altitude: decodedInfo.nodeInfo.position.altitude,
+                                    batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+                                    time: decodedInfo.nodeInfo.position.time),
+                                
+                                lastHeard: decodedInfo.nodeInfo.lastHeard,
+                                snr: decodedInfo.nodeInfo.snr)
+                        )
+                        meshData.save()
+                            
                         print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")
@@ -298,6 +300,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.configCompleteID != 0 {
                     print(decodedInfo)
+                    meshData.load()
                 }
                 
             default:

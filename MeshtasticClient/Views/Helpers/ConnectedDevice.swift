@@ -37,7 +37,7 @@ struct ConnectedDevice: View {
                     Text("Bluetooth Off").font(.caption).foregroundColor(.red)
                 }
             }
-        }.offset(x: 10, y: -10)
+        }.offset(x: 5, y: -10)
     }
 }
 
