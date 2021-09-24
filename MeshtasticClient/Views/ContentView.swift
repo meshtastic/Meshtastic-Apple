@@ -5,7 +5,7 @@ Abstract: Default App View
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: Tab = .nodes
+    @State private var selection: Tab = .messages
 
     enum Tab {
         case messages

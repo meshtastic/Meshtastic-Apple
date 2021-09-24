@@ -9,28 +9,41 @@ struct MessageList: View {
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var meshData: MeshData
     
-    
     var body: some View {
         NavigationView {
-          
+            
             GeometryReader { bounds in
                 
-                ScrollView {
-                    Text(String(bleManager.isSwitchedOn))
-                    Text(String(bleManager.connectedPeripheral != nil))
-                }.padding(.all)
-                
+                List{
+                    
+                    NavigationLink(destination: MessageDetail()) {
+                        
+                        HStack {
+                            
+                            Image(systemName: "dial.max.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: bounds.size.width / 7, height: bounds.size.height / 7)
+                                .foregroundColor(Color.blue)
+                                .symbolRenderingMode(.hierarchical)
+                                .padding(.trailing)
+                            
+                            Text("Primary")
+                                .font(.largeTitle)
+                        }.padding([.leading, .trailing])
+                    }
+                }
             }
-            .navigationTitle("Channels")
+            .navigationTitle("Message Channels")
             .navigationBarItems(trailing:
                                   
                 ZStack {
 
-                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.longName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+                    ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.longName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+                
                 }
             )
-            .navigationBarTitleDisplayMode(.inline)
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -39,8 +52,7 @@ struct MessageList_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            //NodeDetail(node: modelData.nodes[0]).environmentObject(modelData)
-           // NodeDetail(node: modelData.nodes[1]).environmentObject(modelData)
+            MessageList()
         }
     }
 }

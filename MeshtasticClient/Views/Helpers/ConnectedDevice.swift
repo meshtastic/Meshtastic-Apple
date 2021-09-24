@@ -18,7 +18,7 @@ struct ConnectedDevice: View {
                 if bluetoothOn {
                     if deviceConnected {
                         Image(systemName: "antenna.radiowaves.left.and.right")
-                            .imageScale(.large)
+                            .imageScale(.medium)
                             .foregroundColor(.green)
                             .symbolRenderingMode(.hierarchical)
                         Text(name!).font(.caption2).foregroundColor(.gray)
@@ -26,7 +26,7 @@ struct ConnectedDevice: View {
                     else {
                 
                         Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                            .imageScale(.large)
+                            .imageScale(.medium)
                             .foregroundColor(.red)
                             .symbolRenderingMode(.hierarchical)
                         Text("Disconnected").font(.caption2).foregroundColor(.gray)
@@ -37,7 +37,7 @@ struct ConnectedDevice: View {
                     Text("Bluetooth Off").font(.caption).foregroundColor(.red)
                 }
             }
-        }.offset(x: 5, y: -10)
+        }.offset(x: 5, y: -7)
     }
 }
 

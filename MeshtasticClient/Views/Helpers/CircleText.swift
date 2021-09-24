@@ -10,11 +10,13 @@ struct CircleText: View {
     var color: Color
 
     var body: some View {
-        
-        Text(text).font(.caption2).foregroundColor(.white)
-            .background(Circle()
-            .fill(color)
-            .frame(width: 32, height: 32, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/))
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: 36, height: 36)
+            Text(text).textCase(.uppercase).font(.caption2).foregroundColor(.white)
+                .frame(width: 36, height: 36, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
+        }
     }
 }
 

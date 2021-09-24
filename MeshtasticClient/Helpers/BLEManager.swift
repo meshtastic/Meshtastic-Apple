@@ -158,6 +158,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     {
         if(peripheral.identifier == connectedPeripheral.identifier){
             connectedPeripheral = nil
+            connectedNodeInfo = nil
+            connectedNode = nil
         }
         print("Peripheral disconnected: " + peripheral.name!)
         self.startScanning()

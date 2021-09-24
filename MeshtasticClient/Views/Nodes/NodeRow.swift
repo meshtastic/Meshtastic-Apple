@@ -6,17 +6,20 @@ struct NodeRow: View {
 
     var body: some View {
         VStack (alignment: .leading) {
+            
             HStack() {
                 
                 CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
-                Text(node.user.longName).font(.title2)
-            }.padding(.bottom, 2)
-            HStack (alignment: .top){
+                Text(node.user.longName).font(.title)
+            }
+            .padding([.trailing])
+            
+            HStack (alignment: .bottom){
                 
-                Image(systemName: "clock").font(.caption).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
+                Image(systemName: "timer").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
                 let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                Text("Last Heard:").font(.caption).foregroundColor(.gray)
-                Text(lastHeard, style: .relative).font(.caption).foregroundColor(.gray)
+                Text("Last Heard:").font(.headline).foregroundColor(.gray)
+                Text(lastHeard, style: .relative).font(.subheadline).foregroundColor(.gray)
             }
         }.padding([.leading, .top, .bottom])
     }

@@ -122,7 +122,7 @@ struct Connect: View {
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
                         Spacer()
-                    }.padding(.bottom, 25)
+                    }.padding(.bottom, 10)
                     
                 }
                 else {
