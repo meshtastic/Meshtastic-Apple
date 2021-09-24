@@ -30,7 +30,5 @@ struct MyInfoModel: Identifiable, Codable {
         self.rebootCount = rebootCount
         self.messageTimeoutMsec = messageTimeoutMsec
         self.minAppVersion = minAppVersion
-        
     }
-    
 }

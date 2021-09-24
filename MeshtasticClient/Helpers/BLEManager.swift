@@ -97,7 +97,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     {
         var toRadio: ToRadio!
         toRadio = ToRadio()
-//toRadio.setOwner = myUser
+        //toRadio.setOwner = myUser
         
         let binaryData: Data = try! toRadio.serializedData()
         if (self.connectedPeripheral.state == CBPeripheralState.connected)
@@ -156,7 +156,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
-        meshData.load()
         if(peripheral.identifier == connectedPeripheral.identifier){
             connectedPeripheral = nil
         }
@@ -268,9 +267,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         connectedNode = meshData.nodes.first(where: {$0.id == decodedInfo.myInfo.myNodeNum})
                         if connectedNode != nil {
                             connectedNode.myInfo = myInfoModel
-                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                            meshData.nodes.remove(at: nodeIndex!)
-                            meshData.nodes.append(connectedNode)
                         }
                         meshData.save()
                         

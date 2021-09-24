@@ -20,7 +20,6 @@
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEC26F858F900ABCC23 /* MeshData.swift */; };
 		DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */; };
-		DD836AF126F8613500ABCC23 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AF026F8613500ABCC23 /* Color.swift */; };
 		DD8EDE9426F97A2B00A5A10B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD8EDE9326F97A2B00A5A10B /* SwiftProtobuf */; };
 		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
@@ -79,7 +78,6 @@
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD836AEC26F858F900ABCC23 /* MeshData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshData.swift; sourceTree = "<group>"; };
 		DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
-		DD836AF026F8613500ABCC23 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* MeshtasticClient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticClient.entitlements; sourceTree = "<group>"; };
 		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
@@ -265,7 +263,6 @@
 				DDF924C526FA2375009FE055 /* MessageModel.swift */,
 				DD836AEC26F858F900ABCC23 /* MeshData.swift */,
 				DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */,
-				DD836AF026F8613500ABCC23 /* Color.swift */,
 				DDF924CC26FCC97E009FE055 /* PacketModel.swift */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
@@ -452,7 +449,6 @@
 				DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */,
 				DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
-				DD836AF126F8613500ABCC23 /* Color.swift in Sources */,
 				DD47E3D226F1210600029299 /* HelperFunctions.swift in Sources */,
 				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
@@ -649,7 +645,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
@@ -675,7 +671,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;

@@ -38,14 +38,6 @@ struct NodeList: View {
                     Text("Views with bluetooth functionality will show an indicator in the upper right hand corner show if bluetooth is on, and if a device is connected.")
                         .listRowSeparator(.hidden)
                     Spacer().listRowSeparator(.hidden)
-                    //Button(action: {}) {
-                    //    Text("Get Started")
-                    //        .font(.title)
-                    //        .frame(maxWidth: 300)
-                    //}
-                    //.buttonStyle(.borderedProminent)
-                    //.buttonBorderShape(.automatic)
-                    //.controlSize(.large)
                 }
                 else {
                     Toggle(isOn: $showLocationOnly) {
