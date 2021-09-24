@@ -27,12 +27,28 @@ struct Connect: View {
                     List {
                         Section(header: Text("Connected Device").font(.title)) {
                             if(bleManager.connectedPeripheral != nil){
-                                HStack{
+                                HStack {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.green)
                                         .padding(.trailing)
-                                    Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
+                                    
+                                    if bleManager.connectedNodeInfo.myInfo != nil {
+                                        VStack  (alignment: .leading)  {
+                                            if bleManager.connectedNode != nil {
+                                                
+                                                Text(bleManager.connectedNode.user.longName).font(.title2)
+                                            }
+                                            else {
+                                                Text(String(bleManager.connectedNodeInfo.myInfo?.myNodeNum ?? 0)).font(.title2)
+                                                
+                                            }
+                                            Text("FW Version: ").font(.caption)+Text(bleManager.connectedNodeInfo.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+                                        }
+                                    }
+                                    else {
+                                        Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
+                                    }
                                 }
                                 .padding()
                                 .swipeActions {

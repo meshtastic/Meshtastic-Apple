@@ -56,20 +56,8 @@ struct NodeDetail: View {
                     
                     HStack {
                         
-                        Image(node.user.hwModel)
-                            .resizable()
-                            .frame(width:70, height: 70)
-                            .cornerRadius(5)
-                            
-                        Text("Model: " + String(node.user.hwModel))
-                            .font(.title)
-                    }
-                    .padding()
-                    Divider()
-                    HStack {
-                        
                         VStack(alignment: .center) {
-                            Text("AKA").font(.title3)
+                            Text("AKA").font(.title2)
                             CircleText(text: node.user.shortName, color: Color.blue)
                                 .offset(y:10)
                         }
@@ -78,24 +66,36 @@ struct NodeDetail: View {
                         VStack(alignment: .center) {
                             
                             Image(systemName: "waveform.path")
-                                .font(.title2)
+                                .font(.title)
                                 .foregroundColor(.blue)
                                 .symbolRenderingMode(.hierarchical)
-                            Text("SNR").font(.title3)
+                            Text("SNR").font(.title2)
                             Text(String(node.snr ?? 0))
-                                .font(.title3)
+                                .font(.title2)
                                 .foregroundColor(.gray)
                         }
                         Divider()
                         VStack(alignment: .center) {
                             BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
-                            Text("Battery").font(.title3)
+                            Text("Battery").font(.title2)
                             Text(String(node.position.batteryLevel!) + "%")
-                                .font(.title3)
+                                .font(.title2)
                                 .foregroundColor(.gray)
                                 .symbolRenderingMode(.hierarchical)
                        }
                     }.padding(4)
+                    Divider()
+                    HStack {
+                        
+                        Image(node.user.hwModel)
+                            .resizable()
+                            .frame(width:60, height: 60)
+                            .cornerRadius(5)
+                            
+                        Text("Model: " + String(node.user.hwModel))
+                            .font(.title3)
+                    }
+                    .padding()
                     Divider()
                     HStack{
                         

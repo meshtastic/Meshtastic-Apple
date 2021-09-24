@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CB26F0E51D00029299 /* NodeDetail.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D026F1073F00029299 /* NodeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CF26F1073F00029299 /* NodeRow.swift */; };
@@ -65,6 +66,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD47E3CB26F0E51D00029299 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3CF26F1073F00029299 /* NodeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeRow.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 				DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */,
 				DD836AF026F8613500ABCC23 /* Color.swift */,
 				DDF924CC26FCC97E009FE055 /* PacketModel.swift */,
+				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -465,6 +468,7 @@
 				DDF924CD26FCC97E009FE055 /* PacketModel.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
 				DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */,
+				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD47E3D026F1073F00029299 /* NodeRow.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,

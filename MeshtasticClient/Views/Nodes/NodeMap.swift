@@ -33,7 +33,7 @@ struct NodeMap: View {
         let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
             get: {
-                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.09))
+                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.0359, longitudeDelta: 0.0359))
             },
             set: { _ in }
         )
@@ -52,11 +52,15 @@ struct NodeMap: View {
                         CircleText(text: location.user.shortName, color: Color.blue)
                        }
                     )
-                }.frame(maxHeight:.infinity)
+                }
+                .frame(maxHeight:.infinity)
+                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
-        }.navigationViewStyle(StackNavigationViewStyle())
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        
     }
 }
 

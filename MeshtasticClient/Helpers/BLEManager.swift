@@ -3,20 +3,6 @@ import CoreData
 import CoreBluetooth
 import SwiftUI
 
-final class Peripheral: Identifiable, ObservableObject {
-    @Published var id: String
-    @Published var index: Int
-    @Published var name: String
-    @Published var rssi: Int
-    
-    init(id: String, index: Int, name: String, rssi: Int) {
-        self.id = id
-        self.index = index
-        self.name = name
-        self.rssi = rssi
-    }
-}
-
 //---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 //---------------------------------------------------------------------------------------
@@ -27,7 +13,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
-    @Published var connectedNodeInfo: MyInfoModel!
+    @Published var connectedNodeInfo: Peripheral!
+    @Published var connectedNode: NodeInfoModel!
     //private var rssiArray = [NSNumber]()
     private var timer = Timer()
     @Published var isSwitchedOn = false
@@ -89,6 +76,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func connectToDevice(id: String) {
         connectedPeripheral = peripheralArray.filter({ $0.identifier.uuidString == id }).first
+        connectedNodeInfo = Peripheral(id: connectedPeripheral.identifier.uuidString, name: connectedPeripheral.name ?? "Unknown", rssi: 0, myInfo: nil)
         self.centralManager?.connect(connectedPeripheral!)
     }
     
@@ -148,7 +136,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             }
         }
 
-        let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, index: peripherals.count, name: peripheralName, rssi: RSSI.intValue)
+        let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, myInfo: nil)
         //print(newPeripheral)
         peripherals.append(newPeripheral)
     }
@@ -260,11 +248,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
-                    meshData.load()
                     print("Save a myInfo")
                     do {
                        print(try decodedInfo.myInfo.jsonString())
-                       connectedNodeInfo = MyInfoModel(
+                        
+                        // Create a MyInfoModel
+                        let myInfoModel = MyInfoModel(
                             myNodeNum: decodedInfo.myInfo.myNodeNum,
                             hasGps: decodedInfo.myInfo.hasGps_p,
                             numBands: decodedInfo.myInfo.numBands,
@@ -273,7 +262,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                             rebootCount: decodedInfo.myInfo.rebootCount,
                             messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
                             minAppVersion: decodedInfo.myInfo.minAppVersion)
-
+                        // Save it to the connected nodeInfo
+                        connectedNodeInfo.myInfo = myInfoModel
+                        // Save it to the connected node
+                        connectedNode = meshData.nodes.first(where: {$0.id == decodedInfo.myInfo.myNodeNum})
+                        if connectedNode != nil {
+                            connectedNode.myInfo = myInfoModel
+                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+                            meshData.nodes.remove(at: nodeIndex!)
+                            meshData.nodes.append(connectedNode)
+                        }
+                        meshData.save()
+                        
                     } catch {
                         fatalError("Failed to decode json")
                     }

@@ -8,7 +8,7 @@ struct NodeInfoModel: Identifiable, Codable {
     
     var id: UInt32
     var num: UInt32
-    
+    var myInfo: MyInfoModel?
     var user: User
     struct User: Identifiable, Codable {
         var id: String
