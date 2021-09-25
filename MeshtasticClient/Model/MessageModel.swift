@@ -15,11 +15,13 @@ struct MessageModel : Identifiable
     var toUserId: String
     var fromUserLongName: String
     var toUserLongName: String
+    var fromUserShortName: String
+    var toUserShortName: String
     var receivedACK: Bool
     var messagePayload: String
     var direction: String
     
-    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: Int64, fromUserId: String, toUserId: String, fromUserLongName: String, toUserLongName: String, receivedACK: Bool, messagePayload: String, direction: String)
+    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: Int64, fromUserId: String, toUserId: String, fromUserLongName: String, toUserLongName: String, fromUserShortName: String, toUserShortName: String, receivedACK: Bool, messagePayload: String, direction: String)
     {
         self.id = id
         self.messageId = messageId
@@ -28,6 +30,8 @@ struct MessageModel : Identifiable
         self.toUserId = toUserId
         self.fromUserLongName = fromUserLongName
         self.toUserLongName = toUserLongName
+        self.fromUserShortName = fromUserShortName
+        self.toUserShortName = toUserShortName
         self.receivedACK = receivedACK
         self.messagePayload = messagePayload
         self.direction = direction

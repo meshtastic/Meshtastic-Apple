@@ -17,24 +17,24 @@ struct ContentView: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            MessageList()
-                .tabItem {
-                    Label("Messages", systemImage: "text.bubble")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .tag(Tab.messages)
-            NodeMap()
-                .tabItem {
-                    Label("Mesh Map", systemImage: "map")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .tag(Tab.map)
+            //MessageList()
+            //    .tabItem {
+            //        Label("Messages", systemImage: "text.bubble")
+            //            .symbolRenderingMode(.hierarchical)
+            //    }
+            //    .tag(Tab.messages)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")
                         .symbolRenderingMode(.hierarchical)
                 }
                 .tag(Tab.nodes)
+            NodeMap()
+                .tabItem {
+                    Label("Mesh Map", systemImage: "map")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .tag(Tab.map)
             Connect()
                 .tabItem {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
