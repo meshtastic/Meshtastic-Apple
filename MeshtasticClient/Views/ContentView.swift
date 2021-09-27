@@ -17,12 +17,12 @@ struct ContentView: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            //MessageList()
-            //    .tabItem {
-            //        Label("Messages", systemImage: "text.bubble")
-            //            .symbolRenderingMode(.hierarchical)
-            //    }
-            //    .tag(Tab.messages)
+            MessageList()
+                .tabItem {
+                    Label("Messages", systemImage: "text.bubble")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .tag(Tab.messages)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")

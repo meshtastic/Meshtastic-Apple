@@ -57,7 +57,7 @@ struct NodeDetail: View {
                     HStack {
                         
                         VStack(alignment: .center) {
-                            Text("AKA").font(.title2)
+                            Text("AKA").font(.title2).fixedSize()
                             CircleText(text: node.user.shortName, color: Color.blue)
                                 .offset(y:10)
                         }
@@ -69,7 +69,7 @@ struct NodeDetail: View {
                                 .font(.title)
                                 .foregroundColor(.blue)
                                 .symbolRenderingMode(.hierarchical)
-                            Text("SNR").font(.title2)
+                            Text("SNR").font(.title2).fixedSize()
                             Text(String(node.snr ?? 0))
                                 .font(.title2)
                                 .foregroundColor(.gray)
@@ -77,7 +77,7 @@ struct NodeDetail: View {
                         Divider()
                         VStack(alignment: .center) {
                             BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
-                            Text("Battery").font(.title2)
+                            Text("Battery").font(.title2).fixedSize()
                             Text(String(node.position.batteryLevel!) + "%")
                                 .font(.title2)
                                 .foregroundColor(.gray)

@@ -4,42 +4,100 @@ import CoreLocation
 
 struct MessageDetail: View {
     
+    enum Field: Hashable {
+        case messageText
+    }
+    
     @State var typingMessage: String = ""
+    @FocusState private var focusedField: Field?
+    @ObservedObject var messageData: MessageData = MessageData()
+    @EnvironmentObject var bleManager: BLEManager
+    
+    @Namespace var topId
+    @Namespace var bottomId
     
     var body: some View {
-       // NavigationView {
-           
-            VStack(alignment: .leading) {
-                ScrollView {
+        
+        GeometryReader { bounds in
+            
+            VStack {
+                
+                ScrollViewReader { scrollView in
                     
-                    MessageBubble(contentMessage: "I sent a super great message with amazing text", isCurrentUser: true, time: 1, shortName: "GVH")
-                    MessageBubble(contentMessage: "It was amazing to read such a fantastical text", isCurrentUser: false, time: 1, shortName: "RS1")
-                    MessageBubble(contentMessage: "It was the best message", isCurrentUser: false, time: 1, shortName: "RDN")
-                    MessageBubble(contentMessage: "This is a terse response to an amazing text", isCurrentUser: true, time: 1, shortName: "GVH")
-                    MessageBubble(contentMessage: "yo", isCurrentUser: true, time: 1, shortName: "GVH")
-                    MessageBubble(contentMessage: "I sent a super great message with amazing text", isCurrentUser: true, time: 1, shortName: "GVH")
-                    MessageBubble(contentMessage: "It was amazing to read such a fantastical text", isCurrentUser: false, time: 1, shortName: "RS1")
-                    MessageBubble(contentMessage: "It was the best message", isCurrentUser: false, time: 1, shortName: "RDN")
-                    MessageBubble(contentMessage: "This is a terse response to an amazing text", isCurrentUser: true, time: 1, shortName: "GVH")
-                    MessageBubble(contentMessage: "yo", isCurrentUser: true, time: 1, shortName: "GVH")
-                    
-                    
-                    
-                    
-                }.padding([.top, .leading])
-                HStack (alignment: .bottom) {
-                    
-                       TextField("Message", text: $typingMessage)
-                          .textFieldStyle(RoundedBorderTextFieldStyle())
-                          .frame(minHeight: CGFloat(30))
-                        Button(action: sendMessage) {
-                            Image(systemName: "arrow.up.circle.fill").font(.title).foregroundColor(.blue)
+                    ScrollView {
+                        Text("Hidden Top Anchor")
+                            .hidden()
+                            .frame(height: 0)
+                            .id(topId)
+                        
+                        ForEach(messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
+                            
+                            MessageBubble(contentMessage: message.messagePayload, isCurrentUser: false, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName)
                         }
-                }.padding(5)
+                        .onAppear(perform: { scrollView.scrollTo(bottomId) } )
+                        
+                        Text("Hidden Bottom Anchor")
+                            .hidden()
+                            .frame(height: 0)
+                            .id(bottomId)
+                    }
+                    .padding([.top, .leading])
+                }
+                HStack {
+                    
+                    if focusedField != nil {
+                        Button("Dismiss Keyboard") {
+                            focusedField = nil
+                        }
+                        .fixedSize()
+                        .frame(height: 15, alignment: .center)
+                        .padding(.top, 10)
+                    }
+                }
+                HStack (alignment: .top) {
+                
+                    ZStack {
+                    
+                        TextEditor(text: $typingMessage)
+                            .onChange(of: typingMessage, perform: { value in
+                                let size = value.utf8.count
+                                if size >= 200 {
+                                    print("too big!")
+                                }
+                                print(size)
+                            })
+                            .padding(.horizontal)
+                            .focused($focusedField, equals: .messageText)
+                            .multilineTextAlignment(.leading)
+                            .frame(minHeight: 120, maxHeight: 120)
+                        
+                           
+                        Text(typingMessage).opacity(0).padding(.all, 2)
+                        
+                    }
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 2))
+                    .padding(.top)
+                    
+                    Button(action: sendMessage) {
+                        Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
+                    }
+                    .padding(.top)
+                    
+                }.padding([.leading, .bottom])
             }
-            .navigationTitle("CHANNEL - Primary")
-            .navigationBarTitleDisplayMode(.inline)
-        //}
-        //.navigationViewStyle//(StackNavigationViewStyle())
+        }
+        .navigationTitle("CHANNEL - Primary")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarItems(trailing:
+                              
+            ZStack {
+
+                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.longName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+            
+            }
+        )
+        .onAppear{
+            messageData.load()
+        }
     }
 }

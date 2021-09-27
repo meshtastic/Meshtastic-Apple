@@ -13,7 +13,6 @@ struct MeshtasticClientApp: App {
     @ObservedObject private var meshData: MeshData = MeshData()
     @ObservedObject private var bleManager: BLEManager = BLEManager()
     
-    //@ObservedObject var meshData: MeshData
     var body: some Scene {
         WindowGroup {
             ContentView()

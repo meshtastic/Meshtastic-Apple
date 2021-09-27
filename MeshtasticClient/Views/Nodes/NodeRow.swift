@@ -10,7 +10,7 @@ struct NodeRow: View {
             HStack() {
                 
                 CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
-                Text(node.user.longName).font(.title)
+                Text(node.user.longName).font(.title2)
             }
             .padding([.trailing])
             

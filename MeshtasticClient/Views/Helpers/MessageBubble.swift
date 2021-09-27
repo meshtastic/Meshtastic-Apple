@@ -7,18 +7,27 @@ struct MessageBubble: View {
     var shortName: String
     
     var body: some View {
-        VStack(alignment: isCurrentUser ? .leading : .trailing) {
-            HStack {
+        VStack {
+            HStack (alignment: .top) {
                 
                 CircleText(text: shortName, color: isCurrentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)
-                
+                VStack (alignment: .leading) {
                 Text(contentMessage)
                     .padding(10)
                     .foregroundColor(.white)
                     .background(isCurrentUser ? Color.blue : Color(.darkGray))
                     .cornerRadius(10)
+                    HStack (spacing: 4) {
+                        let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+
+                        Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+                        Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+                    }
+                    .padding(.bottom, 10)
+                }
                 Spacer()
-            }.padding(isCurrentUser ? .leading : .trailing, 70)
+            }
+            
         }.padding(.bottom, 1)
     }
 }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
+		DD23A51326FEF5D500D9B90C /* MessageData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A51226FEF5D500D9B90C /* MessageData.swift */; };
 		DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CB26F0E51D00029299 /* NodeDetail.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D026F1073F00029299 /* NodeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CF26F1073F00029299 /* NodeRow.swift */; };
@@ -64,6 +65,7 @@
 
 /* Begin PBXFileReference section */
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
+		DD23A51226FEF5D500D9B90C /* MessageData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageData.swift; sourceTree = "<group>"; };
 		DD47E3CB26F0E51D00029299 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3CF26F1073F00029299 /* NodeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeRow.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				DD836AEC26F858F900ABCC23 /* MeshData.swift */,
 				DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */,
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
+				DD23A51226FEF5D500D9B90C /* MessageData.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -449,6 +452,7 @@
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				DD47E3DB26F3901B00029299 /* MessageList.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
+				DD23A51326FEF5D500D9B90C /* MessageData.swift in Sources */,
 				DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */,
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
@@ -637,10 +641,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.14;
+				MARKETING_VERSION = 1.15;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -663,10 +668,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.14;
+				MARKETING_VERSION = 1.15;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

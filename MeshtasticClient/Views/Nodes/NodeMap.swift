@@ -60,7 +60,9 @@ struct NodeMap: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        
+        .onAppear{
+            meshData.load()
+        }
     }
 }
 

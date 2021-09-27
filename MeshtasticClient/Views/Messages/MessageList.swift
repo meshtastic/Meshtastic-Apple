@@ -7,16 +7,15 @@ struct MessageList: View {
     @State var typingMessage: String = ""
     
     @EnvironmentObject var bleManager: BLEManager
-    @EnvironmentObject var meshData: MeshData
     
     var body: some View {
         NavigationView {
             
             GeometryReader { bounds in
                 
-                List{
+                NavigationLink(destination: MessageDetail()) {
                     
-                    NavigationLink(destination: MessageDetail()) {
+                    List{
                         
                         HStack {
                             
