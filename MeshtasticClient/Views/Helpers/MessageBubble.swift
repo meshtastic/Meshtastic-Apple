@@ -13,6 +13,7 @@ struct MessageBubble: View {
                 CircleText(text: shortName, color: isCurrentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)
                 VStack (alignment: .leading) {
                 Text(contentMessage)
+                    .textSelection(.enabled)
                     .padding(10)
                     .foregroundColor(.white)
                     .background(isCurrentUser ? Color.blue : Color(.darkGray))

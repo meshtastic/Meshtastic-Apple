@@ -17,7 +17,7 @@ struct ContentView: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            MessageList()
+            Channels()
                 .tabItem {
                     Label("Messages", systemImage: "text.bubble")
                         .symbolRenderingMode(.hierarchical)
