@@ -21,6 +21,8 @@ struct Messages: View {
     @EnvironmentObject var bleManager: BLEManager
     
     public var broadcastNodeId: UInt32 = 4294967295
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     
     var body: some View {
         
@@ -36,11 +38,17 @@ struct Messages: View {
                         
                         ForEach(messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
                             
-                            MessageBubble(contentMessage: message.messagePayload, isCurrentUser: false, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName)
+                            let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
+                            
+                            MessageBubble(contentMessage: message.messagePayload, isCurrentUser: currentUser, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName)
                         }
                         .onAppear(perform: { scrollView.scrollTo(bottomId) } )
                         
                         Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
+                    }
+                    .onReceive(timer) { input in
+                        messageData.load()
+                      //  scrollView.scrollTo(bottomId)
                     }
                     .padding(.horizontal)
                 }
