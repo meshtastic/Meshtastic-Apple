@@ -48,7 +48,7 @@ struct Messages: View {
                     }
                     .onReceive(timer) { input in
                         messageData.load()
-                      //  scrollView.scrollTo(bottomId)
+                        // DescrollView.scrollTo(bottomId)
                     }
                     .padding(.horizontal)
                 }
