@@ -340,8 +340,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                 print(messageText)
                                 print(try decodedInfo.packet.jsonString())
                                 
+                                let broadcastNodeId: UInt32 = 4294967295
+                                
+                                let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+                                
+                                var toUserLongName: String = "Broadcast"
+                                var toUserShortName: String = "BRD"
+                                
+                                if decodedInfo.packet.to != broadcastNodeId {
+                                    
+                                    let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+                                    toUserLongName = toUser?.user.longName ?? "Unknown"
+                                    toUserShortName = toUser?.user.shortName ?? "???"
+                                }
+                                
                                 messageData.messages.append(
-                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: Int64(decodedInfo.packet.rxTime), fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: "From Long Name ", toUserLongName: "To Long Name", fromUserShortName: "FLN", toUserShortName: "TLN", receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
+                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: Int64(decodedInfo.packet.rxTime), fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
                                 messageData.save()
                             } else {
                                 print("not a valid UTF-8 sequence")
@@ -349,8 +363,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                             
                         }
                         else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
-                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .unicode) {
                                 print(nodeInfoPayload)
+                                print(try decodedInfo.packet.jsonString())
                             } else {
                                 print("not a valid UTF-8 sequence")
                                 print(try decodedInfo.packet.jsonString())
@@ -358,8 +373,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                             
                         }
                         else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
-                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .ascii) {
                                 print(nodeInfoPayload)
+                                print(try decodedInfo.packet.jsonString())
                             } else {
                                 print("not a valid UTF-8 sequence")
                                 print(try decodedInfo.packet.jsonString())

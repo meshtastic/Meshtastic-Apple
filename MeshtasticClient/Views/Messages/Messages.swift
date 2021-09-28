@@ -20,6 +20,8 @@ struct Messages: View {
     @EnvironmentObject var messageData: MessageData
     @EnvironmentObject var bleManager: BLEManager
     
+    public var broadcastNodeId: UInt32 = 4294967295
+    
     var body: some View {
         
         GeometryReader { bounds in
