@@ -10,6 +10,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     // Data
     @ObservedObject private var meshData : MeshData
+    @ObservedObject private var messageData : MessageData
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
@@ -31,6 +32,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     override init() {
         self.meshData = MeshData()
+        self.messageData = MessageData()
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
@@ -91,7 +93,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     
     //---------------------------------------------------------------------------------------
-    // Disconnect Device function
+    // Set Owner function
     //---------------------------------------------------------------------------------------
     public func setOwner(myUser: User)
     {
@@ -156,6 +158,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
+        if let e = error {
+            
+            print("Central disconnected because \(e)")
+          //  connectToDevice(id: peripheral.identifier.uuidString)
+        } else {
+            print("Central disconnected! (no error)")
+        }
+        
         if(peripheral.identifier == connectedPeripheral.identifier){
             connectedPeripheral = nil
             connectedNodeInfo = nil
@@ -164,6 +174,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         print("Peripheral disconnected: " + peripheral.name!)
         self.startScanning()
     }
+    
+
     
     //---------------------------------------------------------------------------------------
     // Discover Services Event
@@ -320,10 +332,42 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.packet.id  != 0
                 {
-                    print("Save a packet")
+                    
                     do {
-                        print(try decodedInfo.packet.jsonString())
+
                         if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
+                            if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                                print(messageText)
+                                print(try decodedInfo.packet.jsonString())
+                                
+                                messageData.messages.append(
+                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: Int64(decodedInfo.packet.rxTime), fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: "From Long Name ", toUserLongName: "To Long Name", fromUserShortName: "FLN", toUserShortName: "TLN", receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
+                                messageData.save()
+                            } else {
+                                print("not a valid UTF-8 sequence")
+                            }
+                            
+                        }
+                        else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                                print(nodeInfoPayload)
+                            } else {
+                                print("not a valid UTF-8 sequence")
+                                print(try decodedInfo.packet.jsonString())
+                            }
+                            
+                        }
+                        else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
+                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                                print(nodeInfoPayload)
+                            } else {
+                                print("not a valid UTF-8 sequence")
+                                print(try decodedInfo.packet.jsonString())
+                            }
+                        }
+                        else
+                        {
+                            print("Save a packet")
                             print(try decodedInfo.packet.jsonString())
                         }
                         
@@ -335,6 +379,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 if decodedInfo.configCompleteID != 0 {
                     print(decodedInfo)
                     meshData.load()
+                    messageData.load()
                 }
                 
             default:

@@ -22,11 +22,11 @@ class MessageData: ObservableObject {
     func load() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let data = try? Data(contentsOf: Self.fileURL) else {
-                //#if DEBUG
+                #if DEBUG
                 DispatchQueue.main.async {
                     self?.messages = MessageModel.data
                 }
-                //#endif
+                #endif
                 return
             }
             guard let messageList = try? JSONDecoder().decode([MessageModel].self, from: data) else {

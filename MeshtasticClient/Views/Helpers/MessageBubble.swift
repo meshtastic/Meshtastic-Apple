@@ -7,6 +7,7 @@ struct MessageBubble: View {
     var shortName: String
     
     var body: some View {
+        
         HStack (alignment: .top) {
             
             CircleText(text: shortName, color: isCurrentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)

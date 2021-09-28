@@ -17,7 +17,7 @@ struct Messages: View {
     @Namespace var bottomId
     
     // Message Data and Bluetooth
-    @ObservedObject var messageData: MessageData = MessageData()
+    @EnvironmentObject var messageData: MessageData
     @EnvironmentObject var bleManager: BLEManager
     
     var body: some View {

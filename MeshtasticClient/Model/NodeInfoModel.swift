@@ -52,7 +52,7 @@ struct NodeInfoModel: Identifiable, Codable {
             }
         }
         var coordinate: CLLocationCoordinate2D? {
-            if latitude != nil || longitude != nil {
+            if latitude != nil && longitude != nil {
                 let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
                 
                 return coord
