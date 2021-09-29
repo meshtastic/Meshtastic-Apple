@@ -16,6 +16,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var peripheralArray = [CBPeripheral]()
     @Published var connectedNodeInfo: Peripheral!
     @Published var connectedNode: NodeInfoModel!
+    @Published var lastConnectedNode: String
     //private var rssiArray = [NSNumber]()
     private var timer = Timer()
     @Published var isSwitchedOn = false
@@ -33,11 +34,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     override init() {
         self.meshData = MeshData()
         self.messageData = MessageData()
+        self.lastConnectedNode = ""
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
-        
-        
     }
 
     //---------------------------------------------------------------------------------------
@@ -79,6 +79,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func connectToDevice(id: String) {
         connectedPeripheral = peripheralArray.filter({ $0.identifier.uuidString == id }).first
         connectedNodeInfo = Peripheral(id: connectedPeripheral.identifier.uuidString, name: connectedPeripheral.name ?? "Unknown", rssi: 0, myInfo: nil)
+        lastConnectedNode = id
         self.centralManager?.connect(connectedPeripheral!)
     }
     
@@ -357,6 +358,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                 messageData.messages.append(
                                     MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: Int64(decodedInfo.packet.rxTime), fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
                                 messageData.save()
+                                
                             } else {
                                 print("not a valid UTF-8 sequence")
                             }

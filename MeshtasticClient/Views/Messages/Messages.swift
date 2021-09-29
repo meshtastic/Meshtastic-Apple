@@ -22,7 +22,7 @@ struct Messages: View {
     
     public var broadcastNodeId: UInt32 = 4294967295
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    @State var messageCount: Int = 0;
     
     var body: some View {
         
@@ -48,7 +48,10 @@ struct Messages: View {
                     }
                     .onReceive(timer) { input in
                         messageData.load()
-                        // DescrollView.scrollTo(bottomId)
+                        if messageCount < messageData.messages.count {
+                            scrollView.scrollTo(bottomId) 
+                            messageCount = messageData.messages.count
+                        }
                     }
                     .padding(.horizontal)
                 }
@@ -113,11 +116,15 @@ struct Messages: View {
                               
             ZStack {
 
-                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.longName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+            ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.longName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+                
             }
         )
         .onAppear {
+            
             messageData.load()
+            messageCount = messageData.messages.count
+            
         }
     }
 }

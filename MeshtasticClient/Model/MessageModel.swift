@@ -43,20 +43,7 @@ extension MessageModel {
 
     static var data: [MessageModel] {
         [
-            // Put dev test data here
-            MessageModel(messageId: 3773493287, messageTimeStamp: 1632407404, fromUserId: 4064715620, toUserId: 4294967295, fromUserLongName: "TLORA V1 #1", toUserLongName: "Unknown 1", fromUserShortName: "T#", toUserShortName: "U1", receivedACK: false, messagePayload: "I sent a super great message with amazing text", direction: "received"),
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632643652, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "T#", toUserShortName: "U1", receivedACK: false, messagePayload: "It was the best message", direction: "received"),
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632643652, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "TAG", toUserShortName: "U1", receivedACK: false, messagePayload: "SwiftUI is great, but it has been lacking of specific native controls, even though that gets much better year by year. One of them was the text view. When SwiftUI was first released, it had no native ", direction: "received"),
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632643652, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "TAG", toUserShortName: "U1", receivedACK: false, messagePayload: "One of them was the text view. When SwiftUI was first released, it had no native equivalent of the text view; implementing a custom UIViewRepresentable type to contain UITextView was the only way to g", direction: "received"),
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632407404, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "TAG", toUserShortName: "U1", receivedACK: false, messagePayload: "One of them was the text view. When SwiftUI was first released, it had no native equivalent of the text view; implementing a custom UIViewRepresentable type to contain UITextView was the only way to g", direction: "received"),
-                       
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632643652, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "GVH", toUserShortName: "U1", receivedACK: false, messagePayload: "yo", direction: "received"),
-            
-            MessageModel(messageId: 3773493338, messageTimeStamp: 1632407404, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "GVH", toUserShortName: "U1", receivedACK: false, messagePayload: "yo", direction: "received")
-            
-            
-            
-            
+            //MessageModel(messageId: 3773493338, messageTimeStamp: 1632407404, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "GVH", toUserShortName: "U1", receivedACK: false, messagePayload: "yo", direction: "received")
         ]
     }
 }
