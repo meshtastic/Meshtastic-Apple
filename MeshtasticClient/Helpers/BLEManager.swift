@@ -401,7 +401,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     }
                 }
                 
-                if decodedInfo.nodeInfo.num != 0
+            if decodedInfo.nodeInfo.num != 0 && decodedInfo.nodeInfo.user.longName.lengthOfBytes(using: .utf8) > 0
                 {
                     print("Save a nodeInfo")
                     do {

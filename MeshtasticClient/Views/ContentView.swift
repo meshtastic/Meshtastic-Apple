@@ -5,7 +5,7 @@ Abstract: Default App View
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: Tab = .messages
+    @State private var selection: Tab = .nodes
 
     enum Tab {
         case messages
@@ -17,12 +17,12 @@ struct ContentView: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            Channels()
-                .tabItem {
-                    Label("Messages", systemImage: "text.bubble")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .tag(Tab.messages)
+            //Channels()
+            //    .tabItem {
+            //        Label("Messages", systemImage: "text.bubble")
+            //            .symbolRenderingMode(.hierarchical)
+           //     }
+            //    .tag(Tab.messages)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")
