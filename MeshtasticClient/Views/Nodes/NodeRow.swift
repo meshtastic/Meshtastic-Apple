@@ -17,9 +17,14 @@ struct NodeRow: View {
             HStack (alignment: .bottom){
                 
                 Image(systemName: "timer").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
-                let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                Text("Last Heard:").font(.headline).foregroundColor(.gray)
-                Text(lastHeard, style: .relative).font(.headline).foregroundColor(.gray)
+                
+                if node.lastHeard > 0 {
+                    let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
+                    Text("Last Heard: \(lastHeard, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
+                }
+                else {
+                    Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
+                }
             }
         }.padding([.leading, .top, .bottom])
     }

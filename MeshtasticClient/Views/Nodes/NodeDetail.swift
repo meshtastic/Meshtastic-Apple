@@ -36,7 +36,7 @@ struct NodeDetail: View {
                     
                     let annotations = [MapLocation(name: node.user.shortName, coordinate: node.position.coordinate!)]
                     
-                    Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .constant(.none), annotationItems: annotations) { location in
+                    Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
                         MapAnnotation(
                            coordinate: location.coordinate,
                            content: {
@@ -63,26 +63,34 @@ struct NodeDetail: View {
                         }
                         .padding([.leading, .trailing, .bottom])
                         Divider()
-                        VStack(alignment: .center) {
-                            
-                            Image(systemName: "waveform.path")
-                                .font(.title)
-                                .foregroundColor(.blue)
-                                .symbolRenderingMode(.hierarchical)
-                            Text("SNR").font(.title2).fixedSize()
-                            Text(String(node.snr ?? 0))
-                                .font(.title2)
-                                .foregroundColor(.gray)
+                        if node.snr! > 0 {
+                            VStack(alignment: .center) {
+                                
+                                Image(systemName: "waveform.path")
+                                    .font(.title)
+                                    .foregroundColor(.blue)
+                                    .symbolRenderingMode(.hierarchical)
+                                Text("SNR").font(.title2).fixedSize()
+                                Text(String(node.snr ?? 0))
+                                    .font(.title2)
+                                    .foregroundColor(.gray)
+                            }
+                            Divider()
                         }
-                        Divider()
                         VStack(alignment: .center) {
                             BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
-                            Text("Battery").font(.title2).fixedSize()
-                            Text(String(node.position.batteryLevel!) + "%")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                                .symbolRenderingMode(.hierarchical)
-                       }
+                            if node.position.batteryLevel! > 0 {
+                                Text("Battery").font(.title2).fixedSize()
+                                Text(String(node.position.batteryLevel!) + "%")
+                                    .font(.title2)
+                                    .foregroundColor(.gray)
+                                    .symbolRenderingMode(.hierarchical)
+                            }
+                            else {
+                                Text("Powered").font(.title2)
+                            }
+                        }
+                        
                     }.padding(4)
                     Divider()
                     HStack {
@@ -97,15 +105,21 @@ struct NodeDetail: View {
                     }
                     .padding()
                     Divider()
-                    HStack{
+                    
+                    if node.lastHeard > 0 {
                         
-                        Image(systemName: "clock").font(.title2).foregroundColor(.blue)
-                        let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                        Text("Last Heard:").font(.title3)
-                        Text(lastHeard, style: .relative).font(.title3)
-                        Text("ago").font(.title3)
-                    }.padding()
-                    Divider()
+                        HStack{
+                            
+                            Image(systemName: "clock").font(.title2).foregroundColor(.blue)
+                                let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
+                                //Text("Last Heard:").font(.title3)
+                                //Text(lastHeard, style: .relative).font(.title3)
+                                //Text("ago").font(.title3)
+                                Text("Last Heard: \(lastHeard, style: .relative) ago").font(.title3)
+                        }.padding()
+                        Divider()
+                    }
+                    
                     if node.position.coordinate != nil {
                         HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
                             Image(systemName: "mappin").font(.title).foregroundColor(.blue)

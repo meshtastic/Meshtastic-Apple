@@ -6,7 +6,10 @@ struct MessageBubble: View {
     var time: Int32
     var shortName: String
     
+    
     var body: some View {
+        
+      
         
         HStack (alignment: .top) {
             
@@ -19,10 +22,16 @@ struct MessageBubble: View {
                 .background(isCurrentUser ? Color.blue : Color(.darkGray))
                 .cornerRadius(10)
                 HStack (spacing: 4) {
-                    let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+                    
+                   let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
 
-                    Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
-                    Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+                    if time != 0 {
+                        Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+                        Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+                    }
+                    else {
+                        Text("Unknown").font(.caption2).foregroundColor(.gray)
+                    }
                 }
                 .padding(.bottom, 10)
             }

@@ -19,6 +19,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var lastConnectedNode: String
     //private var rssiArray = [NSNumber]()
     private var timer = Timer()
+    private var broadcastNodeId: UInt32 = 4294967295
+    
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
     
@@ -51,47 +53,96 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
              isSwitchedOn = false
          }
     }
-    
-    //---------------------------------------------------------------------------------------
-    // Scan for nearby BLE devices using the Meshtastic BLE service ID
-    //---------------------------------------------------------------------------------------
+    /*
+     * Scan for nearby BLE devices using the Meshtastic BLE service ID
+     */
     func startScanning() {
+        
         // Remove Existing Data
         peripherals.removeAll()
         peripheralArray.removeAll()
         //rssiArray.removeAll()
+        
         // Start Scanning
         print("Start Scanning")
         centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID])
+        
     }
         
     //---------------------------------------------------------------------------------------
     // Stop Scanning For BLE Devices
     //---------------------------------------------------------------------------------------
     func stopScanning() {
-        print("Stop Scanning")
+        
         self.centralManager.stopScan()
+        print("Scanning Stopped")
     }
     
     //---------------------------------------------------------------------------------------
     // Connect to a Device via UUID
     //---------------------------------------------------------------------------------------
     func connectToDevice(id: String) {
+        cleanup()
         connectedPeripheral = peripheralArray.filter({ $0.identifier.uuidString == id }).first
+        
+        
         connectedNodeInfo = Peripheral(id: connectedPeripheral.identifier.uuidString, name: connectedPeripheral.name ?? "Unknown", rssi: 0, myInfo: nil)
         lastConnectedNode = id
         self.centralManager?.connect(connectedPeripheral!)
     }
     
-    //---------------------------------------------------------------------------------------
-    // Disconnect Device function
-    //---------------------------------------------------------------------------------------
+    /*
+     *  Disconnect Device function
+     */
     func disconnectDevice(){
-        if connectedPeripheral != nil {
-            self.centralManager?.cancelPeripheralConnection(connectedPeripheral!)
-        }
+        
+       cleanup()
     }
     
+    /*
+     *  Send Broadcast Message
+     */
+    public func sendMessage(message: String) -> Bool
+    {   var success = true
+        if connectedPeripheral == nil || connectedPeripheral!.state != CBPeripheralState.connected {
+            success = false
+        }
+        else {
+
+            let messageModel = MessageModel(messageId: 0, messageTimeStamp: UInt32(Date().timeIntervalSince1970), fromUserId: self.connectedNode.id, toUserId: broadcastNodeId, fromUserLongName: self.connectedNode.user.longName, toUserLongName: "Broadcast", fromUserShortName: self.connectedNode.user.shortName, toUserShortName: "BC", receivedACK: false, messagePayload: message, direction: "OUT")
+            let dataType = PortNum.textMessageApp
+            let payloadData: Data = message.data(using: String.Encoding.utf8)!
+        
+            var dataMessage = DataMessage()
+            dataMessage.payload = payloadData
+            dataMessage.portnum = dataType
+            
+            var meshPacket = MeshPacket()
+            meshPacket.to = broadcastNodeId
+            meshPacket.decoded = dataMessage
+            meshPacket.wantAck = true
+            
+            var toRadio: ToRadio!
+            toRadio = ToRadio()
+            toRadio.packet = meshPacket
+
+            let binaryData: Data = try! toRadio.serializedData()
+            if (connectedPeripheral!.state == CBPeripheralState.connected)
+            {
+                connectedPeripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+                messageData.messages.append(messageModel)
+                messageData.save()
+
+            }
+            else
+            {
+                connectToDevice(id: lastConnectedNode)
+            }
+            
+        }
+        return success
+    }
     
     //---------------------------------------------------------------------------------------
     // Set Owner function
@@ -114,12 +165,45 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
     }
     
-    //---------------------------------------------------------------------------------------
-    // Discover Peripheral Event
-    //---------------------------------------------------------------------------------------
+        /*
+         *  Call this when things either go wrong, or you're done with the connection.
+         *  This cancels any subscriptions if there are any, or straight disconnects if not.
+         *  (didUpdateNotificationStateForCharacteristic will cancel the connection if a subscription is involved)
+         */
+        private func cleanup() {
+            // Don't do anything if we're not connected
+            guard let connectedPeripheral = connectedPeripheral,
+                case .connected = connectedPeripheral.state else { return }
+            
+            for service in (connectedPeripheral.services ?? [] as [CBService]) {
+                for characteristic in (service.characteristics ?? [] as [CBCharacteristic]) {
+                    if characteristic.uuid == FROMNUM_UUID && characteristic.isNotifying {
+                        // It is notifying, so unsubscribe
+                        self.connectedPeripheral?.setNotifyValue(false, for: characteristic)
+                    }
+                }
+            }
+            
+            centralManager.cancelPeripheralConnection(connectedPeripheral)
+        }
+    
+    /*
+     *  This callback happens whenever a peripheral that is advertising the Meshtastic Service UUID is found.
+     *  We check the RSSI, to make sure it's close enough that we're interested in it, and if it is,
+     *  we start the connection process
+     */
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-
-        print(peripheral)
+        
+        // Reject if the signal strength if it is too low
+        guard RSSI.intValue >= -100
+            else {
+                print("Discovered perhiperal not in expected range, at %d", RSSI.intValue)
+                return
+        }
+        print("Discovered %s at %d", String(describing: peripheral.name), RSSI.intValue)
+        
+        
+        
         if peripheralArray.contains(peripheral) {
           print("Duplicate Found.")
         } else {
@@ -154,6 +238,25 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.startScanning()
     }
     
+    
+    /*
+     *  If the connection fails for whatever reason, we need to deal with it.
+     */
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        
+       // print("Failed to connect to \(String(describing: peripheral.name!))", peripheral, String(describing: error))
+      //  let errorCode = (error! as! NSError).userInfo
+      //  print("Central disconnected because \(errorCode)")
+        
+        if let e = error {
+            let errorDetails = (e as NSError)
+            print("Central disconnected because \(errorDetails.localizedDescription)")
+        } else {
+            print("Central disconnected! (no error)")
+        }
+        cleanup()
+    }
+    
     //---------------------------------------------------------------------------------------
     // Disconnect Peripheral Event
     //---------------------------------------------------------------------------------------
@@ -168,9 +271,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
         
         if(peripheral.identifier == connectedPeripheral.identifier){
-            connectedPeripheral = nil
-            connectedNodeInfo = nil
-            connectedNode = nil
+           // connectedPeripheral = nil
+          //  connectedNodeInfo = nil
+          //  connectedNode = nil
         }
         print("Peripheral disconnected: " + peripheral.name!)
         self.startScanning()
@@ -237,16 +340,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
       }
     }
     
-    //---------------------------------------------------------------------------------------
-    // Data Read / Update Characteristic Event
-    //---------------------------------------------------------------------------------------
+
+    /*
+     * Callback lets us know that data has arrived via a notification on the characteristic
+     */
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
+        // Handle Error
+        if let error = error {
+            print("Error discovering characteristics: %s", error.localizedDescription)
+            cleanup()
+            return
+        }
         switch characteristic.uuid
         {
             case FROMNUM_UUID:
                 peripheral.readValue(for: FROMRADIO_characteristic)
-                
+                print(characteristic.value ?? "no value")
             case FROMRADIO_UUID:
                 if (characteristic.value == nil || characteristic.value!.isEmpty)
                 {
@@ -282,6 +392,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         connectedNode = meshData.nodes.first(where: {$0.id == decodedInfo.myInfo.myNodeNum})
                         if connectedNode != nil {
                             connectedNode.myInfo = myInfoModel
+                            connectedNode.update(from: connectedNode.data)
                         }
                         meshData.save()
                         
@@ -297,9 +408,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   
                         if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
                             
-                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
-                            meshData.nodes.remove(at: nodeIndex!)
-                            meshData.save()
+                            // Found a matching node lets update it
+                            let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
+                            if nodeMatch?.lastHeard ?? 0 > decodedInfo.nodeInfo.lastHeard {
+                                let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
+                                meshData.nodes.remove(at: nodeIndex!)
+                                meshData.save()
+                            }
+                            else {
+                                
+                                // Data is older than what the app already has
+                                return
+                            }
+
                         }
 
                         meshData.nodes.append(
@@ -346,7 +467,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                 let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
                                 
                                 var toUserLongName: String = "Broadcast"
-                                var toUserShortName: String = "BRD"
+                                var toUserShortName: String = "BC"
                                 
                                 if decodedInfo.packet.to != broadcastNodeId {
                                     
@@ -356,7 +477,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                 }
                                 
                                 messageData.messages.append(
-                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: Int64(decodedInfo.packet.rxTime), fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
+                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
                                 messageData.save()
                                 
                             } else {

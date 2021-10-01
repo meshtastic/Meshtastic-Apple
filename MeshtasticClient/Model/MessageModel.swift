@@ -10,7 +10,7 @@ struct MessageModel : Identifiable, Codable
 {
     let id: UUID
     var messageId: UInt32
-    var messageTimestamp: Int64
+    var messageTimestamp: UInt32
     var fromUserId: UInt32
     var toUserId: UInt32
     var fromUserLongName: String
@@ -21,7 +21,7 @@ struct MessageModel : Identifiable, Codable
     var messagePayload: String
     var direction: String
     
-    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: Int64, fromUserId: UInt32, toUserId: UInt32, fromUserLongName: String, toUserLongName: String, fromUserShortName: String, toUserShortName: String, receivedACK: Bool, messagePayload: String, direction: String)
+    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: UInt32, fromUserId: UInt32, toUserId: UInt32, fromUserLongName: String, toUserLongName: String, fromUserShortName: String, toUserShortName: String, receivedACK: Bool, messagePayload: String, direction: String)
     {
         self.id = id
         self.messageId = messageId
@@ -52,7 +52,7 @@ extension MessageModel {
     struct Data {
         var id: UUID
         var messageId: UInt32
-        var messageTimestamp: Int64
+        var messageTimestamp: UInt32
         var fromUserId: UInt32
         var toUserId: UInt32
         var fromUserLongName: String

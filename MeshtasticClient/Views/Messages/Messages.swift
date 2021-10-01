@@ -86,7 +86,12 @@ struct Messages: View {
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
                     .padding(.bottom, 15)
                     
-                    Button(action: sendMessage) {
+                    Button(action: {
+                        if bleManager.sendMessage(message: typingMessage) {
+                            typingMessage = ""
+                        }
+                        
+                    } ) {
                         Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
                     }
                     
@@ -128,7 +133,3 @@ struct Messages: View {
         }
     }
 }
-func sendMessage() {
-        //chatHelper.sendMessage(Message(content: typingMessage, user: DataSource.secondUser))
-       // typingMessage = ""
-    }

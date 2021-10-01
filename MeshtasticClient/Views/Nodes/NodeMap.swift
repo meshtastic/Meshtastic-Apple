@@ -29,7 +29,7 @@ struct NodeMap: View {
     }
     
     var body: some View {
-        let location = LocationHelper.currentLocation
+         let location = LocationHelper.currentLocation
         let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
             get: {

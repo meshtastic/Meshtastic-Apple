@@ -9,7 +9,7 @@ struct BatteryIcon: View {
         
         if batteryLevel == 100 {
             
-            Image(systemName: "battery.100")
+            Image(systemName: "battery.100.bolt")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
@@ -31,6 +31,13 @@ struct BatteryIcon: View {
         else if batteryLevel! < 50 && batteryLevel! > 14 {
             
             Image(systemName: "battery.25")
+                .font(font)
+                .foregroundColor(color)
+                .symbolRenderingMode(.hierarchical)
+        }
+        else if batteryLevel! == 0 {
+            
+            Image(systemName: "powerplug")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)

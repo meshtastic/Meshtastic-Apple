@@ -26,7 +26,7 @@ struct Connect: View {
                     
                     List {
                         Section(header: Text("Connected Device").font(.title)) {
-                            if(bleManager.connectedPeripheral != nil){
+                            if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.state == .connected {
                                 HStack {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                         .symbolRenderingMode(.hierarchical)
