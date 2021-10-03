@@ -11,14 +11,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Data
     @ObservedObject private var meshData : MeshData
     @ObservedObject private var messageData : MessageData
+    
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral!
     @Published var peripheralArray = [CBPeripheral]()
     @Published var connectedNodeInfo: Peripheral!
     @Published var connectedNode: NodeInfoModel!
     @Published var lastConnectedNode: String
+    
     //private var rssiArray = [NSNumber]()
-    private var timer = Timer()
     private var broadcastNodeId: UInt32 = 4294967295
     
     @Published var isSwitchedOn = false
@@ -40,6 +41,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
+        meshData.load()
+        messageData.load()
     }
 
     //---------------------------------------------------------------------------------------
@@ -81,7 +84,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func connectToDevice(id: String) {
         connectedPeripheral = peripheralArray.filter({ $0.identifier.uuidString == id }).first
         connectedNodeInfo = Peripheral(id: connectedPeripheral.identifier.uuidString, name: connectedPeripheral.name ?? "Unknown", rssi: 0, myInfo: nil)
-        lastConnectedNode = id
         self.centralManager?.connect(connectedPeripheral!)
     }
     
@@ -95,8 +97,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     
     /*
-         *  Send Broadcast Message
-         */
+     *  Send Broadcast Message
+     */
     public func sendMessage(message: String) -> Bool
     {   var success = true
         if connectedPeripheral == nil || connectedPeripheral!.state != CBPeripheralState.connected {
@@ -139,9 +141,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         return success
     }
     
-    
     //---------------------------------------------------------------------------------------
-    // Set Owner function
+    // Disconnect Device function
     //---------------------------------------------------------------------------------------
     public func setOwner(myUser: User)
     {
@@ -206,12 +207,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //---------------------------------------------------------------------------------------
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
+        
         if let e = error {
-            
-            print("Central disconnected because \(e)")
-          //  connectToDevice(id: peripheral.identifier.uuidString)
+         print("Central disconnected because \(e)")
+        //  connectToDevice(id: peripheral.identifier.uuidString)
         } else {
-            print("Central disconnected! (no error)")
+         print("Central disconnected! (no error)")
         }
         
         if(peripheral.identifier == connectedPeripheral.identifier){
@@ -222,8 +223,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         print("Peripheral disconnected: " + peripheral.name!)
         self.startScanning()
     }
-    
-
     
     //---------------------------------------------------------------------------------------
     // Discover Services Event
@@ -299,9 +298,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     return
                 }
-                //print(characteristic.value ?? "no value")
-                //let byteArray = [UInt8](characteristic.value!)
-                //print(characteristic.value?.hexDescription ?? "no value")
+                print(characteristic.value ?? "no value")
+                let byteArray = [UInt8](characteristic.value!)
+                print(characteristic.value?.hexDescription ?? "no value")
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
@@ -320,15 +319,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                             numBands: decodedInfo.myInfo.numBands,
                             maxChannels: decodedInfo.myInfo.maxChannels,
                             firmwareVersion: decodedInfo.myInfo.firmwareVersion,
-                            rebootCount: decodedInfo.myInfo.rebootCount,
                             messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
                             minAppVersion: decodedInfo.myInfo.minAppVersion)
                         // Save it to the connected nodeInfo
                         connectedNodeInfo.myInfo = myInfoModel
                         // Save it to the connected node
-                        connectedNode = meshData.nodes.first(where: {$0.id == decodedInfo.myInfo.myNodeNum})
+                        connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.id})
+                        // Since the data is from the device itself we save all myInfo objects since they are always the most update
                         if connectedNode != nil {
                             connectedNode.myInfo = myInfoModel
+                            connectedNode.update(from: connectedNode.data)
                         }
                         meshData.save()
                         
@@ -344,9 +344,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
   
                         if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
                             
-                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
-                            meshData.nodes.remove(at: nodeIndex!)
-                            meshData.save()
+                            // Found a matching node lets update it
+                            let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
+                            if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard {
+                                // The data coming from the device is newer
+                                
+                                let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
+                                meshData.nodes.remove(at: nodeIndex!)
+                                meshData.save()
+                            }
+                            else {
+                                
+                                // Data is older than what the app already has
+                                return
+                            }
                         }
 
                         meshData.nodes.append(
@@ -378,63 +389,46 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     }
                 }
                 
-                if decodedInfo.packet.id  != 0
-                {
-                    
-                    do {
+            if decodedInfo.packet.id  != 0
+            {
 
-                        if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
-                            if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
-                                print(messageText)
-                                print(try decodedInfo.packet.jsonString())
-                                
-                                let broadcastNodeId: UInt32 = 4294967295
-                                
-                                let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                                
-                                var toUserLongName: String = "Broadcast"
-                                var toUserShortName: String = "BRD"
-                                
-                                if decodedInfo.packet.to != broadcastNodeId {
-                                    
-                                    let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                                    toUserLongName = toUser?.user.longName ?? "Unknown"
-                                    toUserShortName = toUser?.user.shortName ?? "???"
-                                }
-                                
-                                messageData.messages.append(
-                                    MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
-                                messageData.save()
-                                
-                            } else {
-                                print("not a valid UTF-8 sequence")
-                            }
-                            
-                        }
-                        else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
-                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .unicode) {
-                                print(nodeInfoPayload)
-                                print(try decodedInfo.packet.jsonString())
-                            } else {
-                                print("not a valid UTF-8 sequence")
-                                print(try decodedInfo.packet.jsonString())
-                            }
-                            
-                        }
-                        else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
-                            if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .ascii) {
-                                print(nodeInfoPayload)
-                                print(try decodedInfo.packet.jsonString())
-                            } else {
-                                print("not a valid UTF-8 sequence")
-                                print(try decodedInfo.packet.jsonString())
-                            }
-                        }
-                        else
-                        {
-                            print("Save a packet")
-                            print(try decodedInfo.packet.jsonString())
-                        }
+             do {
+
+                 if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
+                     if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                         print(messageText)
+                         print(try decodedInfo.packet.jsonString())
+
+                         messageData.messages.append(
+                             MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: "From Long Name ", toUserLongName: "To Long Name", fromUserShortName: "FLN", toUserShortName: "TLN", receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
+                         messageData.save()
+                     } else {
+                         print("not a valid UTF-8 sequence")
+                     }
+
+                 }
+                 else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+                     if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                         print(nodeInfoPayload)
+                     } else {
+                         print("not a valid UTF-8 sequence")
+                         print(try decodedInfo.packet.jsonString())
+                     }
+
+                 }
+                 else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
+                     if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                         print(nodeInfoPayload)
+                     } else {
+                         print("not a valid UTF-8 sequence")
+                         print(try decodedInfo.packet.jsonString())
+                     }
+                 }
+                 else
+                 {
+                     print("Save a packet")
+                     print(try decodedInfo.packet.jsonString())
+                 }
                         
                     } catch {
                         fatalError("Failed to decode json")
@@ -443,8 +437,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.configCompleteID != 0 {
                     print(decodedInfo)
-                    meshData.load()
-                    messageData.load()
+
                 }
                 
             default:

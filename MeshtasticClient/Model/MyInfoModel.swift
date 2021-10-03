@@ -15,11 +15,10 @@ struct MyInfoModel: Identifiable, Codable {
     var numBands: UInt32
     var maxChannels: UInt32
     var firmwareVersion: String
-    var rebootCount: UInt32
     var messageTimeoutMsec: UInt32
     var minAppVersion: UInt32
     
-    init(myNodeNum: UInt32, hasGps: Bool, numBands: UInt32, maxChannels: UInt32, firmwareVersion: String, rebootCount: UInt32, messageTimeoutMsec: UInt32, minAppVersion: UInt32) {
+    init(myNodeNum: UInt32, hasGps: Bool, numBands: UInt32, maxChannels: UInt32, firmwareVersion: String, messageTimeoutMsec: UInt32, minAppVersion: UInt32) {
         
         self.id = myNodeNum
         self.myNodeNum = myNodeNum
@@ -27,7 +26,6 @@ struct MyInfoModel: Identifiable, Codable {
         self.numBands = numBands
         self.maxChannels = maxChannels
         self.firmwareVersion = firmwareVersion
-        self.rebootCount = rebootCount
         self.messageTimeoutMsec = messageTimeoutMsec
         self.minAppVersion = minAppVersion
     }

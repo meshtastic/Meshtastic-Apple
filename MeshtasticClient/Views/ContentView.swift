@@ -5,7 +5,7 @@ Abstract: Default App View
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: Tab = .nodes
+    @State private var selection: Tab = .ble
 
     enum Tab {
         case messages
@@ -18,12 +18,12 @@ struct ContentView: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            //Channels()
-            //    .tabItem {
-            //        Label("Messages", systemImage: "text.bubble")
-            //            .symbolRenderingMode(.hierarchical)
-           //     }
-            //    .tag(Tab.messages)
+            Channels()
+                .tabItem {
+                    Label("Messages", systemImage: "text.bubble")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .tag(Tab.messages)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")
@@ -41,13 +41,13 @@ struct ContentView: View {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
                         .symbolRenderingMode(.hierarchical)
                 }
-                .tag(Tab.settings)
-            AppSettings()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                        .symbolRenderingMode(.hierarchical)
-                }
-                .tag(Tab.settings)
+                .tag(Tab.ble)
+            //AppSettings()
+            //    .tabItem {
+            //        Label("Settings", systemImage: "gear")
+            //            .symbolRenderingMode(.hierarchical)
+            //    }
+            //    .tag(Tab.settings)
         }
     }
 }
