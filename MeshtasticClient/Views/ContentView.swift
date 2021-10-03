@@ -12,6 +12,7 @@ struct ContentView: View {
         case map
         case ble
         case nodes
+        case settings
     }
 
     var body: some View {
@@ -40,7 +41,13 @@ struct ContentView: View {
                     Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
                         .symbolRenderingMode(.hierarchical)
                 }
-                .tag(Tab.ble)
+                .tag(Tab.settings)
+            AppSettings()
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .tag(Tab.settings)
         }
     }
 }

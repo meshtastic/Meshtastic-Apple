@@ -18,6 +18,9 @@
 		DD47E3DB26F3901B00029299 /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DA26F3901A00029299 /* Channels.swift */; };
 		DD47E3DD26F390A000029299 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DC26F390A000029299 /* Messages.swift */; };
 		DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */; };
+		DD4A911B2708303E00501B7E /* BLEHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911A2708303E00501B7E /* BLEHelper.swift */; };
+		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
+		DD4A91202708C66600501B7E /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911F2708C66600501B7E /* Configuration.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEC26F858F900ABCC23 /* MeshData.swift */; };
 		DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */; };
@@ -75,6 +78,9 @@
 		DD47E3DA26F3901A00029299 /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DD47E3DC26F390A000029299 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoModel.swift; sourceTree = "<group>"; };
+		DD4A911A2708303E00501B7E /* BLEHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEHelper.swift; sourceTree = "<group>"; };
+		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		DD4A911F2708C66600501B7E /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD836AEC26F858F900ABCC23 /* MeshData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshData.swift; sourceTree = "<group>"; };
 		DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
@@ -153,6 +159,15 @@
 				DD836AE626F6B38600ABCC23 /* Connect.swift */,
 			);
 			path = Bluetooth;
+			sourceTree = "<group>";
+		};
+		DD4A911C2708C57100501B7E /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				DD4A911D2708C65400501B7E /* AppSettings.swift */,
+				DD4A911F2708C66600501B7E /* Configuration.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
@@ -245,11 +260,12 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD47E3D726F2F21A00029299 /* Bluetooth */,
 				DD47E3CA26F0E50300029299 /* Nodes */,
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
-				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
+				DD4A911C2708C57100501B7E /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -302,6 +318,7 @@
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DDAF8C6D26ED19040058C060 /* Extensions.swift */,
 				DD47E3D126F1210600029299 /* HelperFunctions.swift */,
+				DD4A911A2708303E00501B7E /* BLEHelper.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -453,9 +470,12 @@
 				DD47E3DB26F3901B00029299 /* Channels.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DD23A51326FEF5D500D9B90C /* MessageData.swift in Sources */,
+				DD4A911B2708303E00501B7E /* BLEHelper.swift in Sources */,
 				DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */,
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
+				DD4A91202708C66600501B7E /* Configuration.swift in Sources */,
+				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,

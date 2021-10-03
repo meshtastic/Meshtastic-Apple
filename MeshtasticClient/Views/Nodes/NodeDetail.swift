@@ -33,7 +33,6 @@ struct NodeDetail: View {
                         },
                         set: { _ in }
                     )
-                    
                     let annotations = [MapLocation(name: node.user.shortName, coordinate: node.position.coordinate!)]
                     
                     Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
@@ -63,7 +62,7 @@ struct NodeDetail: View {
                         }
                         .padding([.leading, .trailing, .bottom])
                         Divider()
-                        if node.snr! > 0 {
+                        if node.snr != nil && node.snr! > 0 {
                             VStack(alignment: .center) {
                                 
                                 Image(systemName: "waveform.path")
@@ -79,7 +78,7 @@ struct NodeDetail: View {
                         }
                         VStack(alignment: .center) {
                             BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
-                            if node.position.batteryLevel! > 0 {
+                            if node.position.batteryLevel != nil && node.position.batteryLevel! > 0 {
                                 Text("Battery").font(.title2).fixedSize()
                                 Text(String(node.position.batteryLevel!) + "%")
                                     .font(.title2)
@@ -112,9 +111,6 @@ struct NodeDetail: View {
                             
                             Image(systemName: "clock").font(.title2).foregroundColor(.blue)
                                 let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                                //Text("Last Heard:").font(.title3)
-                                //Text(lastHeard, style: .relative).font(.title3)
-                                //Text("ago").font(.title3)
                                 Text("Last Heard: \(lastHeard, style: .relative) ago").font(.title3)
                         }.padding()
                         Divider()
