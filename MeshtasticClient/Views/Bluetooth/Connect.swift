@@ -11,6 +11,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import CoreBluetooth
 
 struct Connect: View {
     
@@ -26,28 +27,28 @@ struct Connect: View {
                     
                     List {
                         Section(header: Text("Connected Device").font(.title)) {
-                            if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.state == .connected {
+                            if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
                                 HStack {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.green)
                                         .padding(.trailing)
                                     
-                                    if bleManager.connectedNodeInfo.myInfo != nil {
+                                    if bleManager.connectedPeripheral.myInfo != nil {
                                         VStack  (alignment: .leading)  {
                                             if bleManager.connectedNode != nil {
                                                 
                                                 Text(bleManager.connectedNode.user.longName).font(.title2)
                                             }
                                             else {
-                                                Text(String(bleManager.connectedNodeInfo.myInfo?.myNodeNum ?? 0)).font(.title2)
+                                                Text(String(bleManager.connectedPeripheral.myInfo?.myNodeNum ?? 0)).font(.title2)
                                                 
                                             }
-                                            Text("FW Version: ").font(.caption)+Text(bleManager.connectedNodeInfo.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+                                            Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
                                         }
                                     }
                                     else {
-                                        Text((bleManager.connectedPeripheral.name != nil) ? bleManager.connectedPeripheral.name! : "Unknown").font(.title2)
+                                        Text((bleManager.connectedPeripheral!.peripheral.name != nil) ? bleManager.connectedPeripheral!.peripheral.name! : "Unknown").font(.title2)
                                     }
                                 }
                                 .padding()
@@ -76,7 +77,7 @@ struct Connect: View {
                         }.textCase(nil)
                         
                         Section(header: Text("Available Devices").font(.title)) {
-                            ForEach(bleManager.peripherals.sorted(by: { $0.rssi > $1.rssi })) { peripheral in
+                            ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in
                                 HStack {
                                     Image(systemName: "circle.fill")
                                         .imageScale(.large).foregroundColor(.gray)
