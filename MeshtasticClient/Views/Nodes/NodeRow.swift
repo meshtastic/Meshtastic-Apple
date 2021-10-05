@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NodeRow: View {
     var node: NodeInfoModel
-    var index: Int
+    var connected: Bool
 
     var body: some View {
         VStack (alignment: .leading) {
@@ -18,7 +18,10 @@ struct NodeRow: View {
                 
                 Image(systemName: "timer").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
                 
-                if node.lastHeard > 0 {
+                if connected {
+                    Text("Currently Connected").font(.subheadline).foregroundColor(Color.accentColor)
+                }
+                else if node.lastHeard > 0 {
                     let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
                     Text("Last Heard: \(lastHeard, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
                 }
@@ -35,7 +38,7 @@ struct NodeRow_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            NodeRow(node: nodes[0], index: 0)
+            NodeRow(node: nodes[0], connected: true)
         }
         .previewLayout(.fixed(width: 300, height: 70))
     }

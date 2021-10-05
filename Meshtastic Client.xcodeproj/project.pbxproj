@@ -18,7 +18,6 @@
 		DD47E3DB26F3901B00029299 /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DA26F3901A00029299 /* Channels.swift */; };
 		DD47E3DD26F390A000029299 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DC26F390A000029299 /* Messages.swift */; };
 		DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */; };
-		DD4A911B2708303E00501B7E /* BLEHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911A2708303E00501B7E /* BLEHelper.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD4A91202708C66600501B7E /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911F2708C66600501B7E /* Configuration.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
@@ -78,7 +77,6 @@
 		DD47E3DA26F3901A00029299 /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DD47E3DC26F390A000029299 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoModel.swift; sourceTree = "<group>"; };
-		DD4A911A2708303E00501B7E /* BLEHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEHelper.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD4A911F2708C66600501B7E /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
@@ -113,7 +111,6 @@
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		DDF924C526FA2375009FE055 /* MessageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageModel.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
-		DDF924CB26FCC916009FE055 /* packets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = packets.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -286,7 +283,6 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				DDF924CB26FCC916009FE055 /* packets.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -318,7 +314,6 @@
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DDAF8C6D26ED19040058C060 /* Extensions.swift */,
 				DD47E3D126F1210600029299 /* HelperFunctions.swift */,
-				DD4A911A2708303E00501B7E /* BLEHelper.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -470,7 +465,6 @@
 				DD47E3DB26F3901B00029299 /* Channels.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DD23A51326FEF5D500D9B90C /* MessageData.swift in Sources */,
-				DD4A911B2708303E00501B7E /* BLEHelper.swift in Sources */,
 				DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */,
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
@@ -661,7 +655,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.20;
+				MARKETING_VERSION = 1.21;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
@@ -688,7 +682,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.20;
+				MARKETING_VERSION = 1.21;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;

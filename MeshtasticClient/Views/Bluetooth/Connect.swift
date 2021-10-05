@@ -142,6 +142,9 @@ struct Connect: View {
                 }
             )
         }.navigationViewStyle(StackNavigationViewStyle())
+        .onAppear{
+            bleManager.startScanning()
+        }
     }
 }
 

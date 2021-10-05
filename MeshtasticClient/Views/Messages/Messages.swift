@@ -90,6 +90,13 @@ struct Messages: View {
                         if bleManager.sendMessage(message: typingMessage) {
                             typingMessage = ""
                         }
+                        else {
+                            let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
+                                if bleManager.sendMessage(message: typingMessage) {
+                                    typingMessage = ""
+                                }
+                            }
+                        }
                         
                     } ) {
                         Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)

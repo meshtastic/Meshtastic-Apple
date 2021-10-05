@@ -8,23 +8,16 @@ import SwiftUI
 //---------------------------------------------------------------------------------------
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
-    // Data
     @ObservedObject private var meshData : MeshData
     @ObservedObject private var messageData : MessageData
     
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: Peripheral!
-    //@Published var peripheralArray = [CBPeripheral]()
-    //@Published var connectedNodeInfo: Peripheral!
     @Published var connectedNode: NodeInfoModel!
     @Published var lastConnectedNode: String
-    
-    //private var rssiArray = [NSNumber]()
-    private var broadcastNodeId: UInt32 = 4294967295
-    
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
-    
+    private var broadcastNodeId: UInt32 = 4294967295
     
     /* Meshtastic Service Details */
     var TORADIO_characteristic: CBCharacteristic!
@@ -48,7 +41,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         messageData.load()
     }
 
-    /* Check for Bluetooth Connectivity */
+    // called when bluetooth is enabled/disabled for the app
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
          if central.state == .poweredOn {
              isSwitchedOn = true
@@ -58,42 +51,98 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          }
     }
     
-    /* Scan for nearby BLE devices using the Meshtastic BLE service ID */
+    // Scan for nearby BLE devices using the Meshtastic BLE service ID
     func startScanning() {
         
-        peripherals.removeAll()
-        centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID])
-        print("Scanning Started")
+        if isSwitchedOn {
+            peripherals.removeAll()
+            centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+            print("Scanning Started")
+        }
     }
         
-    /*Stop Scanning For BLE Devices */
+    // Stop Scanning For BLE Devices
     func stopScanning() {
         
-        self.centralManager.stopScan()
-        print("Stopped Scanning")
+        if centralManager.isScanning {
+            
+            self.centralManager.stopScan()
+            print("Stopped Scanning")
+        }
     }
     
-    /* Connect to a Device via UUID */
-    func connectToDevice(id: String) {
-        connectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == id }).first
-        lastConnectedNode = connectedPeripheral.peripheral.identifier.uuidString
-        self.centralManager?.connect(connectedPeripheral!.peripheral)
-    }
-    
-    /*  Disconnect Device function */
+    //  Disconnect Device function
     func disconnectDevice(){
+        
         if connectedPeripheral != nil && connectedPeripheral.peripheral.state == CBPeripheralState.connected {
             
             self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
         }
     }
     
-    /* Send Broadcast Message */
+    // Connect to a Device via UUID
+    func connectToDevice(id: String) {
+        
+        connectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == id }).first
+        
+        if connectedPeripheral != nil {
+            
+            lastConnectedNode = connectedPeripheral.peripheral.identifier.uuidString
+            self.centralManager?.connect(connectedPeripheral!.peripheral)
+            print("Connected to: \(connectedPeripheral.peripheral.name ?? "Unknown")")
+        }
+        else {
+            print("Connection failed connectedPeripheral is nil")
+        }
+    }
+    
+    // Connect to a specific peripheral
+    func connectTo(peripheral: CBPeripheral) {
+        
+        if connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+            disconnectDevice()
+        }
+        connectedPeripheral.peripheral = peripheral
+        self.centralManager?.connect(connectedPeripheral!.peripheral)
+        print("Connected to: \(connectedPeripheral.peripheral.name ?? "Unknown")")
+    }
+    
+    // Called each time a peripheral is discovered
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+            
+        peripheral.delegate = self
+        
+        var peripheralName: String = peripheral.name ?? "Unknown"
+        
+        if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
+            peripheralName = name
+        }
+        
+        let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
+
+        peripherals.append(newPeripheral)
+        print("Adding peripheral: \(peripheralName)");
+    }
+    
+    // called when a peripheral is connected
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        
+        peripheral.delegate = self
+        peripheral.discoverServices([meshtasticServiceCBUUID])
+        print("Peripheral connected: " + peripheral.name!)
+        startScanning()
+    }
+    
+    // Send Broadcast Message
     public func sendMessage(message: String) -> Bool
     {   var success = true
         if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected {
             success = false
-            connectToDevice(id: lastConnectedNode)
+            if lastConnectedNode.count > 10 {
+                connectToDevice(id: lastConnectedNode)
+                //Thread.sleep(forTimeInterval: 3)
+            }
+            
         }
         else {
 
@@ -129,37 +178,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
         return success
     }
-    
-    /* Discover Peripheral Event */
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-            
-        print("Adding peripheral: " + ((peripheral.name != nil) ? peripheral.name! : "(null)"));
-        
-        var peripheralName: String!
-        peripheralName = peripheral.name
-        if peripheral.name == nil {
-            if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-                peripheralName = name
-            }
-            else {
-                peripheralName = "Unknown"
-            }
-        }
 
-        let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
-        //print(newPeripheral)
-        peripherals.append(newPeripheral)
-    }
-    
-    /* Connect Peripheral Event */
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        
-        print("Peripheral connected: " + peripheral.name!)
-        peripheral.delegate = self
-        peripheral.discoverServices(nil)
-    }
-    
-    /* Disconnect Peripheral Event */
+    // Disconnect Peripheral Event
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
         
@@ -178,7 +198,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.startScanning()
     }
     
-    /* Discover Services Event */
+    // Discover Services Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         
         guard let services = peripheral.services else { return }
@@ -190,13 +210,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             if (service.uuid == meshtasticServiceCBUUID)
             {
                 print ("Meshtastic service OK")
-                
-                peripheral.discoverCharacteristics(nil, for: service)
+                peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
             }
         }
     }
     
-    /* Discover Characteristics Event */
+    // Discover Characteristics Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?)
     {
       guard let characteristics = service.characteristics else { return }
@@ -233,35 +252,38 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
       }
     }
     
-    /* Data Read / Update Characteristic Event */
+    // Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
         switch characteristic.uuid
         {
             case FROMNUM_UUID:
                 peripheral.readValue(for: FROMNUM_characteristic)
-                peripheral.setNotifyValue(true, for: characteristic)
-                print(characteristic.value ?? "no value")
+                //let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
+                //let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .ascii)
+                //print(stringFromByteArray)
+                //print(characteristic.value?. ?? "no value")
+    
                 
             case FROMRADIO_UUID:
                 if (characteristic.value == nil || characteristic.value!.isEmpty)
                 {
                     return
                 }
-                print(characteristic.value ?? "no value")
+            print(characteristic.value ?? "no value")
                 
                // print(characteristic.value?.hexDescription ?? "no value")
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-                print("Print DecodedInfo")
-                print(decodedInfo)
+                //print("Print DecodedInfo")
+             //   print(decodedInfo)
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
                     print("Save a myInfo")
                     do {
-                       print(try decodedInfo.myInfo.jsonString())
+                      // print(try decodedInfo.myInfo.jsonString())
                         
                         // Create a MyInfoModel
                         let myInfoModel = MyInfoModel(
@@ -334,7 +356,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         )
                         meshData.save()
                             
-                        print(try decodedInfo.nodeInfo.jsonString())
+                       // print(try decodedInfo.nodeInfo.jsonString())
                     } catch {
                         fatalError("Failed to decode json")
                     }
@@ -342,80 +364,69 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
             if decodedInfo.packet.id  != 0
             {
-                //let byteArray = [UInt8](characteristic.value!)
-                print("Try and decode packet")
-               
-             do {
+                print("Handle a Packet")
+                    do {
 
-                 if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
-                     
-                     if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
-                         print(messageText)
-                         print(try decodedInfo.packet.jsonString())
-                         
-                         let broadcastNodeId: UInt32 = 4294967295
-                         
-                         let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                         
-                         var toUserLongName: String = "Broadcast"
-                         var toUserShortName: String = "BC"
-                         
-                         if decodedInfo.packet.to != broadcastNodeId {
+                         if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
                              
-                             let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                             toUserLongName = toUser?.user.longName ?? "Unknown"
-                             toUserShortName = toUser?.user.shortName ?? "???"
+                             if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                                 print("Message Text: \(messageText)")
+                                 
+                                 let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+                                 
+                                 var toUserLongName: String = "Broadcast"
+                                 var toUserShortName: String = "BC"
+                                 
+                                 if decodedInfo.packet.to != broadcastNodeId {
+                                     
+                                     let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+                                     toUserLongName = toUser?.user.longName ?? "Unknown"
+                                     toUserShortName = toUser?.user.shortName ?? "???"
+                                 }
+                                 
+                                 messageData.messages.append(
+                                     MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
+                                 messageData.save()
+                                 
+                             } else {
+                                 print("not a valid UTF-8 sequence")
+                             }
+                             
                          }
+                         else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+                             
+                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from})
+                             updatedNode!.snr = decodedInfo.packet.rxSnr
+                             updatedNode!.lastHeard = decodedInfo.packet.rxTime
+                            // updatedNode!.user.longName = "Node Info updated longname"
+                            // updatedNode!.update(from: updatedNode!.data)
+                             
+                             let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                             meshData.nodes.remove(at: nodeIndex!)
+                             meshData.nodes.append(updatedNode!)
+                             meshData.save()
+                             print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                         }
+                         else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
                          
-                         messageData.messages.append(
-                             MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
-                         messageData.save()
-                         
-                     } else {
-                         print("not a valid UTF-8 sequence")
-                     }
-                     
-                 }
-                 else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
-                     
-                     var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from})
-                     updatedNode!.snr = decodedInfo.packet.rxSnr
-                     updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                     updatedNode!.update(from: updatedNode!.data)
-                     
-                     if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .ascii) {
-                         print(nodeInfoPayload)
-                     } else {
-                         print("not a valid UTF-8 sequence")
-                         print(try decodedInfo.packet.jsonString())
-                     }
-
-                 }
-                 else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
-                     
-                     //Set time and snr from nodeinfo
-                     if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .unicode) {
-                         print(nodeInfoPayload)
-                     } else {
-                         print("not a valid UTF-8 sequence")
-                         print(try decodedInfo.packet.jsonString())
-                     }
-                 }
-                 else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
-                     
-                     //Set time and snr from nodeinfo
-                     if let nodeInfoPayload = String(bytes: decodedInfo.packet.decoded.payload, encoding: .unicode) {
-                         print(nodeInfoPayload)
-                     } else {
-                         print("not a valid UTF-8 sequence")
-                         print(try decodedInfo.packet.jsonString())
-                     }
-                 }
-                 else
-                 {
-                     print("Save a packet")
-                     print(try decodedInfo.packet.jsonString())
-                 }
+                             print("Postion Payload")
+                             print(try decodedInfo.packet.jsonString())
+                         }
+                         else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
+                             
+                             print("Admin App Packet")
+                             print(try decodedInfo.packet.jsonString())
+                         }
+                         else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
+                             
+                             print("Routing App Packet")
+                             //print(try decodedInfo.packet.jsonString())
+                         }
+                         else
+                         {
+                             print("Other App Packet")
+                             print(try decodedInfo.packet.jsonString())
+                         }
                         
                     } catch {
                         fatalError("Failed to decode json")
@@ -423,15 +434,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 }
                 
                 if decodedInfo.configCompleteID != 0 {
-                    print(decodedInfo)
+                    print("Config Complete: \(decodedInfo)")
 
                 }
                 
             default:
                 print("Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
-        
         peripheral.readValue(for: FROMRADIO_characteristic)
     }
 }
-
