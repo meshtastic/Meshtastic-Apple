@@ -135,18 +135,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     // Send Broadcast Message
     public func sendMessage(message: String) -> Bool
-    {   var success = true
-        if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected {
-            success = false
-            if lastConnectedNode.count > 10 {
-                connectToDevice(id: lastConnectedNode)
-                //Thread.sleep(forTimeInterval: 3)
-            }
+    {
+        
+        var success = true
+        
+        // Return false if we are not properly connected to a device, handle retry logic in the view for now
+        if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected || self.connectedNode == nil {
             
+            
+            if connectedPeripheral != nil && self.connectedNode == nil {
+                self.disconnectDevice()
+                // Lets disconnect and then reconnect a second later
+            }
+            success = false
         }
         else {
 
-            let messageModel = MessageModel(messageId: 0, messageTimeStamp: UInt32(Date().timeIntervalSince1970), fromUserId: self.connectedNode.id, toUserId: broadcastNodeId, fromUserLongName: self.connectedNode.user.longName, toUserLongName: "Broadcast", fromUserShortName: self.connectedNode.user.shortName, toUserShortName: "BC", receivedACK: false, messagePayload: message, direction: "OUT")
+            let messageModel = MessageModel(messageId: 0, messageTimeStamp: UInt32(Date().timeIntervalSince1970), fromUserId: self.connectedNode.num, toUserId: broadcastNodeId, fromUserLongName: self.connectedNode.user.longName, toUserLongName: "Broadcast", fromUserShortName: self.connectedNode.user.shortName, toUserShortName: "BC", receivedACK: false, messagePayload: message, direction: "OUT")
             let dataType = PortNum.textMessageApp
             let payloadData: Data = message.data(using: String.Encoding.utf8)!
         
@@ -182,24 +187,44 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Disconnect Peripheral Event
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
+        // Start a Scan so the disconnected peripheral is moved to the peripherals[]
+        self.startScanning()
         
         if let e = error {
          print("Central disconnected because \(e)")
+            let errorCode = (e as NSError).code
+            
+            if errorCode == 6 { // The connection has timed out unexpectedly.
+                // Happens when device is manually reset
+                
+            }
+            else if errorCode == 7 { // The specified device has disconnected from us.
+             
+                // Check if the peripheral is still visible and then reconnect
+                        
+            }
         //  connectToDevice(id: peripheral.identifier.uuidString)
         } else {
          print("Central disconnected! (no error)")
         }
         
         if(peripheral.identifier == connectedPeripheral.peripheral.identifier){
+           // if
             connectedPeripheral = nil
             connectedNode = nil
         }
         print("Peripheral disconnected: " + peripheral.name!)
-        self.startScanning()
+        
     }
     
     // Discover Services Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        
+        if let e = error {
+         print("Discover Services error \(e)")
+       //let errorCode = (e as NSError).code
+            
+        }
         
         guard let services = peripheral.services else { return }
                 
@@ -218,9 +243,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Discover Characteristics Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?)
     {
-      guard let characteristics = service.characteristics else { return }
+        if let e = error {
+            
+            print("Discover Characteristics error \(e)")
+        }
+        
+        guard let characteristics = service.characteristics else { return }
 
-      for characteristic in characteristics {
+        for characteristic in characteristics {
         
         switch characteristic.uuid
         {
@@ -255,6 +285,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
+        if let e = error {
+            
+            print("didUpdateValueFor Characteristic error \(e)")
+        }
+        
         switch characteristic.uuid
         {
             case FROMNUM_UUID:

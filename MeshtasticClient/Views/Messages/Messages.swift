@@ -91,11 +91,18 @@ struct Messages: View {
                             typingMessage = ""
                         }
                         else {
-                            let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
-                                if bleManager.sendMessage(message: typingMessage) {
-                                    typingMessage = ""
+                            if bleManager.lastConnectedNode.count > 10 {
+                                if bleManager.peripherals.contains(where: { $0.id == bleManager.lastConnectedNode }) {
+                                    bleManager.connectToDevice(id: bleManager.lastConnectedNode)
+                                    let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
+                                    
+                                        if bleManager.sendMessage(message: typingMessage) {
+                                            typingMessage = ""
+                                        }
+                                    }
                                 }
                             }
+                            
                         }
                         
                     } ) {
