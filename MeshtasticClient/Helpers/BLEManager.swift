@@ -177,9 +177,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             }
             else
             {
-                connectToDevice(id: lastConnectedNode)
+                success = false
             }
-            
         }
         return success
     }
@@ -422,6 +421,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                  messageData.messages.append(
                                      MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
                                  messageData.save()
+                                 
+                                 let manager = LocalNotificationManager()
+                            
+                                 manager.notifications = [
+                                    Notification(id: ("notifiction.id.\(decodedInfo.packet.id)"), title: ("\(fromUser?.user.shortName ?? "???") says \(messageText))"))]
+                                 manager.schedule()
+                                 manager.listScheduledNotifications()
                                  
                              } else {
                                  print("not a valid UTF-8 sequence")
