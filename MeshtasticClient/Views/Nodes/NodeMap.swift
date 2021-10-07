@@ -30,7 +30,7 @@ struct NodeMap: View {
     
     var body: some View {
         let location = LocationHelper.currentLocation
-        let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+        let currentCoordinatePosition = CLLocationCoordinate2D(latitude: locationNodes[0].position.latitude ?? location.latitude, longitude: locationNodes[0].position.latitude ?? location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
             get: {
                 MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.0359, longitudeDelta: 0.0359))

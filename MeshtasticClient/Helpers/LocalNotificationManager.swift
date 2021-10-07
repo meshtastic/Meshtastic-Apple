@@ -39,6 +39,7 @@ class LocalNotificationManager {
         {
             let content      = UNMutableNotificationContent()
             content.title    = notification.title
+            content.body     = notification.content
             content.sound    = .default
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -70,4 +71,5 @@ class LocalNotificationManager {
 struct Notification {
     var id: String
     var title: String
+    var content: String
 }

@@ -16,7 +16,7 @@ struct NodeRow: View {
             
             HStack (alignment: .bottom){
                 
-                Image(systemName: "timer").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
+                Image(systemName: "timer.square").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
                 
                 if connected {
                     Text("Currently Connected").font(.subheadline).foregroundColor(Color.accentColor)

@@ -315,9 +315,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
-                    print("Save a myInfo")
+                    print("Save myInfo for \(decodedInfo.myInfo.myNodeNum)")
                     do {
-                      // print(try decodedInfo.myInfo.jsonString())
                         
                         // Create a MyInfoModel
                         let myInfoModel = MyInfoModel(
@@ -425,7 +424,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                  let manager = LocalNotificationManager()
                             
                                  manager.notifications = [
-                                    Notification(id: ("notifiction.id.\(decodedInfo.packet.id)"), title: ("\(fromUser?.user.shortName ?? "???") says \(messageText))"))]
+                                    Notification(
+                                        id: ("notification.id.\(decodedInfo.packet.id)"),
+                                        title: "\(fromUser?.user.longName ?? "???") AKA \(fromUser?.user.shortName ?? "") says ",
+                                        content: messageText)
+                                 ]
                                  manager.schedule()
                                  manager.listScheduledNotifications()
                                  
@@ -436,15 +439,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                          }
                          else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
                              
-                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from})
+                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
                              updatedNode!.snr = decodedInfo.packet.rxSnr
                              updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                            // updatedNode!.user.longName = "Node Info updated longname"
-                            // updatedNode!.update(from: updatedNode!.data)
+                             // updatedNode!.user.longName = "Node Info updated longname"
+                             updatedNode!.update(from: updatedNode!.data)
                              
-                             let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                             meshData.nodes.remove(at: nodeIndex!)
-                             meshData.nodes.append(updatedNode!)
+                             //let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                             //meshData.nodes.remove(at: nodeIndex!)
+                             //meshData.nodes.append(updatedNode!)
                              meshData.save()
                              print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
                          }
