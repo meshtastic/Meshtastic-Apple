@@ -315,7 +315,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
-                    print("Save myInfo for \(decodedInfo.myInfo.myNodeNum)")
+                    
                     do {
                         
                         // Create a MyInfoModel
@@ -332,9 +332,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         // Save it to the connected node
                         connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.id})
                         // Since the data is from the device itself we save all myInfo objects since they are always the most update
-                        if connectedNode != nil {
+                        if connectedNode != nil && connectedNode.myInfo == nil {
                             connectedNode.myInfo = myInfoModel
-                            connectedNode.update(from: connectedNode.data)
+                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+                            meshData.nodes.remove(at: nodeIndex!)
+                            meshData.nodes.append(connectedNode)
+                            meshData.save()
+                            print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")                           // connectedNode.update(from: connectedNode.data)
                         }
                         meshData.save()
                         
@@ -440,19 +444,34 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                          else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
                              
                              var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
-                             updatedNode!.snr = decodedInfo.packet.rxSnr
-                             updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                             // updatedNode!.user.longName = "Node Info updated longname"
-                             updatedNode!.update(from: updatedNode!.data)
                              
-                             //let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                             //meshData.nodes.remove(at: nodeIndex!)
-                             //meshData.nodes.append(updatedNode!)
-                             meshData.save()
-                             print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                             if updatedNode != nil {
+                                 updatedNode!.snr = decodedInfo.packet.rxSnr
+                                 updatedNode!.lastHeard = decodedInfo.packet.rxTime
+                                 //updatedNode!.update(from: updatedNode!.data)
+                                 let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                                 meshData.nodes.remove(at: nodeIndex!)
+                                 meshData.nodes.append(updatedNode!)
+                                 meshData.save()
+                                 //meshData.load()
+                                 print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                             }
                          }
                          else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
                          
+                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+                             
+                             if updatedNode != nil {
+                                 updatedNode!.snr = decodedInfo.packet.rxSnr
+                                 updatedNode!.lastHeard = decodedInfo.packet.rxTime
+                                 //updatedNode!.update(from: updatedNode!.data)
+                                 let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                                 meshData.nodes.remove(at: nodeIndex!)
+                                 meshData.nodes.append(updatedNode!)
+                                 meshData.save()
+                                 
+                                 print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                             }
                              print("Postion Payload")
                              print(try decodedInfo.packet.jsonString())
                          }

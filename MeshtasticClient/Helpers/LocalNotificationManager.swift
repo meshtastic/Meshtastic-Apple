@@ -20,7 +20,6 @@ class LocalNotificationManager {
     func schedule()
     {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
-
             switch settings.authorizationStatus {
             case .notDetermined:
                 self.requestAuthorization()
@@ -37,10 +36,11 @@ class LocalNotificationManager {
     {
         for notification in notifications
         {
-            let content      = UNMutableNotificationContent()
-            content.title    = notification.title
-            content.body     = notification.content
-            content.sound    = .default
+            let content                 = UNMutableNotificationContent()
+            content.title               = notification.title
+            content.body                = notification.content
+            content.sound               = .default
+            content.interruptionLevel   = .timeSensitive
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
             let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
