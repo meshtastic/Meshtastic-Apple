@@ -62,9 +62,7 @@ struct NodeList: View {
                                 meshData.nodes.remove(at: nodeIndex!)
                                 meshData.save()
                             } label: {
-                                VStack {
-                                    Label("Delete from app", systemImage: "trash")
-                                }
+                                Label("Delete from app", systemImage: "trash")
                             }
                             .tint(.red)
                         }

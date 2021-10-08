@@ -10,23 +10,48 @@ struct NodeRow: View {
             HStack() {
                 
                 CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
-                Text(node.user.longName).font(.title2)
+                    .offset(x: -15)
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    Text(node.user.longName).font(.headline)
+                        .offset(x: -15)
+                }
+                else {
+                    Text(node.user.longName).font(.title)
+                        .offset(x: -15)
+                }
             }
-            .padding([.trailing])
+            .padding(.bottom, 10)
             
             HStack (alignment: .bottom){
                 
-                Image(systemName: "timer.square").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
-                
-                if connected {
-                    Text("Currently Connected").font(.subheadline).foregroundColor(Color.accentColor)
-                }
-                else if node.lastHeard > 0 {
-                    let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-                    Text("Last Heard: \(lastHeard, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
-                }
-                else {
-                    Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
+                Image(systemName: "clock.badge.checkmark.fill").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
+
+            
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    
+                    if connected {
+                        Text("Currently Connected").font(.caption).foregroundColor(Color.accentColor)
+                    }
+                    else if node.lastHeard > 0 {
+                        let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
+                        Text("Last Heard: \(lastHeard, style: .relative) ago").font(.caption).foregroundColor(.gray)
+                    }
+                    else {
+                        Text("Last Heard: Unknown").font(.caption).foregroundColor(.gray)
+                    }
+                    
+                } else {
+                    if connected {
+                        Text("Currently Connected").font(.subheadline).foregroundColor(Color.accentColor)
+                    }
+                    else if node.lastHeard > 0 {
+                        let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
+                        Text("Last Heard: \(lastHeard, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
+                    }
+                    else {
+                        Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
+                    }
                 }
             }
         }.padding([.leading, .top, .bottom])

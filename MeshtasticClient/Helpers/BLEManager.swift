@@ -77,6 +77,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if connectedPeripheral != nil && connectedPeripheral.peripheral.state == CBPeripheralState.connected {
             
             self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+        } else {
+            connectedNode = nil
+            connectedPeripheral = nil
         }
     }
     

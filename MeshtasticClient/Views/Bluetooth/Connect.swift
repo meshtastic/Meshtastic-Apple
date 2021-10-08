@@ -56,9 +56,7 @@ struct Connect: View {
                                     Button {
                                         bleManager.disconnectDevice()
                                     } label: {
-                                        VStack {
-                                            Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-                                        }
+                                        Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
                                     }
                                     .tint(.red)
                                 }
