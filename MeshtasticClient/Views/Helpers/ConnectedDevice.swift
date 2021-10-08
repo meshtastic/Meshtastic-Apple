@@ -13,31 +13,29 @@ struct ConnectedDevice: View {
     var body: some View {
         
         HStack {
-            VStack {
-                
-                if bluetoothOn {
-                    if deviceConnected {
-                        Image(systemName: "antenna.radiowaves.left.and.right")
-                            .imageScale(.medium)
-                            .foregroundColor(.green)
-                            .symbolRenderingMode(.hierarchical)
-                        Text(name!).font(.caption2).foregroundColor(.gray)
-                    }
-                    else {
-                
-                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                            .imageScale(.medium)
-                            .foregroundColor(.red)
-                            .symbolRenderingMode(.hierarchical)
-                        Text("Disconnected").font(.caption2).foregroundColor(.gray)
-                        
-                    }
+
+            if bluetoothOn {
+                if deviceConnected {
+                    Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+                        .imageScale(.large)
+                        .foregroundColor(.green)
+                        .symbolRenderingMode(.hierarchical)
+                    Text(name!).font(.subheadline).foregroundColor(.gray)
                 }
                 else {
-                    Text("Bluetooth Off").font(.caption).foregroundColor(.red)
+            
+                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                        .imageScale(.medium)
+                        .foregroundColor(.red)
+                        .symbolRenderingMode(.hierarchical)
+                    Text("Disconnected").font(.subheadline).foregroundColor(.gray)
+                    
                 }
             }
-        }.offset(x: 5, y: -7)
+            else {
+                Text("Bluetooth Off").font(.subheadline).foregroundColor(.red)
+            }
+        }
     }
 }
 

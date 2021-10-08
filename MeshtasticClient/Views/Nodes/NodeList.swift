@@ -58,10 +58,12 @@ struct NodeList: View {
                         }
                         .swipeActions {
                             Button {
+                                
                                 let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == node.id })
                                 meshData.nodes.remove(at: nodeIndex!)
                                 meshData.save()
                             } label: {
+                                
                                 Label("Delete from app", systemImage: "trash")
                             }
                             .tint(.red)
