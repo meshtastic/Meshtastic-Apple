@@ -135,15 +135,16 @@ struct Messages: View {
                               
             ZStack {
 
-            ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
-                
+            ConnectedDevice(
+                bluetoothOn: bleManager.isSwitchedOn,
+                deviceConnected: bleManager.connectedPeripheral != nil,
+                name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown"))
             }
         )
         .onAppear {
             
             messageData.load()
             messageCount = messageData.messages.count
-            
         }
     }
 }

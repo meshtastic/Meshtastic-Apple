@@ -54,6 +54,7 @@ struct Connect: View {
                                 .padding()
                                 .swipeActions {
                                     Button {
+                                        
                                         bleManager.disconnectDevice()
                                     } label: {
                                         Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -82,7 +83,10 @@ struct Connect: View {
                                         .padding(.trailing)
                                     Button(action: {
                                         self.bleManager.stopScanning()
-                                        self.bleManager.disconnectDevice()
+                                        if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
+                                        {
+                                            self.bleManager.disconnectDevice()
+                                        }
                                         self.bleManager.connectToDevice(id: peripheral.id)
                                     }) {
                                         Text(peripheral.name).font(.title3)
@@ -135,7 +139,7 @@ struct Connect: View {
                                   
                VStack(alignment: .trailing) {
 
-                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") ?? "Unknown")
+                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
                 
                 }
             )

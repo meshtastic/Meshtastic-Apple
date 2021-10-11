@@ -11,13 +11,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @ObservedObject private var meshData : MeshData
     @ObservedObject private var messageData : MessageData
     
-    private var centralManager: CBCentralManager!
+    @Published private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: Peripheral!
     @Published var connectedNode: NodeInfoModel!
     @Published var lastConnectedNode: String
+    @Published var lastConnectionError: String
+    
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
-    private var broadcastNodeId: UInt32 = 4294967295
+    @Published private var broadcastNodeId: UInt32 = 4294967295
     
     /* Meshtastic Service Details */
     var TORADIO_characteristic: CBCharacteristic!
@@ -34,6 +36,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.meshData = MeshData()
         self.messageData = MessageData()
         self.lastConnectedNode = ""
+        self.lastConnectionError = ""
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
@@ -103,7 +106,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func connectTo(peripheral: CBPeripheral) {
         
         if connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-            disconnectDevice()
+            self.disconnectDevice()
         }
         connectedPeripheral.peripheral = peripheral
         self.centralManager?.connect(connectedPeripheral!.peripheral)
@@ -139,17 +142,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Send Broadcast Message
     public func sendMessage(message: String) -> Bool
     {
-        
-        var success = true
+        var success = false
         
         // Return false if we are not properly connected to a device, handle retry logic in the view for now
         if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected || self.connectedNode == nil {
             
-            
             if connectedPeripheral != nil && self.connectedNode == nil {
                 self.disconnectDevice()
-                // Lets disconnect and then reconnect a second later
+                // Lets disconnect and then reconnect a second later when the message retry happens
             }
+            success = false
+        }
+        else if message.count < 1 {
+            // Don's send an empty message
             success = false
         }
         else {
@@ -177,10 +182,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
                 messageData.messages.append(messageModel)
                 messageData.save()
-            }
-            else
-            {
-                success = false
+                success = true
             }
         }
         return success
@@ -197,24 +199,33 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             let errorCode = (e as NSError).code
             
             if errorCode == 6 { // The connection has timed out unexpectedly.
-                // Happens when device is manually reset
+                // Happens when device is manually reset / powered off
+                connectedPeripheral = nil
+                connectedNode = nil
                 
             }
             else if errorCode == 7 { // The specified device has disconnected from us.
              
                 // Check if the peripheral is still visible and then reconnect
-                        
+                connectedPeripheral = nil
+                connectedNode = nil
             }
-        //  connectToDevice(id: peripheral.identifier.uuidString)
+            else if errorCode == 14 { // Peer error that may require forgetting device in settings
+                lastConnectionError = (e as NSError).description
+                // Check if the peripheral is still visible and then reconnect
+                connectedPeripheral = nil
+                connectedNode = nil
+            }
+
         } else {
-         print("Central disconnected! (no error)")
-        }
-        
-        if(peripheral.identifier == connectedPeripheral.peripheral.identifier){
-           // if
+            
+            print("Central disconnected! (no error)")
             connectedPeripheral = nil
             connectedNode = nil
         }
+        
+        
+        
         print("Peripheral disconnected: " + peripheral.name!)
         
     }
@@ -314,170 +325,172 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
                 //print("Print DecodedInfo")
-             //   print(decodedInfo)
+                //print(decodedInfo)
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
+
+                    // Create a MyInfoModel
+                    let myInfoModel = MyInfoModel(
+                        myNodeNum: decodedInfo.myInfo.myNodeNum,
+                        hasGps: decodedInfo.myInfo.hasGps_p,
+                        numBands: decodedInfo.myInfo.numBands,
+                        maxChannels: decodedInfo.myInfo.maxChannels,
+                        firmwareVersion: decodedInfo.myInfo.firmwareVersion,
+                        messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
+                        minAppVersion: decodedInfo.myInfo.minAppVersion)
                     
-                    do {
-                        
-                        // Create a MyInfoModel
-                        let myInfoModel = MyInfoModel(
-                            myNodeNum: decodedInfo.myInfo.myNodeNum,
-                            hasGps: decodedInfo.myInfo.hasGps_p,
-                            numBands: decodedInfo.myInfo.numBands,
-                            maxChannels: decodedInfo.myInfo.maxChannels,
-                            firmwareVersion: decodedInfo.myInfo.firmwareVersion,
-                            messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
-                            minAppVersion: decodedInfo.myInfo.minAppVersion)
-                        // Save it to the connected nodeInfo
+                    // Save it to the connected nodeInfo
+                    if connectedPeripheral != nil {
                         connectedPeripheral.myInfo = myInfoModel
                         // Save it to the connected node
                         connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.id})
-                        // Since the data is from the device itself we save all myInfo objects since they are always the most update
-                        if connectedNode != nil && connectedNode.myInfo == nil {
-                            connectedNode.myInfo = myInfoModel
-                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                            meshData.nodes.remove(at: nodeIndex!)
-                            meshData.nodes.append(connectedNode)
-                            meshData.save()
-                            print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")                           // connectedNode.update(from: connectedNode.data)
-                        }
-                        meshData.save()
                         
-                    } catch {
-                        fatalError("Failed to decode json")
                     }
-                }
-                
-                if decodedInfo.nodeInfo.num != 0
-                {
-                    print("Save a nodeInfo")
-                    do {
-  
-                        if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
-                            
-                            // Found a matching node lets update it
-                            let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-                            if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard {
-                                // The data coming from the device is newer
-                                
-                                let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
-                                meshData.nodes.remove(at: nodeIndex!)
-                                meshData.save()
-                            }
-                            else {
-                                
-                                // Data is older than what the app already has
-                                return
-                            }
-                        }
-
-                        meshData.nodes.append(
-                            NodeInfoModel(
-                                num: decodedInfo.nodeInfo.num,
-                                user: NodeInfoModel.User(
-                                    id: decodedInfo.nodeInfo.user.id,
-                                    longName: decodedInfo.nodeInfo.user.longName,
-                                    shortName: decodedInfo.nodeInfo.user.shortName,
-                                    //macaddr: decodedInfo.nodeInfo.user.macaddr,
-                                    hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-                                        .uppercased()),
-                                
-                                position: NodeInfoModel.Position(
-                                    latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-                                    longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-                                    altitude: decodedInfo.nodeInfo.position.altitude,
-                                    batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-                                    time: decodedInfo.nodeInfo.position.time),
-                                
-                                lastHeard: decodedInfo.nodeInfo.lastHeard,
-                                snr: decodedInfo.nodeInfo.snr)
-                        )
+                    // Since the data is from the device itself we save all myInfo objects since they are always the most update
+                    if connectedNode != nil && connectedNode.myInfo == nil {
+                        connectedNode.myInfo = myInfoModel
+                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+                        meshData.nodes.remove(at: nodeIndex!)
+                        meshData.nodes.append(connectedNode)
                         meshData.save()
-                            
-                       // print(try decodedInfo.nodeInfo.jsonString())
-                    } catch {
-                        fatalError("Failed to decode json")
+                        print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")                           // connectedNode.update(from: connectedNode.data)
                     }
+                    meshData.save()
                 }
                 
-            if decodedInfo.packet.id  != 0
-            {
-                print("Handle a Packet")
-                    do {
+                if decodedInfo.nodeInfo.num != 0 {
+                    
+                    print("Save a nodeInfo")
 
-                         if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
-                             
-                             if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
-                                 print("Message Text: \(messageText)")
-                                 
-                                 let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                                 
-                                 var toUserLongName: String = "Broadcast"
-                                 var toUserShortName: String = "BC"
-                                 
-                                 if decodedInfo.packet.to != broadcastNodeId {
-                                     
-                                     let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                                     toUserLongName = toUser?.user.longName ?? "Unknown"
-                                     toUserShortName = toUser?.user.shortName ?? "???"
-                                 }
-                                 
-                                 messageData.messages.append(
-                                     MessageModel(messageId: decodedInfo.packet.id, messageTimeStamp: decodedInfo.packet.rxTime, fromUserId: decodedInfo.packet.from, toUserId: decodedInfo.packet.to, fromUserLongName: fromUser?.user.longName ?? "Unknown", toUserLongName: toUserLongName, fromUserShortName: fromUser?.user.shortName ?? "???", toUserShortName: toUserShortName, receivedACK: decodedInfo.packet.decoded.wantResponse, messagePayload: messageText, direction: "IN"))
-                                 messageData.save()
-                                 
-                                 let manager = LocalNotificationManager()
+                    if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
+                        
+                        // Found a matching node lets update it
+                        let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
+                        if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard {
+                            // The data coming from the device is newer
                             
-                                 manager.notifications = [
-                                    Notification(
-                                        id: ("notification.id.\(decodedInfo.packet.id)"),
-                                        title: "\(fromUser?.user.longName ?? "???") AKA \(fromUser?.user.shortName ?? "") says ",
-                                        content: messageText)
-                                 ]
-                                 manager.schedule()
-                                 manager.listScheduledNotifications()
-                                 
-                             } else {
-                                 print("not a valid UTF-8 sequence")
-                             }
+                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
+                            meshData.nodes.remove(at: nodeIndex!)
+                            meshData.save()
+                        }
+                        else {
+                            
+                            // Data is older than what the app already has
+                            return
+                        }
+                    }
+
+                    meshData.nodes.append(
+                        NodeInfoModel(
+                            num: decodedInfo.nodeInfo.num,
+                            user: NodeInfoModel.User(
+                                id: decodedInfo.nodeInfo.user.id,
+                                longName: decodedInfo.nodeInfo.user.longName,
+                                shortName: decodedInfo.nodeInfo.user.shortName,
+                                //macaddr: decodedInfo.nodeInfo.user.macaddr,
+                                hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+                                    .uppercased()),
+                            
+                            position: NodeInfoModel.Position(
+                                latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+                                longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+                                altitude: decodedInfo.nodeInfo.position.altitude,
+                                batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+                                time: decodedInfo.nodeInfo.position.time),
+                            
+                            lastHeard: decodedInfo.nodeInfo.lastHeard,
+                            snr: decodedInfo.nodeInfo.snr)
+                    )
+                    meshData.save()
+            }
+            // Handle assorted app packets
+            if decodedInfo.packet.id  != 0 {
+                
+                print("Handle a Packet")
+                do {
+                    // Text Message App - Primary Broadcast Channel
+                    if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
                              
-                         }
-                         else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
-                             
-                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
-                             
-                             if updatedNode != nil {
-                                 updatedNode!.snr = decodedInfo.packet.rxSnr
-                                 updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                                 //updatedNode!.update(from: updatedNode!.data)
-                                 let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                                 meshData.nodes.remove(at: nodeIndex!)
-                                 meshData.nodes.append(updatedNode!)
-                                 meshData.save()
-                                 //meshData.load()
-                                 print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
-                             }
-                         }
-                         else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
-                         
-                             var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
-                             
-                             if updatedNode != nil {
-                                 updatedNode!.snr = decodedInfo.packet.rxSnr
-                                 updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                                 //updatedNode!.update(from: updatedNode!.data)
-                                 let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                                 meshData.nodes.remove(at: nodeIndex!)
-                                 meshData.nodes.append(updatedNode!)
-                                 meshData.save()
-                                 
-                                 print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
-                             }
-                             print("Postion Payload")
-                             print(try decodedInfo.packet.jsonString())
-                         }
+                        if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+                            
+                            print("Message Text: \(messageText)")
+
+                            let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+
+                            var toUserLongName: String = "Broadcast"
+                            var toUserShortName: String = "BC"
+
+                            if decodedInfo.packet.to != broadcastNodeId {
+
+                            let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+                            toUserLongName = toUser?.user.longName ?? "Unknown"
+                            toUserShortName = toUser?.user.shortName ?? "???"
+                        }
+                            
+                        // Add the received message to the local messages list / file and save
+                        messageData.messages.append(
+                            MessageModel(
+                                messageId: decodedInfo.packet.id,
+                                messageTimeStamp: decodedInfo.packet.rxTime,
+                                fromUserId: decodedInfo.packet.from,
+                                toUserId: decodedInfo.packet.to,
+                                fromUserLongName: fromUser?.user.longName ?? "Unknown",
+                                toUserLongName: toUserLongName,
+                                fromUserShortName: fromUser?.user.shortName ?? "???",
+                                toUserShortName: toUserShortName,
+                                receivedACK: decodedInfo.packet.decoded.wantResponse,
+                                messagePayload: messageText,
+                                direction: "IN")
+                        )
+                        messageData.save()
+                            
+                        // Create an iOS Notification for the received message and schedule it immediately
+                        let manager = LocalNotificationManager()
+                            
+                        manager.notifications = [
+                            Notification(
+                                id: ("notification.id.\(decodedInfo.packet.id)"),
+                                title: "\(fromUser?.user.longName ?? "Unknown")",
+                                subtitle: "AKA \(fromUser?.user.shortName ?? "???")",
+                                content: messageText)
+                        ]
+                        manager.schedule()
+                    }
+                }
+                else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+
+                    var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+
+                    if updatedNode != nil {
+                        updatedNode!.snr = decodedInfo.packet.rxSnr
+                        updatedNode!.lastHeard = decodedInfo.packet.rxTime
+                        //updatedNode!.update(from: updatedNode!.data)
+                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                        meshData.nodes.remove(at: nodeIndex!)
+                        meshData.nodes.append(updatedNode!)
+                        meshData.save()
+                        print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                    }
+                }
+                else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
+
+                    var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+
+                    if updatedNode != nil {
+                        updatedNode!.snr = decodedInfo.packet.rxSnr
+                        updatedNode!.lastHeard = decodedInfo.packet.rxTime
+                        //updatedNode!.update(from: updatedNode!.data)
+                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+                        meshData.nodes.remove(at: nodeIndex!)
+                        meshData.nodes.append(updatedNode!)
+                        meshData.save()
+
+                        print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
+                    }
+                        print("Postion Payload")
+                        print(try decodedInfo.packet.jsonString())
+                }
                          else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
                              
                              print("Admin App Packet")
