@@ -54,8 +54,11 @@ struct Connect: View {
                                 .padding()
                                 .swipeActions {
                                     Button {
-                                        
-                                        bleManager.disconnectDevice()
+                                        if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
+                                        {
+                                            
+                                            bleManager.disconnectDevice() 
+                                        }
                                     } label: {
                                         Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
                                     }
