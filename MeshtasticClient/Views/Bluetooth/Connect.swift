@@ -51,19 +51,19 @@ struct Connect: View {
                                         Text((bleManager.connectedPeripheral!.peripheral.name != nil) ? bleManager.connectedPeripheral!.peripheral.name! : "Unknown").font(.title2)
                                     }
                                 }
-                                .padding()
                                 .swipeActions {
-                                    Button {
+                                    
+                                    Button(role: .destructive) {
                                         if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
                                         {
                                             
-                                            bleManager.disconnectDevice() 
+                                            bleManager.disconnectDevice()
                                         }
                                     } label: {
-                                        Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+                                        Label("Delete", systemImage: "antenna.radiowaves.left.and.right.slash")
                                     }
-                                    .tint(.red)
                                 }
+                                .padding()
                             }
                             else {
                                 HStack{
@@ -90,7 +90,7 @@ struct Connect: View {
                                         {
                                             self.bleManager.disconnectDevice()
                                         }
-                                        self.bleManager.connectToDevice(id: peripheral.id)
+                                        self.bleManager.connectTo(peripheral: peripheral.peripheral)
                                     }) {
                                         Text(peripheral.name).font(.title3)
                                     }
@@ -140,16 +140,14 @@ struct Connect: View {
             .navigationTitle("Bluetooth Radios")
             .navigationBarItems(trailing:
                                   
-               VStack(alignment: .trailing) {
+               ZStack {
 
-                ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
-                
+                    ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
                 }
             )
-        }.navigationViewStyle(StackNavigationViewStyle())
-        .onAppear{
-            bleManager.startScanning()
         }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear(perform: { bleManager.startScanning() } )
     }
 }
 

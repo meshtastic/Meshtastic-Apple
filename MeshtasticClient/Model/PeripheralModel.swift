@@ -17,3 +17,4 @@ final class Peripheral: Identifiable {
         self.myInfo = myInfo
     }
 }
+
