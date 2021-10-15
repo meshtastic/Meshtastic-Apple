@@ -19,7 +19,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
-    @Published var peripherals2 = [CBPeripheral]()
     
     private var broadcastNodeId: UInt32 = 4294967295
 
@@ -40,9 +39,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.messageData = MessageData()
         self.lastConnectionError = ""
         super.init()
-        let options = [CBCentralManagerOptionRestoreIdentifierKey: "com.meshtastic.ble-central"]
-        centralManager = CBCentralManager(delegate: self, queue: nil, options: options)
-        centralManager.delegate = self
+        centralManager = CBCentralManager(delegate: self, queue: nil)
         meshData.load()
         messageData.load()
     }
@@ -65,7 +62,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if isSwitchedOn {
             
             peripherals.removeAll()
-            peripherals2.removeAll()
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
             print("Scanning Started")
         }
@@ -114,22 +110,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
         
         peripherals.append(newPeripheral)
-        peripherals2.append(peripheral)
         print("Adding peripheral: \(peripheralName)");
     }
     
     // called when a peripheral is connected
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
+        peripheral.delegate = self
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
-        connectedPeripheral.peripheral.discoverServices(nil)//[meshtasticServiceCBUUID])
-        print("Peripheral connected: " + peripheral.name!)
-    }
-    
-    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        print("willRestoreState: \(dict)")
-        let restoredPeripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral]
-        print("restoredPeripherals: \(String(describing: restoredPeripherals))")
+        if connectedPeripheral != nil {
+            connectedPeripheral.peripheral.discoverServices([meshtasticServiceCBUUID])
+            print("Peripheral connected: " + peripheral.name!)
+        }
+        
     }
     
     // Send Broadcast Message
@@ -226,9 +219,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         
         if let e = error {
-         print("Discover Services error \(e)")
-       //let errorCode = (e as NSError).code
             
+            print("Discover Services error \(e)")
         }
         
         guard let services = peripheral.services else { return }
@@ -302,7 +294,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 peripheral.readValue(for: FROMNUM_characteristic)
                 let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
                 let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
-                print("string array data \(stringFromByteArray)")
+                print("string array data \(stringFromByteArray!)")
                 //print(characteristic.value?. ?? "no value")
     
                 
@@ -311,9 +303,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     return
                 }
-            //print(characteristic.value ?? "no value")
-                
-               print(characteristic.value?.hexDescription ?? "no value")
+                //print(characteristic.value ?? "no value")
+                //print(characteristic.value?.hexDescription ?? "no value")
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
