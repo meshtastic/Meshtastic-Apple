@@ -48,7 +48,7 @@ struct NodeList: View {
                             
                             if(bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.myInfo != nil) {
                                 
-                                let connected: Bool = (bleManager.connectedPeripheral.myInfo!.id == node.id)
+                                let connected: Bool = (bleManager.connectedPeripheral.myInfo!.myNodeNum == node.id)
                                 NodeRow(node: node, connected: connected)
                             }
                             else {
