@@ -92,12 +92,10 @@ struct Messages: View {
                         }
                         else {
                             
-                            if bleManager.connectedPeripheral != nil {
-                                let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
-                                
-                                    if bleManager.sendMessage(message: typingMessage) {
-                                        typingMessage = ""
-                                    }
+                            let _ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
+                            
+                                if bleManager.sendMessage(message: typingMessage) {
+                                    typingMessage = ""
                                 }
                             }
                         }

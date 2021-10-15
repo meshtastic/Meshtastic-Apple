@@ -15,6 +15,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     @Published var connectedPeripheral: Peripheral!
     @Published var connectedNode: NodeInfoModel!
+    @Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
     
     @Published var isSwitchedOn = false
@@ -37,6 +38,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         
         self.meshData = MeshData()
         self.messageData = MessageData()
+        self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -92,8 +94,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     //  Disconnect Device function
     func disconnectDevice(){
         
-        if connectedPeripheral != nil && connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-            
+        if connectedPeripheral != nil {
             self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
         }
     }
@@ -118,11 +119,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         peripheral.delegate = self
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
-        if connectedPeripheral != nil {
-            connectedPeripheral.peripheral.discoverServices([meshtasticServiceCBUUID])
-            print("Peripheral connected: " + peripheral.name!)
-        }
-        
+        lastConnectedPeripheral = peripheral.identifier.uuidString
+        peripheral.discoverServices([meshtasticServiceCBUUID])
+        print("Peripheral connected: " + peripheral.name!)
     }
     
     // Send Broadcast Message
@@ -133,6 +132,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         // Return false if we are not properly connected to a device, handle retry logic in the view for now
         if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected || self.connectedNode == nil {
         
+            // Try and connect to the last connected device
+            self.disconnectDevice()
+            let lastConnectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == self.lastConnectedPeripheral }).first
+            if lastConnectedPeripheral != nil && lastConnectedPeripheral?.peripheral != nil {
+                connectTo(peripheral: lastConnectedPeripheral!.peripheral)
+            }
+            success = false
             success = false
         }
         else if message.count < 1 {
@@ -292,9 +298,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         {
             case FROMNUM_UUID:
                 peripheral.readValue(for: FROMNUM_characteristic)
-                let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
-                let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
-                print("string array data \(stringFromByteArray!)")
+                //let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
+                //let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
+                //print("string array data \(stringFromByteArray!)")
                 //print(characteristic.value?. ?? "no value")
     
                 
@@ -316,7 +322,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
                     // Create a MyInfoModel
                     let myInfoModel = MyInfoModel(
-                        id: connectedPeripheral.peripheral.identifier,
                         myNodeNum: decodedInfo.myInfo.myNodeNum,
                         hasGps: decodedInfo.myInfo.hasGps_p,
                         numBands: decodedInfo.myInfo.numBands,
