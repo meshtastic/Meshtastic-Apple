@@ -19,6 +19,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
+    @Published var peripherals2 = [CBPeripheral]()
+    
     private var broadcastNodeId: UInt32 = 4294967295
 
     /* Meshtastic Service Details */
@@ -38,8 +40,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.messageData = MessageData()
         self.lastConnectionError = ""
         super.init()
-        //let options = [CBCentralManagerOptionRestoreIdentifierKey: "com.meshtastic.ble-central"]
-        centralManager = CBCentralManager(delegate: self, queue: nil)//, options: options)
+        let options = [CBCentralManagerOptionRestoreIdentifierKey: "com.meshtastic.ble-central"]
+        centralManager = CBCentralManager(delegate: self, queue: nil, options: options)
         centralManager.delegate = self
         meshData.load()
         messageData.load()
@@ -63,6 +65,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if isSwitchedOn {
             
             peripherals.removeAll()
+            peripherals2.removeAll()
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
             print("Scanning Started")
         }
@@ -73,7 +76,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         
         if centralManager.isScanning {
             
-            
             self.centralManager.stopScan()
             print("Stopped Scanning")
         }
@@ -81,11 +83,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     // Connect to a specific peripheral
     func connectTo(peripheral: CBPeripheral) {
+        
         stopScanning()
         if connectedPeripheral != nil && connectedPeripheral.peripheral.state == CBPeripheralState.connected {
             self.disconnectDevice()
         }
-        //connectedPeripheral.peripheral = peripheral
+
         self.centralManager?.connect(peripheral)
         print("Connected to: \(peripheral.name ?? "Unknown")")
     }
@@ -96,17 +99,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if connectedPeripheral != nil && connectedPeripheral.peripheral.state == CBPeripheralState.connected {
             
             self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-        } else {
-            
-            connectedNode = nil
-            connectedPeripheral = nil
         }
     }
     
     // Called each time a peripheral is discovered
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-            
-        peripheral.delegate = self
         
         var peripheralName: String = peripheral.name ?? "Unknown"
         
@@ -115,19 +112,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
         
         let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
-
+        
         peripherals.append(newPeripheral)
+        peripherals2.append(peripheral)
         print("Adding peripheral: \(peripheralName)");
     }
     
     // called when a peripheral is connected
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        
-        peripheral.delegate = self
+
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
-        
-        peripheral.discoverServices([meshtasticServiceCBUUID])
+        connectedPeripheral.peripheral.discoverServices(nil)//[meshtasticServiceCBUUID])
         print("Peripheral connected: " + peripheral.name!)
+    }
+    
+    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+        print("willRestoreState: \(dict)")
+        let restoredPeripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral]
+        print("restoredPeripherals: \(String(describing: restoredPeripherals))")
     }
     
     // Send Broadcast Message
@@ -238,6 +240,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             if (service.uuid == meshtasticServiceCBUUID)
             {
                 print ("Meshtastic service OK")
+                //peripheral.discoverCharacteristics(nil, for: service)
                 peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
             }
         }
@@ -298,7 +301,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             case FROMNUM_UUID:
                 peripheral.readValue(for: FROMNUM_characteristic)
                 let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
-            let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .ascii)
+                let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
                 print("string array data \(stringFromByteArray)")
                 //print(characteristic.value?. ?? "no value")
     
@@ -308,9 +311,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 {
                     return
                 }
-            print(characteristic.value ?? "no value")
+            //print(characteristic.value ?? "no value")
                 
-               // print(characteristic.value?.hexDescription ?? "no value")
+               print(characteristic.value?.hexDescription ?? "no value")
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
@@ -322,6 +325,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
                     // Create a MyInfoModel
                     let myInfoModel = MyInfoModel(
+                        id: connectedPeripheral.peripheral.identifier,
                         myNodeNum: decodedInfo.myInfo.myNodeNum,
                         hasGps: decodedInfo.myInfo.hasGps_p,
                         numBands: decodedInfo.myInfo.numBands,
@@ -334,7 +338,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     if connectedPeripheral != nil {
                         connectedPeripheral.myInfo = myInfoModel
                         // Save it to the connected node
-                        connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.id})
+                        connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.myNodeNum})
                         
                     }
                     // Since the data is from the device itself we save all myInfo objects since they are always the most up to date
@@ -358,7 +362,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         
                         // Found a matching node lets update it
                         let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-                        if connectedPeripheral != nil && connectedPeripheral.myInfo?.id == nodeMatch?.num {
+                        if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == nodeMatch?.num {
                             connectedNode = nodeMatch
                         }
                         
@@ -376,35 +380,38 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         }
                     }
                     // Set the connected node if the nodeInfo is for the connected node.
-                    if connectedPeripheral != nil && connectedPeripheral.myInfo?.id == decodedInfo.nodeInfo.num {
+                    if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == decodedInfo.nodeInfo.num {
                         
                         let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
                         if nodeMatch != nil {
                             connectedNode = nodeMatch
                         }
                     }
-                    meshData.nodes.append(
-                        NodeInfoModel(
-                            num: decodedInfo.nodeInfo.num,
-                            user: NodeInfoModel.User(
-                                id: decodedInfo.nodeInfo.user.id,
-                                longName: decodedInfo.nodeInfo.user.longName,
-                                shortName: decodedInfo.nodeInfo.user.shortName,
-                                //macaddr: decodedInfo.nodeInfo.user.macaddr,
-                                hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-                                    .uppercased()),
-                            
-                            position: NodeInfoModel.Position(
-                                latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-                                longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-                                altitude: decodedInfo.nodeInfo.position.altitude,
-                                batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-                                time: decodedInfo.nodeInfo.position.time),
-                            
-                            lastHeard: decodedInfo.nodeInfo.lastHeard,
-                            snr: decodedInfo.nodeInfo.snr)
-                    )
-                    meshData.save()
+                    if decodedInfo.nodeInfo.hasUser {
+                    
+                        meshData.nodes.append(
+                            NodeInfoModel(
+                                num: decodedInfo.nodeInfo.num,
+                                user: NodeInfoModel.User(
+                                    id: decodedInfo.nodeInfo.user.id,
+                                    longName: decodedInfo.nodeInfo.user.longName,
+                                    shortName: decodedInfo.nodeInfo.user.shortName,
+                                    //macaddr: decodedInfo.nodeInfo.user.macaddr,
+                                    hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+                                        .uppercased()),
+                                
+                                position: NodeInfoModel.Position(
+                                    latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+                                    longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+                                    altitude: decodedInfo.nodeInfo.position.altitude,
+                                    batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+                                    time: decodedInfo.nodeInfo.position.time),
+                                
+                                lastHeard: decodedInfo.nodeInfo.lastHeard,
+                                snr: decodedInfo.nodeInfo.snr)
+                        )
+                        meshData.save()
+                    }
             }
             // Handle assorted app packets
             if decodedInfo.packet.id  != 0 {

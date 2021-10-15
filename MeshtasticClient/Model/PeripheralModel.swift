@@ -1,7 +1,7 @@
 import Foundation
 import CoreBluetooth
 
-final class Peripheral: Identifiable {
+struct Peripheral: Identifiable {
     var id: String
     var name: String
     var rssi: Int
