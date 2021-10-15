@@ -19,15 +19,14 @@ struct Channels: View {
                         HStack {
                             
                             Image(systemName: "dial.max.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 70, height: 70)
-                                .foregroundColor(Color.blue)
+                                .font(.system(size: 62))
                                 .symbolRenderingMode(.hierarchical)
                                 .padding(.trailing)
+                                .foregroundColor(Color.blue)
                             
                             Text("Primary")
                                 .font(.largeTitle)
+                            
                         }.padding()
                     }
                 }

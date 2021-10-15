@@ -75,6 +75,24 @@ struct Messages: View {
                                 }
                             })
                             .keyboardType(.default)
+                            .toolbar
+                            {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    
+                                    Button("Dismiss Keyboard") {
+                                        focusedField = nil
+                                    }
+                                    .font(.subheadline)
+                                    
+                                    Spacer()
+                                    
+                                    ProgressView("Bytes: \(totalBytes) / 200", value: Double(totalBytes), total: 200)
+                                        .frame(width: 130)
+                                        .padding(5)
+                                        .font(.subheadline)
+                                        .accentColor(Color.blue)
+                                }
+                            }
                             .padding(.horizontal, 8)
                             .focused($focusedField, equals: .messageText)
                             .multilineTextAlignment(.leading)
@@ -106,22 +124,6 @@ struct Messages: View {
                     
                 }
                 .padding(.all, 15)
-                HStack (alignment: .top ) {
-                    
-                    if focusedField != nil {
-                        Button("Dismiss Keyboard") {
-                            focusedField = nil
-                        }
-                        .font(.subheadline)
-                        Spacer()
-                        ProgressView("Bytes: \(totalBytes) / 200", value: Double(totalBytes), total: 200)
-                            .frame(width: 130)
-                            .padding(.bottom, 7)
-                            .font(.subheadline)
-                            .accentColor(Color.blue)
-                    }
-                }
-                .padding(.horizontal)
             }
         }
         .navigationTitle("Channel - Primary")

@@ -28,16 +28,19 @@ struct NodeList: View {
             List {
 
                 if meshData.nodes.count == 0 {
-                    Text("Scan for Radios").font(.largeTitle).listRowSeparator(.hidden)
-                    Text("No LoRa Mesh Nodes Found").font(.title2).listRowSeparator(.hidden)
+                    Text("Scan for Radios").font(.largeTitle)
+                        //.listRowSeparator(.hidden)
+                    Text("No LoRa Mesh Nodes Found").font(.title2)
+                        //.listRowSeparator(.hidden)
                     Text("Go to the bluetooth section in the bottom right menu and click the Start Scanning button to scan for nearby radios and find your Meshtastic device. Make sure your device is powered on and near your phone or tablet.")
                         .font(.body)
-                        .listRowSeparator(.hidden)
+                        //.listRowSeparator(.hidden)
                     Text("Once the device shows under Available Devices touch the device you want to connect to and it will pull node information over BLE and populate the node list and mesh map in the Meshtastic app.")
-                        .listRowSeparator(.hidden)
+                        //.listRowSeparator(.hidden)
                     Text("Views with bluetooth functionality will show an indicator in the upper right hand corner show if bluetooth is on, and if a device is connected.")
-                        .listRowSeparator(.hidden)
-                    Spacer().listRowSeparator(.hidden)
+                        //.listRowSeparator(.hidden)
+                    Spacer()
+                        //.listRowSeparator(.hidden)
                 }
                 else {
                     Toggle(isOn: $showLocationOnly) {
