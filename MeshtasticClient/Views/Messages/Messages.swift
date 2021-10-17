@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import Foundation
 import CoreLocation
 
 struct Messages: View {
@@ -8,8 +9,11 @@ struct Messages: View {
         case messageText
     }
     
+	@ObservedObject var userSettings = UserSettings()
+
+	
     // Keyboard State
-    @State var typingMessage: String = ""
+	@State var typingMessage: String = ""
     @State private var totalBytes = 0
     @State private var lastTypingMessage = ""
     @FocusState private var focusedField: Field?
@@ -43,7 +47,6 @@ struct Messages: View {
                             MessageBubble(contentMessage: message.messagePayload, isCurrentUser: currentUser, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName)
                         }
                         .onAppear(perform: { scrollView.scrollTo(bottomId) } )
-                        
                         Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
                     }
                     .onReceive(timer) { input in
@@ -59,8 +62,9 @@ struct Messages: View {
                 HStack (alignment: .top) {
                     
                     ZStack {
-                
-                        TextEditor(text: $typingMessage)
+						//let kbType = Enum.Parse(typeof(KeyboardType), userSettings.keyboardType, true);
+						let kbType = UIKeyboardType(rawValue: userSettings.keyboardType)
+						TextEditor(text: $typingMessage)
                             .onChange(of: typingMessage, perform: { value in
 
                                 let size = value.utf8.count
@@ -74,7 +78,7 @@ struct Messages: View {
                                     self.typingMessage = lastTypingMessage
                                 }
                             })
-                            .keyboardType(.default)
+							.keyboardType(kbType!)
                             .toolbar
                             {
                                 ToolbarItemGroup(placement: .keyboard) {

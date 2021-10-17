@@ -21,33 +21,38 @@ struct ContentView: View {
             Channels()
                 .tabItem {
                     Label("Messages", systemImage: "text.bubble")
+						.symbolRenderingMode(.hierarchical)
                         .symbolVariant(.none)
                 }
                 .tag(Tab.messages)
+			Connect()
+				.tabItem {
+					Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
+						.symbolRenderingMode(.hierarchical)
+						.symbolVariant(.none)
+				}
+				.tag(Tab.ble)
             NodeList()
                 .tabItem {
                     Label("Nodes", systemImage: "flipphone")
+						.symbolRenderingMode(.hierarchical)
                         .symbolVariant(.none)
                 }
                 .tag(Tab.nodes)
             NodeMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")
+						.symbolRenderingMode(.hierarchical)
                         .symbolVariant(.none)
                 }
                 .tag(Tab.map)
-            Connect()
+            AppSettings()
                 .tabItem {
-                    Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
-                        .symbolVariant(.none)
+                    Label("Settings", systemImage: "gear")
+                        .symbolRenderingMode(.hierarchical)
+						.symbolVariant(.none)
                 }
-                .tag(Tab.ble)
-            //AppSettings()
-            //    .tabItem {
-            //        Label("Settings", systemImage: "gear")
-            //            .symbolRenderingMode(.hierarchical)
-            //    }
-            //    .tag(Tab.settings)
+                .tag(Tab.settings)
         }
     }
 }

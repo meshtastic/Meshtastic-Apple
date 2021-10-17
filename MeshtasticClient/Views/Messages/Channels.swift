@@ -3,6 +3,7 @@ import SwiftUI
 import CoreBluetooth
 
 struct Channels: View {
+	
     // Message Data and Bluetooth
     @EnvironmentObject var messageData: MessageData
     @EnvironmentObject var bleManager: BLEManager
@@ -33,11 +34,12 @@ struct Channels: View {
             }
             .navigationTitle("Channels")
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+		.navigationViewStyle(DoubleColumnNavigationViewStyle())
     }
 }
 
 struct MessageList_Previews: PreviewProvider {
+	
     static let meshData = MeshData()
 
     static var previews: some View {

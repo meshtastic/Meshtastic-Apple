@@ -77,6 +77,7 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
         }
         .ignoresSafeArea(.all, edges: [.leading, .trailing])
+		.navigationViewStyle(DoubleColumnNavigationViewStyle())
         .onAppear{
             meshData.load()
         }

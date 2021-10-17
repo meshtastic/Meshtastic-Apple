@@ -29,6 +29,15 @@ class MeshData: ObservableObject {
                 return
             }
             guard let nodeList = try? JSONDecoder().decode([NodeInfoModel].self, from: data) else {
+				do {
+					// If the file is borked delete it so we stop crashing
+					try FileManager.default.removeItem(at: Self.fileURL)
+				}
+				catch {
+					
+					fatalError("Can't delete saved node data.")
+				}
+				
                 fatalError("Can't decode saved node data.")
             }
             DispatchQueue.main.async {
