@@ -19,6 +19,8 @@ struct Messages: View {
     @FocusState private var focusedField: Field?
     @Namespace var topId
     @Namespace var bottomId
+	@State var showDeleteMessageAlert = false
+	@State private var deleteMessageId : UInt32 = 0
     
     // Message Data and Bluetooth
     @EnvironmentObject var messageData: MessageData
@@ -44,7 +46,61 @@ struct Messages: View {
                             
                             let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
                             
-                            MessageBubble(contentMessage: message.messagePayload, isCurrentUser: currentUser, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName)
+							//MessageBubble(contentMessage: message.messagePayload, isCurrentUser: currentUser, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName, id: message.messageId)
+							
+							HStack (alignment: .top) {
+								
+								CircleText(text: message.fromUserShortName, color: currentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)
+									.gesture(LongPressGesture(minimumDuration: 2)
+												.onEnded {_ in
+										print("I want to delete message: \(message.messageId)")
+										self.showDeleteMessageAlert = true
+										self.deleteMessageId = message.messageId
+										
+									})
+								
+								
+								VStack (alignment: .leading) {
+									Text(message.messagePayload)
+									.textSelection(.enabled)
+									.padding(10)
+									.foregroundColor(.white)
+									.background(currentUser ? Color.blue : Color(.darkGray))
+									.cornerRadius(10)
+									HStack (spacing: 4) {
+										
+								        let time = Int32(message.messageTimestamp)
+										let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+
+										if time != 0 {
+											Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+											Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+										}
+										else {
+											Text("Unknown").font(.caption2).foregroundColor(.gray)
+										}
+									}
+									.padding(.bottom, 10)
+								}
+								Spacer()
+							}
+							.alert(isPresented: $showDeleteMessageAlert) {
+								Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
+									primaryButton: .destructive (Text("Delete")) {
+									print("OK button tapped")
+									if deleteMessageId > 0 {
+										
+										let messageIndex = messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
+										messageData.messages.remove(at: messageIndex!)
+										messageData.save()
+										print("Deleted message: \(message.messageId)")
+										showDeleteMessageAlert = false
+										deleteMessageId = 0
+									}
+								},
+								secondaryButton: .cancel()
+								)
+							}
                         }
                         .onAppear(perform: { scrollView.scrollTo(bottomId) } )
                         Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)

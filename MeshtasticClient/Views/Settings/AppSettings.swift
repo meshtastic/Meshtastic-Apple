@@ -18,7 +18,7 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 				case .defaultKeyboard:
 					return "Default"
 				case .asciiCapable:
-					return "ascii Capable"
+					return "ASCII Capable"
 				case .twitter:
 					return "Twitter"
 				case .emailAddress:
@@ -36,6 +36,16 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(username, forKey: "username")
 		}
 	}
+	@Published var preferredPeripheralName: String {
+		didSet {
+			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
+		}
+	}
+	@Published var preferredPeripheralId: String {
+		didSet {
+			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
+		}
+	}
 	@Published var provideLocation: Bool {
 		didSet {
 			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
@@ -49,6 +59,8 @@ class UserSettings: ObservableObject {
 	
 	init() {
 		self.username = UserDefaults.standard.object(forKey: "username") as? String ?? ""
+		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
+		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 	}
@@ -75,6 +87,11 @@ struct AppSettings: View {
 							
 							Text("Provide location to mesh")
 						}
+					}
+					Section(header: Text("PREFERRED PERIPHERAL")) {
+						Text("The preferred peripheral will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary messaging device for the app.").font(.caption).foregroundColor(.gray)
+						Text(userSettings.preferredPeripheralName)
+					
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
 					
