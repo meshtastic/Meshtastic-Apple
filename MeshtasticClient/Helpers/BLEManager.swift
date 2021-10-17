@@ -107,11 +107,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
             peripheralName = name
         }
-        
-        let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
-        
-        peripherals.append(newPeripheral)
-        print("Adding peripheral: \(peripheralName)");
+			
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
+		peripherals.append(newPeripheral)
+		print("Adding peripheral: \(peripheralName)");
     }
     
     // called when a peripheral is connected

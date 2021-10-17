@@ -18,9 +18,13 @@ struct Connect: View {
     @EnvironmentObject var meshData: MeshData
     
     @EnvironmentObject var bleManager: BLEManager
-        
+	@ObservedObject var userSettings = UserSettings()
+	@State var isPreferredRadio: Bool = false
+	
+      
     var body: some View {
-        NavigationView {
+		
+		NavigationView {
             
             VStack {
                 if bleManager.isSwitchedOn {
@@ -46,24 +50,51 @@ struct Connect: View {
                                             }
                                             Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
                                         }
+										Spacer()
+										VStack  (alignment: .center)  {
+											Text("Preferred").font(.caption2)
+											Text("Radio").font(.caption2)
+											Toggle("Preferred Radio", isOn: $isPreferredRadio)
+												.toggleStyle(SwitchToggleStyle(tint: .green))
+												.labelsHidden()
+												.onChange(of: isPreferredRadio) { value in
+													if value {
+														if bleManager.connectedNode != nil {
+															userSettings.preferredPeripheralName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
+														}
+														else {
+															
+															userSettings.preferredPeripheralName = bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device"
+														}
+														
+														userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+															
+													} else {
+														
+														userSettings.preferredPeripheralId = ""
+														userSettings.preferredPeripheralName = ""
+													}
+												}
+										}
                                     }
                                     else {
                                         Text((bleManager.connectedPeripheral!.peripheral.name != nil) ? bleManager.connectedPeripheral!.peripheral.name! : "Unknown").font(.title2)
                                     }
                                 }
-                                .swipeActions {
-                                    
-                                    Button(role: .destructive) {
-                                        if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
-                                        {
-                                            
-                                            bleManager.disconnectDevice()
-                                        }
-                                    } label: {
-                                        Label("Delete", systemImage: "antenna.radiowaves.left.and.right.slash")
-                                    }
-                                }
-                                .padding()
+								.padding([.top, .bottom])
+								.swipeActions {
+									
+									Button(role: .destructive) {
+										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
+										{
+											
+											bleManager.disconnectDevice()
+										}
+									} label: {
+										Label("Delete", systemImage: "antenna.radiowaves.left.and.right.slash")
+									}
+								}
+                                //.padding()
                             }
                             else {
                                 HStack{
@@ -91,6 +122,10 @@ struct Connect: View {
                                             self.bleManager.disconnectDevice()
                                         }
                                         self.bleManager.connectTo(peripheral: peripheral.peripheral)
+										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+											
+											isPreferredRadio = true
+										}
                                     }) {
                                         Text(peripheral.name).font(.title3)
                                     }
@@ -147,7 +182,15 @@ struct Connect: View {
             )
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear(perform: { bleManager.startScanning() } )
+        .onAppear(perform: {
+			
+			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
+				isPreferredRadio = true
+			}
+			else {
+				bleManager.startScanning()
+			}
+		} )
     }
 }
 

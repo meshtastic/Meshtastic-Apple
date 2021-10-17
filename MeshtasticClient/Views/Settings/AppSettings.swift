@@ -68,15 +68,19 @@ class UserSettings: ObservableObject {
 
 struct AppSettings: View {
 	
+	@State private var preferredDeviceConnected = false
+	@EnvironmentObject var bleManager: BLEManager
 	@ObservedObject var userSettings = UserSettings()
 	
     var body: some View {
+
         NavigationView {
             
             GeometryReader { bounds in
                 
 				Form {
 					Section(header: Text("USER DETAILS")) {
+						
 						HStack{
 							
 							Text("User Name")
@@ -87,10 +91,12 @@ struct AppSettings: View {
 							
 							Text("Provide location to mesh")
 						}
-					}
-					Section(header: Text("PREFERRED PERIPHERAL")) {
-						Text("The preferred peripheral will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary messaging device for the app.").font(.caption).foregroundColor(.gray)
+						.listRowSeparator(.visible)
+						Text("Preferred Radio")
+							.listRowSeparator(.hidden)
 						Text(userSettings.preferredPeripheralName)
+								.foregroundColor(.gray)
+						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary radio used for messaging.").font(.caption2).foregroundColor(.gray)
 					
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
