@@ -345,13 +345,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     if connectedNode != nil {
                         connectedNode.myInfo = myInfoModel
                         connectedNode.update(from: connectedNode.data)
-                       // let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                       // meshData.nodes.remove(at: nodeIndex!)
-                       // meshData.nodes.append(connectedNode)
-                        meshData.save()
-                        print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")                           // connectedNode.update(from: connectedNode.data)
+                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+                        meshData.nodes.remove(at: nodeIndex!)
+                        meshData.nodes.append(connectedNode)
+						meshData.save()
+                        print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
                     }
-                    meshData.save()
+                    
                 }
                 
                 if decodedInfo.nodeInfo.num != 0 {
