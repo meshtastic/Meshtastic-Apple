@@ -50,7 +50,7 @@ struct Messages: View {
 							
 							HStack (alignment: .top) {
 								
-								CircleText(text: message.fromUserShortName, color: currentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)
+								CircleText(text: message.fromUserShortName, color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 									.gesture(LongPressGesture(minimumDuration: 2)
 												.onEnded {_ in
 										print("I want to delete message: \(message.messageId)")
@@ -150,7 +150,7 @@ struct Messages: View {
                                         .frame(width: 130)
                                         .padding(5)
                                         .font(.subheadline)
-                                        .accentColor(Color.blue)
+										.accentColor(.accentColor)
                                 }
                             }
                             .padding(.horizontal, 8)

@@ -9,7 +9,7 @@ struct NodeRow: View {
             
             HStack() {
                 
-                CircleText(text: node.user.shortName, color: Color.blue).offset(y: 1).padding(.trailing, 5)
+				CircleText(text: node.user.shortName, color: Color.accentColor).offset(y: 1).padding(.trailing, 5)
                     .offset(x: -15)
                 
                 if UIDevice.current.userInterfaceIdiom == .pad {
@@ -25,7 +25,7 @@ struct NodeRow: View {
             
             HStack (alignment: .bottom){
                 
-                Image(systemName: "clock.badge.checkmark.fill").font(.headline).foregroundColor(.blue).symbolRenderingMode(.hierarchical)
+				Image(systemName: "clock.badge.checkmark.fill").font(.headline).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 
             
                 if UIDevice.current.userInterfaceIdiom == .pad {

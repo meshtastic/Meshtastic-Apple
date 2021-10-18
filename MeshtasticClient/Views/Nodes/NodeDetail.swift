@@ -39,7 +39,7 @@ struct NodeDetail: View {
                         MapAnnotation(
                            coordinate: location.coordinate,
                            content: {
-                            CircleText(text: node.user.shortName, color: Color.blue)
+							   CircleText(text: node.user.shortName, color: .accentColor)
                            }
                         )
                     }.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)  
@@ -57,7 +57,7 @@ struct NodeDetail: View {
                         
                         VStack(alignment: .center) {
                             Text("AKA").font(.title2).fixedSize()
-                            CircleText(text: node.user.shortName, color: Color.blue)
+							CircleText(text: node.user.shortName, color: .accentColor)
                                 .offset(y:10)
                         }
                         .padding([.leading, .trailing, .bottom])
@@ -67,7 +67,7 @@ struct NodeDetail: View {
                                 
                                 Image(systemName: "waveform.path")
                                     .font(.title)
-                                    .foregroundColor(.blue)
+									.foregroundColor(.accentColor)
                                     .symbolRenderingMode(.hierarchical)
                                 Text("SNR").font(.title2).fixedSize()
                                 Text(String(node.snr ?? 0))
@@ -77,7 +77,7 @@ struct NodeDetail: View {
                             Divider()
                         }
                         VStack(alignment: .center) {
-                            BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: Color.blue)
+							BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: .accentColor)
                             if node.position.batteryLevel != nil && node.position.batteryLevel! > 0 {
                                 Text("Battery").font(.title2).fixedSize()
                                 Text(String(node.position.batteryLevel!) + "%")
@@ -109,7 +109,7 @@ struct NodeDetail: View {
                         
                         HStack{
                             
-                            Image(systemName: "clock").font(.title2).foregroundColor(.blue)
+							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
                                 let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
                                 Text("Last Heard: \(lastHeard, style: .relative) ago").font(.title3)
                         }.padding()
@@ -118,7 +118,7 @@ struct NodeDetail: View {
                     
                     if node.position.coordinate != nil {
                         HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
-                            Image(systemName: "mappin").font(.title).foregroundColor(.blue)
+							Image(systemName: "mappin").font(.title).foregroundColor(.accentColor)
                             VStack(alignment: .leading) {
                                 Text("Latitude").font(.headline)
                                 Text(String(node.position.latitude ?? 0)).font(.caption).foregroundColor(.gray)
@@ -139,7 +139,7 @@ struct NodeDetail: View {
                     HStack (alignment: .center) {
                         VStack {
                             HStack{
-                                Image(systemName: "person").font(.title3).foregroundColor(.blue)
+                                Image(systemName: "person").font(.title3).foregroundColor(.accentColor)
                                 Text("Unique Id:").font(.title3)
                             }
                             Text(node.user.id).font(.headline).foregroundColor(.gray)
@@ -147,7 +147,7 @@ struct NodeDetail: View {
                         Divider()
                         VStack {
                             HStack {
-                                Image(systemName: "number").font(.title3).foregroundColor(.blue)
+								Image(systemName: "number").font(.title3).foregroundColor(.accentColor)
                                 Text("Node Number:").font(.title3)
                             }
                             Text(String(node.num)).font(.headline).foregroundColor(.gray)

@@ -118,6 +118,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         peripheral.delegate = self
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
+		let deviceName = peripheral.name ?? ""
+		
+		let peripheralLast4: String = String(deviceName.suffix(4))
+		
+		connectedNode = meshData.nodes.first(where: { $0.user.id.contains(peripheralLast4) })
         lastConnectedPeripheral = peripheral.identifier.uuidString
         peripheral.discoverServices([meshtasticServiceCBUUID])
         print("Peripheral connected: " + peripheral.name!)
@@ -339,10 +344,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     // Since the data is from the device itself we save all myInfo objects since they are always the most up to date
                     if connectedNode != nil {
                         connectedNode.myInfo = myInfoModel
-                        //connectedNode.update(from: connectedNode.data)
-                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                        meshData.nodes.remove(at: nodeIndex!)
-                        meshData.nodes.append(connectedNode)
+                        connectedNode.update(from: connectedNode.data)
+                       // let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+                       // meshData.nodes.remove(at: nodeIndex!)
+                       // meshData.nodes.append(connectedNode)
                         meshData.save()
                         print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")                           // connectedNode.update(from: connectedNode.data)
                     }

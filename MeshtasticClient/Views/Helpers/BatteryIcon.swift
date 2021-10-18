@@ -54,15 +54,15 @@ struct BatteryIcon: View {
 
 struct BatteryIcon_Previews: PreviewProvider {
     static var previews: some View {
-        BatteryIcon(batteryLevel: 100, font: .title2, color: Color.blue)
+		BatteryIcon(batteryLevel: 100, font: .title2, color: Color.accentColor)
             .previewLayout(.fixed(width: 75, height: 75))
-        BatteryIcon(batteryLevel: 99, font: .title2, color: Color.blue)
+        BatteryIcon(batteryLevel: 99, font: .title2, color: Color.accentColor)
             .previewLayout(.fixed(width: 75, height: 75))
-        BatteryIcon(batteryLevel: 74, font: .title2, color: Color.blue)
+        BatteryIcon(batteryLevel: 74, font: .title2, color: Color.accentColor)
             .previewLayout(.fixed(width: 75, height: 75))
-        BatteryIcon(batteryLevel: 49, font: .title2, color: Color.blue)
+        BatteryIcon(batteryLevel: 49, font: .title2, color: Color.accentColor)
             .previewLayout(.fixed(width: 75, height: 75))
-        BatteryIcon(batteryLevel: 14, font: .title2, color: Color.blue)
+        BatteryIcon(batteryLevel: 14, font: .title2, color: Color.accentColor)
             .previewLayout(.fixed(width: 75, height: 75))
     }
 }

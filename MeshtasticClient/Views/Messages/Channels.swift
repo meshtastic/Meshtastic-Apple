@@ -23,7 +23,7 @@ struct Channels: View {
                                 .font(.system(size: 62))
                                 .symbolRenderingMode(.hierarchical)
                                 .padding(.trailing)
-                                .foregroundColor(Color.blue)
+								.foregroundColor(.accentColor)
                             
                             Text("Primary")
                                 .font(.largeTitle)

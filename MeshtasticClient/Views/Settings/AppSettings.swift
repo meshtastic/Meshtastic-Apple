@@ -78,29 +78,36 @@ struct AppSettings: View {
             
             GeometryReader { bounds in
                 
-				Form {
+				List {
 					Section(header: Text("USER DETAILS")) {
 						
-						HStack{
+						HStack {
 							
-							Text("User Name")
+							Label("Name", systemImage: "person.crop.rectangle.fill")
 							TextField("Username", text: $userSettings.username)
 								.foregroundColor(.gray)
 						}
+						.listRowSeparator(.visible)
 						Toggle(isOn: $userSettings.provideLocation) {
 							
-							Text("Provide location to mesh")
+							Label("Provide location to mesh", systemImage: "location.circle.fill")
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
-						Text("Preferred Radio")
+						Label("Preferred Radio", systemImage: "flipphone")
 							.listRowSeparator(.hidden)
 						Text(userSettings.preferredPeripheralName)
 								.foregroundColor(.gray)
-						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary radio used for messaging.").font(.caption2).foregroundColor(.gray)
+						Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
+							.font(.caption)
+							.listRowSeparator(.hidden)
+						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary radio used for messaging.")
+							.font(.caption2)
+							.foregroundColor(.gray)
 					
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
-					
+
 						Picker("Keyboard Type", selection: $userSettings.keyboardType) {
 							ForEach(KeyboardType.allCases) { kb in
 								Text(kb.description)

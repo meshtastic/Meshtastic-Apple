@@ -55,7 +55,7 @@ struct Connect: View {
 											Text("Preferred").font(.caption2)
 											Text("Radio").font(.caption2)
 											Toggle("Preferred Radio", isOn: $isPreferredRadio)
-												.toggleStyle(SwitchToggleStyle(tint: .green))
+												.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 												.labelsHidden()
 												.onChange(of: isPreferredRadio) { value in
 													if value {
@@ -91,7 +91,7 @@ struct Connect: View {
 											bleManager.disconnectDevice()
 										}
 									} label: {
-										Label("Delete", systemImage: "antenna.radiowaves.left.and.right.slash")
+										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
 								}
                                 //.padding()

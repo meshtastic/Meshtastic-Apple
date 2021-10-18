@@ -22,7 +22,7 @@ struct CircleText: View {
 
 struct CircleText_Previews: PreviewProvider {
     static var previews: some View {
-        CircleText(text: "RDN", color: Color.blue)
+		CircleText(text: "RDN", color: Color.accentColor)
             .previewLayout(.fixed(width: 300, height: 100))
     }
 }
