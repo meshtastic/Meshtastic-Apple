@@ -89,12 +89,12 @@ struct Connect: View {
 										{
 											
 											bleManager.disconnectDevice()
+											isPreferredRadio = false
 										}
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
 								}
-                                //.padding()
                             }
                             else {
                                 HStack{
@@ -125,6 +125,10 @@ struct Connect: View {
 										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
 											
 											isPreferredRadio = true
+										}
+										else {
+											
+											isPreferredRadio = false
 										}
                                     }) {
                                         Text(peripheral.name).font(.title3)
@@ -188,6 +192,7 @@ struct Connect: View {
 				isPreferredRadio = true
 			}
 			else {
+				isPreferredRadio = false
 				bleManager.startScanning()
 			}
 		} )
