@@ -93,8 +93,8 @@ extension NodeInfoModel {
     static var data: [NodeInfoModel] {
         [
 
-            NodeInfoModel(num: 2792101487, user: User(id: "!a66c166f", longName: "RAK Solar 2", shortName: "RS2", hwModel: "RAK4631"), position: Position(latitudeI:nil, longitudeI: nil, altitude: nil, batteryLevel: 68, time: nil),  lastHeard: 1631593661, snr: nil),
-            NodeInfoModel(num: 1000569662, user: User(id: "!3ba37b3e", longName: "RAK Solar 1", shortName: "RS1", hwModel: "RAK4631"), position: Position(latitudeI:476021390, longitudeI: -1221532609, altitude: 71, batteryLevel: 70, time: 1632202227),  lastHeard: 1632202227, snr: 5.25)
+           // NodeInfoModel(num: 2792101487, user: User(id: "!a66c166f", longName: "RAK Solar 2", shortName: "RS2", hwModel: "RAK4631"), position: Position(latitudeI:nil, longitudeI: nil, altitude: nil, batteryLevel: 68, time: nil),  lastHeard: 1631593661, snr: nil),
+           // NodeInfoModel(num: 1000569662, user: User(id: "!3ba37b3e", longName: "RAK Solar 1", shortName: "RS1", hwModel: "RAK4631"), position: Position(latitudeI:476021390, longitudeI: -1221532609, altitude: 71, batteryLevel: 70, time: 1632202227),  lastHeard: 1632202227, snr: 5.25)
         ]
     }
 }

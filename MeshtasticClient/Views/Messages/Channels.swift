@@ -3,17 +3,14 @@ import SwiftUI
 import CoreBluetooth
 
 struct Channels: View {
-	
-    // Message Data and Bluetooth
-    @EnvironmentObject var messageData: MessageData
-    @EnvironmentObject var bleManager: BLEManager
-    
+	@State private var isShowingDetailView = true
+	    
     var body: some View {
         NavigationView {
             
             GeometryReader { bounds in
                 
-                NavigationLink(destination: Messages()) {
+                NavigationLink(destination: Messages(), isActive: $isShowingDetailView) {
                     
                     List{
                         

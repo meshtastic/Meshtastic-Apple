@@ -9,9 +9,6 @@ struct Messages: View {
         case messageText
     }
     
-	@ObservedObject var userSettings = UserSettings()
-
-	
     // Keyboard State
 	@State var typingMessage: String = ""
     @State private var totalBytes = 0
@@ -119,7 +116,7 @@ struct Messages: View {
                     
                     ZStack {
 						//let kbType = Enum.Parse(typeof(KeyboardType), userSettings.keyboardType, true);
-						let kbType = UIKeyboardType(rawValue: userSettings.keyboardType)
+						let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 						TextEditor(text: $typingMessage)
                             .onChange(of: typingMessage, perform: { value in
 

@@ -56,6 +56,11 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
 		}
 	}
+	@Published var meshActivityLog: Bool {
+		didSet {
+			UserDefaults.standard.set(meshActivityLog, forKey: "meshActivityLog")
+		}
+	}
 	
 	init() {
 		self.username = UserDefaults.standard.object(forKey: "username") as? String ?? ""
@@ -63,6 +68,7 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
+		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 	}
 }
 
@@ -71,6 +77,10 @@ struct AppSettings: View {
 	@State private var preferredDeviceConnected = false
 	@EnvironmentObject var bleManager: BLEManager
 	@ObservedObject var userSettings = UserSettings()
+	
+	var perferredPeripheral: String {
+		UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
+	}
 	
     var body: some View {
 
@@ -115,11 +125,26 @@ struct AppSettings: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
+					Section(header: Text("MESH NETWORK OPTIONS")) {
+						Toggle(isOn: $userSettings.meshActivityLog) {
+							
+							Label("Log all Mesh activity", systemImage: "network")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if userSettings.meshActivityLog {
+							NavigationLink(destination: MeshLog()) {
+								Text("View Mesh Log")
+							}
+							.listRowSeparator(.visible)
+						}
+						
+					}
 				}
 			}
             .navigationTitle("App Settings")
         }
-		.navigationViewStyle(StackNavigationViewStyle())    }
+		.navigationViewStyle(StackNavigationViewStyle())
+	}
 }
 
 struct AppSettings_Previews: PreviewProvider {

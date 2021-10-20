@@ -33,53 +33,53 @@ struct Connect: View {
                         Section(header: Text("Connected Device").font(.title)) {
                             if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
                                 HStack {
+									
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.green)
                                         .padding(.trailing)
                                     
-                                    if bleManager.connectedPeripheral.myInfo != nil {
-                                        VStack  (alignment: .leading)  {
-                                            if bleManager.connectedNode != nil {
-                                                
-                                                Text(bleManager.connectedNode.user.longName).font(.title2)
-                                            }
-                                            else {
-                                                Text(String(bleManager.connectedPeripheral.myInfo?.myNodeNum ?? 0)).font(.title2)
-                                                
-                                            }
-                                            Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
-                                        }
-										Spacer()
-										VStack  (alignment: .center)  {
-											Text("Preferred").font(.caption2)
-											Text("Radio").font(.caption2)
-											Toggle("Preferred Radio", isOn: $isPreferredRadio)
-												.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-												.labelsHidden()
-												.onChange(of: isPreferredRadio) { value in
-													if value {
-														if bleManager.connectedNode != nil {
-															userSettings.preferredPeripheralName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
-														}
-														else {
-															
-															userSettings.preferredPeripheralName = bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device"
-														}
-														
-														userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-															
-													} else {
-														
-														userSettings.preferredPeripheralId = ""
-														userSettings.preferredPeripheralName = ""
-													}
-												}
+									VStack  (alignment: .leading)  {
+										if bleManager.connectedNode != nil {
+											
+											Text(bleManager.connectedNode.user.longName).font(.title2)
 										}
-                                    }
-                                    else {
-                                        Text((bleManager.connectedPeripheral!.peripheral.name != nil) ? bleManager.connectedPeripheral!.peripheral.name! : "Unknown").font(.title2)
-                                    }
+										else {
+											
+											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
+										}
+										Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
+										if bleManager.connectedNode != nil {
+											Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
+										}
+										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+									}
+									Spacer()
+										
+									VStack  (alignment: .center)  {
+										Text("Preferred").font(.caption2)
+										Text("Radio").font(.caption2)
+										Toggle("Preferred Radio", isOn: $isPreferredRadio)
+											.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+											.labelsHidden()
+											.onChange(of: isPreferredRadio) { value in
+												if value {
+													if bleManager.connectedNode != nil {
+														let deviceName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
+														UserDefaults.standard.set(deviceName, forKey: "preferredPeripheralName")
+														//userSettings.preferredPeripheralName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
+													} else {
+														UserDefaults.standard.set(bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device", forKey: "preferredPeripheralName")
+														//userSettings.preferredPeripheralName =
+													}
+													UserDefaults.standard.set(bleManager.connectedPeripheral!.peripheral.identifier.uuidString, forKey: "preferredPeripheralId")
+
+												} else {
+													UserDefaults.standard.set("", forKey: "preferredPeripheralId")
+													UserDefaults.standard.set("", forKey: "preferredPeripheralName")
+												}
+											}
+									}
                                 }
 								.padding([.top, .bottom])
 								.swipeActions {
@@ -193,7 +193,9 @@ struct Connect: View {
 			}
 			else {
 				isPreferredRadio = false
-				bleManager.startScanning()
+				if bleManager.connectedPeripheral == nil {
+					bleManager.startScanning()
+				}
 			}
 		} )
     }
