@@ -104,7 +104,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@objc func timeoutTimerFired(timer: Timer)
 	{
 		timer.invalidate()
-		lastConnectionError = "BLE Connection timed out" //radio \(connectedPeripheral.peripheral.name ?? "Unknown")
+		//lastConnectionError = "BLE Connection timed out" //radio \(connectedPeripheral.peripheral.name ?? "Unknown")
 		if connectedPeripheral != nil {
 			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			connectedNode = nil
@@ -123,8 +123,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             self.disconnectDevice()
         }
 
-		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(timeoutTimerFired), userInfo: nil, repeats: false)
-        self.centralManager?.connect(peripheral)
+		self.centralManager?.connect(peripheral)
+		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(timeoutTimerFired), userInfo: nil, repeats: false)
 		if meshLoggingEnabled { Logger.log("BLE Connecting: \(peripheral.name ?? "Unknown")") }
         print("BLE Connecting: \(peripheral.name ?? "Unknown")")
     }
@@ -165,7 +165,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
 		lastConnectionError = ""
-		timeoutTimer!.invalidate()
+		self.timeoutTimer!.invalidate()
 		
         peripheral.delegate = self
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
@@ -196,7 +196,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
 				// Error Code 6: The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = " \(e.localizedDescription) Will automatically attempt to reconnect to the preferred radio if it reappears quickly."
+				lastConnectionError = "\(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 3 seconds."
 				self.connectedNode = nil
 				self.connectedPeripheral = nil
 				self.connectTo(peripheral: peripheral)

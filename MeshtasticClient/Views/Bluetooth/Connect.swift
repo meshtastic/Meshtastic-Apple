@@ -35,7 +35,7 @@ struct Connect: View {
 							
 							Section(header: Text("Connection Error").font(.title)) {
 							
-								Text(bleManager.lastConnectionError).font(.title2).foregroundColor(.red)
+								Text(bleManager.lastConnectionError).font(.subheadline).foregroundColor(.red)
 							}
 							.textCase(nil)
 						}
