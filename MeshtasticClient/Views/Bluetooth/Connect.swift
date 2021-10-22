@@ -16,9 +16,10 @@ import CoreBluetooth
 struct Connect: View {
     
     @EnvironmentObject var meshData: MeshData
-    
     @EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var userSettings = UserSettings()
+	
+	@EnvironmentObject var userSettings: UserSettings
+	
 	@State var isPreferredRadio: Bool = false
 	
       
@@ -30,7 +31,17 @@ struct Connect: View {
                 if bleManager.isSwitchedOn {
                     
                     List {
+						if bleManager.lastConnectionError.count > 0 {
+							
+							Section(header: Text("Connection Error").font(.title)) {
+							
+								Text(bleManager.lastConnectionError).font(.title2).foregroundColor(.red)
+							}
+							.textCase(nil)
+						}
+						
                         Section(header: Text("Connected Device").font(.title)) {
+							
                             if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
                                 HStack {
 									
@@ -64,19 +75,20 @@ struct Connect: View {
 											.labelsHidden()
 											.onChange(of: isPreferredRadio) { value in
 												if value {
+													
 													if bleManager.connectedNode != nil {
 														let deviceName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
-														UserDefaults.standard.set(deviceName, forKey: "preferredPeripheralName")
-														//userSettings.preferredPeripheralName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
+
+														userSettings.preferredPeripheralName = deviceName
 													} else {
-														UserDefaults.standard.set(bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device", forKey: "preferredPeripheralName")
-														//userSettings.preferredPeripheralName =
+														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device"
 													}
-													UserDefaults.standard.set(bleManager.connectedPeripheral!.peripheral.identifier.uuidString, forKey: "preferredPeripheralId")
+													
+													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
 
 												} else {
-													UserDefaults.standard.set("", forKey: "preferredPeripheralId")
-													UserDefaults.standard.set("", forKey: "preferredPeripheralName")
+													userSettings.preferredPeripheralId = ""
+													userSettings.preferredPeripheralName = ""
 												}
 											}
 									}
@@ -107,7 +119,8 @@ struct Connect: View {
                                 .padding()
                             }
                             
-                        }.textCase(nil)
+                        }
+						.textCase(nil)
                         
                         Section(header: Text("Available Devices").font(.title)) {
                             ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in

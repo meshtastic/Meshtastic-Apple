@@ -13,6 +13,8 @@ import SwiftUI
 struct NodeList: View {
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var meshData: MeshData
+	
+	@State private var selection: String? = nil
     
     @State private var showLocationOnly = false
     
@@ -47,7 +49,11 @@ struct NodeList: View {
                         Text("Nodes with location only")
                     }
                     ForEach(filteredDevices.sorted(by: { $0.lastHeard > $1.lastHeard })) { node in
-                        NavigationLink(destination: NodeDetail(node: node)) {
+						
+		
+						let index = filteredDevices.sorted(by: { $0.lastHeard > $1.lastHeard }).firstIndex(where: { $0.id == node.id })
+						
+						NavigationLink(destination: NodeDetail(node: node), tag: String(index!), selection: $selection) {
                             
                             if(bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.myInfo != nil) {
                                 
@@ -75,6 +81,15 @@ struct NodeList: View {
                 }
              }
             .navigationTitle("All Nodes")
+			.onAppear(
+				perform: {
+					if UIDevice.current.userInterfaceIdiom == .pad {
+						if meshData.nodes.count > 0 {
+							selection = "0"
+						}
+					}
+				}
+			)
         }
         .ignoresSafeArea(.all, edges: [.leading, .trailing])
 		.navigationViewStyle(DoubleColumnNavigationViewStyle())

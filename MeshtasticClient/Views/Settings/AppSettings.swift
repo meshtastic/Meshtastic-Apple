@@ -74,9 +74,10 @@ class UserSettings: ObservableObject {
 
 struct AppSettings: View {
 	
-	@State private var preferredDeviceConnected = false
 	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var userSettings = UserSettings()
+	@EnvironmentObject var userSettings: UserSettings
+	
+	@State private var preferredDeviceConnected = false
 	
 	var perferredPeripheral: String {
 		UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
