@@ -21,7 +21,6 @@ struct Connect: View {
 	@EnvironmentObject var userSettings: UserSettings
 	
 	@State var isPreferredRadio: Bool = false
-	
       
     var body: some View {
 		
@@ -35,7 +34,7 @@ struct Connect: View {
 							
 							Section(header: Text("Connection Error").font(.title)) {
 							
-								Text(bleManager.lastConnectionError).font(.subheadline).foregroundColor(.red)
+								Text(bleManager.lastConnectionError).font(.headline).foregroundColor(.red)
 							}
 							.textCase(nil)
 						}
@@ -87,8 +86,11 @@ struct Connect: View {
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
 
 												} else {
-													userSettings.preferredPeripheralId = ""
-													userSettings.preferredPeripheralName = ""
+													
+													if bleManager.connectedNode != nil {
+														userSettings.preferredPeripheralId = ""
+														userSettings.preferredPeripheralName = ""
+													}
 												}
 											}
 									}

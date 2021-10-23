@@ -34,6 +34,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	var isDisconnectedByUser = false
 	var timeoutTimer: Timer?
+	var runCount = 0
 	
 	private var meshLoggingEnabled: Bool = true
     
@@ -103,30 +104,48 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	///
 	@objc func timeoutTimerFired(timer: Timer)
 	{
-		timer.invalidate()
-		//lastConnectionError = "BLE Connection timed out" //radio \(connectedPeripheral.peripheral.name ?? "Unknown")
-		if connectedPeripheral != nil {
-			self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-			connectedNode = nil
-			connectedPeripheral = nil
+		guard let context = timer.userInfo as? [String: String] else { return }
+			let name = context["name", default: "Unknown"]
+		
+		runCount += 1
+
+		if runCount == 5 {
+			
+			timeoutTimer?.invalidate()
+			runCount = 0
+			if connectedPeripheral != nil {
+				
+				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+				connectedNode = nil
+				connectedPeripheral = nil
+				
+			}
+			print("BLE Timeout Timer Fired \(runCount) Time(s) Connection Failed: \(name)")
+			Logger.log("BLE Timeout Timer Fired \(runCount) Time(s) Connection Failed: \(name)")
 		}
-		print("BLE-Timeout-Timer fired!")
-		Logger.log("BLE-Timeout-Timer fired!")
+		else {
+			print("BLE Timeout Timer Fired \(runCount) Time(s): \(name)")
+			Logger.log("BLE Timeout Timer Fired \(runCount) Time(s): \(name)")
+		}
 		self.startScanning()
 	}
     
     // Connect to a specific peripheral
     func connectTo(peripheral: CBPeripheral) {
+		
+		if meshLoggingEnabled { Logger.log("BLE Connecting: \(peripheral.name ?? "Unknown")") }
+		print("BLE Connecting: \(peripheral.name ?? "Unknown")")
         
         stopScanning()
-		if self.connectedPeripheral != nil && self.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+		
+		if self.connectedPeripheral != nil {
             self.disconnectDevice()
         }
-
+		
 		self.centralManager?.connect(peripheral)
-		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(timeoutTimerFired), userInfo: nil, repeats: false)
-		if meshLoggingEnabled { Logger.log("BLE Connecting: \(peripheral.name ?? "Unknown")") }
-        print("BLE Connecting: \(peripheral.name ?? "Unknown")")
+		
+		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
+		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
     }
     
     //  Disconnect Device function
@@ -196,16 +215,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
 				// Error Code 6: The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = "\(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 3 seconds."
+				lastConnectionError = "\(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 5 seconds."
 				self.connectedNode = nil
 				self.connectedPeripheral = nil
+				if meshLoggingEnabled { Logger.log("BLE Reconnecting: \(peripheral.name ?? "Unknown")" ) }
+				print("Reconnecting to \(peripheral.name ?? "Unknown")")
 				self.connectTo(peripheral: peripheral)
-                
-                // 2 second delay for device to power back on
-                //let _ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (timer) in
-                    
-                    
-               // }
             }
             else if errorCode == 7 { // The specified device has disconnected from us.
              
@@ -249,8 +264,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
         for service in services
         {
-            
-            
+
             if (service.uuid == meshtasticServiceCBUUID)
             {
                 print("Meshtastic service discovered OK")
