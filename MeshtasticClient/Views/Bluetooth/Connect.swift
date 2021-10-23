@@ -184,7 +184,9 @@ struct Connect: View {
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
                         Spacer()
-                    }.padding(.bottom, 10)
+                    }
+					.padding(.bottom, 10)
+					.hidden()
                     
                 }
                 else {
@@ -205,10 +207,6 @@ struct Connect: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear(perform: {
 
-			if bleManager.connectedPeripheral == nil {
-				bleManager.startScanning()
-			}
-			
 			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
 			}
