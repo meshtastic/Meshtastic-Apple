@@ -154,6 +154,7 @@ struct Messages: View {
                             .focused($focusedField, equals: .messageText)
                             .multilineTextAlignment(.leading)
                             .frame(minHeight: bounds.size.height / 4, maxHeight: bounds.size.height / 4)
+							
                            
                         Text(typingMessage).opacity(0).padding(.all, 0)
                         
@@ -187,14 +188,9 @@ struct Messages: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing:
                               
-            ZStack {
-
-            ConnectedDevice(
-                bluetoothOn: bleManager.isSwitchedOn,
-                deviceConnected: bleManager.connectedPeripheral != nil,
-                name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown"))
-            }
-        )
+		ZStack {
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+		})
         .onAppear {
             
             messageData.load()

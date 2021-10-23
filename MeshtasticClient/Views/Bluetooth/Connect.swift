@@ -38,7 +38,7 @@ struct Connect: View {
 							.textCase(nil)
 						}
 						
-						Section(header: Text("Connected Device").font(.title)) {
+						Section(header: Text("Connected Radio").font(.title)) {
 							
                             if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
                                 HStack {
@@ -126,7 +126,7 @@ struct Connect: View {
 						.textCase(nil)
 						
 						if bleManager.peripherals.count > 0 {
-							Section(header: Text("Available Devices").font(.title)) {
+							Section(header: Text("Available Radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in
 									HStack {
 										Image(systemName: "circle.fill")
