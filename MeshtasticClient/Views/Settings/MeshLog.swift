@@ -7,7 +7,7 @@ struct MeshLog: View {
 	var text = ""
 	@State private var logs = [String]()
 	@State private var isExporting: Bool = false
-	@State private var document: LogDocument = LogDocument(logFile: "")
+	@State private var document: LogDocument = LogDocument(logFile: "MESHTASTIC MESH ACTIVITY LOG\n")
 		
 	var body: some View {
 
@@ -19,27 +19,29 @@ struct MeshLog: View {
 					logs.removeAll()
 					for try await log in url.lines {
 						logs.append(log)
-						document.logFile.append(log)
+						document.logFile.append("\(log) \n")
 					}
 					logs.reverse()
 				} catch {
 					// Stop adding logs when an error is thrown
 				}
 		}
-		.fileExporter(isPresented: $isExporting,
-					  document: document,
-					  contentType: UTType.plainText,
-					  defaultFilename: "mesh-activity-log"
+		.fileExporter(
+			isPresented: $isExporting,
+			document: document,
+			contentType: UTType.plainText,
+			defaultFilename: "mesh-activity-log",
+			onCompletion: {
+
+				result in
+				
+				if case .success = result {
+					print("Mesh activity log download: success.")
+				} else {
+					print("Mesh activity log download \(result).")
+				}
+			}
 		)
-		{
-			result in
-			if case .success = result {
-				print("Upload was ok")
-			}
-			else{
-				print("Something went wrong")
-			}
-		}
 		
 		
 		.textSelection(.enabled)

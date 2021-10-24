@@ -43,8 +43,6 @@ struct Messages: View {
                             
                             let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
                             
-							//MessageBubble(contentMessage: message.messagePayload, isCurrentUser: currentUser, time: Int32(message.messageTimestamp), shortName: message.fromUserShortName, id: message.messageId)
-							
 							HStack (alignment: .top) {
 								
 								CircleText(text: message.fromUserShortName, color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
@@ -189,7 +187,7 @@ struct Messages: View {
         .navigationBarItems(trailing:
                               
 		ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 		})
         .onAppear {
             

@@ -10,17 +10,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	private static var documentsFolder: URL {
 		do {
-			return try FileManager.default.url(for: .documentDirectory,
-											   in: .userDomainMask,
-											   appropriateFor: nil,
-											   create: true)
+			return try FileManager.default.url(
+				for: .documentDirectory,
+				in: .userDomainMask,
+				appropriateFor: nil,
+				create: true)
 		} catch {
 			fatalError("Can't find documents directory.")
 		}
 	}
     
-    @ObservedObject private var meshData : MeshData
-    @ObservedObject private var messageData : MessageData
+    @ObservedObject var meshData : MeshData
+    @ObservedObject var messageData : MessageData
     
     private var centralManager: CBCentralManager!
     
@@ -539,7 +540,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         meshData.nodes.remove(at: nodeIndex!)
                         meshData.nodes.append(updatedNode!)
                         meshData.save()
-						if meshLoggingEnabled { Logger.log("Updated NodeInfo SNR and Time from Node Info App Packet For: \(updatedNode!.user.longName)") }
+						if meshLoggingEnabled { Logger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(updatedNode!.user.longName)") }
                         print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
                     }
                 }
@@ -556,7 +557,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         meshData.nodes.append(updatedNode!)
                         meshData.save()
 
-						if meshLoggingEnabled { Logger.log("Updated NodeInfo SNR and Time from Position App Packet For: \(updatedNode!.user.longName)") }
+						if meshLoggingEnabled { Logger.log("MESH PACKET Updated NodeInfo SNR and Time from Position App Packet For: \(updatedNode!.user.longName)") }
                         print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
                     }
 					print("Postion Payload")
@@ -564,19 +565,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 }
 				else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 					 
-					 if meshLoggingEnabled { Logger.log("BLE FROMRADIO received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { Logger.log("MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("Admin App Packet")
 					 print(try decodedInfo.packet.jsonString())
 				 }
 				 else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 					 
-					 if meshLoggingEnabled { Logger.log("BLE FROMRADIO received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { Logger.log("MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("Routing App Packet")
 					 print(try decodedInfo.packet.jsonString())
 				 }
 				 else
 				 {
-					 if meshLoggingEnabled { Logger.log("BLE FROMRADIO received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { Logger.log("MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("Other App Packet")
 					 print(try decodedInfo.packet.jsonString())
 				 }
@@ -588,7 +589,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 }
                 
                 if decodedInfo.configCompleteID != 0 {
-					if meshLoggingEnabled { Logger.log("Config Complete: \(decodedInfo.configCompleteID)") }
+					if meshLoggingEnabled { Logger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 					print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 
                 }

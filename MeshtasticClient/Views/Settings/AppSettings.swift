@@ -31,11 +31,11 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 class UserSettings: ObservableObject {
-	@Published var username: String {
-		didSet {
-			UserDefaults.standard.set(username, forKey: "username")
-		}
-	}
+	//@Published var meshtasticUsername: String {
+	//	didSet {
+	//		UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
+	//	}
+	//}
 	@Published var preferredPeripheralName: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
@@ -63,7 +63,7 @@ class UserSettings: ObservableObject {
 	}
 	
 	init() {
-		self.username = UserDefaults.standard.object(forKey: "username") as? String ?? ""
+		//self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
@@ -75,7 +75,7 @@ class UserSettings: ObservableObject {
 struct AppSettings: View {
 	
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
+	@ObservedObject var userSettings: UserSettings = UserSettings()
 	
 	@State private var preferredDeviceConnected = false
 	
@@ -92,13 +92,12 @@ struct AppSettings: View {
 				List {
 					Section(header: Text("USER DETAILS")) {
 						
-						HStack {
-							
-							Label("Name", systemImage: "person.crop.rectangle.fill")
-							TextField("Username", text: $userSettings.username)
-								.foregroundColor(.gray)
-						}
-						.listRowSeparator(.visible)
+						//HStack {
+							//Label("Name", systemImage: "person.crop.rectangle.fill")
+							//TextField("Username", text: $userSettings.meshtasticUsername)
+								//.foregroundColor(.gray)
+						//}
+						//.listRowSeparator(.visible)
 						Toggle(isOn: $userSettings.provideLocation) {
 							
 							Label("Provide location to mesh", systemImage: "location.circle.fill")
@@ -138,7 +137,6 @@ struct AppSettings: View {
 							}
 							.listRowSeparator(.visible)
 						}
-						
 					}
 				}
 			}

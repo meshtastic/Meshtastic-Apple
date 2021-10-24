@@ -17,16 +17,15 @@ struct MeshtasticClientApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(meshData)
-                .environmentObject(messageData)
-                .environmentObject(bleManager)
-				.environmentObject(userSettings)
-                .onAppear{
-                    meshData.load()
-                    messageData.load()
-                }
-                
-        }
+		ContentView()
+			.environmentObject(meshData)
+			.environmentObject(messageData)
+			.environmentObject(bleManager)
+			.environmentObject(userSettings)
+			.onAppear{
+				meshData.load()
+				messageData.load()
+			}
+		}
     }
 }

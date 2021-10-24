@@ -3,10 +3,11 @@ import Foundation
 class MeshData: ObservableObject {
     private static var documentsFolder: URL {
         do {
-            return try FileManager.default.url(for: .documentDirectory,
-                                               in: .userDomainMask,
-                                               appropriateFor: nil,
-                                               create: true)
+            return try FileManager.default.url(
+				for: .documentDirectory,
+				in: .userDomainMask,
+				appropriateFor: nil,
+				create: true)
         } catch {
             fatalError("Can't find documents directory.")
         }
