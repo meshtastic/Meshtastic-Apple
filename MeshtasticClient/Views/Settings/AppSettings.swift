@@ -75,7 +75,7 @@ class UserSettings: ObservableObject {
 struct AppSettings: View {
 	
 	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var userSettings: UserSettings = UserSettings()
+	@EnvironmentObject var userSettings: UserSettings
 	
 	@State private var preferredDeviceConnected = false
 	

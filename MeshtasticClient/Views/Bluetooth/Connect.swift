@@ -15,7 +15,6 @@ import CoreBluetooth
 
 struct Connect: View {
     
-    @EnvironmentObject var meshData: MeshData
     @EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	

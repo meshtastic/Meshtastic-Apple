@@ -12,13 +12,10 @@ import CoreLocation
 
 struct NodeMap: View {
     
-    
-    
-    @ObservedObject var bleManager = BLEManager()
-    @EnvironmentObject var meshData: MeshData
+	@EnvironmentObject var bleManager :BLEManager
     
     var locationNodes: [NodeInfoModel] {
-        meshData.nodes.filter { node in
+		bleManager.meshData.nodes.filter { node in
             (node.position.coordinate != nil)
         }
     }
@@ -27,8 +24,6 @@ struct NodeMap: View {
         let name: String
         let coordinate: CLLocationCoordinate2D
     }
-
-    
     
     var body: some View {
         let location = LocationHelper.currentLocation
@@ -64,17 +59,15 @@ struct NodeMap: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear{
-            meshData.load()
+			bleManager.meshData.load()
         }
     }
 }
 
 struct NodeMap_Previews: PreviewProvider {
-    static let meshData = MeshData()
     static let bleManager = BLEManager()
 
     static var previews: some View {
-        NodeMap(bleManager: bleManager)
-            .environmentObject(MeshData())
+        NodeMap()
     }
 }

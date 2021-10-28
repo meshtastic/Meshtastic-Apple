@@ -162,12 +162,12 @@ struct NodeDetail: View {
 
 
 struct NodeDetail_Previews: PreviewProvider {
-    static let meshData = MeshData()
+	static let bleManager = BLEManager()
 
     static var previews: some View {
         Group {
-            NodeDetail(node: meshData.nodes[0]).environmentObject(meshData)
-            NodeDetail(node: meshData.nodes[1]).environmentObject(meshData)
+			NodeDetail(node: bleManager.meshData.nodes[0])
+			NodeDetail(node: bleManager.meshData.nodes[1])
         }
     }
 }

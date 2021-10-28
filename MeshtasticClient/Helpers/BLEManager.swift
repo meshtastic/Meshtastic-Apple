@@ -170,10 +170,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 			
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
+		var newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, peripheral: peripheral, myInfo: nil)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
-		
+
 		if peripheralIndex != nil {
+			newPeripheral.myInfo = self.meshData.nodes[peripheralIndex!].myInfo
 			peripherals.remove(at: peripheralIndex!)
 			peripherals.append(newPeripheral)
 			print("Updating peripheral: \(peripheralName)");

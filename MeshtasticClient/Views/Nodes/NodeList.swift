@@ -11,15 +11,15 @@
 import SwiftUI
 
 struct NodeList: View {
+	
     @EnvironmentObject var bleManager: BLEManager
-    @EnvironmentObject var meshData: MeshData
 	
 	@State private var selection: String? = nil
     
     @State private var showLocationOnly = false
     
     var filteredDevices: [NodeInfoModel] {
-        meshData.nodes.filter { node in
+		bleManager.meshData.nodes.filter { node in
             (!showLocationOnly || node.position.coordinate != nil)
         }
     }
@@ -29,7 +29,7 @@ struct NodeList: View {
            
             List {
 
-                if meshData.nodes.count == 0 {
+				if bleManager.meshData.nodes.count == 0 {
                     Text("Scan for Radios").font(.largeTitle)
                         //.listRowSeparator(.hidden)
                     Text("No LoRa Mesh Nodes Found").font(.title2)
@@ -68,9 +68,9 @@ struct NodeList: View {
                         .swipeActions {
                             Button {
                                 
-                                let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == node.id })
-                                meshData.nodes.remove(at: nodeIndex!)
-                                meshData.save()
+								let nodeIndex = bleManager.meshData.nodes.firstIndex(where: { $0.id == node.id })
+								bleManager.meshData.nodes.remove(at: nodeIndex!)
+								bleManager.meshData.save()
                             } label: {
                                 
                                 Label("Delete from app", systemImage: "trash")
@@ -83,11 +83,11 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
 			.onAppear(
 				perform: {
-					if meshData.nodes.count == 0 {
-						meshData.load()
+					if bleManager.meshData.nodes.count == 0 {
+						bleManager.meshData.load()
 					}
 					if UIDevice.current.userInterfaceIdiom == .pad {
-						if meshData.nodes.count > 0 {
+						if bleManager.meshData.nodes.count > 0 {
 							selection = "0"
 						}
 					}
@@ -102,6 +102,5 @@ struct NodeList: View {
 struct NodeList_Previews: PreviewProvider {
     static var previews: some View {
         NodeList()
-            .environmentObject(MeshData())
     }
 }
