@@ -32,10 +32,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     @Published var isSwitchedOn = false
     @Published var peripherals = [Peripheral]()
-	
-	var isDisconnectedByUser = false
+
 	var timeoutTimer: Timer?
-	var runCount = 0
+	var timeoutTimerCount = 0
 	
 	private var meshLoggingEnabled: Bool = false
     
@@ -72,7 +71,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          if central.state == .poweredOn {
              
              isSwitchedOn = true
-			 startScanning()
          }
          else {
              
@@ -84,7 +82,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func startScanning() {
         
         if isSwitchedOn {
-            
+			
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
             print("Scanning Started")
         }
@@ -110,9 +108,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		guard let context = timer.userInfo as? [String: String] else { return }
 			let name = context["name", default: "Unknown"]
 		
-		runCount += 1
+		timeoutTimerCount += 1
 
-		if runCount == 6 {
+		if timeoutTimerCount == 6 {
 			
 			if connectedPeripheral != nil && connectedPeripheral.peripheral.state != CBPeripheralState.connected {
 				
@@ -122,16 +120,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { Logger.log("BLE Connecting Timeout Timer disconnected orphaned radio: \(name) in state: \(connectedPeripheral.peripheral.state.rawValue)") }
 				
 			}
-			print("BLE Connecting 2 Second Timeout Timer Fired \(runCount) Time(s): \(name)")
-			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(runCount) Time(s): \(name)") }
+			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
+			
 			timeoutTimer?.invalidate()
-			runCount = 0
+			timeoutTimerCount = 0
 		}
 		else {
-			print("BLE Connecting 2 Second Timeout Timer Fired \(runCount) Time(s): \(name)")
-			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(runCount) Time(s): \(name)") }
+			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
 		}
-		self.startScanning()
 	}
     
     // Connect to a specific peripheral
@@ -194,13 +192,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		// Invalidate and reset connection timer count, remove any connection errors
 		lastConnectionError = ""
 		self.timeoutTimer!.invalidate()
-		self.runCount = 0
+		self.timeoutTimerCount = 0
         
 		// Map the peripheral to the connectedNode and connectedPeripheral ObservedObjects
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		let deviceName = peripheral.name ?? ""
 		let peripheralLast4: String = String(deviceName.suffix(4))
-		connectedNode = meshData.nodes.first(where: { $0.user.id.contains(peripheralLast4) })
+		connectedNode = self.meshData.nodes.first(where: { $0.user.id.contains(peripheralLast4) })
         lastConnectedPeripheral = peripheral.identifier.uuidString
 		
 		// Discover Services
@@ -209,7 +207,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         print("BLE Connected: \(peripheral.name ?? "Unknown")")
 		
 		// Clear the "Available Radios" list
-		peripherals.removeAll()
+		//peripherals.removeAll()
     }
 
     // Disconnect Peripheral Event
@@ -219,7 +217,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         // Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
         self.startScanning()
 		self.connectedPeripheral = nil
-		self.connectedNode = nil
         
         if let e = error {
         
@@ -242,6 +239,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
              
                 // Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
+				self.connectedNode = nil
 				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 				if meshLoggingEnabled { Logger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
             }
@@ -249,11 +247,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 // Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "\(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
+				self.connectedNode = nil
 				if meshLoggingEnabled { Logger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
             }
 			else {
 				
 				lastConnectionError = e.localizedDescription
+				self.connectedNode = nil
 				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 				if meshLoggingEnabled { Logger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 			}
@@ -261,6 +261,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             
             // Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
+			self.connectedNode = nil
 			if meshLoggingEnabled { Logger.log("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect") }
             print("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
         }
@@ -268,7 +269,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     // Discover Services Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        
+	
 		peripheral.delegate = self
         if let e = error {
             
@@ -336,6 +337,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         
       }
     }
+	
+	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+		
+		peripheral.delegate = self
+		print("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)")
+		if meshLoggingEnabled { Logger.log("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)") }
+		if let errorText = error?.localizedDescription
+			{
+			  print("didUpdateNotificationStateFor error: \(errorText)")
+			}
+		//commandLock.lock()
+
+		//if let index = commandConditions.firstIndex(where: { (condition) -> Bool in
+		//	if case .notificationStateUpdate(characteristic: characteristic, enabled: characteristic.isNotifying) = condition {
+		//		return true
+		//	} else {
+		//		return false
+		//	}
+		//}) {
+		//	commandConditions.remove(at: index)
+		//	commandError = error
+
+		//	if commandConditions.isEmpty {
+		//		commandLock.broadcast()
+		//	}
+		//}
+
+		//commandLock.unlock()
+		//?.peripheralManager(self, didUpdateNotificationStateFor: characteristic)
+	}
     
     // Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
@@ -372,7 +403,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
-
+			
                     // Create a MyInfoModel
                     let myInfoModel = MyInfoModel(
                         myNodeNum: decodedInfo.myInfo.myNodeNum,
@@ -394,8 +425,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                     if connectedNode != nil {
 						
                         connectedNode.myInfo = myInfoModel
-						
-                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
                         meshData.nodes.remove(at: nodeIndex!)
                         meshData.nodes.append(connectedNode)
 						meshData.save()
@@ -407,8 +437,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 if decodedInfo.nodeInfo.num != 0 {
                     
                     print("Save a nodeInfo")
-
-                    if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
+					print(decodedInfo.nodeInfo)
+					if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
                         
                         // Found a matching node lets update it
                         let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
@@ -461,7 +491,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                                 snr: decodedInfo.nodeInfo.snr)
                         )
                         meshData.save()
-						meshData.load()
 						if meshLoggingEnabled { Logger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
 						if connectedNode == nil {
 							

@@ -83,6 +83,9 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
 			.onAppear(
 				perform: {
+					if meshData.nodes.count == 0 {
+						meshData.load()
+					}
 					if UIDevice.current.userInterfaceIdiom == .pad {
 						if meshData.nodes.count > 0 {
 							selection = "0"

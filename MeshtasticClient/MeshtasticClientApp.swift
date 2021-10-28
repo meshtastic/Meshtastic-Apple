@@ -11,7 +11,6 @@ import SwiftUI
 struct MeshtasticClientApp: App {
 
     @ObservedObject private var meshData: MeshData = MeshData()
-    @ObservedObject private var messageData: MessageData = MessageData()
     @ObservedObject private var bleManager: BLEManager = BLEManager()
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
     
@@ -19,13 +18,8 @@ struct MeshtasticClientApp: App {
         WindowGroup {
 		ContentView()
 			.environmentObject(meshData)
-			.environmentObject(messageData)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
-			.onAppear{
-				meshData.load()
-				messageData.load()
-			}
 		}
     }
 }

@@ -186,7 +186,6 @@ struct Connect: View {
                         Spacer()
                     }
 					.padding(.bottom, 10)
-					.hidden()
                     
                 }
                 else {
@@ -218,8 +217,6 @@ struct Connect: View {
 }
 
 struct Connect_Previews: PreviewProvider {
-   // static let meshData = MeshData()
-  //  static let bleManager = BLEManager()
 
     static var previews: some View {
         Connect()

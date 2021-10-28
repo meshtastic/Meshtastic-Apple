@@ -20,7 +20,7 @@ struct Messages: View {
 	@State private var deleteMessageId : UInt32 = 0
     
     // Message Data and Bluetooth
-    @EnvironmentObject var messageData: MessageData
+  //  @EnvironmentObject var messageData: MessageData
     @EnvironmentObject var bleManager: BLEManager
     
     public var broadcastNodeId: UInt32 = 4294967295
@@ -39,7 +39,7 @@ struct Messages: View {
                         
                         Text("Hidden Top Anchor").hidden().frame(height: 0).id(topId)
                         
-                        ForEach(messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
+						ForEach(bleManager.messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
                             
                             let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
                             
@@ -85,9 +85,9 @@ struct Messages: View {
 									print("OK button tapped")
 									if deleteMessageId > 0 {
 										
-										let messageIndex = messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
-										messageData.messages.remove(at: messageIndex!)
-										messageData.save()
+										let messageIndex = bleManager.messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
+										bleManager.messageData.messages.remove(at: messageIndex!)
+										bleManager.messageData.save()
 										print("Deleted message: \(message.messageId)")
 										showDeleteMessageAlert = false
 										deleteMessageId = 0
@@ -101,10 +101,10 @@ struct Messages: View {
                         Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
                     }
                     .onReceive(timer) { input in
-                        messageData.load()
-                        if messageCount < messageData.messages.count {
+						bleManager.messageData.load()
+						if messageCount < bleManager.messageData.messages.count {
                             scrollView.scrollTo(bottomId) 
-                            messageCount = messageData.messages.count
+							messageCount = bleManager.messageData.messages.count
                         }
                     }
                     .padding(.horizontal)
@@ -187,12 +187,12 @@ struct Messages: View {
         .navigationBarItems(trailing:
                               
 		ZStack {
-			//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 		})
         .onAppear {
             
-            messageData.load()
-            messageCount = messageData.messages.count
+			bleManager.messageData.load()
+			messageCount = bleManager.messageData.messages.count
         }
     }
 }
