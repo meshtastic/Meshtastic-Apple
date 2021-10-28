@@ -57,11 +57,13 @@ struct Connect: View {
 											
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
-										Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedNode != nil {
-											Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
+											Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										}
-										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
+										if bleManager.connectedPeripheral.myInfo != nil {
+											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+										}
 									}
 									Spacer()
 										
@@ -87,7 +89,8 @@ struct Connect: View {
 
 												} else {
 													
-													if bleManager.connectedNode != nil {
+													if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+														
 														userSettings.preferredPeripheralId = ""
 														userSettings.preferredPeripheralName = ""
 													}
@@ -167,6 +170,7 @@ struct Connect: View {
                             .font(.caption)
                                 .foregroundColor(.gray)
                         }
+						.disabled(self.bleManager.isScanning)
                         .padding()
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
@@ -179,6 +183,7 @@ struct Connect: View {
                             .font(.caption)
                             .foregroundColor(.gray)
                         }
+						.disabled(!self.bleManager.isScanning)
                         .padding()
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
@@ -219,8 +224,7 @@ struct Connect_Previews: PreviewProvider {
 
     static var previews: some View {
         Connect()
-            .environmentObject(MeshData())
+
             .environmentObject(BLEManager())
-            
     }
 }

@@ -83,9 +83,6 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
 			.onAppear(
 				perform: {
-					if bleManager.meshData.nodes.count == 0 {
-						bleManager.meshData.load()
-					}
 					if UIDevice.current.userInterfaceIdiom == .pad {
 						if bleManager.meshData.nodes.count > 0 {
 							selection = "0"

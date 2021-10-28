@@ -8,6 +8,8 @@ import MapKit
 import CoreLocation
 
 struct NodeDetail: View {
+	
+	@EnvironmentObject var bleManager :BLEManager
     
     var node: NodeInfoModel
     
@@ -156,6 +158,11 @@ struct NodeDetail: View {
                 }
             }.navigationTitle(node.user.longName)
             .navigationBarTitleDisplayMode(.inline)
+			.navigationBarItems(trailing:
+								  
+				ZStack {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			})
         }.ignoresSafeArea(.all, edges: [.leading, .trailing])
     }
 }

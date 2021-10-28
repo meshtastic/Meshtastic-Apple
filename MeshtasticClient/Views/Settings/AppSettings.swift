@@ -68,7 +68,7 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
 	}
 }
 
@@ -93,9 +93,9 @@ struct AppSettings: View {
 					Section(header: Text("USER DETAILS")) {
 						
 						//HStack {
-							//Label("Name", systemImage: "person.crop.rectangle.fill")
-							//TextField("Username", text: $userSettings.meshtasticUsername)
-								//.foregroundColor(.gray)
+						//	Label("Name", systemImage: "person.crop.rectangle.fill")
+						//	TextField("Username", text: $userSettings.meshtasticUsername)
+						//		.foregroundColor(.gray)
 						//}
 						//.listRowSeparator(.visible)
 						Toggle(isOn: $userSettings.provideLocation) {
@@ -141,6 +141,11 @@ struct AppSettings: View {
 				}
 			}
             .navigationTitle("App Settings")
+			.navigationBarItems(trailing:
+								  
+				ZStack {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			})
         }
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

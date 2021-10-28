@@ -56,11 +56,14 @@ struct NodeMap: View {
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
+			.navigationBarItems(trailing:
+								  
+				ZStack {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			})
+  
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear{
-			bleManager.meshData.load()
-        }
     }
 }
 

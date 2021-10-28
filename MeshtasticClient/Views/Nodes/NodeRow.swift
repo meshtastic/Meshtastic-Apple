@@ -59,7 +59,7 @@ struct NodeRow: View {
 }
 
 struct NodeRow_Previews: PreviewProvider {
-    static var nodes = MeshData().nodes
+	static var nodes = BLEManager().meshData.nodes
 
     static var previews: some View {
         Group {

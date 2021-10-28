@@ -31,6 +31,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var lastConnectionError: String
     
     @Published var isSwitchedOn = false
+	@Published var isScanning = false
     @Published var peripherals = [Peripheral]()
 
 	var timeoutTimer: Timer?
@@ -71,6 +72,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          if central.state == .poweredOn {
              
              isSwitchedOn = true
+			 startScanning()
          }
          else {
              
@@ -84,6 +86,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if isSwitchedOn {
 			
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+			self.isScanning = self.centralManager.isScanning
             print("Scanning Started")
         }
     }
@@ -94,6 +97,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if centralManager.isScanning {
             
             self.centralManager.stopScan()
+			self.isScanning = self.centralManager.isScanning
             print("Stopped Scanning")
         }
     }
@@ -108,7 +112,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		guard let context = timer.userInfo as? [String: String] else { return }
 			let name = context["name", default: "Unknown"]
 		
-		timeoutTimerCount += 1
+		self.timeoutTimerCount += 1
 
 		if timeoutTimerCount == 6 {
 			
@@ -123,8 +127,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
 			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
 			
-			timeoutTimer?.invalidate()
-			timeoutTimerCount = 0
+			self.timeoutTimer?.invalidate()
+			self.timeoutTimerCount = 0
 		}
 		else {
 			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
@@ -174,10 +178,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil {
-			
-			if self.meshData.nodes[peripheralIndex!].myInfo != nil {
-				newPeripheral.myInfo = self.meshData.nodes[peripheralIndex!].myInfo
-			}
+
+			newPeripheral.myInfo = peripherals.first(where: { $0.id == newPeripheral.id })?.myInfo
 			peripherals.remove(at: peripheralIndex!)
 			peripherals.append(newPeripheral)
 			print("Updating peripheral: \(peripheralName)");
