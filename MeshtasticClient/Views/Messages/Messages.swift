@@ -20,7 +20,6 @@ struct Messages: View {
 	@State private var deleteMessageId : UInt32 = 0
     
     // Message Data and Bluetooth
-  //  @EnvironmentObject var messageData: MessageData
     @EnvironmentObject var bleManager: BLEManager
     
     public var broadcastNodeId: UInt32 = 4294967295
@@ -101,7 +100,7 @@ struct Messages: View {
                         Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
                     }
                     .onReceive(timer) { input in
-						bleManager.messageData.load()
+					//	bleManager.messageData.load()
 						if messageCount < bleManager.messageData.messages.count {
                             scrollView.scrollTo(bottomId) 
 							messageCount = bleManager.messageData.messages.count
@@ -191,7 +190,6 @@ struct Messages: View {
 		})
         .onAppear {
             
-			bleManager.messageData.load()
 			messageCount = bleManager.messageData.messages.count
         }
     }

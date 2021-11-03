@@ -110,7 +110,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@objc func timeoutTimerFired(timer: Timer)
 	{
 		guard let context = timer.userInfo as? [String: String] else { return }
-			let name = context["name", default: "Unknown"]
+		let name : String = context["name", default: "Unknown"]
 		
 		self.timeoutTimerCount += 1
 
@@ -124,8 +124,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { Logger.log("BLE Connecting Timeout Timer disconnected orphaned radio: \(name) in state: \(connectedPeripheral.peripheral.state.rawValue)") }
 				
 			}
-			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
-			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
+			self.lastConnectionError = "Timeout while connecting to \(name)."
+			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Times and failed: \(name)")
+			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Times and failed: \(name)") }
 			
 			self.timeoutTimer?.invalidate()
 			self.timeoutTimerCount = 0
@@ -211,9 +212,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         peripheral.discoverServices([meshtasticServiceCBUUID])
 		if meshLoggingEnabled { Logger.log("BLE Connected: \(peripheral.name ?? "Unknown")") }
         print("BLE Connected: \(peripheral.name ?? "Unknown")")
-		
-		// Clear the "Available Radios" list
-		//peripherals.removeAll()
+
     }
 
     // Disconnect Peripheral Event

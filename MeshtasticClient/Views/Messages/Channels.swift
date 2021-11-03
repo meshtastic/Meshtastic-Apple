@@ -3,9 +3,14 @@ import SwiftUI
 import CoreBluetooth
 
 struct Channels: View {
+	
+	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var userSettings: UserSettings
 	@State private var isShowingDetailView = true
 	    
     var body: some View {
+		
+		
         NavigationView {
             
             GeometryReader { bounds in
