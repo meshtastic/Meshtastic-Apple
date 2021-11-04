@@ -14,8 +14,10 @@ struct Messages: View {
     @State private var totalBytes = 0
     @State private var lastTypingMessage = ""
     @FocusState private var focusedField: Field?
+	
     @Namespace var topId
     @Namespace var bottomId
+	
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId : UInt32 = 0
     

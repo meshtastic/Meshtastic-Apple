@@ -65,17 +65,15 @@ struct NodeList: View {
                             }
         
                         }
-                        .swipeActions {
-                            Button {
-                                
-								let nodeIndex = bleManager.meshData.nodes.firstIndex(where: { $0.id == node.id })
-								bleManager.meshData.nodes.remove(at: nodeIndex!)
-								bleManager.meshData.save()
+						.swipeActions (edge: .trailing) {
+                            Button (role: .destructive) {
+								let nodeIndex = bleManager.meshData.nodes.firstIndex(where: { $0.num == node.num })
+									bleManager.meshData.nodes.remove(at: nodeIndex!)
+									bleManager.meshData.save()
                             } label: {
                                 
                                 Label("Delete from app", systemImage: "trash")
-                            }
-                            .tint(.red)
+							}
                         }
                     }
                 }
@@ -83,6 +81,7 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
 			.onAppear(
 				perform: {
+					bleManager.meshData.load()
 					if UIDevice.current.userInterfaceIdiom == .pad {
 						if bleManager.meshData.nodes.count > 0 {
 							selection = "0"
