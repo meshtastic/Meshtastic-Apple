@@ -20,8 +20,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
     
-    @ObservedObject var meshData : MeshData
-    @ObservedObject var messageData : MessageData
+    @Published var meshData : MeshData
+    @Published var messageData : MessageData
     
     private var centralManager: CBCentralManager!
     
@@ -72,7 +72,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          if central.state == .poweredOn {
              
              isSwitchedOn = true
-			 startScanning()
+			 //startScanning()
          }
          else {
              
