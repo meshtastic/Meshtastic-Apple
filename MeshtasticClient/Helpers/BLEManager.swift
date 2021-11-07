@@ -181,8 +181,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if peripheralIndex != nil {
 
 			newPeripheral.myInfo = peripherals.first(where: { $0.id == newPeripheral.id })?.myInfo
-			peripherals.remove(at: peripheralIndex!)
-			peripherals.append(newPeripheral)
+			peripherals[peripheralIndex!] = newPeripheral
+			//peripherals.remove(at: peripheralIndex!)
+			//peripherals.append(newPeripheral)
 			print("Updating peripheral: \(peripheralName)");
 		}
 		else {
@@ -431,9 +432,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
                         connectedNode.myInfo = myInfoModel
 						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                        meshData.nodes.remove(at: nodeIndex!)
-                        meshData.nodes.append(connectedNode)
-						meshData.save()
+                        //meshData.nodes.remove(at: nodeIndex!)
+                        //meshData.nodes.append(connectedNode)
+						if nodeIndex != nil {
+							meshData.nodes[nodeIndex!] = connectedNode
+							meshData.save()
+						}
                         print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
 						if meshLoggingEnabled { Logger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? "Unknown")") }
                     }

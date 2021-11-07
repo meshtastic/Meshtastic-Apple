@@ -142,9 +142,10 @@ struct AppSettings: View {
 			}
             .navigationTitle("App Settings")
 			.navigationBarItems(trailing:
-								  
+									
+				
 				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+				//ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
 			})
         }
 		.navigationViewStyle(StackNavigationViewStyle())
