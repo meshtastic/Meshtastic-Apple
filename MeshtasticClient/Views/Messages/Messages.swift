@@ -27,92 +27,96 @@ struct Messages: View {
     @State var messageCount: Int = 0;
     
     var body: some View {
-        
+		
+		Text("\(messageCount) Messages").font(.caption)
         GeometryReader { bounds in
             
             VStack {
                 
                 ScrollViewReader { scrollView in
                     
-                    ScrollView {
-                        
-                        Text("Hidden Top Anchor").hidden().frame(height: 0).id(topId)
-                        
-						ForEach(bleManager.messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
-                            
-                            let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
-                            
-							HStack (alignment: .top) {
+					if self.bleManager.messageData.messages.count > 0 {
+						
+						ScrollView {
+							
+							Text("Hidden Top Anchor").hidden().frame(height: 0).id(topId)
+							
+							ForEach(bleManager.messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
 								
-								CircleText(text: message.fromUserShortName, color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
-									.gesture(LongPressGesture(minimumDuration: 2)
-												.onEnded {_ in
-										print("I want to delete message: \(message.messageId)")
-										self.showDeleteMessageAlert = true
-										self.deleteMessageId = message.messageId
-										
-									})
-								
-								
-								VStack (alignment: .leading) {
-									Text(message.messagePayload)
-									.textSelection(.enabled)
-									.padding(10)
-									.foregroundColor(.white)
-									.background(currentUser ? Color.blue : Color(.darkGray))
-									.cornerRadius(10)
-									HStack (spacing: 4) {
-										
-								        let time = Int32(message.messageTimestamp)
-										let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+								HStack (alignment: .top) {
+									let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
+									
+									CircleText(text: message.fromUserShortName, color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+										.gesture(LongPressGesture(minimumDuration: 2)
+													.onEnded {_ in
+											print("I want to delete message: \(message.messageId)")
+											self.showDeleteMessageAlert = true
+											self.deleteMessageId = message.messageId
+											
+										})
+									
+									
+									VStack (alignment: .leading) {
+										Text(message.messagePayload)
+										.textSelection(.enabled)
+										.padding(10)
+										.foregroundColor(.white)
+										.background(currentUser ? Color.blue : Color(.darkGray))
+										.cornerRadius(10)
+										HStack (spacing: 4) {
+											
+											let time = Int32(message.messageTimestamp)
+											let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
 
-										if time != 0 {
-											Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
-											Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+											if time != 0 {
+												Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+												Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+											}
+											else {
+												Text("Unknown").font(.caption2).foregroundColor(.gray)
+											}
 										}
-										else {
-											Text("Unknown").font(.caption2).foregroundColor(.gray)
-										}
+										.padding(.bottom, 10)
 									}
-									.padding(.bottom, 10)
+									Spacer()
 								}
-								Spacer()
+								.alert(isPresented: $showDeleteMessageAlert) {
+									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
+										primaryButton: .destructive (Text("Delete")) {
+										print("OK button tapped")
+										if deleteMessageId > 0 {
+											
+											let messageIndex = bleManager.messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
+											bleManager.messageData.messages.remove(at: messageIndex!)
+											bleManager.messageData.save()
+											print("Deleted message: \(message.messageId)")
+											showDeleteMessageAlert = false
+											deleteMessageId = 0
+										}
+									},
+									secondaryButton: .cancel()
+									)
+								}
 							}
-							.alert(isPresented: $showDeleteMessageAlert) {
-								Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
-									primaryButton: .destructive (Text("Delete")) {
-									print("OK button tapped")
-									if deleteMessageId > 0 {
-										
-										let messageIndex = bleManager.messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
-										bleManager.messageData.messages.remove(at: messageIndex!)
-										bleManager.messageData.save()
-										print("Deleted message: \(message.messageId)")
-										showDeleteMessageAlert = false
-										deleteMessageId = 0
-									}
-								},
-								secondaryButton: .cancel()
-								)
+							.onAppear(perform: { scrollView.scrollTo(bottomId) } )
+							Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
+						}
+						.onReceive(timer) { input in
+							
+							if messageCount < bleManager.messageData.messages.count {
+
+								scrollView.scrollTo(bottomId)
+								messageCount = bleManager.messageData.messages.count
 							}
-                        }
-                        .onAppear(perform: { scrollView.scrollTo(bottomId) } )
-                        Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
-                    }
-                    .onReceive(timer) { input in
-					//	bleManager.messageData.load()
-						if messageCount < bleManager.messageData.messages.count {
-                            scrollView.scrollTo(bottomId) 
-							messageCount = bleManager.messageData.messages.count
-                        }
-                    }
-                    .padding(.horizontal)
+						}
+						.padding(.horizontal)
+					}
                 }
                 
                 HStack (alignment: .top) {
                     
                     ZStack {
-						//let kbType = Enum.Parse(typeof(KeyboardType), userSettings.keyboardType, true);
+
 						let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 						TextEditor(text: $typingMessage)
                             .onChange(of: typingMessage, perform: { value in

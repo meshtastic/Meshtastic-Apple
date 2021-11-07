@@ -43,6 +43,7 @@ class LocalNotificationManager {
             content.sound               = .default
             content.interruptionLevel   = .timeSensitive
 
+
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
             let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
 
