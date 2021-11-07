@@ -1,0 +1,22 @@
+{
+  "images" : [
+    {
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "RAK7205_Enclosure-With-Solar-Panel_Top-View_01_9ed42002-fb51-4c49-a69e-43fcef692ef6_739x@2x.progressive-1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "RAK7205_Enclosure-With-Solar-Panel_Top-View_01_9ed42002-fb51-4c49-a69e-43fcef692ef6_739x@2x.progressive.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -20,8 +20,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
     
-    @ObservedObject var meshData : MeshData
-    @ObservedObject var messageData : MessageData
+    @Published var meshData : MeshData
+    @Published var messageData : MessageData
     
     private var centralManager: CBCentralManager!
     
@@ -114,22 +114,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		self.timeoutTimerCount += 1
 
-		if timeoutTimerCount == 6 {
+		if timeoutTimerCount == 10 {
 			
-			if connectedPeripheral != nil && connectedPeripheral.peripheral.state != CBPeripheralState.connected {
+			if connectedPeripheral != nil {
 				
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-				connectedNode = nil
-				connectedPeripheral = nil
-				if meshLoggingEnabled { Logger.log("BLE Connecting Timeout Timer disconnected orphaned radio: \(name) in state: \(connectedPeripheral.peripheral.state.rawValue)") }
-				
 			}
-			self.lastConnectionError = "Timeout while connecting to \(name)."
-			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Times and failed: \(name)")
-			if meshLoggingEnabled { Logger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Times and failed: \(name)") }
+			connectedNode = nil
+			connectedPeripheral = nil
+	
+			self.lastConnectionError = "BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
+			print("BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name).")
+			if meshLoggingEnabled { Logger.log("BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(String(name)).") }
 			
-			self.timeoutTimer?.invalidate()
 			self.timeoutTimerCount = 0
+			self.timeoutTimer?.invalidate()
+			
 		}
 		else {
 			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
