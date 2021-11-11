@@ -108,7 +108,7 @@
 		DDB0209F272B0C6B00F8DBAE /* PersistanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistanceController.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeshtasticClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticClientApp.swift; sourceTree = "<group>"; };
-		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
 		DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DDC2E16526CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E16A26CE248F0042C5E4 /* MeshtasticClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -242,7 +242,6 @@
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC2E18926CE24F70042C5E4 /* Resources */,
 				DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */,
-				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 			);
@@ -305,6 +304,7 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
