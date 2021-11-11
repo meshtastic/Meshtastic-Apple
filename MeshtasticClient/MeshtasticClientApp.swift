@@ -11,6 +11,7 @@ struct MeshtasticClientApp: App {
     var body: some Scene {
         WindowGroup {
 		ContentView()
+			.environment(\.managedObjectContext, MeshProvider.shared.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
 			//.environment(\.managedObjectContext, persistenceController.container.viewContext)

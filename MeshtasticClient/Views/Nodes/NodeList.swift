@@ -12,7 +12,7 @@ import SwiftUI
 
 struct NodeList: View {
 	
-    @EnvironmentObject var bleManager: BLEManager
+	@StateObject var bleManager: BLEManager = BLEManager()
 	
 	@State private var selection: String? = nil
     

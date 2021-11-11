@@ -4,6 +4,11 @@ import Foundation
 import CoreLocation
 
 struct Messages: View {
+	
+	var meshProvider: MeshProvider = .shared
+	
+	@FetchRequest(sortDescriptors: [SortDescriptor(\.messageTimestamp, order: .reverse)])
+	private var messages: FetchedResults<MessageEntity>
     
     enum Field: Hashable {
         case messageText
@@ -30,11 +35,15 @@ struct Messages: View {
     
     var body: some View {
 		
-		Text("\(messageCount) Messages").font(.caption)
+		
         GeometryReader { bounds in
-            
+			
+			ForEach(messages, id: \.messageId) { message in
+				Text(message.messagePayload)
+			}
+			if self.bleManager.messageData.messages.count > 0 {
             VStack {
-                
+				Text("\(messageCount) Messages").font(.caption)
                 ScrollViewReader { scrollView in
                     
 					if self.bleManager.messageData.messages.count > 0 {
@@ -186,6 +195,7 @@ struct Messages: View {
                 }
                 .padding(.all, 15)
             }
+			}
         }
         .navigationTitle("Channel - Primary")
         .navigationBarTitleDisplayMode(.inline)

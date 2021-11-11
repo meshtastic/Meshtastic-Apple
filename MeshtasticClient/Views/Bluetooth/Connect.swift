@@ -64,6 +64,9 @@ struct Connect: View {
 										if bleManager.connectedPeripheral.myInfo != nil {
 											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										}
+										if bleManager.connectedPeripheral.subscribed {
+											Text("Properly Subscribed").font(.caption)
+										}
 									}
 									Spacer()
 										

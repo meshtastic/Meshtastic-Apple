@@ -23,6 +23,10 @@
 		DD8169F9271F1A6100F4AB02 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* Logger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
+		DD834DFB27397C5E00E724DC /* MeshProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD834DFA27397C5E00E724DC /* MeshProvider.swift */; };
+		DD834DFD27397C7100E724DC /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD834DFC27397C7100E724DC /* MessageEntity.swift */; };
+		DD834E0027397CDE00E724DC /* Mesh.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD834DFE27397CDE00E724DC /* Mesh.xcdatamodeld */; };
+		DD834E02273988B000E724DC /* MeshDataError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD834E01273988B000E724DC /* MeshDataError.swift */; };
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEC26F858F900ABCC23 /* MeshData.swift */; };
 		DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */; };
@@ -87,6 +91,10 @@
 		DD8169F8271F1A6100F4AB02 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
+		DD834DFA27397C5E00E724DC /* MeshProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshProvider.swift; sourceTree = "<group>"; };
+		DD834DFC27397C7100E724DC /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
+		DD834DFF27397CDE00E724DC /* Mesh.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Mesh.xcdatamodel; sourceTree = "<group>"; };
+		DD834E01273988B000E724DC /* MeshDataError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshDataError.swift; sourceTree = "<group>"; };
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD836AEC26F858F900ABCC23 /* MeshData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshData.swift; sourceTree = "<group>"; };
 		DD836AEE26F85D8D00ABCC23 /* NodeInfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoModel.swift; sourceTree = "<group>"; };
@@ -206,6 +214,9 @@
 			isa = PBXGroup;
 			children = (
 				DDB0209F272B0C6B00F8DBAE /* PersistanceController.swift */,
+				DD834DFA27397C5E00E724DC /* MeshProvider.swift */,
+				DD834DFC27397C7100E724DC /* MessageEntity.swift */,
+				DD834E01273988B000E724DC /* MeshDataError.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -242,7 +253,6 @@
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC2E18926CE24F70042C5E4 /* Resources */,
 				DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */,
-				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 			);
@@ -305,6 +315,8 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
+				DD834DFE27397CDE00E724DC /* Mesh.xcdatamodeld */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -490,6 +502,7 @@
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				DD47E3DB26F3901B00029299 /* Channels.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
+				DD834DFB27397C5E00E724DC /* MeshProvider.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DD23A51326FEF5D500D9B90C /* MessageData.swift in Sources */,
 				DD836AED26F858F900ABCC23 /* MeshData.swift in Sources */,
@@ -500,7 +513,9 @@
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
+				DD834E0027397CDE00E724DC /* Mesh.xcdatamodeld in Sources */,
 				DD47E3DF26F39D9F00029299 /* MyInfoModel.swift in Sources */,
+				DD834DFD27397C7100E724DC /* MessageEntity.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD47E3D026F1073F00029299 /* NodeRow.swift in Sources */,
@@ -509,6 +524,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
+				DD834E02273988B000E724DC /* MeshDataError.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* Logger.swift in Sources */,
@@ -686,7 +702,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.27.9;
+				MARKETING_VERSION = 1.28.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -713,7 +729,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.27.9;
+				MARKETING_VERSION = 1.28.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -866,6 +882,19 @@
 			productName = SwiftProtobuf;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		DD834DFE27397CDE00E724DC /* Mesh.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				DD834DFF27397CDE00E724DC /* Mesh.xcdatamodel */,
+			);
+			currentVersion = DD834DFF27397CDE00E724DC /* Mesh.xcdatamodel */;
+			path = Mesh.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
 }

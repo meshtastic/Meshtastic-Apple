@@ -1,6 +1,6 @@
 import Foundation
 
-class Logger {
+class MeshLogger {
 
 	static var logFile: URL? {
 		guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }

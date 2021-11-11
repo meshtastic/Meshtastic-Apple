@@ -12,7 +12,7 @@ import CoreLocation
 
 struct NodeMap: View {
     
-	@EnvironmentObject var bleManager :BLEManager
+	@StateObject var bleManager: BLEManager = BLEManager()
     
     var locationNodes: [NodeInfoModel] {
 		bleManager.meshData.nodes.filter { node in
@@ -58,8 +58,8 @@ struct NodeMap: View {
             .navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 								  
-				ZStack {
-				//	ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			ZStack {
+				//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 			})
   
         }
