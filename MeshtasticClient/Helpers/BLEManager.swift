@@ -392,6 +392,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 //let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
                 //print("string array data \(stringFromByteArray!)")
                 //print(characteristic.value?. ?? "no value")
+    
                 
             case FROMRADIO_UUID:
                 if (characteristic.value == nil || characteristic.value!.isEmpty)
