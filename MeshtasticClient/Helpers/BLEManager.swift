@@ -20,7 +20,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
 	
-	//var meshProvider: MeshProvider = .shared
+	var meshProvider: MeshProvider = .shared
     
     @Published var meshData : MeshData
     @Published var messageData : MessageData
@@ -346,6 +346,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
       }
     }
 	
+
+	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		
 		peripheral.delegate = self
@@ -375,9 +377,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		//commandLock.unlock()
 		//?.peripheralManager(self, didUpdateNotificationStateFor: characteristic)
 	}
-    
+	
     // Data Read / Update Characteristic Event
-	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) async
+	internal func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
 		peripheral.delegate = self
 
@@ -552,8 +554,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let decoder = JSONDecoder()
 						let jsonData: Data = try JSONSerialization.data(withJSONObject: messageObject, options: [])
 						let messages = try decoder.decode([MessageProperties].self, from: jsonData)
+						Task.detached {
+	
+							try await self.meshProvider.importMessages(from: messages)
+
+						}
+	
 							
-						//try await meshProvider.importMessages(from: messages)
+							
 							
                         // Add the received message to the local messages list / file and save
                         messageData.messages.append(

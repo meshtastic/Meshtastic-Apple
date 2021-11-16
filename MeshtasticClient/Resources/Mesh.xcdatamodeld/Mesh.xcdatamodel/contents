@@ -18,7 +18,33 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="class"/>
+    <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastHeard" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="position" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionEntity"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity"/>
+    </entity>
+    <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="batteryLevel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="time" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="hwModel" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="longLane" optional="YES" attributeType="String"/>
+        <attribute name="shortName" optional="YES" attributeType="String"/>
+    </entity>
     <elements>
-        <element name="MessageEntity" positionX="-63" positionY="-18" width="128" height="194"/>
+        <element name="MessageEntity" positionX="-425.15625" positionY="-93.07421875" width="128" height="194"/>
+        <element name="NodeInfoEntity" positionX="-42.00390625" positionY="-100.3515625" width="128" height="133"/>
+        <element name="UserEntity" positionX="307.54296875" positionY="53.54296875" width="128" height="89"/>
+        <element name="PositionEntity" positionX="207.3125" positionY="-82.4921875" width="128" height="104"/>
+        <element name="MyInfoEntity" positionX="108.45703125" positionY="204.5625" width="128" height="29"/>
     </elements>
 </model>
