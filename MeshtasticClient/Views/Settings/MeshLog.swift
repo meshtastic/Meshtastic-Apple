@@ -3,7 +3,7 @@ import Foundation
 import UniformTypeIdentifiers
 
 struct MeshLog: View {
-	let logFile = Logger.logFile
+	let logFile = MeshLogger.logFile
 	var text = ""
 	@State private var logs = [String]()
 	@State private var isExporting: Bool = false

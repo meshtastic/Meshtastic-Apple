@@ -106,7 +106,8 @@ struct Messages: View {
 						.onReceive(timer) { input in
 							
 							if messageCount < bleManager.messageData.messages.count {
-
+								
+								bleManager.messageData.load()
 								scrollView.scrollTo(bottomId)
 								messageCount = bleManager.messageData.messages.count
 							}

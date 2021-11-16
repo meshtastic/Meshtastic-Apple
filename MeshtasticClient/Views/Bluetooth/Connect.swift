@@ -128,7 +128,7 @@ struct Connect: View {
 						
 						if bleManager.peripherals.count > 0 {
 							Section(header: Text("Available Radios").font(.title)) {
-								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in
+								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
 									HStack {
 										Image(systemName: "circle.fill")
 											.imageScale(.large).foregroundColor(.gray)
