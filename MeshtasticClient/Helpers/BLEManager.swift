@@ -196,7 +196,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // called when a peripheral is connected
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
-		peripheral.delegate = self
+		//peripheral.delegate = self
 		// Invalidate and reset connection timer count, remove any connection errors
 		lastConnectionError = ""
 		self.timeoutTimer!.invalidate()
@@ -204,6 +204,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         
 		// Map the peripheral to the connectedNode and connectedPeripheral ObservedObjects
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
+		connectedPeripheral.peripheral.delegate = self
 		let deviceName = peripheral.name ?? ""
 		let peripheralLast4: String = String(deviceName.suffix(4))
 		connectedNode = self.meshData.nodes.first(where: { $0.user.id.contains(peripheralLast4) })
@@ -219,7 +220,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Disconnect Peripheral Event
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
-		peripheral.delegate = self
+		connectedPeripheral.peripheral.delegate = self
         // Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
         self.startScanning()
 		self.connectedPeripheral = nil
@@ -276,7 +277,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Discover Services Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 	
-		peripheral.delegate = self
+		connectedPeripheral.peripheral.delegate = self
         if let e = error {
             
             print("Discover Services error \(e)")
@@ -300,7 +301,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Discover Characteristics Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?)
     {
-		peripheral.delegate = self
+		connectedPeripheral.peripheral.delegate = self
         if let e = error {
             
             print("Discover Characteristics error \(e)")
@@ -346,7 +347,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		
-		peripheral.delegate = self
+		connectedPeripheral.peripheral.delegate = self
 		print("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)")
 		if meshLoggingEnabled { MeshLogger.log("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)") }
 		if let errorText = error?.localizedDescription
@@ -377,7 +378,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
-		peripheral.delegate = self
+		connectedPeripheral.peripheral.delegate = self
         if let e = error {
             
             print("didUpdateValueFor Characteristic error \(e)")
@@ -629,7 +630,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 if decodedInfo.configCompleteID != 0 {
 					if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 					print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
-
+					self.connectedPeripheral.subscribed = true
                 }
                 
             default:
