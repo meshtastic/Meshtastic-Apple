@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="firmwareVersion" attributeType="String" defaultValueString=""/>
+        <attribute name="hasGPS" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="maxChannels" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="messageTimeoutMsec" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="myNodeNum" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="numBands" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="lastHeard" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="position" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionEntity"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity"/>
+    </entity>
+    <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="batteryLevel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="time" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="hwModel" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="longName" attributeType="String"/>
+        <attribute name="shortName" attributeType="String"/>
+    </entity>
+    <elements>
+        <element name="MyInfoEntity" positionX="197.7109375" positionY="-39.640625" width="128" height="148"/>
+        <element name="NodeInfoEntity" positionX="407.91796875" positionY="-220.19140625" width="128" height="118"/>
+        <element name="PositionEntity" positionX="63.6640625" positionY="-184.76171875" width="128" height="104"/>
+        <element name="UserEntity" positionX="416.25" positionY="46.7109375" width="128" height="89"/>
+    </elements>
+</model>

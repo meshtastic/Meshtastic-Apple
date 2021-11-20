@@ -72,7 +72,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          if central.state == .poweredOn {
              
              isSwitchedOn = true
-			 startScanning()
+			 //startScanning()
          }
          else {
              
@@ -178,12 +178,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, subscribed: false, peripheral: peripheral, myInfo: nil)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
-		if peripheralIndex != nil {
+		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
 
 			newPeripheral.myInfo = peripherals.first(where: { $0.id == newPeripheral.id })?.myInfo
 			peripherals[peripheralIndex!] = newPeripheral
-			//peripherals.remove(at: peripheralIndex!)
-			//peripherals.append(newPeripheral)
+			peripherals.remove(at: peripheralIndex!)
+			peripherals.append(newPeripheral)
 			print("Updating peripheral: \(peripheralName)");
 		}
 		else {
@@ -196,7 +196,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // called when a peripheral is connected
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
-		//peripheral.delegate = self
+		peripheral.delegate = self
 		// Invalidate and reset connection timer count, remove any connection errors
 		lastConnectionError = ""
 		self.timeoutTimer!.invalidate()
@@ -220,7 +220,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Disconnect Peripheral Event
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?)
     {
-		connectedPeripheral.peripheral.delegate = self
+		peripheral.delegate = self
         // Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
         self.startScanning()
 		self.connectedPeripheral = nil
@@ -277,7 +277,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Discover Services Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 	
-		connectedPeripheral.peripheral.delegate = self
+		peripheral.delegate = self
         if let e = error {
             
             print("Discover Services error \(e)")
@@ -301,7 +301,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Discover Characteristics Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?)
     {
-		connectedPeripheral.peripheral.delegate = self
+		peripheral.delegate = self
         if let e = error {
             
             print("Discover Characteristics error \(e)")
@@ -347,7 +347,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		
-		connectedPeripheral.peripheral.delegate = self
+		peripheral.delegate = self
 		print("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)")
 		if meshLoggingEnabled { MeshLogger.log("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)") }
 		if let errorText = error?.localizedDescription
@@ -378,7 +378,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?)
     {
-		connectedPeripheral.peripheral.delegate = self
+		peripheral.delegate = self
         if let e = error {
             
             print("didUpdateValueFor Characteristic error \(e)")
