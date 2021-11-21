@@ -106,7 +106,7 @@ struct Connect: View {
 									Button(role: .destructive) {
 										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
 										{
-											bleManager.disconnectDevice()
+											bleManager.disconnectPeripheral()
 											isPreferredRadio = false
 										}
 									} label: {
@@ -140,7 +140,8 @@ struct Connect: View {
 											self.bleManager.stopScanning()
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
 											{
-												self.bleManager.disconnectDevice()
+												
+												self.bleManager.disconnectPeripheral()
 											}
 											self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
