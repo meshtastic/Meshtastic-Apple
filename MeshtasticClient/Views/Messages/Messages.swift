@@ -12,6 +12,7 @@ struct Messages: View {
     // Keyboard State
 	@State var typingMessage: String = ""
     @State private var totalBytes = 0
+	private var maxbytes = 228
     @State private var lastTypingMessage = ""
     @FocusState private var focusedField: Field?
 	
@@ -126,7 +127,7 @@ struct Messages: View {
 
                                 let size = value.utf8.count
                                 totalBytes = size
-                                if totalBytes <= 200 {
+                                if totalBytes <= maxbytes {
                                     // Allow the user to type
                                     lastTypingMessage = typingMessage
                                 }
@@ -147,7 +148,7 @@ struct Messages: View {
                                     
                                     Spacer()
                                     
-                                    ProgressView("Bytes: \(totalBytes) / 200", value: Double(totalBytes), total: 200)
+                                    ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
                                         .frame(width: 130)
                                         .padding(5)
                                         .font(.subheadline)

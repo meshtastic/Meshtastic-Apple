@@ -14,7 +14,7 @@
         <attribute name="num" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="position" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionEntity"/>
-        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity"/>
+        <relationship name="user" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity"/>
     </entity>
     <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
