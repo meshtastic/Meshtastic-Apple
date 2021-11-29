@@ -1,24 +1,19 @@
 import Foundation
 import SwiftUI
 
-extension Data
-{
-    var hexDescription: String
-    {
+extension Data {
+    var hexDescription: String {
         return reduce("") {$0 + String(format: "%02x", $1)}
     }
 }
 
-extension Date
-{
-    static var currentTimeStamp: Int64
-    {
+extension Date {
+    static var currentTimeStamp: Int64 {
         return Int64(Date().timeIntervalSince1970 * 1000)
     }
 }
 
-extension String
-{
+extension String {
 
     /// Create `Data` from hexadecimal string representation
     ///
@@ -26,8 +21,7 @@ extension String
     ///
     /// - returns: Data represented by this hexadecimal string.
 
-    var hexadecimal: Data?
-    {
+    var hexadecimal: Data? {
         var data = Data(capacity: count / 2)
 
         let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)

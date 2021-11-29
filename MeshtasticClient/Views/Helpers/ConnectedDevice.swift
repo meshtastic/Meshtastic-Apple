@@ -11,7 +11,7 @@ struct ConnectedDevice: View {
     var name: String?
 
     var body: some View {
-        
+
         HStack {
 
             if bluetoothOn {
@@ -21,18 +21,16 @@ struct ConnectedDevice: View {
                         .foregroundColor(.green)
                         .symbolRenderingMode(.hierarchical)
                     Text(name!).font(.subheadline).foregroundColor(.gray)
-                }
-                else {
-            
+                } else {
+
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
                         .imageScale(.medium)
                         .foregroundColor(.red)
                         .symbolRenderingMode(.hierarchical)
                     Text("Disconnected").font(.subheadline).foregroundColor(.gray)
-                    
+
                 }
-            }
-            else {
+            } else {
                 Text("Bluetooth Off").font(.subheadline).foregroundColor(.red)
             }
         }
@@ -43,9 +41,9 @@ struct ConnectedDevice_Previews: PreviewProvider {
     static var previews: some View {
         ConnectedDevice(bluetoothOn: true, deviceConnected: false, name: "Yellow Beam")
             .previewLayout(.fixed(width: 80, height: 70))
-    
-        ConnectedDevice(bluetoothOn: true, deviceConnected: false,  name: "Yellow Beam")
+
+        ConnectedDevice(bluetoothOn: true, deviceConnected: false, name: "Yellow Beam")
             .previewLayout(.fixed(width: 80, height: 70))
     }
-    
+
 }

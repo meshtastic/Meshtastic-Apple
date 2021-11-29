@@ -12,11 +12,11 @@ class MeshData: ObservableObject {
             fatalError("Can't find documents directory.")
         }
     }
-    
+
     private static var fileURL: URL {
         return documentsFolder.appendingPathComponent("nodeinfo.data")
     }
-    
+
     @Published var nodes: [NodeInfoModel] = []
 
     func load() {
@@ -33,12 +33,11 @@ class MeshData: ObservableObject {
 				do {
 					// If the file is borked delete it so we stop crashing
 					try FileManager.default.removeItem(at: Self.fileURL)
-				}
-				catch {
-					
+				} catch {
+
 					fatalError("Can't delete saved node data.")
 				}
-				
+
                 fatalError("Can't decode saved node data.")
             }
             DispatchQueue.main.async {

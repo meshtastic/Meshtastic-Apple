@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -56,7 +56,7 @@ struct LegacyRadioConfig {
 
   init() {}
 
-  fileprivate var _preferences: LegacyRadioConfig.LegacyPreferences? = nil
+  fileprivate var _preferences: LegacyRadioConfig.LegacyPreferences?
 }
 
 ///
@@ -180,7 +180,7 @@ struct ChannelFile {
 extension LegacyRadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "LegacyRadioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "preferences"),
+    1: .same(proto: "preferences")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -212,7 +212,7 @@ extension LegacyRadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 extension LegacyRadioConfig.LegacyPreferences: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = LegacyRadioConfig.protoMessageName + ".LegacyPreferences"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    15: .same(proto: "region"),
+    15: .same(proto: "region")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -252,17 +252,17 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     8: .same(proto: "version"),
     7: .standard(proto: "rx_text_message"),
     9: .standard(proto: "no_save"),
-    11: .standard(proto: "did_gps_reset"),
+    11: .standard(proto: "did_gps_reset")
   ]
 
   fileprivate class _StorageClass {
-    var _legacyRadio: LegacyRadioConfig? = nil
-    var _myNode: MyNodeInfo? = nil
-    var _owner: User? = nil
+    var _legacyRadio: LegacyRadioConfig?
+    var _myNode: MyNodeInfo?
+    var _owner: User?
     var _nodeDb: [NodeInfo] = []
     var _receiveQueue: [MeshPacket] = []
     var _version: UInt32 = 0
-    var _rxTextMessage: MeshPacket? = nil
+    var _rxTextMessage: MeshPacket?
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
 
@@ -372,7 +372,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ChannelFile"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "channels"),
+    1: .same(proto: "channels")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

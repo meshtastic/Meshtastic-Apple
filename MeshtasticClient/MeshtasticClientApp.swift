@@ -6,9 +6,9 @@ struct MeshtasticClientApp: App {
 
     @ObservedObject private var bleManager: BLEManager = BLEManager()
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
-	
+
 	@Environment(\.scenePhase) var scenePhase
-    
+
     var body: some Scene {
         WindowGroup {
 		ContentView()
@@ -28,17 +28,17 @@ struct MeshtasticClientApp: App {
 			}
 		}
     }
-	
+
 	var persistentContainer: NSPersistentContainer = {
 		   let container = NSPersistentContainer(name: "Mesh")
-		   container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+		   container.loadPersistentStores(completionHandler: { (_, error) in
 			   if let error = error as NSError? {
 				   fatalError("Unresolved error \(error), \(error.userInfo)")
 			   }
 		   })
 		   return container
 	   }()
-	
+
 	func saveContext() {
 		   let context = persistentContainer.viewContext
 		   if context.hasChanges {

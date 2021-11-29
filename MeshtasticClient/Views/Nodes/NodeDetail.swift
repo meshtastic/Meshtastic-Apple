@@ -8,27 +8,27 @@ import MapKit
 import CoreLocation
 
 struct NodeDetail: View {
-	
-	@EnvironmentObject var bleManager :BLEManager
-    
+
+	@EnvironmentObject var bleManager: BLEManager
+
     var node: NodeInfoModel
-    
+
     struct MapLocation: Identifiable {
           let id = UUID()
           let name: String
           let coordinate: CLLocationCoordinate2D
     }
-    
+
     var body: some View {
 
         GeometryReader { bounds in
-            
+
             VStack {
-                
-                if(node.position.coordinate != nil) {
-                    
+
+                if node.position.coordinate != nil {
+
                     let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.position.latitude!, longitude: node.position.longitude!)
-                    
+
                     let regionBinding = Binding<MKCoordinateRegion>(
                         get: {
                             MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
@@ -36,7 +36,7 @@ struct NodeDetail: View {
                         set: { _ in }
                     )
                     let annotations = [MapLocation(name: node.user.shortName, coordinate: node.position.coordinate!)]
-                    
+
                     Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
                         MapAnnotation(
                            coordinate: location.coordinate,
@@ -44,29 +44,27 @@ struct NodeDetail: View {
 							   CircleText(text: node.user.shortName, color: .accentColor)
                            }
                         )
-                    }.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)  
-                }
-                else
-                {
+                    }.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
+                } else {
                     Image(node.user.hwModel)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: bounds.size.width, height: bounds.size.height / 2)
                 }
                 ScrollView {
-                    
+
                     HStack {
-                        
+
                         VStack(alignment: .center) {
                             Text("AKA").font(.title2).fixedSize()
 							CircleText(text: node.user.shortName, color: .accentColor)
-                                .offset(y:10)
+                                .offset(y: 10)
                         }
                         .padding([.leading, .trailing, .bottom])
                         Divider()
                         if node.snr != nil && node.snr! > 0 {
                             VStack(alignment: .center) {
-                                
+
                                 Image(systemName: "waveform.path")
                                     .font(.title)
 									.foregroundColor(.accentColor)
@@ -86,38 +84,37 @@ struct NodeDetail: View {
                                     .font(.title2)
                                     .foregroundColor(.gray)
                                     .symbolRenderingMode(.hierarchical)
-                            }
-                            else {
+                            } else {
                                 Text("Powered").font(.title2)
                             }
                         }
-                        
+
                     }.padding(4)
                     Divider()
                     HStack {
-                        
+
                         Image(node.user.hwModel)
                             .resizable()
-                            .frame(width:60, height: 60)
+                            .frame(width: 60, height: 60)
                             .cornerRadius(5)
-                            
+
                         Text("Model: " + String(node.user.hwModel))
                             .font(.title3)
                     }
                     .padding()
                     Divider()
-                    
+
                     if node.lastHeard > 0 {
-                        
-                        HStack{
-                            
+
+                        HStack {
+
 							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
                                 let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
                                 Text("Last Heard: \(lastHeard, style: .relative) ago").font(.title3)
                         }.padding()
                         Divider()
                     }
-                    
+
                     if node.position.coordinate != nil {
                         HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
 							Image(systemName: "mappin").font(.title).foregroundColor(.accentColor)
@@ -138,9 +135,9 @@ struct NodeDetail: View {
                         }.padding()
                         Divider()
                     }
-                    HStack (alignment: .center) {
+                    HStack(alignment: .center) {
                         VStack {
-                            HStack{
+                            HStack {
                                 Image(systemName: "person").font(.title3).foregroundColor(.accentColor)
                                 Text("Unique Id:").font(.title3)
                             }
@@ -159,14 +156,13 @@ struct NodeDetail: View {
             }.navigationTitle(node.user.longName)
             .navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
-								  
+
 				ZStack {
-					//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+					// ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 			})
         }.ignoresSafeArea(.all, edges: [.leading, .trailing])
     }
 }
-
 
 struct NodeDetail_Previews: PreviewProvider {
 	static let bleManager = BLEManager()

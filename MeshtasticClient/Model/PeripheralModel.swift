@@ -7,9 +7,9 @@ struct Peripheral: Identifiable {
 	var rssi: Int
 	var subscribed: Bool
 	var peripheral: CBPeripheral
-	
+
 	var myInfo: MyInfoModel?
-	
+
 	init(id: String, name: String, rssi: Int, subscribed: Bool, peripheral: CBPeripheral, myInfo: MyInfoModel?) {
 		self.id = id
 		self.name = name

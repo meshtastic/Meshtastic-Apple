@@ -34,7 +34,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -230,7 +230,7 @@ extension ChannelSettings.ModemConfig: CaseIterable {
     .bw125Cr45Sf128,
     .bw500Cr45Sf128,
     .bw3125Cr48Sf512,
-    .bw125Cr48Sf4096,
+    .bw125Cr48Sf4096
   ]
 }
 
@@ -319,7 +319,7 @@ struct Channel {
 
   init() {}
 
-  fileprivate var _settings: ChannelSettings? = nil
+  fileprivate var _settings: ChannelSettings?
 }
 
 #if swift(>=4.2)
@@ -329,7 +329,7 @@ extension Channel.Role: CaseIterable {
   static var allCases: [Channel.Role] = [
     .disabled,
     .primary,
-    .secondary,
+    .secondary
   ]
 }
 
@@ -350,7 +350,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     5: .same(proto: "name"),
     10: .same(proto: "id"),
     16: .standard(proto: "uplink_enabled"),
-    17: .standard(proto: "downlink_enabled"),
+    17: .standard(proto: "downlink_enabled")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -434,7 +434,7 @@ extension ChannelSettings.ModemConfig: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "Bw125Cr45Sf128"),
     1: .same(proto: "Bw500Cr45Sf128"),
     2: .same(proto: "Bw31_25Cr48Sf512"),
-    3: .same(proto: "Bw125Cr48Sf4096"),
+    3: .same(proto: "Bw125Cr48Sf4096")
   ]
 }
 
@@ -443,7 +443,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "index"),
     2: .same(proto: "settings"),
-    3: .same(proto: "role"),
+    3: .same(proto: "role")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -486,6 +486,6 @@ extension Channel.Role: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DISABLED"),
     1: .same(proto: "PRIMARY"),
-    2: .same(proto: "SECONDARY"),
+    2: .same(proto: "SECONDARY")
   ]
 }

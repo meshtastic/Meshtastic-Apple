@@ -14,47 +14,46 @@ import CoreLocation
 import CoreBluetooth
 
 struct Connect: View {
-    
+
     @EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	@State var isPreferredRadio: Bool = false
-      
+
     var body: some View {
-		
+
 		NavigationView {
-            
+
             VStack {
                 if bleManager.isSwitchedOn {
-                    
+
                     List {
 						if bleManager.lastConnectionError.count > 0 {
-							
+
 							Section(header: Text("Connection Error").font(.title)) {
-							
+
 								Text(bleManager.lastConnectionError).font(.title3).foregroundColor(.red)
 							}
 							.textCase(nil)
 						}
-						
+
 						Section(header: Text("Connected Radio").font(.title)) {
-							
+
                             if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
                                 HStack {
-									
+
                                     Image(systemName: "antenna.radiowaves.left.and.right")
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.green)
                                         .padding(.trailing)
-                                    
-									VStack  (alignment: .leading)  {
-										
+
+									VStack(alignment: .leading) {
+
 										if bleManager.connectedNode != nil {
-											
+
 											Text(bleManager.connectedNode.user.longName).font(.title2)
-										}
-										else {
-											
+										} else {
+
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
 										if bleManager.connectedNode != nil {
@@ -69,9 +68,9 @@ struct Connect: View {
 										}
 									}
 									Spacer()
-										
-									VStack  (alignment: .center)  {
-										
+
+									VStack(alignment: .center) {
+
 										Text("Preferred").font(.caption2)
 										Text("Radio").font(.caption2)
 										Toggle("Preferred Radio", isOn: $isPreferredRadio)
@@ -79,7 +78,7 @@ struct Connect: View {
 											.labelsHidden()
 											.onChange(of: isPreferredRadio) { value in
 												if value {
-													
+
 													if bleManager.connectedNode != nil {
 														let deviceName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
 
@@ -87,13 +86,13 @@ struct Connect: View {
 													} else {
 														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device"
 													}
-													
+
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
 
 												} else {
-													
+
 													if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
-														
+
 														userSettings.preferredPeripheralId = ""
 														userSettings.preferredPeripheralName = ""
 													}
@@ -102,10 +101,9 @@ struct Connect: View {
 									}
                                 }
 								.swipeActions {
-									
+
 									Button(role: .destructive) {
-										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
-										{
+										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 											bleManager.disconnectPeripheral()
 											isPreferredRadio = false
 										}
@@ -114,9 +112,8 @@ struct Connect: View {
 									}
 								}
 								.padding([.top, .bottom])
-                            }
-                            else {
-                                HStack{
+                            } else {
+                                HStack {
                                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
                                         .symbolRenderingMode(.hierarchical)
                                         .imageScale(.large).foregroundColor(.red)
@@ -125,10 +122,10 @@ struct Connect: View {
                                 }
                                 .padding()
                             }
-                            
+
                         }
 						.textCase(nil)
-						
+
 						if bleManager.peripherals.count > 0 {
 							Section(header: Text("Available Radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
@@ -138,18 +135,16 @@ struct Connect: View {
 											.padding(.trailing)
 										Button(action: {
 											self.bleManager.stopScanning()
-											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected
-											{
-												
+											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+
 												self.bleManager.disconnectPeripheral()
 											}
 											self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-												
+
 												isPreferredRadio = true
-											}
-											else {
-												
+											} else {
+
 												isPreferredRadio = false
 											}
 										}) {
@@ -157,13 +152,13 @@ struct Connect: View {
 										}
 										Spacer()
 										Text(String(peripheral.rssi) + " dB").font(.title3)
-									}.padding([.bottom,.top])
+									}.padding([.bottom, .top])
 								}
 							}.textCase(nil)
 						}
                     }
-                    
-                    HStack (alignment: .center) {
+
+                    HStack(alignment: .center) {
                         Spacer()
                         Button(action: {
                             self.bleManager.startScanning()
@@ -193,9 +188,8 @@ struct Connect: View {
                         Spacer()
                     }
 					.padding(.bottom, 10)
-                    
-                }
-                else {
+
+                } else {
                     Text("Bluetooth: OFF")
                         .foregroundColor(.red)
                         .font(.title)
@@ -203,7 +197,7 @@ struct Connect: View {
             }
             .navigationTitle("Bluetooth Radios")
             .navigationBarItems(trailing:
-                                  
+
                ZStack {
 
                     ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
@@ -215,8 +209,7 @@ struct Connect: View {
 
 			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
-			}
-			else {
+			} else {
 				isPreferredRadio = false
 			}
 		})

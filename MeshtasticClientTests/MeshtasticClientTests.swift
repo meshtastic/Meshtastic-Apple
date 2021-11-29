@@ -6,7 +6,7 @@
 //
 
 import XCTest
-//@testable import MeshtasticClient
+// @testable import MeshtasticClient
 
 class MeshtasticClientTests: XCTestCase {
 
