@@ -1,0 +1,34 @@
+line_length: 200
+
+type_name:
+  min_length: 1 # only warning
+  max_length: # warning and error
+    warning: 40
+    error: 50
+  excluded: iPhone # excluded via string
+  allowed_symbols: ["_"] # these are allowed in type names
+identifier_name:
+  min_length: 1 # only warning
+  allowed_symbols: ["_"] # these are allowed in type names
+
+# TODO: should review
+force_try:
+  severity: warning # explicitly
+
+# TODO: should review
+file_length:
+  warning: 2000
+  error: 2500
+
+# TODO: should review
+cyclomatic_complexity:
+  warning: 60
+  error: 70
+  ignores_case_statements: true
+
+# TODO: should review
+function_body_length:
+  warning: 200
+
+type_body_length:
+  warning: 400
