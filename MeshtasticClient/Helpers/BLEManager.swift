@@ -20,6 +20,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
     
+	// Core Data
+	@Environment(\.managedObjectContext) private var viewContext
+	
     @Published var meshData : MeshData
     @Published var messageData : MessageData
     
@@ -414,8 +417,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 var decodedInfo = FromRadio()
                 
                 decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-                //print("Print DecodedInfo")
-                //print(decodedInfo)
+                print("Print DecodedInfo")
+                print(decodedInfo)
                 
                 if decodedInfo.myInfo.myNodeNum != 0
                 {
@@ -471,6 +474,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                             let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
                             meshData.nodes.remove(at: nodeIndex!)
                             meshData.save()
+
                         }
                         else {
                             
@@ -511,6 +515,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                         )
                         meshData.save()
 						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
+						
+						
+						
 						if connectedNode == nil {
 							
 							//connectedNode = meshData.nodes.first(where: {$0.num == connectedPeripheral.myInfo!.myNodeNum})
@@ -719,5 +726,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return success
 	}
+	
+	
     
 }

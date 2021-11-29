@@ -48,7 +48,6 @@
 		DDC2E17A26CE248F0042C5E4 /* MeshtasticClientUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E17926CE248F0042C5E4 /* MeshtasticClientUITests.swift */; };
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
-		DDD8976E2745E08F000258DB /* Mesh.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DDD8976C2745E08F000258DB /* Mesh.xcdatamodeld */; };
 		DDF924C626FA2375009FE055 /* MessageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C526FA2375009FE055 /* MessageModel.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 /* End PBXBuildFile section */
@@ -118,7 +117,6 @@
 		DDC2E17B26CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
-		DDD8976D2745E08F000258DB /* Mesh.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Mesh.xcdatamodel; sourceTree = "<group>"; };
 		DDF924C526FA2375009FE055 /* MessageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageModel.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -202,14 +200,6 @@
 			path = Protobufs;
 			sourceTree = "<group>";
 		};
-		DDB0209E272B0C5700F8DBAE /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				DDD8976C2745E08F000258DB /* Mesh.xcdatamodeld */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -290,7 +280,6 @@
 		DDC2E18826CE24EE0042C5E4 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				DDB0209E272B0C5700F8DBAE /* Data */,
 				DD47E3DE26F39D9F00029299 /* MyInfoModel.swift */,
 				DDF924C526FA2375009FE055 /* MessageModel.swift */,
 				DD836AEC26F858F900ABCC23 /* MeshData.swift */,
@@ -495,7 +484,6 @@
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A91202708C66600501B7E /* Configuration.swift in Sources */,
-				DDD8976E2745E08F000258DB /* Mesh.xcdatamodeld in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
@@ -686,7 +674,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.28.2;
+				MARKETING_VERSION = 1.28.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -713,7 +701,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.28.2;
+				MARKETING_VERSION = 1.28.3;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -866,19 +854,6 @@
 			productName = SwiftProtobuf;
 		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		DDD8976C2745E08F000258DB /* Mesh.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				DDD8976D2745E08F000258DB /* Mesh.xcdatamodel */,
-			);
-			currentVersion = DDD8976D2745E08F000258DB /* Mesh.xcdatamodel */;
-			path = Mesh.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = DDC2E14C26CE248E0042C5E4 /* Project object */;
 }
