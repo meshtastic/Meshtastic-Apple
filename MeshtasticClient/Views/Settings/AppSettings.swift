@@ -15,16 +15,16 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-				case .defaultKeyboard:
-					return "Default"
-				case .asciiCapable:
-					return "ASCII Capable"
-				case .twitter:
-					return "Twitter"
-				case .emailAddress:
-					return "Email Address"
-				case .numbersAndPunctuation:
-					return "Numbers and Punctuation"
+			case .defaultKeyboard:
+				return "Default"
+			case .asciiCapable:
+				return "ASCII Capable"
+			case .twitter:
+				return "Twitter"
+			case .emailAddress:
+				return "Email Address"
+			case .numbersAndPunctuation:
+				return "Numbers and Punctuation"
 			}
 		}
 	}

@@ -315,34 +315,34 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         for characteristic in characteristics {
 
-        switch characteristic.uuid {
-            case TORADIO_UUID:
-                print("TORADIO characteristic OK")
+			switch characteristic.uuid {
+			case TORADIO_UUID:
+				print("TORADIO characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
-                TORADIO_characteristic = characteristic
-                var toRadio: ToRadio = ToRadio()
-                toRadio.wantConfigID = 32168
-                let binaryData: Data = try! toRadio.serializedData()
-                peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
-                break
+				TORADIO_characteristic = characteristic
+				var toRadio: ToRadio = ToRadio()
+				toRadio.wantConfigID = 32168
+				let binaryData: Data = try! toRadio.serializedData()
+				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
+				break
 
-            case FROMRADIO_UUID:
-                print("FROMRADIO characteristic OK")
+			case FROMRADIO_UUID:
+				print("FROMRADIO characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
-                FROMRADIO_characteristic = characteristic
-                peripheral.readValue(for: FROMRADIO_characteristic)
-                break
+				FROMRADIO_characteristic = characteristic
+				peripheral.readValue(for: FROMRADIO_characteristic)
+				break
 
-            case FROMNUM_UUID:
-                print("FROMNUM (Notify) characteristic OK")
+			case FROMNUM_UUID:
+				print("FROMNUM (Notify) characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
-                FROMNUM_characteristic = characteristic
-                peripheral.setNotifyValue(true, for: characteristic)
-                break
+				FROMNUM_characteristic = characteristic
+				peripheral.setNotifyValue(true, for: characteristic)
+				break
 
-            default:
-                break
-        }
+			default:
+				break
+			}
 
       }
     }

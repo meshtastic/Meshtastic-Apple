@@ -1,10 +1,10 @@
-line_length: 200
+line_length: 400
 
 type_name:
   min_length: 1 # only warning
   max_length: # warning and error
-    warning: 40
-    error: 50
+    warning: 60
+    error: 70
   excluded: iPhone # excluded via string
   allowed_symbols: ["_"] # these are allowed in type names
 identifier_name:
@@ -17,8 +17,8 @@ force_try:
 
 # TODO: should review
 file_length:
-  warning: 2000
-  error: 2500
+  warning: 2500
+  error: 3000
 
 # TODO: should review
 cyclomatic_complexity:
@@ -30,5 +30,17 @@ cyclomatic_complexity:
 function_body_length:
   warning: 200
 
+# TODO: should review
 type_body_length:
   warning: 400
+
+# TODO: should review
+disabled_rules: # rule identifiers to exclude from running
+  - operator_whitespace
+  - multiple_closures_with_trailing_closure
+  - todo
+
+# TODO: should review
+nesting:
+  type_level:
+    warning: 3
