@@ -3,12 +3,12 @@ import CoreData
 
 @main
 struct MeshtasticClientApp: App {
-	
+
     @ObservedObject private var bleManager: BLEManager = BLEManager()
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
-	
+
 	@Environment(\.scenePhase) var scenePhase
-    
+
     var body: some Scene {
         WindowGroup {
 		ContentView()

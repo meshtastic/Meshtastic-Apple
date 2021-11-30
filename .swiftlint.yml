@@ -19,8 +19,8 @@ force_try:
 
 # TODO: should review
 file_length:
-  warning: 2500
-  error: 3000
+  warning: 3500
+  error: 4000
 
 # TODO: should review
 cyclomatic_complexity:
