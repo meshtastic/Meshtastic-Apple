@@ -4,46 +4,41 @@ struct BatteryIcon: View {
     var batteryLevel: Int32?
     var font: Font
     var color: Color
-    
+
     var body: some View {
-        
+
         if batteryLevel == 100 {
-            
+
             Image(systemName: "battery.100.bolt")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
-        }
-        else if batteryLevel! < 100 && batteryLevel! > 74 {
-            
+        } else if batteryLevel! < 100 && batteryLevel! > 74 {
+
             Image(systemName: "battery.75")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
-        }
-        else if batteryLevel! < 75 && batteryLevel! > 49 {
-            
+        } else if batteryLevel! < 75 && batteryLevel! > 49 {
+
             Image(systemName: "battery.50")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
-        }
-        else if batteryLevel! < 50 && batteryLevel! > 14 {
-            
+        } else if batteryLevel! < 50 && batteryLevel! > 14 {
+
             Image(systemName: "battery.25")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
-        }
-        else if batteryLevel! == 0 {
-            
+        } else if batteryLevel! == 0 {
+
             Image(systemName: "powerplug")
                 .font(font)
                 .foregroundColor(color)
                 .symbolRenderingMode(.hierarchical)
-        }
-        else {
-            
+        } else {
+
             Image(systemName: "battery.0")
                 .font(font)
                 .foregroundColor(color)

@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -29,7 +29,7 @@ struct AdminMessage {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var variant: AdminMessage.OneOf_Variant? = nil
+  var variant: AdminMessage.OneOf_Variant?
 
   ///
   /// set the radio provisioning for this node
@@ -258,7 +258,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     32: .standard(proto: "confirm_set_channel"),
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
-    35: .standard(proto: "reboot_seconds"),
+    35: .standard(proto: "reboot_seconds")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

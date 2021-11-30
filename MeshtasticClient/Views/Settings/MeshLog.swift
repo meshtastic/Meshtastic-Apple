@@ -8,13 +8,13 @@ struct MeshLog: View {
 	@State private var logs = [String]()
 	@State private var isExporting: Bool = false
 	@State private var document: LogDocument = LogDocument(logFile: "MESHTASTIC MESH ACTIVITY LOG\n")
-		
+
 	var body: some View {
 
 		List(logs, id: \.self, rowContent: Text.init)
 			.task {
 				do {
-					
+
 					let url = logFile!
 					logs.removeAll()
 					for try await log in url.lines {
@@ -31,10 +31,8 @@ struct MeshLog: View {
 			document: document,
 			contentType: UTType.plainText,
 			defaultFilename: "mesh-activity-log",
-			onCompletion: {
+			onCompletion: { result in
 
-				result in
-				
 				if case .success = result {
 					print("Mesh activity log download: success.")
 				} else {
@@ -42,12 +40,11 @@ struct MeshLog: View {
 				}
 			}
 		)
-		
-		
+
 		.textSelection(.enabled)
 		.font(.caption2)
-	
-		HStack (alignment: .center) {
+
+		HStack(alignment: .center) {
 			Spacer()
 			Button(action: {
 				let text = ""
@@ -57,7 +54,7 @@ struct MeshLog: View {
 				   } catch {
 					 print(error)
 				   }
-				
+
 			}) {
 				Image(systemName: "trash").imageScale(.large).foregroundColor(.gray)
 				Text("Clear Log").font(.caption)
@@ -67,9 +64,9 @@ struct MeshLog: View {
 			.padding()
 			.background(Color(.systemGray6))
 			.clipShape(Capsule())
-			
+
 			Spacer()
-			
+
 			Button(action: {
 				isExporting = true
 			}) {
@@ -81,9 +78,9 @@ struct MeshLog: View {
 			.padding()
 			.background(Color(.systemGray6))
 			.clipShape(Capsule())
-			
+
 			Spacer()
-			
+
 		}
 		.padding(.bottom, 10)
 		.navigationTitle("Mesh Activity Log")

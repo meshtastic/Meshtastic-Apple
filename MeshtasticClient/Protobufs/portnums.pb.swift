@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -197,7 +197,7 @@ extension PortNum: CaseIterable {
     .environmentalMeasurementApp,
     .privateApp,
     .atakForwarder,
-    .max,
+    .max
   ]
 }
 
@@ -222,6 +222,6 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     67: .same(proto: "ENVIRONMENTAL_MEASUREMENT_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
-    511: .same(proto: "MAX"),
+    511: .same(proto: "MAX")
   ]
 }

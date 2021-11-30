@@ -4,38 +4,38 @@ import SwiftUI
 import SwiftProtobuf
 
 enum KeyboardType: Int, CaseIterable, Identifiable {
-	
+
 	case defaultKeyboard = 0
 	case asciiCapable = 1
 	case twitter = 9
 	case emailAddress = 7
 	case numbersAndPunctuation = 2
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-				case .defaultKeyboard:
-					return "Default"
-				case .asciiCapable:
-					return "ASCII Capable"
-				case .twitter:
-					return "Twitter"
-				case .emailAddress:
-					return "Email Address"
-				case .numbersAndPunctuation:
-					return "Numbers and Punctuation"
+			case .defaultKeyboard:
+				return "Default"
+			case .asciiCapable:
+				return "ASCII Capable"
+			case .twitter:
+				return "Twitter"
+			case .emailAddress:
+				return "Email Address"
+			case .numbersAndPunctuation:
+				return "Numbers and Punctuation"
 			}
 		}
 	}
 }
 
 class UserSettings: ObservableObject {
-	//@Published var meshtasticUsername: String {
+	// @Published var meshtasticUsername: String {
 	//	didSet {
 	//		UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
 	//	}
-	//}
+	// }
 	@Published var preferredPeripheralName: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
@@ -61,9 +61,9 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshActivityLog, forKey: "meshActivityLog")
 		}
 	}
-	
+
 	init() {
-		//self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
+		// self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
@@ -73,33 +73,33 @@ class UserSettings: ObservableObject {
 }
 
 struct AppSettings: View {
-	
+
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	@State private var preferredDeviceConnected = false
-	
+
 	var perferredPeripheral: String {
 		UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 	}
-	
+
     var body: some View {
 
         NavigationView {
-            
-            GeometryReader { bounds in
-                
+
+            GeometryReader { _ in
+
 				List {
 					Section(header: Text("USER DETAILS")) {
-						
-						//HStack {
+
+						// HStack {
 						//	Label("Name", systemImage: "person.crop.rectangle.fill")
 						//	TextField("Username", text: $userSettings.meshtasticUsername)
 						//		.foregroundColor(.gray)
-						//}
-						//.listRowSeparator(.visible)
+						// }
+						// .listRowSeparator(.visible)
 						Toggle(isOn: $userSettings.provideLocation) {
-							
+
 							Label("Provide location to mesh", systemImage: "location.circle.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -114,7 +114,7 @@ struct AppSettings: View {
 						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary radio used for messaging.")
 							.font(.caption2)
 							.foregroundColor(.gray)
-					
+
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
 
@@ -127,7 +127,7 @@ struct AppSettings: View {
 					}
 					Section(header: Text("MESH NETWORK OPTIONS")) {
 						Toggle(isOn: $userSettings.meshActivityLog) {
-							
+
 							Label("Log all Mesh activity", systemImage: "network")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -142,10 +142,9 @@ struct AppSettings: View {
 			}
             .navigationTitle("App Settings")
 			.navigationBarItems(trailing:
-									
-				
+
 				ZStack {
-				//ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
+				// ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
 			})
         }
 		.navigationViewStyle(StackNavigationViewStyle())

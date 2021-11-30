@@ -1,7 +1,7 @@
 import Foundation
 
 class MessageData: ObservableObject {
-    
+
     private static var documentsFolder: URL {
         do {
             return try FileManager.default.url(for: .documentDirectory,
@@ -12,13 +12,13 @@ class MessageData: ObservableObject {
             fatalError("Can't find documents directory.")
         }
     }
-    
+
     private static var fileURL: URL {
         return documentsFolder.appendingPathComponent("messages.data")
     }
-    
+
     @Published var messages: [MessageModel] = []
-    
+
     func load() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let data = try? Data(contentsOf: Self.fileURL) else {
