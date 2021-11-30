@@ -31,9 +31,7 @@ struct MeshLog: View {
 			document: document,
 			contentType: UTType.plainText,
 			defaultFilename: "mesh-activity-log",
-			onCompletion: {
-
-				result in
+			onCompletion: { result in
 
 				if case .success = result {
 					print("Mesh activity log download: success.")

@@ -324,21 +324,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				toRadio.wantConfigID = 32168
 				let binaryData: Data = try! toRadio.serializedData()
 				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
-				break
 
 			case FROMRADIO_UUID:
 				print("FROMRADIO characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
-				break
 
 			case FROMNUM_UUID:
 				print("FROMNUM (Notify) characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-				break
 
 			default:
 				break
@@ -384,217 +381,217 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
 
         switch characteristic.uuid {
-            case FROMNUM_UUID:
-                peripheral.readValue(for: FROMNUM_characteristic)
-                // let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
-                // let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
-                // print("string array data \(stringFromByteArray!)")
-                // print(characteristic.value?. ?? "no value")
+		case FROMNUM_UUID:
+			peripheral.readValue(for: FROMNUM_characteristic)
+			// let byteArrayFromData: [UInt8] = [UInt8](characteristic.value!)
+			// let stringFromByteArray = String(data: Data(_: byteArrayFromData), encoding: .utf8)
+			// print("string array data \(stringFromByteArray!)")
+			// print(characteristic.value?. ?? "no value")
 
-            case FROMRADIO_UUID:
-                if characteristic.value == nil || characteristic.value!.isEmpty {
-                    return
-                }
-                // print(characteristic.value ?? "no value")
-                // print(characteristic.value?.hexDescription ?? "no value")
-                var decodedInfo = FromRadio()
+		case FROMRADIO_UUID:
+			if characteristic.value == nil || characteristic.value!.isEmpty {
+				return
+			}
+			// print(characteristic.value ?? "no value")
+			// print(characteristic.value?.hexDescription ?? "no value")
+			var decodedInfo = FromRadio()
 
-                decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-                print("Print DecodedInfo")
-                print(decodedInfo)
+			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
+			print("Print DecodedInfo")
+			print(decodedInfo)
 
-                if decodedInfo.myInfo.myNodeNum != 0 {
+			if decodedInfo.myInfo.myNodeNum != 0 {
 
-                    // Create a MyInfoModel
-                    let myInfoModel = MyInfoModel(
-                        myNodeNum: decodedInfo.myInfo.myNodeNum,
-                        hasGps: decodedInfo.myInfo.hasGps_p,
-                        numBands: decodedInfo.myInfo.numBands,
-                        maxChannels: decodedInfo.myInfo.maxChannels,
-                        firmwareVersion: decodedInfo.myInfo.firmwareVersion,
-                        messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
-                        minAppVersion: decodedInfo.myInfo.minAppVersion)
+				// Create a MyInfoModel
+				let myInfoModel = MyInfoModel(
+					myNodeNum: decodedInfo.myInfo.myNodeNum,
+					hasGps: decodedInfo.myInfo.hasGps_p,
+					numBands: decodedInfo.myInfo.numBands,
+					maxChannels: decodedInfo.myInfo.maxChannels,
+					firmwareVersion: decodedInfo.myInfo.firmwareVersion,
+					messageTimeoutMsec: decodedInfo.myInfo.messageTimeoutMsec,
+					minAppVersion: decodedInfo.myInfo.minAppVersion)
 
-                    // Save it to the connected nodeInfo
-                    if connectedPeripheral != nil {
-                        connectedPeripheral.myInfo = myInfoModel
-                        // Save it to the connected node
-                        connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.myNodeNum})
+				// Save it to the connected nodeInfo
+				if connectedPeripheral != nil {
+					connectedPeripheral.myInfo = myInfoModel
+					// Save it to the connected node
+					connectedNode = meshData.nodes.first(where: {$0.num == myInfoModel.myNodeNum})
 
-                    }
-                    // Since the data is from the device itself we save all myInfo objects since they are always the most up to date
-                    if connectedNode != nil {
+				}
+				// Since the data is from the device itself we save all myInfo objects since they are always the most up to date
+				if connectedNode != nil {
 
-                        connectedNode.myInfo = myInfoModel
-						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
-                        // meshData.nodes.remove(at: nodeIndex!)
-                        // meshData.nodes.append(connectedNode)
-						if nodeIndex != nil {
-							meshData.nodes[nodeIndex!] = connectedNode
-							meshData.save()
-						}
-                        print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
-						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? "Unknown")") }
-                    }
-                }
+					connectedNode.myInfo = myInfoModel
+					let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.myInfo.myNodeNum })
+					// meshData.nodes.remove(at: nodeIndex!)
+					// meshData.nodes.append(connectedNode)
+					if nodeIndex != nil {
+						meshData.nodes[nodeIndex!] = connectedNode
+						meshData.save()
+					}
+					print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
+					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? "Unknown")") }
+				}
+			}
 
-                if decodedInfo.nodeInfo.num != 0 {
+			if decodedInfo.nodeInfo.num != 0 {
 
-                    print("Save a nodeInfo")
-					print(decodedInfo.nodeInfo)
-					if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
+				print("Save a nodeInfo")
+				print(decodedInfo.nodeInfo)
+				if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
 
-                        // Found a matching node lets update it
-                        let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-                        if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == nodeMatch?.num {
-                            connectedNode = nodeMatch
-                        }
+					// Found a matching node lets update it
+					let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
+					if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == nodeMatch?.num {
+						connectedNode = nodeMatch
+					}
 
-                        if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard && nodeMatch?.user != nil && nodeMatch?.user.longName.count ?? 0 > 0 {
-                            // The data coming from the device is newer
+					if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard && nodeMatch?.user != nil && nodeMatch?.user.longName.count ?? 0 > 0 {
+						// The data coming from the device is newer
 
-                            let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
-                            meshData.nodes.remove(at: nodeIndex!)
-                            meshData.save()
+						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
+						meshData.nodes.remove(at: nodeIndex!)
+						meshData.save()
 
-                        } else {
+					} else {
 
-                            // Data is older than what the app already has
-                            return
-                        }
-                    }
-                    // Set the connected node if the nodeInfo is for the connected node.
-                    if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == decodedInfo.nodeInfo.num {
+						// Data is older than what the app already has
+						return
+					}
+				}
+				// Set the connected node if the nodeInfo is for the connected node.
+				if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == decodedInfo.nodeInfo.num {
 
-                        let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-                        if nodeMatch != nil {
-                            connectedNode = nodeMatch
-                        }
-                    }
-                    if decodedInfo.nodeInfo.hasUser {
+					let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
+					if nodeMatch != nil {
+						connectedNode = nodeMatch
+					}
+				}
+				if decodedInfo.nodeInfo.hasUser {
 
-                        meshData.nodes.append(
-                            NodeInfoModel(
-                                num: decodedInfo.nodeInfo.num,
-                                user: NodeInfoModel.User(
-                                    id: decodedInfo.nodeInfo.user.id,
-                                    longName: decodedInfo.nodeInfo.user.longName,
-                                    shortName: decodedInfo.nodeInfo.user.shortName,
-                                    // macaddr: decodedInfo.nodeInfo.user.macaddr,
-                                    hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-                                        .uppercased()),
+					meshData.nodes.append(
+						NodeInfoModel(
+							num: decodedInfo.nodeInfo.num,
+							user: NodeInfoModel.User(
+								id: decodedInfo.nodeInfo.user.id,
+								longName: decodedInfo.nodeInfo.user.longName,
+								shortName: decodedInfo.nodeInfo.user.shortName,
+								// macaddr: decodedInfo.nodeInfo.user.macaddr,
+								hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
+									.uppercased()),
 
-                                position: NodeInfoModel.Position(
-                                    latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-                                    longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-                                    altitude: decodedInfo.nodeInfo.position.altitude,
-                                    batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-                                    time: decodedInfo.nodeInfo.position.time),
+							position: NodeInfoModel.Position(
+								latitudeI: decodedInfo.nodeInfo.position.latitudeI,
+								longitudeI: decodedInfo.nodeInfo.position.longitudeI,
+								altitude: decodedInfo.nodeInfo.position.altitude,
+								batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
+								time: decodedInfo.nodeInfo.position.time),
 
-                                lastHeard: decodedInfo.nodeInfo.lastHeard,
-                                snr: decodedInfo.nodeInfo.snr)
-                        )
-                        meshData.save()
-						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
+							lastHeard: decodedInfo.nodeInfo.lastHeard,
+							snr: decodedInfo.nodeInfo.snr)
+					)
+					meshData.save()
+					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
 
-						if connectedNode == nil {
+					if connectedNode == nil {
 
-							// connectedNode = meshData.nodes.first(where: {$0.num == connectedPeripheral.myInfo!.myNodeNum})
-						}
-                    }
-            }
-            // Handle assorted app packets
-            if decodedInfo.packet.id  != 0 {
+						// connectedNode = meshData.nodes.first(where: {$0.num == connectedPeripheral.myInfo!.myNodeNum})
+					}
+				}
+			}
+			// Handle assorted app packets
+			if decodedInfo.packet.id  != 0 {
 
-                print("Handle a Packet")
-                do {
-                    // Text Message App - Primary Broadcast Channel
-                    if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
+				print("Handle a Packet")
+				do {
+					// Text Message App - Primary Broadcast Channel
+					if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
 
-                        if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
+						if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
 
-                            print("Message Text: \(messageText)")
+							print("Message Text: \(messageText)")
 							if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received for text message app \(messageText)") }
 
-                            let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+							let fromUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
 
-                            var toUserLongName: String = "Broadcast"
-                            var toUserShortName: String = "BC"
+							var toUserLongName: String = "Broadcast"
+							var toUserShortName: String = "BC"
 
-                            if decodedInfo.packet.to != broadcastNodeId {
+							if decodedInfo.packet.to != broadcastNodeId {
 
-                            let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
-                            toUserLongName = toUser?.user.longName ?? "Unknown"
-                            toUserShortName = toUser?.user.shortName ?? "???"
-                        }
+							let toUser = meshData.nodes.first(where: { $0.id == decodedInfo.packet.from })
+							toUserLongName = toUser?.user.longName ?? "Unknown"
+							toUserShortName = toUser?.user.shortName ?? "???"
+						}
 
-                        // Add the received message to the local messages list / file and save
-                        messageData.messages.append(
-                            MessageModel(
-                                messageId: decodedInfo.packet.id,
-                                messageTimeStamp: decodedInfo.packet.rxTime,
-                                fromUserId: decodedInfo.packet.from,
-                                toUserId: decodedInfo.packet.to,
-                                fromUserLongName: fromUser?.user.longName ?? "Unknown",
-                                toUserLongName: toUserLongName,
-                                fromUserShortName: fromUser?.user.shortName ?? "???",
-                                toUserShortName: toUserShortName,
-                                receivedACK: decodedInfo.packet.decoded.wantResponse,
-                                messagePayload: messageText,
-                                direction: "IN")
-                        )
-                        messageData.save()
+						// Add the received message to the local messages list / file and save
+						messageData.messages.append(
+							MessageModel(
+								messageId: decodedInfo.packet.id,
+								messageTimeStamp: decodedInfo.packet.rxTime,
+								fromUserId: decodedInfo.packet.from,
+								toUserId: decodedInfo.packet.to,
+								fromUserLongName: fromUser?.user.longName ?? "Unknown",
+								toUserLongName: toUserLongName,
+								fromUserShortName: fromUser?.user.shortName ?? "???",
+								toUserShortName: toUserShortName,
+								receivedACK: decodedInfo.packet.decoded.wantResponse,
+								messagePayload: messageText,
+								direction: "IN")
+						)
+						messageData.save()
 
-                        // Create an iOS Notification for the received message and schedule it immediately
-                        let manager = LocalNotificationManager()
+						// Create an iOS Notification for the received message and schedule it immediately
+						let manager = LocalNotificationManager()
 
-                        manager.notifications = [
-                            Notification(
-                                id: ("notification.id.\(decodedInfo.packet.id)"),
-                                title: "\(fromUser?.user.longName ?? "Unknown")",
-                                subtitle: "AKA \(fromUser?.user.shortName ?? "???")",
-                                content: messageText)
-                        ]
-                        manager.schedule()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(decodedInfo.packet.id)"),
+								title: "\(fromUser?.user.longName ?? "Unknown")",
+								subtitle: "AKA \(fromUser?.user.shortName ?? "???")",
+								content: messageText)
+						]
+						manager.schedule()
 						if meshLoggingEnabled { MeshLogger.log("iOS Notification Scheduled for text message from \(fromUser?.user.longName ?? "Unknown") \(messageText)") }
-                    }
-                } else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+					}
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
 
-                    var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+					var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
 					if updatedNode != nil {
 						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received for node info app for \(updatedNode!.user.longName)") }
 					}
 
-                    if updatedNode != nil {
-                        updatedNode!.snr = decodedInfo.packet.rxSnr
-                        updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                        // updatedNode!.update(from: updatedNode!.data)
-                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                        meshData.nodes.remove(at: nodeIndex!)
-                        meshData.nodes.append(updatedNode!)
-                        meshData.save()
+					if updatedNode != nil {
+						updatedNode!.snr = decodedInfo.packet.rxSnr
+						updatedNode!.lastHeard = decodedInfo.packet.rxTime
+						// updatedNode!.update(from: updatedNode!.data)
+						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+						meshData.nodes.remove(at: nodeIndex!)
+						meshData.nodes.append(updatedNode!)
+						meshData.save()
 						if meshLoggingEnabled { MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(updatedNode!.user.longName)") }
-                        print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
-                    }
-                } else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
+						print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
+					}
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
 
-                    var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+					var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
 
-                    if updatedNode != nil {
-                        updatedNode!.snr = decodedInfo.packet.rxSnr
-                        updatedNode!.lastHeard = decodedInfo.packet.rxTime
-                        // updatedNode!.update(from: updatedNode!.data)
-                        let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-                        meshData.nodes.remove(at: nodeIndex!)
-                        meshData.nodes.append(updatedNode!)
-                        meshData.save()
+					if updatedNode != nil {
+						updatedNode!.snr = decodedInfo.packet.rxSnr
+						updatedNode!.lastHeard = decodedInfo.packet.rxTime
+						// updatedNode!.update(from: updatedNode!.data)
+						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
+						meshData.nodes.remove(at: nodeIndex!)
+						meshData.nodes.append(updatedNode!)
+						meshData.save()
 
 						if meshLoggingEnabled { MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Position App Packet For: \(updatedNode!.user.longName)") }
-                        print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
-                    }
+						print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
+					}
 					print("Postion Payload")
 					print(try decodedInfo.packet.jsonString())
-                } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("Admin App Packet")
@@ -610,22 +607,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					 print(try decodedInfo.packet.jsonString())
 				 }
 
-                    } catch {
-						if meshLoggingEnabled { MeshLogger.log("Fatal Error: Failed to decode json") }
-                        fatalError("Failed to decode json")
-                    }
-                }
+				} catch {
+					if meshLoggingEnabled { MeshLogger.log("Fatal Error: Failed to decode json") }
+					fatalError("Failed to decode json")
+				}
+			}
 
-                if decodedInfo.configCompleteID != 0 {
-					if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
-					print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
-					self.connectedPeripheral.subscribed = true
-                }
+			if decodedInfo.configCompleteID != 0 {
+				if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
+				print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
+				self.connectedPeripheral.subscribed = true
+			}
 
-            default:
-
-				if meshLoggingEnabled { MeshLogger.log("Unhandled Characteristic UUID: \(characteristic.uuid)") }
-                print("Unhandled Characteristic UUID: \(characteristic.uuid)")
+		default:
+			if meshLoggingEnabled { MeshLogger.log("Unhandled Characteristic UUID: \(characteristic.uuid)") }
+			print("Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
         peripheral.readValue(for: FROMRADIO_characteristic)
     }

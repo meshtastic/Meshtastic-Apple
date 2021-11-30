@@ -1,14 +1,16 @@
 line_length: 400
 
 type_name:
-  min_length: 1 # only warning
-  max_length: # warning and error
+  min_length: 1
+  max_length:
     warning: 60
     error: 70
   excluded: iPhone # excluded via string
   allowed_symbols: ["_"] # these are allowed in type names
 identifier_name:
-  min_length: 1 # only warning
+  min_length: 1
+  max_length:
+    warning: 60
   allowed_symbols: ["_"] # these are allowed in type names
 
 # TODO: should review
