@@ -3,31 +3,30 @@ import SwiftUI
 import CoreBluetooth
 
 struct Channels: View {
-	
+
 	@State private var isShowingDetailView = true
-	    
+
     var body: some View {
-		
-		
+
         NavigationView {
-            
-            GeometryReader { bounds in
-                
+
+            GeometryReader { _ in
+
                 NavigationLink(destination: Messages(), isActive: $isShowingDetailView) {
-                    
-                    List{
-                        
+
+                    List {
+
                         HStack {
-                            
+
                             Image(systemName: "dial.max.fill")
                                 .font(.system(size: 62))
                                 .symbolRenderingMode(.hierarchical)
                                 .padding(.trailing)
 								.foregroundColor(.accentColor)
-                            
+
                             Text("Primary")
                                 .font(.largeTitle)
-                            
+
                         }.padding()
                     }
                 }
@@ -39,7 +38,7 @@ struct Channels: View {
 }
 
 struct MessageList_Previews: PreviewProvider {
-	
+
     static let meshData = MeshData()
 
     static var previews: some View {

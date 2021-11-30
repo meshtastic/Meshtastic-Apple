@@ -34,7 +34,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -114,7 +114,7 @@ extension RegionCode: CaseIterable {
     .anz,
     .kr,
     .tw,
-    .ru,
+    .ru
   ]
 }
 
@@ -217,7 +217,7 @@ extension ChargeCurrent: CaseIterable {
     .ma1080,
     .ma1160,
     .ma1240,
-    .ma1320,
+    .ma1320
   ]
 }
 
@@ -292,7 +292,7 @@ extension GpsOperation: CaseIterable {
     .gpsOpStationary,
     .gpsOpMobile,
     .gpsOpTimeOnly,
-    .gpsOpDisabled,
+    .gpsOpDisabled
   ]
 }
 
@@ -375,7 +375,7 @@ extension GpsCoordinateFormat: CaseIterable {
     .gpsFormatUtm,
     .gpsFormatMgrs,
     .gpsFormatOlc,
-    .gpsFormatOsgr,
+    .gpsFormatOsgr
   ]
 }
 
@@ -430,7 +430,7 @@ extension LocationSharing: CaseIterable {
   static var allCases: [LocationSharing] = [
     .locUnset,
     .locEnabled,
-    .locDisabled,
+    .locDisabled
   ]
 }
 
@@ -789,7 +789,7 @@ struct RadioConfig {
     }
 
     ///
-    ///Preferences for the RangeTestPlugin
+    /// Preferences for the RangeTestPlugin
     /// FIXME - Move this out of UserPreferences and into a section for plugin configuration.
     var rangeTestPluginEnabled: Bool {
       get {return _storage._rangeTestPluginEnabled}
@@ -808,7 +808,7 @@ struct RadioConfig {
 
     ///
     /// Preferences for the StoreForwardPlugin
-    ///FIXME - Move this out of UserPreferences and into a section for plugin configuration. (was 136)
+    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration. (was 136)
     var storeForwardPluginEnabled: Bool {
       get {return _storage._storeForwardPluginEnabled}
       set {_uniqueStorage()._storeForwardPluginEnabled = newValue}
@@ -917,7 +917,7 @@ struct RadioConfig {
 
   init() {}
 
-  fileprivate var _preferences: RadioConfig.UserPreferences? = nil
+  fileprivate var _preferences: RadioConfig.UserPreferences?
 }
 
 #if swift(>=4.2)
@@ -925,7 +925,7 @@ struct RadioConfig {
 extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType] = [
-    .dht11,
+    .dht11
   ]
 }
 
@@ -944,7 +944,7 @@ extension RegionCode: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "ANZ"),
     7: .same(proto: "KR"),
     8: .same(proto: "TW"),
-    9: .same(proto: "RU"),
+    9: .same(proto: "RU")
   ]
 }
 
@@ -966,7 +966,7 @@ extension ChargeCurrent: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "MA1080"),
     14: .same(proto: "MA1160"),
     15: .same(proto: "MA1240"),
-    16: .same(proto: "MA1320"),
+    16: .same(proto: "MA1320")
   ]
 }
 
@@ -976,7 +976,7 @@ extension GpsOperation: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "GpsOpStationary"),
     2: .same(proto: "GpsOpMobile"),
     3: .same(proto: "GpsOpTimeOnly"),
-    4: .same(proto: "GpsOpDisabled"),
+    4: .same(proto: "GpsOpDisabled")
   ]
 }
 
@@ -987,7 +987,7 @@ extension GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
     2: .same(proto: "GpsFormatUTM"),
     3: .same(proto: "GpsFormatMGRS"),
     4: .same(proto: "GpsFormatOLC"),
-    5: .same(proto: "GpsFormatOSGR"),
+    5: .same(proto: "GpsFormatOSGR")
   ]
 }
 
@@ -995,14 +995,14 @@ extension LocationSharing: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "LocUnset"),
     1: .same(proto: "LocEnabled"),
-    2: .same(proto: "LocDisabled"),
+    2: .same(proto: "LocDisabled")
   ]
 }
 
 extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "RadioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "preferences"),
+    1: .same(proto: "preferences")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1088,7 +1088,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     144: .standard(proto: "environmental_measurement_plugin_recovery_interval"),
     145: .standard(proto: "environmental_measurement_plugin_display_farenheit"),
     146: .standard(proto: "environmental_measurement_plugin_sensor_type"),
-    147: .standard(proto: "environmental_measurement_plugin_sensor_pin"),
+    147: .standard(proto: "environmental_measurement_plugin_sensor_pin")
   ]
 
   fileprivate class _StorageClass {
@@ -1529,6 +1529,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
 
 extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DHT11"),
+    0: .same(proto: "DHT11")
   ]
 }

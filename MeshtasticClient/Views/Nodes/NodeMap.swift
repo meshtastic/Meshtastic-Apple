@@ -11,9 +11,9 @@ import MapKit
 import CoreLocation
 
 struct NodeMap: View {
-    
-	@EnvironmentObject var bleManager :BLEManager
-    
+
+	@EnvironmentObject var bleManager: BLEManager
+
     var locationNodes: [NodeInfoModel] {
 		bleManager.meshData.nodes.filter { node in
             (node.position.coordinate != nil)
@@ -24,7 +24,7 @@ struct NodeMap: View {
         let name: String
         let coordinate: CLLocationCoordinate2D
     }
-    
+
     var body: some View {
         let location = LocationHelper.currentLocation
 
@@ -35,15 +35,15 @@ struct NodeMap: View {
             },
             set: { _ in }
         )
-                
+
         NavigationView {
-            
+
             ZStack {
                 Map(coordinateRegion: regionBinding,
                     interactionModes: [.all],
                     showsUserLocation: true,
                     userTrackingMode: .constant(.follow), annotationItems: locationNodes) { location in
-                    
+
                     MapAnnotation(
                         coordinate: location.position.coordinate!,
                        content: {
@@ -51,17 +51,17 @@ struct NodeMap: View {
                        }
                     )
                 }
-                .frame(maxHeight:.infinity)
+                .frame(maxHeight: .infinity)
                 .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
-								  
+
 				ZStack {
 				//	ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 			})
-  
+
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

@@ -1,24 +1,19 @@
 import Foundation
 import SwiftUI
 
-extension Data
-{
-    var hexDescription: String
-    {
+extension Data {
+    var hexDescription: String {
         return reduce("") {$0 + String(format: "%02x", $1)}
     }
 }
 
-extension Date
-{
-    static var currentTimeStamp: Int64
-    {
+extension Date {
+    static var currentTimeStamp: Int64 {
         return Int64(Date().timeIntervalSince1970 * 1000)
     }
 }
 
-extension String
-{
+extension String {
 
     /// Create `Data` from hexadecimal string representation
     ///
@@ -26,8 +21,7 @@ extension String
     ///
     /// - returns: Data represented by this hexadecimal string.
 
-    var hexadecimal: Data?
-    {
+    var hexadecimal: Data? {
         var data = Data(capacity: count / 2)
 
         let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
@@ -48,36 +42,36 @@ typealias NodeColor = Int
 
 extension NodeColor {
   // a color to represent an individual meshtastic device
-var color: Color {
-    switch self {
-            case 0:
-                return Color(.red)
-            case 1:
-                return Color(.blue)
-            case 2:
-                return Color(.yellow)
-            case 3:
-                return Color(.green)
-            case 4:
-                return Color(.purple)
-            case 5:
-                return Color(.systemPink)
-            case 6:
-                return Color(.systemTeal)
-            case 7:
-                return Color(.black)
-            case 8:
-                return Color(.gray)
-            case 9:
-                return Color(.brown)
-            case 10:
-                return Color(.magenta)
-            case 11:
-                return Color(.orange)
-            case 12:
-                return Color(.cyan)
-            default:
-                return Color(.blue)
-        }
-    }
+	var color: Color {
+		switch self {
+		case 0:
+			return Color(.red)
+		case 1:
+			return Color(.blue)
+		case 2:
+			return Color(.yellow)
+		case 3:
+			return Color(.green)
+		case 4:
+			return Color(.purple)
+		case 5:
+			return Color(.systemPink)
+		case 6:
+			return Color(.systemTeal)
+		case 7:
+			return Color(.black)
+		case 8:
+			return Color(.gray)
+		case 9:
+			return Color(.brown)
+		case 10:
+			return Color(.magenta)
+		case 11:
+			return Color(.orange)
+		case 12:
+			return Color(.cyan)
+		default:
+			return Color(.blue)
+		}
+	}
 }

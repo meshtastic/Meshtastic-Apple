@@ -5,7 +5,7 @@ import SwiftUI
 import CoreLocation
 
 struct NodeInfoModel: Identifiable, Codable {
-    
+
     var id: UInt32
     var num: UInt32
     var myInfo: MyInfoModel?
@@ -15,7 +15,7 @@ struct NodeInfoModel: Identifiable, Codable {
         var longName: String
         var shortName: String
         var hwModel: String
-        
+
         init(id: String, longName: String, shortName: String, hwModel: String) {
             self.id = id
             self.longName = longName
@@ -33,8 +33,7 @@ struct NodeInfoModel: Identifiable, Codable {
                     return nil
                 }
                 return d / 1e7
-            }
-            else {
+            } else {
                return nil
             }
         }
@@ -46,25 +45,23 @@ struct NodeInfoModel: Identifiable, Codable {
                     return nil
                 }
                 return d / 1e7
-            }
-            else {
+            } else {
                return nil
             }
         }
         var coordinate: CLLocationCoordinate2D? {
             if latitude != nil && longitude != nil {
                 let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
-                
+
                 return coord
-            }
-            else {
+            } else {
                return nil
             }
         }
         var altitude: Int32?
         var batteryLevel: Int32?
         var time: UInt32?
-        
+
         init(latitudeI: Int32?, longitudeI: Int32?, altitude: Int32?, batteryLevel: Int32?, time: UInt32? ) {
             self.latitudeI = latitudeI
             self.longitudeI = longitudeI
@@ -73,10 +70,9 @@ struct NodeInfoModel: Identifiable, Codable {
             self.time = time
         }
     }
-    
+
     var lastHeard: UInt32
     var snr: Float?
-
 
     init(num: UInt32, user: User, position: Position, lastHeard: UInt32, snr: Float?) {
         self.id = num
@@ -106,7 +102,7 @@ extension NodeInfoModel {
         var postion: Position
         var lastHeard: UInt32
         var snr: Float?
-        
+
     }
 
     var data: Data {

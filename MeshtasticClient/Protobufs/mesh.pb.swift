@@ -34,7 +34,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -152,7 +152,7 @@ extension HardwareModel: CaseIterable {
     .genieblocks,
     .nrf52Unknown,
     .portduino,
-    .androidSim,
+    .androidSim
   ]
 }
 
@@ -203,7 +203,7 @@ extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Constants] = [
     .unused,
-    .dataPayloadLen,
+    .dataPayloadLen
   ]
 }
 
@@ -261,7 +261,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
   case sx1262Failure // = 10
 
   /// A (likely software but possibly hardware) failure was detected while trying to send packets. If this occurs on your board, please
-  ///post in the forum so that we can ask you to collect some information to allow fixing this bug 
+  /// post in the forum so that we can ask you to collect some information to allow fixing this bug 
   case radioSpiBug // = 11
   case UNRECOGNIZED(Int)
 
@@ -323,7 +323,7 @@ extension CriticalErrorCode: CaseIterable {
     .transmitFailed,
     .brownout,
     .sx1262Failure,
-    .radioSpiBug,
+    .radioSpiBug
   ]
 }
 
@@ -450,13 +450,13 @@ struct RouteDiscovery {
 }
 
 ///
-///A Routing control Data packet handled by the routing plugin
+/// A Routing control Data packet handled by the routing plugin
 struct Routing {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var variant: Routing.OneOf_Variant? = nil
+  var variant: Routing.OneOf_Variant?
 
   ///
   /// A route request going from the requester
@@ -635,7 +635,7 @@ extension Routing.Error: CaseIterable {
     .tooLarge,
     .noResponse,
     .badRequest,
-    .notAuthorized,
+    .notAuthorized
   ]
 }
 
@@ -719,7 +719,7 @@ struct MeshPacket {
   /// This 'trick' is only used while the payloadVariant is an 'encrypted'.
   var channel: UInt32 = 0
 
-  var payloadVariant: MeshPacket.OneOf_PayloadVariant? = nil
+  var payloadVariant: MeshPacket.OneOf_PayloadVariant?
 
   var decoded: DataMessage {
     get {
@@ -915,7 +915,7 @@ extension MeshPacket.Priority: CaseIterable {
     .default,
     .reliable,
     .ack,
-    .max,
+    .max
   ]
 }
 
@@ -988,8 +988,8 @@ struct NodeInfo {
 
   init() {}
 
-  fileprivate var _user: User? = nil
-  fileprivate var _position: Position? = nil
+  fileprivate var _user: User?
+  fileprivate var _position: Position?
 }
 
 ///
@@ -1169,7 +1169,7 @@ extension LogRecord.Level: CaseIterable {
     .warning,
     .info,
     .debug,
-    .trace,
+    .trace
   ]
 }
 
@@ -1341,7 +1341,7 @@ struct ToRadio {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var payloadVariant: ToRadio.OneOf_PayloadVariant? = nil
+  var payloadVariant: ToRadio.OneOf_PayloadVariant?
 
   ///
   /// send this packet on the mesh
@@ -1495,14 +1495,14 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     35: .same(proto: "GENIEBLOCKS"),
     36: .same(proto: "NRF52_UNKNOWN"),
     37: .same(proto: "PORTDUINO"),
-    38: .same(proto: "ANDROID_SIM"),
+    38: .same(proto: "ANDROID_SIM")
   ]
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "Unused"),
-    237: .same(proto: "DATA_PAYLOAD_LEN"),
+    237: .same(proto: "DATA_PAYLOAD_LEN")
   ]
 }
 
@@ -1519,7 +1519,7 @@ extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "TransmitFailed"),
     9: .same(proto: "Brownout"),
     10: .same(proto: "SX1262Failure"),
-    11: .same(proto: "RadioSpiBug"),
+    11: .same(proto: "RadioSpiBug")
   ]
 }
 
@@ -1530,7 +1530,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     2: .standard(proto: "longitude_i"),
     3: .same(proto: "altitude"),
     4: .standard(proto: "battery_level"),
-    9: .same(proto: "time"),
+    9: .same(proto: "time")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1587,7 +1587,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     3: .standard(proto: "short_name"),
     4: .same(proto: "macaddr"),
     6: .standard(proto: "hw_model"),
-    7: .standard(proto: "is_licensed"),
+    7: .standard(proto: "is_licensed")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1644,7 +1644,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
 extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "RouteDiscovery"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "route"),
+    2: .same(proto: "route")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1678,7 +1678,7 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "route_request"),
     2: .standard(proto: "route_reply"),
-    3: .standard(proto: "error_reason"),
+    3: .standard(proto: "error_reason")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1767,7 +1767,7 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
     7: .same(proto: "TOO_LARGE"),
     8: .same(proto: "NO_RESPONSE"),
     32: .same(proto: "BAD_REQUEST"),
-    33: .same(proto: "NOT_AUTHORIZED"),
+    33: .same(proto: "NOT_AUTHORIZED")
   ]
 }
 
@@ -1779,7 +1779,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     3: .standard(proto: "want_response"),
     4: .same(proto: "dest"),
     5: .same(proto: "source"),
-    6: .standard(proto: "request_id"),
+    6: .standard(proto: "request_id")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1847,7 +1847,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     10: .standard(proto: "hop_limit"),
     11: .standard(proto: "want_ack"),
     12: .same(proto: "priority"),
-    13: .standard(proto: "rx_rssi"),
+    13: .standard(proto: "rx_rssi")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1965,7 +1965,7 @@ extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
     64: .same(proto: "DEFAULT"),
     70: .same(proto: "RELIABLE"),
     120: .same(proto: "ACK"),
-    127: .same(proto: "MAX"),
+    127: .same(proto: "MAX")
   ]
 }
 
@@ -1976,7 +1976,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     2: .same(proto: "user"),
     3: .same(proto: "position"),
     7: .same(proto: "snr"),
-    4: .standard(proto: "last_heard"),
+    4: .standard(proto: "last_heard")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2040,7 +2040,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     9: .standard(proto: "error_count"),
     10: .standard(proto: "reboot_count"),
     13: .standard(proto: "message_timeout_msec"),
-    14: .standard(proto: "min_app_version"),
+    14: .standard(proto: "min_app_version")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2135,7 +2135,7 @@ extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     1: .same(proto: "message"),
     2: .same(proto: "time"),
     3: .same(proto: "source"),
-    4: .same(proto: "level"),
+    4: .same(proto: "level")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2187,7 +2187,7 @@ extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
     20: .same(proto: "INFO"),
     30: .same(proto: "WARNING"),
     40: .same(proto: "ERROR"),
-    50: .same(proto: "CRITICAL"),
+    50: .same(proto: "CRITICAL")
   ]
 }
 
@@ -2200,7 +2200,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     4: .standard(proto: "node_info"),
     7: .standard(proto: "log_record"),
     8: .standard(proto: "config_complete_id"),
-    9: .same(proto: "rebooted"),
+    9: .same(proto: "rebooted")
   ]
 
   fileprivate class _StorageClass {
@@ -2368,7 +2368,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     2: .same(proto: "packet"),
     3: .standard(proto: "peer_info"),
     100: .standard(proto: "want_config_id"),
-    104: .same(proto: "disconnect"),
+    104: .same(proto: "disconnect")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2461,7 +2461,7 @@ extension ToRadio.PeerInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   static let protoMessageName: String = ToRadio.protoMessageName + ".PeerInfo"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "app_version"),
-    2: .standard(proto: "mqtt_gateway"),
+    2: .standard(proto: "mqtt_gateway")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

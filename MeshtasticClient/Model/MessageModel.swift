@@ -6,8 +6,7 @@
 //
 import Foundation
 
-struct MessageModel : Identifiable, Codable
-{
+struct MessageModel: Identifiable, Codable {
     let id: UUID
     var messageId: UInt32
     var messageTimestamp: UInt32
@@ -20,9 +19,8 @@ struct MessageModel : Identifiable, Codable
     var receivedACK: Bool
     var messagePayload: String
     var direction: String
-    
-    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: UInt32, fromUserId: UInt32, toUserId: UInt32, fromUserLongName: String, toUserLongName: String, fromUserShortName: String, toUserShortName: String, receivedACK: Bool, messagePayload: String, direction: String)
-    {
+
+    init(id: UUID = UUID(), messageId: UInt32, messageTimeStamp: UInt32, fromUserId: UInt32, toUserId: UInt32, fromUserLongName: String, toUserLongName: String, fromUserShortName: String, toUserShortName: String, receivedACK: Bool, messagePayload: String, direction: String) {
         self.id = id
         self.messageId = messageId
         self.messageTimestamp = messageTimeStamp
@@ -43,7 +41,7 @@ extension MessageModel {
 
     static var data: [MessageModel] {
         [
-            //MessageModel(messageId: 3773493338, messageTimeStamp: 1632407404, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "GVH", toUserShortName: "U1", receivedACK: false, messagePayload: "yo", direction: "received")
+            // MessageModel(messageId: 3773493338, messageTimeStamp: 1632407404, fromUserId: 2930161432, toUserId: 4294967295, fromUserLongName: "TBEAM ARMY GREEN", toUserLongName: "Unknown 1", fromUserShortName: "GVH", toUserShortName: "U1", receivedACK: false, messagePayload: "yo", direction: "received")
         ]
     }
 }
@@ -62,7 +60,7 @@ extension MessageModel {
         var receivedACK: Bool
         var messagePayload: String
         var direction: String
-        
+
     }
 
     var data: Data {

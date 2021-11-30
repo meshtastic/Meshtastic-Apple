@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -68,11 +68,11 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "packet"),
     2: .standard(proto: "channel_id"),
-    3: .standard(proto: "gateway_id"),
+    3: .standard(proto: "gateway_id")
   ]
 
   fileprivate class _StorageClass {
-    var _packet: MeshPacket? = nil
+    var _packet: MeshPacket?
     var _channelID: String = String()
     var _gatewayID: String = String()
 
