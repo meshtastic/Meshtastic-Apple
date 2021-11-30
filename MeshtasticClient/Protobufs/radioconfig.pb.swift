@@ -437,6 +437,105 @@ extension LocationSharing: CaseIterable {
 #endif  // swift(>=4.2)
 
 ///
+/// Bit field of boolean configuration options, indicating which optional 
+///   fields to include when assembling POSITION messages
+/// Longitude and latitude are always included (also time if GPS-synced)
+///
+/// NOTE: the more fields are included, the larger the message will be -
+///   leading to longer airtime and a higher risk of packet loss
+enum PositionFlags: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  /// Required for compilation 
+  case posUndefined // = 0
+
+  /// Include an altitude value (if available) 
+  case posAltitude // = 1
+
+  /// Altitude value is MSL 
+  case posAltMsl // = 2
+
+  /// Include geoidal separation 
+  case posGeoSep // = 4
+
+  /// Include the DOP value ; PDOP used by default, see below 
+  case posDop // = 8
+
+  /// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP 
+  case posHvdop // = 16
+
+  /// Include battery level 
+  case posBattery // = 32
+
+  /// Include number of "satellites in view" 
+  case posSatinview // = 64
+
+  /// Include a sequence number incremented per packet 
+  case posSeqNos // = 128
+
+  /// Include positional timestamp (from GPS solution) 
+  case posTimestamp // = 256
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .posUndefined
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .posUndefined
+    case 1: self = .posAltitude
+    case 2: self = .posAltMsl
+    case 4: self = .posGeoSep
+    case 8: self = .posDop
+    case 16: self = .posHvdop
+    case 32: self = .posBattery
+    case 64: self = .posSatinview
+    case 128: self = .posSeqNos
+    case 256: self = .posTimestamp
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .posUndefined: return 0
+    case .posAltitude: return 1
+    case .posAltMsl: return 2
+    case .posGeoSep: return 4
+    case .posDop: return 8
+    case .posHvdop: return 16
+    case .posBattery: return 32
+    case .posSatinview: return 64
+    case .posSeqNos: return 128
+    case .posTimestamp: return 256
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension PositionFlags: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [PositionFlags] = [
+    .posUndefined,
+    .posAltitude,
+    .posAltMsl,
+    .posGeoSep,
+    .posDop,
+    .posHvdop,
+    .posBattery,
+    .posSatinview,
+    .posSeqNos,
+    .posTimestamp
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///
 /// The entire set of user settable/readable settings for our radio device.
 /// Includes both the current channel settings and any preferences the user has
 /// set for behavior of their node
@@ -469,6 +568,14 @@ struct RadioConfig {
     var positionBroadcastSecs: UInt32 {
       get {return _storage._positionBroadcastSecs}
       set {_uniqueStorage()._positionBroadcastSecs = newValue}
+    }
+
+    ///
+    /// We should send our position this often (but only if it has changed significantly)
+    /// Defaults to 15 minutes
+    var positionBroadcastSmart: Bool {
+      get {return _storage._positionBroadcastSmart}
+      set {_uniqueStorage()._positionBroadcastSmart = newValue}
     }
 
     ///
@@ -660,6 +767,27 @@ struct RadioConfig {
     }
 
     ///
+    /// Shall we accept 2D GPS fixes? By default, only 3D fixes are accepted
+    /// (during a 2D fix, altitude values are unreliable and will be excluded)
+    var gpsAccept2D: Bool {
+      get {return _storage._gpsAccept2D}
+      set {_uniqueStorage()._gpsAccept2D = newValue}
+    }
+
+    ///
+    /// GPS maximum DOP accepted (dilution of precision)
+    /// Set a rejection threshold for GPS readings based on their precision,
+    /// relative to the GPS rated accuracy (which is typically ~3m)
+    /// Solutions above this value will be treated as retryable errors!
+    ///
+    /// Useful range is between 1 - 64 (3m - <~200m)
+    /// By default (if zero), accept all GPS readings
+    var gpsMaxDop: UInt32 {
+      get {return _storage._gpsMaxDop}
+      set {_uniqueStorage()._gpsMaxDop = newValue}
+    }
+
+    ///
     /// This parameter is for advanced users with advanced test equipment, we do not recommend most users use it.
     /// A frequency offset that is added to to the calculated band center frequency.
     /// Used to correct for crystal calibration errors.
@@ -814,9 +942,24 @@ struct RadioConfig {
       set {_uniqueStorage()._storeForwardPluginEnabled = newValue}
     }
 
+    var storeForwardPluginHeartbeat: Bool {
+      get {return _storage._storeForwardPluginHeartbeat}
+      set {_uniqueStorage()._storeForwardPluginHeartbeat = newValue}
+    }
+
     var storeForwardPluginRecords: UInt32 {
       get {return _storage._storeForwardPluginRecords}
       set {_uniqueStorage()._storeForwardPluginRecords = newValue}
+    }
+
+    var storeForwardPluginHistoryReturnMax: UInt32 {
+      get {return _storage._storeForwardPluginHistoryReturnMax}
+      set {_uniqueStorage()._storeForwardPluginHistoryReturnMax = newValue}
+    }
+
+    var storeForwardPluginHistoryReturnWindow: UInt32 {
+      get {return _storage._storeForwardPluginHistoryReturnWindow}
+      set {_uniqueStorage()._storeForwardPluginHistoryReturnWindow = newValue}
     }
 
     ///
@@ -883,11 +1026,36 @@ struct RadioConfig {
       set {_uniqueStorage()._environmentalMeasurementPluginSensorPin = newValue}
     }
 
+    ///
+    /// Bit field of boolean configuration options for POSITION messages
+    /// (bitwise OR of PositionFlags)
+    var positionFlags: UInt32 {
+      get {return _storage._positionFlags}
+      set {_uniqueStorage()._positionFlags = newValue}
+    }
+
+    ///
+    /// Circumvents the logic block for determining whether the device is powered or not. 
+    /// Useful for devices with finicky ADC issues on the battery sense pins.
+    var isAlwaysPowered: Bool {
+      get {return _storage._isAlwaysPowered}
+      set {_uniqueStorage()._isAlwaysPowered = newValue}
+    }
+
+    ///
+    /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds. 
+    /// Potentially useful for devices without user buttons.
+    var autoScreenCarouselSecs: UInt32 {
+      get {return _storage._autoScreenCarouselSecs}
+      set {_uniqueStorage()._autoScreenCarouselSecs = newValue}
+    }
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum EnvironmentalMeasurementSensorType: SwiftProtobuf.Enum {
       typealias RawValue = Int
       case dht11 // = 0
+      case ds18B20 // = 1
       case UNRECOGNIZED(Int)
 
       init() {
@@ -897,6 +1065,7 @@ struct RadioConfig {
       init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .dht11
+        case 1: self = .ds18B20
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -904,6 +1073,7 @@ struct RadioConfig {
       var rawValue: Int {
         switch self {
         case .dht11: return 0
+        case .ds18B20: return 1
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -925,7 +1095,8 @@ struct RadioConfig {
 extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType] = [
-    .dht11
+    .dht11,
+    .ds18B20
   ]
 }
 
@@ -999,6 +1170,21 @@ extension LocationSharing: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension PositionFlags: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "POS_UNDEFINED"),
+    1: .same(proto: "POS_ALTITUDE"),
+    2: .same(proto: "POS_ALT_MSL"),
+    4: .same(proto: "POS_GEO_SEP"),
+    8: .same(proto: "POS_DOP"),
+    16: .same(proto: "POS_HVDOP"),
+    32: .same(proto: "POS_BATTERY"),
+    64: .same(proto: "POS_SATINVIEW"),
+    128: .same(proto: "POS_SEQ_NOS"),
+    256: .same(proto: "POS_TIMESTAMP")
+  ]
+}
+
 extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "RadioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1018,9 +1204,13 @@ extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._preferences {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._preferences {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1035,6 +1225,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
   static let protoMessageName: String = RadioConfig.protoMessageName + ".UserPreferences"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_broadcast_secs"),
+    17: .standard(proto: "position_broadcast_smart"),
     2: .standard(proto: "send_owner_interval"),
     4: .standard(proto: "wait_bluetooth_secs"),
     5: .standard(proto: "screen_on_secs"),
@@ -1057,6 +1248,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     33: .standard(proto: "gps_operation"),
     34: .standard(proto: "gps_update_interval"),
     36: .standard(proto: "gps_attempt_time"),
+    45: .standard(proto: "gps_accept_2d"),
+    46: .standard(proto: "gps_max_dop"),
     41: .standard(proto: "frequency_offset"),
     42: .standard(proto: "mqtt_server"),
     43: .standard(proto: "mqtt_disabled"),
@@ -1080,7 +1273,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     133: .standard(proto: "range_test_plugin_sender"),
     134: .standard(proto: "range_test_plugin_save"),
     148: .standard(proto: "store_forward_plugin_enabled"),
+    149: .standard(proto: "store_forward_plugin_heartbeat"),
     137: .standard(proto: "store_forward_plugin_records"),
+    138: .standard(proto: "store_forward_plugin_history_return_max"),
+    139: .standard(proto: "store_forward_plugin_history_return_window"),
     140: .standard(proto: "environmental_measurement_plugin_measurement_enabled"),
     141: .standard(proto: "environmental_measurement_plugin_screen_enabled"),
     142: .standard(proto: "environmental_measurement_plugin_read_error_count_threshold"),
@@ -1088,11 +1284,15 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     144: .standard(proto: "environmental_measurement_plugin_recovery_interval"),
     145: .standard(proto: "environmental_measurement_plugin_display_farenheit"),
     146: .standard(proto: "environmental_measurement_plugin_sensor_type"),
-    147: .standard(proto: "environmental_measurement_plugin_sensor_pin")
+    147: .standard(proto: "environmental_measurement_plugin_sensor_pin"),
+    150: .standard(proto: "position_flags"),
+    151: .standard(proto: "is_always_powered"),
+    152: .standard(proto: "auto_screen_carousel_secs")
   ]
 
   fileprivate class _StorageClass {
     var _positionBroadcastSecs: UInt32 = 0
+    var _positionBroadcastSmart: Bool = false
     var _sendOwnerInterval: UInt32 = 0
     var _waitBluetoothSecs: UInt32 = 0
     var _screenOnSecs: UInt32 = 0
@@ -1115,6 +1315,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _gpsOperation: GpsOperation = .gpsOpUnset
     var _gpsUpdateInterval: UInt32 = 0
     var _gpsAttemptTime: UInt32 = 0
+    var _gpsAccept2D: Bool = false
+    var _gpsMaxDop: UInt32 = 0
     var _frequencyOffset: Float = 0
     var _mqttServer: String = String()
     var _mqttDisabled: Bool = false
@@ -1138,7 +1340,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _rangeTestPluginSender: UInt32 = 0
     var _rangeTestPluginSave: Bool = false
     var _storeForwardPluginEnabled: Bool = false
+    var _storeForwardPluginHeartbeat: Bool = false
     var _storeForwardPluginRecords: UInt32 = 0
+    var _storeForwardPluginHistoryReturnMax: UInt32 = 0
+    var _storeForwardPluginHistoryReturnWindow: UInt32 = 0
     var _environmentalMeasurementPluginMeasurementEnabled: Bool = false
     var _environmentalMeasurementPluginScreenEnabled: Bool = false
     var _environmentalMeasurementPluginReadErrorCountThreshold: UInt32 = 0
@@ -1147,6 +1352,9 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _environmentalMeasurementPluginDisplayFarenheit: Bool = false
     var _environmentalMeasurementPluginSensorType: RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType = .dht11
     var _environmentalMeasurementPluginSensorPin: UInt32 = 0
+    var _positionFlags: UInt32 = 0
+    var _isAlwaysPowered: Bool = false
+    var _autoScreenCarouselSecs: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -1154,6 +1362,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
 
     init(copying source: _StorageClass) {
       _positionBroadcastSecs = source._positionBroadcastSecs
+      _positionBroadcastSmart = source._positionBroadcastSmart
       _sendOwnerInterval = source._sendOwnerInterval
       _waitBluetoothSecs = source._waitBluetoothSecs
       _screenOnSecs = source._screenOnSecs
@@ -1176,6 +1385,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _gpsOperation = source._gpsOperation
       _gpsUpdateInterval = source._gpsUpdateInterval
       _gpsAttemptTime = source._gpsAttemptTime
+      _gpsAccept2D = source._gpsAccept2D
+      _gpsMaxDop = source._gpsMaxDop
       _frequencyOffset = source._frequencyOffset
       _mqttServer = source._mqttServer
       _mqttDisabled = source._mqttDisabled
@@ -1199,7 +1410,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _rangeTestPluginSender = source._rangeTestPluginSender
       _rangeTestPluginSave = source._rangeTestPluginSave
       _storeForwardPluginEnabled = source._storeForwardPluginEnabled
+      _storeForwardPluginHeartbeat = source._storeForwardPluginHeartbeat
       _storeForwardPluginRecords = source._storeForwardPluginRecords
+      _storeForwardPluginHistoryReturnMax = source._storeForwardPluginHistoryReturnMax
+      _storeForwardPluginHistoryReturnWindow = source._storeForwardPluginHistoryReturnWindow
       _environmentalMeasurementPluginMeasurementEnabled = source._environmentalMeasurementPluginMeasurementEnabled
       _environmentalMeasurementPluginScreenEnabled = source._environmentalMeasurementPluginScreenEnabled
       _environmentalMeasurementPluginReadErrorCountThreshold = source._environmentalMeasurementPluginReadErrorCountThreshold
@@ -1208,6 +1422,9 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _environmentalMeasurementPluginDisplayFarenheit = source._environmentalMeasurementPluginDisplayFarenheit
       _environmentalMeasurementPluginSensorType = source._environmentalMeasurementPluginSensorType
       _environmentalMeasurementPluginSensorPin = source._environmentalMeasurementPluginSensorPin
+      _positionFlags = source._positionFlags
+      _isAlwaysPowered = source._isAlwaysPowered
+      _autoScreenCarouselSecs = source._autoScreenCarouselSecs
     }
   }
 
@@ -1241,6 +1458,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._wifiApMode) }()
         case 15: try { try decoder.decodeSingularEnumField(value: &_storage._region) }()
         case 16: try { try decoder.decodeSingularEnumField(value: &_storage._chargeCurrent) }()
+        case 17: try { try decoder.decodeSingularBoolField(value: &_storage._positionBroadcastSmart) }()
         case 32: try { try decoder.decodeSingularEnumField(value: &_storage._locationShare) }()
         case 33: try { try decoder.decodeSingularEnumField(value: &_storage._gpsOperation) }()
         case 34: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsUpdateInterval) }()
@@ -1253,6 +1471,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 42: try { try decoder.decodeSingularStringField(value: &_storage._mqttServer) }()
         case 43: try { try decoder.decodeSingularBoolField(value: &_storage._mqttDisabled) }()
         case 44: try { try decoder.decodeSingularEnumField(value: &_storage._gpsFormat) }()
+        case 45: try { try decoder.decodeSingularBoolField(value: &_storage._gpsAccept2D) }()
+        case 46: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsMaxDop) }()
         case 100: try { try decoder.decodeSingularBoolField(value: &_storage._factoryReset) }()
         case 101: try { try decoder.decodeSingularBoolField(value: &_storage._debugLogEnabled) }()
         case 103: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._ignoreIncoming) }()
@@ -1272,6 +1492,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 133: try { try decoder.decodeSingularUInt32Field(value: &_storage._rangeTestPluginSender) }()
         case 134: try { try decoder.decodeSingularBoolField(value: &_storage._rangeTestPluginSave) }()
         case 137: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginRecords) }()
+        case 138: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginHistoryReturnMax) }()
+        case 139: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginHistoryReturnWindow) }()
         case 140: try { try decoder.decodeSingularBoolField(value: &_storage._environmentalMeasurementPluginMeasurementEnabled) }()
         case 141: try { try decoder.decodeSingularBoolField(value: &_storage._environmentalMeasurementPluginScreenEnabled) }()
         case 142: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginReadErrorCountThreshold) }()
@@ -1281,6 +1503,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 146: try { try decoder.decodeSingularEnumField(value: &_storage._environmentalMeasurementPluginSensorType) }()
         case 147: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginSensorPin) }()
         case 148: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardPluginEnabled) }()
+        case 149: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardPluginHeartbeat) }()
+        case 150: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionFlags) }()
+        case 151: try { try decoder.decodeSingularBoolField(value: &_storage._isAlwaysPowered) }()
+        case 152: try { try decoder.decodeSingularUInt32Field(value: &_storage._autoScreenCarouselSecs) }()
         default: break
         }
       }
@@ -1334,6 +1560,9 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._chargeCurrent != .maunset {
         try visitor.visitSingularEnumField(value: _storage._chargeCurrent, fieldNumber: 16)
       }
+      if _storage._positionBroadcastSmart != false {
+        try visitor.visitSingularBoolField(value: _storage._positionBroadcastSmart, fieldNumber: 17)
+      }
       if _storage._locationShare != .locUnset {
         try visitor.visitSingularEnumField(value: _storage._locationShare, fieldNumber: 32)
       }
@@ -1369,6 +1598,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       }
       if _storage._gpsFormat != .gpsFormatDec {
         try visitor.visitSingularEnumField(value: _storage._gpsFormat, fieldNumber: 44)
+      }
+      if _storage._gpsAccept2D != false {
+        try visitor.visitSingularBoolField(value: _storage._gpsAccept2D, fieldNumber: 45)
+      }
+      if _storage._gpsMaxDop != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._gpsMaxDop, fieldNumber: 46)
       }
       if _storage._factoryReset != false {
         try visitor.visitSingularBoolField(value: _storage._factoryReset, fieldNumber: 100)
@@ -1427,6 +1662,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._storeForwardPluginRecords != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginRecords, fieldNumber: 137)
       }
+      if _storage._storeForwardPluginHistoryReturnMax != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginHistoryReturnMax, fieldNumber: 138)
+      }
+      if _storage._storeForwardPluginHistoryReturnWindow != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginHistoryReturnWindow, fieldNumber: 139)
+      }
       if _storage._environmentalMeasurementPluginMeasurementEnabled != false {
         try visitor.visitSingularBoolField(value: _storage._environmentalMeasurementPluginMeasurementEnabled, fieldNumber: 140)
       }
@@ -1454,6 +1695,18 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._storeForwardPluginEnabled != false {
         try visitor.visitSingularBoolField(value: _storage._storeForwardPluginEnabled, fieldNumber: 148)
       }
+      if _storage._storeForwardPluginHeartbeat != false {
+        try visitor.visitSingularBoolField(value: _storage._storeForwardPluginHeartbeat, fieldNumber: 149)
+      }
+      if _storage._positionFlags != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._positionFlags, fieldNumber: 150)
+      }
+      if _storage._isAlwaysPowered != false {
+        try visitor.visitSingularBoolField(value: _storage._isAlwaysPowered, fieldNumber: 151)
+      }
+      if _storage._autoScreenCarouselSecs != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._autoScreenCarouselSecs, fieldNumber: 152)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1464,6 +1717,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         let _storage = _args.0
         let rhs_storage = _args.1
         if _storage._positionBroadcastSecs != rhs_storage._positionBroadcastSecs {return false}
+        if _storage._positionBroadcastSmart != rhs_storage._positionBroadcastSmart {return false}
         if _storage._sendOwnerInterval != rhs_storage._sendOwnerInterval {return false}
         if _storage._waitBluetoothSecs != rhs_storage._waitBluetoothSecs {return false}
         if _storage._screenOnSecs != rhs_storage._screenOnSecs {return false}
@@ -1486,6 +1740,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._gpsOperation != rhs_storage._gpsOperation {return false}
         if _storage._gpsUpdateInterval != rhs_storage._gpsUpdateInterval {return false}
         if _storage._gpsAttemptTime != rhs_storage._gpsAttemptTime {return false}
+        if _storage._gpsAccept2D != rhs_storage._gpsAccept2D {return false}
+        if _storage._gpsMaxDop != rhs_storage._gpsMaxDop {return false}
         if _storage._frequencyOffset != rhs_storage._frequencyOffset {return false}
         if _storage._mqttServer != rhs_storage._mqttServer {return false}
         if _storage._mqttDisabled != rhs_storage._mqttDisabled {return false}
@@ -1509,7 +1765,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._rangeTestPluginSender != rhs_storage._rangeTestPluginSender {return false}
         if _storage._rangeTestPluginSave != rhs_storage._rangeTestPluginSave {return false}
         if _storage._storeForwardPluginEnabled != rhs_storage._storeForwardPluginEnabled {return false}
+        if _storage._storeForwardPluginHeartbeat != rhs_storage._storeForwardPluginHeartbeat {return false}
         if _storage._storeForwardPluginRecords != rhs_storage._storeForwardPluginRecords {return false}
+        if _storage._storeForwardPluginHistoryReturnMax != rhs_storage._storeForwardPluginHistoryReturnMax {return false}
+        if _storage._storeForwardPluginHistoryReturnWindow != rhs_storage._storeForwardPluginHistoryReturnWindow {return false}
         if _storage._environmentalMeasurementPluginMeasurementEnabled != rhs_storage._environmentalMeasurementPluginMeasurementEnabled {return false}
         if _storage._environmentalMeasurementPluginScreenEnabled != rhs_storage._environmentalMeasurementPluginScreenEnabled {return false}
         if _storage._environmentalMeasurementPluginReadErrorCountThreshold != rhs_storage._environmentalMeasurementPluginReadErrorCountThreshold {return false}
@@ -1518,6 +1777,9 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._environmentalMeasurementPluginDisplayFarenheit != rhs_storage._environmentalMeasurementPluginDisplayFarenheit {return false}
         if _storage._environmentalMeasurementPluginSensorType != rhs_storage._environmentalMeasurementPluginSensorType {return false}
         if _storage._environmentalMeasurementPluginSensorPin != rhs_storage._environmentalMeasurementPluginSensorPin {return false}
+        if _storage._positionFlags != rhs_storage._positionFlags {return false}
+        if _storage._isAlwaysPowered != rhs_storage._isAlwaysPowered {return false}
+        if _storage._autoScreenCarouselSecs != rhs_storage._autoScreenCarouselSecs {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -1529,6 +1791,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
 
 extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DHT11")
+    0: .same(proto: "DHT11"),
+    1: .same(proto: "DS18B20")
   ]
 }

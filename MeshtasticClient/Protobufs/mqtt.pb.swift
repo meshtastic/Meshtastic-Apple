@@ -113,9 +113,13 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if let v = _storage._packet {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._packet {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      }
+      } }()
       if !_storage._channelID.isEmpty {
         try visitor.visitSingularStringField(value: _storage._channelID, fieldNumber: 2)
       }

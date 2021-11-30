@@ -1,5 +1,5 @@
 //
-//  DeviceMap.swift
+//  NodeMap.swift
 //  MeshtasticClient
 //
 //  Created by Garth Vander Houwen on 8/7/21.

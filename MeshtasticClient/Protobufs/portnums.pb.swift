@@ -113,6 +113,12 @@ enum PortNum: SwiftProtobuf.Enum {
   case environmentalMeasurementApp // = 67
 
   ///
+  /// Experimental tools for estimating node position without a GPS
+  /// Maintained by Github user a-f-G-U-C (a Meshtastic contributor)
+  /// Project files at https://github.com/a-f-G-U-C/Meshtastic-ZPS
+  case zpsApp // = 68
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/Meshtastic-device/blob/master/bin/regen-protos.sh))
@@ -146,6 +152,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 65: self = .storeForwardApp
     case 66: self = .rangeTestApp
     case 67: self = .environmentalMeasurementApp
+    case 68: self = .zpsApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -168,6 +175,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .storeForwardApp: return 65
     case .rangeTestApp: return 66
     case .environmentalMeasurementApp: return 67
+    case .zpsApp: return 68
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -195,6 +203,7 @@ extension PortNum: CaseIterable {
     .storeForwardApp,
     .rangeTestApp,
     .environmentalMeasurementApp,
+    .zpsApp,
     .privateApp,
     .atakForwarder,
     .max
@@ -220,6 +229,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     65: .same(proto: "STORE_FORWARD_APP"),
     66: .same(proto: "RANGE_TEST_APP"),
     67: .same(proto: "ENVIRONMENTAL_MEASUREMENT_APP"),
+    68: .same(proto: "ZPS_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX")

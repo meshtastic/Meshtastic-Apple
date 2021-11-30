@@ -74,6 +74,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   ///
   /// The simulator built into the android app
   case androidSim // = 38
+
+  ///
+  /// Custom DIY device based on @NanoVHF schematics: https://github.com/NanoVHF/Meshtastic-DIY/tree/main/Schematics
+  case diyV1 // = 39
   case UNRECOGNIZED(Int)
 
   init() {
@@ -100,6 +104,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 36: self = .nrf52Unknown
     case 37: self = .portduino
     case 38: self = .androidSim
+    case 39: self = .diyV1
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -124,6 +129,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nrf52Unknown: return 36
     case .portduino: return 37
     case .androidSim: return 38
+    case .diyV1: return 39
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -152,7 +158,105 @@ extension HardwareModel: CaseIterable {
     .genieblocks,
     .nrf52Unknown,
     .portduino,
-    .androidSim
+    .androidSim,
+    .diyV1
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///
+/// The team colors are based on the names of "friendly teams" in ATAK:
+/// https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV/blob/master/atak/ATAK/app/src/main/assets/filters/team_filters.xml
+enum Team: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  /// the default (unset) is "achromatic" (unaffiliated) 
+  case clear // = 0
+  case cyan // = 1
+  case white // = 2
+  case yellow // = 3
+  case orange // = 4
+  case magenta // = 5
+  case red // = 6
+  case maroon // = 7
+  case purple // = 8
+  case darkBlue // = 9
+  case blue // = 10
+  case teal // = 11
+  case green // = 12
+  case darkGreen // = 13
+  case brown // = 14
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .clear
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .clear
+    case 1: self = .cyan
+    case 2: self = .white
+    case 3: self = .yellow
+    case 4: self = .orange
+    case 5: self = .magenta
+    case 6: self = .red
+    case 7: self = .maroon
+    case 8: self = .purple
+    case 9: self = .darkBlue
+    case 10: self = .blue
+    case 11: self = .teal
+    case 12: self = .green
+    case 13: self = .darkGreen
+    case 14: self = .brown
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .clear: return 0
+    case .cyan: return 1
+    case .white: return 2
+    case .yellow: return 3
+    case .orange: return 4
+    case .magenta: return 5
+    case .red: return 6
+    case .maroon: return 7
+    case .purple: return 8
+    case .darkBlue: return 9
+    case .blue: return 10
+    case .teal: return 11
+    case .green: return 12
+    case .darkGreen: return 13
+    case .brown: return 14
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Team: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Team] = [
+    .clear,
+    .cyan,
+    .white,
+    .yellow,
+    .orange,
+    .magenta,
+    .red,
+    .maroon,
+    .purple,
+    .darkBlue,
+    .blue,
+    .teal,
+    .green,
+    .darkGreen,
+    .brown
   ]
 }
 
@@ -339,17 +443,29 @@ struct Position {
   ///
   /// The new preferred location encoding, divide by 1e-7 to get degrees
   /// in floating point
-  var latitudeI: Int32 = 0
+  var latitudeI: Int32 {
+    get {return _storage._latitudeI}
+    set {_uniqueStorage()._latitudeI = newValue}
+  }
 
-  var longitudeI: Int32 = 0
+  var longitudeI: Int32 {
+    get {return _storage._longitudeI}
+    set {_uniqueStorage()._longitudeI = newValue}
+  }
 
   ///
-  /// In meters above MSL
-  var altitude: Int32 = 0
+  /// In meters above MSL (but see issue #359)
+  var altitude: Int32 {
+    get {return _storage._altitude}
+    set {_uniqueStorage()._altitude = newValue}
+  }
 
   ///
   /// 1-100 (0 means not provided)
-  var batteryLevel: Int32 = 0
+  var batteryLevel: Int32 {
+    get {return _storage._batteryLevel}
+    set {_uniqueStorage()._batteryLevel = newValue}
+  }
 
   ///
   /// This is usually not sent over the mesh (to save space), but it is sent
@@ -357,12 +473,252 @@ struct Position {
   /// the mesh (because there are devices on the mesh without GPS), it will only
   /// be sent by devices which has a hardware GPS clock.
   /// seconds since 1970
-  var time: UInt32 = 0
+  var time: UInt32 {
+    get {return _storage._time}
+    set {_uniqueStorage()._time = newValue}
+  }
+
+  var locationSource: Position.LocSource {
+    get {return _storage._locationSource}
+    set {_uniqueStorage()._locationSource = newValue}
+  }
+
+  var altitudeSource: Position.AltSource {
+    get {return _storage._altitudeSource}
+    set {_uniqueStorage()._altitudeSource = newValue}
+  }
+
+  ///
+  /// Positional timestamp (actual timestamp of GPS solution) in integer epoch seconds
+  var posTimestamp: UInt32 {
+    get {return _storage._posTimestamp}
+    set {_uniqueStorage()._posTimestamp = newValue}
+  }
+
+  ///
+  /// Pos. timestamp milliseconds adjustment (rarely available or required)
+  var posTimeMillis: Int32 {
+    get {return _storage._posTimeMillis}
+    set {_uniqueStorage()._posTimeMillis = newValue}
+  }
+
+  ///
+  /// HAE altitude in meters - can be used instead of MSL altitude
+  var altitudeHae: Int32 {
+    get {return _storage._altitudeHae}
+    set {_uniqueStorage()._altitudeHae = newValue}
+  }
+
+  ///
+  /// Geoidal separation in meters
+  var altGeoidSep: Int32 {
+    get {return _storage._altGeoidSep}
+    set {_uniqueStorage()._altGeoidSep = newValue}
+  }
+
+  ///
+  /// Horizontal, Vertical and Position Dilution of Precision, in 1/100 units
+  /// - PDOP is sufficient for most cases
+  /// - for higher precision scenarios, HDOP and VDOP can be used instead,
+  ///   in which case PDOP becomes redundant (PDOP=sqrt(HDOP^2 + VDOP^2))
+  var pdop: UInt32 {
+    get {return _storage._pdop}
+    set {_uniqueStorage()._pdop = newValue}
+  }
+
+  var hdop: UInt32 {
+    get {return _storage._hdop}
+    set {_uniqueStorage()._hdop = newValue}
+  }
+
+  var vdop: UInt32 {
+    get {return _storage._vdop}
+    set {_uniqueStorage()._vdop = newValue}
+  }
+
+  ///
+  /// GPS accuracy (a hardware specific constant) in mm
+  ///   multiplied with DOP to calculate positional accuracy
+  /// Default: "'bout three meters-ish" :)
+  var gpsAccuracy: UInt32 {
+    get {return _storage._gpsAccuracy}
+    set {_uniqueStorage()._gpsAccuracy = newValue}
+  }
+
+  ///
+  /// Ground speed in m/s and True North TRACK in 1/100 degrees
+  ///
+  /// Clarification of terms:
+  /// - "track" is the direction of motion (measured in horizontal plane)
+  /// - "heading" is where the fuselage points (measured in horizontal plane)
+  /// - "yaw" indicates a relative rotation about the vertical axis
+  var groundSpeed: UInt32 {
+    get {return _storage._groundSpeed}
+    set {_uniqueStorage()._groundSpeed = newValue}
+  }
+
+  var groundTrack: UInt32 {
+    get {return _storage._groundTrack}
+    set {_uniqueStorage()._groundTrack = newValue}
+  }
+
+  ///
+  /// GPS fix quality (from NMEA GxGGA statement or similar)
+  var fixQuality: UInt32 {
+    get {return _storage._fixQuality}
+    set {_uniqueStorage()._fixQuality = newValue}
+  }
+
+  ///
+  /// GPS fix type 2D/3D (from NMEA GxGSA statement)
+  var fixType: UInt32 {
+    get {return _storage._fixType}
+    set {_uniqueStorage()._fixType = newValue}
+  }
+
+  ///
+  /// GPS "Satellites in View" number
+  var satsInView: UInt32 {
+    get {return _storage._satsInView}
+    set {_uniqueStorage()._satsInView = newValue}
+  }
+
+  ///
+  /// Sensor ID - in case multiple positioning sensors are being used
+  var sensorID: UInt32 {
+    get {return _storage._sensorID}
+    set {_uniqueStorage()._sensorID = newValue}
+  }
+
+  ///
+  /// Estimated/expected time (in seconds) until next update:
+  /// - if we update at fixed intervals of X seconds, use X
+  /// - if we update at dynamic intervals (based on relative movement etc),
+  ///   but "AT LEAST every Y seconds", use Y
+  var posNextUpdate: UInt32 {
+    get {return _storage._posNextUpdate}
+    set {_uniqueStorage()._posNextUpdate = newValue}
+  }
+
+  ///
+  /// A sequence number, incremented with each Position message to help
+  ///   detect lost updates if needed
+  var posSeqNumber: UInt32 {
+    get {return _storage._posSeqNumber}
+    set {_uniqueStorage()._posSeqNumber = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  ///
+  /// How the location was acquired: manual, onboard GPS, external (EUD) GPS
+  enum LocSource: SwiftProtobuf.Enum {
+    typealias RawValue = Int
+    case locsrcUnspecified // = 0
+    case locsrcManualEntry // = 1
+    case locsrcGpsInternal // = 2
+
+    ///
+    /// More location sources can be added here when available:
+    ///   GSM, radio beacons (BLE etc), location fingerprinting etc
+    case locsrcGpsExternal // = 3
+    case UNRECOGNIZED(Int)
+
+    init() {
+      self = .locsrcUnspecified
+    }
+
+    init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .locsrcUnspecified
+      case 1: self = .locsrcManualEntry
+      case 2: self = .locsrcGpsInternal
+      case 3: self = .locsrcGpsExternal
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    var rawValue: Int {
+      switch self {
+      case .locsrcUnspecified: return 0
+      case .locsrcManualEntry: return 1
+      case .locsrcGpsInternal: return 2
+      case .locsrcGpsExternal: return 3
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
+
+  ///
+  /// How the altitude was acquired: manual, GPS int/ext, etc
+  /// Default: same as location_source if present
+  enum AltSource: SwiftProtobuf.Enum {
+    typealias RawValue = Int
+    case altsrcUnspecified // = 0
+    case altsrcManualEntry // = 1
+    case altsrcGpsInternal // = 2
+    case altsrcGpsExternal // = 3
+    case altsrcBarometric // = 4
+    case UNRECOGNIZED(Int)
+
+    init() {
+      self = .altsrcUnspecified
+    }
+
+    init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .altsrcUnspecified
+      case 1: self = .altsrcManualEntry
+      case 2: self = .altsrcGpsInternal
+      case 3: self = .altsrcGpsExternal
+      case 4: self = .altsrcBarometric
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    var rawValue: Int {
+      switch self {
+      case .altsrcUnspecified: return 0
+      case .altsrcManualEntry: return 1
+      case .altsrcGpsInternal: return 2
+      case .altsrcGpsExternal: return 3
+      case .altsrcBarometric: return 4
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
+
   init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
+
+#if swift(>=4.2)
+
+extension Position.LocSource: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Position.LocSource] = [
+    .locsrcUnspecified,
+    .locsrcManualEntry,
+    .locsrcGpsInternal,
+    .locsrcGpsExternal
+  ]
+}
+
+extension Position.AltSource: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Position.AltSource] = [
+    .altsrcUnspecified,
+    .altsrcManualEntry,
+    .altsrcGpsInternal,
+    .altsrcGpsExternal,
+    .altsrcBarometric
+  ]
+}
+
+#endif  // swift(>=4.2)
 
 ///
 /// Broadcast when a newly powered mesh node wants to find a node num it can use
@@ -427,6 +783,31 @@ struct User {
   /// If this user is a licensed operator, set this flag.
   /// Also, "long_name" should be their licence number.
   var isLicensed: Bool = false
+
+  ///
+  /// Participants in the same network can self-group into different teams.
+  /// Short-term this can be used to visually differentiate them on the map;
+  /// in the longer term it could also help users to semi-automatically
+  /// select or ignore messages according to team affiliation. 
+  /// In total, 14 teams are defined (encoded in 4 bits)
+  var team: Team = .clear
+
+  ///
+  /// Transmit power at antenna connector, in decibel-milliwatt
+  /// An optional self-reported value useful in network planning, discovery
+  /// and positioning - along with ant_gain_dbi and ant_azimuth below
+  var txPowerDbm: UInt32 = 0
+
+  ///
+  /// Antenna gain (applicable to both Tx and Rx), in decibel-isotropic
+  var antGainDbi: UInt32 = 0
+
+  ///
+  /// Directional antenna true azimuth *if applicable*, in degrees (0-360)
+  /// Only applicable in case of stationary nodes with a directional antenna
+  /// Zero = not applicable (mobile or omni) or not specified
+  /// (use a value of 360 to indicate an antenna azimuth of zero degrees)
+  var antAzimuth: UInt32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1495,7 +1876,28 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     35: .same(proto: "GENIEBLOCKS"),
     36: .same(proto: "NRF52_UNKNOWN"),
     37: .same(proto: "PORTDUINO"),
-    38: .same(proto: "ANDROID_SIM")
+    38: .same(proto: "ANDROID_SIM"),
+    39: .same(proto: "DIY_V1")
+  ]
+}
+
+extension Team: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "CLEAR"),
+    1: .same(proto: "CYAN"),
+    2: .same(proto: "WHITE"),
+    3: .same(proto: "YELLOW"),
+    4: .same(proto: "ORANGE"),
+    5: .same(proto: "MAGENTA"),
+    6: .same(proto: "RED"),
+    7: .same(proto: "MAROON"),
+    8: .same(proto: "PURPLE"),
+    9: .same(proto: "DARK_BLUE"),
+    10: .same(proto: "BLUE"),
+    11: .same(proto: "TEAL"),
+    12: .same(proto: "GREEN"),
+    13: .same(proto: "DARK_GREEN"),
+    14: .same(proto: "BROWN")
   ]
 }
 
@@ -1530,53 +1932,256 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     2: .standard(proto: "longitude_i"),
     3: .same(proto: "altitude"),
     4: .standard(proto: "battery_level"),
-    9: .same(proto: "time")
+    9: .same(proto: "time"),
+    10: .standard(proto: "location_source"),
+    11: .standard(proto: "altitude_source"),
+    12: .standard(proto: "pos_timestamp"),
+    13: .standard(proto: "pos_time_millis"),
+    14: .standard(proto: "altitude_hae"),
+    15: .standard(proto: "alt_geoid_sep"),
+    16: .same(proto: "PDOP"),
+    17: .same(proto: "HDOP"),
+    18: .same(proto: "VDOP"),
+    19: .standard(proto: "gps_accuracy"),
+    20: .standard(proto: "ground_speed"),
+    21: .standard(proto: "ground_track"),
+    22: .standard(proto: "fix_quality"),
+    23: .standard(proto: "fix_type"),
+    24: .standard(proto: "sats_in_view"),
+    25: .standard(proto: "sensor_id"),
+    40: .standard(proto: "pos_next_update"),
+    41: .standard(proto: "pos_seq_number")
   ]
 
+  fileprivate class _StorageClass {
+    var _latitudeI: Int32 = 0
+    var _longitudeI: Int32 = 0
+    var _altitude: Int32 = 0
+    var _batteryLevel: Int32 = 0
+    var _time: UInt32 = 0
+    var _locationSource: Position.LocSource = .locsrcUnspecified
+    var _altitudeSource: Position.AltSource = .altsrcUnspecified
+    var _posTimestamp: UInt32 = 0
+    var _posTimeMillis: Int32 = 0
+    var _altitudeHae: Int32 = 0
+    var _altGeoidSep: Int32 = 0
+    var _pdop: UInt32 = 0
+    var _hdop: UInt32 = 0
+    var _vdop: UInt32 = 0
+    var _gpsAccuracy: UInt32 = 0
+    var _groundSpeed: UInt32 = 0
+    var _groundTrack: UInt32 = 0
+    var _fixQuality: UInt32 = 0
+    var _fixType: UInt32 = 0
+    var _satsInView: UInt32 = 0
+    var _sensorID: UInt32 = 0
+    var _posNextUpdate: UInt32 = 0
+    var _posSeqNumber: UInt32 = 0
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _latitudeI = source._latitudeI
+      _longitudeI = source._longitudeI
+      _altitude = source._altitude
+      _batteryLevel = source._batteryLevel
+      _time = source._time
+      _locationSource = source._locationSource
+      _altitudeSource = source._altitudeSource
+      _posTimestamp = source._posTimestamp
+      _posTimeMillis = source._posTimeMillis
+      _altitudeHae = source._altitudeHae
+      _altGeoidSep = source._altGeoidSep
+      _pdop = source._pdop
+      _hdop = source._hdop
+      _vdop = source._vdop
+      _gpsAccuracy = source._gpsAccuracy
+      _groundSpeed = source._groundSpeed
+      _groundTrack = source._groundTrack
+      _fixQuality = source._fixQuality
+      _fixType = source._fixType
+      _satsInView = source._satsInView
+      _sensorID = source._sensorID
+      _posNextUpdate = source._posNextUpdate
+      _posSeqNumber = source._posSeqNumber
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
-      case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
-      case 3: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
-      case 4: try { try decoder.decodeSingularInt32Field(value: &self.batteryLevel) }()
-      case 9: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularSFixed32Field(value: &_storage._latitudeI) }()
+        case 2: try { try decoder.decodeSingularSFixed32Field(value: &_storage._longitudeI) }()
+        case 3: try { try decoder.decodeSingularInt32Field(value: &_storage._altitude) }()
+        case 4: try { try decoder.decodeSingularInt32Field(value: &_storage._batteryLevel) }()
+        case 9: try { try decoder.decodeSingularFixed32Field(value: &_storage._time) }()
+        case 10: try { try decoder.decodeSingularEnumField(value: &_storage._locationSource) }()
+        case 11: try { try decoder.decodeSingularEnumField(value: &_storage._altitudeSource) }()
+        case 12: try { try decoder.decodeSingularFixed32Field(value: &_storage._posTimestamp) }()
+        case 13: try { try decoder.decodeSingularInt32Field(value: &_storage._posTimeMillis) }()
+        case 14: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeHae) }()
+        case 15: try { try decoder.decodeSingularSInt32Field(value: &_storage._altGeoidSep) }()
+        case 16: try { try decoder.decodeSingularUInt32Field(value: &_storage._pdop) }()
+        case 17: try { try decoder.decodeSingularUInt32Field(value: &_storage._hdop) }()
+        case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._vdop) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsAccuracy) }()
+        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundSpeed) }()
+        case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundTrack) }()
+        case 22: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixQuality) }()
+        case 23: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixType) }()
+        case 24: try { try decoder.decodeSingularUInt32Field(value: &_storage._satsInView) }()
+        case 25: try { try decoder.decodeSingularUInt32Field(value: &_storage._sensorID) }()
+        case 40: try { try decoder.decodeSingularUInt32Field(value: &_storage._posNextUpdate) }()
+        case 41: try { try decoder.decodeSingularUInt32Field(value: &_storage._posSeqNumber) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.latitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 1)
-    }
-    if self.longitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 2)
-    }
-    if self.altitude != 0 {
-      try visitor.visitSingularInt32Field(value: self.altitude, fieldNumber: 3)
-    }
-    if self.batteryLevel != 0 {
-      try visitor.visitSingularInt32Field(value: self.batteryLevel, fieldNumber: 4)
-    }
-    if self.time != 0 {
-      try visitor.visitSingularFixed32Field(value: self.time, fieldNumber: 9)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if _storage._latitudeI != 0 {
+        try visitor.visitSingularSFixed32Field(value: _storage._latitudeI, fieldNumber: 1)
+      }
+      if _storage._longitudeI != 0 {
+        try visitor.visitSingularSFixed32Field(value: _storage._longitudeI, fieldNumber: 2)
+      }
+      if _storage._altitude != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._altitude, fieldNumber: 3)
+      }
+      if _storage._batteryLevel != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._batteryLevel, fieldNumber: 4)
+      }
+      if _storage._time != 0 {
+        try visitor.visitSingularFixed32Field(value: _storage._time, fieldNumber: 9)
+      }
+      if _storage._locationSource != .locsrcUnspecified {
+        try visitor.visitSingularEnumField(value: _storage._locationSource, fieldNumber: 10)
+      }
+      if _storage._altitudeSource != .altsrcUnspecified {
+        try visitor.visitSingularEnumField(value: _storage._altitudeSource, fieldNumber: 11)
+      }
+      if _storage._posTimestamp != 0 {
+        try visitor.visitSingularFixed32Field(value: _storage._posTimestamp, fieldNumber: 12)
+      }
+      if _storage._posTimeMillis != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._posTimeMillis, fieldNumber: 13)
+      }
+      if _storage._altitudeHae != 0 {
+        try visitor.visitSingularSInt32Field(value: _storage._altitudeHae, fieldNumber: 14)
+      }
+      if _storage._altGeoidSep != 0 {
+        try visitor.visitSingularSInt32Field(value: _storage._altGeoidSep, fieldNumber: 15)
+      }
+      if _storage._pdop != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._pdop, fieldNumber: 16)
+      }
+      if _storage._hdop != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hdop, fieldNumber: 17)
+      }
+      if _storage._vdop != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._vdop, fieldNumber: 18)
+      }
+      if _storage._gpsAccuracy != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._gpsAccuracy, fieldNumber: 19)
+      }
+      if _storage._groundSpeed != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._groundSpeed, fieldNumber: 20)
+      }
+      if _storage._groundTrack != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._groundTrack, fieldNumber: 21)
+      }
+      if _storage._fixQuality != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._fixQuality, fieldNumber: 22)
+      }
+      if _storage._fixType != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._fixType, fieldNumber: 23)
+      }
+      if _storage._satsInView != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._satsInView, fieldNumber: 24)
+      }
+      if _storage._sensorID != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._sensorID, fieldNumber: 25)
+      }
+      if _storage._posNextUpdate != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._posNextUpdate, fieldNumber: 40)
+      }
+      if _storage._posSeqNumber != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._posSeqNumber, fieldNumber: 41)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Position, rhs: Position) -> Bool {
-    if lhs.latitudeI != rhs.latitudeI {return false}
-    if lhs.longitudeI != rhs.longitudeI {return false}
-    if lhs.altitude != rhs.altitude {return false}
-    if lhs.batteryLevel != rhs.batteryLevel {return false}
-    if lhs.time != rhs.time {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._latitudeI != rhs_storage._latitudeI {return false}
+        if _storage._longitudeI != rhs_storage._longitudeI {return false}
+        if _storage._altitude != rhs_storage._altitude {return false}
+        if _storage._batteryLevel != rhs_storage._batteryLevel {return false}
+        if _storage._time != rhs_storage._time {return false}
+        if _storage._locationSource != rhs_storage._locationSource {return false}
+        if _storage._altitudeSource != rhs_storage._altitudeSource {return false}
+        if _storage._posTimestamp != rhs_storage._posTimestamp {return false}
+        if _storage._posTimeMillis != rhs_storage._posTimeMillis {return false}
+        if _storage._altitudeHae != rhs_storage._altitudeHae {return false}
+        if _storage._altGeoidSep != rhs_storage._altGeoidSep {return false}
+        if _storage._pdop != rhs_storage._pdop {return false}
+        if _storage._hdop != rhs_storage._hdop {return false}
+        if _storage._vdop != rhs_storage._vdop {return false}
+        if _storage._gpsAccuracy != rhs_storage._gpsAccuracy {return false}
+        if _storage._groundSpeed != rhs_storage._groundSpeed {return false}
+        if _storage._groundTrack != rhs_storage._groundTrack {return false}
+        if _storage._fixQuality != rhs_storage._fixQuality {return false}
+        if _storage._fixType != rhs_storage._fixType {return false}
+        if _storage._satsInView != rhs_storage._satsInView {return false}
+        if _storage._sensorID != rhs_storage._sensorID {return false}
+        if _storage._posNextUpdate != rhs_storage._posNextUpdate {return false}
+        if _storage._posSeqNumber != rhs_storage._posSeqNumber {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "LOCSRC_UNSPECIFIED"),
+    1: .same(proto: "LOCSRC_MANUAL_ENTRY"),
+    2: .same(proto: "LOCSRC_GPS_INTERNAL"),
+    3: .same(proto: "LOCSRC_GPS_EXTERNAL")
+  ]
+}
+
+extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ALTSRC_UNSPECIFIED"),
+    1: .same(proto: "ALTSRC_MANUAL_ENTRY"),
+    2: .same(proto: "ALTSRC_GPS_INTERNAL"),
+    3: .same(proto: "ALTSRC_GPS_EXTERNAL"),
+    4: .same(proto: "ALTSRC_BAROMETRIC")
+  ]
 }
 
 extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1587,7 +2192,11 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     3: .standard(proto: "short_name"),
     4: .same(proto: "macaddr"),
     6: .standard(proto: "hw_model"),
-    7: .standard(proto: "is_licensed")
+    7: .standard(proto: "is_licensed"),
+    8: .same(proto: "team"),
+    10: .standard(proto: "tx_power_dbm"),
+    11: .standard(proto: "ant_gain_dbi"),
+    12: .standard(proto: "ant_azimuth")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1602,6 +2211,10 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 4: try { try decoder.decodeSingularBytesField(value: &self.macaddr) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
+      case 8: try { try decoder.decodeSingularEnumField(value: &self.team) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.txPowerDbm) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.antGainDbi) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.antAzimuth) }()
       default: break
       }
     }
@@ -1626,6 +2239,18 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.isLicensed != false {
       try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 7)
     }
+    if self.team != .clear {
+      try visitor.visitSingularEnumField(value: self.team, fieldNumber: 8)
+    }
+    if self.txPowerDbm != 0 {
+      try visitor.visitSingularUInt32Field(value: self.txPowerDbm, fieldNumber: 10)
+    }
+    if self.antGainDbi != 0 {
+      try visitor.visitSingularUInt32Field(value: self.antGainDbi, fieldNumber: 11)
+    }
+    if self.antAzimuth != 0 {
+      try visitor.visitSingularUInt32Field(value: self.antAzimuth, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1636,6 +2261,10 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.macaddr != rhs.macaddr {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.isLicensed != rhs.isLicensed {return false}
+    if lhs.team != rhs.team {return false}
+    if lhs.txPowerDbm != rhs.txPowerDbm {return false}
+    if lhs.antGainDbi != rhs.antGainDbi {return false}
+    if lhs.antAzimuth != rhs.antAzimuth {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1728,8 +2357,9 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     switch self.variant {
     case .routeRequest?: try {
       guard case .routeRequest(let v)? = self.variant else { preconditionFailure() }
@@ -1893,6 +2523,10 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.from != 0 {
       try visitor.visitSingularFixed32Field(value: self.from, fieldNumber: 1)
     }
@@ -1902,9 +2536,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.channel != 0 {
       try visitor.visitSingularUInt32Field(value: self.channel, fieldNumber: 3)
     }
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
     switch self.payloadVariant {
     case .decoded?: try {
       guard case .decoded(let v)? = self.payloadVariant else { preconditionFailure() }
@@ -1996,15 +2627,19 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.num != 0 {
       try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
     }
-    if let v = self._user {
+    try { if let v = self._user {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
-    if let v = self._position {
+    } }()
+    try { if let v = self._position {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }
+    } }()
     if self.lastHeard != 0 {
       try visitor.visitSingularFixed32Field(value: self.lastHeard, fieldNumber: 4)
     }
@@ -2309,12 +2944,13 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
       if _storage._num != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._num, fieldNumber: 1)
       }
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch _storage._payloadVariant {
       case .myInfo?: try {
         guard case .myInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
@@ -2426,8 +3062,9 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     switch self.payloadVariant {
     case .packet?: try {
       guard case .packet(let v)? = self.payloadVariant else { preconditionFailure() }
