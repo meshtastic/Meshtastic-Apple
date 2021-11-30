@@ -1,5 +1,5 @@
 //
-//  DeviceBLE.swift
+//  Connect.swift
 //  MeshtasticClient
 //
 //  Created by Garth Vander Houwen on 8/18/21.
