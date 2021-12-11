@@ -12,7 +12,6 @@
 		DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CB26F0E51D00029299 /* NodeDetail.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D026F1073F00029299 /* NodeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CF26F1073F00029299 /* NodeRow.swift */; };
-		DD47E3D226F1210600029299 /* HelperFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D126F1210600029299 /* HelperFunctions.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D826F3093800029299 /* MessageBubble.swift */; };
 		DD47E3DB26F3901B00029299 /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3DA26F3901A00029299 /* Channels.swift */; };
@@ -76,7 +75,6 @@
 		DD47E3CB26F0E51D00029299 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3CF26F1073F00029299 /* NodeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeRow.swift; sourceTree = "<group>"; };
-		DD47E3D126F1210600029299 /* HelperFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperFunctions.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD47E3D826F3093800029299 /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
 		DD47E3DA26F3901A00029299 /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
@@ -327,7 +325,6 @@
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DDAF8C6D26ED19040058C060 /* Extensions.swift */,
-				DD47E3D126F1210600029299 /* HelperFunctions.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */,
 			);
@@ -503,7 +500,6 @@
 				DD47E3CC26F0E51D00029299 /* NodeDetail.swift in Sources */,
 				DD836AEF26F85D8D00ABCC23 /* NodeInfoModel.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
-				DD47E3D226F1210600029299 /* HelperFunctions.swift in Sources */,
 				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
