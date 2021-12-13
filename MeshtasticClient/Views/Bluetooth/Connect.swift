@@ -15,7 +15,8 @@ import CoreBluetooth
 
 struct Connect: View {
 
-    @EnvironmentObject var bleManager: BLEManager
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 
 	@State var isPreferredRadio: Bool = false
@@ -60,8 +61,8 @@ struct Connect: View {
 											Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										}
 										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
-										if bleManager.connectedPeripheral.myInfo != nil {
-											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+										if bleManager.connectedPeripheral != nil {
+											//Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										}
 										if bleManager.connectedPeripheral.subscribed {
 											Text("Properly Subscribed").font(.caption)
@@ -206,6 +207,8 @@ struct Connect: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear(perform: {
+
+			self.bleManager.context = context
 
 			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true

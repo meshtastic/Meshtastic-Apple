@@ -8,6 +8,15 @@ struct Messages: View {
     enum Field: Hashable {
         case messageText
     }
+	
+	// CoreData
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
+
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(keyPath: \MessageEntity.messageTimestamp, ascending: true)],
+		animation: .default)
+	private var messages: FetchedResults<MessageEntity>
 
     // Keyboard State
 	@State var typingMessage: String = ""
@@ -16,14 +25,8 @@ struct Messages: View {
     @State private var lastTypingMessage = ""
     @FocusState private var focusedField: Field?
 
-    @Namespace var topId
-    @Namespace var bottomId
-
 	@State var showDeleteMessageAlert = false
-	@State private var deleteMessageId: UInt32 = 0
-
-    // Message Data and Bluetooth
-    @EnvironmentObject var bleManager: BLEManager
+	@State private var deleteMessageId: Int32 = 0
 
     public var broadcastNodeId: UInt32 = 4294967295
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -38,18 +41,16 @@ struct Messages: View {
 
                 ScrollViewReader { scrollView in
 
-					if self.bleManager.messageData.messages.count > 0 {
+					if self.messages.count > 0 {
 
 						ScrollView {
 
-							Text("Hidden Top Anchor").hidden().frame(height: 0).id(topId)
-
-							ForEach(bleManager.messageData.messages.sorted(by: { $0.messageTimestamp < $1.messageTimestamp })) { message in
+							ForEach(messages) { message in
 
 								HStack(alignment: .top) {
-									let currentUser: Bool = (bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUserId)
+									let currentUser: Bool = false//(bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUser!.num)
 
-									CircleText(text: message.fromUserShortName, color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+									CircleText(text: "???", color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 										.gesture(LongPressGesture(minimumDuration: 2)
 													.onEnded {_ in
 											print("I want to delete message: \(message.messageId)")
@@ -59,7 +60,7 @@ struct Messages: View {
 										})
 
 									VStack(alignment: .leading) {
-										Text(message.messagePayload)
+										Text(message.messagePayload ?? "EMPTY MESSAGE")
 										.textSelection(.enabled)
 										.padding(10)
 										.foregroundColor(.white)
@@ -87,11 +88,12 @@ struct Messages: View {
 										print("OK button tapped")
 										if deleteMessageId > 0 {
 
-											let messageIndex = bleManager.messageData.messages.firstIndex(where: { $0.messageId == deleteMessageId })
-											bleManager.messageData.messages.remove(at: messageIndex!)
-											bleManager.messageData.save()
-											print("Deleted message: \(message.messageId)")
-											showDeleteMessageAlert = false
+											//let message = messages.first.where: { $0.messageId == deleteMessageId })
+											//context.delete(object: message)
+											//bleManager.messageData.messages.remove(at: messageIndex!)
+											//bleManager.messageData.save()
+											//print("Deleted message: \(message.messageId)")
+											//showDeleteMessageAlert = false
 											deleteMessageId = 0
 										}
 									},
@@ -99,16 +101,23 @@ struct Messages: View {
 									)
 								}
 							}
-							.onAppear(perform: { scrollView.scrollTo(bottomId) })
-							Text("Hidden Bottom Anchor").hidden().frame(height: 0).id(bottomId)
+							.onAppear(perform: {
+
+								self.bleManager.context = context
+								messageCount = messages.count
+								if messageCount > 0 {
+									scrollView.scrollTo(messages[messageCount-1].id, anchor: .bottom)
+								}
+								
+							})
 						}
 						.onReceive(timer) { _ in
 
-							if messageCount < bleManager.messageData.messages.count {
+							if messageCount < messages.count {
 
-								bleManager.messageData.load()
-								scrollView.scrollTo(bottomId)
-								messageCount = bleManager.messageData.messages.count
+								scrollView.scrollTo(messages[messageCount].id, anchor: .bottom)
+								messageCount = messages.count
+
 							}
 						}
 						.padding(.horizontal)
@@ -193,7 +202,7 @@ struct Messages: View {
 		})
         .onAppear {
 
-			messageCount = bleManager.messageData.messages.count
+			messageCount = messages.count
         }
     }
 }

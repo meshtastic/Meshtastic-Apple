@@ -68,7 +68,7 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
+		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 	}
 }
 

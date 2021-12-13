@@ -3,8 +3,10 @@ import CoreData
 
 @main
 struct MeshtasticClientApp: App {
-
-    @ObservedObject private var bleManager: BLEManager = BLEManager()
+	
+	let persistenceController = PersistenceController.shared
+	
+	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
 	@Environment(\.scenePhase) var scenePhase
@@ -12,6 +14,7 @@ struct MeshtasticClientApp: App {
     var body: some Scene {
         WindowGroup {
 		ContentView()
+			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(userSettings)
 			.environmentObject(bleManager)
 		}
