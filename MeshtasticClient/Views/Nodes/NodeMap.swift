@@ -12,13 +12,23 @@ import CoreLocation
 
 struct NodeMap: View {
 
+	// CoreData
+	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)],
+		animation: .default)
+	
+	private var locationNodes: FetchedResults<NodeInfoEntity>
 
-    var locationNodes: [NodeInfoModel] {
-		bleManager.meshData.nodes.filter { node in
-            (node.position.coordinate != nil)
-        }
-    }
+    //var locationNodes: [NodeInfoModel]// {
+		//bleManager.meshData.nodes.filter { node in
+        //    (node.position.coordinate != nil)
+       // }
+    //}
+	
+	
     struct MapLocation: Identifiable {
         let id = UUID()
         let name: String
@@ -39,20 +49,20 @@ struct NodeMap: View {
         NavigationView {
 
             ZStack {
-                Map(coordinateRegion: regionBinding,
-                    interactionModes: [.all],
-                    showsUserLocation: true,
-                    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { location in
-
-                    MapAnnotation(
-                        coordinate: location.position.coordinate!,
-                       content: {
-						   CircleText(text: location.user.shortName, color: .accentColor)
-                       }
-                    )
-                }
-                .frame(maxHeight: .infinity)
-                .ignoresSafeArea(.all, edges: [.leading, .trailing])
+//                Map(coordinateRegion: regionBinding,
+//                    interactionModes: [.all],
+//                    showsUserLocation: true,
+//                    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { location in
+//
+//                    MapAnnotation(
+//                        coordinate: location.position.coordinate!,
+//                       content: {
+//						   CircleText(text: location.user.shortName, color: .accentColor)
+//                       }
+//                    )
+//                }
+//                .frame(maxHeight: .infinity)
+//                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)

@@ -19,12 +19,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 	
 	var context: NSManagedObjectContext?
+	
 	private var centralManager: CBCentralManager!
 	
 	@Published var peripherals = [Peripheral]()
 
     @Published var connectedPeripheral: Peripheral!
-    @Published var connectedNode: NodeInfoModel!
+    @Published var connectedNode: NodeInfoEntity!
     @Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
 
@@ -49,25 +50,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	private var meshLoggingEnabled: Bool = false
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
-
-	
-	//Eventually Delete
-	@Published var meshData: MeshData
-	//@Published var messageData: MessageData
 	
     // MARK: init BLEManager
     override init() {
 
 		self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
-        self.meshData = MeshData()
-        //self.messageData = MessageData()
         self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
         super.init()
 		//let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
         centralManager = CBCentralManager(delegate: self, queue: nil)
-        meshData.load()
-        //messageData.load()
     }
 
 	// MARK: Bluetooth enabled/disabled for the app
@@ -82,7 +74,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
          }
     }
 
-	
 	// MARK: Scanning for BLE Devices
     // Scan for nearby BLE devices using the Meshtastic BLE service ID
     func startScanning() {
@@ -113,8 +104,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	///     - timer: The time that fired the event
 	///
 	@objc func timeoutTimerFired(timer: Timer) {
-		guard let context = timer.userInfo as? [String: String] else { return }
-		let name: String = context["name", default: "Unknown"]
+		guard let timerContext = timer.userInfo as? [String: String] else { return }
+		let name: String = timerContext["name", default: "Unknown"]
 
 		self.timeoutTimerCount += 1
 
@@ -124,7 +115,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
-			connectedNode = nil
 			connectedPeripheral = nil
 
 			self.lastConnectionError = "BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
@@ -177,12 +167,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		var newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, rssi: RSSI.intValue, subscribed: false, peripheral: peripheral, myInfo: nil)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral, myInfo: nil)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
 
-			newPeripheral.myInfo = peripherals.first(where: { $0.id == newPeripheral.id })?.myInfo
+			//newPeripheral.myInfo = peripherals.first(where: { $0.id == newPeripheral.id })?.myInfo
 			peripherals[peripheralIndex!] = newPeripheral
 			peripherals.remove(at: peripheralIndex!)
 			peripherals.append(newPeripheral)
@@ -211,9 +201,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		// Map the peripheral to the connectedNode and connectedPeripheral ObservedObjects
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		connectedPeripheral.peripheral.delegate = self
-		let deviceName = peripheral.name ?? ""
-		let peripheralLast4: String = String(deviceName.suffix(4))
-		connectedNode = self.meshData.nodes.first(where: { $0.user.id.contains(peripheralLast4) })
+		
+		let fetchNodeRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeRequest.predicate = NSPredicate(format: "bleName MATCHES %@", String(peripheral.name ?? "???"))
+		
+		do {
+			let fetchedNode = try context?.fetch(fetchNodeRequest) as! [NodeInfoEntity]
+			
+			if fetchedNode.count == 1 {
+				
+				connectedPeripheral.name = fetchedNode[0].user!.longName!
+				connectedPeripheral.firmwareVersion = (fetchedNode[0].myInfo?.firmwareVersion ?? "Unknown")
+			}
+
+		} catch {
+			print("Fetch NodeInfo Failed")
+		}
+		
         lastConnectedPeripheral = peripheral.identifier.uuidString
 
 		// Discover Services
@@ -257,19 +261,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
                 // Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
-				self.connectedNode = nil
+				
 				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
             } else if errorCode == 14 { // Peer removed pairing information
 
                 // Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "\(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
-				self.connectedNode = nil
+				
 				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
             } else {
 
 				lastConnectionError = e.localizedDescription
-				self.connectedNode = nil
+				
 				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 			}
@@ -277,7 +281,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
             // Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			self.connectedNode = nil
 			if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect") }
             print("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
         }
@@ -394,7 +397,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %i", Int64(decodedInfo.myInfo.myNodeNum))
 				
-				
 				do {
 					let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
 					// Not Found Insert
@@ -407,28 +409,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
-						
-						do {
-							
-							try context!.save()
-							print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
-							
-						} catch {
-							
-							context!.rollback()
-							
-							let nsError = error as NSError
-							print("Error Saving CoreData MyInfoEntity: \(nsError)")
-						}
 					}
+					else {
+						
+						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
+						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
+						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
+						fetchedMyInfo[0].firmwareVersion = decodedInfo.myInfo.firmwareVersion
+						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
+						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
+						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
+					}
+					do {
+						
+						try context!.save()
+						print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
+						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? String(decodedInfo.myInfo.myNodeNum))") }
+						
+					} catch {
+						
+						context!.rollback()
+						
+						let nsError = error as NSError
+						print("Error Saving CoreData MyInfoEntity: \(nsError)")
+					}
+					
 				} catch {
+					print("Fetch MyInfo Error")
 					
 				}
-				
-				
 
-				
-				//if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? String(myInfo.myNodeNum))") }
 			}
 
 			// NodeInfo Data
@@ -437,9 +447,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				print("Save a CoreData NodeInfoEntity")
 				
 				let fetchNodeRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-				fetchNodeRequest.predicate = NSPredicate(format: "num == %i", Int64(decodedInfo.nodeInfo.num))
+				fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.nodeInfo.num))
 				
 				do {
+					
 					let fetchedNode = try context?.fetch(fetchNodeRequest) as! [NodeInfoEntity]
 					// Not Found Insert
 					if fetchedNode.isEmpty {
@@ -466,19 +477,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-						if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
-							
-							let position = PositionEntity(context: context!)
-							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-							position.altitude = decodedInfo.nodeInfo.position.altitude
-							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
-				
-							var newPostions = [PositionEntity]()
-							newPostions.append(position)
-							newNode.positions? = NSOrderedSet(array : newPostions)
-						}
+//						if false && decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
+//
+//							let position = PositionEntity(context: context!)
+//							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+//							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+//							position.altitude = decodedInfo.nodeInfo.position.altitude
+//							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+//							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+//
+//							var newPostions = [PositionEntity]()
+//							newPostions.append(position)
+//							newNode.positions? = NSOrderedSet(array : newPostions)
+//						}
 						
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -498,44 +509,44 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 					} else {
 						
-						let updatedNode = fetchedNode[0]
-						updatedNode.timestamp = Date()
-						updatedNode.lastHeard = Int32(bitPattern: decodedInfo.nodeInfo.lastHeard)
-						updatedNode.snr = decodedInfo.nodeInfo.snr
+						fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
+						fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
+						fetchedNode[0].timestamp = Date()
+						fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.nodeInfo.lastHeard)
+						fetchedNode[0].snr = decodedInfo.nodeInfo.snr
 						
 						if decodedInfo.nodeInfo.hasUser {
 
-							updatedNode.user!.userId = decodedInfo.nodeInfo.user.id
-							updatedNode.user!.longName = decodedInfo.nodeInfo.user.longName
-							updatedNode.user!.shortName = decodedInfo.nodeInfo.user.shortName
-							updatedNode.user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
+							fetchedNode[0].user!.userId = decodedInfo.nodeInfo.user.id
+							fetchedNode[0].user!.longName = decodedInfo.nodeInfo.user.longName
+							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
+							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
 						}
-						if decodedInfo.nodeInfo.hasPosition {
-							
-							let position = PositionEntity(context: context!)
-							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-							position.altitude = decodedInfo.nodeInfo.position.altitude
-							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
-							
-							if position.latitudeI != 0 {
-								let mutablePositions = updatedNode.positions!.mutableCopy() as! NSMutableOrderedSet
-								mutablePositions.add(position)
-								updatedNode.positions = mutablePositions.copy() as? NSOrderedSet
-							}
-						}
+//						if decodedInfo.nodeInfo.hasPosition {
+//							
+//							let position = PositionEntity(context: context!)
+//							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+//							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+//							position.altitude = decodedInfo.nodeInfo.position.altitude
+//							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+//							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+//							
+//							if position.latitudeI != 0 {
+//								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+//								mutablePositions.add(position)
+//								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+//							}
+//						}
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %i", Int64(decodedInfo.nodeInfo.num))
+						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.nodeInfo.num))
 						
 						do {
 							
 							let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
 							if fetchedMyInfo.count > 0 {
 								
-								updatedNode.myInfo = fetchedMyInfo[0]
-				
+								fetchedNode[0].myInfo = fetchedMyInfo[0]
 							}
 							
 						} catch {
@@ -570,62 +581,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					print("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)")
 					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)") }
 				}
-
-//				if meshData.nodes.contains(where: {$0.id == decodedInfo.nodeInfo.num}) {
-//
-//					// Found a matching node lets update it
-//					let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-//					if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == nodeMatch?.num {
-//						connectedNode = nodeMatch
-//					}
-//
-//					if nodeMatch?.lastHeard ?? 0 < decodedInfo.nodeInfo.lastHeard && nodeMatch?.user != nil && nodeMatch?.user.longName.count ?? 0 > 0 {
-//						// The data coming from the device is newer
-//
-//						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.nodeInfo.num })
-//						meshData.nodes.remove(at: nodeIndex!)
-//						meshData.save()
-//
-//					} else {
-//
-//						// Data is older than what the app already has
-//						return
-//					}
-//				}
-// Set the connected node if the nodeInfo is for the connected node.
-//				if connectedPeripheral != nil && connectedPeripheral.myInfo?.myNodeNum == decodedInfo.nodeInfo.num {
-//
-//					let nodeMatch = meshData.nodes.first(where: { $0.id == decodedInfo.nodeInfo.num })
-//					if nodeMatch != nil {
-//						connectedNode = nodeMatch
-//					}
-//				}
-				if decodedInfo.nodeInfo.hasUser {
-
-					meshData.nodes.append(
-						NodeInfoModel(
-							num: decodedInfo.nodeInfo.num,
-							user: NodeInfoModel.User(
-								id: decodedInfo.nodeInfo.user.id,
-								longName: decodedInfo.nodeInfo.user.longName,
-								shortName: decodedInfo.nodeInfo.user.shortName,
-								// macaddr: decodedInfo.nodeInfo.user.macaddr,
-								hwModel: String(describing: decodedInfo.nodeInfo.user.hwModel)
-									.uppercased()),
-
-							position: NodeInfoModel.Position(
-								latitudeI: decodedInfo.nodeInfo.position.latitudeI,
-								longitudeI: decodedInfo.nodeInfo.position.longitudeI,
-								altitude: decodedInfo.nodeInfo.position.altitude,
-								batteryLevel: decodedInfo.nodeInfo.position.batteryLevel,
-								time: decodedInfo.nodeInfo.position.time),
-
-							lastHeard: decodedInfo.nodeInfo.lastHeard,
-							snr: decodedInfo.nodeInfo.snr)
-					)
-					meshData.save()
-					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
-				}
 			}
 			// Handle assorted app packets
 			if decodedInfo.packet.id  != 0 {
@@ -650,12 +605,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								let fetchedUsers = try context?.fetch(messageUsers) as! [UserEntity]
 								
 								let newMessage = MessageEntity(context: context!)
-								newMessage.messageId = Int32(bitPattern: decodedInfo.packet.id)
+								newMessage.messageId = Int64(decodedInfo.packet.id)
 								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
 								
-								if decodedInfo.packet.to == broadcastNodeId {
+								if decodedInfo.packet.to == broadcastNodeId && fetchedUsers.count == 1 {
 								
 									let bcu: UserEntity = UserEntity(context: context!)
 									bcu.shortName = "BC"
@@ -693,11 +648,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									
 								} catch {
 									
-									print("Something went wrong: \(error)")
 									context!.rollback()
 									
 									let nsError = error as NSError
-									print("Unresolved error \(nsError)")
+									print("Failed to save new MessageEntity \(nsError)")
 								}
 								
 							} catch {
@@ -706,41 +660,103 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 					}
 				} else if decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
+					
+					//let fetchNodeInfoAppRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					//fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %i", Int64(decodedInfo.packet.from))
+					
+					let fetchNodeRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.packet.from))
+					
+					do {
+						
+						let fetchedNode = try context?.fetch(fetchNodeRequest) as! [NodeInfoEntity]
 
-					var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
-					if updatedNode != nil {
-						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received for node info app for \(updatedNode!.user.longName)") }
+						if fetchedNode.count == 1 {
+							fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
+							fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
+							fetchedNode[0].timestamp = Date()
+							fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.packet.rxTime)
+							fetchedNode[0].snr = decodedInfo.packet.rxSnr
+						}
+						else {
+							return
+						}
+						do {
+							
+						  try context!.save()
+							
+							if meshLoggingEnabled {
+								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
+							}
+							print("Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
+							
+						} catch {
+							
+							context!.rollback()
+							
+							let nsError = error as NSError
+							print("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+						}
+					} catch {
+						
+						print("Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
-
-					if updatedNode != nil {
-						updatedNode!.snr = decodedInfo.packet.rxSnr
-						updatedNode!.lastHeard = decodedInfo.packet.rxTime
-						// updatedNode!.update(from: updatedNode!.data)
-						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-						meshData.nodes.remove(at: nodeIndex!)
-						meshData.nodes.append(updatedNode!)
-						meshData.save()
-						if meshLoggingEnabled { MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(updatedNode!.user.longName)") }
-						print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode!.user.longName)")
-					}
+	
+			
+					print(decodedInfo.packet.decoded.payload)
+					
+					
+					
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
 
-					var updatedNode = meshData.nodes.first(where: {$0.id == decodedInfo.packet.from })
+					let fetchNodePositionRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.packet.from))
+					
+					do {
+						
+						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 
-					if updatedNode != nil {
-						updatedNode!.snr = decodedInfo.packet.rxSnr
-						updatedNode!.lastHeard = decodedInfo.packet.rxTime
-						// updatedNode!.update(from: updatedNode!.data)
-						let nodeIndex = meshData.nodes.firstIndex(where: { $0.id == decodedInfo.packet.from })
-						meshData.nodes.remove(at: nodeIndex!)
-						meshData.nodes.append(updatedNode!)
-						meshData.save()
-
-						if meshLoggingEnabled { MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Position App Packet For: \(updatedNode!.user.longName)") }
-						print("Updated Position SNR and Time from Packet For: \(updatedNode!.user.longName)")
+						if fetchedNode.count == 1 {
+							fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
+							fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
+							fetchedNode[0].timestamp = Date()
+							fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.packet.rxTime)
+							fetchedNode[0].snr = decodedInfo.packet.rxSnr
+						}
+						else {
+							return
+						}
+						do {
+							
+						  try context!.save()
+							
+							if meshLoggingEnabled {
+								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
+							}
+							print("Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
+							
+						} catch {
+							
+							context!.rollback()
+							
+							let nsError = error as NSError
+							print("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+						}
+					} catch {
+						
+						print("Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
-					print("Postion Payload")
-					print(try decodedInfo.packet.jsonString())
+	
+			
+					print(decodedInfo.packet.decoded.payload)
+//					if meshLoggingEnabled {
+//						MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Position App Packet For: \(updatedNode.num)")
+//					}
+//					print("Updated NodeInfo SNR and Time from Packet For: \(updatedNode.num)")
+//
+//					print("Postion Payload")
+//					print(try decodedInfo.packet.jsonString())
+					
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
@@ -804,17 +820,25 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			success = false
 		} else {
 
-			var longName: String = self.connectedPeripheral.name
-			var shortName: String = "???"
-			var nodeNum: UInt32 = self.connectedPeripheral.myInfo?.myNodeNum ?? 0
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(bitPattern: 0)
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "IN"
+			
 
-			if connectedNode != nil {
-				longName = connectedNode.user.longName
-				shortName = connectedNode.user.shortName
-				nodeNum = connectedNode.num
-			}
+			let bcu: UserEntity = UserEntity(context: context!)
+			bcu.shortName = "BC"
+			bcu.longName = "Broadcast"
+			bcu.hwModel = "UNSET"
+			bcu.num = Int64(broadcastNodeId)
+			bcu.userId = "BROADCASTNODE"
+			newMessage.toUser = bcu
+			
+			// Set from user from query here
 
-			let messageModel = MessageModel(messageId: 0, messageTimeStamp: UInt32(Date().timeIntervalSince1970), fromUserId: nodeNum, toUserId: broadcastNodeId, fromUserLongName: longName, toUserLongName: "Broadcast", fromUserShortName: shortName, toUserShortName: "BC", receivedACK: false, messagePayload: message, direction: "OUT")
+			newMessage.messagePayload = message
+			
 			let dataType = PortNum.textMessageApp
 			let payloadData: Data = message.data(using: String.Encoding.utf8)!
 
@@ -834,9 +858,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			let binaryData: Data = try! toRadio.serializedData()
 			if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				//messageData.messages.append(messageModel)
-				//messageData.save()
-				success = true
+				do {
+					
+					try context!.save()
+					print("Saved a new message for \(0)")
+					success = true
+					
+				} catch {
+					
+					context!.rollback()
+					
+					let nsError = error as NSError
+					print("Unresolved error \(nsError)")
+				}
+				
 			}
 		}
 		return success

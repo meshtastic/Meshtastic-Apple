@@ -26,7 +26,7 @@ struct Messages: View {
     @FocusState private var focusedField: Field?
 
 	@State var showDeleteMessageAlert = false
-	@State private var deleteMessageId: Int32 = 0
+	@State private var deleteMessageId: Int64 = 0
 
     public var broadcastNodeId: UInt32 = 4294967295
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -48,15 +48,16 @@ struct Messages: View {
 							ForEach(messages) { message in
 
 								HStack(alignment: .top) {
-									let currentUser: Bool = false//(bleManager.connectedNode != nil) && ((bleManager.connectedNode.id) == message.fromUser!.num)
+									let currentUser: Bool = false// message.fromUser != nil && ((bleManager.connectedPeripheral) == message.fromUser!.num)
+									
 
-									CircleText(text: "???", color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+									CircleText(text: (message.fromUser?.longName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 										.gesture(LongPressGesture(minimumDuration: 2)
 													.onEnded {_ in
 											print("I want to delete message: \(message.messageId)")
 											self.showDeleteMessageAlert = true
 											self.deleteMessageId = message.messageId
-
+											print(deleteMessageId)
 										})
 
 									VStack(alignment: .leading) {
@@ -193,16 +194,17 @@ struct Messages: View {
             }
         }
         .navigationTitle("Channel - Primary")
-        .navigationBarTitleDisplayMode(.inline)
+        //.navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing:
 
 		ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 
 		})
-        .onAppear {
+		.onAppear(perform: {
 
+			self.bleManager.context = context
 			messageCount = messages.count
-        }
+		})
     }
 }

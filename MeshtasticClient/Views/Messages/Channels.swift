@@ -10,26 +10,23 @@ struct Channels: View {
 
         NavigationView {
 
-            GeometryReader { _ in
+			NavigationLink(destination: Messages(), isActive: $isShowingDetailView) {
 
-                NavigationLink(destination: Messages(), isActive: $isShowingDetailView) {
+				List {
 
-                    List {
+					HStack {
 
-                        HStack {
+						Image(systemName: "dial.max.fill")
+							.font(.system(size: 62))
+							.symbolRenderingMode(.hierarchical)
+							.padding(.trailing)
+							.foregroundColor(.accentColor)
 
-                            Image(systemName: "dial.max.fill")
-                                .font(.system(size: 62))
-                                .symbolRenderingMode(.hierarchical)
-                                .padding(.trailing)
-								.foregroundColor(.accentColor)
+						Text("Primary")
+							.font(.largeTitle)
 
-                            Text("Primary")
-                                .font(.largeTitle)
-
-                        }.padding()
-                    }
-                }
+					}.padding()
+				}
             }
             .navigationTitle("Channels")
         }
@@ -38,8 +35,6 @@ struct Channels: View {
 }
 
 struct MessageList_Previews: PreviewProvider {
-
-    static let meshData = MeshData()
 
     static var previews: some View {
         Group {

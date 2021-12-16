@@ -21,6 +21,15 @@ struct MeshtasticClientApp: App {
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:
+				do {
+					
+					try persistenceController.container.viewContext.save()
+					print("Saved viewContext when the app went to the background.")
+					
+				} catch {
+					
+					print("Failed to save viewContext when the app goes to the background.")
+				}
 				print("Scene is in the background")
 			case .inactive:
 				print("Scene is inactive")

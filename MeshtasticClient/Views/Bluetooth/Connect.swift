@@ -50,15 +50,15 @@ struct Connect: View {
 
 									VStack(alignment: .leading) {
 
-										if bleManager.connectedNode != nil {
+										if bleManager.connectedPeripheral != nil {
 
-											Text(bleManager.connectedNode.user.longName).font(.title2)
+											Text(bleManager.connectedPeripheral.name).font(.title2)
 										} else {
 
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
-										if bleManager.connectedNode != nil {
-											Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
+										if bleManager.connectedPeripheral != nil {
+											//Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user!.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
 										}
 										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedPeripheral != nil {
@@ -80,8 +80,8 @@ struct Connect: View {
 											.onChange(of: isPreferredRadio) { value in
 												if value {
 
-													if bleManager.connectedNode != nil {
-														let deviceName = "\(bleManager.connectedNode.user.longName) / \(bleManager.connectedPeripheral.peripheral.name ?? "")"
+													if bleManager.connectedPeripheral != nil {
+														let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
 
 														userSettings.preferredPeripheralName = deviceName
 													} else {
@@ -201,7 +201,7 @@ struct Connect: View {
 
                ZStack {
 
-                    ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+                    //ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
                 }
             )
         }
