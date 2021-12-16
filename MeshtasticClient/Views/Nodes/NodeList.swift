@@ -42,17 +42,28 @@ struct NodeList: View {
                 } else {
 					ForEach( nodes ) { node in
 						let index = nodes.firstIndex(where: { $0.id == node.id })
-						NavigationLink(destination: NodeInfoEntityDetail(node: node), tag: String(index!), selection: $selection) {
+						NavigationLink(destination: NodeDetail(node: node), tag: String(index!), selection: $selection) {
 
-							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.myInfo != nil {
+							if bleManager.connectedPeripheral != nil {
 
-								let connected: Bool = (bleManager.connectedPeripheral.myInfo!.myNodeNum == node.id)
-								NodeInfoEntityRow(node: node, connected: connected)
+								let connected: Bool = (bleManager.connectedPeripheral.name == node.bleName)
+								NodeRow(node: node, connected: connected)
 							} else {
-								NodeInfoEntityRow(node: node, connected: false)
+								NodeRow(node: node, connected: false)
 							}
 
 						}
+						.swipeActions {
+						   Button {
+							   
+							   context.delete(node)
+							  
+						   } label: {
+							   
+							   Label("Delete from app", systemImage: "trash")
+						   }
+						   .tint(.red)
+					   }
 					}
                 }
              }

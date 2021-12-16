@@ -52,17 +52,17 @@ struct Connect: View {
 
 										if bleManager.connectedPeripheral != nil {
 
-											Text(bleManager.connectedPeripheral.name).font(.title2)
+											Text(bleManager.connectedPeripheral.longName).font(.title2)
+											
 										} else {
 
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
+										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name)
+											.font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedPeripheral != nil {
-											//Text("Model: ").font(.caption)+Text(bleManager.connectedNode?.user!.hwModel ?? "(null)").font(.caption).foregroundColor(Color.gray)
-										}
-										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name).font(.caption).foregroundColor(Color.gray)
-										if bleManager.connectedPeripheral != nil {
-											//Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.myInfo?.firmwareVersion ?? "(null)").font(.caption).foregroundColor(Color.gray)
+											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
+												.font(.caption).foregroundColor(Color.gray)
 										}
 										if bleManager.connectedPeripheral.subscribed {
 											Text("Properly Subscribed").font(.caption)
@@ -200,8 +200,12 @@ struct Connect: View {
             .navigationBarItems(trailing:
 
                ZStack {
-
-                    //ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
+			 
+                    ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+							"???")
                 }
             )
         }

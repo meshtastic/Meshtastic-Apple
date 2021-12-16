@@ -144,7 +144,9 @@ struct AppSettings: View {
 			.navigationBarItems(trailing:
 
 				ZStack {
-				// ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
+
+				
+				//ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
 			})
         }
 		.navigationViewStyle(StackNavigationViewStyle())
@@ -152,8 +154,7 @@ struct AppSettings: View {
 }
 
 struct AppSettings_Previews: PreviewProvider {
-    static let meshData = MeshData()
-
+	
     static var previews: some View {
         Group {
             AppSettings()

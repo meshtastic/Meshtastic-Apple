@@ -57,6 +57,7 @@ struct Messages: View {
 											print("I want to delete message: \(message.messageId)")
 											self.showDeleteMessageAlert = true
 											self.deleteMessageId = message.messageId
+											
 											print(deleteMessageId)
 										})
 
@@ -89,13 +90,19 @@ struct Messages: View {
 										print("OK button tapped")
 										if deleteMessageId > 0 {
 
-											//let message = messages.first.where: { $0.messageId == deleteMessageId })
-											//context.delete(object: message)
-											//bleManager.messageData.messages.remove(at: messageIndex!)
-											//bleManager.messageData.save()
-											//print("Deleted message: \(message.messageId)")
-											//showDeleteMessageAlert = false
-											deleteMessageId = 0
+											let message = messages.first(where: { $0.messageId == deleteMessageId })
+											
+											context.delete(message!)
+											do {
+												
+												try context.save()
+												deleteMessageId = 0
+												messageCount = messages.count
+												
+											} catch {
+												print("Failed to delete message \(deleteMessageId)")
+											}
+											
 										}
 									},
 									secondaryButton: .cancel()
@@ -194,12 +201,16 @@ struct Messages: View {
             }
         }
         .navigationTitle("Channel - Primary")
-        //.navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing:
 
 		ZStack {
-			//ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
 
+			ConnectedDevice(
+				bluetoothOn: bleManager.isSwitchedOn,
+				deviceConnected: bleManager.connectedPeripheral != nil,
+				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+					"???")
 		})
 		.onAppear(perform: {
 

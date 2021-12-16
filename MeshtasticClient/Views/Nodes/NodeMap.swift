@@ -21,13 +21,6 @@ struct NodeMap: View {
 		animation: .default)
 	
 	private var locationNodes: FetchedResults<NodeInfoEntity>
-
-    //var locationNodes: [NodeInfoModel]// {
-		//bleManager.meshData.nodes.filter { node in
-        //    (node.position.coordinate != nil)
-       // }
-    //}
-	
 	
     struct MapLocation: Identifiable {
         let id = UUID()
@@ -37,6 +30,7 @@ struct NodeMap: View {
 
     var body: some View {
         let location = LocationHelper.currentLocation
+
 
         let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
@@ -49,20 +43,32 @@ struct NodeMap: View {
         NavigationView {
 
             ZStack {
-//                Map(coordinateRegion: regionBinding,
-//                    interactionModes: [.all],
-//                    showsUserLocation: true,
-//                    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { location in
-//
-//                    MapAnnotation(
-//                        coordinate: location.position.coordinate!,
-//                       content: {
-//						   CircleText(text: location.user.shortName, color: .accentColor)
-//                       }
-//                    )
-//                }
-//                .frame(maxHeight: .infinity)
-//                .ignoresSafeArea(.all, edges: [.leading, .trailing])
+
+				Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none)
+					.frame(maxHeight: .infinity)
+				//, annotationItems: locationNodes[0].positions?) { location in
+//						MapAnnotation(
+//						   coordinate: location.coordinate,
+//						   content: {
+//							   CircleText(text: location.latitude, color: .accentColor)
+//						   }
+//						)
+//					}.frame(maxHeight: .infinity)
+				
+                //Map(coordinateRegion: regionBinding,
+                //    interactionModes: [.all],
+                //    showsUserLocation: true,
+                //    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { node  in
+
+                    //MapAnnotation(
+						//coordinate: node.positions[0].coordinate,
+                       //content: {
+						//   CircleText(text: node.user!.shortName, color: .accentColor)
+                       //}
+                 //   )
+                //}
+                //.frame(maxHeight: .infinity)
+                //.ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
