@@ -79,9 +79,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func startScanning() {
 
         if isSwitchedOn {
-
+			
+			self.peripherals.removeAll()
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
 			self.isScanning = self.centralManager.isScanning
+			
             print("Scanning Started")
         }
     }
@@ -93,6 +95,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
             self.centralManager.stopScan()
 			self.isScanning = self.centralManager.isScanning
+			
             print("Stopped Scanning")
         }
     }
@@ -167,7 +170,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "", longName: "", firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -485,7 +488,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 							position.altitude = decodedInfo.nodeInfo.position.altitude
 							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 
 							var newPostions = [PositionEntity]()
 							newPostions.append(position)
@@ -522,14 +525,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
 						}
-						if decodedInfo.nodeInfo.hasPosition {
+						if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 && decodedInfo.nodeInfo.position.longitudeI != 0  {
 							
 							let position = PositionEntity(context: context!)
 							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
 							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 							position.altitude = decodedInfo.nodeInfo.position.altitude
      						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 							
 							if position.latitudeI != 0 {
 								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableSet
@@ -671,7 +674,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date()//Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 						}
 						else {
@@ -766,6 +769,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
+				self.peripherals.removeAll()
 			}
 
 		default:

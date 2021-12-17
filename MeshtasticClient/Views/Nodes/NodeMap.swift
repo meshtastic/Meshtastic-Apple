@@ -43,32 +43,21 @@ struct NodeMap: View {
         NavigationView {
 
             ZStack {
-
-				Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none)
-					.frame(maxHeight: .infinity)
-				//, annotationItems: locationNodes[0].positions?) { location in
-//						MapAnnotation(
-//						   coordinate: location.coordinate,
-//						   content: {
-//							   CircleText(text: location.latitude, color: .accentColor)
-//						   }
-//						)
-//					}.frame(maxHeight: .infinity)
 				
-                //Map(coordinateRegion: regionBinding,
-                //    interactionModes: [.all],
-                //    showsUserLocation: true,
-                //    userTrackingMode: .constant(.follow), annotationItems: locationNodes) { node  in
-
-                    //MapAnnotation(
-						//coordinate: node.positions[0].coordinate,
-                       //content: {
-						//   CircleText(text: node.user!.shortName, color: .accentColor)
-                       //}
-                 //   )
-                //}
-                //.frame(maxHeight: .infinity)
-                //.ignoresSafeArea(.all, edges: [.leading, .trailing])
+//                Map(coordinateRegion: regionBinding,
+//                    interactionModes: [.all],
+//                    showsUserLocation: true,
+//					userTrackingMode: .constant(.follow), annotationItems: $locationNodes) { node  in
+//
+//                    MapAnnotation(
+//						coordinate: node.positions[0].coordinate,
+//                        content: {
+//						   CircleText(text: node.user!.shortName, color: .accentColor)
+//                       }
+//                    )
+//                }
+//                .frame(maxHeight: .infinity)
+//                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)

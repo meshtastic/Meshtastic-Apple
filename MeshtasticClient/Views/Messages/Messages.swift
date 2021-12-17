@@ -48,10 +48,10 @@ struct Messages: View {
 							ForEach(messages) { message in
 
 								HStack(alignment: .top) {
-									//let currentUser: true//(message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num)
+									let currentUser: Bool = (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num)
 									
 
-									CircleText(text: (message.fromUser?.longName ?? "???"), color: true ? .accentColor : Color(.darkGray)).padding(.all, 5)
+									CircleText(text: (message.fromUser?.longName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 										.gesture(LongPressGesture(minimumDuration: 2)
 													.onEnded {_ in
 											print("I want to delete message: \(message.messageId)")
@@ -66,7 +66,7 @@ struct Messages: View {
 										.textSelection(.enabled)
 										.padding(10)
 										.foregroundColor(.white)
-										.background(true ? Color.blue : Color(.darkGray))
+										.background(currentUser ? Color.blue : Color(.darkGray))
 										.cornerRadius(10)
 										HStack(spacing: 4) {
 

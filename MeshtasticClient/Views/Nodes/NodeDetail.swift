@@ -29,7 +29,10 @@ struct NodeDetail: View {
 
 				if node.positions != nil && node.positions!.count > 0 {
 
-//					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.position.latitude!, longitude: node.position.longitude!)
+//					let mostRecentPositions = node.positions.max(by: {
+//						$0. < $1.timeIntervalSinceReferenceDate
+//					})
+//					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.positions.latitude!, longitude: node.position.longitude!)
 //
 //					let regionBinding = Binding<MKCoordinateRegion>(
 //						get: {
@@ -37,7 +40,7 @@ struct NodeDetail: View {
 //						},
 //						set: { _ in }
 //					)
-//					let annotations = [MapLocation(name: node.user.shortName, coordinate: node.position.coordinate!)]
+//					let annotations = [MapLocation(name: node.user!.shortName, coordinate: node.positions?.first(where: <#T##(Any) throws -> Bool#>).coordinate!)]
 //
 //					Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
 //						MapAnnotation(
