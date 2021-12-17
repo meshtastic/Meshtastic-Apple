@@ -31,11 +31,11 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 class UserSettings: ObservableObject {
-	// @Published var meshtasticUsername: String {
-	//	didSet {
-	//		UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
-	//	}
-	// }
+//	@Published var meshtasticUsername: String {
+//		didSet {
+//			UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
+//		}
+//	}
 	@Published var preferredPeripheralName: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
@@ -46,11 +46,11 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
 		}
 	}
-	@Published var provideLocation: Bool {
-		didSet {
-			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
-		}
-	}
+//	@Published var provideLocation: Bool {
+//		didSet {
+//			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
+//		}
+//	}
 	@Published var keyboardType: Int {
 		didSet {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
@@ -63,17 +63,19 @@ class UserSettings: ObservableObject {
 	}
 
 	init() {
-		// self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
+		
+		//self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
-		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
+		//self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
 	}
 }
 
 struct AppSettings: View {
 
+	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 
@@ -92,18 +94,18 @@ struct AppSettings: View {
 				List {
 					Section(header: Text("USER DETAILS")) {
 
-						// HStack {
-						//	Label("Name", systemImage: "person.crop.rectangle.fill")
-						//	TextField("Username", text: $userSettings.meshtasticUsername)
-						//		.foregroundColor(.gray)
-						// }
-						// .listRowSeparator(.visible)
-						Toggle(isOn: $userSettings.provideLocation) {
-
-							Label("Provide location to mesh", systemImage: "location.circle.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
+//						HStack {
+//							Label("Name", systemImage: "person.crop.rectangle.fill")
+//							TextField("Username", text: $userSettings.meshtasticUsername)
+//								.foregroundColor(.gray)
+//						}
+//						.listRowSeparator(.visible)
+//						Toggle(isOn: $userSettings.provideLocation) {
+//
+//							Label("Provide location to mesh", systemImage: "location.circle.fill")
+//						}
+//						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+//						.listRowSeparator(.visible)
 						Label("Preferred Radio", systemImage: "flipphone")
 							.listRowSeparator(.hidden)
 						Text(userSettings.preferredPeripheralName)
@@ -125,29 +127,32 @@ struct AppSettings: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
-					Section(header: Text("MESH NETWORK OPTIONS")) {
-						Toggle(isOn: $userSettings.meshActivityLog) {
-
-							Label("Log all Mesh activity", systemImage: "network")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if userSettings.meshActivityLog {
-							NavigationLink(destination: MeshLog()) {
-								Text("View Mesh Log")
-							}
-							.listRowSeparator(.visible)
-						}
-					}
+//					Section(header: Text("MESH NETWORK OPTIONS")) {
+//						Toggle(isOn: $userSettings.meshActivityLog) {
+//
+//							Label("Log all Mesh activity", systemImage: "network")
+//						}
+//						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+//						if userSettings.meshActivityLog {
+//							NavigationLink(destination: MeshLog()) {
+//								Text("View Mesh Log")
+//							}
+//							.listRowSeparator(.visible)
+//						}
+//					}
 				}
 			}
             .navigationTitle("App Settings")
 			.navigationBarItems(trailing:
 
 				ZStack {
-
 				
-				//ConnectedDevice(bluetoothOn: self.bleManager.isSwitchedOn, deviceConnected: self.bleManager.connectedPeripheral != nil, name: (self.bleManager.connectedNode != nil) ? self.bleManager.connectedNode.user.shortName : ((self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.name : "Unknown") )
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
 			})
+			.onAppear{
+
+				self.bleManager.context = context
+			}
         }
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
