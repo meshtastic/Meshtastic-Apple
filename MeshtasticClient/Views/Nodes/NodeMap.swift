@@ -74,10 +74,19 @@ struct NodeMap: View {
             .navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 
-				ZStack {
-				//	ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedNode != nil) ? bleManager.connectedNode.user.shortName : ((bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.name : "Unknown") )
-			})
+			ZStack {
 
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+						"???")
+			})
+			.onAppear(perform: {
+
+				self.bleManager.context = context
+
+			})
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

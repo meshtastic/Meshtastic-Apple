@@ -15,8 +15,8 @@ struct MeshtasticClientApp: App {
         WindowGroup {
 		ContentView()
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
-			.environmentObject(userSettings)
 			.environmentObject(bleManager)
+			.environmentObject(userSettings)
 		}
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {

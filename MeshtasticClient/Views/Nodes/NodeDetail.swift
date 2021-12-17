@@ -106,13 +106,12 @@ struct NodeDetail: View {
 					.padding()
 					Divider()
 
-					if node.lastHeard > 0 {
+					if node.lastHeard != nil {
 
 						HStack {
 
 							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
-								let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-								Text("Last Heard: \(lastHeard, style: .relative) ago").font(.title3)
+							Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
 						}.padding()
 						Divider()
 					}

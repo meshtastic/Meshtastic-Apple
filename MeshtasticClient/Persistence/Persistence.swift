@@ -16,7 +16,7 @@ class PersistenceController {
 		let viewContext = result.container.viewContext
 		for _ in 0..<10 {
 			let newItem = NodeInfoEntity(context: viewContext)
-			newItem.timestamp = Date()
+			newItem.lastHeard = Date()
 		}
 		do {
 			try viewContext.save()

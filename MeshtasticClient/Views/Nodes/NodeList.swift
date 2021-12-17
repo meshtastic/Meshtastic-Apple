@@ -17,7 +17,7 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 	
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 	
 	private var nodes: FetchedResults<NodeInfoEntity>
@@ -36,27 +36,80 @@ struct NodeList: View {
                         .font(.body)
                     Text("Once the device shows under Available Devices touch the device you want to connect to and it will pull node information over BLE and populate the node list and mesh map in the Meshtastic app.")
                     Text("Views with bluetooth functionality will show an indicator in the upper right hand corner show if bluetooth is on, and if a device is connected.")
-                        // .listRowSeparator(.hidden)
-                    Spacer()
-                        // .listRowSeparator(.hidden)
+						.listRowSeparator(.visible)
                 } else {
 					ForEach( nodes ) { node in
 						let index = nodes.firstIndex(where: { $0.id == node.id })
 						NavigationLink(destination: NodeDetail(node: node), tag: String(index!), selection: $selection) {
-
+							
+							let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.name == node.bleName)
+							
 							if bleManager.connectedPeripheral != nil {
+								
+								VStack(alignment: .leading) {
+									
+									HStack {
 
-								let connected: Bool = (bleManager.connectedPeripheral.name == node.bleName)
-								NodeRow(node: node, connected: connected)
-							} else {
-								NodeRow(node: node, connected: false)
+										CircleText(text: node.user?.shortName ?? "???", color: Color.accentColor).offset(y: 1).padding(.trailing, 5)
+											.offset(x: -15)
+
+										if UIDevice.current.userInterfaceIdiom == .pad { Text(node.user?.longName ?? "Unknown").font(.headline)
+												.offset(x: -15)
+										} else {
+											Text(node.user?.longName ?? "Unknown").font(.title).offset(x: -15)
+										}
+									}
+									.padding(.bottom, 10)
+									
+									if connected {
+										HStack(alignment: .bottom) {
+										
+											Image(systemName: "repeat.circle.fill").font(.title3)
+												.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
+										}
+										Spacer()
+									}
+									
+									HStack(alignment: .bottom) {
+
+										Image(systemName: "clock.badge.checkmark.fill").font(.title3).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+
+										if UIDevice.current.userInterfaceIdiom == .pad {
+
+											if node.lastHeard != nil {
+												Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.caption).foregroundColor(.gray)
+													.padding(.bottom)
+											} else {
+												Text("Last Heard: Unknown").font(.caption).foregroundColor(.gray)
+											}
+
+										} else {
+											
+											if node.lastHeard != nil {
+												Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
+											} else {
+												Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
+											}
+										}
+									}
+								}
+								.padding([.leading, .top, .bottom])
 							}
-
 						}
 						.swipeActions {
 						   Button {
 							   
 							   context.delete(node)
+							   do {
+								   
+								   try context.save()
+								   print("Successfully Deleted NodeInfoEntiy: \(node.num)")
+							   } catch {
+								   
+								   print("Failed to save context after deleting NodeInfoEntity Num: \(node.num)")
+								   
+							   }
 							  
 						   } label: {
 							   

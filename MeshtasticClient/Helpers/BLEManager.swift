@@ -167,7 +167,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, name: peripheralName, shortName: "", longName: "", firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "", longName: "", firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -456,10 +456,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if fetchedNode.isEmpty {
 						
 						let newNode = NodeInfoEntity(context: context!)
-						newNode.timestamp = Date()
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
-						newNode.lastHeard = Int32(bitPattern: decodedInfo.nodeInfo.lastHeard)
+						if decodedInfo.nodeInfo.lastHeard > 0 {
+							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
+						}
 						newNode.snr = decodedInfo.nodeInfo.snr
 						
 						let userIdLast4: String = String(decodedInfo.nodeInfo.user.id.suffix(4))
@@ -477,19 +478,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-//						if false && decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
-//
-//							let position = PositionEntity(context: context!)
-//							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-//							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-//							position.altitude = decodedInfo.nodeInfo.position.altitude
-//							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-//							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
-//
-//							var newPostions = [PositionEntity]()
-//							newPostions.append(position)
-//							newNode.positions? = NSOrderedSet(array : newPostions)
-//						}
+						if false && decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
+
+							let position = PositionEntity(context: context!)
+							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+							position.altitude = decodedInfo.nodeInfo.position.altitude
+							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+
+							var newPostions = [PositionEntity]()
+							newPostions.append(position)
+							newNode.positions? = NSSet(array : newPostions)
+						}
 						
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -511,8 +512,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
 						fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
-						fetchedNode[0].timestamp = Date()
-						fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.nodeInfo.lastHeard)
+						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						fetchedNode[0].snr = decodedInfo.nodeInfo.snr
 						
 						if decodedInfo.nodeInfo.hasUser {
@@ -522,21 +522,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
 						}
-//						if decodedInfo.nodeInfo.hasPosition {
-//							
-//							let position = PositionEntity(context: context!)
-//							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-//							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-//							position.altitude = decodedInfo.nodeInfo.position.altitude
-//							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-//							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
-//							
-//							if position.latitudeI != 0 {
-//								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-//								mutablePositions.add(position)
-//								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-//							}
-//						}
+						if decodedInfo.nodeInfo.hasPosition {
+							
+							let position = PositionEntity(context: context!)
+							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+							position.altitude = decodedInfo.nodeInfo.position.altitude
+     						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+							position.time = Int32(bitPattern: decodedInfo.nodeInfo.position.time)
+							
+							if position.latitudeI != 0 {
+								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableSet
+								mutablePositions.add(position)
+								fetchedNode[0].positions = mutablePositions.copy() as? NSSet
+							}
+						}
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.nodeInfo.num))
@@ -669,10 +669,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let fetchedNode = try context?.fetch(fetchNodeInfoAppRequest) as! [NodeInfoEntity]
 
 						if fetchedNode.count == 1 {
-							fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
-							fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
-							fetchedNode[0].timestamp = Date()
-							fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.packet.rxTime)
+							fetchedNode[0].id = Int64(decodedInfo.packet.from)
+							fetchedNode[0].num = Int64(decodedInfo.packet.from)
+							fetchedNode[0].lastHeard = Date()//Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 						}
 						else {
@@ -712,10 +711,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 
 						if fetchedNode.count == 1 {
-							fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
-							fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
-							fetchedNode[0].timestamp = Date()
-							fetchedNode[0].lastHeard = Int32(bitPattern: decodedInfo.packet.rxTime)
+							fetchedNode[0].id = Int64(decodedInfo.packet.from)
+							fetchedNode[0].num = Int64(decodedInfo.packet.from)
+							fetchedNode[0].lastHeard = Date()// Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 						}
 						else {

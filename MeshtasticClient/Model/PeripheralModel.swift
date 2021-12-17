@@ -3,6 +3,7 @@ import CoreBluetooth
 
 struct Peripheral: Identifiable {
 	var id: String
+	var num: Int64
 	var name: String
 	var shortName: String
 	var longName: String
@@ -11,10 +12,9 @@ struct Peripheral: Identifiable {
 	var subscribed: Bool
 	var peripheral: CBPeripheral
 
-	//var myInfo: MyInfoModel?
-
-	init(id: String, name: String, shortName: String, longName: String, firmwareVersion: String, rssi: Int, subscribed: Bool, peripheral: CBPeripheral) {//, myInfo: MyInfoModel?) {
+	init(id: String, num: Int64, name: String, shortName: String, longName: String, firmwareVersion: String, rssi: Int, subscribed: Bool, peripheral: CBPeripheral) {
 		self.id = id
+		self.num = num
 		self.name = name
 		self.shortName = shortName
 		self.longName = longName
@@ -22,6 +22,5 @@ struct Peripheral: Identifiable {
 		self.rssi = rssi
 		self.subscribed = subscribed
 		self.peripheral = peripheral
-		//self.myInfo = myInfo
 	}
 }

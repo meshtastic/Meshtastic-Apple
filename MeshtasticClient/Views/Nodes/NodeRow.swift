@@ -21,28 +21,34 @@ struct NodeRow: View {
 				}
 			}
 			.padding(.bottom, 10)
-
+			
+			if connected {
+				HStack(alignment: .bottom) {
+				
+					Image(systemName: "repeat.circle.fill").font(.title3)
+						.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+					Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
+				}
+				Spacer()
+			}
+			
 			HStack(alignment: .bottom) {
 
-				Image(systemName: "clock.badge.checkmark.fill").font(.headline).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+				Image(systemName: "clock.badge.checkmark.fill").font(.title3).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 
 				if UIDevice.current.userInterfaceIdiom == .pad {
 
-					if connected {
-						Text("Currently Connected").font(.caption).foregroundColor(Color.accentColor)
-					} else if node.lastHeard > 0 {
-						let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-						Text("Last Heard: \(lastHeard, style: .relative) ago").font(.caption).foregroundColor(.gray)
+					if node.lastHeard != nil {
+						Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.caption).foregroundColor(.gray)
+							.padding(.bottom)
 					} else {
 						Text("Last Heard: Unknown").font(.caption).foregroundColor(.gray)
 					}
 
 				} else {
-					if connected {
-						Text("Currently Connected").font(.subheadline).foregroundColor(Color.accentColor)
-					} else if node.lastHeard > 0 {
-						let lastHeard = Date(timeIntervalSince1970: TimeInterval(node.lastHeard))
-						Text("Last Heard: \(lastHeard, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
+					
+					if node.lastHeard != nil {
+						Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
 					} else {
 						Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
 					}
@@ -57,7 +63,7 @@ struct NodeRow_Previews: PreviewProvider {
 
 	static var previews: some View {
 		Group {
-			//NodeInfoEntityRow(node: nodes[0], connected: true)
+			//NodeRow(node: nodes[0], connected: true)
 		}
 		.previewLayout(.fixed(width: 300, height: 70))
 	}
