@@ -23,15 +23,15 @@ struct NodeMap: View {
 	private var locationNodes: FetchedResults<NodeInfoEntity>
 	
     struct MapLocation: Identifiable {
+		
         let id = UUID()
         let name: String
         let coordinate: CLLocationCoordinate2D
     }
 
     var body: some View {
-        let location = LocationHelper.currentLocation
-
-
+		
+		let location = LocationHelper.currentLocation
         let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
         let regionBinding = Binding<MKCoordinateRegion>(
             get: {
@@ -44,10 +44,10 @@ struct NodeMap: View {
 
             ZStack {
 				
-//                Map(coordinateRegion: regionBinding,
-//                    interactionModes: [.all],
-//                    showsUserLocation: true,
-//					userTrackingMode: .constant(.follow), annotationItems: $locationNodes) { node  in
+                Map(coordinateRegion: regionBinding,
+                    interactionModes: [.all],
+                    showsUserLocation: true,
+					userTrackingMode: .constant(.follow))//, annotationItems: $locationNodes) { node  in
 //
 //                    MapAnnotation(
 //						coordinate: node.positions[0].coordinate,
@@ -56,8 +56,8 @@ struct NodeMap: View {
 //                       }
 //                    )
 //                }
-//                .frame(maxHeight: .infinity)
-//                .ignoresSafeArea(.all, edges: [.leading, .trailing])
+               .frame(maxHeight: .infinity)
+                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)

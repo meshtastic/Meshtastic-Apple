@@ -80,7 +80,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         if isSwitchedOn {
 			
-			self.peripherals.removeAll()
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
 			self.isScanning = self.centralManager.isScanning
 			
@@ -766,10 +765,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 			if decodedInfo.configCompleteID != 0 {
+				
 				if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
-				self.peripherals.removeAll()
+				peripherals.removeAll(where: { $0.peripheral.state != CBPeripheralState.connected })
 			}
 
 		default:
@@ -858,10 +858,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let nsError = error as NSError
 					print("Unresolved error \(nsError)")
 				}
-				
 			}
 		}
 		return success
 	}
-
 }
