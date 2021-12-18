@@ -48,7 +48,7 @@ struct Messages: View {
 							ForEach(messages) { message in
 
 								HStack(alignment: .top) {
-									let currentUser: Bool = (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num)
+									let currentUser: Bool = false// (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num)
 									
 
 									CircleText(text: (message.fromUser?.longName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)

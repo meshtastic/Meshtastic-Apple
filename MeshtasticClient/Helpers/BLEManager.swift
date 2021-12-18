@@ -480,7 +480,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-						if false && decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
+						if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
 
 							let position = PositionEntity(context: context!)
 							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
@@ -491,7 +491,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							var newPostions = [PositionEntity]()
 							newPostions.append(position)
-							newNode.positions? = NSSet(array : newPostions)
+							newNode.positions? = NSOrderedSet(array : newPostions)
 						}
 						
 						// Look for a MyInfo
@@ -534,9 +534,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 							
 							if position.latitudeI != 0 {
-								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableSet
+								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 								mutablePositions.add(position)
-								fetchedNode[0].positions = mutablePositions.copy() as? NSSet
+								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 							}
 						}
 						// Look for a MyInfo
@@ -769,7 +769,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
-				peripherals.removeAll(where: { $0.peripheral.state != CBPeripheralState.connected })
+				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 			}
 
 		default:

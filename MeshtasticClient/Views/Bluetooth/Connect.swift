@@ -81,11 +81,13 @@ struct Connect: View {
 												if value {
 
 													if bleManager.connectedPeripheral != nil {
+														
 														let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
-
 														userSettings.preferredPeripheralName = deviceName
+														
 													} else {
-														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.peripheral.name ?? "Unknown Device"
+														
+														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
 													}
 
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString

@@ -19,7 +19,12 @@ struct NodeList: View {
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 	
-	private var nodes: FetchedResults<NodeInfoEntity>
+		private var nodes: FetchedResults<NodeInfoEntity>
+		
+	
+	//@FetchRequest(
+	//	sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+	//	animation: .default) var nodes: FetchedResults<NodeInfoEntity>
 	
 	@State private var selection: String?
 
@@ -113,7 +118,7 @@ struct NodeList: View {
              }
             .navigationTitle("All Nodes")
 			.onAppear{
-
+				//self.nodes.returnsObjectsAsFaults = false
 				self.bleManager.context = context
 
 				if UIDevice.current.userInterfaceIdiom == .pad {

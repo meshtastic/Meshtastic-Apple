@@ -9,19 +9,14 @@ import CoreLocation
 
 struct NodeDetail: View {
 
-	// CoreData
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
 	var node: NodeInfoEntity
 
-	struct MapLocation: Identifiable {
-		  let id = UUID()
-		  let name: String
-		  let coordinate: CLLocationCoordinate2D
-	}
-
 	var body: some View {
+		
+		let mostRecent = node.positions?.lastObject as! PositionEntity
 
 		GeometryReader { bounds in
 
@@ -29,34 +24,46 @@ struct NodeDetail: View {
 
 				if node.positions != nil && node.positions!.count > 0 {
 
-//					let mostRecentPositions = node.positions.max(by: {
-//						$0. < $1.timeIntervalSinceReferenceDate
-//					})
-//					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: node.positions.latitude!, longitude: node.position.longitude!)
-//
-//					let regionBinding = Binding<MKCoordinateRegion>(
-//						get: {
-//							MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-//						},
-//						set: { _ in }
-//					)
-//					let annotations = [MapLocation(name: node.user!.shortName, coordinate: node.positions?.first(where: <#T##(Any) throws -> Bool#>).coordinate!)]
-//
-//					Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
-//						MapAnnotation(
-//						   coordinate: location.coordinate,
-//						   content: {
-//							   CircleText(text: node.user.shortName, color: .accentColor)
-//						   }
-//						)
-//					}.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
+					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
+
+					let regionBinding = Binding<MKCoordinateRegion>(
+						get: {
+							MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
+						},
+						set: { _ in }
+					)
+					let annotations = [MapLocation(name: node.user!.shortName ?? "???", coordinate: mostRecent.coordinate!)]
+
+					Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
+						MapAnnotation(
+						   coordinate: location.coordinate,
+						   content: {
+							   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
+						   }
+						)
+					}
+					.frame(idealWidth: bounds.size.width, maxHeight: bounds.size.height / 3)
+					
 				} else {
+					
 					Image(node.user?.hwModel ?? "UNSET")
 						.resizable()
 						.aspectRatio(contentMode: .fit)
-						.frame(width: bounds.size.width, height: bounds.size.height / 2)
+						.frame(width: bounds.size.width, height: bounds.size.height / 3)
 				}
+
 				ScrollView {
+					
+					if node.lastHeard != nil {
+
+						HStack {
+
+							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
+							Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
+						}
+						.padding()
+						Divider()
+					}
 
 					HStack {
 
@@ -67,7 +74,20 @@ struct NodeDetail: View {
 						}
 						.padding([.leading, .trailing, .bottom])
 						Divider()
-						if node.snr > 0 {
+						VStack {
+							
+							Image(node.user!.hwModel ?? "UNSET")
+								.resizable()
+								.frame(width: 50, height: 50)
+								.cornerRadius(5)
+
+							Text(String(node.user!.hwModel ?? "UNSET"))
+								.font(.subheadline).fixedSize()
+						}
+						.padding()
+						
+						if true {//node.snr > 0 {
+							Divider()
 							VStack(alignment: .center) {
 
 								Image(systemName: "waveform.path")
@@ -78,67 +98,39 @@ struct NodeDetail: View {
 								Text(String(node.snr))
 									.font(.title2)
 									.foregroundColor(.gray)
+									.fixedSize()
 							}
-							Divider()
+							.padding([.leading, .trailing, .bottom])
 						}
-//						VStack(alignment: .center) {
-//							BatteryIcon(batteryLevel: node.position.batteryLevel, font: .title, color: .accentColor)
-//							if node.position.batteryLevel != nil && node.position.batteryLevel! > 0 {
-//								Text("Battery").font(.title2).fixedSize()
-//								Text(String(node.position.batteryLevel!) + "%")
-//									.font(.title2)
-//									.foregroundColor(.gray)
-//									.symbolRenderingMode(.hierarchical)
-//							} else {
-//								Text("Powered").font(.title2)
-//							}
-//						}
-
-					}.padding(4)
-					Divider()
-					HStack {
 						
-						Image(node.user!.hwModel ?? "UNSET")
-							.resizable()
-							.frame(width: 60, height: 60)
-							.cornerRadius(5)
-
-						Text("Model: " + String(node.user!.hwModel ?? "UNSET"))
-							.font(.title3)
+						if node.positions!.count > 0 {
+							Divider()
+						
+							VStack(alignment: .center) {
+							
+								BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
+									.padding(.bottom)
+								if mostRecent.batteryLevel > 0 {
+									
+									Text("Battery").font(.title2).fixedSize()
+									Text(String(mostRecent.batteryLevel) + "%")
+										.font(.title2)
+										.foregroundColor(.gray)
+										.symbolRenderingMode(.hierarchical)
+								} else {
+									
+									Text("Powered")
+										.font(.callout)
+										.fixedSize()
+								}
+							}
+							.padding([.leading, .trailing, .bottom])
+						}
 					}
-					.padding()
+					.padding(4)
+					
 					Divider()
 
-					if node.lastHeard != nil {
-
-						HStack {
-
-							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
-							Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
-						}.padding()
-						Divider()
-					}
-
-//					if node.position.coordinate != nil {
-//						HStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 14) {
-//							Image(systemName: "mappin").font(.title).foregroundColor(.accentColor)
-//							VStack(alignment: .leading) {
-//								Text("Latitude").font(.headline)
-//								Text(String(node.position.latitude ?? 0)).font(.caption).foregroundColor(.gray)
-//							}
-//							Divider()
-//							VStack(alignment: .leading) {
-//								Text("Longitude").font(.headline)
-//								Text(String(node.position.longitude ?? 0)).font(.caption).foregroundColor(.gray)
-//							}
-//							Divider()
-//							VStack(alignment: .leading) {
-//								Text("Altitude").font(.headline)
-//								Text(String(node.position.altitude ?? 0) + " m").font(.caption).foregroundColor(.gray)
-//							}
-//						}.padding()
-//						Divider()
-//					}
 					HStack(alignment: .center) {
 						VStack {
 							HStack {
@@ -156,6 +148,63 @@ struct NodeDetail: View {
 							Text(String(node.num)).font(.headline).foregroundColor(.gray)
 						}
 					}.padding()
+					
+					if node.positions != nil && node.positions!.count > 0 {
+						
+						Divider()
+						
+						HStack {
+							
+							Image(systemName: "map.circle.fill").font(.title).foregroundColor(.accentColor)
+							Text("Position History (\(node.positions?.count ?? 0) Points)").font(.title2)
+						}
+						.padding()
+						
+						Divider()
+						
+						ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+
+							VStack {
+								
+								HStack {
+									
+									Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) //.font(.subheadline)
+									Text("Lat/Long:").font(.caption)
+									Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+										.foregroundColor(.gray)
+										.font(.caption)
+										
+									Text("Altitude:")
+										.font(.caption)
+									
+									Text("\(String(mappin.altitude))m")
+										.foregroundColor(.gray)
+										.font(.caption)
+								}
+								HStack {
+									
+									Image(systemName: "clock.badge.checkmark.fill")
+										.font(.subheadline)
+										.foregroundColor(.accentColor)
+										.symbolRenderingMode(.hierarchical)
+									Text("Time:")
+										.font(.caption)
+									Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
+										.foregroundColor(.gray)
+										.font(.caption)
+									Divider()
+									
+									Text("Battery").font(.caption).fixedSize()
+									Text(String(mappin.batteryLevel) + "%")
+										.font(.caption)
+										.foregroundColor(.gray)
+										.symbolRenderingMode(.hierarchical)
+								}
+							}
+							.padding([.top, .bottom])
+							Divider()
+						}
+					}
 				}
 			}.navigationTitle(node.user!.longName ?? "Unknown")
 			.navigationBarTitleDisplayMode(.inline)
@@ -174,16 +223,19 @@ struct NodeDetail: View {
 				self.bleManager.context = context
 
 			})
-		}.ignoresSafeArea(.all, edges: [.leading, .trailing])
+		}
+		.ignoresSafeArea(.all, edges: [.leading, .trailing])
 	}
 }
 
 struct NodeInfoEntityDetail_Previews: PreviewProvider {
+	
 	static let bleManager = BLEManager()
 
 	static var previews: some View {
 		Group {
-			//NodeInfoEntityDetail(node: node)
+			
+			//NodeDetail(node: node)
 		}
 	}
 }
