@@ -15,14 +15,14 @@ struct NodeDetail: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
-		
-		let mostRecent = node.positions?.lastObject as! PositionEntity
 
 		GeometryReader { bounds in
 
 			VStack {
 
-				if node.positions != nil && node.positions!.count > 0 {
+				if ((node.myInfo?.hasGps) != nil) {
+					
+					let mostRecent = node.positions?.lastObject as! PositionEntity
 
 					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
 
@@ -49,7 +49,7 @@ struct NodeDetail: View {
 					Image(node.user?.hwModel ?? "UNSET")
 						.resizable()
 						.aspectRatio(contentMode: .fit)
-						.frame(width: bounds.size.width, height: bounds.size.height / 3)
+						.frame(width: bounds.size.width, height: bounds.size.height / 2)
 				}
 
 				ScrollView {
@@ -58,7 +58,7 @@ struct NodeDetail: View {
 
 						HStack {
 
-							Image(systemName: "clock").font(.title2).foregroundColor(.accentColor)
+							Image(systemName: "clock").font(.title).foregroundColor(.accentColor)
 							Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
 						}
 						.padding()
@@ -72,8 +72,10 @@ struct NodeDetail: View {
 							CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
 								.offset(y: 10)
 						}
-						.padding([.leading, .trailing, .bottom])
+						.padding(5)
+						
 						Divider()
+						
 						VStack {
 							
 							Image(node.user!.hwModel ?? "UNSET")
@@ -82,11 +84,11 @@ struct NodeDetail: View {
 								.cornerRadius(5)
 
 							Text(String(node.user!.hwModel ?? "UNSET"))
-								.font(.subheadline).fixedSize()
+								.font(.callout).fixedSize()
 						}
-						.padding()
+						.padding(5)
 						
-						if true {//node.snr > 0 {
+						if node.snr > 0 {
 							Divider()
 							VStack(alignment: .center) {
 
@@ -100,10 +102,13 @@ struct NodeDetail: View {
 									.foregroundColor(.gray)
 									.fixedSize()
 							}
-							.padding([.leading, .trailing, .bottom])
+							.padding(5)
 						}
 						
 						if node.positions!.count > 0 {
+							
+							let mostRecent = node.positions?.lastObject as! PositionEntity
+							
 							Divider()
 						
 							VStack(alignment: .center) {
@@ -124,7 +129,7 @@ struct NodeDetail: View {
 										.fixedSize()
 								}
 							}
-							.padding([.leading, .trailing, .bottom])
+							.padding(5)
 						}
 					}
 					.padding(4)
@@ -134,22 +139,22 @@ struct NodeDetail: View {
 					HStack(alignment: .center) {
 						VStack {
 							HStack {
-								Image(systemName: "person").font(.title3).foregroundColor(.accentColor)
-								Text("Unique Id:").font(.title3)
+								Image(systemName: "person").font(.title2).foregroundColor(.accentColor)
+								Text("Unique Id:").font(.title2)
 							}
-							Text(node.user?.userId ?? "??????").font(.headline).foregroundColor(.gray)
+							Text(node.user?.userId ?? "??????").font(.title3).foregroundColor(.gray)
 						}
 						Divider()
 						VStack {
 							HStack {
-							Image(systemName: "number").font(.title3).foregroundColor(.accentColor)
-								Text("Node Number:").font(.title3)
+							Image(systemName: "number").font(.title2).foregroundColor(.accentColor)
+								Text("Node Number:").font(.title2)
 							}
-							Text(String(node.num)).font(.headline).foregroundColor(.gray)
+							Text(String(node.num)).font(.title3).foregroundColor(.gray)
 						}
 					}.padding()
 					
-					if node.positions != nil && node.positions!.count > 0 {
+					if ((node.myInfo?.hasGps) != nil) {
 						
 						Divider()
 						

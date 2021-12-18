@@ -480,7 +480,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-						if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
+						//if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
 
 							let position = PositionEntity(context: context!)
 							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
@@ -492,7 +492,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							var newPostions = [PositionEntity]()
 							newPostions.append(position)
 							newNode.positions? = NSOrderedSet(array : newPostions)
-						}
+						//}
 						
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
