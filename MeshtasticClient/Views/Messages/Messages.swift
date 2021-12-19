@@ -48,12 +48,13 @@ struct Messages: View {
 							ForEach(messages) { message in
 
 								HStack(alignment: .top) {
-									let currentUser: Bool = false// (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num)
-									
+									let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
+									//let currentUser: (Bool = message.fromUser == nil : false : (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num : true)
 
-									CircleText(text: (message.fromUser?.longName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+									CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 										.gesture(LongPressGesture(minimumDuration: 2)
 													.onEnded {_ in
+											print(messages)
 											print("I want to delete message: \(message.messageId)")
 											self.showDeleteMessageAlert = true
 											self.deleteMessageId = message.messageId
@@ -94,8 +95,8 @@ struct Messages: View {
 											
 											context.delete(message!)
 											do {
-												
 												try context.save()
+											
 												deleteMessageId = 0
 												messageCount = messages.count
 												
@@ -182,6 +183,7 @@ struct Messages: View {
                     Button(action: {
                         if bleManager.sendMessage(message: typingMessage) {
                             typingMessage = ""
+							focusedField = nil
                         } else {
 
                             _ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (_) in
@@ -204,14 +206,14 @@ struct Messages: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing:
 
-		ZStack {
+			ZStack {
 
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-					"???")
-		})
+				ConnectedDevice(
+					bluetoothOn: bleManager.isSwitchedOn,
+					deviceConnected: bleManager.connectedPeripheral != nil,
+					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
+			}
+		)
 		.onAppear(perform: {
 
 			self.bleManager.context = context

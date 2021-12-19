@@ -58,7 +58,10 @@ struct NodeDetail: View {
 
 						HStack {
 
-							Image(systemName: "clock").font(.title).foregroundColor(.accentColor)
+							Image(systemName: "clock.badge.checkmark.fill")
+								.font(.title)
+								.foregroundColor(.accentColor)
+								.symbolRenderingMode(.hierarchical)
 							Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
 						}
 						.padding()
@@ -117,7 +120,10 @@ struct NodeDetail: View {
 									.padding(.bottom)
 								if mostRecent.batteryLevel > 0 {
 									
-									Text("Battery").font(.title2).fixedSize()
+									Text("Battery")
+										.font(.title2)
+										.fixedSize()
+										.textCase(.uppercase)
 									Text(String(mostRecent.batteryLevel) + "%")
 										.font(.title2)
 										.foregroundColor(.gray)
@@ -127,6 +133,7 @@ struct NodeDetail: View {
 									Text("Powered")
 										.font(.callout)
 										.fixedSize()
+										.textCase(.uppercase)
 								}
 							}
 							.padding(5)
@@ -139,7 +146,10 @@ struct NodeDetail: View {
 					HStack(alignment: .center) {
 						VStack {
 							HStack {
-								Image(systemName: "person").font(.title2).foregroundColor(.accentColor)
+								Image(systemName: "person")
+									.font(.title2)
+									.foregroundColor(.accentColor)
+									.symbolRenderingMode(.hierarchical)
 								Text("Unique Id:").font(.title2)
 							}
 							Text(node.user?.userId ?? "??????").font(.title3).foregroundColor(.gray)
@@ -147,7 +157,10 @@ struct NodeDetail: View {
 						Divider()
 						VStack {
 							HStack {
-							Image(systemName: "number").font(.title2).foregroundColor(.accentColor)
+							Image(systemName: "number")
+									.font(.title2)
+									.foregroundColor(.accentColor)
+									.symbolRenderingMode(.hierarchical)
 								Text("Node Number:").font(.title2)
 							}
 							Text(String(node.num)).font(.title3).foregroundColor(.gray)
@@ -160,7 +173,10 @@ struct NodeDetail: View {
 						
 						HStack {
 							
-							Image(systemName: "map.circle.fill").font(.title).foregroundColor(.accentColor)
+							Image(systemName: "map.circle.fill")
+								.font(.title)
+								.foregroundColor(.accentColor)
+								.symbolRenderingMode(.hierarchical)
 							Text("Position History (\(node.positions?.count ?? 0) Points)").font(.title2)
 						}
 						.padding()
@@ -206,23 +222,26 @@ struct NodeDetail: View {
 										.symbolRenderingMode(.hierarchical)
 								}
 							}
-							.padding([.top, .bottom])
+							.padding(1)
 							Divider()
 						}
+						.padding(.bottom, 5) // Without some padding here there is a transparent contentview bug
 					}
+					
 				}
-			}.navigationTitle(node.user!.longName ?? "Unknown")
+			}
+			.navigationTitle(node.user!.longName ?? "Unknown")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 
-			ZStack {
+				ZStack {
 
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-						"???")
-			})
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
+				}
+			)
 			.onAppear(perform: {
 
 				self.bleManager.context = context

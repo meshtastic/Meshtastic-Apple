@@ -25,7 +25,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var peripherals = [Peripheral]()
 
     @Published var connectedPeripheral: Peripheral!
-    @Published var connectedNode: NodeInfoEntity!
+    //@Published var connectedNode: NodeInfoEntity!
     @Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
 
@@ -37,6 +37,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimerCount = 0
 
     private var broadcastNodeId: UInt32 = 4294967295
+	var nextSentMessageId: Int64 = 1
 
     /* Meshtastic Service Details */
     var TORADIO_characteristic: CBCharacteristic!
@@ -211,6 +212,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			if fetchedNode.count == 1 {
 				
+				connectedPeripheral.num = fetchedNode[0].user!.num
 				connectedPeripheral.shortName = fetchedNode[0].user!.shortName!
 				connectedPeripheral.longName = fetchedNode[0].user!.longName!
 				connectedPeripheral.firmwareVersion = (fetchedNode[0].myInfo?.firmwareVersion ?? "Unknown")
@@ -480,19 +482,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-						//if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 {
 
-							let position = PositionEntity(context: context!)
-							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-							position.altitude = decodedInfo.nodeInfo.position.altitude
-							position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+						let position = PositionEntity(context: context!)
+						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+						position.altitude = decodedInfo.nodeInfo.position.altitude
+						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 
-							var newPostions = [PositionEntity]()
-							newPostions.append(position)
-							newNode.positions? = NSOrderedSet(array : newPostions)
-						//}
+						var newPostions = [PositionEntity]()
+						newPostions.append(position)
+						newNode.positions? = NSOrderedSet(array : newPostions)
 						
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -524,21 +524,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
 						}
-						if decodedInfo.nodeInfo.hasPosition && decodedInfo.nodeInfo.position.latitudeI != 0 && decodedInfo.nodeInfo.position.longitudeI != 0  {
 							
-							let position = PositionEntity(context: context!)
-							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-							position.altitude = decodedInfo.nodeInfo.position.altitude
-     						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+						let position = PositionEntity(context: context!)
+						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+						position.altitude = decodedInfo.nodeInfo.position.altitude
+						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 							
-							if position.latitudeI != 0 {
-								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-								mutablePositions.add(position)
-								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-							}
-						}
+						let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+						mutablePositions.add(position)
+						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.nodeInfo.num))
@@ -611,20 +608,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
+								newMessage.toUser = Int64(decodedInfo.packet.to)
 								
 								if decodedInfo.packet.to == broadcastNodeId && fetchedUsers.count == 1 {
 								
-									let bcu: UserEntity = UserEntity(context: context!)
-									bcu.shortName = "BC"
-									bcu.longName = "Broadcast"
-									bcu.hwModel = "UNSET"
-									bcu.num = Int64(broadcastNodeId)
-									bcu.userId = "BROADCASTNODE"
-									newMessage.toUser = bcu
+									//let bcu: UserEntity = UserEntity(context: context!)
+									//bcu.shortName = "BC"
+									//bcu.longName = "Broadcast"
+									//bcu.hwModel = "UNSET"
+									//bcu.num = Int64(broadcastNodeId)
+									//bcu.userId = "BROADCASTNODE"
+									//newMessage.toUser = bcu
 									
 								} else {
-									
-									newMessage.toUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.to })
+									//return
+									//newMessage.toUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.to })
 								}
 								
 								newMessage.fromUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.from })
@@ -806,58 +804,70 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// Don's send an empty message
 			success = false
 		} else {
-
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(bitPattern: 0)
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.direction = "IN"
-			
-
-			let bcu: UserEntity = UserEntity(context: context!)
-			bcu.shortName = "BC"
-			bcu.longName = "Broadcast"
-			bcu.hwModel = "UNSET"
-			bcu.num = Int64(broadcastNodeId)
-			bcu.userId = "BROADCASTNODE"
-			newMessage.toUser = bcu
 			
 			// Set from user from query here
-
-			newMessage.messagePayload = message
+			let fetchFromUser:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+			fetchFromUser.predicate = NSPredicate(format: "num == %lld", Int64(self.connectedPeripheral.num))
 			
-			let dataType = PortNum.textMessageApp
-			let payloadData: Data = message.data(using: String.Encoding.utf8)!
-
-			var dataMessage = DataMessage()
-			dataMessage.payload = payloadData
-			dataMessage.portnum = dataType
-
-			var meshPacket = MeshPacket()
-			meshPacket.to = broadcastNodeId
-			meshPacket.decoded = dataMessage
-			meshPacket.wantAck = true
-
-			var toRadio: ToRadio!
-			toRadio = ToRadio()
-			toRadio.packet = meshPacket
-
-			let binaryData: Data = try! toRadio.serializedData()
-			if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				do {
+			do {
+				
+				let fetchedUser = try context?.fetch(fetchFromUser) as! [UserEntity]
+				
+				if fetchedUser.isEmpty {
 					
-					try context!.save()
-					print("Saved a new message for \(0)")
-					success = true
-					
-				} catch {
-					
-					context!.rollback()
-					
-					let nsError = error as NSError
-					print("Unresolved error \(nsError)")
+					print("Connected User Not Found, Fail")
+					success = false
 				}
+				else {
+					
+					let newMessage = MessageEntity(context: context!)
+					newMessage.messageId = nextSentMessageId
+					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+					newMessage.receivedACK = false
+					newMessage.direction = "IN"
+					newMessage.toUser = Int64(broadcastNodeId)
+					
+					newMessage.fromUser = fetchedUser[0]
+					newMessage.messagePayload = message
+					
+					let dataType = PortNum.textMessageApp
+					let payloadData: Data = message.data(using: String.Encoding.utf8)!
+
+					var dataMessage = DataMessage()
+					dataMessage.payload = payloadData
+					dataMessage.portnum = dataType
+
+					var meshPacket = MeshPacket()
+					meshPacket.to = broadcastNodeId
+					meshPacket.decoded = dataMessage
+					meshPacket.wantAck = true
+
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+
+					let binaryData: Data = try! toRadio.serializedData()
+					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+						do {
+							
+							try context!.save()
+							print("Saved a new sent message from \(connectedPeripheral.num)")
+							success = true
+							nextSentMessageId+=1
+							
+						} catch {
+							
+							context!.rollback()
+							
+							let nsError = error as NSError
+							print("Unresolved error \(nsError)")
+						}
+					}
+				}
+				
+			} catch {
+				
 			}
 		}
 		return success

@@ -43,12 +43,10 @@ struct MessageBubble: View {
             Spacer()
         }
 		.alert(isPresented: $showAlert) {
+			
 			Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
 				  primaryButton: .destructive(Text("OK")) {
 				  print("OK button tapped")
-				// let messageIndex = meshData.nodes.firstIndex(where: { $0.id == node.id })
-				// meshData.nodes.remove(at: nodeIndex!)
-				// meshData.save()
 			},
 			secondaryButton: .cancel()
 			)

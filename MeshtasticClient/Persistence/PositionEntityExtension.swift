@@ -9,7 +9,7 @@ extension PositionEntity {
 
 		let d = Double(latitudeI)
 		if d == 0 {
-			return nil
+			return 0
 		}
 		return d / 1e7
 	}
@@ -18,7 +18,7 @@ extension PositionEntity {
 
 		let d = Double(longitudeI)
 		if d == 0 {
-			return nil
+			return 0
 		}
 		return d / 1e7
 	}
