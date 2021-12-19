@@ -214,10 +214,5 @@ struct Messages: View {
 					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
 			}
 		)
-		.onAppear(perform: {
-
-			self.bleManager.context = context
-			messageCount = messages.count
-		})
     }
 }
