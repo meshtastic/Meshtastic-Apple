@@ -467,8 +467,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 						newNode.snr = decodedInfo.nodeInfo.snr
 						
-						let userIdLast4: String = String(decodedInfo.nodeInfo.user.id.suffix(4))
-						newNode.bleName = "Meshtastic_" + userIdLast4
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == newNode.id {
+							
+							newNode.bleName = self.connectedPeripheral.name
+						
+						} else {
+							
+							let userIdLast4: String = String(decodedInfo.nodeInfo.user.id.suffix(4))
+							newNode.bleName = "Meshtastic_" + userIdLast4
+						}
 						
 						if decodedInfo.nodeInfo.hasUser {
 
@@ -608,21 +615,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
-								newMessage.toUser = Int64(decodedInfo.packet.to)
+								//newMessage.toUser = Int64(decodedInfo.packet.to)
 								
 								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 								
-									//let bcu: UserEntity = UserEntity(context: context!)
-									//bcu.shortName = "BC"
-									//bcu.longName = "Broadcast"
-									//bcu.hwModel = "UNSET"
-									//bcu.num = Int64(broadcastNodeId)
-									//bcu.userId = "BROADCASTNODE"
-									//newMessage.toUser = bcu
+									let bcu: UserEntity = UserEntity(context: context!)
+									bcu.shortName = "BC"
+									bcu.longName = "Broadcast"
+									bcu.hwModel = "UNSET"
+									bcu.num = Int64(broadcastNodeNum)
+									bcu.userId = "BROADCASTNODE"
+									newMessage.toUser = bcu
 									
 								} else {
-									//return
-									//newMessage.toUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.to })
+
+									newMessage.toUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.to })
 								}
 								
 								newMessage.fromUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.from })
@@ -678,8 +685,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							return
 						}
 						do {
-							
-						  try context!.save()
+						//	print(decodedInfo.packet.decoded.payload)
+							try context!.save()
 							
 							if meshLoggingEnabled {
 								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")
@@ -710,11 +717,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 
+						
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							print(decodedInfo.packet.decoded.payload)
+							if(decodedInfo.packet.rxTime == 0) {
+								
+								fetchedNode[0].lastHeard = Date()
+								
+							} else {
+								
+								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+								
+							}
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
+							
 						}
 						else {
 							return
@@ -726,7 +744,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							if meshLoggingEnabled {
 								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
 							}
-							print("Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
+							print("Updated NodeInfo SNR and Time from Position Packet For: \(fetchedNode[0].num)")
 							
 						} catch {
 							
@@ -805,29 +823,29 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			success = false
 		} else {
 			
-			// Set from user from query here
-			let fetchFromUser:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
-			fetchFromUser.predicate = NSPredicate(format: "num == %lld", Int64(self.connectedPeripheral.num))
+			let fromUserNum:Int64 = self.connectedPeripheral.num
+			
+			let messageUsers:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+			messageUsers.predicate = NSPredicate(format:"num IN %@", [fromUserNum, Int64(toUserNum)])
 			
 			do {
 				
-				let fetchedUser = try context?.fetch(fetchFromUser) as! [UserEntity]
+				let fetchedUsers = try context?.fetch(messageUsers) as! [UserEntity]
 				
-				if fetchedUser.isEmpty {
+				if fetchedUsers.isEmpty {
 					
-					print("Connected User Not Found, Fail")
+					print("Message Users Not Found, Fail")
 					success = false
 				}
-				else {
+				else if fetchedUsers.count == 2 {
 					
 					let newMessage = MessageEntity(context: context!)
 					newMessage.messageId = nextSentMessageId
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
-					newMessage.toUser = Int64(broadcastNodeNum)
-					
-					newMessage.fromUser = fetchedUser[0]
+					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 					
 					let dataType = PortNum.textMessageApp
@@ -838,7 +856,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					dataMessage.portnum = dataType
 
 					var meshPacket = MeshPacket()
-					meshPacket.to = broadcastNodeNum
+					meshPacket.to = UInt32(toUserNum)
+					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
 
