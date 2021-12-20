@@ -36,7 +36,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 
-    private var broadcastNodeId: UInt32 = 4294967295
+    var broadcastNodeNum: UInt32 = 4294967295
 	var nextSentMessageId: Int64 = 1
 
     /* Meshtastic Service Details */
@@ -610,7 +610,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								newMessage.direction = "IN"
 								newMessage.toUser = Int64(decodedInfo.packet.to)
 								
-								if decodedInfo.packet.to == broadcastNodeId && fetchedUsers.count == 1 {
+								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 								
 									//let bcu: UserEntity = UserEntity(context: context!)
 									//bcu.shortName = "BC"
@@ -713,7 +713,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date()// Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 						}
 						else {
@@ -778,7 +778,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
 
 	// Send Broadcast Message
-	public func sendMessage(message: String) -> Bool {
+	public func sendMessage(message: String, toUserNum: Int64) -> Bool {
 		var success = false
 
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
@@ -825,7 +825,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
-					newMessage.toUser = Int64(broadcastNodeId)
+					newMessage.toUser = Int64(broadcastNodeNum)
 					
 					newMessage.fromUser = fetchedUser[0]
 					newMessage.messagePayload = message
@@ -838,7 +838,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					dataMessage.portnum = dataType
 
 					var meshPacket = MeshPacket()
-					meshPacket.to = broadcastNodeId
+					meshPacket.to = broadcastNodeNum
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
 

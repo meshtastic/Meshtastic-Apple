@@ -181,14 +181,14 @@ struct Messages: View {
                     .padding(.bottom, 15)
 
                     Button(action: {
-                        if bleManager.sendMessage(message: typingMessage) {
+						if bleManager.sendMessage(message: typingMessage, toUserNum: Int64(self.bleManager.broadcastNodeNum)) {
                             typingMessage = ""
 							focusedField = nil
                         } else {
 
                             _ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (_) in
 
-                                if bleManager.sendMessage(message: typingMessage) {
+								if bleManager.sendMessage(message: typingMessage, toUserNum: Int64(self.bleManager.broadcastNodeNum)) {
                                     typingMessage = ""
                                 }
                             }
