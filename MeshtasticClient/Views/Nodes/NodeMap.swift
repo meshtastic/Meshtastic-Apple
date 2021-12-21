@@ -36,23 +36,38 @@ struct NodeMap: View {
             set: { _ in }
         )
 		
+		/*ForEach ( locationNodes ) { node in
+					let mostRecent = node.positions?.lastObject as! PositionEntity
+					if mostRecent.coordinate != nil {
+		
+						annotations.append(MapLocation(name: node.user?.shortName! ?? "???", coordinate: mostRecent.coordinate!))
+		
+					}
+				}*/
+		
         NavigationView {
 
             ZStack {
 				
+				
+				
                 Map(coordinateRegion: regionBinding,
                     interactionModes: [.all],
                     showsUserLocation: true,
-					userTrackingMode: .constant(.follow)//,
-					//ForEach ( locationNodes ) { node in
-					//			let mostRecent = node.positions?.lastObject as! PositionEntity
-					//			if mostRecent.coordinate != nil {
+					userTrackingMode: .constant(.follow),
+					annotationItems: self.locationNodes.filter({ nodeinfo in
+					return nodeinfo.positions != nil && nodeinfo.positions!.count > 0
+					})
+				) { locationNode in
 					
-					//				annotations.append(MapLocation(name: node.user?.shortName! ?? "???", coordinate: mostRecent.coordinate!))
-					
-					//			}
-					//		}
-                    )
+						return MapAnnotation(
+							coordinate: (locationNode.positions!.lastObject as! PositionEntity).coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
+						   content: {
+							   CircleText(text: locationNode.user!.shortName ?? "???", color: .accentColor)
+						   }
+						)
+
+				}
                 //}
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])
