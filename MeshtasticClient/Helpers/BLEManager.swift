@@ -489,11 +489,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.user = newUser
 						}
 						
-
 						let position = PositionEntity(context: context!)
 						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
 						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 						position.altitude = decodedInfo.nodeInfo.position.altitude
+						
 						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 
@@ -541,8 +541,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							
 						let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 						mutablePositions.add(position)
-						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-
+						
+						if position.coordinate == nil {
+							var newPostions = [PositionEntity]()
+							newPostions.append(position)
+							fetchedNode[0].positions? = NSOrderedSet(array : newPostions)
+							
+						} else {
+							
+							fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+						}
+						
 						// Look for a MyInfo
 						let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.nodeInfo.num))
@@ -680,6 +689,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
+							
+							let array = [UInt8](decodedInfo.packet.decoded.payload)
+							print (array[0])
+							print (array[1])
+							print (array[2])
+							print (array[3])
+							print (array[4])
+							print (array)
+							
+							let bytes = decodedInfo.packet.decoded.payload
+							print(bytes, String(bytes: bytes, encoding: .utf8))
+							
+						print(bytes2String(array))
 						}
 						else {
 							return
@@ -715,9 +737,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					
 					do {
 						
-						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
-
 						
+
+						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
+						
+						// Never run
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
@@ -732,6 +756,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								
 							}
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
+							
+							let array = [UInt8](decodedInfo.packet.decoded.payload)
+							//print(array)
+							//let payload = decodedInfo.packet.decoded.payload as NSData
+							let bytes = decodedInfo.packet.decoded.payload
+							print(bytes, String(bytes: bytes, encoding: .utf8))
+							
+							// Get a string from the byte array.
+							if let result = String(bytes: bytes, encoding: .utf8) {
+								print(result)
+							}
+							
+							let testBytes : [UInt8] = [0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64]
+
+
+							var test = bytes2String(testBytes)
+							print(test)
 							
 						}
 						else {
@@ -891,4 +932,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return success
 	}
+}
+
+
+func bytes2String(_ array: [UInt8]) -> String {
+	return String(data: Data(bytes: array, count: array.count), encoding: .utf8) ?? ""
 }

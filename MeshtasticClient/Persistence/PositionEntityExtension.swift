@@ -24,7 +24,7 @@ extension PositionEntity {
 	}
 	
 	var coordinate: CLLocationCoordinate2D? {
-		if latitude != nil && longitude != nil {
+		if latitudeI != 0 && longitudeI != 0 {
 			let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
 
 			return coord

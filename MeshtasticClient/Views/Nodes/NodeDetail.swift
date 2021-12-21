@@ -20,30 +20,38 @@ struct NodeDetail: View {
 
 			VStack {
 
-				if ((node.myInfo?.hasGps) != nil) {
+				if node.positions?.count ?? 0 > 0  {
 					
 					let mostRecent = node.positions?.lastObject as! PositionEntity
-
-					let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
-
-					let regionBinding = Binding<MKCoordinateRegion>(
-						get: {
-							MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-						},
-						set: { _ in }
-					)
-					let annotations = [MapLocation(name: node.user!.shortName ?? "???", coordinate: mostRecent.coordinate!)]
-
-					Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
-						MapAnnotation(
-						   coordinate: location.coordinate,
-						   content: {
-							   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
-						   }
-						)
-					}
-					.frame(idealWidth: bounds.size.width, maxHeight: bounds.size.height / 3)
 					
+					if mostRecent.coordinate != nil {
+
+						let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
+
+						let regionBinding = Binding<MKCoordinateRegion>(
+							get: {
+								MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
+							},
+							set: { _ in }
+						)
+						let annotations = [MapLocation(name: node.user!.shortName ?? "???", coordinate: mostRecent.coordinate!)]
+
+						Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
+							MapAnnotation(
+							   coordinate: location.coordinate,
+							   content: {
+								   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
+							   }
+							)
+						}
+						.frame(idealWidth: bounds.size.width, maxHeight: bounds.size.height / 3)
+					} else {
+						
+						Image(node.user?.hwModel ?? "UNSET")
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+							.frame(width: bounds.size.width, height: bounds.size.height / 2)
+					}
 				} else {
 					
 					Image(node.user?.hwModel ?? "UNSET")
@@ -167,7 +175,7 @@ struct NodeDetail: View {
 						}
 					}.padding()
 					
-					if ((node.myInfo?.hasGps) != nil) {
+					if node.positions?.count ?? 0 > 0 {
 						
 						Divider()
 						
@@ -177,7 +185,7 @@ struct NodeDetail: View {
 								.font(.title)
 								.foregroundColor(.accentColor)
 								.symbolRenderingMode(.hierarchical)
-							Text("Position History (\(node.positions?.count ?? 0) Points)").font(.title2)
+							Text("Location History").font(.title2)
 						}
 						.padding()
 						
@@ -185,7 +193,9 @@ struct NodeDetail: View {
 						
 						ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 
-							VStack {
+							//if mappin.coordinate != nil {
+								
+								VStack {
 								
 								HStack {
 									
@@ -222,8 +232,9 @@ struct NodeDetail: View {
 										.symbolRenderingMode(.hierarchical)
 								}
 							}
-							.padding(1)
-							Divider()
+								.padding(1)
+								Divider()
+							//}
 						}
 						.padding(.bottom, 5) // Without some padding here there is a transparent contentview bug
 					}

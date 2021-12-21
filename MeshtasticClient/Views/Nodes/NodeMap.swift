@@ -9,25 +9,21 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import CoreData
 
 struct NodeMap: View {
 
-	// CoreData
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)],
-		animation: .default)
+	@State private var showLabels: Bool = false
+	
+	@State private var annotationItems: [MapLocation] = []
+	@FetchRequest( sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)], animation: .default)
 	
 	private var locationNodes: FetchedResults<NodeInfoEntity>
 	
-    struct MapLocation: Identifiable {
-		
-        let id = UUID()
-        let name: String
-        let coordinate: CLLocationCoordinate2D
-    }
+	var annotations: [MapLocation] = [MapLocation]()
 
     var body: some View {
 		
@@ -39,7 +35,7 @@ struct NodeMap: View {
             },
             set: { _ in }
         )
-
+		
         NavigationView {
 
             ZStack {
@@ -47,17 +43,19 @@ struct NodeMap: View {
                 Map(coordinateRegion: regionBinding,
                     interactionModes: [.all],
                     showsUserLocation: true,
-					userTrackingMode: .constant(.follow))//, annotationItems: $locationNodes) { node  in
-//
-//                    MapAnnotation(
-//						coordinate: node.positions[0].coordinate,
-//                        content: {
-//						   CircleText(text: node.user!.shortName, color: .accentColor)
-//                       }
-//                    )
-//                }
+					userTrackingMode: .constant(.follow)//,
+					//ForEach ( locationNodes ) { node in
+					//			let mostRecent = node.positions?.lastObject as! PositionEntity
+					//			if mostRecent.coordinate != nil {
+					
+					//				annotations.append(MapLocation(name: node.user?.shortName! ?? "???", coordinate: mostRecent.coordinate!))
+					
+					//			}
+					//		}
+                    )
+                //}
                .frame(maxHeight: .infinity)
-                .ignoresSafeArea(.all, edges: [.leading, .trailing])
+               .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
