@@ -49,7 +49,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	
-	private var meshLoggingEnabled: Bool = false
+	private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 	
     // MARK: init BLEManager
@@ -84,7 +84,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
 			self.isScanning = self.centralManager.isScanning
 			
-            print("Scanning Started")
+            print("✅ Scanning Started")
         }
     }
 
@@ -96,7 +96,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             self.centralManager.stopScan()
 			self.isScanning = self.centralManager.isScanning
 			
-            print("Stopped Scanning")
+            print("🛑 Stopped Scanning")
         }
     }
 
@@ -120,24 +120,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 			connectedPeripheral = nil
 
-			self.lastConnectionError = "BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
-			print("BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name).")
-			if meshLoggingEnabled { MeshLogger.log("BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(String(name)).") }
+			self.lastConnectionError = "🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
+			print("🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name).")
+			if meshLoggingEnabled { MeshLogger.log("🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(String(name)).") }
 
 			self.timeoutTimerCount = 0
 			self.timeoutTimer?.invalidate()
 
 		} else {
-			print("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
-			if meshLoggingEnabled { MeshLogger.log("BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
+			print("🚫 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			if meshLoggingEnabled { MeshLogger.log("🚫 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
 		}
 	}
 
     // Connect to a specific peripheral
     func connectTo(peripheral: CBPeripheral) {
 
-		if meshLoggingEnabled { MeshLogger.log("BLE Connecting: \(peripheral.name ?? "Unknown")") }
-		print("BLE Connecting: \(peripheral.name ?? "Unknown")")
+		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connecting: \(peripheral.name ?? "Unknown")") }
+		print("✅ BLE Connecting: \(peripheral.name ?? "Unknown")")
 
         stopScanning()
 
@@ -178,14 +178,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			peripherals[peripheralIndex!] = newPeripheral
 			peripherals.remove(at: peripheralIndex!)
 			peripherals.append(newPeripheral)
-			print("Updating peripheral: \(peripheralName)")
+			print("ℹ️ Updating peripheral: \(peripheralName)")
 			
 		} else {
 
 			if newPeripheral.peripheral.state != CBPeripheralState.connected {
 
 				peripherals.append(newPeripheral)
-				print("Adding peripheral: \(peripheralName)")
+				print("ℹ️ Adding peripheral: \(peripheralName)")
 			}
 		}
     }
@@ -219,23 +219,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 		} catch {
-			print("Fetch NodeInfo Failed")
+			print("💥 Fetch NodeInfo Failed")
 		}
 		
         lastConnectedPeripheral = peripheral.identifier.uuidString
 
 		// Discover Services
         peripheral.discoverServices([meshtasticServiceCBUUID])
-		if meshLoggingEnabled { MeshLogger.log("BLE Connected: \(peripheral.name ?? "Unknown")") }
-        print("BLE Connected: \(peripheral.name ?? "Unknown")")
+		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
+        print("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
 
     }
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 
-		if meshLoggingEnabled { MeshLogger.log("BLE Failed to Connect: \(peripheral.name ?? "Unknown")") }
-		print("BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
+		if meshLoggingEnabled { MeshLogger.log("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")") }
+		print("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
 		disconnectPeripheral()
 	}
 
@@ -255,7 +255,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				// Happens when device is manually reset / powered off
 				// We will try and re-connect to this device
-				lastConnectionError = "\(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
+				lastConnectionError = "🚫 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
 				if peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 					if meshLoggingEnabled { MeshLogger.log("BLE Reconnecting: \(peripheral.name ?? "Unknown")") }
 					print("BLE Reconnecting: \(peripheral.name ?? "Unknown")")
@@ -266,27 +266,27 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 // Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
 				
-				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
-				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
+				print("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
             } else if errorCode == 14 { // Peer removed pairing information
 
                 // Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "\(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
+				lastConnectionError = "🚫 \(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
 				
-				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
+				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
             } else {
 
 				lastConnectionError = e.localizedDescription
 				
-				print("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
-				if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
+				print("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 			}
         } else {
 
             // Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			if meshLoggingEnabled { MeshLogger.log("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect") }
-            print("BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
+			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect") }
+            print("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
         }
     }
 
@@ -295,7 +295,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         if let e = error {
 
-            print("Discover Services error \(e)")
+            print("🚫 Discover Services error \(e)")
         }
 
         guard let services = peripheral.services else { return }
@@ -303,8 +303,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         for service in services {
 
             if service.uuid == meshtasticServiceCBUUID {
-                print("Meshtastic service discovered OK")
-				if meshLoggingEnabled { MeshLogger.log("BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
+                print("✅ Meshtastic service discovered OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
                 peripheral.discoverCharacteristics(nil, for: service)
                // peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
             }
@@ -315,8 +315,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let e = error {
 
-            print("Discover Characteristics error \(e)")
-			if meshLoggingEnabled { MeshLogger.log("BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)") }
+            print("🚫 Discover Characteristics error \(e)")
+			if meshLoggingEnabled { MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)") }
         }
 
         guard let characteristics = service.characteristics else { return }
@@ -325,8 +325,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			switch characteristic.uuid {
 			case TORADIO_UUID:
-				print("TORADIO characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				print("✅ TORADIO characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				TORADIO_characteristic = characteristic
 				var toRadio: ToRadio = ToRadio()
 				toRadio.wantConfigID = 32168
@@ -334,14 +334,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
 
 			case FROMRADIO_UUID:
-				print("FROMRADIO characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				print("✅ FROMRADIO characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
 				print("FROMNUM (Notify) characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				if meshLoggingEnabled { MeshLogger.log("✅BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
@@ -354,11 +354,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 
-		print("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)")
-		if meshLoggingEnabled { MeshLogger.log("didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)") }
+		print("ℹ️ didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)")
+		if meshLoggingEnabled { MeshLogger.log("ℹ️ didUpdateNotificationStateFor char: \(characteristic.uuid.uuidString) \(characteristic.isNotifying)") }
 		
 		if let errorText = error?.localizedDescription {
-			  print("didUpdateNotificationStateFor error: \(errorText)")
+			  print("🚫 didUpdateNotificationStateFor error: \(errorText)")
 		}
 	}
 
@@ -368,8 +368,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let e = error {
 
-            print("didUpdateValueFor Characteristic error \(e)")
-			if meshLoggingEnabled { MeshLogger.log("BLE didUpdateValueFor characteristic error by \(peripheral.name ?? "Unknown") \(e)") }
+            print("🚫 didUpdateValueFor Characteristic error \(e)")
+			if meshLoggingEnabled { MeshLogger.log("🚫 BLE didUpdateValueFor characteristic error by \(peripheral.name ?? "Unknown") \(e)") }
         }
 
         switch characteristic.uuid {
@@ -396,7 +396,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// MyInfo Data
 			if decodedInfo.myInfo.myNodeNum != 0 {
 				
-				print("Save a CoreData MyInfoEntity")
+				print("💾 Save a CoreData MyInfoEntity")
 				
 				let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -427,19 +427,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					do {
 						
 						try context!.save()
-						print("Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
-						if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and myInfo saved for \(peripheral.name ?? String(decodedInfo.myInfo.myNodeNum))") }
+						print("💾 Saved a myInfo for \(decodedInfo.myInfo.myNodeNum)")
+						if meshLoggingEnabled { MeshLogger.log("💾 Saved a myInfo for \(peripheral.name ?? String(decodedInfo.myInfo.myNodeNum))") }
 						
 					} catch {
 						
 						context!.rollback()
 						
 						let nsError = error as NSError
-						print("Error Saving CoreData MyInfoEntity: \(nsError)")
+						print("💥 Error Saving CoreData MyInfoEntity: \(nsError)")
 					}
 					
 				} catch {
-					print("Fetch MyInfo Error")
+					print("💥 Fetch MyInfo Error")
 					
 				}
 
@@ -448,7 +448,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// NodeInfo Data
 			if decodedInfo.nodeInfo.num != 0 {
 				
-				print("Save a CoreData NodeInfoEntity")
+				print("💾 Save a CoreData NodeInfoEntity")
 				
 				let fetchNodeRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 				fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.nodeInfo.num))
@@ -514,7 +514,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							}
 							
 						} catch {
-							print("Fetch MyInfo Error")
+							print("💥 Fetch MyInfo Error")
 						}
 						
 					} else {
@@ -565,36 +565,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							}
 							
 						} catch {
-							print("Fetch MyInfo Error")
+							print("💥 Fetch MyInfo Error")
 						}
 					}
 					do {
 						
 						try context!.save()
-						print("Saved a nodeInfo for \(decodedInfo.nodeInfo.num)")
+						print("💾 Saved a nodeInfo for \(decodedInfo.nodeInfo.num)")
 						
 					} catch {
 						
 						context!.rollback()
 						
 						let nsError = error as NSError
-						print("Error Saving CoreData NodeInfoEntity: \(nsError)")
+						print("💥 Error Saving CoreData NodeInfoEntity: \(nsError)")
 					}
 					
 				} catch {
 					
-					print("Fetch NodeInfoEntity Error")
+					print("💥 Fetch NodeInfoEntity Error")
 				}
 				
 				if decodedInfo.nodeInfo.hasUser {
 					
-					print("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)")
-					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
+					print("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)")
+					if meshLoggingEnabled { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.user.longName)") }
 					
 				} else {
 					
-					print("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)")
-					if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)") }
+					print("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)")
+					if meshLoggingEnabled { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)") }
 				}
 			}
 			// Handle assorted app packets
@@ -690,18 +690,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 							
-							let array = [UInt8](decodedInfo.packet.decoded.payload)
-							print (array[0])
-							print (array[1])
-							print (array[2])
-							print (array[3])
-							print (array[4])
-							print (array)
-							
-							let bytes = decodedInfo.packet.decoded.payload
-							print(bytes, String(bytes: bytes, encoding: .utf8))
-							
-						print(bytes2String(array))
 						}
 						else {
 							return
@@ -737,11 +725,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					
 					do {
 						
-						
-
 						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 						
-						// Never run
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
@@ -757,23 +742,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							}
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 							
-							let array = [UInt8](decodedInfo.packet.decoded.payload)
-							//print(array)
-							//let payload = decodedInfo.packet.decoded.payload as NSData
-							let bytes = decodedInfo.packet.decoded.payload
-							print(bytes, String(bytes: bytes, encoding: .utf8))
-							
-							// Get a string from the byte array.
-							if let result = String(bytes: bytes, encoding: .utf8) {
-								print(result)
-							}
-							
-							let testBytes : [UInt8] = [0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64]
-
-
-							var test = bytes2String(testBytes)
-							print(test)
-							
 						}
 						else {
 							return
@@ -783,9 +751,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						  try context!.save()
 							
 							if meshLoggingEnabled {
-								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
+								MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
 							}
-							print("Updated NodeInfo SNR and Time from Position Packet For: \(fetchedNode[0].num)")
+							print("💾 Updated NodeInfo SNR and Time from Position Packet For: \(fetchedNode[0].num)")
 							
 						} catch {
 							
@@ -823,8 +791,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			if decodedInfo.configCompleteID != 0 {
 				
-				if meshLoggingEnabled { MeshLogger.log("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
-				print("BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
+				if meshLoggingEnabled { MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
+				print("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 			}
@@ -858,9 +826,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
 				}
 			}
+			print("Failed in the top message condition")
 			success = false
 		} else if message.count < 1 {
 			// Don's send an empty message
+			print("Don't Send an Empty Message")
 			success = false
 		} else {
 			
@@ -878,7 +848,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					print("Message Users Not Found, Fail")
 					success = false
 				}
-				else if fetchedUsers.count == 2 {
+				else if fetchedUsers.count >= 1 {
 					
 					let newMessage = MessageEntity(context: context!)
 					newMessage.messageId = nextSentMessageId
@@ -886,6 +856,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					if newMessage.toUser == nil {
+						
+						let bcu: UserEntity = UserEntity(context: context!)
+						bcu.shortName = "BC"
+						bcu.longName = "Broadcast"
+						bcu.hwModel = "UNSET"
+						bcu.num = Int64(broadcastNodeNum)
+						bcu.userId = "BROADCASTNODE"
+						newMessage.toUser = bcu
+					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 					

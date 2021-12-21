@@ -69,7 +69,7 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		//self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
+		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 	}
 }
 
@@ -127,19 +127,19 @@ struct AppSettings: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
-//					Section(header: Text("MESH NETWORK OPTIONS")) {
-//						Toggle(isOn: $userSettings.meshActivityLog) {
-//
-//							Label("Log all Mesh activity", systemImage: "network")
-//						}
-//						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-//						if userSettings.meshActivityLog {
-//							NavigationLink(destination: MeshLog()) {
-//								Text("View Mesh Log")
-//							}
-//							.listRowSeparator(.visible)
-//						}
-//					}
+					Section(header: Text("MESH NETWORK OPTIONS")) {
+						//Toggle(isOn: $userSettings.meshActivityLog) {
+
+						//	Label("Log all Mesh activity", systemImage: "network")
+						//}
+						//.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if true {//userSettings.meshActivityLog {
+							NavigationLink(destination: MeshLog()) {
+							Text("View Mesh Log")
+						}
+							.listRowSeparator(.visible)
+						}
+					}
 				}
 			}
             .navigationTitle("App Settings")
