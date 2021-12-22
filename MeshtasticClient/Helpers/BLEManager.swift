@@ -55,7 +55,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // MARK: init BLEManager
     override init() {
 
-		self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
         self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
         super.init()
@@ -341,7 +341,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			case FROMNUM_UUID:
 				print("FROMNUM (Notify) characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
@@ -457,7 +457,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					
 					let fetchedNode = try context?.fetch(fetchNodeRequest) as! [NodeInfoEntity]
 					// Not Found Insert
-					if fetchedNode.isEmpty {
+					if fetchedNode.isEmpty && decodedInfo.nodeInfo.hasUser  {
 						
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
@@ -517,7 +517,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							print("💥 Fetch MyInfo Error")
 						}
 						
-					} else {
+					} else if decodedInfo.nodeInfo.hasUser  {
 						
 						fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
 						fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
@@ -600,17 +600,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// Handle assorted app packets
 			if decodedInfo.packet.id  != 0 {
 
-				print("Handle a Packet")
 				do {
 					
-					//!!!: Switch Messages Tab to coredata
 					// Text Message App - Primary Broadcast Channel
 					if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
 
 						if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
 
-							print("Message Text: \(messageText)")
-							if meshLoggingEnabled { MeshLogger.log("BLE FROMRADIO received for text message app \(messageText)") }
+							print("💬 BLE FROMRADIO received for text message app \(messageText)")
+							if meshLoggingEnabled { MeshLogger.log("💬 BLE FROMRADIO received for text message app \(messageText)") }
 							
 							let messageUsers:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 							messageUsers.predicate = NSPredicate(format:"num IN %@", [decodedInfo.packet.to, decodedInfo.packet.from])
@@ -624,7 +622,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
-								//newMessage.toUser = Int64(decodedInfo.packet.to)
 								
 								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 								
@@ -647,7 +644,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								do {
 									
 									try context!.save()
-									print("Saved a new message for \(decodedInfo.packet.id)")
+									print("💾 Saved a new message for \(decodedInfo.packet.id)")
+									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(decodedInfo.packet.id)") }
 									
 									// Create an iOS Notification for the received message and schedule it immediately
 									let manager = LocalNotificationManager()
@@ -660,19 +658,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 											content: messageText)
 									]
 									manager.schedule()
-									if meshLoggingEnabled { MeshLogger.log("iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
+									if meshLoggingEnabled { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
 									
 								} catch {
 									
 									context!.rollback()
 									
 									let nsError = error as NSError
-									print("Failed to save new MessageEntity \(nsError)")
+									print("💥 Failed to save new MessageEntity \(nsError)")
 								}
 								
 							} catch {
 								
-							print("Fetch Message To and From Users Error")
+							print("💥 Fetch Message To and From Users Error")
 						}
 					}
 				} else if decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
@@ -699,21 +697,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							try context!.save()
 							
 							if meshLoggingEnabled {
-								MeshLogger.log("MESH PACKET Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")
+								MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")
 							}
-							print("Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
+							print("💾 Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
 							
 						} catch {
 							
 							context!.rollback()
 							
 							let nsError = error as NSError
-							print("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+							print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
 							
 						}
 					} catch {
 						
-						print("Error Fetching NodeInfoEntity for NODEINFO_APP")
+						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 					
 					print(decodedInfo.packet.decoded.payload)
@@ -760,32 +758,33 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							context!.rollback()
 							
 							let nsError = error as NSError
-							print("Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+							print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
 						}
 					} catch {
 						
-						print("Error Fetching NodeInfoEntity for NODEINFO_APP")
+						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 					
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
-					 if meshLoggingEnabled { MeshLogger.log("MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("Admin App Packet")
-					 print(try decodedInfo.packet.jsonString())
+					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 
-					 if meshLoggingEnabled { MeshLogger.log("MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("Routing App Packet")
-					 print(try decodedInfo.packet.jsonString())
+					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 print("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+
 				 } else {
-					 if meshLoggingEnabled { MeshLogger.log("MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("Other App Packet")
-					 print(try decodedInfo.packet.jsonString())
+					 
+					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 print("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
+
 				 }
 
 				} catch {
-					if meshLoggingEnabled { MeshLogger.log("Fatal Error: Failed to decode json") }
-					fatalError("Failed to decode json")
+					if meshLoggingEnabled { MeshLogger.log("⚰️ Fatal Error: Failed to decode json") }
+					print("⚰️ Fatal Error: Failed to decode json")
 				}
 			}
 
@@ -798,8 +797,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 		default:
-			if meshLoggingEnabled { MeshLogger.log("Unhandled Characteristic UUID: \(characteristic.uuid)") }
-			print("Unhandled Characteristic UUID: \(characteristic.uuid)")
+			if meshLoggingEnabled { MeshLogger.log("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)") }
+			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
         peripheral.readValue(for: FROMRADIO_characteristic)
     }
@@ -826,7 +825,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
 				}
 			}
-			print("Failed in the top message condition")
+			print("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)")
+			if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)") }
+			
 			success = false
 		} else if message.count < 1 {
 			// Don's send an empty message
@@ -892,7 +893,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						do {
 							
 							try context!.save()
-							print("Saved a new sent message from \(connectedPeripheral.num)")
+							print("💾 Saved a new sent message from \(newMessage.fromUser?.longName! ?? "Unknown")")
+							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num)") }
 							success = true
 							nextSentMessageId+=1
 							
