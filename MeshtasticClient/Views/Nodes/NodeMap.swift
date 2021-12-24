@@ -51,12 +51,12 @@ struct NodeMap: View {
 				
 				
 				
-                Map(coordinateRegion: regionBinding,
+                /*Map(coordinateRegion: regionBinding,
                     interactionModes: [.all],
                     showsUserLocation: true,
 					userTrackingMode: .constant(.follow),
 					annotationItems: self.locationNodes.filter({ nodeinfo in
-					return nodeinfo.positions != nil && nodeinfo.positions!.count > 0
+					return nodeinfo.positions != nil && nodeinfo.positions!.count > 0// && (nodeinfo.positions?.lastObject as? AnyObject)?.coordinate != nil
 					})
 				) { locationNode in
 					
@@ -67,7 +67,10 @@ struct NodeMap: View {
 						   }
 						)
 
-				}
+				}*/
+				
+				MapView(nodes: self.locationNodes)
+				
                 //}
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])
