@@ -47,6 +47,7 @@ struct NodeMap: View {
 		
         NavigationView {
 
+
             ZStack {
 				
 				
@@ -57,6 +58,7 @@ struct NodeMap: View {
 					userTrackingMode: .constant(.follow),
 					annotationItems: self.locationNodes.filter({ nodeinfo in
 					return nodeinfo.positions != nil && nodeinfo.positions!.count > 0// && (nodeinfo.positions?.lastObject as? AnyObject)?.coordinate != nil
+
 					})
 				) { locationNode in
 					
@@ -66,6 +68,7 @@ struct NodeMap: View {
 							   CircleText(text: locationNode.user!.shortName ?? "???", color: .accentColor)
 						   }
 						)
+
 
 				}*/
 				

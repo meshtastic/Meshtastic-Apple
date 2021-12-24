@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "tlora-2.jpeg",
+      "filename" : "TLORA_gray.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tlora-1.jpeg",
+      "filename" : "TLORA_olive.jpg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tlora.jpeg",
+      "filename" : "TLORA_purple.jpg",
       "idiom" : "universal",
       "scale" : "3x"
     }
