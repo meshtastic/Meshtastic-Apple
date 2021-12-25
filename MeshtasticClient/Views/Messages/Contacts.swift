@@ -16,10 +16,12 @@ struct Contacts: View {
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
 	
-		private var users: FetchedResults<UserEntity>
+	private var users: FetchedResults<UserEntity>
 	
     var body: some View {
+		
 		NavigationView {
+			
 			List(users) { user in
 				
 				if user.receivedMessages?.count ?? 0 > 0 {
@@ -30,18 +32,24 @@ struct Contacts: View {
 					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 				
 					HStack  {
-						VStack {
-							CircleText(text: user.shortName ?? "???", color: Color.blue)
-						}
+						
 						VStack {
 							
-							HStack (alignment: .bottom){
+							CircleText(text: user.shortName ?? "???", color: Color.blue)
+						}
+						.padding([.leading, .trailing])
+						
+						VStack {
+							
+							HStack {
 
 								VStack {
-									Text(user.longName ?? "Unknown").font(.headline)
+									
+									Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 								}
 					
 								VStack {
+									
 									if lastMessageDay == currentDay {
 										
 										Text(lastMessageTime, style: .time )
@@ -65,27 +73,41 @@ struct Contacts: View {
 								}.frame(maxWidth: .infinity, alignment: .trailing)
 							}
 							.listRowSeparator(.hidden).frame(height: 5)
+							
 							HStack (alignment: .top) {
-								
 								Text(mostRecent.messagePayload ?? "EMPTY MESSSAGE")
 									.frame(height: 60)
 									.truncationMode(.tail)
+									.foregroundColor(Color.gray)
+									.frame(maxWidth: .infinity, alignment: .leading)
 							}
-						}
-					}.padding(10)
+						}.padding(.top, 15)
+					}
 				} else {
+					
 					HStack  {
+						
 						VStack {
+							
 							CircleText(text: user.shortName ?? "???", color: Color.blue)
 						}
+						.padding(.trailing)
+						
 						VStack {
 							
 							HStack{
 
 								VStack {
-									Text(user.longName ?? "Unknown").font(.title3)
+									
+									Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 								}
+								
+								VStack {
+									Text("               ")
+								}
+								.frame(maxWidth: .infinity, alignment: .trailing)
 							}
+							.listRowSeparator(.hidden).frame(height: 5)
 						}
 					}.padding()
 				}
@@ -93,6 +115,7 @@ struct Contacts: View {
 			}
 			.navigationTitle("Contacts")
 		}
+		.listStyle(PlainListStyle())
     }
 }
 

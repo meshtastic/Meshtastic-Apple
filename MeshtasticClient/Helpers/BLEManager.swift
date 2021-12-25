@@ -473,6 +473,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								connectedPeripheral.name  = decodedInfo.nodeInfo.user.longName
 								connectedPeripheral.longName = decodedInfo.nodeInfo.user.longName
 								connectedPeripheral.shortName = decodedInfo.nodeInfo.user.shortName
+								connectedPeripheral.num	= Int64(decodedInfo.nodeInfo.num)
 							}
 						}
 						
@@ -629,7 +630,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									// Save the broadcast user if it does not exist
 									let bcu: UserEntity = UserEntity(context: context!)
 									bcu.shortName = "ALL"
-									bcu.longName = "Broadcast (^all)"
+									bcu.longName = "Primary - Broadcast"
 									bcu.hwModel = "UNSET"
 									bcu.num = Int64(broadcastNodeNum)
 									bcu.userId = "BROADCASTNODE"
@@ -860,7 +861,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						let bcu: UserEntity = UserEntity(context: context!)
 						bcu.shortName = "ALL"
-						bcu.longName = "Broadcast (^all)"
+						bcu.longName = "Primary - Broadcast"
 						bcu.hwModel = "UNSET"
 						bcu.num = Int64(broadcastNodeNum)
 						bcu.userId = "BROADCASTNODE"
