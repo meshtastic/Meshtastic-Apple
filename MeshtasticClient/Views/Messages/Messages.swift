@@ -49,7 +49,6 @@ struct Messages: View {
 
 								HStack(alignment: .top) {
 									let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
-									//let currentUser: (Bool = message.fromUser == nil : false : (message.fromUser != nil && bleManager.connectedPeripheral.num == message.fromUser!.num : true)
 
 									CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
 										.gesture(LongPressGesture(minimumDuration: 2)
