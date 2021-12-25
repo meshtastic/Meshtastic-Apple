@@ -16,10 +16,14 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	//@AppStorage("meshMapType") var meshMapType: String = "hybrid"
+	
 	@State private var showLabels: Bool = false
 	
 	@State private var annotationItems: [MapLocation] = []
 	@FetchRequest( sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)], animation: .default)
+	
+	
 	
 	private var locationNodes: FetchedResults<NodeInfoEntity>
 	
@@ -36,16 +40,29 @@ struct NodeMap: View {
             set: { _ in }
         )
 		
+		/*ForEach ( locationNodes ) { node in
+					let mostRecent = node.positions?.lastObject as! PositionEntity
+					if mostRecent.coordinate != nil {
+		
+						annotations.append(MapLocation(name: node.user?.shortName! ?? "???", coordinate: mostRecent.coordinate!))
+		
+					}
+				}*/
+		
         NavigationView {
 
-			ZStack {
-							
-				Map(coordinateRegion: regionBinding,
-					interactionModes: [.all],
-					showsUserLocation: true,
+
+            ZStack {
+				
+				
+				
+                /*Map(coordinateRegion: regionBinding,
+                    interactionModes: [.all],
+                    showsUserLocation: true,
 					userTrackingMode: .constant(.follow),
 					annotationItems: self.locationNodes.filter({ nodeinfo in
-					return nodeinfo.positions != nil && nodeinfo.positions!.count > 1
+					return nodeinfo.positions != nil && nodeinfo.positions!.count > 0// && (nodeinfo.positions?.lastObject as? AnyObject)?.coordinate != nil
+
 					})
 				) { locationNode in
 					
@@ -56,10 +73,14 @@ struct NodeMap: View {
 						   }
 						)
 
-				}
-				.frame(maxHeight: .infinity)
-				.ignoresSafeArea(.all, edges: [.leading, .trailing])
-			}
+
+				}*/
+				
+				MapView(nodes: self.locationNodes)//.environmentObject(userSettings)
+                //}
+               .frame(maxHeight: .infinity)
+               .ignoresSafeArea(.all, edges: [.leading, .trailing])
+            }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:

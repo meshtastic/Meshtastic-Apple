@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
+		C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
@@ -69,6 +71,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
@@ -145,6 +149,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C9483F6B2773016700998F6B /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				C9A7BC0E27759A6800760B50 /* Custom */,
+				C9483F6C2773017500998F6B /* MapView.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
+		C9A7BC0E27759A6800760B50 /* Custom */ = {
+			isa = PBXGroup;
+			children = (
+				C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */,
+			);
+			path = Custom;
+			sourceTree = "<group>";
+		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -265,6 +286,7 @@
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C9483F6B2773016700998F6B /* Map */,
 				DDC2E18D26CE25CB0042C5E4 /* Helpers */,
 				DD47E3D726F2F21A00029299 /* Bluetooth */,
 				DD47E3CA26F0E50300029299 /* Nodes */,
@@ -513,12 +535,14 @@
 				DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
+				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				DD539500276C452400AD86B1 /* Preferences.swift in Sources */,
+				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
@@ -691,7 +715,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 37C534H572;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -718,7 +742,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 37C534H572;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
