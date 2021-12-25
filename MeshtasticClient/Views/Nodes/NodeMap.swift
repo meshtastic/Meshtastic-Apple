@@ -16,10 +16,14 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	//@AppStorage("meshMapType") var meshMapType: String = "hybrid"
+	
 	@State private var showLabels: Bool = false
 	
 	@State private var annotationItems: [MapLocation] = []
 	@FetchRequest( sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)], animation: .default)
+	
+	
 	
 	private var locationNodes: FetchedResults<NodeInfoEntity>
 	
@@ -72,8 +76,7 @@ struct NodeMap: View {
 
 				}*/
 				
-				MapView(nodes: self.locationNodes)
-				
+				MapView(nodes: self.locationNodes)//.environmentObject(userSettings)
                 //}
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])

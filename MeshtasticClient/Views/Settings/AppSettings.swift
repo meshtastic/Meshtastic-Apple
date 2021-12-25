@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 import SwiftProtobuf
+import MapKit
 
 enum KeyboardType: Int, CaseIterable, Identifiable {
 
@@ -25,6 +26,28 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 				return "Email Address"
 			case .numbersAndPunctuation:
 				return "Numbers and Punctuation"
+			}
+		}
+	}
+}
+
+enum MeshMapType: String, CaseIterable, Identifiable {
+	
+	case satellite = "satellite"
+	case hybrid = "hybrid"
+	case standard = "standard"
+	
+	var id: String { self.rawValue }
+	
+	var description: String {
+		get {
+			switch self {
+			case .satellite:
+				return "Satellite"
+			case .standard:
+				return "Standard"
+			case .hybrid:
+				return "Hybrid"
 			}
 		}
 	}
@@ -61,6 +84,14 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshActivityLog, forKey: "meshActivityLog")
 		}
 	}
+	
+	@Published var meshMapType: String {
+		didSet {
+			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
+		}
+	}
+	
+	
 
 	init() {
 		
@@ -70,6 +101,7 @@ class UserSettings: ObservableObject {
 		//self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
 	}
 }
 
@@ -139,6 +171,14 @@ struct AppSettings: View {
 						}
 							.listRowSeparator(.visible)
 						}
+					}
+					Section(header: Text("MAP OPTIONS")) {
+						 Picker("Map Type", selection: $userSettings.meshMapType) {
+							 ForEach(MeshMapType.allCases) { map in
+								 Text(map.description)
+							 }
+						 }
+						 .pickerStyle(DefaultPickerStyle())
 					}
 				}
 			}

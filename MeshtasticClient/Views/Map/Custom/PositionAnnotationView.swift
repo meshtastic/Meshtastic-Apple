@@ -8,18 +8,19 @@
 import UIKit
 import MapKit
 
+//a simple circle annotation, with a string in it
 class PositionAnnotation: NSObject, MKAnnotation {
 	
 	// This property must be key-value observable, which the `@objc dynamic` attributes provide.
 	@objc dynamic var coordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
 	
 	// Required if you set the annotation view's `canShowCallout` property to `true`
-	var title: String? = "Title"
+	//this string fills the callout label when you tap an annotation
+	var title: String?
 	
+	//the text to appear inside the little circle
 	var shortName: String?
 	
-	// This property defined by `MKAnnotation` is not required.
-	//var subtitle: String? = NSLocalizedString("SAN_FRANCISCO_SUBTITLE", comment: "SF annotation")
 }
 
 class PositionAnnotationView: MKAnnotationView {
