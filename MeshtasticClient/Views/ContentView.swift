@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var selection: Tab = .ble
 
     enum Tab {
+		case contacts
         case messages
         case map
         case ble
@@ -18,6 +19,14 @@ struct ContentView: View {
     var body: some View {
 
         TabView(selection: $selection) {
+//			Contacts()
+//				.tabItem {
+//					Label("Contacts", systemImage: "person.crop.circle")
+//						.symbolRenderingMode(.hierarchical)
+//						.symbolVariant(.none)
+//					
+//				}
+//				.tag(Tab.contacts)
             Channels()
                 .tabItem {
                     Label("Messages", systemImage: "text.bubble")

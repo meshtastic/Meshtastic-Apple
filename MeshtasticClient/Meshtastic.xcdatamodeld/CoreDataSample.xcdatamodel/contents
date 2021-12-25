@@ -58,6 +58,7 @@
         <attribute name="macaddr" optional="YES" attributeType="Binary"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shortName" attributeType="String"/>
+        <attribute name="team" optional="YES" attributeType="String"/>
         <attribute name="userId" attributeType="String"/>
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
@@ -68,6 +69,6 @@
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="149"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
-        <element name="UserEntity" positionX="0" positionY="144" width="128" height="164"/>
+        <element name="UserEntity" positionX="0" positionY="144" width="128" height="179"/>
     </elements>
 </model>

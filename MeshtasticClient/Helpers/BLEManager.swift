@@ -25,7 +25,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var peripherals = [Peripheral]()
 
     @Published var connectedPeripheral: Peripheral!
-    //@Published var connectedNode: NodeInfoEntity!
     @Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
 
@@ -220,6 +219,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		} catch {
 			print("💥 Fetch NodeInfo Failed")
+			if meshLoggingEnabled { MeshLogger.log("💥 Fetch NodeInfo Failed") }
 		}
 		
         lastConnectedPeripheral = peripheral.identifier.uuidString
@@ -257,8 +257,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// We will try and re-connect to this device
 				lastConnectionError = "🚫 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
 				if peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
-					if meshLoggingEnabled { MeshLogger.log("BLE Reconnecting: \(peripheral.name ?? "Unknown")") }
-					print("BLE Reconnecting: \(peripheral.name ?? "Unknown")")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")") }
+					print("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")")
 					self.connectTo(peripheral: peripheral)
 				}
             } else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
@@ -340,7 +340,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				print("FROMNUM (Notify) characteristic OK")
+				print("✅ FROMNUM (Notify) characteristic OK")
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
@@ -390,13 +390,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			var decodedInfo = FromRadio()
 
 			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-			print("Print DecodedInfo")
-			print(decodedInfo)
+			//print("Print DecodedInfo")
+			//print(decodedInfo)
 
 			// MyInfo Data
 			if decodedInfo.myInfo.myNodeNum != 0 {
-				
-				print("💾 Save a CoreData MyInfoEntity")
 				
 				let fetchMyInfoRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -413,6 +411,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
+						connectedPeripheral.num = myInfo.myNodeNum
+						connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
+
 					}
 					else {
 						
@@ -439,16 +440,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					}
 					
 				} catch {
-					print("💥 Fetch MyInfo Error")
 					
+					print("💥 Fetch MyInfo Error")
 				}
-
 			}
 
 			// NodeInfo Data
 			if decodedInfo.nodeInfo.num != 0 {
-				
-				print("💾 Save a CoreData NodeInfoEntity")
 				
 				let fetchNodeRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 				fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.nodeInfo.num))
@@ -469,12 +467,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == newNode.id {
 							
-							newNode.bleName = self.connectedPeripheral.name
-						
-						} else {
-							
-							let userIdLast4: String = String(decodedInfo.nodeInfo.user.id.suffix(4))
-							newNode.bleName = "Meshtastic_" + userIdLast4
+							newNode.bleName = self.connectedPeripheral.peripheral.name
+							if decodedInfo.nodeInfo.hasUser {
+								
+								connectedPeripheral.name  = decodedInfo.nodeInfo.user.longName
+								connectedPeripheral.longName = decodedInfo.nodeInfo.user.longName
+								connectedPeripheral.shortName = decodedInfo.nodeInfo.user.shortName
+							}
 						}
 						
 						if decodedInfo.nodeInfo.hasUser {
@@ -486,6 +485,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newUser.shortName = decodedInfo.nodeInfo.user.shortName
 							newUser.macaddr = decodedInfo.nodeInfo.user.macaddr
 							newUser.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
+							newUser.team = (String(describing: decodedInfo.nodeInfo.user.team))
 							newNode.user = newUser
 						}
 						
@@ -530,6 +530,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.longName = decodedInfo.nodeInfo.user.longName
 							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
+							fetchedNode[0].user!.team = (String(describing: decodedInfo.nodeInfo.user.team))
 						}
 							
 						let position = PositionEntity(context: context!)
@@ -625,9 +626,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								
 								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 								
+									// Save the broadcast user if it does not exist
 									let bcu: UserEntity = UserEntity(context: context!)
-									bcu.shortName = "BC"
-									bcu.longName = "Broadcast"
+									bcu.shortName = "ALL"
+									bcu.longName = "Broadcast (^all)"
 									bcu.hwModel = "UNSET"
 									bcu.num = Int64(broadcastNodeNum)
 									bcu.userId = "BROADCASTNODE"
@@ -693,12 +695,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							return
 						}
 						do {
-						//	print(decodedInfo.packet.decoded.payload)
+							
 							try context!.save()
 							
-							if meshLoggingEnabled {
-								MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")
-							}
+							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")}
 							print("💾 Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
 							
 						} catch {
@@ -714,8 +714,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 					
-					print(decodedInfo.packet.decoded.payload)
-					
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
 
 					let fetchNodePositionRequest:NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -728,7 +726,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							print(decodedInfo.packet.decoded.payload)
 							if(decodedInfo.packet.rxTime == 0) {
 								
 								fetchedNode[0].lastHeard = Date()
@@ -830,9 +827,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			success = false
 		} else if message.count < 1 {
-			// Don's send an empty message
-			print("Don't Send an Empty Message")
+			
+			// Don't send an empty message
+			print("🚫 Don't Send an Empty Message")
 			success = false
+			
 		} else {
 			
 			let fromUserNum:Int64 = self.connectedPeripheral.num
@@ -846,7 +845,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				if fetchedUsers.isEmpty {
 					
-					print("Message Users Not Found, Fail")
+					print("🚫 Message Users Not Found, Fail")
 					success = false
 				}
 				else if fetchedUsers.count >= 1 {
@@ -860,8 +859,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if newMessage.toUser == nil {
 						
 						let bcu: UserEntity = UserEntity(context: context!)
-						bcu.shortName = "BC"
-						bcu.longName = "Broadcast"
+						bcu.shortName = "ALL"
+						bcu.longName = "Broadcast (^all)"
 						bcu.hwModel = "UNSET"
 						bcu.num = Int64(broadcastNodeNum)
 						bcu.userId = "BROADCASTNODE"
@@ -888,6 +887,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 
 					let binaryData: Data = try! toRadio.serializedData()
+					
+					if meshLoggingEnabled { MeshLogger.log("📲 New message sent to \(newMessage.toUser?.longName! ?? "Unknown")") }
+					print("📲 New message sent to \(newMessage.toUser?.longName! ?? "Unknown")")
+					
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						do {
@@ -903,7 +906,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							context!.rollback()
 							
 							let nsError = error as NSError
-							print("Unresolved error \(nsError)")
+							print("🚫 Unresolved error \(nsError)")
 						}
 					}
 				}

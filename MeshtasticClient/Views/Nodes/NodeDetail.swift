@@ -175,7 +175,7 @@ struct NodeDetail: View {
 						}
 					}.padding()
 					
-					if node.positions?.count ?? 0 > 0 {
+					if node.positions?.count ?? 0 > 1 {
 						
 						Divider()
 						
@@ -193,52 +193,51 @@ struct NodeDetail: View {
 						
 						ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 
-							//if mappin.coordinate != nil {
+							if mappin.coordinate != nil {
 								
 								VStack {
 								
-								HStack {
-									
-									Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) //.font(.subheadline)
-									Text("Lat/Long:").font(.caption)
-									Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-										.foregroundColor(.gray)
-										.font(.caption)
+									HStack {
 										
-									Text("Altitude:")
-										.font(.caption)
-									
-									Text("\(String(mappin.altitude))m")
-										.foregroundColor(.gray)
-										.font(.caption)
+										Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) //.font(.subheadline)
+										Text("Lat/Long:").font(.caption)
+										Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+											.foregroundColor(.gray)
+											.font(.caption)
+											
+										Text("Altitude:")
+											.font(.caption)
+										
+										Text("\(String(mappin.altitude))m")
+											.foregroundColor(.gray)
+											.font(.caption)
+									}
+									HStack {
+										
+										Image(systemName: "clock.badge.checkmark.fill")
+											.font(.subheadline)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+										Text("Time:")
+											.font(.caption)
+										Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
+											.foregroundColor(.gray)
+											.font(.caption)
+										Divider()
+										
+										Text("Battery").font(.caption).fixedSize()
+										Text(String(mappin.batteryLevel) + "%")
+											.font(.caption)
+											.foregroundColor(.gray)
+											.symbolRenderingMode(.hierarchical)
+									}
 								}
-								HStack {
-									
-									Image(systemName: "clock.badge.checkmark.fill")
-										.font(.subheadline)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
-									Text("Time:")
-										.font(.caption)
-									Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
-										.foregroundColor(.gray)
-										.font(.caption)
-									Divider()
-									
-									Text("Battery").font(.caption).fixedSize()
-									Text(String(mappin.batteryLevel) + "%")
-										.font(.caption)
-										.foregroundColor(.gray)
-										.symbolRenderingMode(.hierarchical)
-								}
-							}
 								.padding(1)
 								Divider()
-							//}
+							}
 						}
 						.padding(.bottom, 5) // Without some padding here there is a transparent contentview bug
 					}
-					
 				}
 			}
 			.navigationTitle(node.user!.longName ?? "Unknown")
