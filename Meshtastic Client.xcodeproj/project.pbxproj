@@ -715,7 +715,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = 37C534H572;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -742,7 +742,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = 37C534H572;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
