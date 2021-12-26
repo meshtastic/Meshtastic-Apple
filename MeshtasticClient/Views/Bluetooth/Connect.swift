@@ -53,7 +53,7 @@ struct Connect: View {
 										if bleManager.connectedPeripheral != nil {
 
 											Text(bleManager.connectedPeripheral.longName).font(.title2)
-											
+
 										} else {
 
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
@@ -81,12 +81,12 @@ struct Connect: View {
 												if value {
 
 													if bleManager.connectedPeripheral != nil {
-														
+
 														let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
 														userSettings.preferredPeripheralName = deviceName
-														
+
 													} else {
-														
+
 														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
 													}
 
@@ -202,7 +202,7 @@ struct Connect: View {
             .navigationBarItems(trailing:
 
                ZStack {
-			 
+
                     ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,

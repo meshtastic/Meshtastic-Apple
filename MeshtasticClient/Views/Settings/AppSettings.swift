@@ -32,13 +32,13 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 enum MeshMapType: String, CaseIterable, Identifiable {
-	
+
 	case satellite = "satellite"
 	case hybrid = "hybrid"
 	case standard = "standard"
-	
+
 	var id: String { self.rawValue }
-	
+
 	var description: String {
 		get {
 			switch self {
@@ -84,21 +84,19 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshActivityLog, forKey: "meshActivityLog")
 		}
 	}
-	
+
 	@Published var meshMapType: String {
 		didSet {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
 		}
 	}
-	
-	
 
 	init() {
-		
-		//self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
+
+		// self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
-		//self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
+		// self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
@@ -160,12 +158,12 @@ struct AppSettings: View {
 						.pickerStyle(DefaultPickerStyle())
 					}
 					Section(header: Text("MESH NETWORK OPTIONS")) {
-						//Toggle(isOn: $userSettings.meshActivityLog) {
+						// Toggle(isOn: $userSettings.meshActivityLog) {
 
 						//	Label("Log all Mesh activity", systemImage: "network")
-						//}
-						//.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if true {//userSettings.meshActivityLog {
+						// }
+						// .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if true {// userSettings.meshActivityLog {
 							NavigationLink(destination: MeshLog()) {
 							Text("View Mesh Log")
 						}
@@ -186,10 +184,10 @@ struct AppSettings: View {
 			.navigationBarItems(trailing:
 
 				ZStack {
-				
+
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
 			})
-			.onAppear{
+			.onAppear {
 
 				self.bleManager.context = context
 			}
@@ -199,7 +197,7 @@ struct AppSettings: View {
 }
 
 struct AppSettings_Previews: PreviewProvider {
-	
+
     static var previews: some View {
         Group {
             AppSettings()

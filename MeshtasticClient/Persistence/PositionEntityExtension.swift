@@ -4,7 +4,7 @@ import MapKit
 import SwiftUI
 
 extension PositionEntity {
-	
+
 	var latitude: Double? {
 
 		let d = Double(latitudeI)
@@ -13,7 +13,7 @@ extension PositionEntity {
 		}
 		return d / 1e7
 	}
-	
+
 	var longitude: Double? {
 
 		let d = Double(longitudeI)
@@ -22,7 +22,7 @@ extension PositionEntity {
 		}
 		return d / 1e7
 	}
-	
+
 	var coordinate: CLLocationCoordinate2D? {
 		if latitudeI != 0 && longitudeI != 0 {
 			let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
@@ -32,7 +32,7 @@ extension PositionEntity {
 		   return nil
 		}
 	}
-	
+
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
 		if coordinate != nil {
@@ -41,5 +41,5 @@ extension PositionEntity {
 		}
 		return pointAnn
 	}
-	
+
 }

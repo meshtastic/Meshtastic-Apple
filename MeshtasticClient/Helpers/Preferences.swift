@@ -4,12 +4,12 @@
 //
 //  Created by Garth Vander Houwen on 12/16/21.
 //
-//import Foundation
-//import Combine
-//import SwiftUI
+// import Foundation
+// import Combine
+// import SwiftUI
 //
-//class Prefs
-//{
+// class Prefs
+// {
 //	private let defaults = UserDefaults.standard
 //  
 //	private let keyIntExample = "intExample"
@@ -30,4 +30,4 @@
 //	  
 //		return Static.instance
 //	}
-//}
+// }
