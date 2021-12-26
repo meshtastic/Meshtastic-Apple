@@ -1,5 +1,14 @@
 # Meshtastic Client
 
+## OS Requirements
+
+Requires iOS 15 +
+
+## Standards
+
+* Use SwiftUI whenever possible
+* Use Hierarchical icons
+
 - Requires SwiftLint - see https://github.com/realm/SwiftLint
 
 ## To update protobufs:
