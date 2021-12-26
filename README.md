@@ -4,7 +4,7 @@
 
 Requires iOS 15 +
 
-## Standards
+## Code Standards
 
 * Use SwiftUI whenever possible
 * Use Hierarchical icons
