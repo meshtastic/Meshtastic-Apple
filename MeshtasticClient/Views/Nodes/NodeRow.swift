@@ -21,17 +21,17 @@ struct NodeRow: View {
 				}
 			}
 			.padding(.bottom, 10)
-			
+
 			if connected {
 				HStack(alignment: .bottom) {
-				
+
 					Image(systemName: "repeat.circle.fill").font(.title3)
 						.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 					Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
 				}
 				Spacer()
 			}
-			
+
 			HStack(alignment: .bottom) {
 
 				Image(systemName: "clock.badge.checkmark.fill").font(.title3).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
@@ -46,7 +46,7 @@ struct NodeRow: View {
 					}
 
 				} else {
-					
+
 					if node.lastHeard != nil {
 						Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
 					} else {
@@ -59,11 +59,11 @@ struct NodeRow: View {
 }
 
 struct NodeRow_Previews: PreviewProvider {
-	//static var nodes = BLEManager().meshData.nodes
+	// static var nodes = BLEManager().meshData.nodes
 
 	static var previews: some View {
 		Group {
-			//NodeRow(node: nodes[0], connected: true)
+			// NodeRow(node: nodes[0], connected: true)
 		}
 		.previewLayout(.fixed(width: 300, height: 70))
 	}

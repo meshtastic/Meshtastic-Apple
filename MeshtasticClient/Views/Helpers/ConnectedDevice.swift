@@ -27,7 +27,6 @@ struct ConnectedDevice: View {
                         .imageScale(.medium)
                         .foregroundColor(.red)
                         .symbolRenderingMode(.hierarchical)
-                    Text("Disconnected").font(.subheadline).foregroundColor(.gray)
 
                 }
             } else {

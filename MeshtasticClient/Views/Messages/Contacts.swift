@@ -8,112 +8,120 @@
 import SwiftUI
 
 struct Contacts: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
-	
+
 	private var users: FetchedResults<UserEntity>
-	
+
     var body: some View {
-		
+
 		NavigationView {
-			
+
 			List(users) { user in
-				
+
 				if user.receivedMessages?.count ?? 0 > 0 {
-					
+
 					let mostRecent = user.receivedMessages?.lastObject as! MessageEntity
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64(mostRecent.messageTimestamp)))
 					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-				
-					HStack  {
-						
-						VStack {
-							
-							CircleText(text: user.shortName ?? "???", color: Color.blue)
-						}
-						.padding([.leading, .trailing])
-						
-						VStack {
-							
-							HStack {
 
-								VStack {
-									
-									Text(user.longName ?? "Unknown").font(.headline).fixedSize()
-								}
-					
-								VStack {
-									
-									if lastMessageDay == currentDay {
-										
-										Text(lastMessageTime, style: .time )
-											.font(.caption)
-											.foregroundColor(.gray)
-										
-									} else if ( lastMessageDay == (currentDay - 1)) {
-										
-										Text("Yesterday")
-											.font(.callout)
-											.foregroundColor(.gray)
-										
-									} else if ( lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) ) {
-										
-										Text(lastMessageTime, style: .date)
-										
-									} else {
-										
-										Text(lastMessageTime, style: .date)
+					NavigationLink(destination: UserMessageList(user: user)) {
+
+						HStack {
+
+							VStack {
+
+								CircleText(text: user.shortName ?? "???", color: Color.blue)
+							}
+							.padding([.leading, .trailing])
+
+							VStack {
+
+								HStack {
+
+									VStack {
+
+										Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 									}
-								}.frame(maxWidth: .infinity, alignment: .trailing)
-							}
-							.listRowSeparator(.hidden).frame(height: 5)
-							
-							HStack (alignment: .top) {
-								Text(mostRecent.messagePayload ?? "EMPTY MESSSAGE")
-									.frame(height: 60)
-									.truncationMode(.tail)
-									.foregroundColor(Color.gray)
-									.frame(maxWidth: .infinity, alignment: .leading)
-							}
-						}.padding(.top, 15)
-					}
-				} else {
-					
-					HStack  {
-						
-						VStack {
-							
-							CircleText(text: user.shortName ?? "???", color: Color.blue)
-						}
-						.padding(.trailing)
-						
-						VStack {
-							
-							HStack{
 
-								VStack {
-									
-									Text(user.longName ?? "Unknown").font(.headline).fixedSize()
+									VStack {
+
+										if lastMessageDay == currentDay {
+
+											Text(lastMessageTime, style: .time )
+												.font(.caption)
+												.foregroundColor(.gray)
+
+										} else if  lastMessageDay == (currentDay - 1) {
+
+											Text("Yesterday")
+												.font(.callout)
+												.foregroundColor(.gray)
+
+										} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+
+											Text(lastMessageTime, style: .date)
+
+										} else {
+
+											Text(lastMessageTime, style: .date)
+										}
+									}.frame(maxWidth: .infinity, alignment: .trailing)
 								}
-								
-								VStack {
-									Text("               ")
+								.listRowSeparator(.hidden).frame(height: 5)
+
+								HStack(alignment: .top) {
+									Text(mostRecent.messagePayload ?? "EMPTY MESSSAGE")
+										.frame(height: 60)
+										.truncationMode(.tail)
+										.foregroundColor(Color.gray)
+										.frame(maxWidth: .infinity, alignment: .leading)
 								}
-								.frame(maxWidth: .infinity, alignment: .trailing)
-							}
-							.listRowSeparator(.hidden).frame(height: 5)
+							}.padding(.top, 15)
 						}
-					}.padding()
+
+					}
+
+				} else {
+
+					NavigationLink(destination: UserMessageList(user: user)) {
+
+						HStack {
+
+							VStack {
+
+								CircleText(text: user.shortName ?? "???", color: Color.blue)
+							}
+							.padding(.trailing)
+
+							VStack {
+
+								HStack {
+
+									VStack {
+
+										Text(user.longName ?? "Unknown").font(.headline).fixedSize()
+									}
+
+									VStack {
+										Text("               ")
+									}
+									.frame(maxWidth: .infinity, alignment: .trailing)
+								}
+								.listRowSeparator(.hidden).frame(height: 5)
+							}
+						}.padding()
+					}
 				}
-				//NavigationLink(note.title, destination: NoteEditor(id: note.id))
 			}
 			.navigationTitle("Contacts")
+			.navigationBarTitleDisplayMode(.inline)
 		}
 		.listStyle(PlainListStyle())
     }

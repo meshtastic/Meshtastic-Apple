@@ -8,7 +8,7 @@ struct Messages: View {
     enum Field: Hashable {
         case messageText
     }
-	
+
 	// CoreData
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -57,7 +57,7 @@ struct Messages: View {
 											print("I want to delete message: \(message.messageId)")
 											self.showDeleteMessageAlert = true
 											self.deleteMessageId = message.messageId
-											
+
 											print(deleteMessageId)
 										})
 
@@ -91,18 +91,18 @@ struct Messages: View {
 										if deleteMessageId > 0 {
 
 											let message = messages.first(where: { $0.messageId == deleteMessageId })
-											
+
 											context.delete(message!)
 											do {
 												try context.save()
-											
+
 												deleteMessageId = 0
 												messageCount = messages.count
-												
+
 											} catch {
 												print("Failed to delete message \(deleteMessageId)")
 											}
-											
+
 										}
 									},
 									secondaryButton: .cancel()
@@ -116,7 +116,7 @@ struct Messages: View {
 								if messageCount > 0 {
 									scrollView.scrollTo(messages[messageCount-1].id, anchor: .bottom)
 								}
-								
+
 							})
 						}
 						.onReceive(timer) { _ in
