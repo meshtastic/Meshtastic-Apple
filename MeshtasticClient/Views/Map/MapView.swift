@@ -29,8 +29,10 @@ struct MapView: UIViewRepresentable {
 
 		let region = MKCoordinateRegion( center: map.centerCoordinate, latitudinalMeters: CLLocationDistance(exactly: 500)!, longitudinalMeters: CLLocationDistance(exactly: 500)!)
 		map.setRegion(map.regionThatFits(region), animated: false)
-
-		// self.updateMapType(map)
+		
+		//self.updateMapType(map)
+		self.showNodePositions(to: map)
+		self.moveToMeshRegion(in: map)
 
 		map.register(PositionAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(PositionAnnotationView.self))
 
@@ -44,6 +46,38 @@ struct MapView: UIViewRepresentable {
 		self.updateMapType(view)
 
 		self.showNodePositions(to: view)
+		
+		//if (self.needToMoveToMeshRegion) {
+		//	self.moveToMeshRegion(in: view)
+		//	self.needToMoveToMeshRegion = false
+		//}
+	}
+	
+	func moveToMeshRegion(in mapView: MKMapView) {
+		//go through the annotations and create a bounding box that encloses them
+		
+		var minLat: CLLocationDegrees = 90.0
+		var maxLat: CLLocationDegrees = -90.0
+		var minLon: CLLocationDegrees = 180.0
+		var maxLon: CLLocationDegrees = -180.0
+		
+		for annotation in mapView.annotations {
+			if annotation.isKind(of: PositionAnnotation.self) {
+				minLat = min(minLat, annotation.coordinate.latitude)
+				maxLat = max(maxLat, annotation.coordinate.latitude)
+				minLon = min(minLon, annotation.coordinate.longitude)
+				maxLon = max(maxLon, annotation.coordinate.longitude)
+			}
+		}
+		let centerCoord = CLLocationCoordinate2D(latitude: (minLat+maxLat)/2, longitude: (minLon+maxLon)/2)
+		
+		let span = MKCoordinateSpan(latitudeDelta: (maxLat-minLat)*1.5, longitudeDelta: (maxLon-minLon)*1.5)
+		
+		let region = mapView.regionThatFits(MKCoordinateRegion(center: centerCoord, span: span))
+		
+		mapView.setRegion(region, animated: true)
+		
+		
 	}
 
 	func updateMapType(_ map: MKMapView) {
