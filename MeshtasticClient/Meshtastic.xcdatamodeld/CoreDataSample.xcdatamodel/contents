@@ -7,7 +7,7 @@
         <attribute name="messageTimestamp" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="receivedACK" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="fromUser" maxCount="1" deletionRule="Nullify" ordered="YES" destinationEntity="UserEntity" inverseName="sentMessages" inverseEntity="UserEntity"/>
-        <relationship name="toUser" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="receivedMessages" inverseEntity="UserEntity"/>
+        <relationship name="toUser" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="receivedMessages" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="messageId"/>

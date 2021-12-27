@@ -35,7 +35,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 
-    var broadcastNodeNum: UInt32 = 4294967295
+    let broadcastNodeNum: UInt32 = 4294967295
 	var nextSentMessageId: Int64 = 1
 
     /* Meshtastic Service Details */
@@ -111,7 +111,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		self.timeoutTimerCount += 1
 
-		if timeoutTimerCount == 10 {
+		if timeoutTimerCount == 5 {
 
 			if connectedPeripheral != nil {
 
@@ -459,8 +459,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
-						if decodedInfo.nodeInfo.lastHeard > 0 {
+						if decodedInfo.nodeInfo.lastHeard != nil && decodedInfo.nodeInfo.lastHeard > 0 {
 							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
+						}
+						else {
+							newNode.lastHeard = Date()
 						}
 						newNode.snr = decodedInfo.nodeInfo.snr
 
@@ -603,7 +606,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				do {
 
-					// Text Message App - Primary Broadcast Channel
+					// Text Message App - Primary Broadcast User
 					if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
 
 						if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
@@ -629,7 +632,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									// Save the broadcast user if it does not exist
 									let bcu: UserEntity = UserEntity(context: context!)
 									bcu.shortName = "ALL"
-									bcu.longName = "Primary - Broadcast"
+									bcu.longName = "ALL - Broadcast"
 									bcu.hwModel = "UNSET"
 									bcu.num = Int64(broadcastNodeNum)
 									bcu.userId = "BROADCASTNODE"
@@ -648,20 +651,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									try context!.save()
 									print("💾 Saved a new message for \(decodedInfo.packet.id)")
 									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(decodedInfo.packet.id)") }
+									
+									if newMessage.toUser!.num == self.broadcastNodeNum || self.connectedPeripheral != nil && self.connectedPeripheral.num == newMessage.toUser!.num {
+										
+										// Create an iOS Notification for the received message and schedule it immediately
+										let manager = LocalNotificationManager()
 
-									// Create an iOS Notification for the received message and schedule it immediately
-									let manager = LocalNotificationManager()
+										manager.notifications = [
+											Notification(
+												id: ("notification.id.\(decodedInfo.packet.id)"),
+												title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+												content: messageText)
+										]
+										manager.schedule()
+										if meshLoggingEnabled { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
 
-									manager.notifications = [
-										Notification(
-											id: ("notification.id.\(decodedInfo.packet.id)"),
-											title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-											content: messageText)
-									]
-									manager.schedule()
-									if meshLoggingEnabled { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
-
+									}
 								} catch {
 
 									context!.rollback()
@@ -687,7 +693,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							
+							if decodedInfo.packet.rxTime != nil && decodedInfo.packet.rxTime > 0 {
+								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+							}
+							else {
+								fetchedNode[0].lastHeard = Date()
+							}
+							
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 
 						} else {
@@ -737,6 +750,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 
 						} else {
+							
 							return
 						}
 						do {
@@ -774,7 +788,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
-
 				 }
 
 				} catch {
@@ -800,6 +813,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	// Send Broadcast Message
 	public func sendMessage(message: String, toUserNum: Int64) -> Bool {
+		
 		var success = false
 
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
@@ -848,7 +862,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)
-					newMessage.messageId = nextSentMessageId
+					newMessage.messageId = Int64.random(in: Int64.min..<Int64.max)
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
@@ -857,7 +871,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						let bcu: UserEntity = UserEntity(context: context!)
 						bcu.shortName = "ALL"
-						bcu.longName = "Primary - Broadcast"
+						bcu.longName = "ALL - Broadcast"
 						bcu.hwModel = "UNSET"
 						bcu.num = Int64(broadcastNodeNum)
 						bcu.userId = "BROADCASTNODE"
@@ -893,8 +907,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						do {
 
 							try context!.save()
-							print("💾 Saved a new sent message from \(newMessage.fromUser?.longName! ?? "Unknown")")
-							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num)") }
+							print("💾 Saved a new sent message to \(toUserNum)")
+							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)") }
 							success = true
 							nextSentMessageId+=1
 

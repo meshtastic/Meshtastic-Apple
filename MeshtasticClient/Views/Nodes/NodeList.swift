@@ -21,10 +21,6 @@ struct NodeList: View {
 
 		private var nodes: FetchedResults<NodeInfoEntity>
 
-	// @FetchRequest(
-	//	sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
-	//	animation: .default) var nodes: FetchedResults<NodeInfoEntity>
-
 	@State private var selection: String?
 
     var body: some View {
