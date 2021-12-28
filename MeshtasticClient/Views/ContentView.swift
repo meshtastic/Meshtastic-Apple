@@ -19,21 +19,21 @@ struct ContentView: View {
     var body: some View {
 
         TabView(selection: $selection) {
-			Contacts()
-				.tabItem {
-					Label("Messages", systemImage: "text.bubble")
-						.symbolRenderingMode(.hierarchical)
-						.symbolVariant(.none)
-
-				}
-				.tag(Tab.contacts)
-//            Channels()
-//                .tabItem {
-//                    Label("Messages", systemImage: "text.bubble")
+//			Contacts()
+//				.tabItem {
+//					Label("Messages", systemImage: "text.bubble")
 //						.symbolRenderingMode(.hierarchical)
-//                        .symbolVariant(.none)
-//                }
-//                .tag(Tab.messages)
+//						.symbolVariant(.none)
+//
+//				}
+//				.tag(Tab.contacts)
+            Channels()
+                .tabItem {
+                    Label("Messages", systemImage: "text.bubble")
+						.symbolRenderingMode(.hierarchical)
+                        .symbolVariant(.none)
+                }
+                .tag(Tab.messages)
 			Connect()
 				.tabItem {
 					Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")

@@ -175,7 +175,11 @@ struct NodeDetail: View {
 								}
 								Text(String(node.num)).font(.title3).foregroundColor(.gray)
 							}
-						}.padding()
+						}.padding(5)
+						HStack {
+							Text("MAC Address: ")
+							Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
+						}
 
 						if node.positions?.count ?? 0 > 1 {
 

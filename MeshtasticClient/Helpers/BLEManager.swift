@@ -36,7 +36,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimerCount = 0
 
     let broadcastNodeNum: UInt32 = 4294967295
-	var nextSentMessageId: Int64 = 1
 
     /* Meshtastic Service Details */
     var TORADIO_characteristic: CBCharacteristic!
@@ -632,7 +631,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									// Save the broadcast user if it does not exist
 									let bcu: UserEntity = UserEntity(context: context!)
 									bcu.shortName = "ALL"
-									bcu.longName = "ALL - Broadcast"
+									bcu.longName = "All - Broadcast"
 									bcu.hwModel = "UNSET"
 									bcu.num = Int64(broadcastNodeNum)
 									bcu.userId = "BROADCASTNODE"
@@ -862,7 +861,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)
-					newMessage.messageId = Int64.random(in: Int64.min..<Int64.max)
+					newMessage.messageId = Int64(UInt32.random(in: UInt32.min..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
@@ -871,7 +870,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						let bcu: UserEntity = UserEntity(context: context!)
 						bcu.shortName = "ALL"
-						bcu.longName = "ALL - Broadcast"
+						bcu.longName = "All - Broadcast"
 						bcu.hwModel = "UNSET"
 						bcu.num = Int64(broadcastNodeNum)
 						bcu.userId = "BROADCASTNODE"
@@ -910,7 +909,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							print("💾 Saved a new sent message to \(toUserNum)")
 							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)") }
 							success = true
-							nextSentMessageId+=1
 
 						} catch {
 
@@ -928,8 +926,4 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return success
 	}
-}
-
-func bytes2String(_ array: [UInt8]) -> String {
-	return String(data: Data(bytes: array, count: array.count), encoding: .utf8) ?? ""
 }
