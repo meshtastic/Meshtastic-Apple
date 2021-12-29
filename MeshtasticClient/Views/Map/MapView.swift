@@ -69,6 +69,12 @@ struct MapView: UIViewRepresentable {
 				maxLon = max(maxLon, annotation.coordinate.longitude)
 			}
 		}
+		
+		//check if the mesh region looks sensible before we move to it.  Otherwise we won't move the map (leave it at the current location)
+		if maxLat < minLat || (maxLat-minLat) > 5 || maxLon < minLon || (maxLon-minLon) > 5 {
+			return
+		}
+		
 		let centerCoord = CLLocationCoordinate2D(latitude: (minLat+maxLat)/2, longitude: (minLon+maxLon)/2)
 		
 		let span = MKCoordinateSpan(latitudeDelta: (maxLat-minLat)*1.5, longitudeDelta: (maxLon-minLon)*1.5)
