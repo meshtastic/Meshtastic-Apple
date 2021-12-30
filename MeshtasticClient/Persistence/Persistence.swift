@@ -32,6 +32,7 @@ class PersistenceController {
 	let container: NSPersistentContainer
 
 	init(inMemory: Bool = false) {
+		
 		container = NSPersistentContainer(name: "Meshtastic")
 		if inMemory {
 			container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
@@ -39,7 +40,7 @@ class PersistenceController {
 		container.loadPersistentStores(completionHandler: { (_, error) in
 			// Merge policy that favors in memory data over data in the db
 			self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-			
+			self.container.viewContext.automaticallyMergesChangesFromParent = true
 			
 			if let error = error as NSError? {
 				// Replace this implementation with code to handle the error appropriately.
@@ -53,21 +54,22 @@ class PersistenceController {
 				* The store could not be migrated to the current model version.
 				Check the error message to determine what the actual problem was.
 				*/
-				
-				let firstStoreURL = self.container.persistentStoreCoordinator.persistentStores.first?.url
-				
-				do {
-					
-					try self.container.persistentStoreCoordinator.destroyPersistentStore(at: firstStoreURL!, type: .sqlite, options: nil)
-					
-					print("💥 Something went terribly wrong, CoreData database truncated.  All app data is lost.")
-					
-				} catch {
-					print("💣 Failed to destroy broken CoreData database, delete the app.")
-				}
-			
-				print("💣💥 Unresolved error \(error), \(error.userInfo)")
+				self.clearDatabase()
 			}
 		})
+	}
+	
+	public func clearDatabase() {
+		guard let url = self.container.persistentStoreDescriptions.first?.url else { return }
+
+		let persistentStoreCoordinator = self.container.persistentStoreCoordinator
+
+		 do {
+			 try persistentStoreCoordinator.destroyPersistentStore(at:url, ofType: NSSQLiteStoreType, options: nil)
+			 print("💥 Something went terribly wrong, CoreData database truncated.  All app data is lost.")
+			 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+		} catch let error {
+			print("💣 Failed to destroy broken CoreData database, delete the app. Attempted to clear persistent store: " + error.localizedDescription)
+		}
 	}
 }
