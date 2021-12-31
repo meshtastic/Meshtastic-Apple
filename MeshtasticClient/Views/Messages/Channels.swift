@@ -16,8 +16,8 @@ struct Channels: View {
 
 					HStack {
 
-						Image(systemName: "dial.max.fill")
-							.font(.system(size: 62))
+						Image(systemName: "megaphone.fill")
+							.font(.largeTitle)
 							.symbolRenderingMode(.hierarchical)
 							.padding(.trailing)
 							.foregroundColor(.accentColor)

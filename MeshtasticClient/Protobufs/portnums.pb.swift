@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -43,7 +43,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// Deprecated: do not use in new code (formerly called OPAQUE)
-  /// A message sent from a device outside of the mesh, in a form the mesh does not understand 
+  /// A message sent from a device outside of the mesh, in a form the mesh does not understand
   /// NOTE: This must be 0, because it is documented in IMeshService.aidl to be so
   case unknownApp // = 0
 
@@ -206,7 +206,7 @@ extension PortNum: CaseIterable {
     .zpsApp,
     .privateApp,
     .atakForwarder,
-    .max
+    .max,
   ]
 }
 
@@ -232,6 +232,6 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     68: .same(proto: "ZPS_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
-    511: .same(proto: "MAX")
+    511: .same(proto: "MAX"),
   ]
 }

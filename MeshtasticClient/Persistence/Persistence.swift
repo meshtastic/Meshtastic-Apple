@@ -38,6 +38,7 @@ class PersistenceController {
 			container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
 		}
 		container.loadPersistentStores(completionHandler: { (_, error) in
+			
 			// Merge policy that favors in memory data over data in the db
 			self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 			self.container.viewContext.automaticallyMergesChangesFromParent = true
@@ -65,9 +66,11 @@ class PersistenceController {
 		let persistentStoreCoordinator = self.container.persistentStoreCoordinator
 
 		 do {
+			 
 			 try persistentStoreCoordinator.destroyPersistentStore(at:url, ofType: NSSQLiteStoreType, options: nil)
-			 print("💥 Something went terribly wrong, CoreData database truncated.  All app data is lost.")
 			 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+			 print("💥 Something went terribly wrong, CoreData database truncated.  All app data is lost.")
+			 
 		} catch let error {
 			print("💣 Failed to destroy broken CoreData database, delete the app. Attempted to clear persistent store: " + error.localizedDescription)
 		}

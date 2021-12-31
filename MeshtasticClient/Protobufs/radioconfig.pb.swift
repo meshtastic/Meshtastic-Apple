@@ -34,7 +34,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -114,7 +114,7 @@ extension RegionCode: CaseIterable {
     .anz,
     .kr,
     .tw,
-    .ru
+    .ru,
   ]
 }
 
@@ -217,7 +217,7 @@ extension ChargeCurrent: CaseIterable {
     .ma1080,
     .ma1160,
     .ma1240,
-    .ma1320
+    .ma1320,
   ]
 }
 
@@ -292,7 +292,7 @@ extension GpsOperation: CaseIterable {
     .gpsOpStationary,
     .gpsOpMobile,
     .gpsOpTimeOnly,
-    .gpsOpDisabled
+    .gpsOpDisabled,
   ]
 }
 
@@ -304,23 +304,23 @@ enum GpsCoordinateFormat: SwiftProtobuf.Enum {
   typealias RawValue = Int
 
   ///
-  /// GPS coordinates are displayed in the normal decimal degrees format: 
+  /// GPS coordinates are displayed in the normal decimal degrees format:
   /// DD.DDDDDD DDD.DDDDDD
   case gpsFormatDec // = 0
 
   ///
-  /// GPS coordinates are displayed in the degrees minutes seconds format: 
+  /// GPS coordinates are displayed in the degrees minutes seconds format:
   /// DD°MM'SS"C DDD°MM'SS"C, where C is the compass point representing the locations quadrant
   case gpsFormatDms // = 1
 
   ///
-  /// GPS coordinates are displayed in Universal Transverse Mercator format: 
+  /// GPS coordinates are displayed in Universal Transverse Mercator format:
   /// ZZB EEEEEE NNNNNNN, where Z is zone, B is band, E is easting, N is northing
   case gpsFormatUtm // = 2
 
   ///
-  /// GPS coordinates are displayed in Military Grid Reference System format: 
-  /// ZZB CD EEEEE NNNNN, where Z is zone, B is band, C is the east 100k square, D is the north 100k square, 
+  /// GPS coordinates are displayed in Military Grid Reference System format:
+  /// ZZB CD EEEEE NNNNN, where Z is zone, B is band, C is the east 100k square, D is the north 100k square,
   /// E is easting, N is northing
   case gpsFormatMgrs // = 3
 
@@ -375,7 +375,7 @@ extension GpsCoordinateFormat: CaseIterable {
     .gpsFormatUtm,
     .gpsFormatMgrs,
     .gpsFormatOlc,
-    .gpsFormatOsgr
+    .gpsFormatOsgr,
   ]
 }
 
@@ -430,14 +430,14 @@ extension LocationSharing: CaseIterable {
   static var allCases: [LocationSharing] = [
     .locUnset,
     .locEnabled,
-    .locDisabled
+    .locDisabled,
   ]
 }
 
 #endif  // swift(>=4.2)
 
 ///
-/// Bit field of boolean configuration options, indicating which optional 
+/// Bit field of boolean configuration options, indicating which optional
 ///   fields to include when assembling POSITION messages
 /// Longitude and latitude are always included (also time if GPS-synced)
 ///
@@ -529,7 +529,7 @@ extension PositionFlags: CaseIterable {
     .posBattery,
     .posSatinview,
     .posSeqNos,
-    .posTimestamp
+    .posTimestamp,
   ]
 }
 
@@ -556,7 +556,7 @@ struct RadioConfig {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
-  /// see [software design](/software/other/sw-design.md) for more information on these preferences
+  /// See [software design](/software/other/sw-design.md) for more information on these preferences
   struct UserPreferences {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -760,7 +760,7 @@ struct RadioConfig {
     /// How long should we try to get our position during each gps_update_interval attempt?  (in seconds)
     /// Or if zero, use the default of 30 seconds.
     /// If we don't get a new gps fix in that time, the gps will be put into sleep until  the next gps_update_rate
-    /// window. 
+    /// window.
     var gpsAttemptTime: UInt32 {
       get {return _storage._gpsAttemptTime}
       set {_uniqueStorage()._gpsAttemptTime = newValue}
@@ -798,7 +798,7 @@ struct RadioConfig {
 
     ///
     /// The server to use for our MQTT global message gateway feature.
-    /// If not set, the default server will be used 
+    /// If not set, the default server will be used
     var mqttServer: String {
       get {return _storage._mqttServer}
       set {_uniqueStorage()._mqttServer = newValue}
@@ -936,7 +936,7 @@ struct RadioConfig {
 
     ///
     /// Preferences for the StoreForwardPlugin
-    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration. (was 136)
+    ///FIXME - Move this out of UserPreferences and into a section for plugin configuration. (was 136)
     var storeForwardPluginEnabled: Bool {
       get {return _storage._storeForwardPluginEnabled}
       set {_uniqueStorage()._storeForwardPluginEnabled = newValue}
@@ -988,7 +988,7 @@ struct RadioConfig {
     }
 
     ///
-    /// Interval in seconds of how often we should try to send our 
+    /// Interval in seconds of how often we should try to send our
     /// measurements to the mesh
     var environmentalMeasurementPluginUpdateInterval: UInt32 {
       get {return _storage._environmentalMeasurementPluginUpdateInterval}
@@ -1035,7 +1035,7 @@ struct RadioConfig {
     }
 
     ///
-    /// Circumvents the logic block for determining whether the device is powered or not. 
+    /// Circumvents the logic block for determining whether the device is powered or not.
     /// Useful for devices with finicky ADC issues on the battery sense pins.
     var isAlwaysPowered: Bool {
       get {return _storage._isAlwaysPowered}
@@ -1043,11 +1043,43 @@ struct RadioConfig {
     }
 
     ///
-    /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds. 
+    /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds.
     /// Potentially useful for devices without user buttons.
     var autoScreenCarouselSecs: UInt32 {
       get {return _storage._autoScreenCarouselSecs}
       set {_uniqueStorage()._autoScreenCarouselSecs = newValue}
+    }
+
+    ///
+    /// If non-zero, the device will fully power off this many seconds after external power is removed.
+    var onBatteryShutdownAfterSecs: UInt32 {
+      get {return _storage._onBatteryShutdownAfterSecs}
+      set {_uniqueStorage()._onBatteryShutdownAfterSecs = newValue}
+    }
+
+    ///
+    /// Overrides HOPS_RELIABLE and sets the maximum number of hops. This can't be greater than 7.
+    var hopLimit: UInt32 {
+      get {return _storage._hopLimit}
+      set {_uniqueStorage()._hopLimit = newValue}
+    }
+
+    ///
+    /// MQTT username to use (most useful for a custom MQTT server).
+    /// If using a custom server, this will be honoured even if empty.
+    /// If using the default server, this will only be honoured if set, otherwise the device will use the default username
+    var mqttUsername: String {
+      get {return _storage._mqttUsername}
+      set {_uniqueStorage()._mqttUsername = newValue}
+    }
+
+    ///
+    /// MQTT password to use (most useful for a custom MQTT server).
+    /// If using a custom server, this will be honoured even if empty.
+    /// If using the default server, this will only be honoured if set, otherwise the device will use the default password
+    var mqttPassword: String {
+      get {return _storage._mqttPassword}
+      set {_uniqueStorage()._mqttPassword = newValue}
     }
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1087,7 +1119,7 @@ struct RadioConfig {
 
   init() {}
 
-  fileprivate var _preferences: RadioConfig.UserPreferences?
+  fileprivate var _preferences: RadioConfig.UserPreferences? = nil
 }
 
 #if swift(>=4.2)
@@ -1096,7 +1128,7 @@ extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIt
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType] = [
     .dht11,
-    .ds18B20
+    .ds18B20,
   ]
 }
 
@@ -1115,7 +1147,7 @@ extension RegionCode: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "ANZ"),
     7: .same(proto: "KR"),
     8: .same(proto: "TW"),
-    9: .same(proto: "RU")
+    9: .same(proto: "RU"),
   ]
 }
 
@@ -1137,7 +1169,7 @@ extension ChargeCurrent: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "MA1080"),
     14: .same(proto: "MA1160"),
     15: .same(proto: "MA1240"),
-    16: .same(proto: "MA1320")
+    16: .same(proto: "MA1320"),
   ]
 }
 
@@ -1147,7 +1179,7 @@ extension GpsOperation: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "GpsOpStationary"),
     2: .same(proto: "GpsOpMobile"),
     3: .same(proto: "GpsOpTimeOnly"),
-    4: .same(proto: "GpsOpDisabled")
+    4: .same(proto: "GpsOpDisabled"),
   ]
 }
 
@@ -1158,7 +1190,7 @@ extension GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
     2: .same(proto: "GpsFormatUTM"),
     3: .same(proto: "GpsFormatMGRS"),
     4: .same(proto: "GpsFormatOLC"),
-    5: .same(proto: "GpsFormatOSGR")
+    5: .same(proto: "GpsFormatOSGR"),
   ]
 }
 
@@ -1166,7 +1198,7 @@ extension LocationSharing: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "LocUnset"),
     1: .same(proto: "LocEnabled"),
-    2: .same(proto: "LocDisabled")
+    2: .same(proto: "LocDisabled"),
   ]
 }
 
@@ -1181,14 +1213,14 @@ extension PositionFlags: SwiftProtobuf._ProtoNameProviding {
     32: .same(proto: "POS_BATTERY"),
     64: .same(proto: "POS_SATINVIEW"),
     128: .same(proto: "POS_SEQ_NOS"),
-    256: .same(proto: "POS_TIMESTAMP")
+    256: .same(proto: "POS_TIMESTAMP"),
   ]
 }
 
 extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "RadioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "preferences")
+    1: .same(proto: "preferences"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1204,13 +1236,9 @@ extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._preferences {
+    if let v = self._preferences {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1287,7 +1315,11 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     147: .standard(proto: "environmental_measurement_plugin_sensor_pin"),
     150: .standard(proto: "position_flags"),
     151: .standard(proto: "is_always_powered"),
-    152: .standard(proto: "auto_screen_carousel_secs")
+    152: .standard(proto: "auto_screen_carousel_secs"),
+    153: .standard(proto: "on_battery_shutdown_after_secs"),
+    154: .standard(proto: "hop_limit"),
+    155: .standard(proto: "mqtt_username"),
+    156: .standard(proto: "mqtt_password"),
   ]
 
   fileprivate class _StorageClass {
@@ -1355,6 +1387,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _positionFlags: UInt32 = 0
     var _isAlwaysPowered: Bool = false
     var _autoScreenCarouselSecs: UInt32 = 0
+    var _onBatteryShutdownAfterSecs: UInt32 = 0
+    var _hopLimit: UInt32 = 0
+    var _mqttUsername: String = String()
+    var _mqttPassword: String = String()
 
     static let defaultInstance = _StorageClass()
 
@@ -1425,6 +1461,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _positionFlags = source._positionFlags
       _isAlwaysPowered = source._isAlwaysPowered
       _autoScreenCarouselSecs = source._autoScreenCarouselSecs
+      _onBatteryShutdownAfterSecs = source._onBatteryShutdownAfterSecs
+      _hopLimit = source._hopLimit
+      _mqttUsername = source._mqttUsername
+      _mqttPassword = source._mqttPassword
     }
   }
 
@@ -1507,6 +1547,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 150: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionFlags) }()
         case 151: try { try decoder.decodeSingularBoolField(value: &_storage._isAlwaysPowered) }()
         case 152: try { try decoder.decodeSingularUInt32Field(value: &_storage._autoScreenCarouselSecs) }()
+        case 153: try { try decoder.decodeSingularUInt32Field(value: &_storage._onBatteryShutdownAfterSecs) }()
+        case 154: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopLimit) }()
+        case 155: try { try decoder.decodeSingularStringField(value: &_storage._mqttUsername) }()
+        case 156: try { try decoder.decodeSingularStringField(value: &_storage._mqttPassword) }()
         default: break
         }
       }
@@ -1707,6 +1751,18 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._autoScreenCarouselSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._autoScreenCarouselSecs, fieldNumber: 152)
       }
+      if _storage._onBatteryShutdownAfterSecs != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._onBatteryShutdownAfterSecs, fieldNumber: 153)
+      }
+      if _storage._hopLimit != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopLimit, fieldNumber: 154)
+      }
+      if !_storage._mqttUsername.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._mqttUsername, fieldNumber: 155)
+      }
+      if !_storage._mqttPassword.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._mqttPassword, fieldNumber: 156)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1780,6 +1836,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._positionFlags != rhs_storage._positionFlags {return false}
         if _storage._isAlwaysPowered != rhs_storage._isAlwaysPowered {return false}
         if _storage._autoScreenCarouselSecs != rhs_storage._autoScreenCarouselSecs {return false}
+        if _storage._onBatteryShutdownAfterSecs != rhs_storage._onBatteryShutdownAfterSecs {return false}
+        if _storage._hopLimit != rhs_storage._hopLimit {return false}
+        if _storage._mqttUsername != rhs_storage._mqttUsername {return false}
+        if _storage._mqttPassword != rhs_storage._mqttPassword {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -1792,6 +1852,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
 extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHT11"),
-    1: .same(proto: "DS18B20")
+    1: .same(proto: "DS18B20"),
   ]
 }
