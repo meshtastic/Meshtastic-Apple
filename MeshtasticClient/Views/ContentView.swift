@@ -41,13 +41,13 @@ struct ContentView: View {
 						.symbolVariant(.none)
 				}
 				.tag(Tab.ble)
-//            NodeList()
-//                .tabItem {
-//                    Label("Nodes", systemImage: "flipphone")
-//						.symbolRenderingMode(.hierarchical)
-//                        .symbolVariant(.none)
-//                }
-//                .tag(Tab.nodes)
+            NodeList()
+                .tabItem {
+                    Label("Nodes", systemImage: "flipphone")
+						.symbolRenderingMode(.hierarchical)
+                        .symbolVariant(.none)
+                }
+                .tag(Tab.nodes)
             NodeMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")

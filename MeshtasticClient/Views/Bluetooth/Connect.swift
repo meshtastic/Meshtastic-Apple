@@ -204,9 +204,9 @@ struct Connect: View {
                ZStack {
 
                     ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+						bluetoothOn: self.bleManager.isSwitchedOn,
+						deviceConnected: self.bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName :
 							"???")
                 }
             )
@@ -216,7 +216,7 @@ struct Connect: View {
 
 			self.bleManager.context = context
 
-			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
+			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
 			} else {
 				isPreferredRadio = false

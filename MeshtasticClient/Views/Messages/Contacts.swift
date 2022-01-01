@@ -36,7 +36,7 @@ struct Contacts: View {
 					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
-					if user.num == bleManager.broadcastNodeNum {//user.num != currentUserNum && (user.num == bleManager.broadcastNodeNum || mostRecentDM != nil) {
+					if user.num != currentUserNum && (user.num == bleManager.broadcastNodeNum || mostRecentDM != nil) {
 						
 							NavigationLink(destination: UserMessageList(user: user)
 											.environment(\.managedObjectContext, self.context)) {
@@ -96,7 +96,7 @@ struct Contacts: View {
 						}
 					}
 					
-				} else if false {// self.bleManager.connectedPeripheral == nil || ((self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0) != user.num) {
+				} else if self.bleManager.connectedPeripheral == nil || ((self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0) != user.num) {
 
 					NavigationLink(destination: UserMessageList(user: user)) {
 
