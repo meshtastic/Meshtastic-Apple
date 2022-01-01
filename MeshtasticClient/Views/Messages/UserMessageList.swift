@@ -32,160 +32,148 @@ struct UserMessageList: View {
 
     var body: some View {
 
-//		HStack {
+		VStack {
+			
+			ScrollViewReader { scrollView in
 
-			VStack {
-				
-			//	List {
+				ScrollView {
+					// Use fetched property
+					let allMessages = user.value(forKey: "allMessages")
+						as! [MessageEntity]
+					
+					if allMessages.count > 0 {
 
-					ScrollViewReader { scrollView in
-
-						ScrollView {
-							// Use fetched property
-							let allMessages = user.value(forKey: "allMessages")
-								as! [MessageEntity]
+						ForEach( allMessages ) { (message: MessageEntity) in
 							
-							if allMessages.count > 0 {
+								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
 								
 								
-								let mergedMessageList =  user.receivedMessages!.mutableCopy() as? NSMutableOrderedSet
-								//mergedMessageList?.union(user.sentMessages!)
-							 
-							//	mergedMessageList?.append(<#T##Self.Output#>).addObjects(from: user.sentMessages!.mutableCopy() as! [Any])
-							
-								ForEach( user.receivedMessages?.array as! [MessageEntity], id: \.self) { (message: MessageEntity) in
+								if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
 									
-							//		HStack {
-										let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
+									
+									HStack (alignment: .top) {
+									
+										if currentUser { Spacer(minLength:50) }
 										
+										if !currentUser {
 										
-										if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
-											
-											
-											HStack (alignment: .top) {
-											
-												if currentUser { Spacer(minLength:50) }
-												
-												if !currentUser {
-												
-													CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
-														.gesture(LongPressGesture(minimumDuration: 2).onEnded {_ in
+											CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+												.gesture(LongPressGesture(minimumDuration: 2).onEnded {_ in
 
-															print("I want to delete message: \(message.messageId)")
-															self.showDeleteMessageAlert = true
-															self.deleteMessageId = message.messageId
-															print(deleteMessageId)
-													})
-												}
-												
-												VStack(alignment: currentUser ? .trailing : .leading) {
-													
-													Text(message.messagePayload ?? "EMPTY MESSAGE")
-													.textSelection(.enabled)
-													.padding(10)
-													.foregroundColor(.white)
-													.background(currentUser ? Color.blue : Color(.darkGray))
-													.cornerRadius(15)
-													
-													HStack(spacing: 4) {
+													print("I want to delete message: \(message.messageId)")
+													self.showDeleteMessageAlert = true
+													self.deleteMessageId = message.messageId
+													print(deleteMessageId)
+											})
+											.padding(.leading)
+										}
+										
+										VStack(alignment: currentUser ? .trailing : .leading) {
+											
+											Text(message.messagePayload ?? "EMPTY MESSAGE")
+											.textSelection(.enabled)
+											.padding(10)
+											.foregroundColor(.white)
+											.background(currentUser ? Color.blue : Color(.darkGray))
+											.cornerRadius(15)
+											
+											HStack(spacing: 4) {
 
-														let time = Int32(message.messageTimestamp)
-														let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+												let time = Int32(message.messageTimestamp)
+												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
 
-														if time != 0 {
-															Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
-															Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
-														} else {
-															Text("Unknown").font(.caption2).foregroundColor(.gray)
-														}
-													}
-													.padding(.bottom, 10)
-												}
-												if !currentUser {
-													Spacer(minLength:50)
+												if time != 0 {
+													Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+													Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+												} else {
+													Text("Unknown").font(.caption2).foregroundColor(.gray)
 												}
 											}
-											.padding(.trailing)
-											.frame(maxWidth: .infinity)
+											.padding(.bottom, 10)
 										}
-								//	}
+										if !currentUser {
+											Spacer(minLength:50)
+										}
+									}
+									.padding(.trailing)
+									.frame(maxWidth: .infinity)
 								}
-								.listRowSeparator(.hidden)
-							}
+						//	}
 						}
-						.onAppear(perform: {
-							
-							self.bleManager.context = context
-							if mergedMessageList?.count ?? 0 > 0 {
-								scrollView.scrollTo((mergedMessageList![mergedMessageList!.count-1] as AnyObject).id, anchor: .bottom)
+						.listRowSeparator(.hidden)
+					}
+				}
+				.onAppear(perform: {
+					
+					self.bleManager.context = context
+					if mergedMessageList?.count ?? 0 > 0 {
+						scrollView.scrollTo((mergedMessageList![mergedMessageList!.count-1] as AnyObject).id, anchor: .bottom)
+					}
+				})
+			}
+				
+			
+			HStack(alignment: .top) {
+
+				ZStack {
+
+					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
+					TextEditor(text: $typingMessage)
+						.onChange(of: typingMessage, perform: { value in
+
+							let size = value.utf8.count
+							totalBytes = size
+							if totalBytes <= maxbytes {
+								// Allow the user to type
+								lastTypingMessage = typingMessage
+							} else {
+								// Set the message back and remove the bytes over the count
+								self.typingMessage = lastTypingMessage
 							}
 						})
-					}
-					
-			//	}
-			//	.padding(.top)
-				
-				HStack(alignment: .top) {
+						.keyboardType(kbType!)
+						.toolbar {
+							ToolbarItemGroup(placement: .keyboard) {
 
-					ZStack {
-
-						let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
-						TextEditor(text: $typingMessage)
-							.onChange(of: typingMessage, perform: { value in
-
-								let size = value.utf8.count
-								totalBytes = size
-								if totalBytes <= maxbytes {
-									// Allow the user to type
-									lastTypingMessage = typingMessage
-								} else {
-									// Set the message back and remove the bytes over the count
-									self.typingMessage = lastTypingMessage
+								Button("Dismiss Keyboard") {
+									focusedField = nil
 								}
-							})
-							.keyboardType(kbType!)
-							.toolbar {
-								ToolbarItemGroup(placement: .keyboard) {
+								.font(.subheadline)
 
-									Button("Dismiss Keyboard") {
-										focusedField = nil
-									}
+								Spacer()
+
+								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+									.frame(width: 130)
+									.padding(5)
 									.font(.subheadline)
-
-									Spacer()
-
-									ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
-										.frame(width: 130)
-										.padding(5)
-										.font(.subheadline)
-										.accentColor(.accentColor)
-								}
+									.accentColor(.accentColor)
 							}
-							.padding(.horizontal, 8)
-							.focused($focusedField, equals: .messageText)
-							.multilineTextAlignment(.leading)
-							.frame(minHeight: 100, maxHeight: 160)
-
-						Text(typingMessage).opacity(0).padding(.all, 0)
-
-					}
-					.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
-					.padding(.bottom, 15)
-
-					Button(action: {
-						if bleManager.sendMessage(message: typingMessage, toUserNum: user.num) {
-							typingMessage = ""
-							focusedField = nil
 						}
+						.padding(.horizontal, 8)
+						.focused($focusedField, equals: .messageText)
+						.multilineTextAlignment(.leading)
+						.frame(minHeight: 100, maxHeight: 160)
 
-					}) {
-						Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
-					}
+					Text(typingMessage).opacity(0).padding(.all, 0)
 
 				}
-				.padding(.all, 15)
+				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
+				.padding(.bottom, 15)
+
+				Button(action: {
+					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num) {
+						typingMessage = ""
+						focusedField = nil
+					}
+
+				}) {
+					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
+				}
+
 			}
-//		}
+			.padding(.all, 15)
+		}
+
 		.navigationViewStyle(.stack)
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
