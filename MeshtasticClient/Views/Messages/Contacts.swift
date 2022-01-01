@@ -23,83 +23,78 @@ struct Contacts: View {
 		NavigationView {
 
 			List(users) { (user: UserEntity) in
-
-				if user.receivedMessages?.count ?? 0 > 0 {
-					
-					let currentUserNum = self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0
-
-					let mostRecentBC = user.receivedMessages?.array.last as! MessageEntity
-					
-					let mostRecentDM = user.receivedMessages?.array.last(where: {($0 as! MessageEntity).toUser!.num == currentUserNum }) as? MessageEntity
-					
-					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64(mostRecentDM?.messageTimestamp ?? mostRecentBC.messageTimestamp)))
-					let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-					let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-
-					if user.num != currentUserNum && (user.num == bleManager.broadcastNodeNum || mostRecentDM != nil) {
+				
+				let currentUserNum = self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0
+				
+				let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
+				
+				NavigationLink(destination: UserMessageList(user: user).environment(\.managedObjectContext, self.context)) {
+								
+					if allMessages.count > 0 {
 						
-							NavigationLink(destination: UserMessageList(user: user)
-											.environment(\.managedObjectContext, self.context)) {
+						let mostRecent = allMessages.last
+						let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent!.messageTimestamp ))))
+						let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+						let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+							
+						HStack {
+							
+							VStack {
 
-							HStack {
+								CircleText(text: user.shortName ?? "???", color: Color.blue)
+							}
+							.padding([.leading, .trailing])
+							
+							VStack {
+								
+								HStack {
+							
+									VStack {
 
-								VStack {
-
-									CircleText(text: user.shortName ?? "???", color: Color.blue)
-								}
-								.padding([.leading, .trailing])
-
-								VStack {
-
-									HStack {
-
-										VStack {
-
-											Text(user.longName ?? "Unknown").font(.headline).fixedSize()
-										}
-
-										VStack {
-
-											if lastMessageDay == currentDay {
-
-												Text(lastMessageTime, style: .time )
-													.font(.caption)
-													.foregroundColor(.gray)
-
-											} else if  lastMessageDay == (currentDay - 1) {
-
-												Text("Yesterday")
-													.font(.callout)
-													.foregroundColor(.gray)
-
-											} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-
-												Text(lastMessageTime, style: .date)
-
-											} else {
-
-												Text(lastMessageTime, style: .date)
-											}
-										}.frame(maxWidth: .infinity, alignment: .trailing)
+										Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 									}
-									.listRowSeparator(.hidden).frame(height: 5)
+							
+									VStack {
 
-									HStack(alignment: .top) {
-										Text(mostRecentDM != nil ? mostRecentDM?.messagePayload as! String : (mostRecentBC.messagePayload ?? "Unknown" ))
+										if lastMessageDay == currentDay {
+
+											Text(lastMessageTime, style: .time )
+												.font(.caption)
+												.foregroundColor(.gray)
+
+										} else if  lastMessageDay == (currentDay - 1) {
+
+											Text("Yesterday")
+												.font(.callout)
+												.foregroundColor(.gray)
+
+										} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+
+											Text(lastMessageTime, style: .date)
+
+										} else {
+
+											Text(lastMessageTime, style: .date)
+										}
+									}
+									.frame(maxWidth: .infinity, alignment: .trailing)
+								}
+								.listRowSeparator(.hidden).frame(height: 5)
+								
+								HStack(alignment: .top) {
+										
+										Text(mostRecent!.messagePayload ?? "Empty Message")
 											.frame(height: 60)
 											.truncationMode(.tail)
 											.foregroundColor(Color.gray)
 											.frame(maxWidth: .infinity, alignment: .leading)
-									}
-								}.padding(.top, 15)
+								}
 							}
+							.padding(.top)
 						}
-					}
-					
-				} else if self.bleManager.connectedPeripheral == nil || ((self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0) != user.num) {
-
-					NavigationLink(destination: UserMessageList(user: user)) {
-
+						
+					} else {
+						
 						HStack {
 
 							VStack {

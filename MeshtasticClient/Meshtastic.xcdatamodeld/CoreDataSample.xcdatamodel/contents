@@ -65,8 +65,8 @@
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
-        <fetchedProperty name="fetchedProperty" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="UserEntity"/>
+        <fetchedProperty name="allMessages" optional="YES">
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)"/>
         </fetchedProperty>
     </entity>
     <elements>

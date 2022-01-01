@@ -27,6 +27,8 @@ struct UserMessageList: View {
 	
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
+	
+	@State var mergedMessageList: NSMutableOrderedSet?
 
     var body: some View {
 
@@ -36,11 +38,20 @@ struct UserMessageList: View {
 				
 			//	List {
 
-					ScrollViewReader { _ in
+					ScrollViewReader { scrollView in
 
 						ScrollView {
-
-							if user.receivedMessages?.count ?? 0 > 0 {
+							// Use fetched property
+							let allMessages = user.value(forKey: "allMessages")
+								as! [MessageEntity]
+							
+							if allMessages.count > 0 {
+								
+								
+								let mergedMessageList =  user.receivedMessages!.mutableCopy() as? NSMutableOrderedSet
+								//mergedMessageList?.union(user.sentMessages!)
+							 
+							//	mergedMessageList?.append(<#T##Self.Output#>).addObjects(from: user.sentMessages!.mutableCopy() as! [Any])
 							
 								ForEach( user.receivedMessages?.array as! [MessageEntity], id: \.self) { (message: MessageEntity) in
 									
@@ -102,7 +113,15 @@ struct UserMessageList: View {
 								.listRowSeparator(.hidden)
 							}
 						}
+						.onAppear(perform: {
+							
+							self.bleManager.context = context
+							if mergedMessageList?.count ?? 0 > 0 {
+								scrollView.scrollTo((mergedMessageList![mergedMessageList!.count-1] as AnyObject).id, anchor: .bottom)
+							}
+						})
 					}
+					
 			//	}
 			//	.padding(.top)
 				
@@ -157,14 +176,6 @@ struct UserMessageList: View {
 						if bleManager.sendMessage(message: typingMessage, toUserNum: user.num) {
 							typingMessage = ""
 							focusedField = nil
-						} else {
-
-							_ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (_) in
-
-								if bleManager.sendMessage(message: typingMessage, toUserNum: user.num) {
-									typingMessage = ""
-								}
-							}
 						}
 
 					}) {
@@ -197,10 +208,9 @@ struct UserMessageList: View {
 			}
 		}
 		.onAppear(perform: {
-			
+
 			self.bleManager.context = context
 
 		})
     }
-
 }
