@@ -65,12 +65,15 @@
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
+        <fetchedProperty name="fetchedProperty" optional="YES">
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="UserEntity"/>
+        </fetchedProperty>
     </entity>
     <elements>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="164"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="149"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
-        <element name="UserEntity" positionX="0" positionY="144" width="128" height="179"/>
+        <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
     </elements>
 </model>

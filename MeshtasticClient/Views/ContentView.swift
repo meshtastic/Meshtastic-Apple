@@ -19,21 +19,21 @@ struct ContentView: View {
     var body: some View {
 
         TabView(selection: $selection) {
-//			Contacts()
-//				.tabItem {
-//					Label("Messages", systemImage: "text.bubble")
-//						.symbolRenderingMode(.hierarchical)
-//						.symbolVariant(.none)
-//
-//				}
-//				.tag(Tab.contacts)
-            Channels()
-                .tabItem {
-                    Label("Messages", systemImage: "text.bubble")
+			Contacts()
+				.tabItem {
+					Label("Messages", systemImage: "text.bubble")
 						.symbolRenderingMode(.hierarchical)
-                        .symbolVariant(.none)
-                }
-                .tag(Tab.messages)
+						.symbolVariant(.none)
+
+				}
+				.tag(Tab.contacts)
+//            Channels()
+//                .tabItem {
+//                    Label("Messages", systemImage: "text.bubble")
+//						.symbolRenderingMode(.hierarchical)
+//                        .symbolVariant(.none)
+//                }
+//                .tag(Tab.messages)
 			Connect()
 				.tabItem {
 					Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
@@ -41,13 +41,13 @@ struct ContentView: View {
 						.symbolVariant(.none)
 				}
 				.tag(Tab.ble)
-            NodeList()
-                .tabItem {
-                    Label("Nodes", systemImage: "flipphone")
-						.symbolRenderingMode(.hierarchical)
-                        .symbolVariant(.none)
-                }
-                .tag(Tab.nodes)
+//            NodeList()
+//                .tabItem {
+//                    Label("Nodes", systemImage: "flipphone")
+//						.symbolRenderingMode(.hierarchical)
+//                        .symbolVariant(.none)
+//                }
+//                .tag(Tab.nodes)
             NodeMap()
                 .tabItem {
                     Label("Mesh Map", systemImage: "map")

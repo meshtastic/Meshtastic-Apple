@@ -34,14 +34,16 @@ class PersistenceController {
 	init(inMemory: Bool = false) {
 		
 		container = NSPersistentContainer(name: "Meshtastic")
+		
 		if inMemory {
 			container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
 		}
+		
 		container.loadPersistentStores(completionHandler: { (_, error) in
 			
 			// Merge policy that favors in memory data over data in the db
 			self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-			//self.container.viewContext.automaticallyMergesChangesFromParent = true
+			self.container.viewContext.automaticallyMergesChangesFromParent = true
 			
 			if let error = error as NSError? {
 
