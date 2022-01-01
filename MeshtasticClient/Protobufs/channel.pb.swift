@@ -34,7 +34,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -167,30 +167,40 @@ struct ChannelSettings {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
-  /// Standard predefined channel settings 
+  /// Standard predefined channel settings
   /// Note: these mappings must match ModemConfigChoice in the device code.
   enum ModemConfig: SwiftProtobuf.Enum {
     typealias RawValue = Int
 
     ///
     /// < Bw = 125 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. Default medium range (5.469 kbps)
+    /// < on. ShortSlow | Short Range / Slow (5.469 kbps)
     case bw125Cr45Sf128 // = 0
 
     ///
     /// < Bw = 500 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. Fast+short range (21.875 kbps)
+    /// < on. ShortFast | Short Range / Fast (21.875 kbps)
     case bw500Cr45Sf128 // = 1
 
     ///
     /// < Bw = 31.25 kHz, Cr = 4/8, Sf(9) = 512chips/symbol,
-    /// < CRC on. Slow+long range (275 bps)
+    /// < CRC on. LongFast | Long Range / Fast (275 bps)
     case bw3125Cr48Sf512 // = 2
 
     ///
     /// < Bw = 125 kHz, Cr = 4/8, Sf(12) = 4096chips/symbol, CRC
-    /// < on. Slow+long range (183 bps)
+    /// < on. LongSlow | Long Range / Slow (183 bps)
     case bw125Cr48Sf4096 // = 3
+
+    ///
+    /// < Bw = 250 kHz, Cr = 4/6, Sf(11) = 2048chips/symbol, CRC
+    /// < on. MediumSlow | Medium Range / Slow (895 bps)
+    case bw250Cr46Sf2048 // = 4
+
+    ///
+    /// < Bw = 250 kHz, Cr = 4/7, Sf(10) = 1024chips/symbol, CRC
+    /// < on. MediumFast | Medium Range / Fast (1400 bps)
+    case bw250Cr47Sf1024 // = 5
     case UNRECOGNIZED(Int)
 
     init() {
@@ -203,6 +213,8 @@ struct ChannelSettings {
       case 1: self = .bw500Cr45Sf128
       case 2: self = .bw3125Cr48Sf512
       case 3: self = .bw125Cr48Sf4096
+      case 4: self = .bw250Cr46Sf2048
+      case 5: self = .bw250Cr47Sf1024
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -213,6 +225,8 @@ struct ChannelSettings {
       case .bw500Cr45Sf128: return 1
       case .bw3125Cr48Sf512: return 2
       case .bw125Cr48Sf4096: return 3
+      case .bw250Cr46Sf2048: return 4
+      case .bw250Cr47Sf1024: return 5
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -230,7 +244,9 @@ extension ChannelSettings.ModemConfig: CaseIterable {
     .bw125Cr45Sf128,
     .bw500Cr45Sf128,
     .bw3125Cr48Sf512,
-    .bw125Cr48Sf4096
+    .bw125Cr48Sf4096,
+    .bw250Cr46Sf2048,
+    .bw250Cr47Sf1024,
   ]
 }
 
@@ -245,8 +261,8 @@ struct Channel {
 
   ///
   /// The index of this channel in the channel table (from 0 to MAX_NUM_CHANNELS-1)
-  /// (Someday - not currently implemented) An index of -1 could be used to mean "set by name", 
-  /// in which case the target node will find and set the channel by settings.name. 
+  /// (Someday - not currently implemented) An index of -1 could be used to mean "set by name",
+  /// in which case the target node will find and set the channel by settings.name.
   var index: Int32 = 0
 
   ///
@@ -289,7 +305,7 @@ struct Channel {
 
     ///
     /// Secondary channels are only used for encryption/decryption/authentication purposes.
-    /// Their radio settings (freq etc) are ignored, only psk is used. 
+    /// Their radio settings (freq etc) are ignored, only psk is used.
     case secondary // = 2
     case UNRECOGNIZED(Int)
 
@@ -319,7 +335,7 @@ struct Channel {
 
   init() {}
 
-  fileprivate var _settings: ChannelSettings?
+  fileprivate var _settings: ChannelSettings? = nil
 }
 
 #if swift(>=4.2)
@@ -329,7 +345,7 @@ extension Channel.Role: CaseIterable {
   static var allCases: [Channel.Role] = [
     .disabled,
     .primary,
-    .secondary
+    .secondary,
   ]
 }
 
@@ -350,7 +366,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     5: .same(proto: "name"),
     10: .same(proto: "id"),
     16: .standard(proto: "uplink_enabled"),
-    17: .standard(proto: "downlink_enabled")
+    17: .standard(proto: "downlink_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -434,7 +450,9 @@ extension ChannelSettings.ModemConfig: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "Bw125Cr45Sf128"),
     1: .same(proto: "Bw500Cr45Sf128"),
     2: .same(proto: "Bw31_25Cr48Sf512"),
-    3: .same(proto: "Bw125Cr48Sf4096")
+    3: .same(proto: "Bw125Cr48Sf4096"),
+    4: .same(proto: "Bw250Cr46Sf2048"),
+    5: .same(proto: "Bw250Cr47Sf1024"),
   ]
 }
 
@@ -443,7 +461,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "index"),
     2: .same(proto: "settings"),
-    3: .same(proto: "role")
+    3: .same(proto: "role"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -461,16 +479,12 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
     if self.index != 0 {
       try visitor.visitSingularInt32Field(value: self.index, fieldNumber: 1)
     }
-    try { if let v = self._settings {
+    if let v = self._settings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
+    }
     if self.role != .disabled {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 3)
     }
@@ -490,6 +504,6 @@ extension Channel.Role: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DISABLED"),
     1: .same(proto: "PRIMARY"),
-    2: .same(proto: "SECONDARY")
+    2: .same(proto: "SECONDARY"),
   ]
 }

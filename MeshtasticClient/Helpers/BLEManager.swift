@@ -25,7 +25,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var peripherals = [Peripheral]()
 
     @Published var connectedPeripheral: Peripheral!
-    @Published var lastConnectedPeripheral: String
+    //@Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
 
 	@Published var isSwitchedOn: Bool = false
@@ -54,7 +54,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     override init() {
 
 		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
-        self.lastConnectedPeripheral = ""
+        //self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
         super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
@@ -221,7 +221,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if meshLoggingEnabled { MeshLogger.log("💥 Fetch NodeInfo Failed") }
 		}
 
-        lastConnectedPeripheral = peripheral.identifier.uuidString
+        //lastConnectedPeripheral = peripheral.identifier.uuidString
 
 		// Discover Services
         peripheral.discoverServices([meshtasticServiceCBUUID])
@@ -365,10 +365,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// TODO: Convert to CoreData
 	// FIXME: Remove broken JSON file data layer implementation
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        if let e = error {
+       
+		
+		if let e = error {
+			
+			print("🚫 didUpdateValueFor Characteristic error \(e)")
 
-            print("🚫 didUpdateValueFor Characteristic error \(e)")
-			if meshLoggingEnabled { MeshLogger.log("🚫 BLE didUpdateValueFor characteristic error by \(peripheral.name ?? "Unknown") \(e)") }
+			let errorCode = (e as NSError).code
+			
+			if errorCode == 5 { // CBATTErrorDomain Code=5 "Authentication is insufficient."
+
+				// BLE Pin connection error
+				// We will try and re-connect to this device
+				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
+				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully.") }
+				self.centralManager?.cancelPeripheralConnection(peripheral)
+
+			}
         }
 
         switch characteristic.uuid {
@@ -825,16 +838,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
-			} else {
-
-				// Try and connect to the last connected device
-				let lastConnectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == self.lastConnectedPeripheral }).first
-				if lastConnectedPeripheral != nil && lastConnectedPeripheral?.peripheral != nil {
-					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
-				}
 			}
-			print("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)")
-			if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)") }
+//			else {
+//
+//				// Try and connect to the last connected device
+//				let lastConnectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == self.lastConnectedPeripheral }).first
+//				if lastConnectedPeripheral != nil && lastConnectedPeripheral?.peripheral != nil {
+//					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
+//				}
+//			}
+			 //print("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)")
+			//if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)") }
 
 			success = false
 		} else if message.count < 1 {
@@ -861,7 +875,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)
-					newMessage.messageId = Int64(UInt32.random(in: UInt32.min..<UInt32.max))
+					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"

@@ -15,20 +15,20 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-struct StoreAndForwardMessage {
+struct StoreAndForward {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var rr: StoreAndForwardMessage.RequestResponse = .unset
+  var rr: StoreAndForward.RequestResponse = .unset
 
-  var stats: StoreAndForwardMessage.Statistics {
-    get {return _stats ?? StoreAndForwardMessage.Statistics()}
+  var stats: StoreAndForward.Statistics {
+    get {return _stats ?? StoreAndForward.Statistics()}
     set {_stats = newValue}
   }
   /// Returns true if `stats` has been explicitly set.
@@ -36,14 +36,23 @@ struct StoreAndForwardMessage {
   /// Clears the value of `stats`. Subsequent reads from it will return its default value.
   mutating func clearStats() {self._stats = nil}
 
-  var history: StoreAndForwardMessage.History {
-    get {return _history ?? StoreAndForwardMessage.History()}
+  var history: StoreAndForward.History {
+    get {return _history ?? StoreAndForward.History()}
     set {_history = newValue}
   }
   /// Returns true if `history` has been explicitly set.
   var hasHistory: Bool {return self._history != nil}
   /// Clears the value of `history`. Subsequent reads from it will return its default value.
   mutating func clearHistory() {self._history = nil}
+
+  var heartbeat: StoreAndForward.Heartbeat {
+    get {return _heartbeat ?? StoreAndForward.Heartbeat()}
+    set {_heartbeat = newValue}
+  }
+  /// Returns true if `heartbeat` has been explicitly set.
+  var hasHeartbeat: Bool {return self._heartbeat != nil}
+  /// Clears the value of `heartbeat`. Subsequent reads from it will return its default value.
+  mutating func clearHeartbeat() {self._heartbeat = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -56,7 +65,13 @@ struct StoreAndForwardMessage {
     ///
     /// Unset/unused
     case unset // = 0
+
+    ///
+    /// Router is an in error state.
     case routerError // = 1
+
+    ///
+    /// Router heartbeat
     case routerHeartbeat // = 2
 
     ///
@@ -71,6 +86,13 @@ struct StoreAndForwardMessage {
     ///
     /// Router is currently busy. Please try again later.
     case routerBusy // = 5
+
+    ///
+    /// Router is responding to a request for history.
+    case routerHistory // = 6
+
+    ///
+    /// Client is an in error state.
     case clientError // = 101
 
     ///
@@ -89,7 +111,10 @@ struct StoreAndForwardMessage {
     ///
     /// The response to a "Ping"
     case clientPong // = 105
-    case max // = 255
+
+    ///
+    /// Client has requested that the router abort processing the client's request
+    case clientAbort // = 106
     case UNRECOGNIZED(Int)
 
     init() {
@@ -104,12 +129,13 @@ struct StoreAndForwardMessage {
       case 3: self = .routerPing
       case 4: self = .routerPong
       case 5: self = .routerBusy
+      case 6: self = .routerHistory
       case 101: self = .clientError
       case 102: self = .clientHistory
       case 103: self = .clientStats
       case 104: self = .clientPing
       case 105: self = .clientPong
-      case 255: self = .max
+      case 106: self = .clientAbort
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -122,12 +148,13 @@ struct StoreAndForwardMessage {
       case .routerPing: return 3
       case .routerPong: return 4
       case .routerBusy: return 5
+      case .routerHistory: return 6
       case .clientError: return 101
       case .clientHistory: return 102
       case .clientStats: return 103
       case .clientPing: return 104
       case .clientPong: return 105
-      case .max: return 255
+      case .clientAbort: return 106
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -193,6 +220,28 @@ struct StoreAndForwardMessage {
     /// The window of messages that was used to filter the history client requested
     var window: UInt32 = 0
 
+    ///
+    /// The window of messages that was used to filter the history client requested
+    var lastRequest: UInt32 = 0
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+  }
+
+  struct Heartbeat {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Number of that will be sent to the client
+    var period: UInt32 = 0
+
+    ///
+    /// If set, this is not the primary Store & Forward router on the mesh
+    var secondary: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -200,27 +249,29 @@ struct StoreAndForwardMessage {
 
   init() {}
 
-  fileprivate var _stats: StoreAndForwardMessage.Statistics?
-  fileprivate var _history: StoreAndForwardMessage.History?
+  fileprivate var _stats: StoreAndForward.Statistics? = nil
+  fileprivate var _history: StoreAndForward.History? = nil
+  fileprivate var _heartbeat: StoreAndForward.Heartbeat? = nil
 }
 
 #if swift(>=4.2)
 
-extension StoreAndForwardMessage.RequestResponse: CaseIterable {
+extension StoreAndForward.RequestResponse: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [StoreAndForwardMessage.RequestResponse] = [
+  static var allCases: [StoreAndForward.RequestResponse] = [
     .unset,
     .routerError,
     .routerHeartbeat,
     .routerPing,
     .routerPong,
     .routerBusy,
+    .routerHistory,
     .clientError,
     .clientHistory,
     .clientStats,
     .clientPing,
     .clientPong,
-    .max
+    .clientAbort,
   ]
 }
 
@@ -228,12 +279,13 @@ extension StoreAndForwardMessage.RequestResponse: CaseIterable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-extension StoreAndForwardMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "StoreAndForwardMessage"
+extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "StoreAndForward"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "rr"),
     2: .same(proto: "stats"),
-    3: .same(proto: "history")
+    3: .same(proto: "history"),
+    4: .same(proto: "heartbeat"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -245,38 +297,39 @@ extension StoreAndForwardMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       case 1: try { try decoder.decodeSingularEnumField(value: &self.rr) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._stats) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._history) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._heartbeat) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
     if self.rr != .unset {
       try visitor.visitSingularEnumField(value: self.rr, fieldNumber: 1)
     }
-    try { if let v = self._stats {
+    if let v = self._stats {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._history {
+    }
+    if let v = self._history {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
+    }
+    if let v = self._heartbeat {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: StoreAndForwardMessage, rhs: StoreAndForwardMessage) -> Bool {
+  static func ==(lhs: StoreAndForward, rhs: StoreAndForward) -> Bool {
     if lhs.rr != rhs.rr {return false}
     if lhs._stats != rhs._stats {return false}
     if lhs._history != rhs._history {return false}
+    if lhs._heartbeat != rhs._heartbeat {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension StoreAndForwardMessage.RequestResponse: SwiftProtobuf._ProtoNameProviding {
+extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNSET"),
     1: .same(proto: "ROUTER_ERROR"),
@@ -284,27 +337,28 @@ extension StoreAndForwardMessage.RequestResponse: SwiftProtobuf._ProtoNameProvid
     3: .same(proto: "ROUTER_PING"),
     4: .same(proto: "ROUTER_PONG"),
     5: .same(proto: "ROUTER_BUSY"),
+    6: .same(proto: "ROUTER_HISTORY"),
     101: .same(proto: "CLIENT_ERROR"),
     102: .same(proto: "CLIENT_HISTORY"),
     103: .same(proto: "CLIENT_STATS"),
     104: .same(proto: "CLIENT_PING"),
     105: .same(proto: "CLIENT_PONG"),
-    255: .same(proto: "MAX")
+    106: .same(proto: "CLIENT_ABORT"),
   ]
 }
 
-extension StoreAndForwardMessage.Statistics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = StoreAndForwardMessage.protoMessageName + ".Statistics"
+extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = StoreAndForward.protoMessageName + ".Statistics"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "MessagesTotal"),
-    2: .same(proto: "MessagesSaved"),
-    3: .same(proto: "MessagesMax"),
-    4: .same(proto: "UpTime"),
-    5: .same(proto: "Requests"),
-    6: .same(proto: "RequestsHistory"),
-    7: .same(proto: "Heartbeat"),
-    8: .same(proto: "ReturnMax"),
-    9: .same(proto: "ReturnWindow")
+    1: .standard(proto: "messages_total"),
+    2: .standard(proto: "messages_saved"),
+    3: .standard(proto: "messages_max"),
+    4: .standard(proto: "up_time"),
+    5: .same(proto: "requests"),
+    6: .standard(proto: "requests_history"),
+    7: .same(proto: "heartbeat"),
+    8: .standard(proto: "return_max"),
+    9: .standard(proto: "return_window"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -358,7 +412,7 @@ extension StoreAndForwardMessage.Statistics: SwiftProtobuf.Message, SwiftProtobu
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: StoreAndForwardMessage.Statistics, rhs: StoreAndForwardMessage.Statistics) -> Bool {
+  static func ==(lhs: StoreAndForward.Statistics, rhs: StoreAndForward.Statistics) -> Bool {
     if lhs.messagesTotal != rhs.messagesTotal {return false}
     if lhs.messagesSaved != rhs.messagesSaved {return false}
     if lhs.messagesMax != rhs.messagesMax {return false}
@@ -373,11 +427,12 @@ extension StoreAndForwardMessage.Statistics: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
-extension StoreAndForwardMessage.History: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = StoreAndForwardMessage.protoMessageName + ".History"
+extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = StoreAndForward.protoMessageName + ".History"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "HistoryMessages"),
-    2: .same(proto: "Window")
+    1: .standard(proto: "history_messages"),
+    2: .same(proto: "window"),
+    3: .standard(proto: "last_request"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -388,6 +443,7 @@ extension StoreAndForwardMessage.History: SwiftProtobuf.Message, SwiftProtobuf._
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.historyMessages) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.window) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.lastRequest) }()
       default: break
       }
     }
@@ -400,12 +456,54 @@ extension StoreAndForwardMessage.History: SwiftProtobuf.Message, SwiftProtobuf._
     if self.window != 0 {
       try visitor.visitSingularUInt32Field(value: self.window, fieldNumber: 2)
     }
+    if self.lastRequest != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastRequest, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: StoreAndForwardMessage.History, rhs: StoreAndForwardMessage.History) -> Bool {
+  static func ==(lhs: StoreAndForward.History, rhs: StoreAndForward.History) -> Bool {
     if lhs.historyMessages != rhs.historyMessages {return false}
     if lhs.window != rhs.window {return false}
+    if lhs.lastRequest != rhs.lastRequest {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension StoreAndForward.Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = StoreAndForward.protoMessageName + ".Heartbeat"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "period"),
+    2: .same(proto: "secondary"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.period) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.secondary) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.period != 0 {
+      try visitor.visitSingularUInt32Field(value: self.period, fieldNumber: 1)
+    }
+    if self.secondary != 0 {
+      try visitor.visitSingularUInt32Field(value: self.secondary, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: StoreAndForward.Heartbeat, rhs: StoreAndForward.Heartbeat) -> Bool {
+    if lhs.period != rhs.period {return false}
+    if lhs.secondary != rhs.secondary {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -175,19 +175,11 @@ struct Messages: View {
                     .padding(.bottom, 15)
 
                     Button(action: {
-						if bleManager.sendMessage(message: typingMessage, toUserNum: Int64(self.bleManager.broadcastNodeNum)) {
+						if self.bleManager.sendMessage(message: typingMessage, toUserNum: Int64(self.bleManager.broadcastNodeNum)) {
                             typingMessage = ""
 							focusedField = nil
-                        } else {
-
-                            _ = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { (_) in
-
-								if bleManager.sendMessage(message: typingMessage, toUserNum: Int64(self.bleManager.broadcastNodeNum)) {
-                                    typingMessage = ""
-                                }
-                            }
                         }
-
+						
                     }) {
                         Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
                     }
@@ -203,9 +195,9 @@ struct Messages: View {
 			ZStack {
 
 				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
+					bluetoothOn: self.bleManager.isSwitchedOn,
+					deviceConnected: self.bleManager.connectedPeripheral != nil,
+					name: (self.bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName : "???")
 			}
 		)
     }

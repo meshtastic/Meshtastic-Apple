@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -29,10 +29,10 @@ struct AdminMessage {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var variant: AdminMessage.OneOf_Variant?
+  var variant: AdminMessage.OneOf_Variant? = nil
 
   ///
-  /// set the radio provisioning for this node
+  /// Set the radio provisioning for this node
   var setRadio: RadioConfig {
     get {
       if case .setRadio(let v)? = variant {return v}
@@ -66,7 +66,7 @@ struct AdminMessage {
   }
 
   ///
-  /// Send the current RadioConfig in the response for this message.
+  /// Send the current RadioConfig in the response to this message.
   var getRadioRequest: Bool {
     get {
       if case .getRadioRequest(let v)? = variant {return v}
@@ -84,7 +84,7 @@ struct AdminMessage {
   }
 
   ///
-  /// Send the specified channel in the response for this message
+  /// Send the specified channel in the response to this message
   /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
   var getChannelRequest: UInt32 {
     get {
@@ -100,6 +100,24 @@ struct AdminMessage {
       return Channel()
     }
     set {variant = .getChannelResponse(newValue)}
+  }
+
+  ///
+  /// Send the current owner data in the response to this message.
+  var getOwnerRequest: Bool {
+    get {
+      if case .getOwnerRequest(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getOwnerRequest(newValue)}
+  }
+
+  var getOwnerResponse: User {
+    get {
+      if case .getOwnerResponse(let v)? = variant {return v}
+      return User()
+    }
+    set {variant = .getOwnerResponse(newValue)}
   }
 
   ///
@@ -148,7 +166,7 @@ struct AdminMessage {
 
   enum OneOf_Variant: Equatable {
     ///
-    /// set the radio provisioning for this node
+    /// Set the radio provisioning for this node
     case setRadio(RadioConfig)
     ///
     /// Set the owner for this node
@@ -161,14 +179,18 @@ struct AdminMessage {
     /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
     case setChannel(Channel)
     ///
-    /// Send the current RadioConfig in the response for this message.
+    /// Send the current RadioConfig in the response to this message.
     case getRadioRequest(Bool)
     case getRadioResponse(RadioConfig)
     ///
-    /// Send the specified channel in the response for this message
+    /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
     case getChannelRequest(UInt32)
     case getChannelResponse(Channel)
+    ///
+    /// Send the current owner data in the response to this message.
+    case getOwnerRequest(Bool)
+    case getOwnerResponse(User)
     ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
@@ -218,6 +240,14 @@ struct AdminMessage {
         guard case .getChannelResponse(let l) = lhs, case .getChannelResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getOwnerRequest, .getOwnerRequest): return {
+        guard case .getOwnerRequest(let l) = lhs, case .getOwnerRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getOwnerResponse, .getOwnerResponse): return {
+        guard case .getOwnerResponse(let l) = lhs, case .getOwnerResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.confirmSetChannel, .confirmSetChannel): return {
         guard case .confirmSetChannel(let l) = lhs, case .confirmSetChannel(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -255,10 +285,12 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     5: .standard(proto: "get_radio_response"),
     6: .standard(proto: "get_channel_request"),
     7: .standard(proto: "get_channel_response"),
+    8: .standard(proto: "get_owner_request"),
+    9: .standard(proto: "get_owner_response"),
     32: .standard(proto: "confirm_set_channel"),
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
-    35: .standard(proto: "reboot_seconds")
+    35: .standard(proto: "reboot_seconds"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -348,6 +380,27 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.variant = .getChannelResponse(v)
         }
       }()
+      case 8: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getOwnerRequest(v)
+        }
+      }()
+      case 9: try {
+        var v: User?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getOwnerResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getOwnerResponse(v)
+        }
+      }()
       case 32: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -387,9 +440,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
+    // allocates stack space for every case branch when no optimizations are
+    // enabled. https://github.com/apple/swift-protobuf/issues/1034
     switch self.variant {
     case .setRadio?: try {
       guard case .setRadio(let v)? = self.variant else { preconditionFailure() }
@@ -418,6 +470,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .getChannelResponse?: try {
       guard case .getChannelResponse(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case .getOwnerRequest?: try {
+      guard case .getOwnerRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    }()
+    case .getOwnerResponse?: try {
+      guard case .getOwnerResponse(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     }()
     case .confirmSetChannel?: try {
       guard case .confirmSetChannel(let v)? = self.variant else { preconditionFailure() }

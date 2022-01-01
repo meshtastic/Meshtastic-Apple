@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -30,35 +30,29 @@ struct ServiceEnvelope {
   ///
   /// The (probably encrypted) packet
   var packet: MeshPacket {
-    get {return _storage._packet ?? MeshPacket()}
-    set {_uniqueStorage()._packet = newValue}
+    get {return _packet ?? MeshPacket()}
+    set {_packet = newValue}
   }
   /// Returns true if `packet` has been explicitly set.
-  var hasPacket: Bool {return _storage._packet != nil}
+  var hasPacket: Bool {return self._packet != nil}
   /// Clears the value of `packet`. Subsequent reads from it will return its default value.
-  mutating func clearPacket() {_uniqueStorage()._packet = nil}
+  mutating func clearPacket() {self._packet = nil}
 
   ///
   /// The global channel ID it was sent on
-  var channelID: String {
-    get {return _storage._channelID}
-    set {_uniqueStorage()._channelID = newValue}
-  }
+  var channelID: String = String()
 
   ///
   /// The sending gateway node ID. Can we use this to authenticate/prevent fake
   /// nodeid impersonation for senders? - i.e. use gateway/mesh id (which is authenticated) + local node id as
   /// the globally trusted nodenum
-  var gatewayID: String {
-    get {return _storage._gatewayID}
-    set {_uniqueStorage()._gatewayID = newValue}
-  }
+  var gatewayID: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _packet: MeshPacket? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -68,80 +62,40 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "packet"),
     2: .standard(proto: "channel_id"),
-    3: .standard(proto: "gateway_id")
+    3: .standard(proto: "gateway_id"),
   ]
 
-  fileprivate class _StorageClass {
-    var _packet: MeshPacket?
-    var _channelID: String = String()
-    var _gatewayID: String = String()
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _packet = source._packet
-      _channelID = source._channelID
-      _gatewayID = source._gatewayID
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._packet) }()
-        case 2: try { try decoder.decodeSingularStringField(value: &_storage._channelID) }()
-        case 3: try { try decoder.decodeSingularStringField(value: &_storage._gatewayID) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._packet) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.channelID) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.gatewayID) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._packet {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      } }()
-      if !_storage._channelID.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._channelID, fieldNumber: 2)
-      }
-      if !_storage._gatewayID.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._gatewayID, fieldNumber: 3)
-      }
+    if let v = self._packet {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }
+    if !self.channelID.isEmpty {
+      try visitor.visitSingularStringField(value: self.channelID, fieldNumber: 2)
+    }
+    if !self.gatewayID.isEmpty {
+      try visitor.visitSingularStringField(value: self.gatewayID, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ServiceEnvelope, rhs: ServiceEnvelope) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._packet != rhs_storage._packet {return false}
-        if _storage._channelID != rhs_storage._channelID {return false}
-        if _storage._gatewayID != rhs_storage._gatewayID {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._packet != rhs._packet {return false}
+    if lhs.channelID != rhs.channelID {return false}
+    if lhs.gatewayID != rhs.gatewayID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

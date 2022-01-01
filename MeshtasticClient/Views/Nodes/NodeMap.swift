@@ -25,24 +25,15 @@ struct NodeMap: View {
 
 	private var locationNodes: FetchedResults<NodeInfoEntity>
 
-	var annotations: [MapLocation] = [MapLocation]()
-
     var body: some View {
 
 		let location = LocationHelper.currentLocation
-        let currentCoordinatePosition = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-        let regionBinding = Binding<MKCoordinateRegion>(
-            get: {
-                MKCoordinateRegion(center: currentCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.0359, longitudeDelta: 0.0359))
-            },
-            set: { _ in }
-        )
 
         NavigationView {
 
             ZStack {
 
-				MapView(nodes: self.locationNodes)// .environmentObject(userSettings)
+				MapView(nodes: self.locationNodes)//.environmentObject(bleManager)
                 // }
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])
