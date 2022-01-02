@@ -28,7 +28,7 @@ struct Contacts: View {
 				
 				let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
 				
-				NavigationLink(destination: UserMessageList(user: user).environment(\.managedObjectContext, self.context)) {
+				NavigationLink(destination: UserMessageList(user: user)) {
 								
 					if allMessages.count > 0 {
 						

@@ -144,6 +144,17 @@ struct UserMessageList: View {
 												}
 											}
 											
+											
+//											VStack (alignment: .trailing) {
+//
+//												HStack  {
+//													let image = "❤️".image(fontSize: 26)
+//													Image(uiImage: image!).font(.caption)
+//													CircleText(text: "AKA", color: .blue, circleSize: 28, fontSize: 11)
+//												}
+//												.padding(0)
+//											}
+
 											HStack(spacing: 4) {
 
 												let time = Int32(message.messageTimestamp)
@@ -158,11 +169,13 @@ struct UserMessageList: View {
 											}
 											.padding(.bottom, 10)
 										}
+										.id(allMessages.firstIndex(of: message))
+										
 										if !currentUser {
 											Spacer(minLength:50)
 										}
 									}
-									.padding(.trailing)
+									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
 									.alert(isPresented: $showDeleteMessageAlert) {
 										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
@@ -189,30 +202,28 @@ struct UserMessageList: View {
 							}
 						}
 						.listRowSeparator(.hidden)
+					
 					}
 				}
 				.onAppear(perform: {
 					
 					self.bleManager.context = context
+				
 					messageCount = ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
 					
 					if messageCount > 0 {
-						
-						//scrollView.scrollTo(allMessages[allMessages.count-1].id, anchor: .bottom)
-						//scrollView.scrollTo(allMessages[allMessages.endIndex - 1])
-						//scrollView.scrollTo((allMessages[messageCount-1] as AnyObject).id, anchor: .bottom)
-						
+						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
 				.onChange(of: user, perform: { newValue in
 					
-						messageCount =  ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
-						if messageCount > 0 {
-
-							//scrollView.scrollTo((allMessages[messageCount-1] as AnyObject).id, anchor: .bottom)
-						}
+					messageCount =  ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
+					
+					if messageCount > 0 {
+						
+						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
-				)
+				})
 			}
 				
 			
