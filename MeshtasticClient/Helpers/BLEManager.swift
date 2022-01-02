@@ -493,7 +493,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
-						if decodedInfo.nodeInfo.lastHeard != nil && decodedInfo.nodeInfo.lastHeard > 0 {
+						if decodedInfo.nodeInfo.lastHeard > 0 {
 							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						}
 						else {
@@ -728,7 +728,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
 							
-							if decodedInfo.packet.rxTime != nil && decodedInfo.packet.rxTime > 0 {
+							if decodedInfo.packet.rxTime > 0 {
 								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							}
 							else {
@@ -846,7 +846,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
 
 	// Send Broadcast Message
-	public func sendMessage(message: String, toUserNum: Int64) -> Bool {
+	public func sendMessage(message: String, toUserNum: Int64, replyTo: Int64) -> Bool {
 		
 		var success = false
 
@@ -902,6 +902,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					if replyTo > 0 {
+						newMessage.replyID = replyTo
+					}
 					if newMessage.toUser == nil {
 
 						let bcu: UserEntity = UserEntity(context: context!)
@@ -925,6 +928,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
+					if replyTo > 0 {
+						meshPacket.replyID = UInt32(replyTo)
+					}
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
 

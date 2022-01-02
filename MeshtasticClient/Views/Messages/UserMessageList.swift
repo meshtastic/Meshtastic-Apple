@@ -27,6 +27,7 @@ struct UserMessageList: View {
 	
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
+	@State private var replyMessageId: Int64 = 0
 	
 	@State var messageCount = 0
 
@@ -55,7 +56,6 @@ struct UserMessageList: View {
 										if !currentUser {
 										
 											CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
-												.padding(.leading)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
@@ -66,7 +66,7 @@ struct UserMessageList: View {
 											.background(currentUser ? Color.blue : Color(.darkGray))
 											.cornerRadius(15)
 											.contextMenu {
-												Menu("Tapback Reaction") {
+												Menu("Tapback response") {
 													Button(action: {
 													// Send Heart Tapback
 													}) {
@@ -119,7 +119,10 @@ struct UserMessageList: View {
 													
 												}
 												Button(action: {
-												// copy the content to the paste board
+													self.replyMessageId = message.messageId
+													self.focusedField = .messageText
+		
+													print("I want to reply to \(message.messageId)")
 												}) {
 													Text("Reply")
 													Image(systemName: "arrowshape.turn.up.left.2.fill")
@@ -261,9 +264,10 @@ struct UserMessageList: View {
 				.padding(.bottom, 15)
 
 				Button(action: {
-					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num) {
+					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, replyTo: replyMessageId) {
 						typingMessage = ""
 						focusedField = nil
+						replyMessageId = 0
 					}
 
 				}) {
