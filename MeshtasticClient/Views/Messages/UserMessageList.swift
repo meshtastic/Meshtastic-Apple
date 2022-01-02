@@ -28,18 +28,17 @@ struct UserMessageList: View {
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	
-	@State var mergedMessageList: NSMutableOrderedSet?
+	@State var messageCount = 0
 
     var body: some View {
 
 		VStack {
 			
+			let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
+			
 			ScrollViewReader { scrollView in
 
 				ScrollView {
-					// Use fetched property
-					let allMessages = user.value(forKey: "allMessages")
-						as! [MessageEntity]
 					
 					if allMessages.count > 0 {
 
@@ -106,10 +105,25 @@ struct UserMessageList: View {
 				.onAppear(perform: {
 					
 					self.bleManager.context = context
-					if mergedMessageList?.count ?? 0 > 0 {
-						scrollView.scrollTo((mergedMessageList![mergedMessageList!.count-1] as AnyObject).id, anchor: .bottom)
+					messageCount = ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
+					
+					if messageCount > 0 {
+						
+						//scrollView.scrollTo(allMessages[allMessages.count-1].id, anchor: .bottom)
+						//scrollView.scrollTo(allMessages[allMessages.endIndex - 1])
+						//scrollView.scrollTo((allMessages[messageCount-1] as AnyObject).id, anchor: .bottom)
+						
 					}
 				})
+				.onChange(of: user, perform: { newValue in
+					
+						messageCount =  ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
+						if messageCount > 0 {
+
+							//scrollView.scrollTo((allMessages[messageCount-1] as AnyObject).id, anchor: .bottom)
+						}
+					}
+				)
 			}
 				
 			

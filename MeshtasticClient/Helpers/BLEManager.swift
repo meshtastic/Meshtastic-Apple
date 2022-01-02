@@ -425,7 +425,29 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
 						connectedPeripheral.num = myInfo.myNodeNum
 						connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
-
+						
+						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
+						
+						do {
+							let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
+							
+							if fetchedUser.isEmpty {
+								// Save the broadcast user if it does not exist
+								let bcu: UserEntity = UserEntity(context: context!)
+								bcu.shortName = "ALL"
+								bcu.longName = "All - Broadcast"
+								bcu.hwModel = "UNSET"
+								bcu.num = Int64(broadcastNodeNum)
+								bcu.userId = "BROADCASTNODE"
+								print("💾 Saved the All - Broadcast User")
+							}
+							
+						} catch {
+							
+							print("💥 Error Saving the All - Broadcast User")
+						}
+						
 					} else {
 
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
