@@ -46,9 +46,7 @@ struct UserMessageList: View {
 							
 								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
 								
-								
 								if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
-									
 									
 									HStack (alignment: .top) {
 									
@@ -57,20 +55,12 @@ struct UserMessageList: View {
 										if !currentUser {
 										
 											CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
-												.gesture(LongPressGesture(minimumDuration: 2).onEnded {_ in
-
-													print("I want to delete message: \(message.messageId)")
-													self.showDeleteMessageAlert = true
-													self.deleteMessageId = message.messageId
-													print(deleteMessageId)
-											})
-											.padding(.leading)
+												.padding(.leading)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
 											
 											Text(message.messagePayload ?? "EMPTY MESSAGE")
-											//.textSelection(.enabled)
 											.padding(10)
 											.foregroundColor(.white)
 											.background(currentUser ? Color.blue : Color(.darkGray))
@@ -135,19 +125,20 @@ struct UserMessageList: View {
 													Image(systemName: "arrowshape.turn.up.left.2.fill")
 												}
 												Button(action: {
-												// copy the content to the paste board
+													UIPasteboard.general.string = message.messagePayload
 												}) {
 													Text("Copy")
 													Image(systemName: "doc.on.doc")
 												}
 												Divider()
 												Button(role: .destructive, action: {
-												// copy the content to the paste board
+													self.showDeleteMessageAlert = true
+													self.deleteMessageId = message.messageId
+													print(deleteMessageId)
 												}) {
 													Text("Delete")
 													Image(systemName: "trash")
 												}
-								
 											}
 											
 											HStack(spacing: 4) {
@@ -170,8 +161,29 @@ struct UserMessageList: View {
 									}
 									.padding(.trailing)
 									.frame(maxWidth: .infinity)
+									.alert(isPresented: $showDeleteMessageAlert) {
+										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
+										primaryButton: .destructive(Text("Delete")) {
+										print("OK button tapped")
+										if deleteMessageId > 0 {
+
+											let message = allMessages.first(where: { $0.messageId == deleteMessageId })
+
+											context.delete(message!)
+											do {
+												try context.save()
+
+												deleteMessageId = 0
+
+											} catch {
+													print("Failed to delete message \(deleteMessageId)")
+											}
+										}
+									},
+									secondaryButton: .cancel()
+									)
 								}
-						//	}
+							}
 						}
 						.listRowSeparator(.hidden)
 					}
