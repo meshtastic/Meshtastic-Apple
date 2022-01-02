@@ -35,7 +35,7 @@ struct UserMessageList: View {
 		VStack {
 			
 			let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
-			
+
 			ScrollViewReader { scrollView in
 
 				ScrollView {
@@ -70,11 +70,85 @@ struct UserMessageList: View {
 										VStack(alignment: currentUser ? .trailing : .leading) {
 											
 											Text(message.messagePayload ?? "EMPTY MESSAGE")
-											.textSelection(.enabled)
+											//.textSelection(.enabled)
 											.padding(10)
 											.foregroundColor(.white)
 											.background(currentUser ? Color.blue : Color(.darkGray))
 											.cornerRadius(15)
+											.contextMenu {
+												Menu("Tapback Reaction") {
+													Button(action: {
+													// Send Heart Tapback
+													}) {
+														Text("Heart")
+														let image = "❤️".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send Heart Tapback
+													}) {
+														Text("Thumbs Up")
+														let image = "👍".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send Heart Tapback
+													}) {
+														Text("Thumbs Down")
+														let image = "👎".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send ROFL Tapback
+													}) {
+														Text("HaHa")
+														let image = "🤣".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send Heart Tapback
+													}) {
+														Text("Exclamation Mark")
+														let image = "‼️".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send Heart Tapback
+													}) {
+														Text("Question Mark")
+														let image = "❓".image()
+														Image(uiImage: image!)
+													}
+													Button(action: {
+													// Send Poop Tapback
+													}) {
+														Text("Poop")
+														let image = "💩".image()
+														Image(uiImage: image!)
+													}
+													
+												}
+												Button(action: {
+												// copy the content to the paste board
+												}) {
+													Text("Reply")
+													Image(systemName: "arrowshape.turn.up.left.2.fill")
+												}
+												Button(action: {
+												// copy the content to the paste board
+												}) {
+													Text("Copy")
+													Image(systemName: "doc.on.doc")
+												}
+												Divider()
+												Button(role: .destructive, action: {
+												// copy the content to the paste board
+												}) {
+													Text("Delete")
+													Image(systemName: "trash")
+												}
+								
+											}
 											
 											HStack(spacing: 4) {
 
