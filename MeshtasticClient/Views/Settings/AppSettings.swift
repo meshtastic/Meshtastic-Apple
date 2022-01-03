@@ -157,7 +157,15 @@ struct AppSettings: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
-					Section(header: Text("MESH NETWORK OPTIONS")) {
+					Section(header: Text("MAP OPTIONS")) {
+						 Picker("Map Type", selection: $userSettings.meshMapType) {
+							 ForEach(MeshMapType.allCases) { map in
+								 Text(map.description)
+							 }
+						 }
+						 .pickerStyle(DefaultPickerStyle())
+					}
+					Section(header: Text("DEBUG")) {
 						// Toggle(isOn: $userSettings.meshActivityLog) {
 
 						//	Label("Log all Mesh activity", systemImage: "network")
@@ -170,14 +178,7 @@ struct AppSettings: View {
 							.listRowSeparator(.visible)
 						}
 					}
-					Section(header: Text("MAP OPTIONS")) {
-						 Picker("Map Type", selection: $userSettings.meshMapType) {
-							 ForEach(MeshMapType.allCases) { map in
-								 Text(map.description)
-							 }
-						 }
-						 .pickerStyle(DefaultPickerStyle())
-					}
+					
 				}
 			}
             .navigationTitle("App Settings")

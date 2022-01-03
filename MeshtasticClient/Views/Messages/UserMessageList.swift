@@ -42,7 +42,11 @@ struct UserMessageList: View {
 				ScrollView {
 					
 					if allMessages.count > 0 {
-
+						
+						HStack{
+							// Padding at the top of the message list
+						}.padding(.bottom)
+						
 						ForEach( allMessages ) { (message: MessageEntity) in
 							
 								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
@@ -54,8 +58,7 @@ struct UserMessageList: View {
 										if currentUser { Spacer(minLength:50) }
 										
 										if !currentUser {
-										
-											CircleText(text: (message.fromUser?.shortName ?? "???"), color: currentUser ? .accentColor : Color(.darkGray)).padding(.all, 5)
+											CircleText(text: message.fromUser?.shortName ?? "???", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 36, fontSize: 16).padding(.all, 5)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
@@ -296,8 +299,8 @@ struct UserMessageList: View {
 
 				HStack {
 
-					CircleText(text: user.shortName ?? "???", color: .blue).fixedSize()
-					Text(user.longName ?? "Unknown").foregroundColor(.gray).font(.caption2).fixedSize()
+					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 42, fontSize: 20).fixedSize()
+					Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

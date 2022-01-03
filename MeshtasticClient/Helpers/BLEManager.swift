@@ -808,7 +808,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
+					
+					//
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
+
+					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+
+				 } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")

@@ -8,8 +8,8 @@ import SwiftUI
 struct CircleText: View {
     var text: String
     var color: Color
-	var circleSize: CGFloat? = 40
-	var fontSize: CGFloat? = 16
+	var circleSize: CGFloat? = 50
+	var fontSize: CGFloat? = 24
 
     var body: some View {
 		
