@@ -28,6 +28,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var connectedPeripheral: Peripheral!
     //@Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
+	@Published var lastConnnectionVersion: String
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
@@ -55,8 +56,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     override init() {
 
 		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
-        //self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
+		self.lastConnnectionVersion = "0.0.0"
         super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -426,6 +427,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
 						version = version.dropLast()
 						myInfo.firmwareVersion = String(version)
+						lastConnnectionVersion = String(version)
 				
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
@@ -464,6 +466,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
 						version = version.dropLast()
 						fetchedMyInfo[0].firmwareVersion = String(version)
+						lastConnnectionVersion = String(version)
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
@@ -823,22 +826,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
 				 }
 
 				} catch {

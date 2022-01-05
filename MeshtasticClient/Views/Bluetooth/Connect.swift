@@ -22,13 +22,28 @@ struct Connect: View {
 	@State var isPreferredRadio: Bool = false
 
     var body: some View {
+		
+		let firmwareVersion = bleManager.lastConnnectionVersion
+		let minimumVersion = "1.2.30"
+		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 
+		
 		NavigationView {
 
             VStack {
                 if bleManager.isSwitchedOn {
 
                     List {
+						
+						if supportedVersion == false {
+
+							Section(header: Text("Upgrade your Firmware").font(.title)) {
+
+								Text("🚨 Your firmware version is unsupported, the minimum firmware version is \(minimumVersion).").font(.subheadline).foregroundColor(.red)
+							}
+							.textCase(nil)
+						}
+						
 						if bleManager.lastConnectionError.count > 0 {
 
 							Section(header: Text("Connection Error").font(.title)) {
