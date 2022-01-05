@@ -71,55 +71,96 @@ struct UserMessageList: View {
 											.contextMenu {
 												Menu("Tapback response") {
 													Button(action: {
-													// Send Heart Tapback
+														
+														if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent ❤️ Tapback")
+															
+														} else { print("❤️ Tapback Failed") }
+														
 													}) {
 														Text("Heart")
 														let image = "❤️".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send Heart Tapback
+														
+														if bleManager.sendMessage(message: "👍", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent 👍 Tapback")
+															
+														} else { print("👍 Tapback Failed")}
+														
 													}) {
 														Text("Thumbs Up")
 														let image = "👍".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send Heart Tapback
+														
+														if bleManager.sendMessage(message: "👎", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent 👎 Tapback")
+															
+														} else { print("👎 Tapback Failed") }
+														
 													}) {
 														Text("Thumbs Down")
 														let image = "👎".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send ROFL Tapback
+														
+														if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent 🤣 Tapback")
+															
+														} else { print("🤣 Tapback Failed") }
+														
 													}) {
 														Text("HaHa")
 														let image = "🤣".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send Heart Tapback
+								
+														if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent ‼️ Tapback")
+															
+														} else { print("‼️ Tapback Failed") }
+														
 													}) {
 														Text("Exclamation Mark")
 														let image = "‼️".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send Heart Tapback
+														
+														if bleManager.sendMessage(message: "❓", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent ❓ Tapback")
+															
+														} else { print("❓ Tapback Failed") }
+														
 													}) {
 														Text("Question Mark")
 														let image = "❓".image()
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													// Send Poop Tapback
+													
+														if bleManager.sendMessage(message: "💩", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															
+															print("Sent 💩 Tapback")
+															
+														} else { print("💩 Tapback Failed") }
+														
 													}) {
 														Text("Poop")
 														let image = "💩".image()
 														Image(uiImage: image!)
 													}
-													
 												}
 												Button(action: {
 													self.replyMessageId = message.messageId
@@ -147,18 +188,28 @@ struct UserMessageList: View {
 												}
 											}
 											
-											
-//											VStack (alignment: .trailing) {
-//
-//												HStack  {
-//													let image = "❤️".image(fontSize: 26)
-//													Image(uiImage: image!).font(.caption)
-//													CircleText(text: "AKA", color: .blue, circleSize: 28, fontSize: 11)
-//												}
-//												.padding(0)
-//											}
+											VStack (alignment: .trailing) {
 
-											HStack(spacing: 4) {
+												let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+												HStack  {
+													
+													ForEach( tapbacks ) { (tapback: MessageEntity) in
+													
+														VStack {
+															
+															let image = tapback.messagePayload!.image(fontSize: 20)
+															Image(uiImage: image!).font(.caption)
+															Text("\(tapback.fromUser?.shortName ?? "???")")
+																.font(.caption2)
+																.foregroundColor(.gray)
+																.fixedSize()
+																.padding(.bottom, 1)
+														}
+													}
+												}
+											}
+
+											HStack {
 
 												let time = Int32(message.messageTimestamp)
 												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
@@ -170,7 +221,7 @@ struct UserMessageList: View {
 													Text("Unknown").font(.caption2).foregroundColor(.gray)
 												}
 											}
-											.padding(.bottom, 10)
+											.padding(4)
 										}
 										.id(allMessages.firstIndex(of: message))
 										
@@ -205,7 +256,6 @@ struct UserMessageList: View {
 							}
 						}
 						.listRowSeparator(.hidden)
-					
 					}
 				}
 				.onAppear(perform: {
@@ -278,7 +328,7 @@ struct UserMessageList: View {
 				.padding(.bottom, 15)
 
 				Button(action: {
-					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, replyTo: replyMessageId) {
+					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, isTapback: false, replyID: replyMessageId) {
 						typingMessage = ""
 						focusedField = nil
 						replyMessageId = 0

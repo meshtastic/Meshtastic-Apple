@@ -2,6 +2,7 @@ import Foundation
 import CoreData
 import CoreBluetooth
 import SwiftUI
+import MapKit
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -419,7 +420,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
 						myInfo.numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
-						myInfo.firmwareVersion = decodedInfo.myInfo.firmwareVersion
+						
+						// Swift does strings weird, this does work
+						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						version = version.dropLast()
+						myInfo.firmwareVersion = String(version)
+				
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
@@ -453,7 +460,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
 						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
-						fetchedMyInfo[0].firmwareVersion = decodedInfo.myInfo.firmwareVersion
+						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						version = version.dropLast()
+						fetchedMyInfo[0].firmwareVersion = String(version)
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
@@ -852,8 +862,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         peripheral.readValue(for: FROMRADIO_characteristic)
     }
 
-	// Send Broadcast Message
-	public func sendMessage(message: String, toUserNum: Int64, replyTo: Int64) -> Bool {
+	// Send  Message
+	public func sendMessage(message: String, toUserNum: Int64, isTapback: Bool, replyID: Int64) -> Bool {
 		
 		var success = false
 
@@ -868,18 +878,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-//			else {
-//
-//				// Try and connect to the last connected device
-//				let lastConnectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == self.lastConnectedPeripheral }).first
-//				if lastConnectedPeripheral != nil && lastConnectedPeripheral?.peripheral != nil {
-//					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
-//				}
-//			}
-			 //print("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)")
-			//if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)") }
+			print("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")")
+			if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")") }
 
 			success = false
+			
 		} else if message.count < 1 {
 
 			// Don't send an empty message
@@ -909,8 +912,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
-					if replyTo > 0 {
-						newMessage.replyID = replyTo
+					newMessage.isTapback = isTapback
+					
+					if replyID > 0 {
+						
+						newMessage.replyID = replyID
 					}
 					if newMessage.toUser == nil {
 
@@ -922,6 +928,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						bcu.userId = "BROADCASTNODE"
 						newMessage.toUser = bcu
 					}
+					
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 
@@ -935,8 +942,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
-					if replyTo > 0 {
-						meshPacket.replyID = UInt32(replyTo)
+					if replyID > 0 {
+						meshPacket.replyID = UInt32(replyID)
 					}
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true

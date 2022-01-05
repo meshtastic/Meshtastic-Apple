@@ -2,7 +2,7 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21C52" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
         <attribute name="direction" attributeType="String"/>
-        <attribute name="isTapback" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isTapback" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="messageId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="messagePayload" attributeType="String"/>
         <attribute name="messageTimestamp" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -10,6 +10,9 @@
         <attribute name="replyID" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="fromUser" maxCount="1" deletionRule="Nullify" ordered="YES" destinationEntity="UserEntity" inverseName="sentMessages" inverseEntity="UserEntity"/>
         <relationship name="toUser" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="receivedMessages" inverseEntity="UserEntity"/>
+        <fetchedProperty name="tapbacks" optional="YES">
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="replyID == $FETCH_SOURCE.messageId AND isTapback == true"/>
+        </fetchedProperty>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="messageId"/>
@@ -66,11 +69,11 @@
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
         <fetchedProperty name="allMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND isTapback == false"/>
         </fetchedProperty>
     </entity>
     <elements>
-        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="164"/>
+        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="185"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="149"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
