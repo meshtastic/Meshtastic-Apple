@@ -57,6 +57,24 @@ struct UserMessageList: View {
 								
 								if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
 									
+									
+									if message.replyID > 0 {
+										
+										HStack {
+											
+											Text(message.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+												.padding(10)
+												.overlay(
+													RoundedRectangle(cornerRadius: 18)
+														.stroke(Color.blue, lineWidth: 0.5)
+											)
+											Image(systemName: "arrowshape.turn.up.left.fill")
+												.symbolRenderingMode(.hierarchical)
+												.imageScale(.large).foregroundColor(.blue)
+												.padding(.trailing)
+										}
+									}
+									
 									HStack (alignment: .top) {
 									
 										if currentUser { Spacer(minLength:50) }
@@ -77,8 +95,6 @@ struct UserMessageList: View {
 												if hasTapbackSupport {
 												
 													Menu("Tapback response") {
-														
-														
 														
 														Button(action: {
 															
