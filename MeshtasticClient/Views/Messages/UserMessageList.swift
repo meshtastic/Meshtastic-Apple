@@ -32,7 +32,11 @@ struct UserMessageList: View {
 	@State var messageCount = 0
 
     var body: some View {
-
+		
+		let firmwareVersion = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.firmwareVersion : "0.0.0"
+		let minimumVersion = "1.2.50"
+		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
+		
 		VStack {
 			
 			let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
@@ -69,107 +73,115 @@ struct UserMessageList: View {
 											.background(currentUser ? Color.blue : Color(.darkGray))
 											.cornerRadius(15)
 											.contextMenu {
-												Menu("Tapback response") {
-													Button(action: {
+												
+												if hasTapbackSupport {
+												
+													Menu("Tapback response") {
 														
-														if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent ❤️ Tapback")
-															
-														} else { print("❤️ Tapback Failed") }
 														
-													}) {
-														Text("Heart")
-														let image = "❤️".image()
-														Image(uiImage: image!)
+														
+														Button(action: {
+															
+															if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent ❤️ Tapback")
+																
+															} else { print("❤️ Tapback Failed") }
+															
+														}) {
+															Text("Heart")
+															let image = "❤️".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+															
+															if bleManager.sendMessage(message: "👍", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent 👍 Tapback")
+																
+															} else { print("👍 Tapback Failed")}
+															
+														}) {
+															Text("Thumbs Up")
+															let image = "👍".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+															
+															if bleManager.sendMessage(message: "👎", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent 👎 Tapback")
+																
+															} else { print("👎 Tapback Failed") }
+															
+														}) {
+															Text("Thumbs Down")
+															let image = "👎".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+															
+															if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent 🤣 Tapback")
+																
+																
+															} else { print("🤣 Tapback Failed") }
+															
+														}) {
+															Text("HaHa")
+															let image = "🤣".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+									
+															if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent ‼️ Tapback")
+																
+															} else { print("‼️ Tapback Failed") }
+															
+														}) {
+															Text("Exclamation Mark")
+															let image = "‼️".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+															
+															if bleManager.sendMessage(message: "❓", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent ❓ Tapback")
+																
+															} else { print("❓ Tapback Failed") }
+															
+														}) {
+															Text("Question Mark")
+															let image = "❓".image()
+															Image(uiImage: image!)
+														}
+														Button(action: {
+														
+															if bleManager.sendMessage(message: "💩", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+																
+																print("Sent 💩 Tapback")
+																
+															} else { print("💩 Tapback Failed") }
+															
+														}) {
+															Text("Poop")
+															let image = "💩".image()
+															Image(uiImage: image!)
+														}
 													}
 													Button(action: {
-														
-														if bleManager.sendMessage(message: "👍", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent 👍 Tapback")
-															
-														} else { print("👍 Tapback Failed")}
-														
+														self.replyMessageId = message.messageId
+														self.focusedField = .messageText
+			
+														print("I want to reply to \(message.messageId)")
 													}) {
-														Text("Thumbs Up")
-														let image = "👍".image()
-														Image(uiImage: image!)
+														Text("Reply")
+														Image(systemName: "arrowshape.turn.up.left.2.fill")
 													}
-													Button(action: {
-														
-														if bleManager.sendMessage(message: "👎", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent 👎 Tapback")
-															
-														} else { print("👎 Tapback Failed") }
-														
-													}) {
-														Text("Thumbs Down")
-														let image = "👎".image()
-														Image(uiImage: image!)
-													}
-													Button(action: {
-														
-														if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent 🤣 Tapback")
-															
-														} else { print("🤣 Tapback Failed") }
-														
-													}) {
-														Text("HaHa")
-														let image = "🤣".image()
-														Image(uiImage: image!)
-													}
-													Button(action: {
-								
-														if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent ‼️ Tapback")
-															
-														} else { print("‼️ Tapback Failed") }
-														
-													}) {
-														Text("Exclamation Mark")
-														let image = "‼️".image()
-														Image(uiImage: image!)
-													}
-													Button(action: {
-														
-														if bleManager.sendMessage(message: "❓", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent ❓ Tapback")
-															
-														} else { print("❓ Tapback Failed") }
-														
-													}) {
-														Text("Question Mark")
-														let image = "❓".image()
-														Image(uiImage: image!)
-													}
-													Button(action: {
-													
-														if bleManager.sendMessage(message: "💩", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
-															
-															print("Sent 💩 Tapback")
-															
-														} else { print("💩 Tapback Failed") }
-														
-													}) {
-														Text("Poop")
-														let image = "💩".image()
-														Image(uiImage: image!)
-													}
-												}
-												Button(action: {
-													self.replyMessageId = message.messageId
-													self.focusedField = .messageText
-		
-													print("I want to reply to \(message.messageId)")
-												}) {
-													Text("Reply")
-													Image(systemName: "arrowshape.turn.up.left.2.fill")
 												}
 												Button(action: {
 													UIPasteboard.general.string = message.messagePayload
@@ -188,27 +200,40 @@ struct UserMessageList: View {
 												}
 											}
 											
-											VStack (alignment: .trailing) {
-
+											if hasTapbackSupport {
+											
 												let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
-												HStack  {
+											
+											
+												if tapbacks.count > 0 {
 													
-													ForEach( tapbacks ) { (tapback: MessageEntity) in
-													
-														VStack {
+													VStack (alignment: .trailing) {
+
+														HStack  {
 															
-															let image = tapback.messagePayload!.image(fontSize: 20)
-															Image(uiImage: image!).font(.caption)
-															Text("\(tapback.fromUser?.shortName ?? "???")")
-																.font(.caption2)
-																.foregroundColor(.gray)
-																.fixedSize()
-																.padding(.bottom, 1)
+															ForEach( tapbacks ) { (tapback: MessageEntity) in
+															
+																VStack {
+																	
+																	let image = tapback.messagePayload!.image(fontSize: 20)
+																	Image(uiImage: image!).font(.caption)
+																	Text("\(tapback.fromUser?.shortName ?? "???")")
+																		.font(.caption2)
+																		.foregroundColor(.gray)
+																		.fixedSize()
+																		.padding(.bottom, 1)
+																}
+															}
 														}
+														.padding(10)
+														.overlay(
+															RoundedRectangle(cornerRadius: 18)
+																.stroke(Color.gray, lineWidth: 1)
+														)
 													}
 												}
 											}
-
+											
 											HStack {
 
 												let time = Int32(message.messageTimestamp)
