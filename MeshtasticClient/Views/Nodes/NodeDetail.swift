@@ -91,13 +91,16 @@ struct NodeDetail: View {
 
 							VStack {
 
-								Image(node.user!.hwModel ?? "UNSET")
-									.resizable()
-									.frame(width: 50, height: 50)
-									.cornerRadius(5)
+								if node.user != nil {
+									
+									Image(node.user!.hwModel ?? "UNSET")
+										.resizable()
+										.frame(width: 50, height: 50)
+										.cornerRadius(5)
 
-								Text(String(node.user!.hwModel ?? "UNSET"))
-									.font(.callout).fixedSize()
+									Text(String(node.user!.hwModel ?? "UNSET"))
+										.font(.callout).fixedSize()
+								}
 							}
 							.padding(5)
 
@@ -262,7 +265,8 @@ struct NodeDetail: View {
 							}
 						}
 					}
-				}.ignoresSafeArea(.all, edges: [.leading, .trailing])
+				}
+				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
 		}
 		.navigationTitle(node.user!.longName ?? "Unknown")

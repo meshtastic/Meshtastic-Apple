@@ -23,7 +23,7 @@ struct UserMessageList: View {
 	@State var lastTypingMessage = ""
 	@FocusState var focusedField: Field?
 
-	var user: UserEntity
+	@State var user: UserEntity
 	
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
@@ -57,12 +57,13 @@ struct UserMessageList: View {
 								
 								if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
 									
-									
 									if message.replyID > 0 {
+										
+										let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
 										
 										HStack {
 											
-											Text(message.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
 												.padding(10)
 												.overlay(
 													RoundedRectangle(cornerRadius: 18)
@@ -101,6 +102,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent ❤️ Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("❤️ Tapback Failed") }
 															
@@ -114,6 +116,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "👍", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent 👍 Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("👍 Tapback Failed")}
 															
@@ -127,6 +130,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "👎", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent 👎 Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("👎 Tapback Failed") }
 															
@@ -140,7 +144,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent 🤣 Tapback")
-																
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("🤣 Tapback Failed") }
 															
@@ -154,6 +158,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent ‼️ Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("‼️ Tapback Failed") }
 															
@@ -167,6 +172,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "❓", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent ❓ Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("❓ Tapback Failed") }
 															
@@ -180,6 +186,7 @@ struct UserMessageList: View {
 															if bleManager.sendMessage(message: "💩", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
 																
 																print("Sent 💩 Tapback")
+																self.context.refresh(user, mergeChanges: true)
 																
 															} else { print("💩 Tapback Failed") }
 															
@@ -219,7 +226,7 @@ struct UserMessageList: View {
 											if hasTapbackSupport {
 											
 												let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
-											
+												
 											
 												if tapbacks.count > 0 {
 													
@@ -311,6 +318,7 @@ struct UserMessageList: View {
 				})
 				.onChange(of: user, perform: { newValue in
 					
+					self.context.refresh(user, mergeChanges: true)
 					messageCount =  ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
 					
 					if messageCount > 0 {
