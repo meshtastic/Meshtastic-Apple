@@ -23,7 +23,7 @@ struct UserMessageList: View {
 	@State var lastTypingMessage = ""
 	@FocusState var focusedField: Field?
 
-	@State var user: UserEntity
+	@ObservedObject var user: UserEntity
 	
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
