@@ -269,7 +269,7 @@ struct NodeDetail: View {
 				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
 		}
-		.navigationTitle(node.user!.longName ?? "Unknown")
+		.navigationTitle(node != nil ? String(node.user!.longName ?? "Unknown") : "Unknown")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
