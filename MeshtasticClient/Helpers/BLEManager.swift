@@ -2,6 +2,7 @@ import Foundation
 import CoreData
 import CoreBluetooth
 import SwiftUI
+import MapKit
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -27,6 +28,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     @Published var connectedPeripheral: Peripheral!
     //@Published var lastConnectedPeripheral: String
     @Published var lastConnectionError: String
+	@Published var lastConnnectionVersion: String
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
@@ -54,8 +56,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     override init() {
 
 		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
-        //self.lastConnectedPeripheral = ""
         self.lastConnectionError = ""
+		self.lastConnnectionVersion = "0.0.0"
         super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -419,19 +421,52 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
 						myInfo.numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
-						myInfo.firmwareVersion = decodedInfo.myInfo.firmwareVersion
+						
+						// Swift does strings weird, this does work
+						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						version = version.dropLast()
+						myInfo.firmwareVersion = String(version)
+						lastConnnectionVersion = String(version)
+				
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
 						connectedPeripheral.num = myInfo.myNodeNum
 						connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
-
+						
+						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
+						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
+						
+						do {
+							let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
+							
+							if fetchedUser.isEmpty {
+								// Save the broadcast user if it does not exist
+								let bcu: UserEntity = UserEntity(context: context!)
+								bcu.shortName = "ALL"
+								bcu.longName = "All - Broadcast"
+								bcu.hwModel = "UNSET"
+								bcu.num = Int64(broadcastNodeNum)
+								bcu.userId = "BROADCASTNODE"
+								print("💾 Saved the All - Broadcast User")
+							}
+							
+						} catch {
+							
+							print("💥 Error Saving the All - Broadcast User")
+						}
+						
 					} else {
 
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
 						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
-						fetchedMyInfo[0].firmwareVersion = decodedInfo.myInfo.firmwareVersion
+						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						version = version.dropLast()
+						fetchedMyInfo[0].firmwareVersion = String(version)
+						lastConnnectionVersion = String(version)
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
@@ -471,7 +506,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
-						if decodedInfo.nodeInfo.lastHeard != nil && decodedInfo.nodeInfo.lastHeard > 0 {
+						if decodedInfo.nodeInfo.lastHeard > 0 {
 							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						}
 						else {
@@ -706,7 +741,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
 							
-							if decodedInfo.packet.rxTime != nil && decodedInfo.packet.rxTime > 0 {
+							if decodedInfo.packet.rxTime > 0 {
 								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							}
 							else {
@@ -786,20 +821,27 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
+					
+					//
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
+
+					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+
+				 } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else {
 
 					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					 print("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
 				 }
 
 				} catch {
@@ -823,8 +865,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         peripheral.readValue(for: FROMRADIO_characteristic)
     }
 
-	// Send Broadcast Message
-	public func sendMessage(message: String, toUserNum: Int64) -> Bool {
+	// Send  Message
+	public func sendMessage(message: String, toUserNum: Int64, isTapback: Bool, replyID: Int64) -> Bool {
 		
 		var success = false
 
@@ -839,18 +881,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-//			else {
-//
-//				// Try and connect to the last connected device
-//				let lastConnectedPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == self.lastConnectedPeripheral }).first
-//				if lastConnectedPeripheral != nil && lastConnectedPeripheral?.peripheral != nil {
-//					connectTo(peripheral: lastConnectedPeripheral!.peripheral)
-//				}
-//			}
-			 //print("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)")
-			//if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(lastConnectedPeripheral)") }
+			print("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")")
+			if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")") }
 
 			success = false
+			
 		} else if message.count < 1 {
 
 			// Don't send an empty message
@@ -880,6 +915,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					newMessage.isTapback = isTapback
+					
+					if replyID > 0 {
+						
+						newMessage.replyID = replyID
+					}
 					if newMessage.toUser == nil {
 
 						let bcu: UserEntity = UserEntity(context: context!)
@@ -890,6 +931,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						bcu.userId = "BROADCASTNODE"
 						newMessage.toUser = bcu
 					}
+					
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 
@@ -903,6 +945,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
+					if replyID > 0 {
+						meshPacket.replyID = UInt32(replyID)
+					}
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
 

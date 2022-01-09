@@ -8,14 +8,19 @@ import SwiftUI
 struct CircleText: View {
     var text: String
     var color: Color
+	var circleSize: CGFloat? = 50
+	var fontSize: CGFloat? = 24
 
     var body: some View {
+		
+		let font = Font.system(size: fontSize!)
+		
         ZStack {
             Circle()
                 .fill(color)
-                .frame(width: 36, height: 36)
-            Text(text).textCase(.uppercase).font(.caption2).foregroundColor(.white)
-                .frame(width: 36, height: 36, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
+                .frame(width: circleSize, height: circleSize)
+			Text(text).textCase(.uppercase).font(font).foregroundColor(.white)
+                .frame(width: circleSize, height: circleSize, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
         }
     }
 }
