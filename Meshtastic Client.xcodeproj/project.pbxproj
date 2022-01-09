@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
 		C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */; };
+		C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A88B54278B503C00BD810A /* MapViewModule.swift */; };
 		DD17E5DD277D49D400010EC2 /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DB277D49D400010EC2 /* apponly.pb.swift */; };
 		DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
@@ -74,6 +75,7 @@
 /* Begin PBXFileReference section */
 		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
+		C9A88B54278B503C00BD810A /* MapViewModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewModule.swift; sourceTree = "<group>"; };
 		DD17E5DB277D49D400010EC2 /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
 		DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
@@ -156,6 +158,7 @@
 			children = (
 				C9A7BC0E27759A6800760B50 /* Custom */,
 				C9483F6C2773017500998F6B /* MapView.swift */,
+				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -544,6 +547,7 @@
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,
+				C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
