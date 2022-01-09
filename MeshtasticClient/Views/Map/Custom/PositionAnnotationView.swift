@@ -26,38 +26,38 @@ class PositionAnnotation: NSObject, MKAnnotation {
 class PositionAnnotationView: MKAnnotationView {
 
 	private let annotationFrame = CGRect(x: 0, y: 0, width: 32, height: 32)
-		private let label: UILabel
+	private let label: UILabel
 
-		override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
-			self.label = UILabel(frame: annotationFrame.offsetBy(dx: 0, dy: 0))
-			super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-			self.frame = annotationFrame
-			self.label.font = UIFont.preferredFont(forTextStyle: .caption2)
-			self.label.textColor = .white
-			self.label.textAlignment = .center
-			self.backgroundColor = .clear
-			self.addSubview(label)
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		self.label = UILabel(frame: annotationFrame.offsetBy(dx: 0, dy: 0))
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		self.frame = annotationFrame
+		self.label.font = UIFont.preferredFont(forTextStyle: .caption2)
+		self.label.textColor = .white
+		self.label.textAlignment = .center
+		self.backgroundColor = .clear
+		self.addSubview(label)
+	}
+
+	required init?(coder aDecoder: NSCoder) {
+		fatalError("init(coder:) not implemented!")
+	}
+
+	public var name: String = "" {
+		didSet {
+			self.label.text = name
 		}
+	}
 
-		required init?(coder aDecoder: NSCoder) {
-			fatalError("init(coder:) not implemented!")
-		}
+	override func draw(_ rect: CGRect) {
+		guard let context = UIGraphicsGetCurrentContext() else { return }
 
-		public var name: String = "" {
-			didSet {
-				self.label.text = name
-			}
-		}
+		let circleRect = CGRect(x: 1, y: 1, width: 30, height: 30)
 
-		override func draw(_ rect: CGRect) {
-			guard let context = UIGraphicsGetCurrentContext() else { return }
+		context.setFillColor(CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
 
-			let circleRect = CGRect(x: 1, y: 1, width: 30, height: 30)
+		context.fillEllipse(in: circleRect)
 
-			context.setFillColor(CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
-
-			context.fillEllipse(in: circleRect)
-
-		}
+	}
 
 }
