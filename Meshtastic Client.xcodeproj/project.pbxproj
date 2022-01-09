@@ -10,7 +10,6 @@
 		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
 		C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */; };
 		C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A88B54278B503C00BD810A /* MapViewModule.swift */; };
-		DD17E5DD277D49D400010EC2 /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DB277D49D400010EC2 /* apponly.pb.swift */; };
 		DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -76,7 +75,6 @@
 		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
 		C9A88B54278B503C00BD810A /* MapViewModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewModule.swift; sourceTree = "<group>"; };
-		DD17E5DB277D49D400010EC2 /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
 		DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -209,7 +207,6 @@
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
-				DD17E5DB277D49D400010EC2 /* apponly.pb.swift */,
 				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
 				DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
@@ -557,7 +554,6 @@
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
-				DD17E5DD277D49D400010EC2 /* apponly.pb.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DD47E3DD26F390A000029299 /* Messages.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */,
@@ -723,7 +719,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 37C534H572;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -750,7 +746,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 37C534H572;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
