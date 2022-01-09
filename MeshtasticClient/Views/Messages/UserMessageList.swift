@@ -316,14 +316,16 @@ struct UserMessageList: View {
 						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
-				.onChange(of: user, perform: { newValue in
+				.onChange(of: allMessages.count, perform: { count in
 					
 					self.context.refresh(user, mergeChanges: true)
-					messageCount =  ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
 					
-					if messageCount > 0 {
+					let index = count - 1
+					
+					if index > 2 {
+					
+						scrollView.scrollTo(index, anchor: .bottom)
 						
-						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
 			}
