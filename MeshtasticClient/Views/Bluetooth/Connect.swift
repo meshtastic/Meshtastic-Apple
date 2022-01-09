@@ -22,13 +22,28 @@ struct Connect: View {
 	@State var isPreferredRadio: Bool = false
 
     var body: some View {
+		
+		let firmwareVersion = bleManager.lastConnnectionVersion
+		let minimumVersion = "1.2.30"
+		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 
+		
 		NavigationView {
 
             VStack {
                 if bleManager.isSwitchedOn {
 
                     List {
+						
+						if supportedVersion == false {
+
+							Section(header: Text("Upgrade your Firmware").font(.title)) {
+
+								Text("🚨 Your firmware version is unsupported, the minimum firmware version is \(minimumVersion).").font(.subheadline).foregroundColor(.red)
+							}
+							.textCase(nil)
+						}
+						
 						if bleManager.lastConnectionError.count > 0 {
 
 							Section(header: Text("Connection Error").font(.title)) {
@@ -204,9 +219,9 @@ struct Connect: View {
                ZStack {
 
                     ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+						bluetoothOn: self.bleManager.isSwitchedOn,
+						deviceConnected: self.bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName :
 							"???")
                 }
             )
@@ -216,7 +231,7 @@ struct Connect: View {
 
 			self.bleManager.context = context
 
-			if bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == bleManager.connectedPeripheral.peripheral.identifier.uuidString {
+			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
 			} else {
 				isPreferredRadio = false

@@ -42,7 +42,7 @@ struct NodeDetail: View {
 								MapAnnotation(
 								   coordinate: location.coordinate,
 								   content: {
-									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
+									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 33, fontSize: 16)
 								   }
 								)
 							}
@@ -91,13 +91,16 @@ struct NodeDetail: View {
 
 							VStack {
 
-								Image(node.user!.hwModel ?? "UNSET")
-									.resizable()
-									.frame(width: 50, height: 50)
-									.cornerRadius(5)
+								if node.user != nil {
+									
+									Image(node.user!.hwModel ?? "UNSET")
+										.resizable()
+										.frame(width: 50, height: 50)
+										.cornerRadius(5)
 
-								Text(String(node.user!.hwModel ?? "UNSET"))
-									.font(.callout).fixedSize()
+									Text(String(node.user!.hwModel ?? "UNSET"))
+										.font(.callout).fixedSize()
+								}
 							}
 							.padding(5)
 
@@ -160,7 +163,7 @@ struct NodeDetail: View {
 										.font(.title2)
 										.foregroundColor(.accentColor)
 										.symbolRenderingMode(.hierarchical)
-									Text("Unique Id:").font(.title2)
+									Text("User Id:").font(.title2)
 								}
 								Text(node.user?.userId ?? "??????").font(.title3).foregroundColor(.gray)
 							}
@@ -175,11 +178,18 @@ struct NodeDetail: View {
 								}
 								Text(String(node.num)).font(.title3).foregroundColor(.gray)
 							}
-						}.padding(5)
+						}
+						.padding(5)
+						Divider()
 						HStack {
+							Image(systemName: "globe")
+									.font(.headline)
+									.foregroundColor(.accentColor)
+									.symbolRenderingMode(.hierarchical)
 							Text("MAC Address: ")
 							Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 						}
+						.padding()
 
 						if node.positions?.count ?? 0 > 1 {
 
@@ -187,7 +197,7 @@ struct NodeDetail: View {
 
 							HStack {
 
-								Image(systemName: "map.circle.fill")
+								Image(systemName: "location.circle.fill")
 									.font(.title)
 									.foregroundColor(.accentColor)
 									.symbolRenderingMode(.hierarchical)
@@ -210,8 +220,13 @@ struct NodeDetail: View {
 											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
 												.foregroundColor(.gray)
 												.font(.caption)
-
-											Text("Altitude:")
+											
+											Image(systemName: "arrow.up.arrow.down.circle")
+												.font(.subheadline)
+												.foregroundColor(.accentColor)
+												.symbolRenderingMode(.hierarchical)
+											
+											Text("Alt:")
 												.font(.caption)
 
 											Text("\(String(mappin.altitude))m")
@@ -231,21 +246,27 @@ struct NodeDetail: View {
 												.font(.caption)
 											Divider()
 
-											Text("Battery").font(.caption).fixedSize()
-											Text(String(mappin.batteryLevel) + "%")
-												.font(.caption)
-												.foregroundColor(.gray)
-												.symbolRenderingMode(.hierarchical)
+											HStack {
+												
+												BatteryIcon(batteryLevel: mappin.batteryLevel, font: .subheadline, color: .accentColor)
+												
+												if mappin.batteryLevel > 0 {
+													
+													Text(String(mappin.batteryLevel) + "%")
+														.font(.caption2)
+														.foregroundColor(.gray)
+												}
+											}
 										}
 									}
 									.padding(1)
 									Divider()
 								}
 							}
-							.padding(.bottom, 5) // Without some padding here there is a transparent contentview bug
 						}
 					}
-				}.ignoresSafeArea(.all, edges: [.leading, .trailing])
+				}
+				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
 		}
 		.navigationTitle(node.user!.longName ?? "Unknown")
