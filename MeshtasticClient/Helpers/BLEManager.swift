@@ -922,6 +922,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					print("🚫 Message Users Not Found, Fail")
 					success = false
+					
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)

@@ -267,6 +267,7 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
+				.padding(1)
 			}
 		}
 		.navigationTitle(node != nil ? String(node.user!.longName ?? "Unknown") : "Unknown")
