@@ -120,9 +120,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 			connectedPeripheral = nil
 
-			self.lastConnectionError = "🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
-			print("🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(name).")
-			if meshLoggingEnabled { MeshLogger.log("🚫 BLE Connecting Timeout after making \(timeoutTimerCount) attempts to connect to \(String(name)).") }
+			self.lastConnectionError = "🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
+			print("🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name).")
+			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(String(name)). This can occur when a device has been taken out of BLE range, or if a device is already connected to another phone, tablet or computer.") }
 
 			self.timeoutTimerCount = 0
 			self.timeoutTimer?.invalidate()
@@ -256,7 +256,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				// Happens when device is manually reset / powered off
 				// We will try and re-connect to this device
-				lastConnectionError = "🚫 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
+				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
 				if peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")") }
 					print("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")")
@@ -267,20 +267,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 // Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
 
-				print("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
-				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
             } else if errorCode == 14 { // Peer removed pairing information
 
                 // Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "🚫 \(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
+				lastConnectionError = "🚨 \(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
 
-				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
+				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
             } else {
 
 				lastConnectionError = e.localizedDescription
 
-				print("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
-				if meshLoggingEnabled { MeshLogger.log("🚫 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 			}
         } else {
 
@@ -424,7 +424,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						// Swift does strings weird, this does work
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
-						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
 						myInfo.firmwareVersion = String(version)
 						lastConnnectionVersion = String(version)
@@ -463,7 +463,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
 						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
-						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(encodedOffset:6))]
+						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
 						fetchedMyInfo[0].firmwareVersion = String(version)
 						lastConnnectionVersion = String(version)
@@ -670,9 +670,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 								let newMessage = MessageEntity(context: context!)
 								newMessage.messageId = Int64(decodedInfo.packet.id)
-								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
+								
+								
+								if decodedInfo.packet.rxTime == 0 {
+
+									newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
+
+								} else {
+
+									newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
+								}
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
+								newMessage.isTapback = decodedInfo.packet.isTapback
+								
+								if decodedInfo.packet.replyID > 0 {
+									
+									newMessage.replyID = Int64(decodedInfo.packet.replyID)
+								}
 
 								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 
@@ -945,6 +960,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
+					meshPacket.isTapback = isTapback
 					if replyID > 0 {
 						meshPacket.replyID = UInt32(replyID)
 					}
