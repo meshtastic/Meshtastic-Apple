@@ -72,7 +72,7 @@ struct NodeMap: View {
 
 	@State private var showUserLocation: Bool = true
 	@State private var userTrackingMode: MKUserTrackingMode = MKUserTrackingMode.none
-	@State private var userLocation: CLLocationCoordinate2D?
+	@State private var userLocation: CLLocationCoordinate2D? = LocationHelper.currentLocation
 
 	@State private var showAnnotations: Bool = true
 	@State private var annotations: [MKPointAnnotation] = []
@@ -84,7 +84,7 @@ struct NodeMap: View {
 	
     var body: some View {
 
-		//let location = LocationHelper.currentLocation
+		//self.$userLocation = LocationHelper.currentLocation
 
         NavigationView {
 
