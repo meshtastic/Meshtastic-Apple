@@ -73,7 +73,7 @@ struct Connect: View {
 
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
-										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name)
+										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
 											.font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedPeripheral != nil {
 											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)

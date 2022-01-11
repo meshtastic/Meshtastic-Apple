@@ -55,7 +55,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // MARK: init BLEManager
     override init() {
 
-		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
+		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
         self.lastConnectionError = ""
 		self.lastConnnectionVersion = "0.0.0"
         super.init()
@@ -128,8 +128,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			self.timeoutTimer?.invalidate()
 
 		} else {
-			print("🚫 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
-			if meshLoggingEnabled { MeshLogger.log("🚫 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
+			print("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
 		}
 	}
 
@@ -142,6 +142,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         stopScanning()
 
 		if self.connectedPeripheral != nil {
+			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")") }
+			print("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
             self.disconnectPeripheral()
         }
 
@@ -364,8 +366,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 
     // MARK: Data Read / Update Characteristic Event
-	// TODO: Convert to CoreData
-	// FIXME: Remove broken JSON file data layer implementation
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
        
 		
@@ -682,11 +682,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								}
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
-								newMessage.isTapback = decodedInfo.packet.isTapback
+								newMessage.isTapback = decodedInfo.packet.decoded.isTapback
 								
-								if decodedInfo.packet.replyID > 0 {
+								if decodedInfo.packet.decoded.replyID > 0 {
 									
-									newMessage.replyID = Int64(decodedInfo.packet.replyID)
+									newMessage.replyID = Int64(decodedInfo.packet.decoded.replyID)
 								}
 
 								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
@@ -962,9 +962,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
-					meshPacket.isTapback = isTapback
+					meshPacket.decoded.isTapback = isTapback
 					if replyID > 0 {
-						meshPacket.replyID = UInt32(replyID)
+						meshPacket.decoded.replyID = UInt32(replyID)
 					}
 					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
