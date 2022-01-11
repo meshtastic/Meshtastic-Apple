@@ -179,12 +179,18 @@ struct Connect: View {
                     HStack(alignment: .center) {
                         Spacer()
                         Button(action: {
+							
                             self.bleManager.startScanning()
+							
                         }) {
-                            Image(systemName: "play.fill").imageScale(.large).foregroundColor(.gray)
+							
+                            Image(systemName: "play.circle")
+								.symbolRenderingMode(.hierarchical)
+								.imageScale(.large)
+								.foregroundColor(self.bleManager.isScanning ? .gray : .accentColor)
                             Text("Start Scanning").font(.caption)
                             .font(.caption)
-                                .foregroundColor(.gray)
+
                         }
 						.disabled(self.bleManager.isScanning)
                         .padding()
@@ -192,12 +198,18 @@ struct Connect: View {
                         .clipShape(Capsule())
                         Spacer()
                         Button(action: {
+							
                             self.bleManager.stopScanning()
+							
                         }) {
-                            Image(systemName: "stop.fill").imageScale(.large).foregroundColor(.gray)
+							
+							Image(systemName: "stop.circle")
+								.symbolRenderingMode(.hierarchical)
+								.imageScale(.large)
+								.foregroundColor(!self.bleManager.isScanning ? .gray : .accentColor)
                             Text("Stop Scanning")
                             .font(.caption)
-                            .foregroundColor(.gray)
+							
                         }
 						.disabled(!self.bleManager.isScanning)
                         .padding()
