@@ -407,7 +407,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// print("Print DecodedInfo")
 			// print(decodedInfo)
 
-			// MyInfo Data
+			// MARK: Incoming MyInfo Packet
 			if decodedInfo.myInfo.myNodeNum != 0 {
 
 				let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -491,7 +491,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 			}
 
-			// NodeInfo Data
+			// MARK: Incoming Node Info Packet
 			if decodedInfo.nodeInfo.num != 0 {
 
 				let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -653,7 +653,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				do {
 
-					// Text Message App - Primary Broadcast User
+					// MARK: Incoming Packet from the TEXTMESSAGE_APP
 					if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
 
 						if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
@@ -788,6 +788,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 					}
 
+				// MARK: Incoming Packet from the POSITION_APP
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
 
 					let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
