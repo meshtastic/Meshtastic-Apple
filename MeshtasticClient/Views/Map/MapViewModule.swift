@@ -41,6 +41,8 @@ public struct MapView: UIViewRepresentable {
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
 		private var locationNodes: FetchedResults<NodeInfoEntity>
 	
+	//@State private var locationNodes: [NodeInfoEntity]
+	
 	public init(
 		//region: Binding<MKCoordinateRegion> = .constant(MKCoordinateRegion()),
 		customMapOverlay: CustomMapOverlay? = nil,
@@ -95,7 +97,7 @@ public struct MapView: UIViewRepresentable {
 		
 		//self.annotations = annotations
 		
-		//self.locationNodes = locationNodes
+		self.locationNodes = locationNodes
 		
 		self.overlays = overlays
 		
@@ -106,8 +108,23 @@ public struct MapView: UIViewRepresentable {
 		mapView.delegate = context.coordinator
 		mapView.register(PositionAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(PositionAnnotationView.self))
 		
+		Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { timer in
+			for node in self.locationNodes {
+				// try and get the last position
+				if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
+					let annotation = PositionAnnotation()
+					annotation.coordinate = (node.positions!.lastObject as! PositionEntity).coordinate!
+					annotation.title = node.user?.longName ?? "Unknown"
+					annotation.shortName = node.user?.shortName?.uppercased() ?? "???"
+
+					mapView.addAnnotation(annotation)
+				}
+			}
+		}
+		
 		return mapView
 	}
+	
 	
 	public func updateUIView(_ mapView: MKMapView, context: Context) {
 		

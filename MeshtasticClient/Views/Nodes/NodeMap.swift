@@ -107,6 +107,7 @@ struct NodeMap: View {
 					userTrackingMode: self.userTrackingMode,
 					userLocation: self.$userLocation,
 					//annotations: self.annotations,
+					//locationNodes: self.locationNodes.map({ nodeinfo in return nodeinfo }),
 					overlays: self.overlays
 				)
 				
