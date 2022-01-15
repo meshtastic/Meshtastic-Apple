@@ -24,7 +24,7 @@ struct Contacts: View {
 
 			List(users) { (user: UserEntity) in
 				
-				let currentUserNum = self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0
+				//let currentUserNum = self.bleManager.connectedPeripheral != nil ? self.bleManager.connectedPeripheral.num : 0
 				
 				let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
 				

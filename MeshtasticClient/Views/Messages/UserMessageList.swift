@@ -310,9 +310,8 @@ struct UserMessageList: View {
 					
 					self.bleManager.context = context
 				
-					messageCount = ((user.sentMessages?.count ?? 0) + (user.receivedMessages?.count ?? 0))
-					
-					if messageCount > 0 {
+					if allMessages.count > 2 {
+						
 						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
@@ -325,7 +324,6 @@ struct UserMessageList: View {
 					if index > 2 {
 					
 						scrollView.scrollTo(index, anchor: .bottom)
-						
 					}
 				})
 			}
