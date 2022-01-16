@@ -962,11 +962,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
+
+					meshPacket.decoded = dataMessage
+
 					meshPacket.decoded.isTapback = isTapback
 					if replyID > 0 {
 						meshPacket.decoded.replyID = UInt32(replyID)
 					}
-					meshPacket.decoded = dataMessage
 					meshPacket.wantAck = true
 
 					var toRadio: ToRadio!
