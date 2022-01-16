@@ -34,7 +34,7 @@ struct UserMessageList: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.2.50"
+		let minimumVersion = "1.2.55"
 		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		VStack {
