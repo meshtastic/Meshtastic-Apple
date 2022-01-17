@@ -49,7 +49,7 @@ struct NodeMap: View {
 	)*/
 	
 	@State private var customMapOverlay: MapView.CustomMapOverlay? = MapView.CustomMapOverlay(
-			mapName: UserDefaults.standard.string(forKey: "meshMapCustomTileServer"),
+			mapName: "offlinemap",
 			tileType: "png",
 			canReplaceMapContent: true
 		)

@@ -97,7 +97,7 @@ public struct MapView: UIViewRepresentable {
 		
 		//self.annotations = annotations
 		
-		self.locationNodes = locationNodes
+		//self.locationNodes = locationNodes
 		
 		self.overlays = overlays
 		
@@ -135,22 +135,10 @@ public struct MapView: UIViewRepresentable {
 		if self.customMapOverlay != self.presentCustomMapOverlayHash {
 			mapView.removeOverlays(mapView.overlays)
 			if let customMapOverlay = self.customMapOverlay {
-				let overlay = CustomMapOverlaySource(
-					parent: self,
-					mapName: customMapOverlay.mapName,
-					tileType: customMapOverlay.tileType,
-					defaultTile: customMapOverlay.defaultTile
-				)
 				
-				if let minZ = customMapOverlay.minimumZoomLevel {
-					overlay.minimumZ = minZ
-				}
+				let overlay = LocalMBTileOverlay(mbTilePath: Bundle.main.path(forResource: "offline_map", ofType: "mbtiles")!)
 				
-				if let maxZ = customMapOverlay.maximumZoomLevel {
-					overlay.maximumZ = maxZ
-				}
-				
-				overlay.canReplaceMapContent = customMapOverlay.canReplaceMapContent
+				overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
 				
 				mapView.addOverlay(overlay)
 			}
