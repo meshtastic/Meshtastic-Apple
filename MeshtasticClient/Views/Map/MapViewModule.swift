@@ -11,7 +11,9 @@ import CoreData
 #if canImport(MapKit) && canImport(UIKit)
 public struct MapView: UIViewRepresentable {
 
-	@Environment(\.managedObjectContext) var context
+	//@Environment(\.managedObjectContext) var context
+	
+	var context: NSManagedObjectContext?
 	
 	//@Binding private var region: MKCoordinateRegion
 	
@@ -60,7 +62,8 @@ public struct MapView: UIViewRepresentable {
 		userLocation: Binding<CLLocationCoordinate2D?> = .constant(nil),
 		//annotations: [MKPointAnnotation] = [],
 		//locationNodes: [NodeInfoEntity] = [],
-		overlays: [Overlay] = []
+		overlays: [Overlay] = [],
+		context: NSManagedObjectContext? = nil
 	) {
 		//self._region = region
 		
@@ -97,7 +100,7 @@ public struct MapView: UIViewRepresentable {
 		
 		//self.annotations = annotations
 		
-		self.locationNodes = locationNodes
+		//self.locationNodes = locationNodes
 		
 		self.overlays = overlays
 		
