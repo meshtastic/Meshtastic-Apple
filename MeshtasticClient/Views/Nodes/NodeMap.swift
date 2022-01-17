@@ -108,14 +108,16 @@ struct NodeMap: View {
 					userLocation: self.$userLocation,
 					//annotations: self.annotations,
 					//locationNodes: self.locationNodes.map({ nodeinfo in return nodeinfo }),
-					overlays: self.overlays
+					overlays: self.overlays,
+					context: self.context
 				)
-				
+
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
+			
 			.navigationBarItems(trailing:
 
 			ZStack {
