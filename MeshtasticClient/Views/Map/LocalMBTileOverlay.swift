@@ -9,11 +9,42 @@ import UIKit
 import MapKit
 import SQLite
 
+extension MKMapRect {
+	init(coordinates: [CLLocationCoordinate2D]) {
+		self = MKMapRect()
+		var coordinates = coordinates
+		if !coordinates.isEmpty {
+			let first = coordinates.removeFirst()
+			var top = first.latitude
+			var bottom = first.latitude
+			var left = first.longitude
+			var right = first.longitude
+			coordinates.forEach { coordinate in
+				top = max(top, coordinate.latitude)
+				bottom = min(bottom, coordinate.latitude)
+				left = min(left, coordinate.longitude)
+				right = max(right, coordinate.longitude)
+			}
+			let topLeft = MKMapPoint(CLLocationCoordinate2D(latitude:top, longitude:left))
+			let bottomRight = MKMapPoint(CLLocationCoordinate2D(latitude:bottom, longitude:right))
+			self = MKMapRect(x:topLeft.x, y:topLeft.y,
+							 width:bottomRight.x - topLeft.x, height:bottomRight.y - topLeft.y)
+		}
+	}
+}
+
 class LocalMBTileOverlay: MKTileOverlay {
 
 	var path: String!
 	
 	var mb: Connection!
+	
+	private var _boundingMapRect: MKMapRect!
+	override var boundingMapRect: MKMapRect {
+		get {
+			return _boundingMapRect
+		}
+	}
 	
 	init(mbTilePath path: String) {
 		
@@ -35,19 +66,29 @@ class LocalMBTileOverlay: MKTileOverlay {
 			
 			self.isGeometryFlipped = true
 			
-			//let boundingBoxString = try mb.pluck(metadata.select(value).filter(name == "bounds"))
-			//let boundCoords = boundingBoxString![value].split(separator: ",")
-			//self.boundingMapRect = MKMapRect(coordinates: [CLLocationCoordinate2D(latitude: Double(boundCoords[0]) ?? 0, longitude: Double(boundCoords[1]) ?? 0), CLLocationCoordinate2D(latitude: Double(boundCoords[2]) ?? 0, longitude: Double(boundCoords[3]) ?? 0)])
+			let boundingBoxString = try mb.pluck(metadata.select(value).filter(name == "bounds"))
+			let boundCoords = boundingBoxString![value].split(separator: ",")
+			let coords = [
+				CLLocationCoordinate2D(latitude: Double(boundCoords[1]) ?? 0,
+									   longitude: Double(boundCoords[0]) ?? 0),
+				CLLocationCoordinate2D(latitude: Double(boundCoords[3]) ?? 0,
+									   longitude: Double(boundCoords[2]) ?? 0)
+			]
+			self._boundingMapRect = MKMapRect(coordinates: coords)
 			
 			
 		} catch {
-			
+			//print("MAP ERROR \(error)")
 		}
 		
 		
 	}
 	
-	override func loadTile(at path: MKTileOverlayPath) async throws -> Data {
+	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
+		
+	//}
+	
+	//override func loadTile(at path: MKTileOverlayPath) async throws -> Data {
 		
 		let tileX = Int64(path.x)
 		let tileY = Int64(path.y)
@@ -58,14 +99,18 @@ class LocalMBTileOverlay: MKTileOverlay {
 		let tileColumn = Expression<Int64>("tile_column")
 		let tileRow = Expression<Int64>("tile_row")
 		
-		if let dataQuery = try self.mb.pluck(Table("tiles").select(tileData).filter(zoomLevel == tileZ).filter(tileColumn == tileX).filter(tileRow == tileY)) {
+		if let dataQuery = try? self.mb.pluck(Table("tiles").select(tileData).filter(zoomLevel == tileZ).filter(tileColumn == tileX).filter(tileRow == tileY)) {
 		
 			let data = Data(bytes: dataQuery[tileData].bytes, count: dataQuery[tileData].bytes.count)//dataQuery![tileData].bytes
 		
-			return data
+			//return data
+			result(data, nil)
 			
 		} else {
-			return Data()
+			print("💥 No tile here: x:\(tileX) y:\(tileY) z:\(tileZ)")
+			//return Data()
+			let error = NSError(domain: "LocalMBTileOverlay", code: 1, userInfo: ["reason": "no_tile"])
+			result(nil, error)
 		}
 	}
 	

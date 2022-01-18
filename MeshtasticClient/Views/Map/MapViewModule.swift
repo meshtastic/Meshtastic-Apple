@@ -11,9 +11,9 @@ import CoreData
 #if canImport(MapKit) && canImport(UIKit)
 public struct MapView: UIViewRepresentable {
 
-	//@Environment(\.managedObjectContext) var context
+	@Environment(\.managedObjectContext) var context
 	
-	var context: NSManagedObjectContext?
+	//var context: NSManagedObjectContext?
 	
 	//@Binding private var region: MKCoordinateRegion
 	
@@ -40,8 +40,11 @@ public struct MapView: UIViewRepresentable {
 	
 	private var overlays: [Overlay]
 	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
-		private var locationNodes: FetchedResults<NodeInfoEntity>
+	//@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
+	//	private var locationNodes: FetchedResults<NodeInfoEntity>
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)], animation: .default)
+	private var positions: FetchedResults<PositionEntity>
 	
 	//@State private var locationNodes: [NodeInfoEntity]
 	
@@ -62,8 +65,8 @@ public struct MapView: UIViewRepresentable {
 		userLocation: Binding<CLLocationCoordinate2D?> = .constant(nil),
 		//annotations: [MKPointAnnotation] = [],
 		//locationNodes: [NodeInfoEntity] = [],
-		overlays: [Overlay] = [],
-		context: NSManagedObjectContext? = nil
+		overlays: [Overlay] = []
+		//context: NSManagedObjectContext? = nil
 	) {
 		//self._region = region
 		
@@ -111,7 +114,7 @@ public struct MapView: UIViewRepresentable {
 		mapView.delegate = context.coordinator
 		mapView.register(PositionAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(PositionAnnotationView.self))
 		
-		Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { timer in
+		/*Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { timer in
 			for node in self.locationNodes {
 				// try and get the last position
 				if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
@@ -123,7 +126,7 @@ public struct MapView: UIViewRepresentable {
 					mapView.addAnnotation(annotation)
 				}
 			}
-		}
+		}*/
 		
 		return mapView
 	}
@@ -139,18 +142,20 @@ public struct MapView: UIViewRepresentable {
 			mapView.removeOverlays(mapView.overlays)
 			if let customMapOverlay = self.customMapOverlay {
 				
-				let overlay = LocalMBTileOverlay(mbTilePath: Bundle.main.path(forResource: "offline_map", ofType: "mbtiles")!)
-				
-				overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
-				
-				mapView.addOverlay(overlay)
+				if let tilePath = Bundle.main.path(forResource: "offline_map", ofType: "mbtiles") {
+					let overlay = LocalMBTileOverlay(mbTilePath: tilePath)
+					
+					overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
+					
+					mapView.addOverlay(overlay)
+				}
 			}
 			DispatchQueue.main.async {
 				self.presentCustomMapOverlayHash = self.customMapOverlay
 			}
 		}
 		
-		if mapView.overlays.count != (self.overlays.count + (self.customMapOverlay == nil ? 0 : 1)) {
+		/*if mapView.overlays.count != (self.overlays.count + (self.customMapOverlay == nil ? 0 : 1)) {
 			context.coordinator.overlays = self.overlays
 			mapView.overlays.forEach { overlay in
 				if !(overlay is MKTileOverlay) {
@@ -158,7 +163,7 @@ public struct MapView: UIViewRepresentable {
 				}
 			}
 			mapView.addOverlays(self.overlays.map { overlay in overlay.shape })
-		}
+		}*/
 		
 		if mapView.mapType != self.mapType {
 			mapView.mapType = self.mapType
@@ -210,7 +215,7 @@ public struct MapView: UIViewRepresentable {
 			shouldMoveRegion = true
 		}
 
-		for node in self.locationNodes {
+		/*for node in self.locationNodes {
 			// try and get the last position
 			if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
 				let annotation = PositionAnnotation()
@@ -220,6 +225,22 @@ public struct MapView: UIViewRepresentable {
 
 				mapView.addAnnotation(annotation)
 			}
+		}*/
+		
+		var displayedNodes: [Int64] = []
+		for position in self.positions {
+			if position.nodePosition == nil || displayedNodes.contains(position.nodePosition!.num) || position.coordinate == nil {
+				continue
+			}
+			
+			let annotation = PositionAnnotation()
+			annotation.coordinate = position.coordinate!
+			annotation.title = position.nodePosition!.user?.longName ?? "Unknown"
+			annotation.shortName = position.nodePosition!.user?.shortName?.uppercased() ?? "???"
+
+			mapView.addAnnotation(annotation)
+			
+			displayedNodes.append(position.nodePosition!.num)
 		}
 		
 		if shouldMoveRegion {

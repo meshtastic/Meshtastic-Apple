@@ -108,8 +108,8 @@ struct NodeMap: View {
 					userLocation: self.$userLocation,
 					//annotations: self.annotations,
 					//locationNodes: self.locationNodes.map({ nodeinfo in return nodeinfo }),
-					overlays: self.overlays,
-					context: self.context
+					overlays: self.overlays
+					//context: self.context
 				)
 
                .frame(maxHeight: .infinity)
