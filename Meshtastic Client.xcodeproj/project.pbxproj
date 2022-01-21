@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
-		C9697F9B2793366500250207 /* offline_map.mbtiles in Resources */ = {isa = PBXBuildFile; fileRef = C9697F9A2793366500250207 /* offline_map.mbtiles */; };
 		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		C9697FA72793F9FB00250207 /* MTAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697FA62793F9FB00250207 /* MTAppDelegate.swift */; };
@@ -78,7 +77,6 @@
 
 /* Begin PBXFileReference section */
 		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
-		C9697F9A2793366500250207 /* offline_map.mbtiles */ = {isa = PBXFileReference; lastKnownFileType = file; path = offline_map.mbtiles; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		C9697FA62793F9FB00250207 /* MTAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTAppDelegate.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
@@ -326,7 +324,6 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				C9697F9A2793366500250207 /* offline_map.mbtiles */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -490,7 +487,6 @@
 			files = (
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
-				C9697F9B2793366500250207 /* offline_map.mbtiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -740,9 +736,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = 37C534H572;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -770,9 +766,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
-				DEVELOPMENT_TEAM = 37C534H572;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

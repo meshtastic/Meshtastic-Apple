@@ -822,9 +822,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 								mutablePositions.add(position)
-								
+
 								print("💾 Recieved a Position Packet")
-								
+
 								if position.coordinate == nil {
 									var newPostions = [PositionEntity]()
 									newPostions.append(position)

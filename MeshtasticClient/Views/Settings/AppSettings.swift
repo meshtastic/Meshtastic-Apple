@@ -171,7 +171,7 @@ struct AppSettings: View {
 							 }
 						 }
 						 .pickerStyle(DefaultPickerStyle())
-						TextField("Custom Tile Server", text: $userSettings.meshMapCustomTileServer)
+					//	TextField("Custom Tile Server", text: $userSettings.meshMapCustomTileServer)
 					}
 					Section(header: Text("DEBUG")) {
 						// Toggle(isOn: $userSettings.meshActivityLog) {
