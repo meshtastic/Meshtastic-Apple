@@ -4,6 +4,8 @@ import CoreData
 @main
 struct MeshtasticClientApp: App {
 
+	@UIApplicationDelegateAdaptor var delegate: MTAppDelegate
+	
 	let persistenceController = PersistenceController.shared
 
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared

@@ -90,6 +90,12 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
 		}
 	}
+	
+	@Published var meshMapCustomTileServer: String {
+		didSet {
+			UserDefaults.standard.set(meshMapCustomTileServer, forKey: "meshMapCustomTileServer")
+		}
+	}
 
 	init() {
 
@@ -100,6 +106,7 @@ class UserSettings: ObservableObject {
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
+		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 	}
 }
 
@@ -164,6 +171,7 @@ struct AppSettings: View {
 							 }
 						 }
 						 .pickerStyle(DefaultPickerStyle())
+					//	TextField("Custom Tile Server", text: $userSettings.meshMapCustomTileServer)
 					}
 					Section(header: Text("DEBUG")) {
 						// Toggle(isOn: $userSettings.meshActivityLog) {
@@ -178,7 +186,6 @@ struct AppSettings: View {
 							.listRowSeparator(.visible)
 						}
 					}
-					
 				}
 			}
             .navigationTitle("App Settings")

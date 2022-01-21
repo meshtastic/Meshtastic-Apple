@@ -811,6 +811,31 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							}
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 
+								
+							if let positionMessage = try? Position(serializedData: decodedInfo.packet.decoded.payload) {
+								let position = PositionEntity(context: context!)
+								position.latitudeI = positionMessage.latitudeI
+								position.longitudeI = positionMessage.longitudeI
+								position.altitude = positionMessage.altitude
+								position.batteryLevel = positionMessage.batteryLevel
+								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+
+								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+								mutablePositions.add(position)
+
+								print("💾 Recieved a Position Packet")
+
+								if position.coordinate == nil {
+									var newPostions = [PositionEntity]()
+									newPostions.append(position)
+									fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
+
+								} else {
+
+									fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+								}
+							}
+							
 						} else {
 							
 							return
