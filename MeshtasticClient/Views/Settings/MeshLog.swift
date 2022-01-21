@@ -56,10 +56,12 @@ struct MeshLog: View {
 				   }
 
 			}) {
-				Image(systemName: "trash").imageScale(.large).foregroundColor(.gray)
+				Image(systemName: "trash.circle.fill")
+					.symbolRenderingMode(.hierarchical)
+					.imageScale(.large).foregroundColor(.accentColor)
 				Text("Clear Log").font(.caption)
 				.font(.caption)
-					.foregroundColor(.gray)
+					.foregroundColor(.accentColor)
 			}
 			.padding()
 			.background(Color(.systemGray6))
@@ -70,10 +72,12 @@ struct MeshLog: View {
 			Button(action: {
 				isExporting = true
 			}) {
-				Image(systemName: "arrow.down.circle.fill").imageScale(.large).foregroundColor(.gray)
+				Image(systemName: "arrow.down.circle.fill")
+					.symbolRenderingMode(.hierarchical)
+					.imageScale(.large).foregroundColor(.accentColor)
 				Text("Download Log")
 				.font(.caption)
-				.foregroundColor(.gray)
+				.foregroundColor(.accentColor)
 			}
 			.padding()
 			.background(Color(.systemGray6))
