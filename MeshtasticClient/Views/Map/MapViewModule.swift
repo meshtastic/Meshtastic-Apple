@@ -142,12 +142,21 @@ public struct MapView: UIViewRepresentable {
 			mapView.removeOverlays(mapView.overlays)
 			if let customMapOverlay = self.customMapOverlay {
 				
-				if let tilePath = Bundle.main.path(forResource: "offline_map", ofType: "mbtiles") {
+				let fileManager = FileManager.default
+				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
+				if fileManager.fileExists(atPath: tilePath) {
+				//if let tilePath = Bundle.main.path(forResource: "offline_map", ofType: "mbtiles") {
+					
+					print("Loading local map file")
+					
 					let overlay = LocalMBTileOverlay(mbTilePath: tilePath)
 					
 					overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
 					
 					mapView.addOverlay(overlay)
+				} else {
+					print("Couldn't find a local map file to load")
 				}
 			}
 			DispatchQueue.main.async {

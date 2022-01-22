@@ -3,8 +3,6 @@ import CoreData
 
 @main
 struct MeshtasticClientApp: App {
-
-	@UIApplicationDelegateAdaptor var delegate: MTAppDelegate
 	
 	let persistenceController = PersistenceController.shared
 
@@ -19,6 +17,22 @@ struct MeshtasticClientApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
+			.onOpenURL(perform: { (url) in 
+				//we are expecting a .mbtiles map file that contains raster data
+				//save it to the documents directory, and name it offline_map.mbtiles
+				let fileManager = FileManager.default
+				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
+				try? fileManager.copyItem(at: url, to: destination)
+				
+				if (fileManager.fileExists(atPath: destination.path)) {
+					print("ℹ️ Saved the map file")
+				} else {
+					print("💥 Didn't save the map file")
+				}
+				
+			}
+			)
 		}
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
