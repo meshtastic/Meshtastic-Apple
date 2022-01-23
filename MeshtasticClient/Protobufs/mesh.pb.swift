@@ -1613,14 +1613,14 @@ struct MyNodeInfo {
   }
 
   ///
-  /// 48 time windows of 1hr each with the airtime transmitted out of the device per hour.
+  /// 24 time windows of 1hr each with the airtime transmitted out of the device per hour.
   var airPeriodTx: [UInt32] {
     get {return _storage._airPeriodTx}
     set {_uniqueStorage()._airPeriodTx = newValue}
   }
 
   ///
-  /// 48 time windows of 1hr each with the airtime of valid packets for your mesh.
+  /// 24 time windows of 1hr each with the airtime of valid packets for your mesh.
   var airPeriodRx: [UInt32] {
     get {return _storage._airPeriodRx}
     set {_uniqueStorage()._airPeriodRx = newValue}
@@ -1638,6 +1638,13 @@ struct MyNodeInfo {
   var channelUtilization: Float {
     get {return _storage._channelUtilization}
     set {_uniqueStorage()._channelUtilization = newValue}
+  }
+
+  ///
+  /// Percent of airtime for transmission used within the last hour.
+  var airUtilTx: Float {
+    get {return _storage._airUtilTx}
+    set {_uniqueStorage()._airUtilTx = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -2932,6 +2939,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     17: .standard(proto: "air_period_rx"),
     18: .standard(proto: "has_wifi"),
     19: .standard(proto: "channel_utilization"),
+    20: .standard(proto: "air_util_tx"),
   ]
 
   fileprivate class _StorageClass {
@@ -2953,6 +2961,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _airPeriodRx: [UInt32] = []
     var _hasWifi_p: Bool = false
     var _channelUtilization: Float = 0
+    var _airUtilTx: Float = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -2977,6 +2986,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _airPeriodRx = source._airPeriodRx
       _hasWifi_p = source._hasWifi_p
       _channelUtilization = source._channelUtilization
+      _airUtilTx = source._airUtilTx
     }
   }
 
@@ -3013,6 +3023,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 17: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._airPeriodRx) }()
         case 18: try { try decoder.decodeSingularBoolField(value: &_storage._hasWifi_p) }()
         case 19: try { try decoder.decodeSingularFloatField(value: &_storage._channelUtilization) }()
+        case 20: try { try decoder.decodeSingularFloatField(value: &_storage._airUtilTx) }()
         default: break
         }
       }
@@ -3075,6 +3086,9 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._channelUtilization != 0 {
         try visitor.visitSingularFloatField(value: _storage._channelUtilization, fieldNumber: 19)
       }
+      if _storage._airUtilTx != 0 {
+        try visitor.visitSingularFloatField(value: _storage._airUtilTx, fieldNumber: 20)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3102,6 +3116,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._airPeriodRx != rhs_storage._airPeriodRx {return false}
         if _storage._hasWifi_p != rhs_storage._hasWifi_p {return false}
         if _storage._channelUtilization != rhs_storage._channelUtilization {return false}
+        if _storage._airUtilTx != rhs_storage._airUtilTx {return false}
         return true
       }
       if !storagesAreEqual {return false}

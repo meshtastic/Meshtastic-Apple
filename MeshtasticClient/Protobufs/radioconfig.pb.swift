@@ -535,6 +535,72 @@ extension PositionFlags: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum InputEventChar: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case keyNone // = 0
+  case keyUp // = 17
+  case keyDown // = 18
+  case keyLeft // = 19
+  case keyRight // = 20
+
+  /// '\n' 
+  case keySelect // = 10
+  case keyBack // = 27
+  case keyCancel // = 24
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .keyNone
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .keyNone
+    case 10: self = .keySelect
+    case 17: self = .keyUp
+    case 18: self = .keyDown
+    case 19: self = .keyLeft
+    case 20: self = .keyRight
+    case 24: self = .keyCancel
+    case 27: self = .keyBack
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .keyNone: return 0
+    case .keySelect: return 10
+    case .keyUp: return 17
+    case .keyDown: return 18
+    case .keyLeft: return 19
+    case .keyRight: return 20
+    case .keyCancel: return 24
+    case .keyBack: return 27
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension InputEventChar: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [InputEventChar] = [
+    .keyNone,
+    .keyUp,
+    .keyDown,
+    .keyLeft,
+    .keyRight,
+    .keySelect,
+    .keyBack,
+    .keyCancel,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 ///
 /// The entire set of user settable/readable settings for our radio device.
 /// Includes both the current channel settings and any preferences the user has
@@ -779,7 +845,6 @@ struct RadioConfig {
     /// Set a rejection threshold for GPS readings based on their precision,
     /// relative to the GPS rated accuracy (which is typically ~3m)
     /// Solutions above this value will be treated as retryable errors!
-    ///
     /// Useful range is between 1 - 64 (3m - <~200m)
     /// By default (if zero), accept all GPS readings
     var gpsMaxDop: UInt32 {
@@ -1082,12 +1147,114 @@ struct RadioConfig {
       set {_uniqueStorage()._mqttPassword = newValue}
     }
 
+    ///
+    /// Disable TX from the LoRa radio. Useful for hot-swapping antennas and other tests.
+    /// Defaults to false
+    var isLoraTxDisabled: Bool {
+      get {return _storage._isLoraTxDisabled}
+      set {_uniqueStorage()._isLoraTxDisabled = newValue}
+    }
+
+    ///
+    /// If set to true, enable power saving features of the esp32
+    var isPowerSaving: Bool {
+      get {return _storage._isPowerSaving}
+      set {_uniqueStorage()._isPowerSaving = newValue}
+    }
+
+    ///
+    /// Enable the rotary encoder #1
+    var rotary1Enabled: Bool {
+      get {return _storage._rotary1Enabled}
+      set {_uniqueStorage()._rotary1Enabled = newValue}
+    }
+
+    ///
+    /// GPIO pin for rotary encoder A port.
+    var rotary1PinA: UInt32 {
+      get {return _storage._rotary1PinA}
+      set {_uniqueStorage()._rotary1PinA = newValue}
+    }
+
+    ///
+    /// GPIO pin for rotary encoder B port.
+    var rotary1PinB: UInt32 {
+      get {return _storage._rotary1PinB}
+      set {_uniqueStorage()._rotary1PinB = newValue}
+    }
+
+    ///
+    /// GPIO pin for rotary encoder Press port.
+    var rotary1PinPress: UInt32 {
+      get {return _storage._rotary1PinPress}
+      set {_uniqueStorage()._rotary1PinPress = newValue}
+    }
+
+    ///
+    /// Generate input event on CW of this kind.
+    var rotary1EventCw: InputEventChar {
+      get {return _storage._rotary1EventCw}
+      set {_uniqueStorage()._rotary1EventCw = newValue}
+    }
+
+    ///
+    /// Generate input event on CCW of this kind.
+    var rotary1EventCcw: InputEventChar {
+      get {return _storage._rotary1EventCcw}
+      set {_uniqueStorage()._rotary1EventCcw = newValue}
+    }
+
+    ///
+    /// Generate input event on Press of this kind.
+    var rotary1EventPress: InputEventChar {
+      get {return _storage._rotary1EventPress}
+      set {_uniqueStorage()._rotary1EventPress = newValue}
+    }
+
+    ///
+    /// Enable/disable CannedMessagePlugin.
+    var cannedMessagePluginEnabled: Bool {
+      get {return _storage._cannedMessagePluginEnabled}
+      set {_uniqueStorage()._cannedMessagePluginEnabled = newValue}
+    }
+
+    ///
+    /// Input event origin accepted by the canned message plugin.
+    /// Can be e.g. "rotEnc1" or keyword "_any"
+    var cannedMessagePluginAllowInputSource: String {
+      get {return _storage._cannedMessagePluginAllowInputSource}
+      set {_uniqueStorage()._cannedMessagePluginAllowInputSource = newValue}
+    }
+
+    ///
+    /// Predefined messages for CannedMessagePlugin separated by '|' characters.
+    /// Note: Split out the messages out to their own messages because we want to store 1,000 characters.
+    /// and the entire message must fit within 256 bytes.
+    /// Not sure if we should deprecate this or just remove it since we're in dev phase.
+    var cannedMessagePluginMessages: String {
+      get {return _storage._cannedMessagePluginMessages}
+      set {_uniqueStorage()._cannedMessagePluginMessages = newValue}
+    }
+
+    ///
+    /// CannedMessagePlugin also sends a bell character with the messages.
+    /// ExternalNotificationPlugin can benefit from this feature.
+    var cannedMessagePluginSendBell: Bool {
+      get {return _storage._cannedMessagePluginSendBell}
+      set {_uniqueStorage()._cannedMessagePluginSendBell = newValue}
+    }
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum EnvironmentalMeasurementSensorType: SwiftProtobuf.Enum {
       typealias RawValue = Int
       case dht11 // = 0
       case ds18B20 // = 1
+      case dht12 // = 2
+      case dht21 // = 3
+      case dht22 // = 4
+      case bme280 // = 5
+      case bme680 // = 6
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1098,6 +1265,11 @@ struct RadioConfig {
         switch rawValue {
         case 0: self = .dht11
         case 1: self = .ds18B20
+        case 2: self = .dht12
+        case 3: self = .dht21
+        case 4: self = .dht22
+        case 5: self = .bme280
+        case 6: self = .bme680
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1106,6 +1278,11 @@ struct RadioConfig {
         switch self {
         case .dht11: return 0
         case .ds18B20: return 1
+        case .dht12: return 2
+        case .dht21: return 3
+        case .dht22: return 4
+        case .bme280: return 5
+        case .bme680: return 6
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1129,6 +1306,11 @@ extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIt
   static var allCases: [RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType] = [
     .dht11,
     .ds18B20,
+    .dht12,
+    .dht21,
+    .dht22,
+    .bme280,
+    .bme680,
   ]
 }
 
@@ -1214,6 +1396,19 @@ extension PositionFlags: SwiftProtobuf._ProtoNameProviding {
     64: .same(proto: "POS_SATINVIEW"),
     128: .same(proto: "POS_SEQ_NOS"),
     256: .same(proto: "POS_TIMESTAMP"),
+  ]
+}
+
+extension InputEventChar: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "KEY_NONE"),
+    10: .same(proto: "KEY_SELECT"),
+    17: .same(proto: "KEY_UP"),
+    18: .same(proto: "KEY_DOWN"),
+    19: .same(proto: "KEY_LEFT"),
+    20: .same(proto: "KEY_RIGHT"),
+    24: .same(proto: "KEY_CANCEL"),
+    27: .same(proto: "KEY_BACK"),
   ]
 }
 
@@ -1320,6 +1515,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     154: .standard(proto: "hop_limit"),
     155: .standard(proto: "mqtt_username"),
     156: .standard(proto: "mqtt_password"),
+    157: .standard(proto: "is_lora_tx_disabled"),
+    158: .standard(proto: "is_power_saving"),
+    160: .standard(proto: "rotary1_enabled"),
+    161: .standard(proto: "rotary1_pin_a"),
+    162: .standard(proto: "rotary1_pin_b"),
+    163: .standard(proto: "rotary1_pin_press"),
+    164: .standard(proto: "rotary1_event_cw"),
+    165: .standard(proto: "rotary1_event_ccw"),
+    166: .standard(proto: "rotary1_event_press"),
+    170: .standard(proto: "canned_message_plugin_enabled"),
+    171: .standard(proto: "canned_message_plugin_allow_input_source"),
+    172: .standard(proto: "canned_message_plugin_messages"),
+    173: .standard(proto: "canned_message_plugin_send_bell"),
   ]
 
   fileprivate class _StorageClass {
@@ -1391,6 +1599,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _hopLimit: UInt32 = 0
     var _mqttUsername: String = String()
     var _mqttPassword: String = String()
+    var _isLoraTxDisabled: Bool = false
+    var _isPowerSaving: Bool = false
+    var _rotary1Enabled: Bool = false
+    var _rotary1PinA: UInt32 = 0
+    var _rotary1PinB: UInt32 = 0
+    var _rotary1PinPress: UInt32 = 0
+    var _rotary1EventCw: InputEventChar = .keyNone
+    var _rotary1EventCcw: InputEventChar = .keyNone
+    var _rotary1EventPress: InputEventChar = .keyNone
+    var _cannedMessagePluginEnabled: Bool = false
+    var _cannedMessagePluginAllowInputSource: String = String()
+    var _cannedMessagePluginMessages: String = String()
+    var _cannedMessagePluginSendBell: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -1465,6 +1686,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _hopLimit = source._hopLimit
       _mqttUsername = source._mqttUsername
       _mqttPassword = source._mqttPassword
+      _isLoraTxDisabled = source._isLoraTxDisabled
+      _isPowerSaving = source._isPowerSaving
+      _rotary1Enabled = source._rotary1Enabled
+      _rotary1PinA = source._rotary1PinA
+      _rotary1PinB = source._rotary1PinB
+      _rotary1PinPress = source._rotary1PinPress
+      _rotary1EventCw = source._rotary1EventCw
+      _rotary1EventCcw = source._rotary1EventCcw
+      _rotary1EventPress = source._rotary1EventPress
+      _cannedMessagePluginEnabled = source._cannedMessagePluginEnabled
+      _cannedMessagePluginAllowInputSource = source._cannedMessagePluginAllowInputSource
+      _cannedMessagePluginMessages = source._cannedMessagePluginMessages
+      _cannedMessagePluginSendBell = source._cannedMessagePluginSendBell
     }
   }
 
@@ -1551,6 +1785,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 154: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopLimit) }()
         case 155: try { try decoder.decodeSingularStringField(value: &_storage._mqttUsername) }()
         case 156: try { try decoder.decodeSingularStringField(value: &_storage._mqttPassword) }()
+        case 157: try { try decoder.decodeSingularBoolField(value: &_storage._isLoraTxDisabled) }()
+        case 158: try { try decoder.decodeSingularBoolField(value: &_storage._isPowerSaving) }()
+        case 160: try { try decoder.decodeSingularBoolField(value: &_storage._rotary1Enabled) }()
+        case 161: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinA) }()
+        case 162: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinB) }()
+        case 163: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinPress) }()
+        case 164: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventCw) }()
+        case 165: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventCcw) }()
+        case 166: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventPress) }()
+        case 170: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessagePluginEnabled) }()
+        case 171: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginAllowInputSource) }()
+        case 172: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessages) }()
+        case 173: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessagePluginSendBell) }()
         default: break
         }
       }
@@ -1763,6 +2010,45 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if !_storage._mqttPassword.isEmpty {
         try visitor.visitSingularStringField(value: _storage._mqttPassword, fieldNumber: 156)
       }
+      if _storage._isLoraTxDisabled != false {
+        try visitor.visitSingularBoolField(value: _storage._isLoraTxDisabled, fieldNumber: 157)
+      }
+      if _storage._isPowerSaving != false {
+        try visitor.visitSingularBoolField(value: _storage._isPowerSaving, fieldNumber: 158)
+      }
+      if _storage._rotary1Enabled != false {
+        try visitor.visitSingularBoolField(value: _storage._rotary1Enabled, fieldNumber: 160)
+      }
+      if _storage._rotary1PinA != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinA, fieldNumber: 161)
+      }
+      if _storage._rotary1PinB != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinB, fieldNumber: 162)
+      }
+      if _storage._rotary1PinPress != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinPress, fieldNumber: 163)
+      }
+      if _storage._rotary1EventCw != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._rotary1EventCw, fieldNumber: 164)
+      }
+      if _storage._rotary1EventCcw != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._rotary1EventCcw, fieldNumber: 165)
+      }
+      if _storage._rotary1EventPress != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._rotary1EventPress, fieldNumber: 166)
+      }
+      if _storage._cannedMessagePluginEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._cannedMessagePluginEnabled, fieldNumber: 170)
+      }
+      if !_storage._cannedMessagePluginAllowInputSource.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginAllowInputSource, fieldNumber: 171)
+      }
+      if !_storage._cannedMessagePluginMessages.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessages, fieldNumber: 172)
+      }
+      if _storage._cannedMessagePluginSendBell != false {
+        try visitor.visitSingularBoolField(value: _storage._cannedMessagePluginSendBell, fieldNumber: 173)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1840,6 +2126,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._hopLimit != rhs_storage._hopLimit {return false}
         if _storage._mqttUsername != rhs_storage._mqttUsername {return false}
         if _storage._mqttPassword != rhs_storage._mqttPassword {return false}
+        if _storage._isLoraTxDisabled != rhs_storage._isLoraTxDisabled {return false}
+        if _storage._isPowerSaving != rhs_storage._isPowerSaving {return false}
+        if _storage._rotary1Enabled != rhs_storage._rotary1Enabled {return false}
+        if _storage._rotary1PinA != rhs_storage._rotary1PinA {return false}
+        if _storage._rotary1PinB != rhs_storage._rotary1PinB {return false}
+        if _storage._rotary1PinPress != rhs_storage._rotary1PinPress {return false}
+        if _storage._rotary1EventCw != rhs_storage._rotary1EventCw {return false}
+        if _storage._rotary1EventCcw != rhs_storage._rotary1EventCcw {return false}
+        if _storage._rotary1EventPress != rhs_storage._rotary1EventPress {return false}
+        if _storage._cannedMessagePluginEnabled != rhs_storage._cannedMessagePluginEnabled {return false}
+        if _storage._cannedMessagePluginAllowInputSource != rhs_storage._cannedMessagePluginAllowInputSource {return false}
+        if _storage._cannedMessagePluginMessages != rhs_storage._cannedMessagePluginMessages {return false}
+        if _storage._cannedMessagePluginSendBell != rhs_storage._cannedMessagePluginSendBell {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -1853,5 +2152,10 @@ extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftP
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHT11"),
     1: .same(proto: "DS18B20"),
+    2: .same(proto: "DHT12"),
+    3: .same(proto: "DHT21"),
+    4: .same(proto: "DHT22"),
+    5: .same(proto: "BME280"),
+    6: .same(proto: "BME680"),
   ]
 }

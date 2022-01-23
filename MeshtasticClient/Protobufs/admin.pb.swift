@@ -162,6 +162,156 @@ struct AdminMessage {
     set {variant = .rebootSeconds(newValue)}
   }
 
+  ///
+  /// Get the Canned Message Plugin message part1 in the response to this message.
+  var getCannedMessagePluginPart1Request: Bool {
+    get {
+      if case .getCannedMessagePluginPart1Request(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getCannedMessagePluginPart1Request(newValue)}
+  }
+
+  var getCannedMessagePluginPart1Response: CannedMessagePluginMessagePart1 {
+    get {
+      if case .getCannedMessagePluginPart1Response(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart1()
+    }
+    set {variant = .getCannedMessagePluginPart1Response(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Plugin message part2 in the response to this message.
+  var getCannedMessagePluginPart2Request: Bool {
+    get {
+      if case .getCannedMessagePluginPart2Request(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getCannedMessagePluginPart2Request(newValue)}
+  }
+
+  var getCannedMessagePluginPart2Response: CannedMessagePluginMessagePart2 {
+    get {
+      if case .getCannedMessagePluginPart2Response(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart2()
+    }
+    set {variant = .getCannedMessagePluginPart2Response(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Plugin message part3 in the response to this message.
+  var getCannedMessagePluginPart3Request: Bool {
+    get {
+      if case .getCannedMessagePluginPart3Request(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getCannedMessagePluginPart3Request(newValue)}
+  }
+
+  var getCannedMessagePluginPart3Response: CannedMessagePluginMessagePart3 {
+    get {
+      if case .getCannedMessagePluginPart3Response(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart3()
+    }
+    set {variant = .getCannedMessagePluginPart3Response(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Plugin message part4 in the response to this message.
+  var getCannedMessagePluginPart4Request: Bool {
+    get {
+      if case .getCannedMessagePluginPart4Request(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getCannedMessagePluginPart4Request(newValue)}
+  }
+
+  var getCannedMessagePluginPart4Response: CannedMessagePluginMessagePart4 {
+    get {
+      if case .getCannedMessagePluginPart4Response(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart4()
+    }
+    set {variant = .getCannedMessagePluginPart4Response(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Plugin message part5 in the response to this message.
+  var getCannedMessagePluginPart5Request: Bool {
+    get {
+      if case .getCannedMessagePluginPart5Request(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getCannedMessagePluginPart5Request(newValue)}
+  }
+
+  var getCannedMessagePluginPart5Response: CannedMessagePluginMessagePart5 {
+    get {
+      if case .getCannedMessagePluginPart5Response(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart5()
+    }
+    set {variant = .getCannedMessagePluginPart5Response(newValue)}
+  }
+
+  ///
+  /// Set the canned message plugin part 1 text.
+  var setCannedMessagePluginPart1: CannedMessagePluginMessagePart1 {
+    get {
+      if case .setCannedMessagePluginPart1(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart1()
+    }
+    set {variant = .setCannedMessagePluginPart1(newValue)}
+  }
+
+  ///
+  /// Set the canned message plugin part 2 text.
+  var setCannedMessagePluginPart2: CannedMessagePluginMessagePart2 {
+    get {
+      if case .setCannedMessagePluginPart2(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart2()
+    }
+    set {variant = .setCannedMessagePluginPart2(newValue)}
+  }
+
+  ///
+  /// Set the canned message plugin part 3 text.
+  var setCannedMessagePluginPart3: CannedMessagePluginMessagePart3 {
+    get {
+      if case .setCannedMessagePluginPart3(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart3()
+    }
+    set {variant = .setCannedMessagePluginPart3(newValue)}
+  }
+
+  ///
+  /// Set the canned message plugin part 4 text.
+  var setCannedMessagePluginPart4: CannedMessagePluginMessagePart4 {
+    get {
+      if case .setCannedMessagePluginPart4(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart4()
+    }
+    set {variant = .setCannedMessagePluginPart4(newValue)}
+  }
+
+  ///
+  /// Set the canned message plugin part 5 text.
+  var setCannedMessagePluginPart5: CannedMessagePluginMessagePart5 {
+    get {
+      if case .setCannedMessagePluginPart5(let v)? = variant {return v}
+      return CannedMessagePluginMessagePart5()
+    }
+    set {variant = .setCannedMessagePluginPart5(newValue)}
+  }
+
+  ///
+  /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
+  var shutdownSeconds: Int32 {
+    get {
+      if case .shutdownSeconds(let v)? = variant {return v}
+      return 0
+    }
+    set {variant = .shutdownSeconds(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Variant: Equatable {
@@ -205,6 +355,44 @@ struct AdminMessage {
     ///
     /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
     case rebootSeconds(Int32)
+    ///
+    /// Get the Canned Message Plugin message part1 in the response to this message.
+    case getCannedMessagePluginPart1Request(Bool)
+    case getCannedMessagePluginPart1Response(CannedMessagePluginMessagePart1)
+    ///
+    /// Get the Canned Message Plugin message part2 in the response to this message.
+    case getCannedMessagePluginPart2Request(Bool)
+    case getCannedMessagePluginPart2Response(CannedMessagePluginMessagePart2)
+    ///
+    /// Get the Canned Message Plugin message part3 in the response to this message.
+    case getCannedMessagePluginPart3Request(Bool)
+    case getCannedMessagePluginPart3Response(CannedMessagePluginMessagePart3)
+    ///
+    /// Get the Canned Message Plugin message part4 in the response to this message.
+    case getCannedMessagePluginPart4Request(Bool)
+    case getCannedMessagePluginPart4Response(CannedMessagePluginMessagePart4)
+    ///
+    /// Get the Canned Message Plugin message part5 in the response to this message.
+    case getCannedMessagePluginPart5Request(Bool)
+    case getCannedMessagePluginPart5Response(CannedMessagePluginMessagePart5)
+    ///
+    /// Set the canned message plugin part 1 text.
+    case setCannedMessagePluginPart1(CannedMessagePluginMessagePart1)
+    ///
+    /// Set the canned message plugin part 2 text.
+    case setCannedMessagePluginPart2(CannedMessagePluginMessagePart2)
+    ///
+    /// Set the canned message plugin part 3 text.
+    case setCannedMessagePluginPart3(CannedMessagePluginMessagePart3)
+    ///
+    /// Set the canned message plugin part 4 text.
+    case setCannedMessagePluginPart4(CannedMessagePluginMessagePart4)
+    ///
+    /// Set the canned message plugin part 5 text.
+    case setCannedMessagePluginPart5(CannedMessagePluginMessagePart5)
+    ///
+    /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
+    case shutdownSeconds(Int32)
 
   #if !swift(>=4.1)
     static func ==(lhs: AdminMessage.OneOf_Variant, rhs: AdminMessage.OneOf_Variant) -> Bool {
@@ -264,6 +452,70 @@ struct AdminMessage {
         guard case .rebootSeconds(let l) = lhs, case .rebootSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getCannedMessagePluginPart1Request, .getCannedMessagePluginPart1Request): return {
+        guard case .getCannedMessagePluginPart1Request(let l) = lhs, case .getCannedMessagePluginPart1Request(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart1Response, .getCannedMessagePluginPart1Response): return {
+        guard case .getCannedMessagePluginPart1Response(let l) = lhs, case .getCannedMessagePluginPart1Response(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart2Request, .getCannedMessagePluginPart2Request): return {
+        guard case .getCannedMessagePluginPart2Request(let l) = lhs, case .getCannedMessagePluginPart2Request(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart2Response, .getCannedMessagePluginPart2Response): return {
+        guard case .getCannedMessagePluginPart2Response(let l) = lhs, case .getCannedMessagePluginPart2Response(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart3Request, .getCannedMessagePluginPart3Request): return {
+        guard case .getCannedMessagePluginPart3Request(let l) = lhs, case .getCannedMessagePluginPart3Request(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart3Response, .getCannedMessagePluginPart3Response): return {
+        guard case .getCannedMessagePluginPart3Response(let l) = lhs, case .getCannedMessagePluginPart3Response(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart4Request, .getCannedMessagePluginPart4Request): return {
+        guard case .getCannedMessagePluginPart4Request(let l) = lhs, case .getCannedMessagePluginPart4Request(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart4Response, .getCannedMessagePluginPart4Response): return {
+        guard case .getCannedMessagePluginPart4Response(let l) = lhs, case .getCannedMessagePluginPart4Response(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart5Request, .getCannedMessagePluginPart5Request): return {
+        guard case .getCannedMessagePluginPart5Request(let l) = lhs, case .getCannedMessagePluginPart5Request(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessagePluginPart5Response, .getCannedMessagePluginPart5Response): return {
+        guard case .getCannedMessagePluginPart5Response(let l) = lhs, case .getCannedMessagePluginPart5Response(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessagePluginPart1, .setCannedMessagePluginPart1): return {
+        guard case .setCannedMessagePluginPart1(let l) = lhs, case .setCannedMessagePluginPart1(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessagePluginPart2, .setCannedMessagePluginPart2): return {
+        guard case .setCannedMessagePluginPart2(let l) = lhs, case .setCannedMessagePluginPart2(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessagePluginPart3, .setCannedMessagePluginPart3): return {
+        guard case .setCannedMessagePluginPart3(let l) = lhs, case .setCannedMessagePluginPart3(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessagePluginPart4, .setCannedMessagePluginPart4): return {
+        guard case .setCannedMessagePluginPart4(let l) = lhs, case .setCannedMessagePluginPart4(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setCannedMessagePluginPart5, .setCannedMessagePluginPart5): return {
+        guard case .setCannedMessagePluginPart5(let l) = lhs, case .setCannedMessagePluginPart5(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.shutdownSeconds, .shutdownSeconds): return {
+        guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -291,6 +543,22 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
     35: .standard(proto: "reboot_seconds"),
+    36: .standard(proto: "get_canned_message_plugin_part1_request"),
+    37: .standard(proto: "get_canned_message_plugin_part1_response"),
+    38: .standard(proto: "get_canned_message_plugin_part2_request"),
+    39: .standard(proto: "get_canned_message_plugin_part2_response"),
+    40: .standard(proto: "get_canned_message_plugin_part3_request"),
+    41: .standard(proto: "get_canned_message_plugin_part3_response"),
+    42: .standard(proto: "get_canned_message_plugin_part4_request"),
+    43: .standard(proto: "get_canned_message_plugin_part4_response"),
+    44: .standard(proto: "get_canned_message_plugin_part5_request"),
+    45: .standard(proto: "get_canned_message_plugin_part5_response"),
+    46: .standard(proto: "set_canned_message_plugin_part1"),
+    47: .standard(proto: "set_canned_message_plugin_part2"),
+    48: .standard(proto: "set_canned_message_plugin_part3"),
+    49: .standard(proto: "set_canned_message_plugin_part4"),
+    50: .standard(proto: "set_canned_message_plugin_part5"),
+    51: .standard(proto: "shutdown_seconds"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -433,6 +701,184 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.variant = .rebootSeconds(v)
         }
       }()
+      case 36: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart1Request(v)
+        }
+      }()
+      case 37: try {
+        var v: CannedMessagePluginMessagePart1?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getCannedMessagePluginPart1Response(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart1Response(v)
+        }
+      }()
+      case 38: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart2Request(v)
+        }
+      }()
+      case 39: try {
+        var v: CannedMessagePluginMessagePart2?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getCannedMessagePluginPart2Response(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart2Response(v)
+        }
+      }()
+      case 40: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart3Request(v)
+        }
+      }()
+      case 41: try {
+        var v: CannedMessagePluginMessagePart3?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getCannedMessagePluginPart3Response(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart3Response(v)
+        }
+      }()
+      case 42: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart4Request(v)
+        }
+      }()
+      case 43: try {
+        var v: CannedMessagePluginMessagePart4?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getCannedMessagePluginPart4Response(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart4Response(v)
+        }
+      }()
+      case 44: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart5Request(v)
+        }
+      }()
+      case 45: try {
+        var v: CannedMessagePluginMessagePart5?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getCannedMessagePluginPart5Response(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getCannedMessagePluginPart5Response(v)
+        }
+      }()
+      case 46: try {
+        var v: CannedMessagePluginMessagePart1?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setCannedMessagePluginPart1(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setCannedMessagePluginPart1(v)
+        }
+      }()
+      case 47: try {
+        var v: CannedMessagePluginMessagePart2?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setCannedMessagePluginPart2(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setCannedMessagePluginPart2(v)
+        }
+      }()
+      case 48: try {
+        var v: CannedMessagePluginMessagePart3?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setCannedMessagePluginPart3(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setCannedMessagePluginPart3(v)
+        }
+      }()
+      case 49: try {
+        var v: CannedMessagePluginMessagePart4?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setCannedMessagePluginPart4(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setCannedMessagePluginPart4(v)
+        }
+      }()
+      case 50: try {
+        var v: CannedMessagePluginMessagePart5?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setCannedMessagePluginPart5(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setCannedMessagePluginPart5(v)
+        }
+      }()
+      case 51: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .shutdownSeconds(v)
+        }
+      }()
       default: break
       }
     }
@@ -494,6 +940,70 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .rebootSeconds?: try {
       guard case .rebootSeconds(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 35)
+    }()
+    case .getCannedMessagePluginPart1Request?: try {
+      guard case .getCannedMessagePluginPart1Request(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 36)
+    }()
+    case .getCannedMessagePluginPart1Response?: try {
+      guard case .getCannedMessagePluginPart1Response(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 37)
+    }()
+    case .getCannedMessagePluginPart2Request?: try {
+      guard case .getCannedMessagePluginPart2Request(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 38)
+    }()
+    case .getCannedMessagePluginPart2Response?: try {
+      guard case .getCannedMessagePluginPart2Response(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 39)
+    }()
+    case .getCannedMessagePluginPart3Request?: try {
+      guard case .getCannedMessagePluginPart3Request(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 40)
+    }()
+    case .getCannedMessagePluginPart3Response?: try {
+      guard case .getCannedMessagePluginPart3Response(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 41)
+    }()
+    case .getCannedMessagePluginPart4Request?: try {
+      guard case .getCannedMessagePluginPart4Request(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
+    }()
+    case .getCannedMessagePluginPart4Response?: try {
+      guard case .getCannedMessagePluginPart4Response(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 43)
+    }()
+    case .getCannedMessagePluginPart5Request?: try {
+      guard case .getCannedMessagePluginPart5Request(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 44)
+    }()
+    case .getCannedMessagePluginPart5Response?: try {
+      guard case .getCannedMessagePluginPart5Response(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 45)
+    }()
+    case .setCannedMessagePluginPart1?: try {
+      guard case .setCannedMessagePluginPart1(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
+    }()
+    case .setCannedMessagePluginPart2?: try {
+      guard case .setCannedMessagePluginPart2(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 47)
+    }()
+    case .setCannedMessagePluginPart3?: try {
+      guard case .setCannedMessagePluginPart3(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 48)
+    }()
+    case .setCannedMessagePluginPart4?: try {
+      guard case .setCannedMessagePluginPart4(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 49)
+    }()
+    case .setCannedMessagePluginPart5?: try {
+      guard case .setCannedMessagePluginPart5(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 50)
+    }()
+    case .shutdownSeconds?: try {
+      guard case .shutdownSeconds(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 51)
     }()
     case nil: break
     }
