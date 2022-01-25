@@ -3,6 +3,7 @@
 ## OS Requirements
 
 * iOS App Requires iOS 15 +
+* iPadOS App Requires iPadOS 15 +
 * Mac App Reguires macOS 12 +
 
 ## Code Standards
