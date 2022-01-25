@@ -2,8 +2,8 @@
 
 ## OS Requirements
 
-Requires iOS 15 +
-Reguires macOS 12 +
+* Requires iOS 15 +
+* Reguires macOS 12 +
 
 ## Code Standards
 
