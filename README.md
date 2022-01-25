@@ -1,9 +1,9 @@
-# Meshtastic Client
+# Meshtastic Apple Clients
 
 ## OS Requirements
 
-* Requires iOS 15 +
-* Reguires macOS 12 +
+* iOS App Requires iOS 15 +
+* Mac App Reguires macOS 12 +
 
 ## Code Standards
 
