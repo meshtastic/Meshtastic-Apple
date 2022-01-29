@@ -17,6 +17,10 @@ public struct MapView: UIViewRepresentable {
 	
 	//@Binding private var region: MKCoordinateRegion
 	
+	//make this view dependent on the UserDefault that is updated when importing a new map file
+	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
+	@State private var loadedLastUpdatedLocalMapFile = 0
+	
 	private var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	
@@ -138,7 +142,7 @@ public struct MapView: UIViewRepresentable {
 			//mapView.region = self.region
 		//}
 		
-		if self.customMapOverlay != self.presentCustomMapOverlayHash {
+		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 			mapView.removeOverlays(mapView.overlays)
 			if let customMapOverlay = self.customMapOverlay {
 				
@@ -150,17 +154,19 @@ public struct MapView: UIViewRepresentable {
 					
 					print("Loading local map file")
 					
-					let overlay = LocalMBTileOverlay(mbTilePath: tilePath)
+					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
 					
-					overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
+						overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
 					
-					mapView.addOverlay(overlay)
+						mapView.addOverlay(overlay)
+					}
 				} else {
 					print("Couldn't find a local map file to load")
 				}
 			}
 			DispatchQueue.main.async {
 				self.presentCustomMapOverlayHash = self.customMapOverlay
+				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
 		

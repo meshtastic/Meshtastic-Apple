@@ -23,10 +23,21 @@ struct MeshtasticClientApp: App {
 				let fileManager = FileManager.default
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
+				
+				//do we need to delete an old one?
+				if (fileManager.fileExists(atPath: destination.path)) {
+					print("ℹ️ Found an old map file.  Deleting it")
+					try? fileManager.removeItem(atPath: destination.path)
+				}
+				
 				try? fileManager.copyItem(at: url, to: destination)
 				
 				if (fileManager.fileExists(atPath: destination.path)) {
 					print("ℹ️ Saved the map file")
+					
+					//need to tell the map view that it needs to update and try loading the new overlay
+					UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
+					
 				} else {
 					print("💥 Didn't save the map file")
 				}
