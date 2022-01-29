@@ -33,6 +33,11 @@ extension MKMapRect {
 	}
 }
 
+enum MapTileError: Error {
+	case invalidFormat
+	case other
+}
+
 class LocalMBTileOverlay: MKTileOverlay {
 
 	var path: String!
@@ -46,7 +51,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 		}
 	}
 	
-	init(mbTilePath path: String) {
+	init?(mbTilePath path: String) {
 		
 		super.init(urlTemplate: nil)
 		self.path = path
@@ -57,6 +62,12 @@ class LocalMBTileOverlay: MKTileOverlay {
 			
 			let name = Expression<String>("name")
 			let value = Expression<String>("value")
+			
+			//make sure it's raster
+			let formatQuery = try mb.pluck(metadata.select(value).filter(name == "format"))
+			if formatQuery?[value] == nil || (formatQuery![value] != "jpg" && formatQuery![value] != "png") {
+				throw MapTileError.invalidFormat
+			}
 			
 			let minZQuery = try mb.pluck(metadata.select(value).filter(name == "minzoom"))
 			self.minimumZ = Int(minZQuery![value])!
@@ -78,7 +89,8 @@ class LocalMBTileOverlay: MKTileOverlay {
 			
 			
 		} catch {
-			//print("MAP ERROR \(error)")
+			print("💥 Map tile error: \(error)")
+			return nil
 		}
 		
 		
