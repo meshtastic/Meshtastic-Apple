@@ -152,6 +152,41 @@ struct DeviceState {
     set {_uniqueStorage()._didGpsReset = newValue}
   }
 
+  ///
+  /// Canned Message Plugin message part1.
+  var cannedMessagePluginMessagePart1: String {
+    get {return _storage._cannedMessagePluginMessagePart1}
+    set {_uniqueStorage()._cannedMessagePluginMessagePart1 = newValue}
+  }
+
+  ///
+  /// Canned Message Plugin message part2.
+  var cannedMessagePluginMessagePart2: String {
+    get {return _storage._cannedMessagePluginMessagePart2}
+    set {_uniqueStorage()._cannedMessagePluginMessagePart2 = newValue}
+  }
+
+  ///
+  /// Canned Message Plugin message part3.
+  var cannedMessagePluginMessagePart3: String {
+    get {return _storage._cannedMessagePluginMessagePart3}
+    set {_uniqueStorage()._cannedMessagePluginMessagePart3 = newValue}
+  }
+
+  ///
+  /// Canned Message Plugin message part4.
+  var cannedMessagePluginMessagePart4: String {
+    get {return _storage._cannedMessagePluginMessagePart4}
+    set {_uniqueStorage()._cannedMessagePluginMessagePart4 = newValue}
+  }
+
+  ///
+  /// Canned Message Plugin message part5.
+  var cannedMessagePluginMessagePart5: String {
+    get {return _storage._cannedMessagePluginMessagePart5}
+    set {_uniqueStorage()._cannedMessagePluginMessagePart5 = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -253,6 +288,11 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     7: .standard(proto: "rx_text_message"),
     9: .standard(proto: "no_save"),
     11: .standard(proto: "did_gps_reset"),
+    13: .standard(proto: "canned_message_plugin_message_part1"),
+    14: .standard(proto: "canned_message_plugin_message_part2"),
+    15: .standard(proto: "canned_message_plugin_message_part3"),
+    16: .standard(proto: "canned_message_plugin_message_part4"),
+    17: .standard(proto: "canned_message_plugin_message_part5"),
   ]
 
   fileprivate class _StorageClass {
@@ -265,6 +305,11 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _rxTextMessage: MeshPacket? = nil
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
+    var _cannedMessagePluginMessagePart1: String = String()
+    var _cannedMessagePluginMessagePart2: String = String()
+    var _cannedMessagePluginMessagePart3: String = String()
+    var _cannedMessagePluginMessagePart4: String = String()
+    var _cannedMessagePluginMessagePart5: String = String()
 
     static let defaultInstance = _StorageClass()
 
@@ -280,6 +325,11 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _rxTextMessage = source._rxTextMessage
       _noSave = source._noSave
       _didGpsReset = source._didGpsReset
+      _cannedMessagePluginMessagePart1 = source._cannedMessagePluginMessagePart1
+      _cannedMessagePluginMessagePart2 = source._cannedMessagePluginMessagePart2
+      _cannedMessagePluginMessagePart3 = source._cannedMessagePluginMessagePart3
+      _cannedMessagePluginMessagePart4 = source._cannedMessagePluginMessagePart4
+      _cannedMessagePluginMessagePart5 = source._cannedMessagePluginMessagePart5
     }
   }
 
@@ -307,6 +357,11 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
+        case 13: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart1) }()
+        case 14: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart2) }()
+        case 15: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart3) }()
+        case 16: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart4) }()
+        case 17: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart5) }()
         default: break
         }
       }
@@ -342,6 +397,21 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       if _storage._didGpsReset != false {
         try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
       }
+      if !_storage._cannedMessagePluginMessagePart1.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart1, fieldNumber: 13)
+      }
+      if !_storage._cannedMessagePluginMessagePart2.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart2, fieldNumber: 14)
+      }
+      if !_storage._cannedMessagePluginMessagePart3.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart3, fieldNumber: 15)
+      }
+      if !_storage._cannedMessagePluginMessagePart4.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart4, fieldNumber: 16)
+      }
+      if !_storage._cannedMessagePluginMessagePart5.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart5, fieldNumber: 17)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -360,6 +430,11 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
         if _storage._noSave != rhs_storage._noSave {return false}
         if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
+        if _storage._cannedMessagePluginMessagePart1 != rhs_storage._cannedMessagePluginMessagePart1 {return false}
+        if _storage._cannedMessagePluginMessagePart2 != rhs_storage._cannedMessagePluginMessagePart2 {return false}
+        if _storage._cannedMessagePluginMessagePart3 != rhs_storage._cannedMessagePluginMessagePart3 {return false}
+        if _storage._cannedMessagePluginMessagePart4 != rhs_storage._cannedMessagePluginMessagePart4 {return false}
+        if _storage._cannedMessagePluginMessagePart5 != rhs_storage._cannedMessagePluginMessagePart5 {return false}
         return true
       }
       if !storagesAreEqual {return false}

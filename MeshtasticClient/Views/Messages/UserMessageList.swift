@@ -317,7 +317,7 @@ struct UserMessageList: View {
 				})
 				.onChange(of: allMessages.count, perform: { count in
 					
-					self.context.refresh(user, mergeChanges: true)
+					//self.context.refresh(user, mergeChanges: true)
 					
 					let index = count - 1
 					

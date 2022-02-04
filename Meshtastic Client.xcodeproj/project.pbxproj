@@ -26,6 +26,7 @@
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
+		DD70A468279C554A003120E4 /* cannedmessages.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD70A467279C554A003120E4 /* cannedmessages.pb.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
@@ -92,6 +93,7 @@
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
+		DD70A467279C554A003120E4 /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
@@ -215,7 +217,8 @@
 			isa = PBXGroup;
 			children = (
 				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
-				C9A88B56278B559900BD810A /* apponly.pb.swift */,
+				DD17E5DB277D49D400010EC2 /* apponly.pb.swift */,
+				DD70A467279C554A003120E4 /* cannedmessages.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
 				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
 				DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */,
@@ -540,6 +543,7 @@
 				DD47E3DB26F3901B00029299 /* Channels.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
+				DD70A468279C554A003120E4 /* cannedmessages.pb.swift in Sources */,
 				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
