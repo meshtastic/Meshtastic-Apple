@@ -62,6 +62,9 @@ enum HardwareModel: SwiftProtobuf.Enum {
   /// The new version of the heltec WiFi_Lora_32_V2 board that has battery sensing hooked to GPIO 37.  Sadly they did not update anything on the silkscreen to identify this board
   case heltecV21 // = 10
 
+  /// Ancient heltec WiFi_Lora_32 board 
+  case heltecV1 // = 11
+
   ///
   /// Less common/prototype boards listed here (needs one more byte over the air)
   case loraRelayV1 // = 32
@@ -78,6 +81,14 @@ enum HardwareModel: SwiftProtobuf.Enum {
   ///
   /// Custom DIY device based on @NanoVHF schematics: https://github.com/NanoVHF/Meshtastic-DIY/tree/main/Schematics
   case diyV1 // = 39
+
+  ///
+  /// RAK WisBlock ESP32 core: https://docs.rakwireless.com/Product-Categories/WisBlock/RAK11200/Overview/
+  case rak11200 // = 40
+
+  ///
+  /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
+  case privateHw // = 255
   case UNRECOGNIZED(Int)
 
   init() {
@@ -97,6 +108,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 8: self = .tloraV11P3
     case 9: self = .rak4631
     case 10: self = .heltecV21
+    case 11: self = .heltecV1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -105,6 +117,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 37: self = .portduino
     case 38: self = .androidSim
     case 39: self = .diyV1
+    case 40: self = .rak11200
+    case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -122,6 +136,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tloraV11P3: return 8
     case .rak4631: return 9
     case .heltecV21: return 10
+    case .heltecV1: return 11
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -130,6 +145,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .portduino: return 37
     case .androidSim: return 38
     case .diyV1: return 39
+    case .rak11200: return 40
+    case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -152,6 +169,7 @@ extension HardwareModel: CaseIterable {
     .tloraV11P3,
     .rak4631,
     .heltecV21,
+    .heltecV1,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -160,6 +178,8 @@ extension HardwareModel: CaseIterable {
     .portduino,
     .androidSim,
     .diyV1,
+    .rak11200,
+    .privateHw,
   ]
 }
 
@@ -1064,6 +1084,15 @@ struct DataMessage {
   /// Indicates the original message ID that this message is reporting failure on. (formerly called original_id)
   var requestID: UInt32 = 0
 
+  ///
+  /// If set, this message is intened to be a reply to a previously sent message with the defined id.
+  var replyID: UInt32 = 0
+
+  ///
+  /// Defaults to false. If true, then what is in the payload should be treated as an emoji like giving
+  /// a message a heart or poop emoji.
+  var isTapback: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -1210,21 +1239,6 @@ struct MeshPacket {
   var delayed: MeshPacket.Delayed {
     get {return _storage._delayed}
     set {_uniqueStorage()._delayed = newValue}
-  }
-
-  ///
-  /// If set, this message is intened to be a reply to a previously sent message with the defined id.
-  var replyID: UInt32 {
-    get {return _storage._replyID}
-    set {_uniqueStorage()._replyID = newValue}
-  }
-
-  ///
-  /// Defaults to false. If true, then what is in the payload should be treated as an emoji like giving
-  /// a message a heart or poop emoji.
-  var isTapback: Bool {
-    get {return _storage._isTapback}
-    set {_uniqueStorage()._isTapback = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1613,14 +1627,14 @@ struct MyNodeInfo {
   }
 
   ///
-  /// 48 time windows of 1hr each with the airtime transmitted out of the device per hour.
+  /// 24 time windows of 1hr each with the airtime transmitted out of the device per hour.
   var airPeriodTx: [UInt32] {
     get {return _storage._airPeriodTx}
     set {_uniqueStorage()._airPeriodTx = newValue}
   }
 
   ///
-  /// 48 time windows of 1hr each with the airtime of valid packets for your mesh.
+  /// 24 time windows of 1hr each with the airtime of valid packets for your mesh.
   var airPeriodRx: [UInt32] {
     get {return _storage._airPeriodRx}
     set {_uniqueStorage()._airPeriodRx = newValue}
@@ -1638,6 +1652,13 @@ struct MyNodeInfo {
   var channelUtilization: Float {
     get {return _storage._channelUtilization}
     set {_uniqueStorage()._channelUtilization = newValue}
+  }
+
+  ///
+  /// Percent of airtime for transmission used within the last hour.
+  var airUtilTx: Float {
+    get {return _storage._airUtilTx}
+    set {_uniqueStorage()._airUtilTx = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -2046,6 +2067,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "TLORA_V1_1p3"),
     9: .same(proto: "RAK4631"),
     10: .same(proto: "HELTEC_V2_1"),
+    11: .same(proto: "HELTEC_V1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
@@ -2054,6 +2076,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     37: .same(proto: "PORTDUINO"),
     38: .same(proto: "ANDROID_SIM"),
     39: .same(proto: "DIY_V1"),
+    40: .same(proto: "RAK11200"),
+    255: .same(proto: "PRIVATE_HW"),
   ]
 }
 
@@ -2585,6 +2609,8 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     4: .same(proto: "dest"),
     5: .same(proto: "source"),
     6: .standard(proto: "request_id"),
+    7: .standard(proto: "reply_id"),
+    8: .standard(proto: "is_tapback"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2599,6 +2625,8 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 4: try { try decoder.decodeSingularFixed32Field(value: &self.dest) }()
       case 5: try { try decoder.decodeSingularFixed32Field(value: &self.source) }()
       case 6: try { try decoder.decodeSingularFixed32Field(value: &self.requestID) }()
+      case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.isTapback) }()
       default: break
       }
     }
@@ -2623,6 +2651,12 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.requestID != 0 {
       try visitor.visitSingularFixed32Field(value: self.requestID, fieldNumber: 6)
     }
+    if self.replyID != 0 {
+      try visitor.visitSingularFixed32Field(value: self.replyID, fieldNumber: 7)
+    }
+    if self.isTapback != false {
+      try visitor.visitSingularBoolField(value: self.isTapback, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2633,6 +2667,8 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.dest != rhs.dest {return false}
     if lhs.source != rhs.source {return false}
     if lhs.requestID != rhs.requestID {return false}
+    if lhs.replyID != rhs.replyID {return false}
+    if lhs.isTapback != rhs.isTapback {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2654,8 +2690,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     12: .same(proto: "priority"),
     13: .standard(proto: "rx_rssi"),
     15: .same(proto: "delayed"),
-    16: .standard(proto: "reply_id"),
-    17: .standard(proto: "is_tapback"),
   ]
 
   fileprivate class _StorageClass {
@@ -2671,8 +2705,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _priority: MeshPacket.Priority = .unset
     var _rxRssi: Int32 = 0
     var _delayed: MeshPacket.Delayed = .noDelay
-    var _replyID: UInt32 = 0
-    var _isTapback: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -2691,8 +2723,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _priority = source._priority
       _rxRssi = source._rxRssi
       _delayed = source._delayed
-      _replyID = source._replyID
-      _isTapback = source._isTapback
     }
   }
 
@@ -2743,8 +2773,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 12: try { try decoder.decodeSingularEnumField(value: &_storage._priority) }()
         case 13: try { try decoder.decodeSingularInt32Field(value: &_storage._rxRssi) }()
         case 15: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
-        case 16: try { try decoder.decodeSingularFixed32Field(value: &_storage._replyID) }()
-        case 17: try { try decoder.decodeSingularBoolField(value: &_storage._isTapback) }()
         default: break
         }
       }
@@ -2800,12 +2828,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._delayed != .noDelay {
         try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 15)
       }
-      if _storage._replyID != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._replyID, fieldNumber: 16)
-      }
-      if _storage._isTapback != false {
-        try visitor.visitSingularBoolField(value: _storage._isTapback, fieldNumber: 17)
-      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2827,8 +2849,6 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._priority != rhs_storage._priority {return false}
         if _storage._rxRssi != rhs_storage._rxRssi {return false}
         if _storage._delayed != rhs_storage._delayed {return false}
-        if _storage._replyID != rhs_storage._replyID {return false}
-        if _storage._isTapback != rhs_storage._isTapback {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2935,6 +2955,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     17: .standard(proto: "air_period_rx"),
     18: .standard(proto: "has_wifi"),
     19: .standard(proto: "channel_utilization"),
+    20: .standard(proto: "air_util_tx"),
   ]
 
   fileprivate class _StorageClass {
@@ -2956,6 +2977,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _airPeriodRx: [UInt32] = []
     var _hasWifi_p: Bool = false
     var _channelUtilization: Float = 0
+    var _airUtilTx: Float = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -2980,6 +3002,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _airPeriodRx = source._airPeriodRx
       _hasWifi_p = source._hasWifi_p
       _channelUtilization = source._channelUtilization
+      _airUtilTx = source._airUtilTx
     }
   }
 
@@ -3016,6 +3039,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 17: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._airPeriodRx) }()
         case 18: try { try decoder.decodeSingularBoolField(value: &_storage._hasWifi_p) }()
         case 19: try { try decoder.decodeSingularFloatField(value: &_storage._channelUtilization) }()
+        case 20: try { try decoder.decodeSingularFloatField(value: &_storage._airUtilTx) }()
         default: break
         }
       }
@@ -3078,6 +3102,9 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._channelUtilization != 0 {
         try visitor.visitSingularFloatField(value: _storage._channelUtilization, fieldNumber: 19)
       }
+      if _storage._airUtilTx != 0 {
+        try visitor.visitSingularFloatField(value: _storage._airUtilTx, fieldNumber: 20)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3105,6 +3132,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._airPeriodRx != rhs_storage._airPeriodRx {return false}
         if _storage._hasWifi_p != rhs_storage._hasWifi_p {return false}
         if _storage._channelUtilization != rhs_storage._channelUtilization {return false}
+        if _storage._airUtilTx != rhs_storage._airUtilTx {return false}
         return true
       }
       if !storagesAreEqual {return false}

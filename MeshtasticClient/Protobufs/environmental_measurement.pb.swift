@@ -31,6 +31,12 @@ struct EnvironmentalMeasurement {
 
   var barometricPressure: Float = 0
 
+  var gasResistance: Float = 0
+
+  var voltage: Float = 0
+
+  var current: Float = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -44,6 +50,9 @@ extension EnvironmentalMeasurement: SwiftProtobuf.Message, SwiftProtobuf._Messag
     1: .same(proto: "temperature"),
     2: .standard(proto: "relative_humidity"),
     3: .standard(proto: "barometric_pressure"),
+    4: .standard(proto: "gas_resistance"),
+    5: .same(proto: "voltage"),
+    6: .same(proto: "current"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -55,6 +64,9 @@ extension EnvironmentalMeasurement: SwiftProtobuf.Message, SwiftProtobuf._Messag
       case 1: try { try decoder.decodeSingularFloatField(value: &self.temperature) }()
       case 2: try { try decoder.decodeSingularFloatField(value: &self.relativeHumidity) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.barometricPressure) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self.gasResistance) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
+      case 6: try { try decoder.decodeSingularFloatField(value: &self.current) }()
       default: break
       }
     }
@@ -70,6 +82,15 @@ extension EnvironmentalMeasurement: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if self.barometricPressure != 0 {
       try visitor.visitSingularFloatField(value: self.barometricPressure, fieldNumber: 3)
     }
+    if self.gasResistance != 0 {
+      try visitor.visitSingularFloatField(value: self.gasResistance, fieldNumber: 4)
+    }
+    if self.voltage != 0 {
+      try visitor.visitSingularFloatField(value: self.voltage, fieldNumber: 5)
+    }
+    if self.current != 0 {
+      try visitor.visitSingularFloatField(value: self.current, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -77,6 +98,9 @@ extension EnvironmentalMeasurement: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if lhs.temperature != rhs.temperature {return false}
     if lhs.relativeHumidity != rhs.relativeHumidity {return false}
     if lhs.barometricPressure != rhs.barometricPressure {return false}
+    if lhs.gasResistance != rhs.gasResistance {return false}
+    if lhs.voltage != rhs.voltage {return false}
+    if lhs.current != rhs.current {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

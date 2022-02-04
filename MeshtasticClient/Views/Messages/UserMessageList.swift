@@ -62,7 +62,7 @@ struct UserMessageList: View {
 										let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
 										
 										HStack {
-											
+											Text(String(message.messageId))
 											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
 												.padding(10)
 												.overlay(
@@ -212,6 +212,27 @@ struct UserMessageList: View {
 													Text("Copy")
 													Image(systemName: "doc.on.doc")
 												}
+												Menu("Message Details") {
+													
+													VStack {
+														
+														let time = Int32(message.messageTimestamp)
+														let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+
+														if time != 0 {
+															Text("Sent \(messageDate, style: .date) \(messageDate, style: .time)").font(.caption2).foregroundColor(.gray)
+														} else {
+															Text("Unknown").font(.caption2).foregroundColor(.gray)
+														}
+
+													}
+													
+													VStack {
+																
+														Text("Received ACK: \(message.receivedACK ? "✔️" : "")")
+														
+													}
+												}
 												Divider()
 												Button(role: .destructive, action: {
 													self.showDeleteMessageAlert = true
@@ -261,16 +282,23 @@ struct UserMessageList: View {
 
 												let time = Int32(message.messageTimestamp)
 												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+												let showUntil = Date().addingTimeInterval(3600)
 
 												if time != 0 {
-													Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
-													Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
+												//	Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
+												//	Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
 												} else {
-													Text("Unknown").font(.caption2).foregroundColor(.gray)
+												//	Text("Unknown").font(.caption2).foregroundColor(.gray)
+												}
+												
+												if messageDate <= showUntil && message.receivedACK {
+
+													Text("Delivered").font(.caption2).foregroundColor(.gray)
 												}
 											}
-											.padding(4)
+											
 										}
+										.padding(.bottom)
 										.id(allMessages.firstIndex(of: message))
 										
 										if !currentUser {
