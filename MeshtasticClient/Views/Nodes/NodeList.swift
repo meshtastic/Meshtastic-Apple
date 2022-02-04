@@ -46,7 +46,7 @@ struct NodeList: View {
 
 						NavigationLink(destination: NodeDetail(node: node), tag: String(index!), selection: $selection) {
 
-							let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.name == node.bleName)
+							let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 
 							VStack(alignment: .leading) {
 
