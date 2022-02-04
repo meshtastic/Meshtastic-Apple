@@ -214,17 +214,17 @@
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
+				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
 				C9A88B56278B559900BD810A /* apponly.pb.swift */,
-				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
-				DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
 				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
-				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
-				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
 				DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */,
-				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
-				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
 				DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */,
+				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
+				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
+				DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */,
+				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
+				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
 			);
 			path = Protobufs;
 			sourceTree = "<group>";
