@@ -10,13 +10,13 @@ import UIKit
 import MapKit
 import SwiftUI
 import CoreData
-
+#if false
 // wrap a MKMapView into something we can use in SwiftUI
 struct MapView: UIViewRepresentable {
 
 	var nodes: FetchedResults<NodeInfoEntity>
 
-	weak var mapViewDelegate = MapViewDelegate()
+	var mapViewDelegate = MapViewDelegate()
 
 	// observe changes to the key in UserDefaults
 	@AppStorage("meshMapType") var type: String = "hybrid"
@@ -36,6 +36,12 @@ struct MapView: UIViewRepresentable {
 
 		map.register(PositionAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(PositionAnnotationView.self))
 
+		let overlay = MKTileOverlay(urlTemplate: //"http://tiles-a.data-cdn.linz.govt.nz/services;key=7fa19132d53240708c4ff436df5b9800/tiles/v4/layer=50767/EPSG:3857/{z}/{x}/{y}.png")
+			"http://10.147.253.250:5050/local/map/{z}/{x}/{y}.png")
+		overlay.canReplaceMapContent = true
+		self.mapViewDelegate.renderer = MKTileOverlayRenderer(tileOverlay: overlay)
+		map.addOverlay(overlay)
+		
 		return map
 	}
 
@@ -129,6 +135,8 @@ private extension MapView {
 
 class MapViewDelegate: NSObject, MKMapViewDelegate {
 
+	var renderer: MKTileOverlayRenderer?
+	
 	func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 
 		guard !annotation.isKind(of: MKUserLocation.self) else {
@@ -144,6 +152,11 @@ class MapViewDelegate: NSObject, MKMapViewDelegate {
 
 		return annotationView
 	}
+	
+	func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+		return self.renderer!
+		
+	}
 
 	private func setupPositionAnnotationView(for annotation: PositionAnnotation, on mapView: MKMapView) -> PositionAnnotationView {
 		let identifier = NSStringFromClass(PositionAnnotationView.self)
@@ -157,3 +170,4 @@ class MapViewDelegate: NSObject, MKMapViewDelegate {
 		return annotationView
 	}
 }
+#endif

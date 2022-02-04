@@ -1,13 +1,16 @@
-# Meshtastic Client
+# Meshtastic Apple Clients
 
 ## OS Requirements
 
-Requires iOS 15 +
+* iOS App Requires iOS 15 +
+* iPadOS App Requires iPadOS 15 +
+* Mac App Reguires macOS 12 +
 
 ## Code Standards
 
 * Use SwiftUI whenever possible
 * Use Hierarchical icons
+* Use Core Data for persistence
 
 - Requires SwiftLint - see https://github.com/realm/SwiftLint
 

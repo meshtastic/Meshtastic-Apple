@@ -8,8 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
+		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
+		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */; };
-		DD17E5DD277D49D400010EC2 /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DB277D49D400010EC2 /* apponly.pb.swift */; };
+		C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A88B54278B503C00BD810A /* MapViewModule.swift */; };
+		C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A88B56278B559900BD810A /* apponly.pb.swift */; };
 		DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -74,8 +77,10 @@
 
 /* Begin PBXFileReference section */
 		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
-		DD17E5DB277D49D400010EC2 /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
+		C9A88B54278B503C00BD810A /* MapViewModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewModule.swift; sourceTree = "<group>"; };
+		C9A88B56278B559900BD810A /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
 		DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
@@ -132,6 +137,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -158,6 +164,8 @@
 			children = (
 				C9A7BC0E27759A6800760B50 /* Custom */,
 				C9483F6C2773017500998F6B /* MapView.swift */,
+				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
+				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -383,6 +391,7 @@
 			name = MeshtasticClient;
 			packageProductDependencies = (
 				DD5394FB276993AD00AD86B1 /* SwiftProtobuf */,
+				C9697FA427933B8C00250207 /* SQLite */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */;
@@ -435,6 +444,7 @@
 				TargetAttributes = {
 					DDC2E15326CE248E0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
+						LastSwiftMigration = 1320;
 					};
 					DDC2E16926CE248F0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
@@ -457,6 +467,7 @@
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
 				DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -548,16 +559,18 @@
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,
+				C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
+				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
+				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
-				DD17E5DD277D49D400010EC2 /* apponly.pb.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DD47E3DD26F390A000029299 /* Messages.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */,
@@ -720,9 +733,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
@@ -732,11 +747,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
@@ -748,9 +764,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
@@ -760,7 +778,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -896,6 +914,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.2;
+			};
+		};
 		DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
@@ -907,6 +933,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C9697FA427933B8C00250207 /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
+			productName = SQLite;
+		};
 		DD5394FB276993AD00AD86B1 /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
