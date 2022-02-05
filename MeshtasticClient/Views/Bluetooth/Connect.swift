@@ -24,7 +24,7 @@ struct Connect: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.2.30"
+		let minimumVersion = "1.2.46"
 		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 
 		
@@ -73,7 +73,7 @@ struct Connect: View {
 
 											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
-										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.name)
+										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
 											.font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedPeripheral != nil {
 											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)

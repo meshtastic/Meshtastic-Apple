@@ -14,8 +14,8 @@ fi
 
 pdir=$(realpath "../Meshtastic-protobufs")
 sdir=$(realpath "./MeshtasticClient/Protobufs")
-echo "pdir:$pdir sdir:$sdir"
-pfiles="radioconfig.proto channel.proto cannedmessages.proto deviceonly.proto portnums.proto remote_hardware.proto environmental_measurement.proto admin.proto mqtt.proto mesh.proto storeforward.proto"
+echo "pdir:$pdir sdir:$sdir
+pfiles="admin.proto apponly.proto cannedmessages.proto channel.proto deviceonly.proto environmental_measurement.proto mesh.proto mqtt.proto portnums.proto radioconfig.proto remote_hardware.proto storeforward.proto"
 for pf in $pfiles
 do
   echo "Generating $pf..."
