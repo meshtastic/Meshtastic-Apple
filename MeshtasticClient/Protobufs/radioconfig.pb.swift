@@ -1244,6 +1244,25 @@ struct RadioConfig {
       set {_uniqueStorage()._cannedMessagePluginSendBell = newValue}
     }
 
+    ///
+    /// Whether to send encrypted or decrypted packets to MQTT.
+    /// This parameter is only honoured if you also set mqtt_server
+    /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
+    /// 
+    /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
+    var mqttEncryptionEnabled: Bool {
+      get {return _storage._mqttEncryptionEnabled}
+      set {_uniqueStorage()._mqttEncryptionEnabled = newValue}
+    }
+
+    ///
+    /// Ratio of voltage divider for battery pin eg. 3.20 (R1=100k, R2=220k)
+    /// Overrides the ADC_MULTIPLIER defined in variant for battery voltage calculation.
+    var adcMultiplierOverride: Float {
+      get {return _storage._adcMultiplierOverride}
+      set {_uniqueStorage()._adcMultiplierOverride = newValue}
+    }
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum EnvironmentalMeasurementSensorType: SwiftProtobuf.Enum {
@@ -1255,6 +1274,7 @@ struct RadioConfig {
       case dht22 // = 4
       case bme280 // = 5
       case bme680 // = 6
+      case mcp9808 // = 7
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1270,6 +1290,7 @@ struct RadioConfig {
         case 4: self = .dht22
         case 5: self = .bme280
         case 6: self = .bme680
+        case 7: self = .mcp9808
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1283,6 +1304,7 @@ struct RadioConfig {
         case .dht22: return 4
         case .bme280: return 5
         case .bme680: return 6
+        case .mcp9808: return 7
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1311,6 +1333,7 @@ extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIt
     .dht22,
     .bme280,
     .bme680,
+    .mcp9808,
   ]
 }
 
@@ -1528,6 +1551,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     171: .standard(proto: "canned_message_plugin_allow_input_source"),
     172: .standard(proto: "canned_message_plugin_messages"),
     173: .standard(proto: "canned_message_plugin_send_bell"),
+    174: .standard(proto: "mqtt_encryption_enabled"),
+    175: .standard(proto: "adc_multiplier_override"),
   ]
 
   fileprivate class _StorageClass {
@@ -1612,6 +1637,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _cannedMessagePluginAllowInputSource: String = String()
     var _cannedMessagePluginMessages: String = String()
     var _cannedMessagePluginSendBell: Bool = false
+    var _mqttEncryptionEnabled: Bool = false
+    var _adcMultiplierOverride: Float = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -1699,6 +1726,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _cannedMessagePluginAllowInputSource = source._cannedMessagePluginAllowInputSource
       _cannedMessagePluginMessages = source._cannedMessagePluginMessages
       _cannedMessagePluginSendBell = source._cannedMessagePluginSendBell
+      _mqttEncryptionEnabled = source._mqttEncryptionEnabled
+      _adcMultiplierOverride = source._adcMultiplierOverride
     }
   }
 
@@ -1798,6 +1827,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 171: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginAllowInputSource) }()
         case 172: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessages) }()
         case 173: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessagePluginSendBell) }()
+        case 174: try { try decoder.decodeSingularBoolField(value: &_storage._mqttEncryptionEnabled) }()
+        case 175: try { try decoder.decodeSingularFloatField(value: &_storage._adcMultiplierOverride) }()
         default: break
         }
       }
@@ -2049,6 +2080,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._cannedMessagePluginSendBell != false {
         try visitor.visitSingularBoolField(value: _storage._cannedMessagePluginSendBell, fieldNumber: 173)
       }
+      if _storage._mqttEncryptionEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._mqttEncryptionEnabled, fieldNumber: 174)
+      }
+      if _storage._adcMultiplierOverride != 0 {
+        try visitor.visitSingularFloatField(value: _storage._adcMultiplierOverride, fieldNumber: 175)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2139,6 +2176,8 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._cannedMessagePluginAllowInputSource != rhs_storage._cannedMessagePluginAllowInputSource {return false}
         if _storage._cannedMessagePluginMessages != rhs_storage._cannedMessagePluginMessages {return false}
         if _storage._cannedMessagePluginSendBell != rhs_storage._cannedMessagePluginSendBell {return false}
+        if _storage._mqttEncryptionEnabled != rhs_storage._mqttEncryptionEnabled {return false}
+        if _storage._adcMultiplierOverride != rhs_storage._adcMultiplierOverride {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2157,5 +2196,6 @@ extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftP
     4: .same(proto: "DHT22"),
     5: .same(proto: "BME280"),
     6: .same(proto: "BME680"),
+    7: .same(proto: "MCP9808"),
   ]
 }

@@ -833,8 +833,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 								mutablePositions.add(position)
 
-								print("💾 Recieved a Position Packet")
-
 								if position.coordinate == nil {
 									var newPostions = [PositionEntity]()
 									newPostions.append(position)
@@ -855,42 +853,45 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						  try context!.save()
 
 							if meshLoggingEnabled {
-								MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")
+								MeshLogger.log("💾 Updated NodeInfo Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 							}
-							print("💾 Updated NodeInfo SNR and Time from Position Packet For: \(fetchedNode[0].num)")
+							print("💾 Updated NodeInfo Position Coordinates, SNR and Time from Position App Packet For:: \(fetchedNode[0].num)")
 
 						} catch {
 
 							context!.rollback()
 
 							let nsError = error as NSError
-							print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+							print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 						}
 					} catch {
 
-						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+						print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
 					}
 
-					
-					//
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.environmentalMeasurementApp {
+
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Environmental Measurement App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Environmental Measurement App UNHANDLED \(try decodedInfo.packet.jsonString())")
+
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
 
-					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
 
-					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else if  decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 
-					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				 } else {
 
-					 if meshLoggingEnabled { MeshLogger.log("🚨 MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					 print("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
 				 }
 
@@ -996,9 +997,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					var meshPacket = MeshPacket()
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
-
 					meshPacket.decoded = dataMessage
-
 					meshPacket.decoded.isTapback = isTapback
 					if replyID > 0 {
 						meshPacket.decoded.replyID = UInt32(replyID)

@@ -81,6 +81,14 @@ enum HardwareModel: SwiftProtobuf.Enum {
   ///
   /// Custom DIY device based on @NanoVHF schematics: https://github.com/NanoVHF/Meshtastic-DIY/tree/main/Schematics
   case diyV1 // = 39
+
+  ///
+  /// RAK WisBlock ESP32 core: https://docs.rakwireless.com/Product-Categories/WisBlock/RAK11200/Overview/
+  case rak11200 // = 40
+
+  ///
+  /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
+  case privateHw // = 255
   case UNRECOGNIZED(Int)
 
   init() {
@@ -109,6 +117,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 37: self = .portduino
     case 38: self = .androidSim
     case 39: self = .diyV1
+    case 40: self = .rak11200
+    case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -135,6 +145,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .portduino: return 37
     case .androidSim: return 38
     case .diyV1: return 39
+    case .rak11200: return 40
+    case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -166,6 +178,8 @@ extension HardwareModel: CaseIterable {
     .portduino,
     .androidSim,
     .diyV1,
+    .rak11200,
+    .privateHw,
   ]
 }
 
@@ -2062,6 +2076,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     37: .same(proto: "PORTDUINO"),
     38: .same(proto: "ANDROID_SIM"),
     39: .same(proto: "DIY_V1"),
+    40: .same(proto: "RAK11200"),
+    255: .same(proto: "PRIVATE_HW"),
   ]
 }
 
