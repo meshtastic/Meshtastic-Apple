@@ -67,11 +67,8 @@ struct Connect: View {
 
 										if bleManager.connectedPeripheral != nil {
 
-											Text(bleManager.connectedPeripheral.longName).font(.title2)
+											Text(bleManager.connectedPeripheral.name).font(.title2)
 
-										} else {
-
-											Text(String(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")).font(.title2)
 										}
 										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
 											.font(.caption).foregroundColor(Color.gray)

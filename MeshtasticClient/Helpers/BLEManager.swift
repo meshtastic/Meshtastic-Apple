@@ -206,27 +206,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		connectedPeripheral.peripheral.delegate = self
 
-		let fetchConnectedPeripheralRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchConnectedPeripheralRequest.predicate = NSPredicate(format: "bleName MATCHES %@", String(peripheral.name ?? "???"))
-
-		do {
-			let fetchedNode = try context?.fetch(fetchConnectedPeripheralRequest) as! [NodeInfoEntity]
-
-			if fetchedNode.count == 1 {
-
-				connectedPeripheral.num = fetchedNode[0].user!.num
-				connectedPeripheral.shortName = fetchedNode[0].user!.shortName!
-				connectedPeripheral.longName = fetchedNode[0].user!.longName!
-				connectedPeripheral.firmwareVersion = (fetchedNode[0].myInfo?.firmwareVersion ?? "Unknown")
-			}
-
-		} catch {
-			print("💥 Fetch NodeInfo Failed")
-			if meshLoggingEnabled { MeshLogger.log("💥 Fetch NodeInfo Failed") }
-		}
-
-        //lastConnectedPeripheral = peripheral.identifier.uuidString
-
 		// Discover Services
         peripheral.discoverServices([meshtasticServiceCBUUID])
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
@@ -429,6 +408,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let myInfo = MyInfoEntity(context: context!)
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
+						myInfo.channelUtilization = decodedInfo.myInfo.channelUtilization
 						myInfo.numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						
 						// Swift does strings weird, this does work
@@ -441,8 +421,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						myInfo.minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						myInfo.maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
-						connectedPeripheral.num = myInfo.myNodeNum
-						connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.num = myInfo.myNodeNum
+						self.connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.name = myInfo.bleName ?? "Unknown"
 						
 						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -470,6 +451,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
+						fetchedMyInfo[0].channelUtilization = decodedInfo.myInfo.channelUtilization
 						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: decodedInfo.myInfo.firmwareVersion))]
@@ -479,6 +461,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
+						connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
+						connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
+						connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
+						
 					}
 					do {
 
@@ -523,15 +509,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 						newNode.snr = decodedInfo.nodeInfo.snr
 
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == newNode.id {
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == newNode.num {
 
-							newNode.bleName = self.connectedPeripheral.peripheral.name
 							if decodedInfo.nodeInfo.hasUser {
-
+								
 								connectedPeripheral.name  = decodedInfo.nodeInfo.user.longName
-								connectedPeripheral.longName = decodedInfo.nodeInfo.user.longName
-								connectedPeripheral.shortName = decodedInfo.nodeInfo.user.shortName
-								connectedPeripheral.num	= Int64(decodedInfo.nodeInfo.num)
 							}
 						}
 
@@ -589,8 +571,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						}
-						//fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						fetchedNode[0].snr = decodedInfo.nodeInfo.snr
+						
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == fetchedNode[0].num {
+
+							if decodedInfo.nodeInfo.hasUser {
+								
+								self.connectedPeripheral.name  = fetchedNode[0].user!.longName ?? "Unknown"
+							}
+						}
 
 						if decodedInfo.nodeInfo.hasUser {
 
@@ -882,7 +871,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 					
-					let currentNodeNum = connectedPeripheral.num
+					let currentNodeNum = self.connectedPeripheral.num
 					
 
 					
