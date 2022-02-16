@@ -173,7 +173,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -409,7 +409,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
 						myInfo.channelUtilization = decodedInfo.myInfo.channelUtilization
-						myInfo.numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						
 						// Swift does strings weird, this does work
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
@@ -424,6 +423,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.num = myInfo.myNodeNum
 						self.connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = myInfo.bleName ?? "Unknown"
+						self.connectedPeripheral.channelUtilization = myInfo.channelUtilization
+						self.connectedPeripheral.airTime = myInfo.airUtilTx
 						
 						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -452,7 +453,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
 						fetchedMyInfo[0].channelUtilization = decodedInfo.myInfo.channelUtilization
-						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
@@ -461,9 +461,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
-						connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
-						connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
-						connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
+						self.connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
+						self.connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
+						self.connectedPeripheral.channelUtilization = fetchedMyInfo[0].channelUtilization
+						self.connectedPeripheral.airTime = fetchedMyInfo[0].airUtilTx
 						
 					}
 					do {
@@ -781,7 +783,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							try context!.save()
 
-							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")}
+							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
 							print("💾 Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
 
 						} catch {

@@ -29,7 +29,6 @@
         <attribute name="messageTimeoutMsec" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="myNodeNum" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="numBands" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="myInfoNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="myInfo" inverseEntity="NodeInfoEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -38,6 +37,7 @@
         </uniquenessConstraints>
     </entity>
     <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="bleName" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastHeard" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -77,8 +77,8 @@
     </entity>
     <elements>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="185"/>
-        <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="194"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="134"/>
+        <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="179"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="134"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
     </elements>

@@ -26,7 +26,6 @@ struct Connect: View {
 		let firmwareVersion = bleManager.lastConnnectionVersion
 		let minimumVersion = "1.2.52"
 		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
-
 		
 		NavigationView {
 
@@ -74,6 +73,10 @@ struct Connect: View {
 											.font(.caption).foregroundColor(Color.gray)
 										if bleManager.connectedPeripheral != nil {
 											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
+												.font(.caption).foregroundColor(Color.gray)
+											Text("Channel Utilization: ").font(.caption)+Text(String(bleManager.connectedPeripheral.channelUtilization ?? 0.00))
+												.font(.caption).foregroundColor(Color.gray)
+											Text("Air Time: ").font(.caption)+Text(String(bleManager.connectedPeripheral.airTime ?? 0.00))
 												.font(.caption).foregroundColor(Color.gray)
 										}
 										if bleManager.connectedPeripheral.subscribed {
