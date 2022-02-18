@@ -35,7 +35,7 @@ struct UserMessageList: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.2.60"
+		let minimumVersion = "1.2.54"
 		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		VStack {
@@ -346,7 +346,7 @@ struct UserMessageList: View {
 				})
 				.onChange(of: allMessages.count, perform: { count in
 					
-					//self.context.refresh(user, mergeChanges: true)
+					self.context.refresh(user, mergeChanges: true)
 					
 					let index = count - 1
 					
@@ -390,10 +390,18 @@ struct UserMessageList: View {
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
-									typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
-						
+									if user.num == bleManager.broadcastNodeNum {
+										
+										typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
+										
+									} else {
+										
+										typingMessage =  "📍 " + userLongName + " Has shared their position with you."
+									}
 								} label: {
-									Image(systemName: "mappin")
+									Image(systemName: "mappin.and.ellipse")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.accentColor)
 								}
 
 								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))

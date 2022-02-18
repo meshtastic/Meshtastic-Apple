@@ -69,11 +69,11 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
 		}
 	}
-//	@Published var provideLocation: Bool {
-//		didSet {
-//			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
-//		}
-//	}
+	@Published var provideLocation: Bool {
+		didSet {
+			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
+		}
+	}
 	@Published var keyboardType: Int {
 		didSet {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
@@ -102,7 +102,7 @@ class UserSettings: ObservableObject {
 		// self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
-		// self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
+		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
@@ -137,12 +137,12 @@ struct AppSettings: View {
 //								.foregroundColor(.gray)
 //						}
 //						.listRowSeparator(.visible)
-//						Toggle(isOn: $userSettings.provideLocation) {
-//
-//							Label("Provide location to mesh", systemImage: "location.circle.fill")
-//						}
-//						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-//						.listRowSeparator(.visible)
+						Toggle(isOn: $userSettings.provideLocation) {
+
+							Label("Provide location to mesh", systemImage: "location.circle.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
 						Label("Preferred Radio", systemImage: "flipphone")
 							.listRowSeparator(.hidden)
 						Text(userSettings.preferredPeripheralName)
