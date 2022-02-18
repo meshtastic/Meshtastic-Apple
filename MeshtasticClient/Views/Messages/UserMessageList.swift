@@ -28,6 +28,7 @@ struct UserMessageList: View {
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
+	@State private var sendPositionWithMessage: Bool = false
 	
 	@State var messageCount = 0
 
@@ -385,6 +386,15 @@ struct UserMessageList: View {
 								.font(.subheadline)
 
 								Spacer()
+								
+								Button {
+									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
+									sendPositionWithMessage = true
+									typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
+						
+								} label: {
+									Image(systemName: "mappin")
+								}
 
 								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
@@ -409,6 +419,11 @@ struct UserMessageList: View {
 						typingMessage = ""
 						focusedField = nil
 						replyMessageId = 0
+						if sendPositionWithMessage {
+							if bleManager.sendPosition(destNum: user.num, wantResponse: false) {
+								print("Position Sent")
+							}
+						}
 					}
 
 				}) {

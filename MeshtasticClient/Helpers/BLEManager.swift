@@ -1077,4 +1077,97 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return success
 	}
+	
+	// Send  Message
+	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
+		
+		var success = false
+		
+		let fromNodeNum = connectedPeripheral.num
+		
+		if fromNodeNum <= 0 {
+			
+			return false
+		}
+		
+		let fetchNode: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNode.predicate = NSPredicate(format: "num == %lld", fromNodeNum)
+
+		do {
+
+			let fetchedNode = try context?.fetch(fetchNode) as! [NodeInfoEntity]
+
+			if fetchedNode.count == 1 {
+				var positionPacket = Position()
+				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+				positionPacket.time = UInt32(Date().timeIntervalSince1970)
+				positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+				let mostRecentPosition = fetchedNode[0].positions?.lastObject as! PositionEntity
+				positionPacket.batteryLevel = mostRecentPosition.batteryLevel
+				
+				var meshPacket = MeshPacket()
+				meshPacket.to = UInt32(broadcastNodeNum)
+				meshPacket.from	= UInt32(connectedPeripheral.num)
+				meshPacket.wantAck = wantResponse
+				
+				var dataMessage = DataMessage()
+				dataMessage.payload = try! positionPacket.serializedData()
+				dataMessage.portnum = PortNum.positionApp
+				
+				meshPacket.decoded = dataMessage
+				
+				let position = PositionEntity(context: context!)
+				position.latitudeI = positionPacket.latitudeI
+				position.longitudeI = positionPacket.longitudeI
+				position.altitude = positionPacket.altitude
+				position.batteryLevel = positionPacket.batteryLevel
+				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionPacket.time)))
+
+				let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+				mutablePositions.add(position)
+
+				fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				let binaryData: Data = try! toRadio.serializedData()
+				
+				if meshLoggingEnabled { MeshLogger.log("📍 Sent a Position Packet for node: \(fromNodeNum)") }
+				print("📍 Sent a Position Packet for node: \(fromNodeNum)")
+				
+				if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+					do {
+
+						try context!.save()
+						print("💾 Saved a new position for the connected node: \(fromNodeNum)")
+						if meshLoggingEnabled { MeshLogger.log("💾 Saved a new position for the connected node: \(fromNodeNum)") }
+						success = true
+
+					} catch {
+
+						context!.rollback()
+
+						let nsError = error as NSError
+						print("🚫 Unresolved Core Data error in Send Position Function \(nsError)")
+						if meshLoggingEnabled { MeshLogger.log("🚫 Unresolved Core Data error in Send Position Function \(nsError)") }
+						success = false
+					}
+				}
+				
+			}
+			
+		} catch {
+				
+		}
+		
+		
+		
+
+		
+		return success
+	}
+	
 }
