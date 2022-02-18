@@ -6,6 +6,8 @@ class LocationHelper: NSObject, ObservableObject {
 
     // Mount Rainier
     static let DefaultLocation = CLLocationCoordinate2D(latitude: 46.879967, longitude: -121.726906)
+	
+	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 
     static var currentLocation: CLLocationCoordinate2D {
 
@@ -14,6 +16,14 @@ class LocationHelper: NSObject, ObservableObject {
         }
         return location.coordinate
     }
+
+	static var currentAltitude: CLLocationDistance {
+
+		guard let altitude = shared.locationManager.location?.altitude else {
+			return DefaultAltitude
+		}
+		return altitude
+	}
 
     private let locationManager = CLLocationManager()
 

@@ -173,7 +173,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -409,7 +409,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
 						myInfo.channelUtilization = decodedInfo.myInfo.channelUtilization
-						myInfo.numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						
 						// Swift does strings weird, this does work
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
@@ -424,6 +423,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.num = myInfo.myNodeNum
 						self.connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = myInfo.bleName ?? "Unknown"
+						self.connectedPeripheral.channelUtilization = myInfo.channelUtilization
+						self.connectedPeripheral.airTime = myInfo.airUtilTx
 						
 						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -452,7 +453,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
 						fetchedMyInfo[0].channelUtilization = decodedInfo.myInfo.channelUtilization
-						fetchedMyInfo[0].numBands = Int32(bitPattern: decodedInfo.myInfo.numBands)
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
@@ -461,9 +461,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: decodedInfo.myInfo.messageTimeoutMsec)
 						fetchedMyInfo[0].minAppVersion = Int32(bitPattern: decodedInfo.myInfo.minAppVersion)
 						fetchedMyInfo[0].maxChannels = Int32(bitPattern: decodedInfo.myInfo.maxChannels)
-						connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
-						connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
-						connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
+						self.connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
+						self.connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
+						self.connectedPeripheral.channelUtilization = fetchedMyInfo[0].channelUtilization
+						self.connectedPeripheral.airTime = fetchedMyInfo[0].airUtilTx
 						
 					}
 					do {
@@ -781,7 +783,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							try context!.save()
 
-							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(Int64(decodedInfo.nodeInfo.num))")}
+							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
 							print("💾 Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
 
 						} catch {
@@ -1075,4 +1077,97 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return success
 	}
+	
+	// Send  Message
+	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
+		
+		var success = false
+		
+		let fromNodeNum = connectedPeripheral.num
+		
+		if fromNodeNum <= 0 {
+			
+			return false
+		}
+		
+		let fetchNode: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNode.predicate = NSPredicate(format: "num == %lld", fromNodeNum)
+
+		do {
+
+			let fetchedNode = try context?.fetch(fetchNode) as! [NodeInfoEntity]
+
+			if fetchedNode.count == 1 {
+				var positionPacket = Position()
+				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+				positionPacket.time = UInt32(Date().timeIntervalSince1970)
+				positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+				let mostRecentPosition = fetchedNode[0].positions?.lastObject as! PositionEntity
+				positionPacket.batteryLevel = mostRecentPosition.batteryLevel
+				
+				var meshPacket = MeshPacket()
+				meshPacket.to = UInt32(broadcastNodeNum)
+				meshPacket.from	= UInt32(connectedPeripheral.num)
+				meshPacket.wantAck = wantResponse
+				
+				var dataMessage = DataMessage()
+				dataMessage.payload = try! positionPacket.serializedData()
+				dataMessage.portnum = PortNum.positionApp
+				
+				meshPacket.decoded = dataMessage
+				
+				let position = PositionEntity(context: context!)
+				position.latitudeI = positionPacket.latitudeI
+				position.longitudeI = positionPacket.longitudeI
+				position.altitude = positionPacket.altitude
+				position.batteryLevel = positionPacket.batteryLevel
+				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionPacket.time)))
+
+				let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+				mutablePositions.add(position)
+
+				fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				let binaryData: Data = try! toRadio.serializedData()
+				
+				if meshLoggingEnabled { MeshLogger.log("📍 Sent a Position Packet for node: \(fromNodeNum)") }
+				print("📍 Sent a Position Packet for node: \(fromNodeNum)")
+				
+				if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+					do {
+
+						try context!.save()
+						print("💾 Saved a new position for the connected node: \(fromNodeNum)")
+						if meshLoggingEnabled { MeshLogger.log("💾 Saved a new position for the connected node: \(fromNodeNum)") }
+						success = true
+
+					} catch {
+
+						context!.rollback()
+
+						let nsError = error as NSError
+						print("🚫 Unresolved Core Data error in Send Position Function \(nsError)")
+						if meshLoggingEnabled { MeshLogger.log("🚫 Unresolved Core Data error in Send Position Function \(nsError)") }
+						success = false
+					}
+				}
+				
+			}
+			
+		} catch {
+				
+		}
+		
+		
+		
+
+		
+		return success
+	}
+	
 }

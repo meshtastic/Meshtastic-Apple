@@ -9,7 +9,7 @@ struct CircleText: View {
     var text: String
     var color: Color
 	var circleSize: CGFloat? = 50
-	var fontSize: CGFloat? = 24
+	var fontSize: CGFloat? = 22
 
     var body: some View {
 		

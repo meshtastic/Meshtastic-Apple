@@ -85,6 +85,7 @@
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
+		DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v2.xcdatamodel"; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD47E3D826F3093800029299 /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
@@ -737,7 +738,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
@@ -754,7 +755,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,6";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -768,7 +769,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
@@ -784,7 +785,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,6";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -949,9 +950,10 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */;
+			currentVersion = DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = MeshtasticClient/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

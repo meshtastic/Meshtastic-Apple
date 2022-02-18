@@ -40,13 +40,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<false/>
+	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Bluetooth is used to connect an iPhone to a user's meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to center maps of the mesh</string>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>Privacy – Bluetooth Always Usage Description</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>UIApplicationSceneManifest</key>
