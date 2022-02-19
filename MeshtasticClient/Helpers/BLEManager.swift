@@ -376,7 +376,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
         switch characteristic.uuid {
 		case FROMNUM_UUID:
-			peripheral.readValue(for: FROMNUM_characteristic)
+			//Dont need to call readValue here, the value is already here from the notify
+			//readValue in turn calls this callback so we end up spamming the node with fromnum reads continuously
+			//peripheral.readValue(for: FROMNUM_characteristic)
+			
 			let characteristicValue: [UInt8] = [UInt8](characteristic.value!)
 			let bigEndianUInt32 = characteristicValue.withUnsafeBytes { $0.load(as: UInt32.self) }
 			let returnValue = CFByteOrderGetCurrent() == CFByteOrder(CFByteOrderLittleEndian.rawValue)
