@@ -35,7 +35,7 @@ struct UserMessageList: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.2.60"
+		let minimumVersion = "1.3.0"
 		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		VStack {
@@ -49,7 +49,7 @@ struct UserMessageList: View {
 					if allMessages.count > 0 {
 						
 						HStack{
-							// Padding at the top of the message list
+						// Padding at the top of the message list
 						}.padding(.bottom)
 						
 						ForEach( allMessages ) { (message: MessageEntity) in
@@ -63,7 +63,7 @@ struct UserMessageList: View {
 										let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
 										
 										HStack {
-											Text(String(message.messageId))
+
 											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
 												.padding(10)
 												.overlay(
@@ -390,10 +390,18 @@ struct UserMessageList: View {
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
-									typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
-						
+									if user.num == bleManager.broadcastNodeNum {
+										
+										typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
+										
+									} else {
+										
+										typingMessage =  "📍 " + userLongName + " Has shared their position with you."
+									}
 								} label: {
-									Image(systemName: "mappin")
+									Image(systemName: "mappin.and.ellipse")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.accentColor)
 								}
 
 								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))

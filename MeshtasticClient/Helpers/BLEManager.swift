@@ -726,7 +726,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 									try context!.save()
 									print("💾 Saved a new message for \(decodedInfo.packet.id)")
-									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(decodedInfo.packet.id)") }
+									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
 									
 									if newMessage.toUser!.num == self.broadcastNodeNum || self.connectedPeripheral != nil && self.connectedPeripheral.num == newMessage.toUser!.num {
 										
@@ -735,7 +735,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 										manager.notifications = [
 											Notification(
-												id: ("notification.id.\(decodedInfo.packet.id)"),
+												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "Unknown")",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 												content: messageText)
@@ -878,8 +878,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					
 					let currentNodeNum = self.connectedPeripheral.num
 					
-
-					
 					if let routingMessage = try? Routing(serializedData: decodedInfo.packet.decoded.payload) {
 						print(decodedInfo.packet.decoded.requestID)
 						print(routingMessage)
@@ -890,8 +888,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					}
 					
 					if decodedInfo.packet.priority == MeshPacket.Priority.ack {
-						
-						
 						
 						let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 						fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(decodedInfo.packet.decoded.requestID))
@@ -908,7 +904,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							
 							
 						}
-						
 					}
 
 					
@@ -1110,7 +1105,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				positionPacket.batteryLevel = mostRecentPosition.batteryLevel
 				
 				var meshPacket = MeshPacket()
-				meshPacket.to = UInt32(broadcastNodeNum)
+				meshPacket.to = UInt32(destNum)
 				meshPacket.from	= UInt32(connectedPeripheral.num)
 				meshPacket.wantAck = wantResponse
 				

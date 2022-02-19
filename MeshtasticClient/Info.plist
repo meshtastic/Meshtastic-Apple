@@ -40,7 +40,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
+	<false/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
