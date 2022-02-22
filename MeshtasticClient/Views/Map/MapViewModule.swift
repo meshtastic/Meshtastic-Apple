@@ -285,6 +285,14 @@ public struct MapView: UIViewRepresentable {
 		//check if the mesh region looks sensible before we move to it.  Otherwise we won't move the map (leave it at the current location)
 		if maxLat < minLat || (maxLat-minLat) > 5 || maxLon < minLon || (maxLon-minLon) > 5 {
 			return
+		} else if minLat == maxLat && minLon == maxLon {
+			//then we are focussed on a single point (probably because there is only one node with a position)
+			//widen that out a little (don't zoom way in to that point)
+			
+			//0.001 degrees latitude is about 100m
+			//the mapView.regionThatFits call below will expand this out to a rectangle
+			minLat = minLat - 0.001
+			maxLat = maxLat + 0.001
 		}
 		
 		let centerCoord = CLLocationCoordinate2D(latitude: (minLat+maxLat)/2, longitude: (minLon+maxLon)/2)
