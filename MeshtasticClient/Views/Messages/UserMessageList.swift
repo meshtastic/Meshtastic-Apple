@@ -12,6 +12,7 @@ struct UserMessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var userSettings: UserSettings
 	
 	enum Field: Hashable {
 		case messageText
@@ -35,7 +36,7 @@ struct UserMessageList: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.3.0"
+		let minimumVersion = "1.3"
 		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		VStack {
@@ -338,6 +339,7 @@ struct UserMessageList: View {
 				.onAppear(perform: {
 					
 					self.bleManager.context = context
+					self.bleManager.userSettings = userSettings
 				
 					if allMessages.count > 2 {
 						
@@ -463,10 +465,5 @@ struct UserMessageList: View {
 				}
 			}
 		}
-		.onAppear(perform: {
-
-			self.bleManager.context = context
-
-		})
     }
 }

@@ -11,6 +11,7 @@ struct NodeDetail: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var userSettings: UserSettings
 
 	var node: NodeInfoEntity
 
@@ -285,6 +286,7 @@ struct NodeDetail: View {
 		.onAppear(perform: {
 
 			self.bleManager.context = context
+			self.bleManager.userSettings = userSettings
 
 		})
 	}
