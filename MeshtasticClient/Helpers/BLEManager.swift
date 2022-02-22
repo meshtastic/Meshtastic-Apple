@@ -20,6 +20,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 
 	var context: NSManagedObjectContext?
+	
+	var userSettings: UserSettings?
 
 	private var centralManager: CBCentralManager!
 
@@ -35,6 +37,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
+	
+	var positionTimer: Timer?
 
     let broadcastNodeNum: UInt32 = 4294967295
 
@@ -210,7 +214,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         peripheral.discoverServices([meshtasticServiceCBUUID])
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
         print("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
-
+		
     }
 
 	// Called when a Peripheral fails to connect
@@ -489,6 +493,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					print("💥 Fetch MyInfo Error")
 				}
+				
+				// Use a timer to keep track of position updates, context to pass the radio name with the timer and the RunLoop to prevent
+				// the timer from running on the main UI thread
+				if self.positionTimer != nil {
+					self.positionTimer!.invalidate()
+				}
+				let context = ["name": "@\(peripheral.name ?? "Unknown")"]
+				self.positionTimer = Timer.scheduledTimer(timeInterval: 30.0, target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+				RunLoop.current.add(self.positionTimer!, forMode: .common)
+				
 			}
 
 			// MARK: Incoming Node Info Packet
@@ -662,7 +676,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)") }
 				}
 			}
-			// Handle assorted app packets
+			// Handle other packet types
 			if decodedInfo.packet.id  != 0 {
 
 				do {
@@ -757,6 +771,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							print("💥 Fetch Message To and From Users Error")
 						}
 					}
+				// MARK: Incoming NODEINFO_APP Packet
 				} else if decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
 
 					let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -873,7 +888,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
 					}
-
+				// MARK: Incoming ROUTING_APP Packet
 				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 					
 					let currentNodeNum = self.connectedPeripheral.num
@@ -998,7 +1013,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)
-					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+					//newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+					newMessage.messageId = Int64(0xFF | UInt32.random(in: UInt32(UInt8.max)..<UInt32(1147483647)))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
@@ -1161,11 +1177,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 		}
 		
-		
-		
-
-		
 		return success
 	}
 	
+	@objc func positionTimerFired(timer: Timer) {
+		
+		// Check for connected node
+		if connectedPeripheral != nil {
+
+			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
+			if userSettings!.provideLocation {
+				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
+				if !success {
+					
+					print("Failed to send positon to device")
+					
+				}
+
+			}
+			// Request config to update MyNodeInfo data periodically as well as all nodes
+			
+		}
+	}
 }

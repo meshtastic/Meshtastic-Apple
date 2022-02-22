@@ -242,6 +242,7 @@ struct Connect: View {
         .onAppear(perform: {
 
 			self.bleManager.context = context
+			self.bleManager.userSettings = userSettings
 
 			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true

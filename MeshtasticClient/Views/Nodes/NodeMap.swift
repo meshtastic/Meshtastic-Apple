@@ -15,6 +15,7 @@ struct NodeMap: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var userSettings: UserSettings
 
 	@AppStorage("meshMapType") var type: String = "hybrid"
 	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
@@ -131,6 +132,7 @@ struct NodeMap: View {
 			.onAppear(perform: {
 
 				self.bleManager.context = context
+				self.bleManager.userSettings = userSettings
 
 			})
         }

@@ -14,6 +14,7 @@ struct NodeList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@EnvironmentObject var userSettings: UserSettings
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
@@ -115,6 +116,7 @@ struct NodeList: View {
 			.onAppear {
 				// self.nodes.returnsObjectsAsFaults = false
 				self.bleManager.context = context
+				self.bleManager.userSettings = userSettings
 
 				if UIDevice.current.userInterfaceIdiom == .pad {
 					if nodes.count > 0 {
