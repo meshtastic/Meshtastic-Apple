@@ -1013,8 +1013,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				} else if fetchedUsers.count >= 1 {
 
 					let newMessage = MessageEntity(context: context!)
-					//newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-					newMessage.messageId = Int64(0xFF | UInt32.random(in: UInt32(UInt8.max)..<UInt32(1147483647)))
+					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+					//newMessage.messageId = Int64(0xFF | UInt32.random(in: UInt32(UInt8.max)..<UInt32(1147483647)))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
@@ -1047,6 +1047,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					dataMessage.portnum = dataType
 
 					var meshPacket = MeshPacket()
+					meshPacket.id = UInt32(newMessage.messageId)
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
