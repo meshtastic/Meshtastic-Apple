@@ -271,7 +271,7 @@ struct NodeDetail: View {
 				.padding(1)
 			}
 		}
-		.navigationTitle(node != nil ? String(node.user!.longName ?? "Unknown") : "Unknown")
+		.navigationTitle((node != nil && node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
