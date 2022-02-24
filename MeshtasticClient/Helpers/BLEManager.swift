@@ -742,7 +742,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									print("💾 Saved a new message for \(decodedInfo.packet.id)")
 									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
 									
-									if newMessage.toUser!.num == self.broadcastNodeNum || self.connectedPeripheral != nil && self.connectedPeripheral.num == newMessage.toUser!.num {
+									if newMessage.toUser != nil && newMessage.toUser!.num == self.broadcastNodeNum || self.connectedPeripheral != nil && self.connectedPeripheral.num == newMessage.toUser!.num {
 										
 										// Create an iOS Notification for the received message and schedule it immediately
 										let manager = LocalNotificationManager()
@@ -891,17 +891,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// MARK: Incoming ROUTING_APP Packet
 				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 					
-					let currentNodeNum = self.connectedPeripheral.num
-					
-					if let routingMessage = try? Routing(serializedData: decodedInfo.packet.decoded.payload) {
-						print(decodedInfo.packet.decoded.requestID)
-						print(routingMessage)
-						//let mes = routingMessage.
-						let error = routingMessage.errorReason
-
-						//routingMessage.routeRequest
-					}
-					
 					if decodedInfo.packet.priority == MeshPacket.Priority.ack {
 						
 						let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
@@ -909,15 +898,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						do {
 
-							let fetchedMessage = try context?.fetch(fetchMessageRequest) as! [MessageEntity]
+							let fetchedMessage = try context?.fetch(fetchMessageRequest)[0] as? MessageEntity
 							
-							if fetchedMessage.count > 0 {
-								
+							if fetchedMessage != nil {
+								fetchedMessage!.receivedACK = true
+								fetchedMessage!.ackTimestamp = Int32(Date().timeIntervalSince1970)
 							}
+							
+							try context!.save()
+
+							  if meshLoggingEnabled {
+								  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
+							  }
+							  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
 							
 						} catch {
 							
-							
+							context!.rollback()
+
+							let nsError = error as NSError
+							print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
 						}
 					}
 
@@ -1100,7 +1100,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		let fromNodeNum = connectedPeripheral.num
 		
-		if fromNodeNum <= 0 {
+		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
 			
 			return false
 		}
@@ -1188,6 +1188,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
+				
 				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
 					

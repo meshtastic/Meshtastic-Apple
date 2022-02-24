@@ -19,7 +19,7 @@ struct CircleText: View {
             Circle()
                 .fill(color)
                 .frame(width: circleSize, height: circleSize)
-			Text(text).textCase(.uppercase).font(font).foregroundColor(.white)
+			Text(text).textCase(.uppercase).font(font).foregroundColor(.white).fixedSize()
                 .frame(width: circleSize, height: circleSize, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
         }
     }

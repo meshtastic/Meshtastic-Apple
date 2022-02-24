@@ -87,28 +87,28 @@ struct NodeList: View {
 							}
 							.padding([.leading, .top, .bottom])
 						}
-						.swipeActions {
-
-						   Button {
-
-							   context.delete(node)
-
-							   do {
-
-								   try context.save()
-								   print("Successfully Deleted NodeInfoEntiy: \(node.num)")
-
-							   } catch {
-
-								   print("Failed to save context after deleting NodeInfoEntity Num: \(node.num)")
-							   }
-
-						   } label: {
-
-							   Label("Delete from app", systemImage: "trash")
-						   }
-						   .tint(.red)
-					   }
+//						.swipeActions {
+//
+//						   Button {
+//
+//							   context.delete(node)
+//
+//							   do {
+//
+//								   try context.save()
+//								   print("Successfully Deleted NodeInfoEntiy: \(node.num)")
+//
+//							   } catch {
+//
+//								   print("Failed to save context after deleting NodeInfoEntity Num: \(node.num)")
+//							   }
+//
+//						   } label: {
+//
+//							   Label("Delete from app", systemImage: "trash")
+//						   }
+//						   .tint(.red)
+//					   }
 					}
                 }
              }

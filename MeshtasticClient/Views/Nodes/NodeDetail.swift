@@ -43,7 +43,7 @@ struct NodeDetail: View {
 								MapAnnotation(
 								   coordinate: location.coordinate,
 								   content: {
-									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 33, fontSize: 16)
+									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 32, fontSize: 14)
 								   }
 								)
 							}
@@ -271,7 +271,7 @@ struct NodeDetail: View {
 				.padding(1)
 			}
 		}
-		.navigationTitle(node != nil ? String(node.user!.longName ?? "Unknown") : "Unknown")
+		.navigationTitle((node != nil && node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 

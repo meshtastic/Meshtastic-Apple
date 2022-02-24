@@ -54,11 +54,11 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 }
 
 class UserSettings: ObservableObject {
-//	@Published var meshtasticUsername: String {
-//		didSet {
-//			UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
-//		}
-//	}
+	@Published var meshtasticUsername: String {
+		didSet {
+			UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
+		}
+	}
 	@Published var preferredPeripheralName: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
@@ -99,7 +99,7 @@ class UserSettings: ObservableObject {
 
 	init() {
 
-		// self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
+		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
@@ -131,12 +131,14 @@ struct AppSettings: View {
 				List {
 					Section(header: Text("USER DETAILS")) {
 
-//						HStack {
-//							Label("Name", systemImage: "person.crop.rectangle.fill")
-//							TextField("Username", text: $userSettings.meshtasticUsername)
-//								.foregroundColor(.gray)
-//						}
-//						.listRowSeparator(.visible)
+						HStack {
+							Label("Name", systemImage: "person.crop.rectangle.fill")
+							TextField("Username", text: $userSettings.meshtasticUsername)
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.asciiCapable)
+						.disableAutocorrection(true)
+						.listRowSeparator(.visible)
 						Toggle(isOn: $userSettings.provideLocation) {
 
 							Label("Provide location to mesh", systemImage: "location.circle.fill")
@@ -173,13 +175,13 @@ struct AppSettings: View {
 						 .pickerStyle(DefaultPickerStyle())
 					//	TextField("Custom Tile Server", text: $userSettings.meshMapCustomTileServer)
 					}
-					Section(header: Text("DEBUG")) {
-						// Toggle(isOn: $userSettings.meshActivityLog) {
+					Section(header: Text("DEBUG OPTIONS")) {
+						 Toggle(isOn: $userSettings.meshActivityLog) {
 
-						//	Label("Log all Mesh activity", systemImage: "network")
-						// }
-						// .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if true {// userSettings.meshActivityLog {
+							Label("Log all Mesh activity", systemImage: "network")
+						 }
+						 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if userSettings.meshActivityLog {
 							NavigationLink(destination: MeshLog()) {
 							Text("View Mesh Log")
 						}
