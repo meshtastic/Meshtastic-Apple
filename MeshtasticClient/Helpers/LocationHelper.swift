@@ -4,7 +4,7 @@ class LocationHelper: NSObject, ObservableObject {
 
     static let shared = LocationHelper()
 
-    // Apple Park ° N, 122.0090° W
+    // Apple Park
     static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)

@@ -891,17 +891,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// MARK: Incoming ROUTING_APP Packet
 				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
 					
-					let currentNodeNum = self.connectedPeripheral.num
-					
-					if let routingMessage = try? Routing(serializedData: decodedInfo.packet.decoded.payload) {
-						print(decodedInfo.packet.decoded.requestID)
-						print(decodedInfo.packet.priority)
-						//let mes = routingMessage.
-						let error = routingMessage.errorReason
-
-						//routingMessage.routeRequest
-					}
-					
 					if decodedInfo.packet.priority == MeshPacket.Priority.ack {
 						
 						let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
