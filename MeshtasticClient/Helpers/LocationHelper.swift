@@ -4,8 +4,8 @@ class LocationHelper: NSObject, ObservableObject {
 
     static let shared = LocationHelper()
 
-    // Mount Rainier
-    static let DefaultLocation = CLLocationCoordinate2D(latitude: 46.879967, longitude: -121.726906)
+    // Apple Park ° N, 122.0090° W
+    static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 

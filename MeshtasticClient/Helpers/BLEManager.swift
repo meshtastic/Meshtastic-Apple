@@ -897,7 +897,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print(decodedInfo.packet.decoded.requestID)
 						print(decodedInfo.packet.priority)
 						//let mes = routingMessage.
-						//let error = routingMessage.errorReason
+						let error = routingMessage.errorReason
 
 						//routingMessage.routeRequest
 					}
@@ -1111,7 +1111,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		let fromNodeNum = connectedPeripheral.num
 		
-		if fromNodeNum <= 0 {
+		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
 			
 			return false
 		}
@@ -1199,6 +1199,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
+				
 				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
 					
