@@ -8,7 +8,7 @@
 
 ## Code Standards
 
-* Use SwiftUI whenever possible
+* Use SwiftUI
 * Use Hierarchical icons
 * Use Core Data for persistence
 
