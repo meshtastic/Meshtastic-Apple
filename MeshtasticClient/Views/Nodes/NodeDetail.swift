@@ -43,7 +43,7 @@ struct NodeDetail: View {
 								MapAnnotation(
 								   coordinate: location.coordinate,
 								   content: {
-									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 33, fontSize: 16)
+									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 32, fontSize: 14)
 								   }
 								)
 							}

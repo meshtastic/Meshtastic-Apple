@@ -25,8 +25,11 @@ struct Contacts: View {
 			List(users) { (user: UserEntity) in
 				
 				let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
+				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
-				NavigationLink(destination: UserMessageList(user: user)) {
+				if  user.num != connectedNodeNum {
+				
+					NavigationLink(destination: UserMessageList(user: user)) {
 								
 					if allMessages.count > 0 {
 						
@@ -119,6 +122,7 @@ struct Contacts: View {
 							}
 						}.padding()
 					}
+				}
 				}
 			}
 			.navigationTitle("Contacts")

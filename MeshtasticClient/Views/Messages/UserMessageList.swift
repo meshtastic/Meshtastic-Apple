@@ -218,21 +218,22 @@ struct UserMessageList: View {
 													
 													VStack {
 														
-														let time = Int32(message.messageTimestamp)
-														let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
+														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 
-														if time != 0 {
-															Text("Sent \(messageDate, style: .date) \(messageDate, style: .time)").font(.caption2).foregroundColor(.gray)
-														} else {
-															Text("Unknown").font(.caption2).foregroundColor(.gray)
-														}
-
+														Text("Sent \(messageDate, style: .date) \(messageDate, style: .time)").font(.caption2).foregroundColor(.gray)
 													}
 													
 													VStack {
 																
 														Text("Received ACK: \(message.receivedACK ? "✔️" : "")")
 														
+													}
+													if message.receivedACK {
+														VStack {
+															
+															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
+															Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
+														}
 													}
 												}
 												Divider()
@@ -285,13 +286,6 @@ struct UserMessageList: View {
 												let time = Int32(message.messageTimestamp)
 												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
 												let showUntil = Date().addingTimeInterval(3600)
-
-												if time != 0 {
-												//	Text(messageDate, style: .date).font(.caption2).foregroundColor(.gray)
-												//	Text(messageDate, style: .time).font(.caption2).foregroundColor(.gray)
-												} else {
-												//	Text("Unknown").font(.caption2).foregroundColor(.gray)
-												}
 												
 												if messageDate <= showUntil && message.receivedACK {
 
@@ -352,7 +346,7 @@ struct UserMessageList: View {
 					
 					let index = count - 1
 					
-					if index > 2 {
+					if index > 3 {
 					
 						scrollView.scrollTo(index, anchor: .bottom)
 					}
@@ -394,11 +388,25 @@ struct UserMessageList: View {
 									sendPositionWithMessage = true
 									if user.num == bleManager.broadcastNodeNum {
 										
-										typingMessage =  "📍 " + userLongName + " Has shared their position with the mesh."
+										if userSettings.meshtasticUsername.count > 0 {
+										
+											typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with the mesh from node " + userLongName
+										} else {
+											
+											typingMessage =  "📍 " + userLongName + " has shared their position with the mesh."
+											
+										}
 										
 									} else {
 										
-										typingMessage =  "📍 " + userLongName + " Has shared their position with you."
+										if userSettings.meshtasticUsername.count > 0 {
+											
+											typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+											
+										} else {
+											
+											typingMessage =  "📍 " + userLongName + " has shared their position with you."
+										}
 									}
 								} label: {
 									Image(systemName: "mappin.and.ellipse")
