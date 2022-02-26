@@ -109,14 +109,15 @@ struct Connect: View {
 
 												} else {
 
-													if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+												if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
 
-														userSettings.preferredPeripheralId = ""
-														userSettings.preferredPeripheralName = ""
-													}
+													userSettings.preferredPeripheralId = ""
+													userSettings.preferredPeripheralName = ""
 												}
 											}
+										}
 									}
+									
                                 }
 								.swipeActions {
 
@@ -130,6 +131,8 @@ struct Connect: View {
 									}
 								}
 								.padding([.top, .bottom])
+								
+								
                             } else {
                                 HStack {
                                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
@@ -196,7 +199,6 @@ struct Connect: View {
                         .padding()
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
-                        Spacer()
                         Button(action: {
 							
                             self.bleManager.stopScanning()
@@ -215,7 +217,33 @@ struct Connect: View {
                         .padding()
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
-                        Spacer()
+                      
+					#if targetEnvironment(macCatalyst)
+						
+						if bleManager.connectedPeripheral != nil {
+							Button(role: .destructive, action: {
+								
+								if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+									bleManager.disconnectPeripheral()
+									isPreferredRadio = false
+								}
+								
+							}) {
+								
+								Image(systemName: "antenna.radiowaves.left.and.right.slash")
+									.symbolRenderingMode(.hierarchical)
+									.imageScale(.large)
+									.foregroundColor(.red)
+								Text("Disconnect").font(.caption)
+								.font(.caption)
+
+							}
+							.padding()
+							.background(Color(.systemGray6))
+							.clipShape(Capsule())
+						}
+					#endif
+						Spacer()
                     }
 					.padding(.bottom, 10)
 

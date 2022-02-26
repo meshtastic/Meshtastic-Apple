@@ -920,7 +920,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
 						}
 					}
-
 					
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
