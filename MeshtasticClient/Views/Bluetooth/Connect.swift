@@ -85,7 +85,7 @@ struct Connect: View {
 									}
 									Spacer()
 
-									VStack(alignment: .trailing) {
+									VStack(alignment: .center) {
 
 										Text("Preferred").font(.caption2)
 										Text("Radio").font(.caption2)
