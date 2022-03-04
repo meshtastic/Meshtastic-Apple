@@ -98,7 +98,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
             self.centralManager.stopScan()
 			self.isScanning = self.centralManager.isScanning
-			peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
             print("🛑 Stopped Scanning")
         }
     }
