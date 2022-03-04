@@ -98,7 +98,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
             self.centralManager.stopScan()
 			self.isScanning = self.centralManager.isScanning
-
+			peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
             print("🛑 Stopped Scanning")
         }
     }
@@ -177,7 +177,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -187,13 +187,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			peripherals.append(newPeripheral)
 
 		} else {
-
+			
 			if newPeripheral.peripheral.state != CBPeripheralState.connected {
 
 				peripherals.append(newPeripheral)
 				print("ℹ️ Adding peripheral: \(peripheralName)")
 			}
 		}
+		
+		let today = Date()
+		let fiveMinutesAgo = Calendar.current.date(byAdding: .minute, value: -5, to: today)!
+		peripherals.removeAll(where: { $0.lastUpdate <= fiveMinutesAgo})
     }
 
     // Called when a peripheral is connected

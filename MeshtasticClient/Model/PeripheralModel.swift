@@ -11,10 +11,11 @@ struct Peripheral: Identifiable {
 	var rssi: Int
 	var channelUtilization: Float?
 	var airTime: Float?
+	var lastUpdate: Date
 	var subscribed: Bool
 	var peripheral: CBPeripheral
 
-	init(id: String, num: Int64, name: String, shortName: String, longName: String, firmwareVersion: String, rssi: Int, channelUtilization: Float?, airTime: Float?, subscribed: Bool, peripheral: CBPeripheral) {
+	init(id: String, num: Int64, name: String, shortName: String, longName: String, firmwareVersion: String, rssi: Int, channelUtilization: Float?, airTime: Float?, lastUpdate: Date, subscribed: Bool, peripheral: CBPeripheral) {
 		self.id = id
 		self.num = num
 		self.name = name
@@ -24,6 +25,7 @@ struct Peripheral: Identifiable {
 		self.rssi = rssi
 		self.channelUtilization = channelUtilization
 		self.airTime = airTime
+		self.lastUpdate = lastUpdate
 		self.subscribed = subscribed
 		self.peripheral = peripheral
 	}
