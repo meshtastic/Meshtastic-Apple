@@ -335,17 +335,20 @@ struct UserMessageList: View {
 					self.bleManager.context = context
 					self.bleManager.userSettings = userSettings
 				
-					if allMessages.count > 0 {
+					if allMessages.count > 1 {
 						
-						withAnimation(Animation.spring().delay(0.5)) {
+						withAnimation(Animation.spring().delay(1)) {
 							scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 						}
 					}
 				})
 				.onChange(of: allMessages.count, perform: { count in
 					
-					withAnimation(Animation.spring().delay(0.5)) {
-						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
+					if count > 1 {
+					
+						withAnimation(Animation.spring().delay(1)) {
+							scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
+						}
 					}
 				})
 			}
