@@ -53,6 +53,31 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 	}
 }
 
+enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
+
+	case oneMinute = 60
+	case fiveMinutes = 300
+	case tenMinutes = 600
+	case fifteenMinutes = 900
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .oneMinute:
+				return "One Minute"
+			case .fiveMinutes:
+				return "Five Minutes"
+			case .tenMinutes:
+				return "Ten Minutes"
+			case .fifteenMinutes:
+				return "Fifteen Minutes"
+			}
+		}
+	}
+}
+
+
 class UserSettings: ObservableObject {
 	@Published var meshtasticUsername: String {
 		didSet {
@@ -74,6 +99,11 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
 		}
 	}
+	@Published var provideLocationInterval: Int {
+		didSet {
+			UserDefaults.standard.set(provideLocationInterval, forKey: "provideLocationInterval")
+		}
+	}
 	@Published var keyboardType: Int {
 		didSet {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
@@ -90,7 +120,6 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
 		}
 	}
-	
 	@Published var meshMapCustomTileServer: String {
 		didSet {
 			UserDefaults.standard.set(meshMapCustomTileServer, forKey: "meshMapCustomTileServer")
@@ -103,6 +132,7 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
+		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
@@ -139,23 +169,42 @@ struct AppSettings: View {
 						.keyboardType(.asciiCapable)
 						.disableAutocorrection(true)
 						.listRowSeparator(.visible)
+						
+						HStack {
+							Label("Radio", systemImage: "flipphone")
+							Text(userSettings.preferredPeripheralName)
+								.foregroundColor(.gray)
+							
+						}
+						Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
+							.font(.caption)
+							.listRowSeparator(.hidden)
+						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
+							.font(.caption2)
+							.foregroundColor(.gray)
+
+					}
+					Section(header: Text("LOCATION OPTIONS")) {
+						
 						Toggle(isOn: $userSettings.provideLocation) {
 
 							Label("Provide location to mesh", systemImage: "location.circle.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
-						Label("Preferred Radio", systemImage: "flipphone")
-							.listRowSeparator(.hidden)
-						Text(userSettings.preferredPeripheralName)
-								.foregroundColor(.gray)
-						Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
-							.font(.caption)
-							.listRowSeparator(.hidden)
-						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.  This device is assumed to be the primary radio used for messaging.")
-							.font(.caption2)
-							.foregroundColor(.gray)
-
+					
+						if userSettings.provideLocation {
+							
+							Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
+								ForEach(LocationUpdateInterval.allCases) { lu in
+									Text(lu.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							
+							Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
+								.font(.caption)
+								.listRowSeparator(.visible)
+						}
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
 
@@ -181,10 +230,10 @@ struct AppSettings: View {
 							Label("Log all Mesh activity", systemImage: "network")
 						 }
 						 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if userSettings.meshActivityLog {
-							NavigationLink(destination: MeshLog()) {
-							Text("View Mesh Log")
-						}
+							if userSettings.meshActivityLog {
+								NavigationLink(destination: MeshLog()) {
+								Text("View Mesh Log")
+							}
 							.listRowSeparator(.visible)
 						}
 					}

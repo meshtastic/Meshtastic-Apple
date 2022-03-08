@@ -98,7 +98,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
             self.centralManager.stopScan()
 			self.isScanning = self.centralManager.isScanning
-
             print("🛑 Stopped Scanning")
         }
     }
@@ -177,7 +176,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -187,13 +186,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			peripherals.append(newPeripheral)
 
 		} else {
-
+			
 			if newPeripheral.peripheral.state != CBPeripheralState.connected {
 
 				peripherals.append(newPeripheral)
 				print("ℹ️ Adding peripheral: \(peripheralName)")
 			}
 		}
+		
+		let today = Date()
+		let fiveMinutesAgo = Calendar.current.date(byAdding: .minute, value: -5, to: today)!
+		peripherals.removeAll(where: { $0.lastUpdate <= fiveMinutesAgo})
     }
 
     // Called when a peripheral is connected
@@ -379,28 +382,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         }
 
         switch characteristic.uuid {
-		case FROMNUM_UUID:
-			//Dont need to call readValue here, the value is already here from the notify
-			//readValue in turn calls this callback so we end up spamming the node with fromnum reads continuously
-			//peripheral.readValue(for: FROMNUM_characteristic)
-			
-			let characteristicValue: [UInt8] = [UInt8](characteristic.value!)
-			let bigEndianUInt32 = characteristicValue.withUnsafeBytes { $0.load(as: UInt32.self) }
-			let returnValue = CFByteOrderGetCurrent() == CFByteOrder(CFByteOrderLittleEndian.rawValue)
-							? UInt32(bigEndian: bigEndianUInt32) : bigEndianUInt32
-		    // print(returnValue)
 
 		case FROMRADIO_UUID:
 			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
-			// print(characteristic.value ?? "no value")
-			// print(characteristic.value?.hexDescription ?? "no value")
+
 			var decodedInfo = FromRadio()
 
 			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-			// print("Print DecodedInfo")
-			// print(decodedInfo)
 
 			// MARK: Incoming MyInfo Packet
 			if decodedInfo.myInfo.myNodeNum != 0 {
@@ -417,8 +407,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
 						myInfo.channelUtilization = decodedInfo.myInfo.channelUtilization
 						
-						// Swift does strings weird, this does work
-						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
+						// Swift does strings weird, this does work to get the version without the github hash
+						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
 						myInfo.firmwareVersion = String(version)
@@ -494,15 +484,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					print("💥 Fetch MyInfo Error")
 				}
 				
-				// Use a timer to keep track of position updates, context to pass the radio name with the timer and the RunLoop to prevent
-				// the timer from running on the main UI thread
-				if self.positionTimer != nil {
-					self.positionTimer!.invalidate()
+				// MARK: Share Location Position Update Timer
+				// Use context to pass the radio name with the timer
+				// Use a RunLoop to prevent the timer from running on the main UI thread
+				if userSettings?.provideLocation ?? false {
+					
+					if self.positionTimer != nil {
+						self.positionTimer!.invalidate()
+					}
+					let context = ["name": "@\(peripheral.name ?? "Unknown")"]
+					self.positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					RunLoop.current.add(self.positionTimer!, forMode: .common)
 				}
-				let context = ["name": "@\(peripheral.name ?? "Unknown")"]
-				self.positionTimer = Timer.scheduledTimer(timeInterval: 30.0, target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-				RunLoop.current.add(self.positionTimer!, forMode: .common)
-				
 			}
 
 			// MARK: Incoming Node Info Packet
@@ -801,8 +794,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							try context!.save()
 
-							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
-							print("💾 Updated NodeInfo SNR and Time from Packet For: \(fetchedNode[0].num)")
+							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR \(decodedInfo.packet.rxSnr) and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
+							print("💾 Updated NodeInfo SNR \(decodedInfo.packet.rxSnr) and Time from Packet For: \(fetchedNode[0].num)")
 
 						} catch {
 
@@ -873,9 +866,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						  try context!.save()
 
 							if meshLoggingEnabled {
-								MeshLogger.log("💾 Updated NodeInfo Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+								MeshLogger.log("💾 Updated NodeInfo Position Coordinates, SNR \(decodedInfo.packet.rxSnr) and Time from Position App Packet For: \(fetchedNode[0].num)")
 							}
-							print("💾 Updated NodeInfo Position Coordinates, SNR and Time from Position App Packet For:: \(fetchedNode[0].num)")
+							print("💾 Updated NodeInfo Position Coordinates, SNR \(decodedInfo.packet.rxSnr) and Time from Position App Packet For:: \(fetchedNode[0].num)")
 
 						} catch {
 
@@ -919,10 +912,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							let nsError = error as NSError
 							print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
 						}
-					}
+					} else {
 					
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+						print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					}
 
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.environmentalMeasurementApp {
 
@@ -1194,10 +1188,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					print("Failed to send positon to device")
 					
 				}
-
 			}
-			// Request config to update MyNodeInfo data periodically as well as all nodes
-			
 		}
 	}
 }
