@@ -235,6 +235,14 @@ struct UserMessageList: View {
 															Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
 														}
 													}
+													if message.ackSNR != 0 {
+														VStack {
+															
+															Text("ACK SNR \(String(message.ackSNR))")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
+													}
 												}
 												Divider()
 												Button(role: .destructive, action: {
