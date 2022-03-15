@@ -291,13 +291,9 @@ struct UserMessageList: View {
 											
 											HStack {
 
-												let time = Int32(message.messageTimestamp)
-												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
-												let showUntil = Date().addingTimeInterval(3600)
-												
-												if messageDate <= showUntil && message.receivedACK {
+												if message.receivedACK {
 
-													Text("Delivered").font(.caption2).foregroundColor(.gray)
+													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
 												}
 											}
 											
@@ -345,18 +341,15 @@ struct UserMessageList: View {
 				
 					if allMessages.count > 1 {
 						
-						withAnimation(Animation.spring().delay(1)) {
-							scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
-						}
+						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
-				.onChange(of: allMessages.count, perform: { count in
+				.onChange(of: allMessages, perform: { message in
 					
-					if count > 1 {
+					if allMessages.count > 1 {
 					
-						withAnimation(Animation.spring().delay(1)) {
-							scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
-						}
+						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
+
 					}
 				})
 			}

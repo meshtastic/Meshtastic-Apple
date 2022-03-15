@@ -913,6 +913,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							} else {
 								fetchedMessage!.ackTimestamp = Int32(decodedInfo.packet.rxTime)
 							}
+							
+							fetchedMessage!.objectWillChange.send()
 						} else {
 						
 							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
@@ -922,9 +924,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						try context!.save()
 
 						  if meshLoggingEnabled {
-							  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
+							  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
 						  }
-						  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
+						  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
 						
 					} catch {
 						
