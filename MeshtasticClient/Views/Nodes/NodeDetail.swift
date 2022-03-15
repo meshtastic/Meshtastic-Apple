@@ -122,7 +122,7 @@ struct NodeDetail: View {
 								.padding(5)
 							}
 
-							if node.positions!.count > 0 {
+							if node.positions?.count ?? 0 > 0 {
 
 								let mostRecent = node.positions?.lastObject as! PositionEntity
 

@@ -52,13 +52,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 
-	private var meshLoggingEnabled: Bool = true
+	private var meshLoggingEnabled: Bool = false
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
     // MARK: init BLEManager
     override init() {
 
-		self.meshLoggingEnabled = true // UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
         self.lastConnectionError = ""
 		self.lastConnnectionVersion = "0.0.0"
         super.init()
@@ -624,17 +624,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 
 						let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-						mutablePositions.add(position)
 
-//						if position.coordinate == nil {
-//							var newPostions = [PositionEntity]()
-//							newPostions.append(position)
-//							fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
-//
-//						} else {
-
-							fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-//						}
+						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 						// Look for a MyInfo
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -845,28 +836,27 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 							}
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
-
 								
 							if let positionMessage = try? Position(serializedData: decodedInfo.packet.decoded.payload) {
+								
 								let position = PositionEntity(context: context!)
 								position.latitudeI = positionMessage.latitudeI
 								position.longitudeI = positionMessage.longitudeI
 								position.altitude = positionMessage.altitude
 								position.batteryLevel = positionMessage.batteryLevel
-								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+								
+								if positionMessage.time == 0 {
 
+									fetchedNode[0].lastHeard = Date()
+									
+								} else {
+									
+									position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+								}
 								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 								mutablePositions.add(position)
-
-								if position.coordinate == nil {
-									var newPostions = [PositionEntity]()
-									newPostions.append(position)
-									fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
-
-								} else {
-
-									fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-								}
+								
+								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 							}
 							
 						} else {
