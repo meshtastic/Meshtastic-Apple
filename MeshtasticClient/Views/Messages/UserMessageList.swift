@@ -235,6 +235,14 @@ struct UserMessageList: View {
 															Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
 														}
 													}
+													if message.ackSNR != 0 {
+														VStack {
+															
+															Text("ACK SNR \(String(message.ackSNR))")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
+													}
 												}
 												Divider()
 												Button(role: .destructive, action: {
@@ -283,13 +291,9 @@ struct UserMessageList: View {
 											
 											HStack {
 
-												let time = Int32(message.messageTimestamp)
-												let messageDate = Date(timeIntervalSince1970: TimeInterval(time))
-												let showUntil = Date().addingTimeInterval(3600)
-												
-												if messageDate <= showUntil && message.receivedACK {
+												if message.receivedACK {
 
-													Text("Delivered").font(.caption2).foregroundColor(.gray)
+													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
 												}
 											}
 											
@@ -335,17 +339,17 @@ struct UserMessageList: View {
 					self.bleManager.context = context
 					self.bleManager.userSettings = userSettings
 				
-					if allMessages.count > 0 {
+					if allMessages.count > 1 {
 						
-						withAnimation(Animation.spring().delay(0.5)) {
-							scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
-						}
+						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
-				.onChange(of: allMessages.count, perform: { count in
+				.onChange(of: allMessages, perform: { message in
 					
-					withAnimation(Animation.spring().delay(0.5)) {
+					if allMessages.count > 1 {
+					
 						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
+
 					}
 				})
 			}

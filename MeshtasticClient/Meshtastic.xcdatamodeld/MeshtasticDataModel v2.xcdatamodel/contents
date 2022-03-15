@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21D62" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="direction" attributeType="String"/>
         <attribute name="isTapback" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -77,7 +78,7 @@
         </fetchedProperty>
     </entity>
     <elements>
-        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="200"/>
+        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="179"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="134"/>

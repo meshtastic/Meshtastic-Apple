@@ -548,8 +548,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						position.altitude = decodedInfo.nodeInfo.position.altitude
 
 						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
-
+						if decodedInfo.nodeInfo.position.time > 0 {
+							
+							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+						}
+						else {
+							position.time = Date()
+						}
+						
 						var newPostions = [PositionEntity]()
 						newPostions.append(position)
 						newNode.positions? = NSOrderedSet(array: newPostions)
@@ -609,20 +615,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 						position.altitude = decodedInfo.nodeInfo.position.altitude
 						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
-						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+						if decodedInfo.nodeInfo.position.time > 0 {
+							
+							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+						}
+						else {
+							position.time = Date()
+						}
 
 						let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 						mutablePositions.add(position)
 
-						if position.coordinate == nil {
-							var newPostions = [PositionEntity]()
-							newPostions.append(position)
-							fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
-
-						} else {
+//						if position.coordinate == nil {
+//							var newPostions = [PositionEntity]()
+//							newPostions.append(position)
+//							fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
+//
+//						} else {
 
 							fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-						}
+//						}
 
 						// Look for a MyInfo
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -883,39 +895,45 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					}
 				// MARK: Incoming ROUTING_APP Packet
 				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
-					
-					if decodedInfo.packet.priority == MeshPacket.Priority.ack {
 						
-						let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-						fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(decodedInfo.packet.decoded.requestID))
+					let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+					fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(decodedInfo.packet.decoded.requestID))
 
-						do {
+					do {
 
-							let fetchedMessage = try context?.fetch(fetchMessageRequest)[0] as? MessageEntity
+						let fetchedMessage = try context?.fetch(fetchMessageRequest)[0] as? MessageEntity
+						
+						if fetchedMessage != nil {
 							
-							if fetchedMessage != nil {
-								fetchedMessage!.receivedACK = true
+							
+							fetchedMessage!.receivedACK = true
+							fetchedMessage!.ackSNR = decodedInfo.packet.rxSnr
+							if decodedInfo.packet.rxTime <= 0 {
 								fetchedMessage!.ackTimestamp = Int32(Date().timeIntervalSince1970)
+							} else {
+								fetchedMessage!.ackTimestamp = Int32(decodedInfo.packet.rxTime)
 							}
 							
-							try context!.save()
-
-							  if meshLoggingEnabled {
-								  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
-							  }
-							  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.id)")
-							
-						} catch {
-							
-							context!.rollback()
-
-							let nsError = error as NSError
-							print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
+							fetchedMessage!.objectWillChange.send()
+						} else {
+						
+							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+							print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
 						}
-					} else {
-					
-						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-						print("ℹ️ MESH PACKET received for Routing App UNHANDLED \(try decodedInfo.packet.jsonString())")
+						
+						try context!.save()
+
+						  if meshLoggingEnabled {
+							  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
+						  }
+						  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
+						
+					} catch {
+						
+						context!.rollback()
+
+						let nsError = error as NSError
+						print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
 					}
 
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.environmentalMeasurementApp {
