@@ -1005,7 +1005,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 		default:
-			if meshLoggingEnabled { MeshLogger.log("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)") }
+			// Likely FROMNUM_UUID
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
         peripheral.readValue(for: FROMRADIO_characteristic)
