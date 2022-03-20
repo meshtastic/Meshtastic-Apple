@@ -344,9 +344,9 @@ struct UserMessageList: View {
 						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 					}
 				})
-				.onChange(of: allMessages, perform: { message in
+				.onChange(of: allMessages.count, perform: { count in
 					
-					if allMessages.count > 1 {
+					if count > 1 {
 					
 						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
 

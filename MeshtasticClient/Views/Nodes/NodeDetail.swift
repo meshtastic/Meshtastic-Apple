@@ -23,7 +23,7 @@ struct NodeDetail: View {
 
 				VStack {
 
-					if node.positions?.count ?? 0 > 0 {
+					if node.positions?.count ?? 0 >= 1 {
 
 						let mostRecent = node.positions?.lastObject as! PositionEntity
 
@@ -122,7 +122,7 @@ struct NodeDetail: View {
 								.padding(5)
 							}
 
-							if node.positions!.count > 0 {
+							if node.positions?.count ?? 0 >= 1 {
 
 								let mostRecent = node.positions?.lastObject as! PositionEntity
 
@@ -192,7 +192,7 @@ struct NodeDetail: View {
 						}
 						.padding()
 
-						if node.positions?.count ?? 0 > 1 {
+						if node.positions?.count ?? 0 >= 1 {
 
 							Divider()
 
@@ -271,7 +271,7 @@ struct NodeDetail: View {
 				.padding(1)
 			}
 		}
-		.navigationTitle((node != nil && node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
+		.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
