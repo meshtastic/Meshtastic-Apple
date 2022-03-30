@@ -547,7 +547,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 						position.altitude = decodedInfo.nodeInfo.position.altitude
 
-						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
 						if decodedInfo.nodeInfo.position.time > 0 {
 							
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
@@ -614,7 +613,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
 						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 						position.altitude = decodedInfo.nodeInfo.position.altitude
-						position.batteryLevel = decodedInfo.nodeInfo.position.batteryLevel
+
 						if decodedInfo.nodeInfo.position.time > 0 {
 							
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
@@ -706,7 +705,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								}
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
-								newMessage.isTapback = decodedInfo.packet.decoded.isTapback
+								newMessage.isTapback = decodedInfo.packet.decoded.emoji == 1
 								
 								if decodedInfo.packet.decoded.replyID > 0 {
 									
@@ -843,7 +842,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								position.latitudeI = positionMessage.latitudeI
 								position.longitudeI = positionMessage.longitudeI
 								position.altitude = positionMessage.altitude
-								position.batteryLevel = positionMessage.batteryLevel
 								
 								if positionMessage.time == 0  {
 
@@ -969,10 +967,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 					}
 
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.environmentalMeasurementApp {
+				} else if  decodedInfo.packet.decoded.portnum == PortNum.telemetryApp {
 
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Environmental Measurement App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					print("ℹ️ MESH PACKET received for Environmental Measurement App UNHANDLED \(try decodedInfo.packet.jsonString())")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())")
 
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
 
@@ -1095,7 +1093,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
-					meshPacket.decoded.isTapback = isTapback
+					meshPacket.decoded.emoji = isTapback ? 1 : 0
 					if replyID > 0 {
 						meshPacket.decoded.replyID = UInt32(replyID)
 					}
@@ -1162,8 +1160,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 				positionPacket.time = UInt32(Date().timeIntervalSince1970)
 				positionPacket.altitude = Int32(LocationHelper.currentAltitude)
-				let mostRecentPosition = fetchedNode[0].positions?.lastObject as! PositionEntity
-				positionPacket.batteryLevel = mostRecentPosition.batteryLevel
 				
 				var meshPacket = MeshPacket()
 				meshPacket.to = UInt32(destNum)

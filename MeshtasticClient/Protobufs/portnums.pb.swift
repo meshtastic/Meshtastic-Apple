@@ -61,27 +61,27 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// The built-in position messaging app.
-  /// Payload is a [Position](/developers/protobufs/api.md#position) message
+  /// Payload is a [Position](/docs/developers/protobufs/api#position) message
   case positionApp // = 3
 
   ///
   /// The built-in user info app.
-  /// Payload is a [User](/developers/protobufs/api.md#user) message
+  /// Payload is a [User](/docs/developers/protobufs/api#user) message
   case nodeinfoApp // = 4
 
   ///
   /// Protocol control packets for mesh protocol use.
-  /// Payload is a [Routing](/developers/protobufs/api.md#routing) message
+  /// Payload is a [Routing](/docs/developers/protobufs/api#routing) message
   case routingApp // = 5
 
   ///
   /// Admin control packets.
-  /// Payload is a [AdminMessage](/developers/protobufs/api.md#adminmessage) message
+  /// Payload is a [AdminMessage](/docs/developers/protobufs/api#adminmessage) message
   case adminApp // = 6
 
   ///
   /// Provides a 'ping' service that replies to any packet it receives.
-  /// Also serves as a small example plugin.
+  /// Also serves as a small example module.
   case replyApp // = 32
 
   ///
@@ -93,8 +93,7 @@ enum PortNum: SwiftProtobuf.Enum {
   /// Connect to the RX/TX pins of a device with 38400 8N1. Packets received from the Meshtastic
   /// network is forwarded to the RX pin while sending a packet to TX will go out to the Mesh network.
   /// Maximum packet size of 240 bytes.
-  /// Plugin is disabled by default can be turned on by setting SERIALPLUGIN_ENABLED = 1 in SerialPlugh.cpp.
-  /// Maintained by Jm Casler (MC Hamster) : jm@casler.org
+  /// Module is disabled by default can be turned on by setting SERIAL_MODULE_ENABLED = 1 in SerialPlugh.cpp.
   case serialApp // = 64
 
   ///
@@ -103,14 +102,13 @@ enum PortNum: SwiftProtobuf.Enum {
   case storeForwardApp // = 65
 
   ///
-  /// STORE_FORWARD_APP (Work in Progress)
-  /// Maintained by Jm Casler (MC Hamster) : jm@casler.org
+  /// Optional port for messages for the range test module.
   case rangeTestApp // = 66
 
   ///
-  /// Provides a format to send and receive environmental data from the Meshtastic network.
+  /// Provides a format to send and receive telemetry data from the Meshtastic network.
   /// Maintained by Charles Crossan (crossan007) : crossan007@gmail.com
-  case environmentalMeasurementApp // = 67
+  case telemetryApp // = 67
 
   ///
   /// Experimental tools for estimating node position without a GPS
@@ -125,7 +123,7 @@ enum PortNum: SwiftProtobuf.Enum {
   case privateApp // = 256
 
   ///
-  /// ATAK Forwarder Plugin https://github.com/paulmandal/atak-forwarder
+  /// ATAK Forwarder Module https://github.com/paulmandal/atak-forwarder
   case atakForwarder // = 257
 
   ///
@@ -151,7 +149,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 64: self = .serialApp
     case 65: self = .storeForwardApp
     case 66: self = .rangeTestApp
-    case 67: self = .environmentalMeasurementApp
+    case 67: self = .telemetryApp
     case 68: self = .zpsApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
@@ -174,7 +172,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .serialApp: return 64
     case .storeForwardApp: return 65
     case .rangeTestApp: return 66
-    case .environmentalMeasurementApp: return 67
+    case .telemetryApp: return 67
     case .zpsApp: return 68
     case .privateApp: return 256
     case .atakForwarder: return 257
@@ -202,7 +200,7 @@ extension PortNum: CaseIterable {
     .serialApp,
     .storeForwardApp,
     .rangeTestApp,
-    .environmentalMeasurementApp,
+    .telemetryApp,
     .zpsApp,
     .privateApp,
     .atakForwarder,
@@ -211,6 +209,10 @@ extension PortNum: CaseIterable {
 }
 
 #endif  // swift(>=4.2)
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension PortNum: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -228,7 +230,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     64: .same(proto: "SERIAL_APP"),
     65: .same(proto: "STORE_FORWARD_APP"),
     66: .same(proto: "RANGE_TEST_APP"),
-    67: .same(proto: "ENVIRONMENTAL_MEASUREMENT_APP"),
+    67: .same(proto: "TELEMETRY_APP"),
     68: .same(proto: "ZPS_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),

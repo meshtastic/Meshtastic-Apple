@@ -31,12 +31,18 @@ struct ChannelSet {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///
+  /// TODO: REPLACE
   var settings: [ChannelSettings] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ChannelSet: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

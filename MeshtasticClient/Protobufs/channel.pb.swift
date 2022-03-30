@@ -79,7 +79,7 @@ struct ChannelSettings {
   /// Because protobufs take ZERO space when the value is zero this works out nicely.
   /// This value is replaced by bandwidth/spread_factor/coding_rate.
   /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-  var modemConfig: ChannelSettings.ModemConfig = .bw125Cr45Sf128
+  var modemConfig: ChannelSettings.ModemConfig = .vlongSlow
 
   ///
   /// Bandwidth in MHz
@@ -173,60 +173,60 @@ struct ChannelSettings {
     typealias RawValue = Int
 
     ///
-    /// < Bw = 125 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. ShortSlow | Short Range / Slow (5.469 kbps)
-    case bw125Cr45Sf128 // = 0
+    /// TODO: REPLACE
+    case vlongSlow // = 0
 
     ///
-    /// < Bw = 500 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. ShortFast | Short Range / Fast (21.875 kbps)
-    case bw500Cr45Sf128 // = 1
+    /// TODO: REPLACE
+    case longSlow // = 1
 
     ///
-    /// < Bw = 31.25 kHz, Cr = 4/8, Sf(9) = 512chips/symbol,
-    /// < CRC on. LongFast | Long Range / Fast (275 bps)
-    case bw3125Cr48Sf512 // = 2
+    /// TODO: REPLACE
+    case longFast // = 2
 
     ///
-    /// < Bw = 125 kHz, Cr = 4/8, Sf(12) = 4096chips/symbol, CRC
-    /// < on. LongSlow | Long Range / Slow (183 bps)
-    case bw125Cr48Sf4096 // = 3
+    /// TODO: REPLACE
+    case midSlow // = 3
 
     ///
-    /// < Bw = 250 kHz, Cr = 4/6, Sf(11) = 2048chips/symbol, CRC
-    /// < on. MediumSlow | Medium Range / Slow (895 bps)
-    case bw250Cr46Sf2048 // = 4
+    /// TODO: REPLACE
+    case midFast // = 4
 
     ///
-    /// < Bw = 250 kHz, Cr = 4/7, Sf(10) = 1024chips/symbol, CRC
-    /// < on. MediumFast | Medium Range / Fast (1400 bps)
-    case bw250Cr47Sf1024 // = 5
+    /// TODO: REPLACE
+    case shortSlow // = 5
+
+    ///
+    /// TODO: REPLACE
+    case shortFast // = 6
     case UNRECOGNIZED(Int)
 
     init() {
-      self = .bw125Cr45Sf128
+      self = .vlongSlow
     }
 
     init?(rawValue: Int) {
       switch rawValue {
-      case 0: self = .bw125Cr45Sf128
-      case 1: self = .bw500Cr45Sf128
-      case 2: self = .bw3125Cr48Sf512
-      case 3: self = .bw125Cr48Sf4096
-      case 4: self = .bw250Cr46Sf2048
-      case 5: self = .bw250Cr47Sf1024
+      case 0: self = .vlongSlow
+      case 1: self = .longSlow
+      case 2: self = .longFast
+      case 3: self = .midSlow
+      case 4: self = .midFast
+      case 5: self = .shortSlow
+      case 6: self = .shortFast
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
 
     var rawValue: Int {
       switch self {
-      case .bw125Cr45Sf128: return 0
-      case .bw500Cr45Sf128: return 1
-      case .bw3125Cr48Sf512: return 2
-      case .bw125Cr48Sf4096: return 3
-      case .bw250Cr46Sf2048: return 4
-      case .bw250Cr47Sf1024: return 5
+      case .vlongSlow: return 0
+      case .longSlow: return 1
+      case .longFast: return 2
+      case .midSlow: return 3
+      case .midFast: return 4
+      case .shortSlow: return 5
+      case .shortFast: return 6
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -241,12 +241,13 @@ struct ChannelSettings {
 extension ChannelSettings.ModemConfig: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [ChannelSettings.ModemConfig] = [
-    .bw125Cr45Sf128,
-    .bw500Cr45Sf128,
-    .bw3125Cr48Sf512,
-    .bw125Cr48Sf4096,
-    .bw250Cr46Sf2048,
-    .bw250Cr47Sf1024,
+    .vlongSlow,
+    .longSlow,
+    .longFast,
+    .midSlow,
+    .midFast,
+    .shortSlow,
+    .shortFast,
   ]
 }
 
@@ -276,6 +277,8 @@ struct Channel {
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   mutating func clearSettings() {self._settings = nil}
 
+  ///
+  /// TODO: REPLACE
   var role: Channel.Role = .disabled
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -351,6 +354,13 @@ extension Channel.Role: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ChannelSettings: @unchecked Sendable {}
+extension ChannelSettings.ModemConfig: @unchecked Sendable {}
+extension Channel: @unchecked Sendable {}
+extension Channel.Role: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -395,7 +405,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if self.txPower != 0 {
       try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 1)
     }
-    if self.modemConfig != .bw125Cr45Sf128 {
+    if self.modemConfig != .vlongSlow {
       try visitor.visitSingularEnumField(value: self.modemConfig, fieldNumber: 3)
     }
     if !self.psk.isEmpty {
@@ -447,12 +457,13 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
 extension ChannelSettings.ModemConfig: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "Bw125Cr45Sf128"),
-    1: .same(proto: "Bw500Cr45Sf128"),
-    2: .same(proto: "Bw31_25Cr48Sf512"),
-    3: .same(proto: "Bw125Cr48Sf4096"),
-    4: .same(proto: "Bw250Cr46Sf2048"),
-    5: .same(proto: "Bw250Cr47Sf1024"),
+    0: .same(proto: "VLongSlow"),
+    1: .same(proto: "LongSlow"),
+    2: .same(proto: "LongFast"),
+    3: .same(proto: "MidSlow"),
+    4: .same(proto: "MidFast"),
+    5: .same(proto: "ShortSlow"),
+    6: .same(proto: "ShortFast"),
   ]
 }
 
@@ -479,12 +490,16 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.index != 0 {
       try visitor.visitSingularInt32Field(value: self.index, fieldNumber: 1)
     }
-    if let v = self._settings {
+    try { if let v = self._settings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     if self.role != .disabled {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 3)
     }
