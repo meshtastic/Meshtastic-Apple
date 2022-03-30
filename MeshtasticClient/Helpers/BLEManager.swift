@@ -705,7 +705,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								}
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
-								newMessage.isTapback = decodedInfo.packet.decoded.emoji == 1
+								newMessage.isEmoji = decodedInfo.packet.decoded.emoji == 1
 								
 								if decodedInfo.packet.decoded.replyID > 0 {
 									
@@ -1010,7 +1010,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
 
 	// Send  Message
-	public func sendMessage(message: String, toUserNum: Int64, isTapback: Bool, replyID: Int64) -> Bool {
+	public func sendMessage(message: String, toUserNum: Int64, isEmoji: Bool, replyID: Int64) -> Bool {
 		
 		var success = false
 
@@ -1061,7 +1061,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
-					newMessage.isTapback = isTapback
+					newMessage.isEmoji = isEmoji
 					
 					if replyID > 0 {
 						
@@ -1093,7 +1093,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					meshPacket.to = UInt32(toUserNum)
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
-					meshPacket.decoded.emoji = isTapback ? 1 : 0
+					meshPacket.decoded.emoji = isEmoji ? 1 : 0
 					if replyID > 0 {
 						meshPacket.decoded.replyID = UInt32(replyID)
 					}

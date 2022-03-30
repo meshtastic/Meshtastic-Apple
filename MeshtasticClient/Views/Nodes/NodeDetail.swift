@@ -130,25 +130,9 @@ struct NodeDetail: View {
 
 								VStack(alignment: .center) {
 
-									BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
+									BatteryIcon(batteryLevel: 100, font: .title, color: .accentColor)
 										.padding(.bottom)
-									if mostRecent.batteryLevel > 0 {
-
-										Text("Battery")
-											.font(.title2)
-											.fixedSize()
-											.textCase(.uppercase)
-										Text(String(mostRecent.batteryLevel) + "%")
-											.font(.title2)
-											.foregroundColor(.gray)
-											.symbolRenderingMode(.hierarchical)
-									} else {
-
-										Text("Powered")
-											.font(.callout)
-											.fixedSize()
-											.textCase(.uppercase)
-									}
+									
 								}
 								.padding(5)
 							}
@@ -207,63 +191,66 @@ struct NodeDetail: View {
 							.padding()
 
 							Divider()
-
 							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-
-								if mappin.coordinate != nil {
-
-									VStack {
-
-										HStack {
-
-											Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
-											Text("Lat/Long:").font(.caption)
-											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-												.foregroundColor(.gray)
-												.font(.caption)
-											
-											Image(systemName: "arrow.up.arrow.down.circle")
-												.font(.subheadline)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-											
-											Text("Alt:")
-												.font(.caption)
-
-											Text("\(String(mappin.altitude))m")
-												.foregroundColor(.gray)
-												.font(.caption)
-										}
-										HStack {
-
-											Image(systemName: "clock.badge.checkmark.fill")
-												.font(.subheadline)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-											Text("Time:")
-												.font(.caption)
-											Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
-												.foregroundColor(.gray)
-												.font(.caption)
-											Divider()
-
-											HStack {
-												
-												BatteryIcon(batteryLevel: mappin.batteryLevel, font: .subheadline, color: .accentColor)
-												
-												if mappin.batteryLevel > 0 {
-													
-													Text(String(mappin.batteryLevel) + "%")
-														.font(.caption2)
-														.foregroundColor(.gray)
-												}
-											}
-										}
-									}
-									.padding(1)
-									Divider()
-								}
+								
+								
 							}
+//							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+//
+//								if mappin.coordinate != nil {
+//
+//									VStack {
+//
+//										HStack {
+//
+//											Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
+//											Text("Lat/Long:").font(.caption)
+//											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+//												.foregroundColor(.gray)
+//												.font(.caption)
+//
+//											Image(systemName: "arrow.up.arrow.down.circle")
+//												.font(.subheadline)
+//												.foregroundColor(.accentColor)
+//												.symbolRenderingMode(.hierarchical)
+//
+//											Text("Alt:")
+//												.font(.caption)
+//
+//											Text("\(String(mappin.altitude))m")
+//												.foregroundColor(.gray)
+//												.font(.caption)
+//										}
+//										HStack {
+//
+//											Image(systemName: "clock.badge.checkmark.fill")
+//												.font(.subheadline)
+//												.foregroundColor(.accentColor)
+//												.symbolRenderingMode(.hierarchical)
+//											Text("Time:")
+//												.font(.caption)
+//											Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
+//												.foregroundColor(.gray)
+//												.font(.caption)
+//											Divider()
+//
+//											HStack {
+//
+//												BatteryIcon(batteryLevel: mappin.batteryLevel, font: .subheadline, color: .accentColor)
+//
+//												if mappin.batteryLevel > 0 {
+//
+//													Text(String(mappin.batteryLevel) + "%")
+//														.font(.caption2)
+//														.foregroundColor(.gray)
+//												}
+//											}
+//										}
+//									}
+//									.padding(1)
+//									Divider()
+//								}
+//							}
 						}
 					}
 				}
