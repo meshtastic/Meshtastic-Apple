@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -56,7 +37,6 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// users COULD type in a channel name and be able to talk.
 /// Y is a lower case letter from a-z that represents the channel 'speed' settings
 /// (for some future definition of speed)
-///
 /// FIXME: Add description of multi-channel support and how primary vs secondary channels are used.
 /// FIXME: explain how apps use channels for security.
 /// explain how remote settings and remote gpio are managed as an example
@@ -285,12 +265,10 @@ struct Channel {
 
   ///
   /// How this channel is being used (or not).
-  ///
   /// Note: this field is an enum to give us options for the future.
   /// In particular, someday we might make a 'SCANNING' option.
   /// SCANNING channels could have different frequencies and the radio would
   /// occasionally check that freq to see if anything is being transmitted.
-  ///
   /// For devices that have multiple physical radios attached, we could keep multiple PRIMARY/SCANNING channels active at once to allow
   /// cross band routing as needed.
   /// If a device has only a single radio (the common case) only one channel can be PRIMARY at a time

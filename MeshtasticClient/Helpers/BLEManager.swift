@@ -513,6 +513,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
+						if decodedInfo.nodeInfo.hasDeviceMetrics {
+							newNode.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
+							newNode.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
+						}
+						
+						
 						if decodedInfo.nodeInfo.lastHeard > 0 {
 							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						}

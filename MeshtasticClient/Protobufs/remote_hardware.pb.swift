@@ -23,12 +23,9 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// An example app to show off the module system. This message is used for
 /// REMOTE_HARDWARE_APP PortNums.
-///
 /// Also provides easy remote access to any GPIO.
-///
 /// In the future other remote hardware operations can be added based on user interest
 /// (i.e. serial output, spi/i2c input/output).
-///
 /// FIXME - currently this feature is turned on by default which is dangerous
 /// because no security yet (beyond the channel mechanism).
 /// It should be off by default and then protected based on some TBD mechanism

@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -425,7 +406,6 @@ extension Constants: CaseIterable {
 
 ///
 /// Error codes for critical errors
-///
 /// The device might report these fault codes on the screen.
 /// If you encounter a fault code, please post on the meshtastic.discourse.group
 /// and we'll try to help.
@@ -665,7 +645,6 @@ struct Position {
 
   ///
   /// Ground speed in m/s and True North TRACK in 1/100 degrees
-  ///
   /// Clarification of terms:
   /// - "track" is the direction of motion (measured in horizontal plane)
   /// - "heading" is where the fuselage points (measured in horizontal plane)
@@ -868,24 +847,20 @@ extension Position.AltSource: CaseIterable {
 /// Broadcast when a newly powered mesh node wants to find a node num it can use
 /// Sent from the phone over bluetooth to set the user id for the owner of this node.
 /// Also sent from nodes to each other when a new node signs on (so all clients can have this info)
-///
 /// The algorithm is as follows:
 /// when a node starts up, it broadcasts their user and the normal flow is for all
 /// other nodes to reply with their User as well (so the new node can build its nodedb)
 /// If a node ever receives a User (not just the first broadcast) message where
 /// the sender node number equals our node number, that indicates a collision has
 /// occurred and the following steps should happen:
-///
 /// If the receiving node (that was already in the mesh)'s macaddr is LOWER than the
 /// new User who just tried to sign in: it gets to keep its nodenum.
 /// We send a broadcast message of OUR User (we use a broadcast so that the other node can
 /// receive our message, considering we have the same id - it also serves to let
 /// observers correct their nodedb) - this case is rare so it should be okay.
-///
 /// If any node receives a User where the macaddr is GTE than their local macaddr,
 /// they have been vetoed and should pick a new random nodenum (filtering against
 /// whatever it knows about the nodedb) and rebroadcast their User.
-///
 /// A few nodenums are reserved and will never be requested:
 /// 0xff - broadcast
 /// 0 through 3 - for future use
@@ -1453,11 +1428,8 @@ struct MeshPacket {
   /// This field is never sent over the air, it is only used internally inside of a local device node.
   /// API clients (either on the local node or connected directly to the node)
   /// can set this parameter if necessary.
-  ///
   /// (values must be <= 127 to keep protobuf field to one byte in size.
-  ///
   /// Detailed background on this field:
-  ///
   /// I noticed a funny side effect of lora being so slow: Usually when making
   /// a protocol there isn’t much need to use message priority to change the order
   /// of transmission (because interfaces are fairly fast).
@@ -1466,7 +1438,6 @@ struct MeshPacket {
   /// In the case of meshtastic that means we want to send protocol acks as soon as possible
   /// (to prevent unneeded retransmissions), we want routing messages to be sent next,
   /// then messages marked as reliable and finally ‘background’ packets like periodic position updates.
-  ///
   /// So I bit the bullet and implemented a new (internal - not sent over the air)
   /// field in MeshPacket called ‘priority’.
   /// And the transmission queue in the router object is now a priority queue.
@@ -1612,16 +1583,12 @@ extension MeshPacket.Delayed: CaseIterable {
 
 ///
 /// The bluetooth to device link:
-///
 /// Old BTLE protocol docs from TODO, merge in above and make real docs...
-///
 /// use protocol buffers, and NanoPB
-///
 /// messages from device to phone:
 /// POSITION_UPDATE (..., time)
 /// TEXT_RECEIVED(from, text, time)
 /// OPAQUE_RECEIVED(from, payload, time) (for signal messages or other applications)
-///
 /// messages from phone to device:
 /// SET_MYID(id, human readable long, human readable short) (send down the unique ID
 /// string used for this node, a human readable string shown for that id, and a very
@@ -1630,7 +1597,6 @@ extension MeshPacket.Delayed: CaseIterable {
 /// nodes() (returns list of nodes, with full info, last time seen, loc, battery
 /// level etc) SET_CONFIG (switches device to a new set of radio params and
 /// preshared key, drops all existing nodes, force our node to rejoin this new group)
-///
 /// Full information about a node on the mesh
 struct NodeInfo {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -1683,15 +1649,15 @@ struct NodeInfo {
   }
 
   ///
-  /// The latest device telemetry data for the node.
-  var telemetry: Telemetry {
-    get {return _storage._telemetry ?? Telemetry()}
-    set {_uniqueStorage()._telemetry = newValue}
+  /// The latest device metrics for the node.
+  var deviceMetrics: DeviceMetrics {
+    get {return _storage._deviceMetrics ?? DeviceMetrics()}
+    set {_uniqueStorage()._deviceMetrics = newValue}
   }
-  /// Returns true if `telemetry` has been explicitly set.
-  var hasTelemetry: Bool {return _storage._telemetry != nil}
-  /// Clears the value of `telemetry`. Subsequent reads from it will return its default value.
-  mutating func clearTelemetry() {_uniqueStorage()._telemetry = nil}
+  /// Returns true if `deviceMetrics` has been explicitly set.
+  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
+  /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
+  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1856,7 +1822,6 @@ struct MyNodeInfo {
 
 ///
 /// Debug output from the device.
-///
 /// To minimize the size of records inside the device code, if a time/source/level is not set
 /// on the message it is assumed to be a continuation of the previously sent message.
 /// This allows the device code to use fixed maxlen 64 byte strings for messages,
@@ -3197,7 +3162,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     3: .same(proto: "position"),
     4: .same(proto: "snr"),
     5: .standard(proto: "last_heard"),
-    6: .same(proto: "telemetry"),
+    6: .standard(proto: "device_metrics"),
   ]
 
   fileprivate class _StorageClass {
@@ -3206,7 +3171,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _position: Position? = nil
     var _snr: Float = 0
     var _lastHeard: UInt32 = 0
-    var _telemetry: Telemetry? = nil
+    var _deviceMetrics: DeviceMetrics? = nil
 
     static let defaultInstance = _StorageClass()
 
@@ -3218,7 +3183,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _position = source._position
       _snr = source._snr
       _lastHeard = source._lastHeard
-      _telemetry = source._telemetry
+      _deviceMetrics = source._deviceMetrics
     }
   }
 
@@ -3242,7 +3207,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
         case 4: try { try decoder.decodeSingularFloatField(value: &_storage._snr) }()
         case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._telemetry) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
         default: break
         }
       }
@@ -3270,7 +3235,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._lastHeard != 0 {
         try visitor.visitSingularFixed32Field(value: _storage._lastHeard, fieldNumber: 5)
       }
-      try { if let v = _storage._telemetry {
+      try { if let v = _storage._deviceMetrics {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       } }()
     }
@@ -3287,7 +3252,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._position != rhs_storage._position {return false}
         if _storage._snr != rhs_storage._snr {return false}
         if _storage._lastHeard != rhs_storage._lastHeard {return false}
-        if _storage._telemetry != rhs_storage._telemetry {return false}
+        if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
         return true
       }
       if !storagesAreEqual {return false}

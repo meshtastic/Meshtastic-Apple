@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -41,10 +22,8 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// The frequency/regulatory region the user has selected.
-///
 /// Note: In 1.0 builds (which must still be supported by the android app for a
 /// long time) this field will be unpopulated.
-///
 /// If firmware is ever upgraded from an old 1.0ish build, the old
 /// MyNodeInfo.region string will be used to set UserPreferences.region and the
 /// old value will be no longer set.
@@ -175,37 +154,57 @@ extension RegionCode: CaseIterable {
 /// Defines the device's role on the Mesh network
 ///   unset
 ///     Behave normally.
-///
 ///   Router
 ///     Functions as a router
 enum Role: SwiftProtobuf.Enum {
   typealias RawValue = Int
 
   ///
-  /// Default device role
-  case `default` // = 0
+  /// Client device role
+  case client // = 0
 
   ///
-  /// Router device role
-  case router // = 1
+  /// ClientMute device role
+  ///   This is like the client but packets will not hop over this node. Would be
+  ///   useful if you want to save power by not contributing to the mesh.
+  case clientMute // = 1
+
+  ///
+  /// Router device role.
+  ///   Uses an agressive algirithem for the flood networking so packets will
+  ///   prefer to be routed over this node. Also assume that this will be generally
+  ///   unattended and so will turn off the wifi/ble radio as well as the oled screen.
+  case router // = 2
+
+  ///
+  /// RouterClient device role
+  ///   Uses an agressive algirithem for the flood networking so packets will
+  ///   prefer to be routed over this node. Similiar power management as a regular
+  ///   client, so the RouterClient can be used as both a Router and a Client. Useful
+  ///   as a well placed base station that you could also use to send messages.
+  case routerClient // = 3
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .default
+    self = .client
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .default
-    case 1: self = .router
+    case 0: self = .client
+    case 1: self = .clientMute
+    case 2: self = .router
+    case 3: self = .routerClient
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
 
   var rawValue: Int {
     switch self {
-    case .default: return 0
-    case .router: return 1
+    case .client: return 0
+    case .clientMute: return 1
+    case .router: return 2
+    case .routerClient: return 3
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -217,8 +216,10 @@ enum Role: SwiftProtobuf.Enum {
 extension Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Role] = [
-    .default,
+    .client,
+    .clientMute,
     .router,
+    .routerClient,
   ]
 }
 
@@ -465,7 +466,6 @@ extension GpsCoordinateFormat: CaseIterable {
 /// Bit field of boolean configuration options, indicating which optional
 ///   fields to include when assembling POSITION messages
 /// Longitude and latitude are always included (also time if GPS-synced)
-///
 /// NOTE: the more fields are included, the larger the message will be -
 ///   leading to longer airtime and a higher risk of packet loss
 enum PositionFlags: SwiftProtobuf.Enum {
@@ -1338,7 +1338,6 @@ struct RadioConfig {
     /// Whether to send encrypted or decrypted packets to MQTT.
     /// This parameter is only honoured if you also set mqtt_server
     /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
-    /// 
     /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
     var mqttEncryptionEnabled: Bool {
       get {return _storage._mqttEncryptionEnabled}
@@ -1633,8 +1632,10 @@ extension RegionCode: SwiftProtobuf._ProtoNameProviding {
 
 extension Role: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "Default"),
-    1: .same(proto: "Router"),
+    0: .same(proto: "Client"),
+    1: .same(proto: "ClientMute"),
+    2: .same(proto: "Router"),
+    3: .same(proto: "RouterClient"),
   ]
 }
 
@@ -1842,7 +1843,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _wifiApMode: Bool = false
     var _region: RegionCode = .unset
     var _chargeCurrent: ChargeCurrent = .maunset
-    var _role: Role = .default
+    var _role: Role = .client
     var _isLowPower: Bool = false
     var _fixedPosition: Bool = false
     var _serialDisabled: Bool = false
@@ -2161,7 +2162,7 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._positionBroadcastSmartDisabled != false {
         try visitor.visitSingularBoolField(value: _storage._positionBroadcastSmartDisabled, fieldNumber: 17)
       }
-      if _storage._role != .default {
+      if _storage._role != .client {
         try visitor.visitSingularEnumField(value: _storage._role, fieldNumber: 18)
       }
       if _storage._locationShareDisabled != false {
