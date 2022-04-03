@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -50,6 +50,7 @@
         <attribute name="voltage" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
+        <relationship name="telemetry" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TelemetryEntitiy"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -64,6 +65,16 @@
         <attribute name="satsInView" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="nodePosition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="positions" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="TelemetryEntitiy" representedClassName="TelemetryEntitiy" syncable="YES" codeGenerationType="class">
+        <attribute name="barometricPressure" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="current" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="gasResistance" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="num" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="relativeHumidity" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="temperature" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="voltage" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="nodeTelemetry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryEntitiy"/>
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
         <attribute name="hwModel" attributeType="String"/>
@@ -83,8 +94,9 @@
     <elements>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="179"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="194"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
+        <element name="TelemetryEntitiy" positionX="-36" positionY="144" width="128" height="149"/>
     </elements>
 </model>
