@@ -405,8 +405,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let myInfo = MyInfoEntity(context: context!)
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
-						myInfo.channelUtilization = decodedInfo.myInfo.channelUtilization
-						
+
 						// Swift does strings weird, this does work to get the version without the github hash
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
@@ -420,8 +419,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.num = myInfo.myNodeNum
 						self.connectedPeripheral.firmwareVersion = myInfo.firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = myInfo.bleName ?? "Unknown"
-						self.connectedPeripheral.channelUtilization = myInfo.channelUtilization
-						self.connectedPeripheral.airTime = myInfo.airUtilTx
 						
 						let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 						fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.myInfo.myNodeNum))
@@ -449,7 +446,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						fetchedMyInfo[0].myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						fetchedMyInfo[0].hasGps = decodedInfo.myInfo.hasGps_p
-						fetchedMyInfo[0].channelUtilization = decodedInfo.myInfo.channelUtilization
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 						var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: decodedInfo.myInfo.firmwareVersion))]
 						version = version.dropLast()
@@ -461,9 +457,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.num = fetchedMyInfo[0].myNodeNum
 						self.connectedPeripheral.firmwareVersion = fetchedMyInfo[0].firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = fetchedMyInfo[0].bleName ?? "Unknown"
-						self.connectedPeripheral.channelUtilization = fetchedMyInfo[0].channelUtilization
-						self.connectedPeripheral.airTime = fetchedMyInfo[0].airUtilTx
-						
 					}
 					do {
 
@@ -513,18 +506,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let newNode = NodeInfoEntity(context: context!)
 						newNode.id = Int64(decodedInfo.nodeInfo.num)
 						newNode.num = Int64(decodedInfo.nodeInfo.num)
+						
 						if decodedInfo.nodeInfo.hasDeviceMetrics {
+							
 							newNode.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
 							newNode.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
+							newNode.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
+							self.connectedPeripheral.channelUtilization = newNode.channelUtilization
+							newNode.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
 						}
 						
-						
-						if decodedInfo.nodeInfo.lastHeard > 0 {
-							newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
-						}
-						else {
-							newNode.lastHeard = Date()
-						}
+						// FIXME: Date from the node info, may be a bad date, needs to be fixed upstream in the firmware
+						newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						newNode.snr = decodedInfo.nodeInfo.snr
 
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == newNode.num {
@@ -534,7 +528,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								connectedPeripheral.name  = decodedInfo.nodeInfo.user.longName
 							}
 						}
-
+					
 						if decodedInfo.nodeInfo.hasUser {
 
 							let newUser = UserEntity(context: context!)
