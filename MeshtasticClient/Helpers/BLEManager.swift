@@ -967,8 +967,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						}
 					}
 
+				// MARK: Incoming TELEMETRY_APP Packet
 				} else if  decodedInfo.packet.decoded.portnum == PortNum.telemetryApp {
 
+					
+					if let telemetryMessage = try? Telemetry(serializedData: decodedInfo.packet.decoded.payload) {
+						
+						let telemetry = TelemetryEntity(context: context!)
+						telemetry.num = Int64(decodedInfo.packet.from)
+						print(decodedInfo.packet.decoded.requestID)
+						print(telemetryMessage)
+					}
+					
+					
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())") }
 					print("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())")
 

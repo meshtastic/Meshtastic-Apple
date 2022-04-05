@@ -34,6 +34,7 @@
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */; };
+		DD9E682F27FACD1F00EE0214 /* SwiftUICharts in Frameworks */ = {isa = PBXBuildFile; productRef = DD9E682E27FACD1F00EE0214 /* SwiftUICharts */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */; };
 		DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5C26ED09490058C060 /* portnums.pb.swift */; };
@@ -135,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD9E682F27FACD1F00EE0214 /* SwiftUICharts in Frameworks */,
 				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */,
 			);
@@ -388,6 +390,7 @@
 			packageProductDependencies = (
 				DD5394FB276993AD00AD86B1 /* SwiftProtobuf */,
 				C9697FA427933B8C00250207 /* SQLite */,
+				DD9E682E27FACD1F00EE0214 /* SwiftUICharts */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */;
@@ -464,6 +467,7 @@
 			packageReferences = (
 				DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
+				DD9E682D27FACD1F00EE0214 /* XCRemoteSwiftPackageReference "SwiftUICharts" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -787,6 +791,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = MeshtasticClientTests/Info.plist;
@@ -809,6 +814,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = MeshtasticClientTests/Info.plist;
@@ -924,6 +930,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		DD9E682D27FACD1F00EE0214 /* XCRemoteSwiftPackageReference "SwiftUICharts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mecid/SwiftUICharts.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.8;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -936,6 +950,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
 			productName = SwiftProtobuf;
+		};
+		DD9E682E27FACD1F00EE0214 /* SwiftUICharts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD9E682D27FACD1F00EE0214 /* XCRemoteSwiftPackageReference "SwiftUICharts" */;
+			productName = SwiftUICharts;
 		};
 /* End XCSwiftPackageProductDependency section */
 
