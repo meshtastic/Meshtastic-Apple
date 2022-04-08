@@ -469,7 +469,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						context!.rollback()
 
 						let nsError = error as NSError
-						print("💥 Error Saving CoreData MyInfoEntity: \(nsError)")
+						print("💥 Error Saving Core Data MyInfoEntity: \(nsError)")
 					}
 
 				} catch {
@@ -652,7 +652,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						context!.rollback()
 
 						let nsError = error as NSError
-						print("💥 Error Saving CoreData NodeInfoEntity: \(nsError)")
+						print("💥 Error Saving Core Data NodeInfoEntity: \(nsError)")
 					}
 
 				} catch {
@@ -1133,8 +1133,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							context!.rollback()
 
 							let nsError = error as NSError
-							print("🚫 Unresolved Core Data error in Send Message Function \(nsError)")
-							if meshLoggingEnabled { MeshLogger.log("🚫 Unresolved Core Data error \(nsError)") }
+							print("💥 Unresolved Core Data error in Send Message Function \(nsError)")
+							if meshLoggingEnabled { MeshLogger.log("💥 Unresolved Core Data error \(nsError)") }
 						}
 					}
 				}
