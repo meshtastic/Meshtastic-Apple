@@ -318,7 +318,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				TORADIO_characteristic = characteristic
 				var toRadio: ToRadio = ToRadio()
-				toRadio.wantConfigID = 32168
+				toRadio.wantConfigID =  UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 				let binaryData: Data = try! toRadio.serializedData()
 				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
 
