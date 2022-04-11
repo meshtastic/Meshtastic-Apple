@@ -206,6 +206,13 @@ struct AppSettings: View {
 								.listRowSeparator(.visible)
 						}
 					}
+					Section(header: Text("MESH OPTIONS")) {
+							
+						NavigationLink(destination: ShareChannel()) {
+							Text("Share Your Channel vis QR Code")
+						}
+					
+					}
 					Section(header: Text("MESSAGING OPTIONS")) {
 
 						Picker("Keyboard Type", selection: $userSettings.keyboardType) {

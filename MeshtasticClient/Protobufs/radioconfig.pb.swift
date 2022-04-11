@@ -705,13 +705,6 @@ struct RadioConfig {
     }
 
     ///
-    /// Send our owner info at least this often (also we always send once at boot - to rejoin the mesh)
-    var sendOwnerInterval: UInt32 {
-      get {return _storage._sendOwnerInterval}
-      set {_uniqueStorage()._sendOwnerInterval = newValue}
-    }
-
-    ///
     /// Power management state machine option.
     /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of 1 minute
@@ -1741,7 +1734,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_broadcast_secs"),
     17: .standard(proto: "position_broadcast_smart_disabled"),
-    2: .standard(proto: "send_owner_interval"),
     4: .standard(proto: "wait_bluetooth_secs"),
     5: .standard(proto: "screen_on_secs"),
     6: .standard(proto: "phone_timeout_secs"),
@@ -1829,7 +1821,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
   fileprivate class _StorageClass {
     var _positionBroadcastSecs: UInt32 = 0
     var _positionBroadcastSmartDisabled: Bool = false
-    var _sendOwnerInterval: UInt32 = 0
     var _waitBluetoothSecs: UInt32 = 0
     var _screenOnSecs: UInt32 = 0
     var _phoneTimeoutSecs: UInt32 = 0
@@ -1920,7 +1911,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     init(copying source: _StorageClass) {
       _positionBroadcastSecs = source._positionBroadcastSecs
       _positionBroadcastSmartDisabled = source._positionBroadcastSmartDisabled
-      _sendOwnerInterval = source._sendOwnerInterval
       _waitBluetoothSecs = source._waitBluetoothSecs
       _screenOnSecs = source._screenOnSecs
       _phoneTimeoutSecs = source._phoneTimeoutSecs
@@ -2022,7 +2012,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
         case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionBroadcastSecs) }()
-        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._sendOwnerInterval) }()
         case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._waitBluetoothSecs) }()
         case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._screenOnSecs) }()
         case 6: try { try decoder.decodeSingularUInt32Field(value: &_storage._phoneTimeoutSecs) }()
@@ -2116,9 +2105,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       if _storage._positionBroadcastSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._positionBroadcastSecs, fieldNumber: 1)
-      }
-      if _storage._sendOwnerInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._sendOwnerInterval, fieldNumber: 2)
       }
       if _storage._waitBluetoothSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._waitBluetoothSecs, fieldNumber: 4)
@@ -2380,7 +2366,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         let rhs_storage = _args.1
         if _storage._positionBroadcastSecs != rhs_storage._positionBroadcastSecs {return false}
         if _storage._positionBroadcastSmartDisabled != rhs_storage._positionBroadcastSmartDisabled {return false}
-        if _storage._sendOwnerInterval != rhs_storage._sendOwnerInterval {return false}
         if _storage._waitBluetoothSecs != rhs_storage._waitBluetoothSecs {return false}
         if _storage._screenOnSecs != rhs_storage._screenOnSecs {return false}
         if _storage._phoneTimeoutSecs != rhs_storage._phoneTimeoutSecs {return false}

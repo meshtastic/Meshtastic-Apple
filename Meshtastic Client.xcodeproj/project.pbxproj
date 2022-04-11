@@ -26,7 +26,8 @@
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
 		DD6B85A62800915B000ACD6B /* CarBode in Frameworks */ = {isa = PBXBuildFile; productRef = DD6B85A52800915B000ACD6B /* CarBode */; };
-		DD6B85A828009258000ACD6B /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6B85A728009258000ACD6B /* Channel.swift */; };
+		DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6B85A728009258000ACD6B /* ShareChannel.swift */; };
+		DD6B85AA2800DFE5000ACD6B /* QRCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6B85A92800DFE5000ACD6B /* QRCamera.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
@@ -93,7 +94,8 @@
 		DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
-		DD6B85A728009258000ACD6B /* Channel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
+		DD6B85A728009258000ACD6B /* ShareChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannel.swift; sourceTree = "<group>"; };
+		DD6B85A92800DFE5000ACD6B /* QRCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCamera.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
@@ -204,7 +206,7 @@
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
-				DD6B85A728009258000ACD6B /* Channel.swift */,
+				DD6B85A728009258000ACD6B /* ShareChannel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -348,6 +350,7 @@
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
 				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
+				DD6B85A92800DFE5000ACD6B /* QRCamera.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -536,12 +539,13 @@
 			files = (
 				DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
+				DD6B85AA2800DFE5000ACD6B /* QRCamera.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
-				DD6B85A828009258000ACD6B /* Channel.swift in Sources */,
+				DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
@@ -745,6 +749,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -776,6 +781,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

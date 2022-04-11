@@ -115,6 +115,14 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case rak11200 // = 40
 
   ///
+  /// B&Q Consulting Nano Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:nano
+  case nanoG1 // = 41
+
+  ///
+  /// nRF52840 Dongle : https://www.nordicsemi.com/Products/Development-hardware/nrf52840-dongle/
+  case nrf52840Pca10059 // = 42
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -146,6 +154,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 38: self = .androidSim
     case 39: self = .diyV1
     case 40: self = .rak11200
+    case 41: self = .nanoG1
+    case 42: self = .nrf52840Pca10059
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -174,6 +184,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .androidSim: return 38
     case .diyV1: return 39
     case .rak11200: return 40
+    case .nanoG1: return 41
+    case .nrf52840Pca10059: return 42
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -207,6 +219,8 @@ extension HardwareModel: CaseIterable {
     .androidSim,
     .diyV1,
     .rak11200,
+    .nanoG1,
+    .nrf52840Pca10059,
     .privateHw,
   ]
 }
@@ -2293,6 +2307,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     38: .same(proto: "ANDROID_SIM"),
     39: .same(proto: "DIY_V1"),
     40: .same(proto: "RAK11200"),
+    41: .same(proto: "NANO_G1"),
+    42: .same(proto: "NRF52840_PCA10059"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

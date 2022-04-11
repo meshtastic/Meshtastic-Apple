@@ -384,6 +384,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         switch characteristic.uuid {
 
 		case FROMRADIO_UUID:
+			
 			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
@@ -405,6 +406,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let myInfo = MyInfoEntity(context: context!)
 						myInfo.myNodeNum = Int64(decodedInfo.myInfo.myNodeNum)
 						myInfo.hasGps = decodedInfo.myInfo.hasGps_p
+						myInfo.bitrate = decodedInfo.myInfo.bitrate
 
 						// Swift does strings weird, this does work to get the version without the github hash
 						let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
@@ -436,6 +438,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								bcu.userId = "BROADCASTNODE"
 								print("💾 Saved the All - Broadcast User")
 							}
+							
+							var settingsCalled = self.getSettings()
+							
+							if settingsCalled {
+								
+								print("💾 Called Get Settings")
+								
+							} else {
+								
+								print("💥 Get Settings Call Failed")
+							}
+							
 							
 						} catch {
 							
@@ -1146,6 +1160,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return success
 	}
 	
+	// Send Position
 	public func sendPosition(destNum: Int64,  wantResponse: Bool) -> Bool {
 		
 		var success = false
@@ -1222,5 +1237,41 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 			}
 		}
+	}
+	
+	// MARK: Device Settings
+	public func getSettings() -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getRadioRequest = true
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
 	}
 }
