@@ -736,15 +736,6 @@ struct RadioConfig {
     /// Power management state machine option.
     /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of two hours, MAXUINT for disabled
-    var phoneSdsTimeoutSec: UInt32 {
-      get {return _storage._phoneSdsTimeoutSec}
-      set {_uniqueStorage()._phoneSdsTimeoutSec = newValue}
-    }
-
-    ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
-    /// 0 for default of two hours, MAXUINT for disabled
     var meshSdsTimeoutSecs: UInt32 {
       get {return _storage._meshSdsTimeoutSecs}
       set {_uniqueStorage()._meshSdsTimeoutSecs = newValue}
@@ -1737,7 +1728,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     4: .standard(proto: "wait_bluetooth_secs"),
     5: .standard(proto: "screen_on_secs"),
     6: .standard(proto: "phone_timeout_secs"),
-    7: .standard(proto: "phone_sds_timeout_sec"),
     8: .standard(proto: "mesh_sds_timeout_secs"),
     9: .standard(proto: "sds_secs"),
     10: .standard(proto: "ls_secs"),
@@ -1824,7 +1814,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _waitBluetoothSecs: UInt32 = 0
     var _screenOnSecs: UInt32 = 0
     var _phoneTimeoutSecs: UInt32 = 0
-    var _phoneSdsTimeoutSec: UInt32 = 0
     var _meshSdsTimeoutSecs: UInt32 = 0
     var _sdsSecs: UInt32 = 0
     var _lsSecs: UInt32 = 0
@@ -1914,7 +1903,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _waitBluetoothSecs = source._waitBluetoothSecs
       _screenOnSecs = source._screenOnSecs
       _phoneTimeoutSecs = source._phoneTimeoutSecs
-      _phoneSdsTimeoutSec = source._phoneSdsTimeoutSec
       _meshSdsTimeoutSecs = source._meshSdsTimeoutSecs
       _sdsSecs = source._sdsSecs
       _lsSecs = source._lsSecs
@@ -2015,7 +2003,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._waitBluetoothSecs) }()
         case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._screenOnSecs) }()
         case 6: try { try decoder.decodeSingularUInt32Field(value: &_storage._phoneTimeoutSecs) }()
-        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._phoneSdsTimeoutSec) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._meshSdsTimeoutSecs) }()
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._sdsSecs) }()
         case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._lsSecs) }()
@@ -2114,9 +2101,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       }
       if _storage._phoneTimeoutSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._phoneTimeoutSecs, fieldNumber: 6)
-      }
-      if _storage._phoneSdsTimeoutSec != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._phoneSdsTimeoutSec, fieldNumber: 7)
       }
       if _storage._meshSdsTimeoutSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._meshSdsTimeoutSecs, fieldNumber: 8)
@@ -2369,7 +2353,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._waitBluetoothSecs != rhs_storage._waitBluetoothSecs {return false}
         if _storage._screenOnSecs != rhs_storage._screenOnSecs {return false}
         if _storage._phoneTimeoutSecs != rhs_storage._phoneTimeoutSecs {return false}
-        if _storage._phoneSdsTimeoutSec != rhs_storage._phoneSdsTimeoutSec {return false}
         if _storage._meshSdsTimeoutSecs != rhs_storage._meshSdsTimeoutSecs {return false}
         if _storage._sdsSecs != rhs_storage._sdsSecs {return false}
         if _storage._lsSecs != rhs_storage._lsSecs {return false}
