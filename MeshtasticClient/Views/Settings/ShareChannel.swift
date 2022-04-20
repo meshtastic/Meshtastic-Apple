@@ -6,69 +6,88 @@
 //
 import SwiftUI
 import CoreData
-import CarBode
+import CoreImage.CIFilterBuiltins
 
+
+struct QrCodeImage {
+	let context = CIContext()
+
+	func generateQRCode(from text: String) -> UIImage {
+		var qrImage = UIImage(systemName: "xmark.circle") ?? UIImage()
+		let data = Data(text.utf8)
+		let filter = CIFilter.qrCodeGenerator()
+		filter.setValue(data, forKey: "inputMessage")
+
+		let transform = CGAffineTransform(scaleX: 15, y: 15)
+		if let outputImage = filter.outputImage?.transformed(by: transform) {
+			if let image = context.createCGImage(
+				outputImage,
+				from: outputImage.extent) {
+				qrImage = UIImage(cgImage: image)
+			}
+		}
+		return qrImage
+	}
+}
 
 struct ShareChannel: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
-	
-	@State var dataString = "Hello Carbode"
-	@State var barcodeType = CBBarcodeView.BarcodeType.qrCode
-	@State var rotate = CBBarcodeView.Orientation.up
-	
-	@State var barcodeImage: UIImage?
 
-
+	
+	@State private var text = "meshtastic.org"
+	var qrCodeImage = QrCodeImage()
+	
 	var body: some View {
-	
-		HStack {
+		
+		VStack {
 			
 			GeometryReader { bounds in
 				
+				let smallest = min(bounds.size.width, bounds.size.height)
+				
 				ScrollView {
-					
-					VStack {
-						
-						let smallest = min(bounds.size.width, bounds.size.height)
 
-						Text("Channel Name").font(.largeTitle)
-						CBBarcodeView(data: $dataString,
-							barcodeType: $barcodeType,
-							orientation: $rotate)
-							{ image in
-								self.barcodeImage = image
-							}.frame(
+					VStack {
+						Text("Scan the QR code below with the Apple or Android device you would like to share with your channel settings with.")
+							.fixedSize(horizontal: false, vertical: true)
+							.font(.callout)
+							.padding()
+						Spacer()
+						
+						let image = qrCodeImage.generateQRCode(from: text)
+						Image(uiImage: image)
+							.resizable()
+							.scaledToFit()
+							.frame(
 								minWidth: smallest * 0.9,
 								maxWidth: smallest * 0.9,
 								minHeight: smallest * 0.9,
 								maxHeight: smallest * 0.9,
-								alignment: .topLeading
+								alignment: .center
 							)
-							.padding(.bottom)
-						Text("Channel Details").font(.title)
-						
-						Text("Some helpful text about how this whole thing works goes here, also could add a share sheet icon and pass the link around.")
 						Spacer()
-						Text("Some helpful text about how this whole thing works goes here, also could add a share sheet icon and pass the link around.")
+						Text("Channel Name (Long/Slow)").font(.title)
+						Spacer()
 					}
+					.frame(width: bounds.size.width, height: bounds.size.height)
 				}
-			}.padding()
-		}
-		.navigationTitle("Share Channel")
-		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
+			}
+			.navigationTitle("Share Channel")
+			.navigationBarTitleDisplayMode(.automatic)
+			.navigationBarItems(trailing:
 
-			ZStack {
+				ZStack {
 
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
-		})
-		.onAppear {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
+			})
+			.onAppear {
 
-			self.bleManager.context = context
+				self.bleManager.context = context
+			}
+			
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

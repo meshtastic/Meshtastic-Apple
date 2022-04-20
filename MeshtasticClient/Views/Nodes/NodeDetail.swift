@@ -104,7 +104,8 @@ struct NodeDetail: View {
 								}
 							}
 							.padding(5)
-
+							
+							
 							if node.snr > 0 {
 								Divider()
 								VStack(alignment: .center) {

@@ -2,21 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "CarBode",
-        "repositoryURL": "https://github.com/heart/CarBode-Barcode-Scanner-For-SwiftUI",
-        "state": {
-          "branch": null,
-          "revision": "6167624ec47174900434f1c03dfa0b2dd5d19c0d",
-          "version": "2.2.3"
-        }
-      },
-      {
         "package": "SQLite.swift",
         "repositoryURL": "https://github.com/stephencelis/SQLite.swift.git",
         "state": {
           "branch": null,
-          "revision": "60a65015f6402b7c34b9a924f755ca0a73afeeaa",
-          "version": "0.13.1"
+          "revision": "4d543d811ee644fa4cc4bfa0be996b4dd6ba0f54",
+          "version": "0.13.3"
         }
       },
       {
@@ -24,8 +15,8 @@
         "repositoryURL": "https://github.com/apple/swift-protobuf.git",
         "state": {
           "branch": null,
-          "revision": "7e2c5f3cbbeea68e004915e3a8961e20bd11d824",
-          "version": "1.18.0"
+          "revision": "e1499bc69b9040b29184f7f2996f7bab467c1639",
+          "version": "1.19.0"
         }
       }
     ]

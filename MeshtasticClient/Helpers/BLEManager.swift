@@ -523,11 +523,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						if decodedInfo.nodeInfo.hasDeviceMetrics {
 							
-							newNode.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
-							newNode.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
-							newNode.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
-							self.connectedPeripheral.channelUtilization = newNode.channelUtilization
-							newNode.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							let newTelemetry = TelemetryEntity(context: context!)
+							
+							newTelemetry.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
+							newTelemetry.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
+							newTelemetry.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
+							self.connectedPeripheral.channelUtilization = newTelemetry.channelUtilization
+							newTelemetry.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
 							self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
 						}
 						
@@ -988,7 +990,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if let telemetryMessage = try? Telemetry(serializedData: decodedInfo.packet.decoded.payload) {
 						
 						let telemetry = TelemetryEntity(context: context!)
-						telemetry.num = Int64(decodedInfo.packet.from)
 						print(decodedInfo.packet.decoded.requestID)
 						print(telemetryMessage)
 					}
@@ -1178,6 +1179,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		do {
 
 			let fetchedNode = try context?.fetch(fetchNode) as! [NodeInfoEntity]
+			
 
 			if fetchedNode.count == 1 {
 				
@@ -1207,10 +1209,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				print("📍 Sent a Position Packet from the phone to the device for node: \(fromNodeNum)")
 				
 				if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					
 					connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-					
 					success = true
-					
 				}
 			}
 			
