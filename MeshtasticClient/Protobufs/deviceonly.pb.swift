@@ -21,6 +21,61 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
+/// TODO: REPLACE
+enum ScreenFonts: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  ///
+  /// TODO: REPLACE
+  case fontSmall // = 0
+
+  ///
+  /// TODO: REPLACE
+  case fontMedium // = 1
+
+  ///
+  /// TODO: REPLACE
+  case fontLarge // = 2
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .fontSmall
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .fontSmall
+    case 1: self = .fontMedium
+    case 2: self = .fontLarge
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .fontSmall: return 0
+    case .fontMedium: return 1
+    case .fontLarge: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension ScreenFonts: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [ScreenFonts] = [
+    .fontSmall,
+    .fontMedium,
+    .fontLarge,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///
 /// This message is never sent over the wire, but it is used for serializing DB
 /// state to flash in the device code
 /// FIXME, since we write this each time we enter deep sleep (and have infinite
@@ -127,12 +182,55 @@ struct ChannelFile {
   init() {}
 }
 
+///
+/// This can be used for customizing the firmware distribution. If populated,
+/// show a secondary bootup screen with cuatom logo and text for 2.5 seconds.
+struct OEMStore {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The Logo width in Px
+  var oemIconWidth: UInt32 = 0
+
+  ///
+  /// The Logo height in Px
+  var oemIconHeight: UInt32 = 0
+
+  ///
+  /// The Logo in xbm bytechar format
+  var oemIconBits: Data = Data()
+
+  ///
+  /// Use this font for the OEM text.
+  var oemFont: ScreenFonts = .fontSmall
+
+  ///
+  /// Use this font for the OEM text.
+  var oemText: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
+extension ScreenFonts: @unchecked Sendable {}
 extension DeviceState: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
+extension OEMStore: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
+
+extension ScreenFonts: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "FONT_SMALL"),
+    1: .same(proto: "FONT_MEDIUM"),
+    2: .same(proto: "FONT_LARGE"),
+  ]
+}
 
 extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "DeviceState"
@@ -285,6 +383,62 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
   static func ==(lhs: ChannelFile, rhs: ChannelFile) -> Bool {
     if lhs.channels != rhs.channels {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "OEMStore"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "oem_icon_width"),
+    2: .standard(proto: "oem_icon_height"),
+    3: .standard(proto: "oem_icon_bits"),
+    4: .standard(proto: "oem_font"),
+    5: .standard(proto: "oem_text"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconWidth) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconHeight) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.oemIconBits) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.oemFont) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.oemText) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.oemIconWidth != 0 {
+      try visitor.visitSingularUInt32Field(value: self.oemIconWidth, fieldNumber: 1)
+    }
+    if self.oemIconHeight != 0 {
+      try visitor.visitSingularUInt32Field(value: self.oemIconHeight, fieldNumber: 2)
+    }
+    if !self.oemIconBits.isEmpty {
+      try visitor.visitSingularBytesField(value: self.oemIconBits, fieldNumber: 3)
+    }
+    if self.oemFont != .fontSmall {
+      try visitor.visitSingularEnumField(value: self.oemFont, fieldNumber: 4)
+    }
+    if !self.oemText.isEmpty {
+      try visitor.visitSingularStringField(value: self.oemText, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: OEMStore, rhs: OEMStore) -> Bool {
+    if lhs.oemIconWidth != rhs.oemIconWidth {return false}
+    if lhs.oemIconHeight != rhs.oemIconHeight {return false}
+    if lhs.oemIconBits != rhs.oemIconBits {return false}
+    if lhs.oemFont != rhs.oemFont {return false}
+    if lhs.oemText != rhs.oemText {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

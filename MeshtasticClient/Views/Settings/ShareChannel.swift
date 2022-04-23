@@ -1,5 +1,5 @@
 //
-//  Channel.swift
+//  ShareChannel.swift
 //  MeshtasticClient
 //
 //  Created by Garth Vander Houwen on 4/8/22.
@@ -18,7 +18,7 @@ struct QrCodeImage {
 		let filter = CIFilter.qrCodeGenerator()
 		filter.setValue(data, forKey: "inputMessage")
 
-		let transform = CGAffineTransform(scaleX: 15, y: 15)
+		let transform = CGAffineTransform(scaleX: 20, y: 20)
 		if let outputImage = filter.outputImage?.transformed(by: transform) {
 			if let image = context.createCGImage(
 				outputImage,

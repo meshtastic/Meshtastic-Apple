@@ -1148,7 +1148,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							context!.rollback()
 
 							let nsError = error as NSError
-							print("💥 Unresolved Core Data error in Send Message Function \(nsError)")
+							print("💥 Unresolved Core Data error in Send Message Function it is likely that your database is corrupted deleting and re-installing the app should clear the corrupted data. Error: \(nsError)")
 							if meshLoggingEnabled { MeshLogger.log("💥 Unresolved Core Data error \(nsError)") }
 						}
 					}

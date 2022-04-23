@@ -1362,6 +1362,10 @@ struct RadioConfig {
       case baud460800 // = 9
       case baud576000 // = 10
       case baud921600 // = 11
+      case baud110 // = 12
+      case baud300 // = 13
+      case baud600 // = 14
+      case baud1200 // = 15
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1382,6 +1386,10 @@ struct RadioConfig {
         case 9: self = .baud460800
         case 10: self = .baud576000
         case 11: self = .baud921600
+        case 12: self = .baud110
+        case 13: self = .baud300
+        case 14: self = .baud600
+        case 15: self = .baud1200
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1400,6 +1408,10 @@ struct RadioConfig {
         case .baud460800: return 9
         case .baud576000: return 10
         case .baud921600: return 11
+        case .baud110: return 12
+        case .baud300: return 13
+        case .baud600: return 14
+        case .baud1200: return 15
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1550,6 +1562,10 @@ extension RadioConfig.UserPreferences.Serial_Baud: CaseIterable {
     .baud460800,
     .baud576000,
     .baud921600,
+    .baud110,
+    .baud300,
+    .baud600,
+    .baud1200,
   ]
 }
 
@@ -2454,6 +2470,10 @@ extension RadioConfig.UserPreferences.Serial_Baud: SwiftProtobuf._ProtoNameProvi
     9: .same(proto: "BAUD_460800"),
     10: .same(proto: "BAUD_576000"),
     11: .same(proto: "BAUD_921600"),
+    12: .same(proto: "BAUD_110"),
+    13: .same(proto: "BAUD_300"),
+    14: .same(proto: "BAUD_600"),
+    15: .same(proto: "BAUD_1200"),
   ]
 }
 

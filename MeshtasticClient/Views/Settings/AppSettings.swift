@@ -158,7 +158,7 @@ struct AppSettings: View {
 
             GeometryReader { _ in
 
-				List {
+				Form {
 					Section(header: Text("USER DETAILS")) {
 
 						HStack {
