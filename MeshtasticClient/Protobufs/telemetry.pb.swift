@@ -21,6 +21,110 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
+/// TODO: REPLACE
+enum TelemetrySensorType: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  ///
+  /// No external telemetry sensor
+  case notSet // = 0
+
+  ///
+  /// TODO: REPLACE
+  case dht11 // = 1
+
+  ///
+  /// TODO: REPLACE
+  case ds18B20 // = 2
+
+  ///
+  /// TODO: REPLACE
+  case dht12 // = 3
+
+  ///
+  /// TODO: REPLACE
+  case dht21 // = 4
+
+  ///
+  /// TODO: REPLACE
+  case dht22 // = 5
+
+  ///
+  /// TODO: REPLACE
+  case bme280 // = 6
+
+  ///
+  /// TODO: REPLACE
+  case bme680 // = 7
+
+  ///
+  /// TODO: REPLACE
+  case mcp9808 // = 8
+
+  ///
+  /// TODO: REPLACE
+  case shtc3 // = 9
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .notSet
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .notSet
+    case 1: self = .dht11
+    case 2: self = .ds18B20
+    case 3: self = .dht12
+    case 4: self = .dht21
+    case 5: self = .dht22
+    case 6: self = .bme280
+    case 7: self = .bme680
+    case 8: self = .mcp9808
+    case 9: self = .shtc3
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .notSet: return 0
+    case .dht11: return 1
+    case .ds18B20: return 2
+    case .dht12: return 3
+    case .dht21: return 4
+    case .dht22: return 5
+    case .bme280: return 6
+    case .bme680: return 7
+    case .mcp9808: return 8
+    case .shtc3: return 9
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension TelemetrySensorType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [TelemetrySensorType] = [
+    .notSet,
+    .dht11,
+    .ds18B20,
+    .dht12,
+    .dht21,
+    .dht22,
+    .bme280,
+    .bme680,
+    .mcp9808,
+    .shtc3,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///
 /// Key native device metrics such as battery level
 struct DeviceMetrics {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -155,6 +259,7 @@ struct Telemetry {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
+extension TelemetrySensorType: @unchecked Sendable {}
 extension DeviceMetrics: @unchecked Sendable {}
 extension EnvironmentMetrics: @unchecked Sendable {}
 extension Telemetry: @unchecked Sendable {}
@@ -162,6 +267,21 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
+
+extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "NotSet"),
+    1: .same(proto: "DHT11"),
+    2: .same(proto: "DS18B20"),
+    3: .same(proto: "DHT12"),
+    4: .same(proto: "DHT21"),
+    5: .same(proto: "DHT22"),
+    6: .same(proto: "BME280"),
+    7: .same(proto: "BME680"),
+    8: .same(proto: "MCP9808"),
+    9: .same(proto: "SHTC3"),
+  ]
+}
 
 extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "DeviceMetrics"

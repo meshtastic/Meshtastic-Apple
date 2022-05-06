@@ -439,9 +439,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								print("💾 Saved the All - Broadcast User")
 							}
 							
-							var settingsCalled = self.getSettings()
+							//var settingsCalled = self.getSettings()
 							
-							if settingsCalled {
+							if false {
 								
 								print("💾 Called Get Settings")
 								
@@ -523,14 +523,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						if decodedInfo.nodeInfo.hasDeviceMetrics {
 							
-							let newTelemetry = TelemetryEntity(context: context!)
+							let telemetry = TelemetryEntity(context: context!)
 							
-							newTelemetry.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
-							newTelemetry.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
-							newTelemetry.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
-							self.connectedPeripheral.channelUtilization = newTelemetry.channelUtilization
-							newTelemetry.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							telemetry.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
+							telemetry.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
+							telemetry.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
+							self.connectedPeripheral.channelUtilization = telemetry.channelUtilization
+							telemetry.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
 							self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							
+							var newTelemetries = [TelemetryEntity]()
+							newTelemetries.append(telemetry)
+							newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 						}
 						
 						// FIXME: Date from the node info, may be a bad date, needs to be fixed upstream in the firmware
@@ -554,7 +558,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newUser.shortName = decodedInfo.nodeInfo.user.shortName
 							newUser.macaddr = decodedInfo.nodeInfo.user.macaddr
 							newUser.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
-							newUser.team = (String(describing: decodedInfo.nodeInfo.user.team))
 							newNode.user = newUser
 						}
 
@@ -622,25 +625,43 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.shortName = decodedInfo.nodeInfo.user.shortName
 							fetchedNode[0].user!.macaddr = decodedInfo.nodeInfo.user.macaddr
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
-							fetchedNode[0].user!.team = (String(describing: decodedInfo.nodeInfo.user.team))
 						}
-
-						let position = PositionEntity(context: context!)
-						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
-						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
-						position.altitude = decodedInfo.nodeInfo.position.altitude
-
-						if decodedInfo.nodeInfo.position.time > 0 {
+						
+						if decodedInfo.nodeInfo.hasDeviceMetrics {
 							
-							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+							let newTelemetry = TelemetryEntity(context: context!)
+		
+							newTelemetry.batteryLevel = Int32(decodedInfo.nodeInfo.deviceMetrics.batteryLevel)
+							newTelemetry.voltage = decodedInfo.nodeInfo.deviceMetrics.voltage
+							newTelemetry.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
+							self.connectedPeripheral.channelUtilization = newTelemetry.channelUtilization
+							newTelemetry.airUtilTx = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+							
+							let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
+							fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 						}
-						else {
-							position.time = Date()
+						
+						if decodedInfo.nodeInfo.hasPosition {
+
+							let position = PositionEntity(context: context!)
+							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
+							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
+							position.altitude = decodedInfo.nodeInfo.position.altitude
+
+							if decodedInfo.nodeInfo.position.time > 0 {
+								
+								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
+							}
+							else {
+								position.time = Date()
+							}
+
+							let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+
+							fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+							
 						}
-
-						let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-
-						fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 						// Look for a MyInfo
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")

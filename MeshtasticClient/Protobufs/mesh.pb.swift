@@ -228,146 +228,6 @@ extension HardwareModel: CaseIterable {
 #endif  // swift(>=4.2)
 
 ///
-/// The team colors are based on the names of "friendly teams" in ATAK:
-/// https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV/blob/master/atak/ATAK/app/src/main/assets/filters/team_filters.xml
-enum Team: SwiftProtobuf.Enum {
-  typealias RawValue = Int
-
-  ///
-  /// the default (unset) is "achromatic" (unaffiliated)
-  case clear // = 0
-
-  ///
-  /// TODO: REPLACE
-  case cyan // = 1
-
-  ///
-  /// TODO: REPLACE
-  case white // = 2
-
-  ///
-  /// TODO: REPLACE
-  case yellow // = 3
-
-  ///
-  /// TODO: REPLACE
-  case orange // = 4
-
-  ///
-  /// TODO: REPLACE
-  case magenta // = 5
-
-  ///
-  /// TODO: REPLACE
-  case red // = 6
-
-  ///
-  /// TODO: REPLACE
-  case maroon // = 7
-
-  ///
-  /// TODO: REPLACE
-  case purple // = 8
-
-  ///
-  /// TODO: REPLACE
-  case darkBlue // = 9
-
-  ///
-  /// TODO: REPLACE
-  case blue // = 10
-
-  ///
-  /// TODO: REPLACE
-  case teal // = 11
-
-  ///
-  /// TODO: REPLACE
-  case green // = 12
-
-  ///
-  /// TODO: REPLACE
-  case darkGreen // = 13
-
-  ///
-  /// TODO: REPLACE
-  case brown // = 14
-  case UNRECOGNIZED(Int)
-
-  init() {
-    self = .clear
-  }
-
-  init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .clear
-    case 1: self = .cyan
-    case 2: self = .white
-    case 3: self = .yellow
-    case 4: self = .orange
-    case 5: self = .magenta
-    case 6: self = .red
-    case 7: self = .maroon
-    case 8: self = .purple
-    case 9: self = .darkBlue
-    case 10: self = .blue
-    case 11: self = .teal
-    case 12: self = .green
-    case 13: self = .darkGreen
-    case 14: self = .brown
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  var rawValue: Int {
-    switch self {
-    case .clear: return 0
-    case .cyan: return 1
-    case .white: return 2
-    case .yellow: return 3
-    case .orange: return 4
-    case .magenta: return 5
-    case .red: return 6
-    case .maroon: return 7
-    case .purple: return 8
-    case .darkBlue: return 9
-    case .blue: return 10
-    case .teal: return 11
-    case .green: return 12
-    case .darkGreen: return 13
-    case .brown: return 14
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-}
-
-#if swift(>=4.2)
-
-extension Team: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Team] = [
-    .clear,
-    .cyan,
-    .white,
-    .yellow,
-    .orange,
-    .magenta,
-    .red,
-    .maroon,
-    .purple,
-    .darkBlue,
-    .blue,
-    .teal,
-    .green,
-    .darkGreen,
-    .brown,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-///
 /// Shared constants between device and phone
 enum Constants: SwiftProtobuf.Enum {
   typealias RawValue = Int
@@ -916,14 +776,6 @@ struct User {
   /// If this user is a licensed operator, set this flag.
   /// Also, "long_name" should be their licence number.
   var isLicensed: Bool = false
-
-  ///
-  /// Participants in the same network can self-group into different teams.
-  /// Short-term this can be used to visually differentiate them on the map;
-  /// in the longer term it could also help users to semi-automatically
-  /// select or ignore messages according to team affiliation.
-  /// In total, 14 teams are defined (encoded in 4 bits)
-  var team: Team = .clear
 
   ///
   /// Transmit power at antenna connector, in decibel-milliwatt
@@ -2300,7 +2152,6 @@ struct ToRadio {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
-extension Team: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
 extension CriticalErrorCode: @unchecked Sendable {}
 extension Position: @unchecked Sendable {}
@@ -2357,26 +2208,6 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     41: .same(proto: "NANO_G1"),
     42: .same(proto: "NRF52840_PCA10059"),
     255: .same(proto: "PRIVATE_HW"),
-  ]
-}
-
-extension Team: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "CLEAR"),
-    1: .same(proto: "CYAN"),
-    2: .same(proto: "WHITE"),
-    3: .same(proto: "YELLOW"),
-    4: .same(proto: "ORANGE"),
-    5: .same(proto: "MAGENTA"),
-    6: .same(proto: "RED"),
-    7: .same(proto: "MAROON"),
-    8: .same(proto: "PURPLE"),
-    9: .same(proto: "DARK_BLUE"),
-    10: .same(proto: "BLUE"),
-    11: .same(proto: "TEAL"),
-    12: .same(proto: "GREEN"),
-    13: .same(proto: "DARK_GREEN"),
-    14: .same(proto: "BROWN"),
   ]
 }
 
@@ -2664,7 +2495,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     4: .same(proto: "macaddr"),
     6: .standard(proto: "hw_model"),
     7: .standard(proto: "is_licensed"),
-    8: .same(proto: "team"),
     10: .standard(proto: "tx_power_dbm"),
     11: .standard(proto: "ant_gain_dbi"),
     12: .standard(proto: "ant_azimuth"),
@@ -2682,7 +2512,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 4: try { try decoder.decodeSingularBytesField(value: &self.macaddr) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
-      case 8: try { try decoder.decodeSingularEnumField(value: &self.team) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.txPowerDbm) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.antGainDbi) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.antAzimuth) }()
@@ -2710,9 +2539,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.isLicensed != false {
       try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 7)
     }
-    if self.team != .clear {
-      try visitor.visitSingularEnumField(value: self.team, fieldNumber: 8)
-    }
     if self.txPowerDbm != 0 {
       try visitor.visitSingularUInt32Field(value: self.txPowerDbm, fieldNumber: 10)
     }
@@ -2732,7 +2558,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.macaddr != rhs.macaddr {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.isLicensed != rhs.isLicensed {return false}
-    if lhs.team != rhs.team {return false}
     if lhs.txPowerDbm != rhs.txPowerDbm {return false}
     if lhs.antGainDbi != rhs.antGainDbi {return false}
     if lhs.antAzimuth != rhs.antAzimuth {return false}

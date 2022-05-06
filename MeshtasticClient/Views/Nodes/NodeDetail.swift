@@ -123,15 +123,15 @@ struct NodeDetail: View {
 								.padding(5)
 							}
 
-							if node.positions?.count ?? 0 >= 1 {
+							if node.telemetries?.count ?? 0 >= 1 {
 
-								let mostRecent = node.positions?.lastObject as! PositionEntity
+								let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 
 								Divider()
 
 								VStack(alignment: .center) {
 
-									BatteryIcon(batteryLevel: 100, font: .title, color: .accentColor)
+									BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
 										.padding(.bottom)
 									
 								}

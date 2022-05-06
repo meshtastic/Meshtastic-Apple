@@ -1105,70 +1105,6 @@ struct RadioConfig {
     }
 
     ///
-    /// Preferences for the Telemetry Module (Environment)
-    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
-    /// Enable/Disable the telemetry measurement module measurement collection
-    var telemetryModuleEnvironmentMeasurementEnabled: Bool {
-      get {return _storage._telemetryModuleEnvironmentMeasurementEnabled}
-      set {_uniqueStorage()._telemetryModuleEnvironmentMeasurementEnabled = newValue}
-    }
-
-    ///
-    /// Enable/Disable the telemetry measurement module on-device display
-    var telemetryModuleEnvironmentScreenEnabled: Bool {
-      get {return _storage._telemetryModuleEnvironmentScreenEnabled}
-      set {_uniqueStorage()._telemetryModuleEnvironmentScreenEnabled = newValue}
-    }
-
-    ///
-    /// Sometimes sensor reads can fail.
-    /// If this happens, we will retry a configurable number of attempts,
-    /// each attempt will be delayed by the minimum required refresh rate for that sensor
-    var telemetryModuleEnvironmentReadErrorCountThreshold: UInt32 {
-      get {return _storage._telemetryModuleEnvironmentReadErrorCountThreshold}
-      set {_uniqueStorage()._telemetryModuleEnvironmentReadErrorCountThreshold = newValue}
-    }
-
-    ///
-    /// Interval in seconds of how often we should try to send our
-    /// measurements to the mesh
-    var telemetryModuleDeviceUpdateInterval: UInt32 {
-      get {return _storage._telemetryModuleDeviceUpdateInterval}
-      set {_uniqueStorage()._telemetryModuleDeviceUpdateInterval = newValue}
-    }
-
-    ///
-    /// Sometimes we can end up with more than read_error_count_threshold failures.
-    /// In this case, we will stop trying to read from the sensor for a while.
-    /// Wait this long until trying to read from the sensor again
-    var telemetryModuleEnvironmentRecoveryInterval: UInt32 {
-      get {return _storage._telemetryModuleEnvironmentRecoveryInterval}
-      set {_uniqueStorage()._telemetryModuleEnvironmentRecoveryInterval = newValue}
-    }
-
-    ///
-    /// We'll always read the sensor in Celsius, but sometimes we might want to
-    /// display the results in Fahrenheit as a "user preference".
-    var telemetryModuleEnvironmentDisplayFahrenheit: Bool {
-      get {return _storage._telemetryModuleEnvironmentDisplayFahrenheit}
-      set {_uniqueStorage()._telemetryModuleEnvironmentDisplayFahrenheit = newValue}
-    }
-
-    ///
-    /// Specify the sensor type
-    var telemetryModuleEnvironmentSensorType: RadioConfig.UserPreferences.TelemetrySensorType {
-      get {return _storage._telemetryModuleEnvironmentSensorType}
-      set {_uniqueStorage()._telemetryModuleEnvironmentSensorType = newValue}
-    }
-
-    ///
-    /// Specify the peferred GPIO Pin for sensor readings
-    var telemetryModuleEnvironmentSensorPin: UInt32 {
-      get {return _storage._telemetryModuleEnvironmentSensorPin}
-      set {_uniqueStorage()._telemetryModuleEnvironmentSensorPin = newValue}
-    }
-
-    ///
     /// Bit field of boolean configuration options for POSITION messages
     /// (bitwise OR of PositionFlags)
     var positionFlags: UInt32 {
@@ -1336,14 +1272,6 @@ struct RadioConfig {
       set {_uniqueStorage()._adcMultiplierOverride = newValue}
     }
 
-    ///
-    /// Interval in seconds of how often we should try to send our
-    /// environent measurements to the mesh
-    var telemetryModuleEnvironmentUpdateInterval: UInt32 {
-      get {return _storage._telemetryModuleEnvironmentUpdateInterval}
-      set {_uniqueStorage()._telemetryModuleEnvironmentUpdateInterval = newValue}
-    }
-
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1451,90 +1379,6 @@ struct RadioConfig {
 
     }
 
-    ///
-    /// TODO: REPLACE
-    enum TelemetrySensorType: SwiftProtobuf.Enum {
-      typealias RawValue = Int
-
-      ///
-      /// No external telemetry sensor
-      case none // = 0
-
-      ///
-      /// TODO: REPLACE
-      case dht11 // = 1
-
-      ///
-      /// TODO: REPLACE
-      case ds18B20 // = 2
-
-      ///
-      /// TODO: REPLACE
-      case dht12 // = 3
-
-      ///
-      /// TODO: REPLACE
-      case dht21 // = 4
-
-      ///
-      /// TODO: REPLACE
-      case dht22 // = 5
-
-      ///
-      /// TODO: REPLACE
-      case bme280 // = 6
-
-      ///
-      /// TODO: REPLACE
-      case bme680 // = 7
-
-      ///
-      /// TODO: REPLACE
-      case mcp9808 // = 8
-
-      ///
-      /// TODO: REPLACE
-      case shtc3 // = 9
-      case UNRECOGNIZED(Int)
-
-      init() {
-        self = .none
-      }
-
-      init?(rawValue: Int) {
-        switch rawValue {
-        case 0: self = .none
-        case 1: self = .dht11
-        case 2: self = .ds18B20
-        case 3: self = .dht12
-        case 4: self = .dht21
-        case 5: self = .dht22
-        case 6: self = .bme280
-        case 7: self = .bme680
-        case 8: self = .mcp9808
-        case 9: self = .shtc3
-        default: self = .UNRECOGNIZED(rawValue)
-        }
-      }
-
-      var rawValue: Int {
-        switch self {
-        case .none: return 0
-        case .dht11: return 1
-        case .ds18B20: return 2
-        case .dht12: return 3
-        case .dht21: return 4
-        case .dht22: return 5
-        case .bme280: return 6
-        case .bme680: return 7
-        case .mcp9808: return 8
-        case .shtc3: return 9
-        case .UNRECOGNIZED(let i): return i
-        }
-      }
-
-    }
-
     init() {}
 
     fileprivate var _storage = _StorageClass.defaultInstance
@@ -1578,22 +1422,6 @@ extension RadioConfig.UserPreferences.Serial_Mode: CaseIterable {
   ]
 }
 
-extension RadioConfig.UserPreferences.TelemetrySensorType: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [RadioConfig.UserPreferences.TelemetrySensorType] = [
-    .none,
-    .dht11,
-    .ds18B20,
-    .dht12,
-    .dht21,
-    .dht22,
-    .bme280,
-    .bme680,
-    .mcp9808,
-    .shtc3,
-  ]
-}
-
 #endif  // swift(>=4.2)
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -1607,7 +1435,6 @@ extension RadioConfig: @unchecked Sendable {}
 extension RadioConfig.UserPreferences: @unchecked Sendable {}
 extension RadioConfig.UserPreferences.Serial_Baud: @unchecked Sendable {}
 extension RadioConfig.UserPreferences.Serial_Mode: @unchecked Sendable {}
-extension RadioConfig.UserPreferences.TelemetrySensorType: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -1791,14 +1618,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     137: .standard(proto: "store_forward_module_records"),
     138: .standard(proto: "store_forward_module_history_return_max"),
     139: .standard(proto: "store_forward_module_history_return_window"),
-    140: .standard(proto: "telemetry_module_environment_measurement_enabled"),
-    141: .standard(proto: "telemetry_module_environment_screen_enabled"),
-    142: .standard(proto: "telemetry_module_environment_read_error_count_threshold"),
-    143: .standard(proto: "telemetry_module_device_update_interval"),
-    144: .standard(proto: "telemetry_module_environment_recovery_interval"),
-    145: .standard(proto: "telemetry_module_environment_display_fahrenheit"),
-    146: .standard(proto: "telemetry_module_environment_sensor_type"),
-    147: .standard(proto: "telemetry_module_environment_sensor_pin"),
     150: .standard(proto: "position_flags"),
     151: .standard(proto: "is_always_powered"),
     152: .standard(proto: "auto_screen_carousel_secs"),
@@ -1821,7 +1640,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     173: .standard(proto: "canned_message_module_send_bell"),
     174: .standard(proto: "mqtt_encryption_enabled"),
     175: .standard(proto: "adc_multiplier_override"),
-    177: .standard(proto: "telemetry_module_environment_update_interval"),
   ]
 
   fileprivate class _StorageClass {
@@ -1877,14 +1695,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _storeForwardModuleRecords: UInt32 = 0
     var _storeForwardModuleHistoryReturnMax: UInt32 = 0
     var _storeForwardModuleHistoryReturnWindow: UInt32 = 0
-    var _telemetryModuleEnvironmentMeasurementEnabled: Bool = false
-    var _telemetryModuleEnvironmentScreenEnabled: Bool = false
-    var _telemetryModuleEnvironmentReadErrorCountThreshold: UInt32 = 0
-    var _telemetryModuleDeviceUpdateInterval: UInt32 = 0
-    var _telemetryModuleEnvironmentRecoveryInterval: UInt32 = 0
-    var _telemetryModuleEnvironmentDisplayFahrenheit: Bool = false
-    var _telemetryModuleEnvironmentSensorType: RadioConfig.UserPreferences.TelemetrySensorType = .none
-    var _telemetryModuleEnvironmentSensorPin: UInt32 = 0
     var _positionFlags: UInt32 = 0
     var _isAlwaysPowered: Bool = false
     var _autoScreenCarouselSecs: UInt32 = 0
@@ -1907,7 +1717,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _cannedMessageModuleSendBell: Bool = false
     var _mqttEncryptionEnabled: Bool = false
     var _adcMultiplierOverride: Float = 0
-    var _telemetryModuleEnvironmentUpdateInterval: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -1966,14 +1775,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _storeForwardModuleRecords = source._storeForwardModuleRecords
       _storeForwardModuleHistoryReturnMax = source._storeForwardModuleHistoryReturnMax
       _storeForwardModuleHistoryReturnWindow = source._storeForwardModuleHistoryReturnWindow
-      _telemetryModuleEnvironmentMeasurementEnabled = source._telemetryModuleEnvironmentMeasurementEnabled
-      _telemetryModuleEnvironmentScreenEnabled = source._telemetryModuleEnvironmentScreenEnabled
-      _telemetryModuleEnvironmentReadErrorCountThreshold = source._telemetryModuleEnvironmentReadErrorCountThreshold
-      _telemetryModuleDeviceUpdateInterval = source._telemetryModuleDeviceUpdateInterval
-      _telemetryModuleEnvironmentRecoveryInterval = source._telemetryModuleEnvironmentRecoveryInterval
-      _telemetryModuleEnvironmentDisplayFahrenheit = source._telemetryModuleEnvironmentDisplayFahrenheit
-      _telemetryModuleEnvironmentSensorType = source._telemetryModuleEnvironmentSensorType
-      _telemetryModuleEnvironmentSensorPin = source._telemetryModuleEnvironmentSensorPin
       _positionFlags = source._positionFlags
       _isAlwaysPowered = source._isAlwaysPowered
       _autoScreenCarouselSecs = source._autoScreenCarouselSecs
@@ -1996,7 +1797,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _cannedMessageModuleSendBell = source._cannedMessageModuleSendBell
       _mqttEncryptionEnabled = source._mqttEncryptionEnabled
       _adcMultiplierOverride = source._adcMultiplierOverride
-      _telemetryModuleEnvironmentUpdateInterval = source._telemetryModuleEnvironmentUpdateInterval
     }
   }
 
@@ -2064,14 +1864,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 137: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleRecords) }()
         case 138: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleHistoryReturnMax) }()
         case 139: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleHistoryReturnWindow) }()
-        case 140: try { try decoder.decodeSingularBoolField(value: &_storage._telemetryModuleEnvironmentMeasurementEnabled) }()
-        case 141: try { try decoder.decodeSingularBoolField(value: &_storage._telemetryModuleEnvironmentScreenEnabled) }()
-        case 142: try { try decoder.decodeSingularUInt32Field(value: &_storage._telemetryModuleEnvironmentReadErrorCountThreshold) }()
-        case 143: try { try decoder.decodeSingularUInt32Field(value: &_storage._telemetryModuleDeviceUpdateInterval) }()
-        case 144: try { try decoder.decodeSingularUInt32Field(value: &_storage._telemetryModuleEnvironmentRecoveryInterval) }()
-        case 145: try { try decoder.decodeSingularBoolField(value: &_storage._telemetryModuleEnvironmentDisplayFahrenheit) }()
-        case 146: try { try decoder.decodeSingularEnumField(value: &_storage._telemetryModuleEnvironmentSensorType) }()
-        case 147: try { try decoder.decodeSingularUInt32Field(value: &_storage._telemetryModuleEnvironmentSensorPin) }()
         case 148: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardModuleEnabled) }()
         case 149: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardModuleHeartbeat) }()
         case 150: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionFlags) }()
@@ -2097,7 +1889,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 174: try { try decoder.decodeSingularBoolField(value: &_storage._mqttEncryptionEnabled) }()
         case 175: try { try decoder.decodeSingularFloatField(value: &_storage._adcMultiplierOverride) }()
         case 176: try { try decoder.decodeSingularEnumField(value: &_storage._serialModuleBaud) }()
-        case 177: try { try decoder.decodeSingularUInt32Field(value: &_storage._telemetryModuleEnvironmentUpdateInterval) }()
         default: break
         }
       }
@@ -2253,30 +2044,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._storeForwardModuleHistoryReturnWindow != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._storeForwardModuleHistoryReturnWindow, fieldNumber: 139)
       }
-      if _storage._telemetryModuleEnvironmentMeasurementEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._telemetryModuleEnvironmentMeasurementEnabled, fieldNumber: 140)
-      }
-      if _storage._telemetryModuleEnvironmentScreenEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._telemetryModuleEnvironmentScreenEnabled, fieldNumber: 141)
-      }
-      if _storage._telemetryModuleEnvironmentReadErrorCountThreshold != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._telemetryModuleEnvironmentReadErrorCountThreshold, fieldNumber: 142)
-      }
-      if _storage._telemetryModuleDeviceUpdateInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._telemetryModuleDeviceUpdateInterval, fieldNumber: 143)
-      }
-      if _storage._telemetryModuleEnvironmentRecoveryInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._telemetryModuleEnvironmentRecoveryInterval, fieldNumber: 144)
-      }
-      if _storage._telemetryModuleEnvironmentDisplayFahrenheit != false {
-        try visitor.visitSingularBoolField(value: _storage._telemetryModuleEnvironmentDisplayFahrenheit, fieldNumber: 145)
-      }
-      if _storage._telemetryModuleEnvironmentSensorType != .none {
-        try visitor.visitSingularEnumField(value: _storage._telemetryModuleEnvironmentSensorType, fieldNumber: 146)
-      }
-      if _storage._telemetryModuleEnvironmentSensorPin != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._telemetryModuleEnvironmentSensorPin, fieldNumber: 147)
-      }
       if _storage._storeForwardModuleEnabled != false {
         try visitor.visitSingularBoolField(value: _storage._storeForwardModuleEnabled, fieldNumber: 148)
       }
@@ -2352,9 +2119,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._serialModuleBaud != .baudDefault {
         try visitor.visitSingularEnumField(value: _storage._serialModuleBaud, fieldNumber: 176)
       }
-      if _storage._telemetryModuleEnvironmentUpdateInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._telemetryModuleEnvironmentUpdateInterval, fieldNumber: 177)
-      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2416,14 +2180,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._storeForwardModuleRecords != rhs_storage._storeForwardModuleRecords {return false}
         if _storage._storeForwardModuleHistoryReturnMax != rhs_storage._storeForwardModuleHistoryReturnMax {return false}
         if _storage._storeForwardModuleHistoryReturnWindow != rhs_storage._storeForwardModuleHistoryReturnWindow {return false}
-        if _storage._telemetryModuleEnvironmentMeasurementEnabled != rhs_storage._telemetryModuleEnvironmentMeasurementEnabled {return false}
-        if _storage._telemetryModuleEnvironmentScreenEnabled != rhs_storage._telemetryModuleEnvironmentScreenEnabled {return false}
-        if _storage._telemetryModuleEnvironmentReadErrorCountThreshold != rhs_storage._telemetryModuleEnvironmentReadErrorCountThreshold {return false}
-        if _storage._telemetryModuleDeviceUpdateInterval != rhs_storage._telemetryModuleDeviceUpdateInterval {return false}
-        if _storage._telemetryModuleEnvironmentRecoveryInterval != rhs_storage._telemetryModuleEnvironmentRecoveryInterval {return false}
-        if _storage._telemetryModuleEnvironmentDisplayFahrenheit != rhs_storage._telemetryModuleEnvironmentDisplayFahrenheit {return false}
-        if _storage._telemetryModuleEnvironmentSensorType != rhs_storage._telemetryModuleEnvironmentSensorType {return false}
-        if _storage._telemetryModuleEnvironmentSensorPin != rhs_storage._telemetryModuleEnvironmentSensorPin {return false}
         if _storage._positionFlags != rhs_storage._positionFlags {return false}
         if _storage._isAlwaysPowered != rhs_storage._isAlwaysPowered {return false}
         if _storage._autoScreenCarouselSecs != rhs_storage._autoScreenCarouselSecs {return false}
@@ -2446,7 +2202,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._cannedMessageModuleSendBell != rhs_storage._cannedMessageModuleSendBell {return false}
         if _storage._mqttEncryptionEnabled != rhs_storage._mqttEncryptionEnabled {return false}
         if _storage._adcMultiplierOverride != rhs_storage._adcMultiplierOverride {return false}
-        if _storage._telemetryModuleEnvironmentUpdateInterval != rhs_storage._telemetryModuleEnvironmentUpdateInterval {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2482,20 +2237,5 @@ extension RadioConfig.UserPreferences.Serial_Mode: SwiftProtobuf._ProtoNameProvi
     0: .same(proto: "MODE_Default"),
     1: .same(proto: "MODE_SIMPLE"),
     2: .same(proto: "MODE_PROTO"),
-  ]
-}
-
-extension RadioConfig.UserPreferences.TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "None"),
-    1: .same(proto: "DHT11"),
-    2: .same(proto: "DS18B20"),
-    3: .same(proto: "DHT12"),
-    4: .same(proto: "DHT21"),
-    5: .same(proto: "DHT22"),
-    6: .same(proto: "BME280"),
-    7: .same(proto: "BME680"),
-    8: .same(proto: "MCP9808"),
-    9: .same(proto: "SHTC3"),
   ]
 }

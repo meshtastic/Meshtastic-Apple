@@ -129,6 +129,86 @@ struct AdminMessage {
   }
 
   ///
+  /// Ask for the following config data to be sent
+  var getConfigRequest: AdminMessage.ConfigType {
+    get {
+      if case .getConfigRequest(let v)? = variant {return v}
+      return .deviceConfig
+    }
+    set {variant = .getConfigRequest(newValue)}
+  }
+
+  ///
+  /// Send the current Config in the response to this message.
+  var getConfigResponse: Config {
+    get {
+      if case .getConfigResponse(let v)? = variant {return v}
+      return Config()
+    }
+    set {variant = .getConfigResponse(newValue)}
+  }
+
+  ///
+  /// Set the current Config
+  var setConfig: Config {
+    get {
+      if case .setConfig(let v)? = variant {return v}
+      return Config()
+    }
+    set {variant = .setConfig(newValue)}
+  }
+
+  ///
+  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+  var confirmSetConfig: Bool {
+    get {
+      if case .confirmSetConfig(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .confirmSetConfig(newValue)}
+  }
+
+  ///
+  /// Ask for the following config data to be sent
+  var getModuleConfigRequest: AdminMessage.ModuleConfigType {
+    get {
+      if case .getModuleConfigRequest(let v)? = variant {return v}
+      return .mqttConfig
+    }
+    set {variant = .getModuleConfigRequest(newValue)}
+  }
+
+  ///
+  /// Send the current Config in the response to this message.
+  var getModuleConfigResponse: ModuleConfig {
+    get {
+      if case .getModuleConfigResponse(let v)? = variant {return v}
+      return ModuleConfig()
+    }
+    set {variant = .getModuleConfigResponse(newValue)}
+  }
+
+  ///
+  /// Set the current Config
+  var setModuleConfig: ModuleConfig {
+    get {
+      if case .setModuleConfig(let v)? = variant {return v}
+      return ModuleConfig()
+    }
+    set {variant = .setModuleConfig(newValue)}
+  }
+
+  ///
+  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+  var confirmSetModuleConfig: Bool {
+    get {
+      if case .confirmSetModuleConfig(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .confirmSetModuleConfig(newValue)}
+  }
+
+  ///
   /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
   /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
   /// If you fail to do so, the radio will assume loss of comms and revert your changes.
@@ -340,6 +420,30 @@ struct AdminMessage {
     /// TODO: REPLACE
     case getOwnerResponse(User)
     ///
+    /// Ask for the following config data to be sent
+    case getConfigRequest(AdminMessage.ConfigType)
+    ///
+    /// Send the current Config in the response to this message.
+    case getConfigResponse(Config)
+    ///
+    /// Set the current Config
+    case setConfig(Config)
+    ///
+    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+    case confirmSetConfig(Bool)
+    ///
+    /// Ask for the following config data to be sent
+    case getModuleConfigRequest(AdminMessage.ModuleConfigType)
+    ///
+    /// Send the current Config in the response to this message.
+    case getModuleConfigResponse(ModuleConfig)
+    ///
+    /// Set the current Config
+    case setModuleConfig(ModuleConfig)
+    ///
+    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+    case confirmSetModuleConfig(Bool)
+    ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
     /// If you fail to do so, the radio will assume loss of comms and revert your changes.
@@ -437,6 +541,38 @@ struct AdminMessage {
         guard case .getOwnerResponse(let l) = lhs, case .getOwnerResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getConfigRequest, .getConfigRequest): return {
+        guard case .getConfigRequest(let l) = lhs, case .getConfigRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getConfigResponse, .getConfigResponse): return {
+        guard case .getConfigResponse(let l) = lhs, case .getConfigResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setConfig, .setConfig): return {
+        guard case .setConfig(let l) = lhs, case .setConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.confirmSetConfig, .confirmSetConfig): return {
+        guard case .confirmSetConfig(let l) = lhs, case .confirmSetConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getModuleConfigRequest, .getModuleConfigRequest): return {
+        guard case .getModuleConfigRequest(let l) = lhs, case .getModuleConfigRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getModuleConfigResponse, .getModuleConfigResponse): return {
+        guard case .getModuleConfigResponse(let l) = lhs, case .getModuleConfigResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setModuleConfig, .setModuleConfig): return {
+        guard case .setModuleConfig(let l) = lhs, case .setModuleConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.confirmSetModuleConfig, .confirmSetModuleConfig): return {
+        guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.confirmSetChannel, .confirmSetChannel): return {
         guard case .confirmSetChannel(let l) = lhs, case .confirmSetChannel(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -511,12 +647,169 @@ struct AdminMessage {
   #endif
   }
 
+  ///
+  /// TODO: REPLACE
+  enum ConfigType: SwiftProtobuf.Enum {
+    typealias RawValue = Int
+
+    ///
+    /// TODO: REPLACE
+    case deviceConfig // = 0
+
+    ///
+    /// TODO: REPLACE
+    case gpsConfig // = 1
+
+    ///
+    /// TODO: REPLACE
+    case powerConfig // = 2
+
+    ///
+    /// TODO: REPLACE
+    case wifiConfig // = 3
+
+    ///
+    /// TODO: REPLACE
+    case displayConfig // = 4
+
+    ///
+    /// TODO: REPLACE
+    case loraConfig // = 5
+    case UNRECOGNIZED(Int)
+
+    init() {
+      self = .deviceConfig
+    }
+
+    init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .deviceConfig
+      case 1: self = .gpsConfig
+      case 2: self = .powerConfig
+      case 3: self = .wifiConfig
+      case 4: self = .displayConfig
+      case 5: self = .loraConfig
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    var rawValue: Int {
+      switch self {
+      case .deviceConfig: return 0
+      case .gpsConfig: return 1
+      case .powerConfig: return 2
+      case .wifiConfig: return 3
+      case .displayConfig: return 4
+      case .loraConfig: return 5
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
+
+  ///
+  /// TODO: REPLACE
+  enum ModuleConfigType: SwiftProtobuf.Enum {
+    typealias RawValue = Int
+
+    ///
+    /// TODO: REPLACE
+    case mqttConfig // = 0
+
+    ///
+    /// TODO: REPLACE
+    case serialConfig // = 1
+
+    ///
+    /// TODO: REPLACE
+    case extnotifConfig // = 2
+
+    ///
+    /// TODO: REPLACE
+    case storeforwardConfig // = 3
+
+    ///
+    /// TODO: REPLACE
+    case rangetestConfig // = 4
+
+    ///
+    /// TODO: REPLACE
+    case telemetryConfig // = 5
+
+    ///
+    /// TODO: REPLACE
+    case cannedmsgConfig // = 6
+    case UNRECOGNIZED(Int)
+
+    init() {
+      self = .mqttConfig
+    }
+
+    init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .mqttConfig
+      case 1: self = .serialConfig
+      case 2: self = .extnotifConfig
+      case 3: self = .storeforwardConfig
+      case 4: self = .rangetestConfig
+      case 5: self = .telemetryConfig
+      case 6: self = .cannedmsgConfig
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    var rawValue: Int {
+      switch self {
+      case .mqttConfig: return 0
+      case .serialConfig: return 1
+      case .extnotifConfig: return 2
+      case .storeforwardConfig: return 3
+      case .rangetestConfig: return 4
+      case .telemetryConfig: return 5
+      case .cannedmsgConfig: return 6
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+  }
+
   init() {}
 }
+
+#if swift(>=4.2)
+
+extension AdminMessage.ConfigType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [AdminMessage.ConfigType] = [
+    .deviceConfig,
+    .gpsConfig,
+    .powerConfig,
+    .wifiConfig,
+    .displayConfig,
+    .loraConfig,
+  ]
+}
+
+extension AdminMessage.ModuleConfigType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [AdminMessage.ModuleConfigType] = [
+    .mqttConfig,
+    .serialConfig,
+    .extnotifConfig,
+    .storeforwardConfig,
+    .rangetestConfig,
+    .telemetryConfig,
+    .cannedmsgConfig,
+  ]
+}
+
+#endif  // swift(>=4.2)
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension AdminMessage: @unchecked Sendable {}
 extension AdminMessage.OneOf_Variant: @unchecked Sendable {}
+extension AdminMessage.ConfigType: @unchecked Sendable {}
+extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -533,6 +826,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     7: .standard(proto: "get_channel_response"),
     8: .standard(proto: "get_owner_request"),
     9: .standard(proto: "get_owner_response"),
+    10: .standard(proto: "get_config_request"),
+    11: .standard(proto: "get_config_response"),
+    12: .standard(proto: "set_config"),
+    13: .standard(proto: "confirm_set_config"),
+    14: .standard(proto: "get_module_config_request"),
+    15: .standard(proto: "get_module_config_response"),
+    16: .standard(proto: "set_module_config"),
+    17: .standard(proto: "confirm_set_module_config"),
     32: .standard(proto: "confirm_set_channel"),
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
@@ -658,6 +959,90 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.variant = .getOwnerResponse(v)
+        }
+      }()
+      case 10: try {
+        var v: AdminMessage.ConfigType?
+        try decoder.decodeSingularEnumField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getConfigRequest(v)
+        }
+      }()
+      case 11: try {
+        var v: Config?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getConfigResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getConfigResponse(v)
+        }
+      }()
+      case 12: try {
+        var v: Config?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setConfig(v)
+        }
+      }()
+      case 13: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .confirmSetConfig(v)
+        }
+      }()
+      case 14: try {
+        var v: AdminMessage.ModuleConfigType?
+        try decoder.decodeSingularEnumField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getModuleConfigRequest(v)
+        }
+      }()
+      case 15: try {
+        var v: ModuleConfig?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getModuleConfigResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getModuleConfigResponse(v)
+        }
+      }()
+      case 16: try {
+        var v: ModuleConfig?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .setModuleConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .setModuleConfig(v)
+        }
+      }()
+      case 17: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .confirmSetModuleConfig(v)
         }
       }()
       case 32: try {
@@ -843,6 +1228,38 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .getOwnerResponse(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     }()
+    case .getConfigRequest?: try {
+      guard case .getConfigRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 10)
+    }()
+    case .getConfigResponse?: try {
+      guard case .getConfigResponse(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .setConfig?: try {
+      guard case .setConfig(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .confirmSetConfig?: try {
+      guard case .confirmSetConfig(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 13)
+    }()
+    case .getModuleConfigRequest?: try {
+      guard case .getModuleConfigRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 14)
+    }()
+    case .getModuleConfigResponse?: try {
+      guard case .getModuleConfigResponse(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+    }()
+    case .setModuleConfig?: try {
+      guard case .setModuleConfig(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+    }()
+    case .confirmSetModuleConfig?: try {
+      guard case .confirmSetModuleConfig(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 17)
+    }()
     case .confirmSetChannel?: try {
       guard case .confirmSetChannel(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 32)
@@ -921,4 +1338,27 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEVICE_CONFIG"),
+    1: .same(proto: "GPS_CONFIG"),
+    2: .same(proto: "POWER_CONFIG"),
+    3: .same(proto: "WIFI_CONFIG"),
+    4: .same(proto: "DISPLAY_CONFIG"),
+    5: .same(proto: "LORA_CONFIG"),
+  ]
+}
+
+extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "MQTT_CONFIG"),
+    1: .same(proto: "SERIAL_CONFIG"),
+    2: .same(proto: "EXTNOTIF_CONFIG"),
+    3: .same(proto: "STOREFORWARD_CONFIG"),
+    4: .same(proto: "RANGETEST_CONFIG"),
+    5: .same(proto: "TELEMETRY_CONFIG"),
+    6: .same(proto: "CANNEDMSG_CONFIG"),
+  ]
 }
