@@ -626,7 +626,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							fetchedNode[0].user!.macaddr = decodedInfo.nodeInfo.user.macaddr
 							fetchedNode[0].user!.hwModel = String(describing: decodedInfo.nodeInfo.user.hwModel).uppercased()
 						}
-						
+
 						if decodedInfo.nodeInfo.hasDeviceMetrics {
 							
 							let newTelemetry = TelemetryEntity(context: context!)
@@ -1049,8 +1049,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 			}
 
+		case FROMNUM_UUID :
+			print("🚨 FROMNUM Characteristic UUID: \(characteristic.uuid)")
+			if characteristic.value == nil || characteristic.value!.isEmpty {
+				return
+			}
+
+			var decodedInfo = FromRadio()
+
+			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
+			
 		default:
-			// Likely FROMNUM_UUID
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
         peripheral.readValue(for: FROMRADIO_characteristic)
