@@ -1057,7 +1057,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			var decodedInfo = FromRadio()
 
-			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
+			//decodedInfo = try! FromRadio(serializedData: characteristic.value!)
 			
 		default:
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
@@ -1216,7 +1216,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				var positionPacket = Position()
 				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-				positionPacket.time = UInt32(Date().timeIntervalSince1970)
+				positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 				positionPacket.altitude = Int32(LocationHelper.currentAltitude)
 				
 				var meshPacket = MeshPacket()
@@ -1274,7 +1274,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func getSettings() -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.getRadioRequest = true
+		//adminPacket.getRadioRequest = true
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)

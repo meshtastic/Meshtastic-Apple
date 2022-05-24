@@ -24,6 +24,16 @@ class LocationHelper: NSObject, ObservableObject {
 		}
 		return altitude
 	}
+	
+	static var currentTimestamp: Date {
+
+		guard let timestamp = shared.locationManager.location?.timestamp else {
+			return Date.now
+		}
+		return timestamp
+	}
+	
+	
 
     private let locationManager = CLLocationManager()
 

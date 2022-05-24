@@ -34,16 +34,6 @@ struct AdminMessage {
   var variant: AdminMessage.OneOf_Variant? = nil
 
   ///
-  /// Set the radio provisioning for this node
-  var setRadio: RadioConfig {
-    get {
-      if case .setRadio(let v)? = variant {return v}
-      return RadioConfig()
-    }
-    set {variant = .setRadio(newValue)}
-  }
-
-  ///
   /// Set the owner for this node
   var setOwner: User {
     get {
@@ -65,26 +55,6 @@ struct AdminMessage {
       return Channel()
     }
     set {variant = .setChannel(newValue)}
-  }
-
-  ///
-  /// Send the current RadioConfig in the response to this message.
-  var getRadioRequest: Bool {
-    get {
-      if case .getRadioRequest(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getRadioRequest(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getRadioResponse: RadioConfig {
-    get {
-      if case .getRadioResponse(let v)? = variant {return v}
-      return RadioConfig()
-    }
-    set {variant = .getRadioResponse(newValue)}
   }
 
   ///
@@ -388,9 +358,6 @@ struct AdminMessage {
   /// TODO: REPLACE
   enum OneOf_Variant: Equatable {
     ///
-    /// Set the radio provisioning for this node
-    case setRadio(RadioConfig)
-    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -400,12 +367,6 @@ struct AdminMessage {
     /// Note: only one channel can be marked as primary.
     /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
     case setChannel(Channel)
-    ///
-    /// Send the current RadioConfig in the response to this message.
-    case getRadioRequest(Bool)
-    ///
-    /// TODO: REPLACE
-    case getRadioResponse(RadioConfig)
     ///
     /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
@@ -505,24 +466,12 @@ struct AdminMessage {
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch (lhs, rhs) {
-      case (.setRadio, .setRadio): return {
-        guard case .setRadio(let l) = lhs, case .setRadio(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.setOwner, .setOwner): return {
         guard case .setOwner(let l) = lhs, case .setOwner(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.setChannel, .setChannel): return {
         guard case .setChannel(let l) = lhs, case .setChannel(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getRadioRequest, .getRadioRequest): return {
-        guard case .getRadioRequest(let l) = lhs, case .getRadioRequest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getRadioResponse, .getRadioResponse): return {
-        guard case .getRadioResponse(let l) = lhs, case .getRadioResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.getChannelRequest, .getChannelRequest): return {
@@ -658,7 +607,7 @@ struct AdminMessage {
 
     ///
     /// TODO: REPLACE
-    case gpsConfig // = 1
+    case positionConfig // = 1
 
     ///
     /// TODO: REPLACE
@@ -684,7 +633,7 @@ struct AdminMessage {
     init?(rawValue: Int) {
       switch rawValue {
       case 0: self = .deviceConfig
-      case 1: self = .gpsConfig
+      case 1: self = .positionConfig
       case 2: self = .powerConfig
       case 3: self = .wifiConfig
       case 4: self = .displayConfig
@@ -696,7 +645,7 @@ struct AdminMessage {
     var rawValue: Int {
       switch self {
       case .deviceConfig: return 0
-      case .gpsConfig: return 1
+      case .positionConfig: return 1
       case .powerConfig: return 2
       case .wifiConfig: return 3
       case .displayConfig: return 4
@@ -782,7 +731,7 @@ extension AdminMessage.ConfigType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [AdminMessage.ConfigType] = [
     .deviceConfig,
-    .gpsConfig,
+    .positionConfig,
     .powerConfig,
     .wifiConfig,
     .displayConfig,
@@ -817,11 +766,8 @@ extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "AdminMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "set_radio"),
     2: .standard(proto: "set_owner"),
     3: .standard(proto: "set_channel"),
-    4: .standard(proto: "get_radio_request"),
-    5: .standard(proto: "get_radio_response"),
     6: .standard(proto: "get_channel_request"),
     7: .standard(proto: "get_channel_response"),
     8: .standard(proto: "get_owner_request"),
@@ -859,19 +805,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try {
-        var v: RadioConfig?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .setRadio(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .setRadio(v)
-        }
-      }()
       case 2: try {
         var v: User?
         var hadOneofValue = false
@@ -896,27 +829,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.variant = .setChannel(v)
-        }
-      }()
-      case 4: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getRadioRequest(v)
-        }
-      }()
-      case 5: try {
-        var v: RadioConfig?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .getRadioResponse(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getRadioResponse(v)
         }
       }()
       case 6: try {
@@ -1192,10 +1104,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
     switch self.variant {
-    case .setRadio?: try {
-      guard case .setRadio(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
@@ -1203,14 +1111,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .setChannel?: try {
       guard case .setChannel(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }()
-    case .getRadioRequest?: try {
-      guard case .getRadioRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
-    }()
-    case .getRadioResponse?: try {
-      guard case .getRadioResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
     case .getChannelRequest?: try {
       guard case .getChannelRequest(let v)? = self.variant else { preconditionFailure() }
@@ -1343,7 +1243,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DEVICE_CONFIG"),
-    1: .same(proto: "GPS_CONFIG"),
+    1: .same(proto: "POSITION_CONFIG"),
     2: .same(proto: "POWER_CONFIG"),
     3: .same(proto: "WIFI_CONFIG"),
     4: .same(proto: "DISPLAY_CONFIG"),

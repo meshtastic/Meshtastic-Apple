@@ -89,68 +89,81 @@ struct DeviceState {
   ///
   /// Read only settings/info about this node
   var myNode: MyNodeInfo {
-    get {return _myNode ?? MyNodeInfo()}
-    set {_myNode = newValue}
+    get {return _storage._myNode ?? MyNodeInfo()}
+    set {_uniqueStorage()._myNode = newValue}
   }
   /// Returns true if `myNode` has been explicitly set.
-  var hasMyNode: Bool {return self._myNode != nil}
+  var hasMyNode: Bool {return _storage._myNode != nil}
   /// Clears the value of `myNode`. Subsequent reads from it will return its default value.
-  mutating func clearMyNode() {self._myNode = nil}
+  mutating func clearMyNode() {_uniqueStorage()._myNode = nil}
 
   ///
   /// My owner info
   var owner: User {
-    get {return _owner ?? User()}
-    set {_owner = newValue}
+    get {return _storage._owner ?? User()}
+    set {_uniqueStorage()._owner = newValue}
   }
   /// Returns true if `owner` has been explicitly set.
-  var hasOwner: Bool {return self._owner != nil}
+  var hasOwner: Bool {return _storage._owner != nil}
   /// Clears the value of `owner`. Subsequent reads from it will return its default value.
-  mutating func clearOwner() {self._owner = nil}
+  mutating func clearOwner() {_uniqueStorage()._owner = nil}
 
   ///
   /// TODO: REPLACE
-  var nodeDb: [NodeInfo] = []
+  var nodeDb: [NodeInfo] {
+    get {return _storage._nodeDb}
+    set {_uniqueStorage()._nodeDb = newValue}
+  }
 
   ///
   /// Received packets saved for delivery to the phone
-  var receiveQueue: [MeshPacket] = []
+  var receiveQueue: [MeshPacket] {
+    get {return _storage._receiveQueue}
+    set {_uniqueStorage()._receiveQueue = newValue}
+  }
 
   ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
-  var version: UInt32 = 0
+  var version: UInt32 {
+    get {return _storage._version}
+    set {_uniqueStorage()._version = newValue}
+  }
 
   ///
   /// We keep the last received text message (only) stored in the device flash,
   /// so we can show it on the screen.
   /// Might be null
   var rxTextMessage: MeshPacket {
-    get {return _rxTextMessage ?? MeshPacket()}
-    set {_rxTextMessage = newValue}
+    get {return _storage._rxTextMessage ?? MeshPacket()}
+    set {_uniqueStorage()._rxTextMessage = newValue}
   }
   /// Returns true if `rxTextMessage` has been explicitly set.
-  var hasRxTextMessage: Bool {return self._rxTextMessage != nil}
+  var hasRxTextMessage: Bool {return _storage._rxTextMessage != nil}
   /// Clears the value of `rxTextMessage`. Subsequent reads from it will return its default value.
-  mutating func clearRxTextMessage() {self._rxTextMessage = nil}
+  mutating func clearRxTextMessage() {_uniqueStorage()._rxTextMessage = nil}
 
   ///
   /// Used only during development.
   /// Indicates developer is testing and changes should never be saved to flash.
-  var noSave: Bool = false
+  var noSave: Bool {
+    get {return _storage._noSave}
+    set {_uniqueStorage()._noSave = newValue}
+  }
 
   ///
   /// Some GPSes seem to have bogus settings from the factory, so we always do one factory reset.
-  var didGpsReset: Bool = false
+  var didGpsReset: Bool {
+    get {return _storage._didGpsReset}
+    set {_uniqueStorage()._didGpsReset = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _myNode: MyNodeInfo? = nil
-  fileprivate var _owner: User? = nil
-  fileprivate var _rxTextMessage: MeshPacket? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -232,66 +245,112 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     11: .standard(proto: "did_gps_reset"),
   ]
 
+  fileprivate class _StorageClass {
+    var _myNode: MyNodeInfo? = nil
+    var _owner: User? = nil
+    var _nodeDb: [NodeInfo] = []
+    var _receiveQueue: [MeshPacket] = []
+    var _version: UInt32 = 0
+    var _rxTextMessage: MeshPacket? = nil
+    var _noSave: Bool = false
+    var _didGpsReset: Bool = false
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _myNode = source._myNode
+      _owner = source._owner
+      _nodeDb = source._nodeDb
+      _receiveQueue = source._receiveQueue
+      _version = source._version
+      _rxTextMessage = source._rxTextMessage
+      _noSave = source._noSave
+      _didGpsReset = source._didGpsReset
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._myNode) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._owner) }()
-      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.nodeDb) }()
-      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.receiveQueue) }()
-      case 7: try { try decoder.decodeSingularMessageField(value: &self._rxTextMessage) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.version) }()
-      case 9: try { try decoder.decodeSingularBoolField(value: &self.noSave) }()
-      case 11: try { try decoder.decodeSingularBoolField(value: &self.didGpsReset) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._myNode) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._owner) }()
+        case 4: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeDb) }()
+        case 5: try { try decoder.decodeRepeatedMessageField(value: &_storage._receiveQueue) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._rxTextMessage) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
+        case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
+        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._myNode {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._owner {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    if !self.nodeDb.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.nodeDb, fieldNumber: 4)
-    }
-    if !self.receiveQueue.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.receiveQueue, fieldNumber: 5)
-    }
-    try { if let v = self._rxTextMessage {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-    } }()
-    if self.version != 0 {
-      try visitor.visitSingularUInt32Field(value: self.version, fieldNumber: 8)
-    }
-    if self.noSave != false {
-      try visitor.visitSingularBoolField(value: self.noSave, fieldNumber: 9)
-    }
-    if self.didGpsReset != false {
-      try visitor.visitSingularBoolField(value: self.didGpsReset, fieldNumber: 11)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._myNode {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._owner {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if !_storage._nodeDb.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._nodeDb, fieldNumber: 4)
+      }
+      if !_storage._receiveQueue.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._receiveQueue, fieldNumber: 5)
+      }
+      try { if let v = _storage._rxTextMessage {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
+      if _storage._version != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
+      }
+      if _storage._noSave != false {
+        try visitor.visitSingularBoolField(value: _storage._noSave, fieldNumber: 9)
+      }
+      if _storage._didGpsReset != false {
+        try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: DeviceState, rhs: DeviceState) -> Bool {
-    if lhs._myNode != rhs._myNode {return false}
-    if lhs._owner != rhs._owner {return false}
-    if lhs.nodeDb != rhs.nodeDb {return false}
-    if lhs.receiveQueue != rhs.receiveQueue {return false}
-    if lhs.version != rhs.version {return false}
-    if lhs._rxTextMessage != rhs._rxTextMessage {return false}
-    if lhs.noSave != rhs.noSave {return false}
-    if lhs.didGpsReset != rhs.didGpsReset {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._myNode != rhs_storage._myNode {return false}
+        if _storage._owner != rhs_storage._owner {return false}
+        if _storage._nodeDb != rhs_storage._nodeDb {return false}
+        if _storage._receiveQueue != rhs_storage._receiveQueue {return false}
+        if _storage._version != rhs_storage._version {return false}
+        if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
+        if _storage._noSave != rhs_storage._noSave {return false}
+        if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

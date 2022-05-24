@@ -46,38 +46,6 @@ struct ChannelSettings {
   // methods supported on all messages.
 
   ///
-  /// If zero then, use default max legal continuous power (ie. something that won't
-  /// burn out the radio hardware)
-  /// In most cases you should use zero here.
-  /// Units are in dBm.
-  var txPower: Int32 = 0
-
-  ///
-  /// Note: This is the 'old' mechanism for specifying channel parameters.
-  /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
-  /// As a heuristic: If bandwidth is specified, do not use modem_config.
-  /// Because protobufs take ZERO space when the value is zero this works out nicely.
-  /// This value is replaced by bandwidth/spread_factor/coding_rate.
-  /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-  var modemConfig: ChannelSettings.ModemConfig = .vlongSlow
-
-  ///
-  /// Bandwidth in MHz
-  /// Certain bandwidth numbers are 'special' and will be converted to the
-  /// appropriate floating point value: 31 -> 31.25MHz
-  var bandwidth: UInt32 = 0
-
-  ///
-  /// A number from 7 to 12.
-  /// Indicates number of chirps per symbol as 1<<spread_factor.
-  var spreadFactor: UInt32 = 0
-
-  ///
-  /// The denominator of the coding rate.
-  /// ie for 4/8, the value is 8. 5/8 the value is 5.
-  var codingRate: UInt32 = 0
-
-  ///
   /// NOTE: this field is _independent_ and unrelated to the concepts in channel.proto.
   /// this is controlling the actual hardware frequency the radio is transmitting on.
   /// In a perfect world we would have called it something else (band?) but I forgot to make this change during the big 1.2 renaming.
@@ -119,7 +87,7 @@ struct ChannelSettings {
   /// is the special (minimally secure) "Default"channel.
   /// In user interfaces it should be rendered as a local language translation of "X".
   /// For channel_num hashing empty string will be treated as "X".
-  /// Where "X" is selected based on the English words listed above for ModemConfig
+  /// Where "X" is selected based on the English words listed above for ModemPreset
   var name: String = String()
 
   ///
@@ -146,92 +114,8 @@ struct ChannelSettings {
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  ///
-  /// Standard predefined channel settings
-  /// Note: these mappings must match ModemConfigChoice in the device code.
-  enum ModemConfig: SwiftProtobuf.Enum {
-    typealias RawValue = Int
-
-    ///
-    /// TODO: REPLACE
-    case vlongSlow // = 0
-
-    ///
-    /// TODO: REPLACE
-    case longSlow // = 1
-
-    ///
-    /// TODO: REPLACE
-    case longFast // = 2
-
-    ///
-    /// TODO: REPLACE
-    case midSlow // = 3
-
-    ///
-    /// TODO: REPLACE
-    case midFast // = 4
-
-    ///
-    /// TODO: REPLACE
-    case shortSlow // = 5
-
-    ///
-    /// TODO: REPLACE
-    case shortFast // = 6
-    case UNRECOGNIZED(Int)
-
-    init() {
-      self = .vlongSlow
-    }
-
-    init?(rawValue: Int) {
-      switch rawValue {
-      case 0: self = .vlongSlow
-      case 1: self = .longSlow
-      case 2: self = .longFast
-      case 3: self = .midSlow
-      case 4: self = .midFast
-      case 5: self = .shortSlow
-      case 6: self = .shortFast
-      default: self = .UNRECOGNIZED(rawValue)
-      }
-    }
-
-    var rawValue: Int {
-      switch self {
-      case .vlongSlow: return 0
-      case .longSlow: return 1
-      case .longFast: return 2
-      case .midSlow: return 3
-      case .midFast: return 4
-      case .shortSlow: return 5
-      case .shortFast: return 6
-      case .UNRECOGNIZED(let i): return i
-      }
-    }
-
-  }
-
   init() {}
 }
-
-#if swift(>=4.2)
-
-extension ChannelSettings.ModemConfig: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [ChannelSettings.ModemConfig] = [
-    .vlongSlow,
-    .longSlow,
-    .longFast,
-    .midSlow,
-    .midFast,
-    .shortSlow,
-    .shortFast,
-  ]
-}
-
-#endif  // swift(>=4.2)
 
 ///
 /// A pair of a channel number, mode and the (sharable) settings for that channel
@@ -334,7 +218,6 @@ extension Channel.Role: CaseIterable {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ChannelSettings: @unchecked Sendable {}
-extension ChannelSettings.ModemConfig: @unchecked Sendable {}
 extension Channel: @unchecked Sendable {}
 extension Channel.Role: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -344,11 +227,6 @@ extension Channel.Role: @unchecked Sendable {}
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ChannelSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "tx_power"),
-    3: .standard(proto: "modem_config"),
-    6: .same(proto: "bandwidth"),
-    7: .standard(proto: "spread_factor"),
-    8: .standard(proto: "coding_rate"),
     9: .standard(proto: "channel_num"),
     4: .same(proto: "psk"),
     5: .same(proto: "name"),
@@ -363,13 +241,8 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
-      case 3: try { try decoder.decodeSingularEnumField(value: &self.modemConfig) }()
       case 4: try { try decoder.decodeSingularBytesField(value: &self.psk) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.bandwidth) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.spreadFactor) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.codingRate) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
       case 10: try { try decoder.decodeSingularFixed32Field(value: &self.id) }()
       case 16: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
@@ -380,26 +253,11 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.txPower != 0 {
-      try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 1)
-    }
-    if self.modemConfig != .vlongSlow {
-      try visitor.visitSingularEnumField(value: self.modemConfig, fieldNumber: 3)
-    }
     if !self.psk.isEmpty {
       try visitor.visitSingularBytesField(value: self.psk, fieldNumber: 4)
     }
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 5)
-    }
-    if self.bandwidth != 0 {
-      try visitor.visitSingularUInt32Field(value: self.bandwidth, fieldNumber: 6)
-    }
-    if self.spreadFactor != 0 {
-      try visitor.visitSingularUInt32Field(value: self.spreadFactor, fieldNumber: 7)
-    }
-    if self.codingRate != 0 {
-      try visitor.visitSingularUInt32Field(value: self.codingRate, fieldNumber: 8)
     }
     if self.channelNum != 0 {
       try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 9)
@@ -417,11 +275,6 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   static func ==(lhs: ChannelSettings, rhs: ChannelSettings) -> Bool {
-    if lhs.txPower != rhs.txPower {return false}
-    if lhs.modemConfig != rhs.modemConfig {return false}
-    if lhs.bandwidth != rhs.bandwidth {return false}
-    if lhs.spreadFactor != rhs.spreadFactor {return false}
-    if lhs.codingRate != rhs.codingRate {return false}
     if lhs.channelNum != rhs.channelNum {return false}
     if lhs.psk != rhs.psk {return false}
     if lhs.name != rhs.name {return false}
@@ -431,18 +284,6 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
-}
-
-extension ChannelSettings.ModemConfig: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "VLongSlow"),
-    1: .same(proto: "LongSlow"),
-    2: .same(proto: "LongFast"),
-    3: .same(proto: "MidSlow"),
-    4: .same(proto: "MidFast"),
-    5: .same(proto: "ShortSlow"),
-    6: .same(proto: "ShortFast"),
-  ]
 }
 
 extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
