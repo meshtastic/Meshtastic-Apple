@@ -33,72 +33,72 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var mqttConfig: ModuleConfig.MQTTConfig {
+  var mqtt: ModuleConfig.MQTTConfig {
     get {
-      if case .mqttConfig(let v)? = payloadVariant {return v}
+      if case .mqtt(let v)? = payloadVariant {return v}
       return ModuleConfig.MQTTConfig()
     }
-    set {payloadVariant = .mqttConfig(newValue)}
+    set {payloadVariant = .mqtt(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var serialConfig: ModuleConfig.SerialConfig {
+  var serial: ModuleConfig.SerialConfig {
     get {
-      if case .serialConfig(let v)? = payloadVariant {return v}
+      if case .serial(let v)? = payloadVariant {return v}
       return ModuleConfig.SerialConfig()
     }
-    set {payloadVariant = .serialConfig(newValue)}
+    set {payloadVariant = .serial(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var externalNotificationConfig: ModuleConfig.ExternalNotificationConfig {
+  var externalNotification: ModuleConfig.ExternalNotificationConfig {
     get {
-      if case .externalNotificationConfig(let v)? = payloadVariant {return v}
+      if case .externalNotification(let v)? = payloadVariant {return v}
       return ModuleConfig.ExternalNotificationConfig()
     }
-    set {payloadVariant = .externalNotificationConfig(newValue)}
+    set {payloadVariant = .externalNotification(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var storeForwardConfig: ModuleConfig.StoreForwardConfig {
+  var storeForward: ModuleConfig.StoreForwardConfig {
     get {
-      if case .storeForwardConfig(let v)? = payloadVariant {return v}
+      if case .storeForward(let v)? = payloadVariant {return v}
       return ModuleConfig.StoreForwardConfig()
     }
-    set {payloadVariant = .storeForwardConfig(newValue)}
+    set {payloadVariant = .storeForward(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var rangeTestConfig: ModuleConfig.RangeTestConfig {
+  var rangeTest: ModuleConfig.RangeTestConfig {
     get {
-      if case .rangeTestConfig(let v)? = payloadVariant {return v}
+      if case .rangeTest(let v)? = payloadVariant {return v}
       return ModuleConfig.RangeTestConfig()
     }
-    set {payloadVariant = .rangeTestConfig(newValue)}
+    set {payloadVariant = .rangeTest(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var telemetryConfig: ModuleConfig.TelemetryConfig {
+  var telemetry: ModuleConfig.TelemetryConfig {
     get {
-      if case .telemetryConfig(let v)? = payloadVariant {return v}
+      if case .telemetry(let v)? = payloadVariant {return v}
       return ModuleConfig.TelemetryConfig()
     }
-    set {payloadVariant = .telemetryConfig(newValue)}
+    set {payloadVariant = .telemetry(newValue)}
   }
 
   ///
   /// TODO: REPLACE
-  var cannedMessageConfig: ModuleConfig.CannedMessageConfig {
+  var cannedMessage: ModuleConfig.CannedMessageConfig {
     get {
-      if case .cannedMessageConfig(let v)? = payloadVariant {return v}
+      if case .cannedMessage(let v)? = payloadVariant {return v}
       return ModuleConfig.CannedMessageConfig()
     }
-    set {payloadVariant = .cannedMessageConfig(newValue)}
+    set {payloadVariant = .cannedMessage(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -108,25 +108,25 @@ struct ModuleConfig {
   enum OneOf_PayloadVariant: Equatable {
     ///
     /// TODO: REPLACE
-    case mqttConfig(ModuleConfig.MQTTConfig)
+    case mqtt(ModuleConfig.MQTTConfig)
     ///
     /// TODO: REPLACE
-    case serialConfig(ModuleConfig.SerialConfig)
+    case serial(ModuleConfig.SerialConfig)
     ///
     /// TODO: REPLACE
-    case externalNotificationConfig(ModuleConfig.ExternalNotificationConfig)
+    case externalNotification(ModuleConfig.ExternalNotificationConfig)
     ///
     /// TODO: REPLACE
-    case storeForwardConfig(ModuleConfig.StoreForwardConfig)
+    case storeForward(ModuleConfig.StoreForwardConfig)
     ///
     /// TODO: REPLACE
-    case rangeTestConfig(ModuleConfig.RangeTestConfig)
+    case rangeTest(ModuleConfig.RangeTestConfig)
     ///
     /// TODO: REPLACE
-    case telemetryConfig(ModuleConfig.TelemetryConfig)
+    case telemetry(ModuleConfig.TelemetryConfig)
     ///
     /// TODO: REPLACE
-    case cannedMessageConfig(ModuleConfig.CannedMessageConfig)
+    case cannedMessage(ModuleConfig.CannedMessageConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -134,32 +134,32 @@ struct ModuleConfig {
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch (lhs, rhs) {
-      case (.mqttConfig, .mqttConfig): return {
-        guard case .mqttConfig(let l) = lhs, case .mqttConfig(let r) = rhs else { preconditionFailure() }
+      case (.mqtt, .mqtt): return {
+        guard case .mqtt(let l) = lhs, case .mqtt(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.serialConfig, .serialConfig): return {
-        guard case .serialConfig(let l) = lhs, case .serialConfig(let r) = rhs else { preconditionFailure() }
+      case (.serial, .serial): return {
+        guard case .serial(let l) = lhs, case .serial(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.externalNotificationConfig, .externalNotificationConfig): return {
-        guard case .externalNotificationConfig(let l) = lhs, case .externalNotificationConfig(let r) = rhs else { preconditionFailure() }
+      case (.externalNotification, .externalNotification): return {
+        guard case .externalNotification(let l) = lhs, case .externalNotification(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.storeForwardConfig, .storeForwardConfig): return {
-        guard case .storeForwardConfig(let l) = lhs, case .storeForwardConfig(let r) = rhs else { preconditionFailure() }
+      case (.storeForward, .storeForward): return {
+        guard case .storeForward(let l) = lhs, case .storeForward(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.rangeTestConfig, .rangeTestConfig): return {
-        guard case .rangeTestConfig(let l) = lhs, case .rangeTestConfig(let r) = rhs else { preconditionFailure() }
+      case (.rangeTest, .rangeTest): return {
+        guard case .rangeTest(let l) = lhs, case .rangeTest(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.telemetryConfig, .telemetryConfig): return {
-        guard case .telemetryConfig(let l) = lhs, case .telemetryConfig(let r) = rhs else { preconditionFailure() }
+      case (.telemetry, .telemetry): return {
+        guard case .telemetry(let l) = lhs, case .telemetry(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.cannedMessageConfig, .cannedMessageConfig): return {
-        guard case .cannedMessageConfig(let l) = lhs, case .cannedMessageConfig(let r) = rhs else { preconditionFailure() }
+      case (.cannedMessage, .cannedMessage): return {
+        guard case .cannedMessage(let l) = lhs, case .cannedMessage(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -175,6 +175,36 @@ struct ModuleConfig {
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
+    ///
+    /// If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
+    /// is_uplink_enabled or is_downlink_enabled.
+    /// But if this flag is set, all MQTT features will be disabled and no servers will be contacted.
+    var disabled: Bool = false
+
+    ///
+    /// The server to use for our MQTT global message gateway feature.
+    /// If not set, the default server will be used
+    var address: String = String()
+
+    ///
+    /// MQTT username to use (most useful for a custom MQTT server).
+    /// If using a custom server, this will be honoured even if empty.
+    /// If using the default server, this will only be honoured if set, otherwise the device will use the default username
+    var username: String = String()
+
+    ///
+    /// MQTT password to use (most useful for a custom MQTT server).
+    /// If using a custom server, this will be honoured even if empty.
+    /// If using the default server, this will only be honoured if set, otherwise the device will use the default password
+    var password: String = String()
+
+    ///
+    /// Whether to send encrypted or decrypted packets to MQTT.
+    /// This parameter is only honoured if you also set server
+    /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
+    /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
+    var encryptionEnabled: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -187,7 +217,141 @@ struct ModuleConfig {
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
+    ///
+    /// Preferences for the SerialModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var enabled: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var echo: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var rxd: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var txd: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var baud: ModuleConfig.SerialConfig.Serial_Baud = .baudDefault
+
+    ///
+    /// TODO: REPLACE
+    var timeout: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var mode: ModuleConfig.SerialConfig.Serial_Mode = .modeDefault
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    ///
+    /// TODO: REPLACE
+    enum Serial_Baud: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+      case baudDefault // = 0
+      case baud2400 // = 1
+      case baud4800 // = 2
+      case baud9600 // = 3
+      case baud19200 // = 4
+      case baud38400 // = 5
+      case baud57600 // = 6
+      case baud115200 // = 7
+      case baud230400 // = 8
+      case baud460800 // = 9
+      case baud576000 // = 10
+      case baud921600 // = 11
+      case baud110 // = 12
+      case baud300 // = 13
+      case baud600 // = 14
+      case baud1200 // = 15
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .baudDefault
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .baudDefault
+        case 1: self = .baud2400
+        case 2: self = .baud4800
+        case 3: self = .baud9600
+        case 4: self = .baud19200
+        case 5: self = .baud38400
+        case 6: self = .baud57600
+        case 7: self = .baud115200
+        case 8: self = .baud230400
+        case 9: self = .baud460800
+        case 10: self = .baud576000
+        case 11: self = .baud921600
+        case 12: self = .baud110
+        case 13: self = .baud300
+        case 14: self = .baud600
+        case 15: self = .baud1200
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .baudDefault: return 0
+        case .baud2400: return 1
+        case .baud4800: return 2
+        case .baud9600: return 3
+        case .baud19200: return 4
+        case .baud38400: return 5
+        case .baud57600: return 6
+        case .baud115200: return 7
+        case .baud230400: return 8
+        case .baud460800: return 9
+        case .baud576000: return 10
+        case .baud921600: return 11
+        case .baud110: return 12
+        case .baud300: return 13
+        case .baud600: return 14
+        case .baud1200: return 15
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    ///
+    /// TODO: REPLACE
+    enum Serial_Mode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+      case modeDefault // = 0
+      case modeSimple // = 1
+      case modeProto // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .modeDefault
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .modeDefault
+        case 1: self = .modeSimple
+        case 2: self = .modeProto
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .modeDefault: return 0
+        case .modeSimple: return 1
+        case .modeProto: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
 
     init() {}
   }
@@ -198,6 +362,31 @@ struct ModuleConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
+
+    ///
+    /// Preferences for the ExternalNotificationModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var enabled: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var outputMs: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var output: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var active: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var alertMessage: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var alertBell: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -211,6 +400,27 @@ struct ModuleConfig {
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
+    ///
+    /// Preferences for the StoreForwardModule
+    ///FIXME - Move this out of UserPreferences and into a section for module configuration. (was 136)
+    var enabled: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var heartbeat: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var records: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var historyReturnMax: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var historyReturnWindow: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -222,6 +432,19 @@ struct ModuleConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
+
+    ///
+    /// Preferences for the RangeTestModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var enabled: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var sender: UInt32 = 0
+
+    ///
+    /// TODO: REPLACE
+    var save: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -288,7 +511,125 @@ struct ModuleConfig {
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
+    ///
+    /// Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
+    var rotary1Enabled: Bool = false
+
+    ///
+    /// GPIO pin for rotary encoder A port.
+    var inputbrokerPinA: UInt32 = 0
+
+    ///
+    /// GPIO pin for rotary encoder B port.
+    var inputbrokerPinB: UInt32 = 0
+
+    ///
+    /// GPIO pin for rotary encoder Press port.
+    var inputbrokerPinPress: UInt32 = 0
+
+    ///
+    /// Generate input event on CW of this kind.
+    var inputbrokerEventCw: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+
+    ///
+    /// Generate input event on CCW of this kind.
+    var inputbrokerEventCcw: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+
+    ///
+    /// Generate input event on Press of this kind.
+    var inputbrokerEventPress: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+
+    ///
+    /// Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
+    var updown1Enabled: Bool = false
+
+    ///
+    /// Enable/disable CannedMessageModule.
+    var enabled: Bool = false
+
+    ///
+    /// Input event origin accepted by the canned message module.
+    /// Can be e.g. "rotEnc1", "upDownEnc1" or keyword "_any"
+    var allowInputSource: String = String()
+
+    ///
+    /// CannedMessageModule also sends a bell character with the messages.
+    /// ExternalNotificationModule can benefit from this feature.
+    var sendBell: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    ///
+    /// TODO: REPLACE
+    enum InputEventChar: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// TODO: REPLACE
+      case keyNone // = 0
+
+      ///
+      /// TODO: REPLACE
+      case keyUp // = 17
+
+      ///
+      /// TODO: REPLACE
+      case keyDown // = 18
+
+      ///
+      /// TODO: REPLACE
+      case keyLeft // = 19
+
+      ///
+      /// TODO: REPLACE
+      case keyRight // = 20
+
+      ///
+      /// '\n'
+      case keySelect // = 10
+
+      ///
+      /// TODO: REPLACE
+      case keyBack // = 27
+
+      ///
+      /// TODO: REPLACE
+      case keyCancel // = 24
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .keyNone
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .keyNone
+        case 10: self = .keySelect
+        case 17: self = .keyUp
+        case 18: self = .keyDown
+        case 19: self = .keyLeft
+        case 20: self = .keyRight
+        case 24: self = .keyCancel
+        case 27: self = .keyBack
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .keyNone: return 0
+        case .keySelect: return 10
+        case .keyUp: return 17
+        case .keyDown: return 18
+        case .keyLeft: return 19
+        case .keyRight: return 20
+        case .keyCancel: return 24
+        case .keyBack: return 27
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
 
     init() {}
   }
@@ -296,16 +637,68 @@ struct ModuleConfig {
   init() {}
 }
 
+#if swift(>=4.2)
+
+extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
+    .baudDefault,
+    .baud2400,
+    .baud4800,
+    .baud9600,
+    .baud19200,
+    .baud38400,
+    .baud57600,
+    .baud115200,
+    .baud230400,
+    .baud460800,
+    .baud576000,
+    .baud921600,
+    .baud110,
+    .baud300,
+    .baud600,
+    .baud1200,
+  ]
+}
+
+extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
+    .modeDefault,
+    .modeSimple,
+    .modeProto,
+  ]
+}
+
+extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
+    .keyNone,
+    .keyUp,
+    .keyDown,
+    .keyLeft,
+    .keyRight,
+    .keySelect,
+    .keyBack,
+    .keyCancel,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ModuleConfig: @unchecked Sendable {}
 extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig: @unchecked Sendable {}
+extension ModuleConfig.SerialConfig.Serial_Baud: @unchecked Sendable {}
+extension ModuleConfig.SerialConfig.Serial_Mode: @unchecked Sendable {}
 extension ModuleConfig.ExternalNotificationConfig: @unchecked Sendable {}
 extension ModuleConfig.StoreForwardConfig: @unchecked Sendable {}
 extension ModuleConfig.RangeTestConfig: @unchecked Sendable {}
 extension ModuleConfig.TelemetryConfig: @unchecked Sendable {}
 extension ModuleConfig.CannedMessageConfig: @unchecked Sendable {}
+extension ModuleConfig.CannedMessageConfig.InputEventChar: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -313,13 +706,13 @@ extension ModuleConfig.CannedMessageConfig: @unchecked Sendable {}
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ModuleConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "mqtt_config"),
-    2: .standard(proto: "serial_config"),
-    3: .standard(proto: "external_notification_config"),
-    4: .standard(proto: "store_forward_config"),
-    5: .standard(proto: "range_test_config"),
-    6: .standard(proto: "telemetry_config"),
-    7: .standard(proto: "canned_message_config"),
+    1: .same(proto: "mqtt"),
+    2: .same(proto: "serial"),
+    3: .standard(proto: "external_notification"),
+    4: .standard(proto: "store_forward"),
+    5: .standard(proto: "range_test"),
+    6: .same(proto: "telemetry"),
+    7: .standard(proto: "canned_message"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -333,12 +726,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .mqttConfig(let m) = current {v = m}
+          if case .mqtt(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .mqttConfig(v)
+          self.payloadVariant = .mqtt(v)
         }
       }()
       case 2: try {
@@ -346,12 +739,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .serialConfig(let m) = current {v = m}
+          if case .serial(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .serialConfig(v)
+          self.payloadVariant = .serial(v)
         }
       }()
       case 3: try {
@@ -359,12 +752,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .externalNotificationConfig(let m) = current {v = m}
+          if case .externalNotification(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .externalNotificationConfig(v)
+          self.payloadVariant = .externalNotification(v)
         }
       }()
       case 4: try {
@@ -372,12 +765,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .storeForwardConfig(let m) = current {v = m}
+          if case .storeForward(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .storeForwardConfig(v)
+          self.payloadVariant = .storeForward(v)
         }
       }()
       case 5: try {
@@ -385,12 +778,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .rangeTestConfig(let m) = current {v = m}
+          if case .rangeTest(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .rangeTestConfig(v)
+          self.payloadVariant = .rangeTest(v)
         }
       }()
       case 6: try {
@@ -398,12 +791,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .telemetryConfig(let m) = current {v = m}
+          if case .telemetry(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .telemetryConfig(v)
+          self.payloadVariant = .telemetry(v)
         }
       }()
       case 7: try {
@@ -411,12 +804,12 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         var hadOneofValue = false
         if let current = self.payloadVariant {
           hadOneofValue = true
-          if case .cannedMessageConfig(let m) = current {v = m}
+          if case .cannedMessage(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .cannedMessageConfig(v)
+          self.payloadVariant = .cannedMessage(v)
         }
       }()
       default: break
@@ -430,32 +823,32 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
     switch self.payloadVariant {
-    case .mqttConfig?: try {
-      guard case .mqttConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .mqtt?: try {
+      guard case .mqtt(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }()
-    case .serialConfig?: try {
-      guard case .serialConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .serial?: try {
+      guard case .serial(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }()
-    case .externalNotificationConfig?: try {
-      guard case .externalNotificationConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .externalNotification?: try {
+      guard case .externalNotification(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     }()
-    case .storeForwardConfig?: try {
-      guard case .storeForwardConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .storeForward?: try {
+      guard case .storeForward(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     }()
-    case .rangeTestConfig?: try {
-      guard case .rangeTestConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .rangeTest?: try {
+      guard case .rangeTest(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
-    case .telemetryConfig?: try {
-      guard case .telemetryConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .telemetry?: try {
+      guard case .telemetry(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
-    case .cannedMessageConfig?: try {
-      guard case .cannedMessageConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .cannedMessage?: try {
+      guard case .cannedMessage(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     }()
     case nil: break
@@ -472,18 +865,55 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 
 extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "disabled"),
+    2: .same(proto: "address"),
+    3: .same(proto: "username"),
+    4: .same(proto: "password"),
+    5: .standard(proto: "encryption_enabled"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.disabled) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.address) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.username) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.password) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.encryptionEnabled) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.disabled != false {
+      try visitor.visitSingularBoolField(value: self.disabled, fieldNumber: 1)
+    }
+    if !self.address.isEmpty {
+      try visitor.visitSingularStringField(value: self.address, fieldNumber: 2)
+    }
+    if !self.username.isEmpty {
+      try visitor.visitSingularStringField(value: self.username, fieldNumber: 3)
+    }
+    if !self.password.isEmpty {
+      try visitor.visitSingularStringField(value: self.password, fieldNumber: 4)
+    }
+    if self.encryptionEnabled != false {
+      try visitor.visitSingularBoolField(value: self.encryptionEnabled, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.MQTTConfig, rhs: ModuleConfig.MQTTConfig) -> Bool {
+    if lhs.disabled != rhs.disabled {return false}
+    if lhs.address != rhs.address {return false}
+    if lhs.username != rhs.username {return false}
+    if lhs.password != rhs.password {return false}
+    if lhs.encryptionEnabled != rhs.encryptionEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -491,37 +921,158 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
 
 extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".SerialConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "echo"),
+    3: .same(proto: "rxd"),
+    4: .same(proto: "txd"),
+    5: .same(proto: "baud"),
+    6: .same(proto: "timeout"),
+    7: .same(proto: "mode"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.echo) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.rxd) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.txd) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.baud) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.timeout) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.echo != false {
+      try visitor.visitSingularBoolField(value: self.echo, fieldNumber: 2)
+    }
+    if self.rxd != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rxd, fieldNumber: 3)
+    }
+    if self.txd != 0 {
+      try visitor.visitSingularUInt32Field(value: self.txd, fieldNumber: 4)
+    }
+    if self.baud != .baudDefault {
+      try visitor.visitSingularEnumField(value: self.baud, fieldNumber: 5)
+    }
+    if self.timeout != 0 {
+      try visitor.visitSingularUInt32Field(value: self.timeout, fieldNumber: 6)
+    }
+    if self.mode != .modeDefault {
+      try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.SerialConfig, rhs: ModuleConfig.SerialConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.echo != rhs.echo {return false}
+    if lhs.rxd != rhs.rxd {return false}
+    if lhs.txd != rhs.txd {return false}
+    if lhs.baud != rhs.baud {return false}
+    if lhs.timeout != rhs.timeout {return false}
+    if lhs.mode != rhs.mode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
+extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "BAUD_Default"),
+    1: .same(proto: "BAUD_2400"),
+    2: .same(proto: "BAUD_4800"),
+    3: .same(proto: "BAUD_9600"),
+    4: .same(proto: "BAUD_19200"),
+    5: .same(proto: "BAUD_38400"),
+    6: .same(proto: "BAUD_57600"),
+    7: .same(proto: "BAUD_115200"),
+    8: .same(proto: "BAUD_230400"),
+    9: .same(proto: "BAUD_460800"),
+    10: .same(proto: "BAUD_576000"),
+    11: .same(proto: "BAUD_921600"),
+    12: .same(proto: "BAUD_110"),
+    13: .same(proto: "BAUD_300"),
+    14: .same(proto: "BAUD_600"),
+    15: .same(proto: "BAUD_1200"),
+  ]
+}
+
+extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "MODE_Default"),
+    1: .same(proto: "MODE_SIMPLE"),
+    2: .same(proto: "MODE_PROTO"),
+  ]
+}
+
 extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".ExternalNotificationConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "output_ms"),
+    3: .same(proto: "output"),
+    4: .same(proto: "active"),
+    5: .standard(proto: "alert_message"),
+    6: .standard(proto: "alert_bell"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.outputMs) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.output) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.active) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.alertMessage) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.alertBell) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.outputMs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.outputMs, fieldNumber: 2)
+    }
+    if self.output != 0 {
+      try visitor.visitSingularUInt32Field(value: self.output, fieldNumber: 3)
+    }
+    if self.active != false {
+      try visitor.visitSingularBoolField(value: self.active, fieldNumber: 4)
+    }
+    if self.alertMessage != false {
+      try visitor.visitSingularBoolField(value: self.alertMessage, fieldNumber: 5)
+    }
+    if self.alertBell != false {
+      try visitor.visitSingularBoolField(value: self.alertBell, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.ExternalNotificationConfig, rhs: ModuleConfig.ExternalNotificationConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.outputMs != rhs.outputMs {return false}
+    if lhs.output != rhs.output {return false}
+    if lhs.active != rhs.active {return false}
+    if lhs.alertMessage != rhs.alertMessage {return false}
+    if lhs.alertBell != rhs.alertBell {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -529,18 +1080,55 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
 
 extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".StoreForwardConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "heartbeat"),
+    3: .same(proto: "records"),
+    4: .standard(proto: "history_return_max"),
+    5: .standard(proto: "history_return_window"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.heartbeat) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.records) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.historyReturnMax) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.historyReturnWindow) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.heartbeat != false {
+      try visitor.visitSingularBoolField(value: self.heartbeat, fieldNumber: 2)
+    }
+    if self.records != 0 {
+      try visitor.visitSingularUInt32Field(value: self.records, fieldNumber: 3)
+    }
+    if self.historyReturnMax != 0 {
+      try visitor.visitSingularUInt32Field(value: self.historyReturnMax, fieldNumber: 4)
+    }
+    if self.historyReturnWindow != 0 {
+      try visitor.visitSingularUInt32Field(value: self.historyReturnWindow, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.StoreForwardConfig, rhs: ModuleConfig.StoreForwardConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.heartbeat != rhs.heartbeat {return false}
+    if lhs.records != rhs.records {return false}
+    if lhs.historyReturnMax != rhs.historyReturnMax {return false}
+    if lhs.historyReturnWindow != rhs.historyReturnWindow {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -548,18 +1136,43 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".RangeTestConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "sender"),
+    3: .same(proto: "save"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.sender) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.save) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.sender != 0 {
+      try visitor.visitSingularUInt32Field(value: self.sender, fieldNumber: 2)
+    }
+    if self.save != false {
+      try visitor.visitSingularBoolField(value: self.save, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.RangeTestConfig, rhs: ModuleConfig.RangeTestConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.sender != rhs.sender {return false}
+    if lhs.save != rhs.save {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -647,19 +1260,105 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".CannedMessageConfig"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "rotary1_enabled"),
+    2: .standard(proto: "inputbroker_pin_a"),
+    3: .standard(proto: "inputbroker_pin_b"),
+    4: .standard(proto: "inputbroker_pin_press"),
+    5: .standard(proto: "inputbroker_event_cw"),
+    6: .standard(proto: "inputbroker_event_ccw"),
+    7: .standard(proto: "inputbroker_event_press"),
+    8: .standard(proto: "updown1_enabled"),
+    9: .same(proto: "enabled"),
+    10: .standard(proto: "allow_input_source"),
+    11: .standard(proto: "send_bell"),
+  ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.rotary1Enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.inputbrokerPinA) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.inputbrokerPinB) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.inputbrokerPinPress) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.inputbrokerEventCw) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.inputbrokerEventCcw) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.inputbrokerEventPress) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.updown1Enabled) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 10: try { try decoder.decodeSingularStringField(value: &self.allowInputSource) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.sendBell) }()
+      default: break
+      }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.rotary1Enabled != false {
+      try visitor.visitSingularBoolField(value: self.rotary1Enabled, fieldNumber: 1)
+    }
+    if self.inputbrokerPinA != 0 {
+      try visitor.visitSingularUInt32Field(value: self.inputbrokerPinA, fieldNumber: 2)
+    }
+    if self.inputbrokerPinB != 0 {
+      try visitor.visitSingularUInt32Field(value: self.inputbrokerPinB, fieldNumber: 3)
+    }
+    if self.inputbrokerPinPress != 0 {
+      try visitor.visitSingularUInt32Field(value: self.inputbrokerPinPress, fieldNumber: 4)
+    }
+    if self.inputbrokerEventCw != .keyNone {
+      try visitor.visitSingularEnumField(value: self.inputbrokerEventCw, fieldNumber: 5)
+    }
+    if self.inputbrokerEventCcw != .keyNone {
+      try visitor.visitSingularEnumField(value: self.inputbrokerEventCcw, fieldNumber: 6)
+    }
+    if self.inputbrokerEventPress != .keyNone {
+      try visitor.visitSingularEnumField(value: self.inputbrokerEventPress, fieldNumber: 7)
+    }
+    if self.updown1Enabled != false {
+      try visitor.visitSingularBoolField(value: self.updown1Enabled, fieldNumber: 8)
+    }
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 9)
+    }
+    if !self.allowInputSource.isEmpty {
+      try visitor.visitSingularStringField(value: self.allowInputSource, fieldNumber: 10)
+    }
+    if self.sendBell != false {
+      try visitor.visitSingularBoolField(value: self.sendBell, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.CannedMessageConfig, rhs: ModuleConfig.CannedMessageConfig) -> Bool {
+    if lhs.rotary1Enabled != rhs.rotary1Enabled {return false}
+    if lhs.inputbrokerPinA != rhs.inputbrokerPinA {return false}
+    if lhs.inputbrokerPinB != rhs.inputbrokerPinB {return false}
+    if lhs.inputbrokerPinPress != rhs.inputbrokerPinPress {return false}
+    if lhs.inputbrokerEventCw != rhs.inputbrokerEventCw {return false}
+    if lhs.inputbrokerEventCcw != rhs.inputbrokerEventCcw {return false}
+    if lhs.inputbrokerEventPress != rhs.inputbrokerEventPress {return false}
+    if lhs.updown1Enabled != rhs.updown1Enabled {return false}
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.allowInputSource != rhs.allowInputSource {return false}
+    if lhs.sendBell != rhs.sendBell {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "KEY_NONE"),
+    10: .same(proto: "KEY_SELECT"),
+    17: .same(proto: "KEY_UP"),
+    18: .same(proto: "KEY_DOWN"),
+    19: .same(proto: "KEY_LEFT"),
+    20: .same(proto: "KEY_RIGHT"),
+    24: .same(proto: "KEY_CANCEL"),
+    27: .same(proto: "KEY_BACK"),
+  ]
 }

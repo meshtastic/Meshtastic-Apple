@@ -537,7 +537,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 						}
 						
-						// FIXME: Date from the node info, may be a bad date, needs to be fixed upstream in the firmware
 						newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						newNode.snr = decodedInfo.nodeInfo.snr
 
@@ -565,14 +564,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
 						position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 						position.altitude = decodedInfo.nodeInfo.position.altitude
-
-						if decodedInfo.nodeInfo.position.time > 0 {
-							
-							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
-						}
-						else {
-							position.time = Date()
-						}
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 						
 						var newPostions = [PositionEntity]()
 						newPostions.append(position)
@@ -598,15 +590,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 						fetchedNode[0].id = Int64(decodedInfo.nodeInfo.num)
 						fetchedNode[0].num = Int64(decodedInfo.nodeInfo.num)
-						
-						if decodedInfo.nodeInfo.lastHeard == 0 {
-
-							fetchedNode[0].lastHeard = Date()
-
-						} else {
-
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
-						}
+						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.lastHeard)))
 						fetchedNode[0].snr = decodedInfo.nodeInfo.snr
 						
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == fetchedNode[0].num {
@@ -648,14 +632,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							position.latitudeI = decodedInfo.nodeInfo.position.latitudeI
 							position.longitudeI = decodedInfo.nodeInfo.position.longitudeI
 							position.altitude = decodedInfo.nodeInfo.position.altitude
-
-							if decodedInfo.nodeInfo.position.time > 0 {
-								
-								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
-							}
-							else {
-								position.time = Date()
-							}
+							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.nodeInfo.position.time)))
 
 							let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 
@@ -730,16 +707,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 								let newMessage = MessageEntity(context: context!)
 								newMessage.messageId = Int64(decodedInfo.packet.id)
-								
-								
-								if decodedInfo.packet.rxTime == 0 {
-
-									newMessage.messageTimestamp = Int32(Date().timeIntervalSince1970)
-
-								} else {
-
-									newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
-								}
+								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
 								newMessage.receivedACK = false
 								newMessage.direction = "IN"
 								newMessage.isEmoji = decodedInfo.packet.decoded.emoji == 1
@@ -816,14 +784,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							
-							if decodedInfo.packet.rxTime > 0 {
-								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
-							}
-							else {
-								fetchedNode[0].lastHeard = Date()
-							}
-							
+							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 
 						} else {
@@ -862,15 +823,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						if fetchedNode.count == 1 {
 							fetchedNode[0].id = Int64(decodedInfo.packet.from)
 							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							if decodedInfo.packet.rxTime == 0 {
-
-								fetchedNode[0].lastHeard = Date()
-
-							} else {
-
-								fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
-
-							}
+							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
 							fetchedNode[0].snr = decodedInfo.packet.rxSnr
 								
 							if let positionMessage = try? Position(serializedData: decodedInfo.packet.decoded.payload) {
@@ -879,15 +832,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								position.latitudeI = positionMessage.latitudeI
 								position.longitudeI = positionMessage.longitudeI
 								position.altitude = positionMessage.altitude
-								
-								if positionMessage.time == 0  {
+								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 
-									position.time = Date()
-									
-								} else {
-									
-									position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-								}
 								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 								mutablePositions.add(position)
 								
@@ -975,15 +921,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								
 								if fetchedMessage != nil {
 									
-									
 									fetchedMessage!.receivedACK = true
 									fetchedMessage!.ackSNR = decodedInfo.packet.rxSnr
-									if decodedInfo.packet.rxTime <= 0 {
-										fetchedMessage!.ackTimestamp = Int32(Date().timeIntervalSince1970)
-									} else {
-										fetchedMessage!.ackTimestamp = Int32(decodedInfo.packet.rxTime)
-									}
-									
+									fetchedMessage!.ackTimestamp = Int32(decodedInfo.packet.rxTime)
 									fetchedMessage!.objectWillChange.send()
 								}
 								
