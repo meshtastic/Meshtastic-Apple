@@ -21,43 +21,59 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// This is a stub version of the old 1.1 representation of RadioConfig.
-/// But only keeping the region info.
-/// The device firmware uses this stub while migrating old nodes to the new preferences system.
-struct LegacyRadioConfig {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
+/// TODO: REPLACE
+enum ScreenFonts: SwiftProtobuf.Enum {
+  typealias RawValue = Int
 
-  var preferences: LegacyRadioConfig.LegacyPreferences {
-    get {return _preferences ?? LegacyRadioConfig.LegacyPreferences()}
-    set {_preferences = newValue}
-  }
-  /// Returns true if `preferences` has been explicitly set.
-  var hasPreferences: Bool {return self._preferences != nil}
-  /// Clears the value of `preferences`. Subsequent reads from it will return its default value.
-  mutating func clearPreferences() {self._preferences = nil}
+  ///
+  /// TODO: REPLACE
+  case fontSmall // = 0
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  ///
+  /// TODO: REPLACE
+  case fontMedium // = 1
 
-  struct LegacyPreferences {
-    // SwiftProtobuf.Message conformance is added in an extension below. See the
-    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-    // methods supported on all messages.
+  ///
+  /// TODO: REPLACE
+  case fontLarge // = 2
+  case UNRECOGNIZED(Int)
 
-    ///
-    /// The region code for my radio (US, CN, EU433, etc...)
-    var region: RegionCode = .unset
-
-    var unknownFields = SwiftProtobuf.UnknownStorage()
-
-    init() {}
+  init() {
+    self = .fontSmall
   }
 
-  init() {}
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .fontSmall
+    case 1: self = .fontMedium
+    case 2: self = .fontLarge
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
 
-  fileprivate var _preferences: LegacyRadioConfig.LegacyPreferences? = nil
+  var rawValue: Int {
+    switch self {
+    case .fontSmall: return 0
+    case .fontMedium: return 1
+    case .fontLarge: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
 }
+
+#if swift(>=4.2)
+
+extension ScreenFonts: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [ScreenFonts] = [
+    .fontSmall,
+    .fontMedium,
+    .fontLarge,
+  ]
+}
+
+#endif  // swift(>=4.2)
 
 ///
 /// This message is never sent over the wire, but it is used for serializing DB
@@ -69,17 +85,6 @@ struct DeviceState {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
-
-  ///
-  /// Moved to its own file, but we keep this here so we can automatically migrate old radio.region settings
-  var legacyRadio: LegacyRadioConfig {
-    get {return _storage._legacyRadio ?? LegacyRadioConfig()}
-    set {_uniqueStorage()._legacyRadio = newValue}
-  }
-  /// Returns true if `legacyRadio` has been explicitly set.
-  var hasLegacyRadio: Bool {return _storage._legacyRadio != nil}
-  /// Clears the value of `legacyRadio`. Subsequent reads from it will return its default value.
-  mutating func clearLegacyRadio() {_uniqueStorage()._legacyRadio = nil}
 
   ///
   /// Read only settings/info about this node
@@ -103,6 +108,8 @@ struct DeviceState {
   /// Clears the value of `owner`. Subsequent reads from it will return its default value.
   mutating func clearOwner() {_uniqueStorage()._owner = nil}
 
+  ///
+  /// TODO: REPLACE
   var nodeDb: [NodeInfo] {
     get {return _storage._nodeDb}
     set {_uniqueStorage()._nodeDb = newValue}
@@ -152,41 +159,6 @@ struct DeviceState {
     set {_uniqueStorage()._didGpsReset = newValue}
   }
 
-  ///
-  /// Canned Message Plugin message part1.
-  var cannedMessagePluginMessagePart1: String {
-    get {return _storage._cannedMessagePluginMessagePart1}
-    set {_uniqueStorage()._cannedMessagePluginMessagePart1 = newValue}
-  }
-
-  ///
-  /// Canned Message Plugin message part2.
-  var cannedMessagePluginMessagePart2: String {
-    get {return _storage._cannedMessagePluginMessagePart2}
-    set {_uniqueStorage()._cannedMessagePluginMessagePart2 = newValue}
-  }
-
-  ///
-  /// Canned Message Plugin message part3.
-  var cannedMessagePluginMessagePart3: String {
-    get {return _storage._cannedMessagePluginMessagePart3}
-    set {_uniqueStorage()._cannedMessagePluginMessagePart3 = newValue}
-  }
-
-  ///
-  /// Canned Message Plugin message part4.
-  var cannedMessagePluginMessagePart4: String {
-    get {return _storage._cannedMessagePluginMessagePart4}
-    set {_uniqueStorage()._cannedMessagePluginMessagePart4 = newValue}
-  }
-
-  ///
-  /// Canned Message Plugin message part5.
-  var cannedMessagePluginMessagePart5: String {
-    get {return _storage._cannedMessagePluginMessagePart5}
-    set {_uniqueStorage()._cannedMessagePluginMessagePart5 = newValue}
-  }
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -210,76 +182,59 @@ struct ChannelFile {
   init() {}
 }
 
-// MARK: - Code below here is support for the SwiftProtobuf runtime.
+///
+/// This can be used for customizing the firmware distribution. If populated,
+/// show a secondary bootup screen with cuatom logo and text for 2.5 seconds.
+struct OEMStore {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
-extension LegacyRadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "LegacyRadioConfig"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "preferences"),
-  ]
+  ///
+  /// The Logo width in Px
+  var oemIconWidth: UInt32 = 0
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._preferences) }()
-      default: break
-      }
-    }
-  }
+  ///
+  /// The Logo height in Px
+  var oemIconHeight: UInt32 = 0
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._preferences {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
+  ///
+  /// The Logo in xbm bytechar format
+  var oemIconBits: Data = Data()
 
-  static func ==(lhs: LegacyRadioConfig, rhs: LegacyRadioConfig) -> Bool {
-    if lhs._preferences != rhs._preferences {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
+  ///
+  /// Use this font for the OEM text.
+  var oemFont: ScreenFonts = .fontSmall
+
+  ///
+  /// Use this font for the OEM text.
+  var oemText: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
 }
 
-extension LegacyRadioConfig.LegacyPreferences: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = LegacyRadioConfig.protoMessageName + ".LegacyPreferences"
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ScreenFonts: @unchecked Sendable {}
+extension DeviceState: @unchecked Sendable {}
+extension ChannelFile: @unchecked Sendable {}
+extension OEMStore: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
+// MARK: - Code below here is support for the SwiftProtobuf runtime.
+
+extension ScreenFonts: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    15: .same(proto: "region"),
+    0: .same(proto: "FONT_SMALL"),
+    1: .same(proto: "FONT_MEDIUM"),
+    2: .same(proto: "FONT_LARGE"),
   ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 15: try { try decoder.decodeSingularEnumField(value: &self.region) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.region != .unset {
-      try visitor.visitSingularEnumField(value: self.region, fieldNumber: 15)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: LegacyRadioConfig.LegacyPreferences, rhs: LegacyRadioConfig.LegacyPreferences) -> Bool {
-    if lhs.region != rhs.region {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
 }
 
 extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "DeviceState"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "legacyRadio"),
     2: .standard(proto: "my_node"),
     3: .same(proto: "owner"),
     4: .standard(proto: "node_db"),
@@ -288,15 +243,9 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     7: .standard(proto: "rx_text_message"),
     9: .standard(proto: "no_save"),
     11: .standard(proto: "did_gps_reset"),
-    13: .standard(proto: "canned_message_plugin_message_part1"),
-    14: .standard(proto: "canned_message_plugin_message_part2"),
-    15: .standard(proto: "canned_message_plugin_message_part3"),
-    16: .standard(proto: "canned_message_plugin_message_part4"),
-    17: .standard(proto: "canned_message_plugin_message_part5"),
   ]
 
   fileprivate class _StorageClass {
-    var _legacyRadio: LegacyRadioConfig? = nil
     var _myNode: MyNodeInfo? = nil
     var _owner: User? = nil
     var _nodeDb: [NodeInfo] = []
@@ -305,18 +254,12 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _rxTextMessage: MeshPacket? = nil
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
-    var _cannedMessagePluginMessagePart1: String = String()
-    var _cannedMessagePluginMessagePart2: String = String()
-    var _cannedMessagePluginMessagePart3: String = String()
-    var _cannedMessagePluginMessagePart4: String = String()
-    var _cannedMessagePluginMessagePart5: String = String()
 
     static let defaultInstance = _StorageClass()
 
     private init() {}
 
     init(copying source: _StorageClass) {
-      _legacyRadio = source._legacyRadio
       _myNode = source._myNode
       _owner = source._owner
       _nodeDb = source._nodeDb
@@ -325,11 +268,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _rxTextMessage = source._rxTextMessage
       _noSave = source._noSave
       _didGpsReset = source._didGpsReset
-      _cannedMessagePluginMessagePart1 = source._cannedMessagePluginMessagePart1
-      _cannedMessagePluginMessagePart2 = source._cannedMessagePluginMessagePart2
-      _cannedMessagePluginMessagePart3 = source._cannedMessagePluginMessagePart3
-      _cannedMessagePluginMessagePart4 = source._cannedMessagePluginMessagePart4
-      _cannedMessagePluginMessagePart5 = source._cannedMessagePluginMessagePart5
     }
   }
 
@@ -348,7 +286,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         // allocates stack space for every case branch when no optimizations are
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._legacyRadio) }()
         case 2: try { try decoder.decodeSingularMessageField(value: &_storage._myNode) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._owner) }()
         case 4: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeDb) }()
@@ -357,11 +294,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
-        case 13: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart1) }()
-        case 14: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart2) }()
-        case 15: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart3) }()
-        case 16: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart4) }()
-        case 17: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessagePart5) }()
         default: break
         }
       }
@@ -370,24 +302,25 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if let v = _storage._legacyRadio {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      }
-      if let v = _storage._myNode {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._myNode {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      }
-      if let v = _storage._owner {
+      } }()
+      try { if let v = _storage._owner {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      }
+      } }()
       if !_storage._nodeDb.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._nodeDb, fieldNumber: 4)
       }
       if !_storage._receiveQueue.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._receiveQueue, fieldNumber: 5)
       }
-      if let v = _storage._rxTextMessage {
+      try { if let v = _storage._rxTextMessage {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-      }
+      } }()
       if _storage._version != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
       }
@@ -396,21 +329,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       }
       if _storage._didGpsReset != false {
         try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
-      }
-      if !_storage._cannedMessagePluginMessagePart1.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart1, fieldNumber: 13)
-      }
-      if !_storage._cannedMessagePluginMessagePart2.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart2, fieldNumber: 14)
-      }
-      if !_storage._cannedMessagePluginMessagePart3.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart3, fieldNumber: 15)
-      }
-      if !_storage._cannedMessagePluginMessagePart4.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart4, fieldNumber: 16)
-      }
-      if !_storage._cannedMessagePluginMessagePart5.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessagePart5, fieldNumber: 17)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -421,7 +339,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
         let rhs_storage = _args.1
-        if _storage._legacyRadio != rhs_storage._legacyRadio {return false}
         if _storage._myNode != rhs_storage._myNode {return false}
         if _storage._owner != rhs_storage._owner {return false}
         if _storage._nodeDb != rhs_storage._nodeDb {return false}
@@ -430,11 +347,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
         if _storage._noSave != rhs_storage._noSave {return false}
         if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
-        if _storage._cannedMessagePluginMessagePart1 != rhs_storage._cannedMessagePluginMessagePart1 {return false}
-        if _storage._cannedMessagePluginMessagePart2 != rhs_storage._cannedMessagePluginMessagePart2 {return false}
-        if _storage._cannedMessagePluginMessagePart3 != rhs_storage._cannedMessagePluginMessagePart3 {return false}
-        if _storage._cannedMessagePluginMessagePart4 != rhs_storage._cannedMessagePluginMessagePart4 {return false}
-        if _storage._cannedMessagePluginMessagePart5 != rhs_storage._cannedMessagePluginMessagePart5 {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -471,6 +383,62 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
   static func ==(lhs: ChannelFile, rhs: ChannelFile) -> Bool {
     if lhs.channels != rhs.channels {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "OEMStore"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "oem_icon_width"),
+    2: .standard(proto: "oem_icon_height"),
+    3: .standard(proto: "oem_icon_bits"),
+    4: .standard(proto: "oem_font"),
+    5: .standard(proto: "oem_text"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconWidth) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.oemIconHeight) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.oemIconBits) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.oemFont) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.oemText) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.oemIconWidth != 0 {
+      try visitor.visitSingularUInt32Field(value: self.oemIconWidth, fieldNumber: 1)
+    }
+    if self.oemIconHeight != 0 {
+      try visitor.visitSingularUInt32Field(value: self.oemIconHeight, fieldNumber: 2)
+    }
+    if !self.oemIconBits.isEmpty {
+      try visitor.visitSingularBytesField(value: self.oemIconBits, fieldNumber: 3)
+    }
+    if self.oemFont != .fontSmall {
+      try visitor.visitSingularEnumField(value: self.oemFont, fieldNumber: 4)
+    }
+    if !self.oemText.isEmpty {
+      try visitor.visitSingularStringField(value: self.oemText, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: OEMStore, rhs: OEMStore) -> Bool {
+    if lhs.oemIconWidth != rhs.oemIconWidth {return false}
+    if lhs.oemIconHeight != rhs.oemIconHeight {return false}
+    if lhs.oemIconBits != rhs.oemIconBits {return false}
+    if lhs.oemFont != rhs.oemFont {return false}
+    if lhs.oemText != rhs.oemText {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

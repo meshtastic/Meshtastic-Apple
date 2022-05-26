@@ -158,7 +158,7 @@ struct AppSettings: View {
 
             GeometryReader { _ in
 
-				List {
+				Form {
 					Section(header: Text("USER DETAILS")) {
 
 						HStack {
@@ -205,6 +205,13 @@ struct AppSettings: View {
 								.font(.caption)
 								.listRowSeparator(.visible)
 						}
+					}
+					Section(header: Text("MESH OPTIONS")) {
+							
+						NavigationLink(destination: ShareChannel()) {
+							Text("Share Your Channel vis QR Code")
+						}
+					
 					}
 					Section(header: Text("MESSAGING OPTIONS")) {
 

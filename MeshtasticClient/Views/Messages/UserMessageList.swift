@@ -101,7 +101,7 @@ struct UserMessageList: View {
 														
 														Button(action: {
 															
-															if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent ❤️ Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -115,7 +115,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 															
-															if bleManager.sendMessage(message: "👍", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "👍", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent 👍 Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -129,7 +129,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 															
-															if bleManager.sendMessage(message: "👎", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "👎", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent 👎 Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -143,7 +143,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 															
-															if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent 🤣 Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -157,7 +157,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 									
-															if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent ‼️ Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -171,7 +171,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 															
-															if bleManager.sendMessage(message: "❓", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "❓", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent ❓ Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -185,7 +185,7 @@ struct UserMessageList: View {
 														}
 														Button(action: {
 														
-															if bleManager.sendMessage(message: "💩", toUserNum: user.num, isTapback: true, replyID: message.messageId) {
+															if bleManager.sendMessage(message: "💩", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 																
 																print("Sent 💩 Tapback")
 																self.context.refresh(user, mergeChanges: true)
@@ -434,7 +434,7 @@ struct UserMessageList: View {
 				.padding(.bottom, 15)
 
 				Button(action: {
-					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, isTapback: false, replyID: replyMessageId) {
+					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, isEmoji: false, replyID: replyMessageId) {
 						typingMessage = ""
 						focusedField = nil
 						replyMessageId = 0

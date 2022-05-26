@@ -21,14 +21,11 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// An example app to show off the plugin system. This message is used for
+/// An example app to show off the module system. This message is used for
 /// REMOTE_HARDWARE_APP PortNums.
-///
 /// Also provides easy remote access to any GPIO.
-///
 /// In the future other remote hardware operations can be added based on user interest
 /// (i.e. serial output, spi/i2c input/output).
-///
 /// FIXME - currently this feature is turned on by default which is dangerous
 /// because no security yet (beyond the channel mechanism).
 /// It should be off by default and then protected based on some TBD mechanism
@@ -53,6 +50,8 @@ struct HardwareMessage {
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  ///
+  /// TODO: REPLACE
   enum TypeEnum: SwiftProtobuf.Enum {
     typealias RawValue = Int
 
@@ -131,6 +130,11 @@ extension HardwareMessage.TypeEnum: CaseIterable {
 }
 
 #endif  // swift(>=4.2)
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension HardwareMessage: @unchecked Sendable {}
+extension HardwareMessage.TypeEnum: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 

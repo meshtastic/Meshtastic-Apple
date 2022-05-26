@@ -20,13 +20,19 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+///
+/// TODO: REPLACE
 struct StoreAndForward {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///
+  /// TODO: REPLACE
   var rr: StoreAndForward.RequestResponse = .unset
 
+  ///
+  /// TODO: REPLACE
   var stats: StoreAndForward.Statistics {
     get {return _stats ?? StoreAndForward.Statistics()}
     set {_stats = newValue}
@@ -36,6 +42,8 @@ struct StoreAndForward {
   /// Clears the value of `stats`. Subsequent reads from it will return its default value.
   mutating func clearStats() {self._stats = nil}
 
+  ///
+  /// TODO: REPLACE
   var history: StoreAndForward.History {
     get {return _history ?? StoreAndForward.History()}
     set {_history = newValue}
@@ -45,6 +53,8 @@ struct StoreAndForward {
   /// Clears the value of `history`. Subsequent reads from it will return its default value.
   mutating func clearHistory() {self._history = nil}
 
+  ///
+  /// TODO: REPLACE
   var heartbeat: StoreAndForward.Heartbeat {
     get {return _heartbeat ?? StoreAndForward.Heartbeat()}
     set {_heartbeat = newValue}
@@ -161,6 +171,8 @@ struct StoreAndForward {
 
   }
 
+  ///
+  /// TODO: REPLACE
   struct Statistics {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -207,6 +219,8 @@ struct StoreAndForward {
     init() {}
   }
 
+  ///
+  /// TODO: REPLACE
   struct History {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -229,6 +243,8 @@ struct StoreAndForward {
     init() {}
   }
 
+  ///
+  /// TODO: REPLACE
   struct Heartbeat {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -277,6 +293,14 @@ extension StoreAndForward.RequestResponse: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+#if swift(>=5.5) && canImport(_Concurrency)
+extension StoreAndForward: @unchecked Sendable {}
+extension StoreAndForward.RequestResponse: @unchecked Sendable {}
+extension StoreAndForward.Statistics: @unchecked Sendable {}
+extension StoreAndForward.History: @unchecked Sendable {}
+extension StoreAndForward.Heartbeat: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -304,18 +328,22 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.rr != .unset {
       try visitor.visitSingularEnumField(value: self.rr, fieldNumber: 1)
     }
-    if let v = self._stats {
+    try { if let v = self._stats {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
-    if let v = self._history {
+    } }()
+    try { if let v = self._history {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }
-    if let v = self._heartbeat {
+    } }()
+    try { if let v = self._heartbeat {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 

@@ -21,10 +21,13 @@
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D826F3093800029299 /* MessageBubble.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
+		DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158B2824A91E0032668E /* module_config.pb.swift */; };
+		DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158D2824AA7E0032668E /* config.pb.swift */; };
 		DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */; };
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
+		DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6B85A728009258000ACD6B /* ShareChannel.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
@@ -43,8 +46,8 @@
 		DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6426ED0A490058C060 /* channel.pb.swift */; };
 		DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */; };
 		DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */; };
-		DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */; };
 		DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6D26ED19040058C060 /* Extensions.swift */; };
+		DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticClientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -52,7 +55,9 @@
 		DDC2E17A26CE248F0042C5E4 /* MeshtasticClientUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E17926CE248F0042C5E4 /* MeshtasticClientUITests.swift */; };
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
+		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+		DDCA31322826009C00207175 /* PassKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDCA31312826009C00207175 /* PassKit.framework */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 /* End PBXBuildFile section */
 
@@ -88,9 +93,12 @@
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD47E3D826F3093800029299 /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		DD4C158B2824A91E0032668E /* module_config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = module_config.pb.swift; sourceTree = "<group>"; };
+		DD4C158D2824AA7E0032668E /* config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = config.pb.swift; sourceTree = "<group>"; };
 		DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
+		DD6B85A728009258000ACD6B /* ShareChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannel.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
@@ -110,8 +118,9 @@
 		DDAF8C6426ED0A490058C060 /* channel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = channel.pb.swift; sourceTree = "<group>"; };
 		DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = remote_hardware.pb.swift; sourceTree = "<group>"; };
 		DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = deviceonly.pb.swift; sourceTree = "<group>"; };
-		DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = environmental_measurement.pb.swift; sourceTree = "<group>"; };
 		DDAF8C6D26ED19040058C060 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = telemetry.pb.swift; sourceTree = "<group>"; };
+		DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 3.xcdatamodel"; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* MeshtasticClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeshtasticClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticClientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticClientApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -125,7 +134,9 @@
 		DDC2E17B26CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
+		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		DDCA31312826009C00207175 /* PassKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PassKit.framework; path = System/Library/Frameworks/PassKit.framework; sourceTree = SDKROOT; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -134,6 +145,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDCA31322826009C00207175 /* PassKit.framework in Frameworks */,
 				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
 				DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */,
 			);
@@ -199,6 +211,7 @@
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
+				DD6B85A728009258000ACD6B /* ShareChannel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -206,6 +219,7 @@
 		DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DDCA31312826009C00207175 /* PassKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -217,14 +231,16 @@
 				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
 				C9A88B56278B559900BD810A /* apponly.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
+				DD4C158D2824AA7E0032668E /* config.pb.swift */,
 				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
-				DDAF8C6A26ED0DD80058C060 /* environmental_measurement.pb.swift */,
 				DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */,
+				DD4C158B2824A91E0032668E /* module_config.pb.swift */,
 				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
 				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
 				DDAF8C5E26ED09B50058C060 /* radioconfig.pb.swift */,
 				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
 				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
+				DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */,
 			);
 			path = Protobufs;
 			sourceTree = "<group>";
@@ -342,6 +358,7 @@
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
 				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
+				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -533,12 +550,13 @@
 				DDAF8C5F26ED09B50058C060 /* radioconfig.pb.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
+				DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
-				DDAF8C6B26ED0DD80058C060 /* environmental_measurement.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
@@ -546,6 +564,7 @@
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
 				DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
+				DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
@@ -558,8 +577,10 @@
 				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
+				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
+				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
@@ -730,17 +751,18 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.53;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -761,17 +783,18 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = MeshtasticClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.53;
+				MARKETING_VERSION = 1.3.1;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -786,6 +809,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = MeshtasticClientTests/Info.plist;
@@ -808,6 +832,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				INFOPLIST_FILE = MeshtasticClientTests/Info.plist;
@@ -920,7 +945,7 @@
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.19.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -942,10 +967,11 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */,
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */;
+			currentVersion = DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = MeshtasticClient/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

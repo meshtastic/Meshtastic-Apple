@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -56,7 +37,6 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// users COULD type in a channel name and be able to talk.
 /// Y is a lower case letter from a-z that represents the channel 'speed' settings
 /// (for some future definition of speed)
-///
 /// FIXME: Add description of multi-channel support and how primary vs secondary channels are used.
 /// FIXME: explain how apps use channels for security.
 /// explain how remote settings and remote gpio are managed as an example
@@ -64,38 +44,6 @@ struct ChannelSettings {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
-
-  ///
-  /// If zero then, use default max legal continuous power (ie. something that won't
-  /// burn out the radio hardware)
-  /// In most cases you should use zero here.
-  /// Units are in dBm.
-  var txPower: Int32 = 0
-
-  ///
-  /// Note: This is the 'old' mechanism for specifying channel parameters.
-  /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
-  /// As a heuristic: If bandwidth is specified, do not use modem_config.
-  /// Because protobufs take ZERO space when the value is zero this works out nicely.
-  /// This value is replaced by bandwidth/spread_factor/coding_rate.
-  /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-  var modemConfig: ChannelSettings.ModemConfig = .bw125Cr45Sf128
-
-  ///
-  /// Bandwidth in MHz
-  /// Certain bandwidth numbers are 'special' and will be converted to the
-  /// appropriate floating point value: 31 -> 31.25MHz
-  var bandwidth: UInt32 = 0
-
-  ///
-  /// A number from 7 to 12.
-  /// Indicates number of chirps per symbol as 1<<spread_factor.
-  var spreadFactor: UInt32 = 0
-
-  ///
-  /// The denominator of the coding rate.
-  /// ie for 4/8, the value is 8. 5/8 the value is 5.
-  var codingRate: UInt32 = 0
 
   ///
   /// NOTE: this field is _independent_ and unrelated to the concepts in channel.proto.
@@ -139,7 +87,7 @@ struct ChannelSettings {
   /// is the special (minimally secure) "Default"channel.
   /// In user interfaces it should be rendered as a local language translation of "X".
   /// For channel_num hashing empty string will be treated as "X".
-  /// Where "X" is selected based on the English words listed above for ModemConfig
+  /// Where "X" is selected based on the English words listed above for ModemPreset
   var name: String = String()
 
   ///
@@ -166,91 +114,8 @@ struct ChannelSettings {
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  ///
-  /// Standard predefined channel settings
-  /// Note: these mappings must match ModemConfigChoice in the device code.
-  enum ModemConfig: SwiftProtobuf.Enum {
-    typealias RawValue = Int
-
-    ///
-    /// < Bw = 125 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. ShortSlow | Short Range / Slow (5.469 kbps)
-    case bw125Cr45Sf128 // = 0
-
-    ///
-    /// < Bw = 500 kHz, Cr = 4/5, Sf(7) = 128chips/symbol, CRC
-    /// < on. ShortFast | Short Range / Fast (21.875 kbps)
-    case bw500Cr45Sf128 // = 1
-
-    ///
-    /// < Bw = 31.25 kHz, Cr = 4/8, Sf(9) = 512chips/symbol,
-    /// < CRC on. LongFast | Long Range / Fast (275 bps)
-    case bw3125Cr48Sf512 // = 2
-
-    ///
-    /// < Bw = 125 kHz, Cr = 4/8, Sf(12) = 4096chips/symbol, CRC
-    /// < on. LongSlow | Long Range / Slow (183 bps)
-    case bw125Cr48Sf4096 // = 3
-
-    ///
-    /// < Bw = 250 kHz, Cr = 4/6, Sf(11) = 2048chips/symbol, CRC
-    /// < on. MediumSlow | Medium Range / Slow (895 bps)
-    case bw250Cr46Sf2048 // = 4
-
-    ///
-    /// < Bw = 250 kHz, Cr = 4/7, Sf(10) = 1024chips/symbol, CRC
-    /// < on. MediumFast | Medium Range / Fast (1400 bps)
-    case bw250Cr47Sf1024 // = 5
-    case UNRECOGNIZED(Int)
-
-    init() {
-      self = .bw125Cr45Sf128
-    }
-
-    init?(rawValue: Int) {
-      switch rawValue {
-      case 0: self = .bw125Cr45Sf128
-      case 1: self = .bw500Cr45Sf128
-      case 2: self = .bw3125Cr48Sf512
-      case 3: self = .bw125Cr48Sf4096
-      case 4: self = .bw250Cr46Sf2048
-      case 5: self = .bw250Cr47Sf1024
-      default: self = .UNRECOGNIZED(rawValue)
-      }
-    }
-
-    var rawValue: Int {
-      switch self {
-      case .bw125Cr45Sf128: return 0
-      case .bw500Cr45Sf128: return 1
-      case .bw3125Cr48Sf512: return 2
-      case .bw125Cr48Sf4096: return 3
-      case .bw250Cr46Sf2048: return 4
-      case .bw250Cr47Sf1024: return 5
-      case .UNRECOGNIZED(let i): return i
-      }
-    }
-
-  }
-
   init() {}
 }
-
-#if swift(>=4.2)
-
-extension ChannelSettings.ModemConfig: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [ChannelSettings.ModemConfig] = [
-    .bw125Cr45Sf128,
-    .bw500Cr45Sf128,
-    .bw3125Cr48Sf512,
-    .bw125Cr48Sf4096,
-    .bw250Cr46Sf2048,
-    .bw250Cr47Sf1024,
-  ]
-}
-
-#endif  // swift(>=4.2)
 
 ///
 /// A pair of a channel number, mode and the (sharable) settings for that channel
@@ -276,18 +141,18 @@ struct Channel {
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   mutating func clearSettings() {self._settings = nil}
 
+  ///
+  /// TODO: REPLACE
   var role: Channel.Role = .disabled
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// How this channel is being used (or not).
-  ///
   /// Note: this field is an enum to give us options for the future.
   /// In particular, someday we might make a 'SCANNING' option.
   /// SCANNING channels could have different frequencies and the radio would
   /// occasionally check that freq to see if anything is being transmitted.
-  ///
   /// For devices that have multiple physical radios attached, we could keep multiple PRIMARY/SCANNING channels active at once to allow
   /// cross band routing as needed.
   /// If a device has only a single radio (the common case) only one channel can be PRIMARY at a time
@@ -351,16 +216,17 @@ extension Channel.Role: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ChannelSettings: @unchecked Sendable {}
+extension Channel: @unchecked Sendable {}
+extension Channel.Role: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ChannelSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "tx_power"),
-    3: .standard(proto: "modem_config"),
-    6: .same(proto: "bandwidth"),
-    7: .standard(proto: "spread_factor"),
-    8: .standard(proto: "coding_rate"),
     9: .standard(proto: "channel_num"),
     4: .same(proto: "psk"),
     5: .same(proto: "name"),
@@ -375,13 +241,8 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
-      case 3: try { try decoder.decodeSingularEnumField(value: &self.modemConfig) }()
       case 4: try { try decoder.decodeSingularBytesField(value: &self.psk) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.bandwidth) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.spreadFactor) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.codingRate) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
       case 10: try { try decoder.decodeSingularFixed32Field(value: &self.id) }()
       case 16: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
@@ -392,26 +253,11 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.txPower != 0 {
-      try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 1)
-    }
-    if self.modemConfig != .bw125Cr45Sf128 {
-      try visitor.visitSingularEnumField(value: self.modemConfig, fieldNumber: 3)
-    }
     if !self.psk.isEmpty {
       try visitor.visitSingularBytesField(value: self.psk, fieldNumber: 4)
     }
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 5)
-    }
-    if self.bandwidth != 0 {
-      try visitor.visitSingularUInt32Field(value: self.bandwidth, fieldNumber: 6)
-    }
-    if self.spreadFactor != 0 {
-      try visitor.visitSingularUInt32Field(value: self.spreadFactor, fieldNumber: 7)
-    }
-    if self.codingRate != 0 {
-      try visitor.visitSingularUInt32Field(value: self.codingRate, fieldNumber: 8)
     }
     if self.channelNum != 0 {
       try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 9)
@@ -429,11 +275,6 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 
   static func ==(lhs: ChannelSettings, rhs: ChannelSettings) -> Bool {
-    if lhs.txPower != rhs.txPower {return false}
-    if lhs.modemConfig != rhs.modemConfig {return false}
-    if lhs.bandwidth != rhs.bandwidth {return false}
-    if lhs.spreadFactor != rhs.spreadFactor {return false}
-    if lhs.codingRate != rhs.codingRate {return false}
     if lhs.channelNum != rhs.channelNum {return false}
     if lhs.psk != rhs.psk {return false}
     if lhs.name != rhs.name {return false}
@@ -443,17 +284,6 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
-}
-
-extension ChannelSettings.ModemConfig: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "Bw125Cr45Sf128"),
-    1: .same(proto: "Bw500Cr45Sf128"),
-    2: .same(proto: "Bw31_25Cr48Sf512"),
-    3: .same(proto: "Bw125Cr48Sf4096"),
-    4: .same(proto: "Bw250Cr46Sf2048"),
-    5: .same(proto: "Bw250Cr47Sf1024"),
-  ]
 }
 
 extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -479,12 +309,16 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.index != 0 {
       try visitor.visitSingularInt32Field(value: self.index, fieldNumber: 1)
     }
-    if let v = self._settings {
+    try { if let v = self._settings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     if self.role != .disabled {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 3)
     }

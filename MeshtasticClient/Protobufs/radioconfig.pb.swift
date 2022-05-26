@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -41,25 +22,65 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 
 ///
 /// The frequency/regulatory region the user has selected.
-///
 /// Note: In 1.0 builds (which must still be supported by the android app for a
 /// long time) this field will be unpopulated.
-///
 /// If firmware is ever upgraded from an old 1.0ish build, the old
 /// MyNodeInfo.region string will be used to set UserPreferences.region and the
 /// old value will be no longer set.
 enum RegionCode: SwiftProtobuf.Enum {
   typealias RawValue = Int
+
+  ///
+  /// TODO: REPLACE
   case unset // = 0
+
+  ///
+  /// TODO: REPLACE
   case us // = 1
+
+  ///
+  /// TODO: REPLACE
   case eu433 // = 2
-  case eu865 // = 3
+
+  ///
+  /// TODO: REPLACE
+  case eu868 // = 3
+
+  ///
+  /// TODO: REPLACE
   case cn // = 4
+
+  ///
+  /// TODO: REPLACE
   case jp // = 5
+
+  ///
+  /// TODO: REPLACE
   case anz // = 6
+
+  ///
+  /// TODO: REPLACE
   case kr // = 7
+
+  ///
+  /// TODO: REPLACE
   case tw // = 8
+
+  ///
+  /// TODO: REPLACE
   case ru // = 9
+
+  ///
+  /// TODO: REPLACE
+  case `in` // = 10
+
+  ///
+  /// TODO: REPLACE
+  case nz865 // = 11
+
+  ///
+  /// TODO: REPLACE
+  case th // = 12
   case UNRECOGNIZED(Int)
 
   init() {
@@ -71,13 +92,16 @@ enum RegionCode: SwiftProtobuf.Enum {
     case 0: self = .unset
     case 1: self = .us
     case 2: self = .eu433
-    case 3: self = .eu865
+    case 3: self = .eu868
     case 4: self = .cn
     case 5: self = .jp
     case 6: self = .anz
     case 7: self = .kr
     case 8: self = .tw
     case 9: self = .ru
+    case 10: self = .in
+    case 11: self = .nz865
+    case 12: self = .th
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -87,13 +111,16 @@ enum RegionCode: SwiftProtobuf.Enum {
     case .unset: return 0
     case .us: return 1
     case .eu433: return 2
-    case .eu865: return 3
+    case .eu868: return 3
     case .cn: return 4
     case .jp: return 5
     case .anz: return 6
     case .kr: return 7
     case .tw: return 8
     case .ru: return 9
+    case .in: return 10
+    case .nz865: return 11
+    case .th: return 12
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -108,13 +135,91 @@ extension RegionCode: CaseIterable {
     .unset,
     .us,
     .eu433,
-    .eu865,
+    .eu868,
     .cn,
     .jp,
     .anz,
     .kr,
     .tw,
     .ru,
+    .in,
+    .nz865,
+    .th,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///
+/// Defines the device's role on the Mesh network
+///   unset
+///     Behave normally.
+///   Router
+///     Functions as a router
+enum Role: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  ///
+  /// Client device role
+  case client // = 0
+
+  ///
+  /// ClientMute device role
+  ///   This is like the client but packets will not hop over this node. Would be
+  ///   useful if you want to save power by not contributing to the mesh.
+  case clientMute // = 1
+
+  ///
+  /// Router device role.
+  ///   Uses an agressive algirithem for the flood networking so packets will
+  ///   prefer to be routed over this node. Also assume that this will be generally
+  ///   unattended and so will turn off the wifi/ble radio as well as the oled screen.
+  case router // = 2
+
+  ///
+  /// RouterClient device role
+  ///   Uses an agressive algirithem for the flood networking so packets will
+  ///   prefer to be routed over this node. Similiar power management as a regular
+  ///   client, so the RouterClient can be used as both a Router and a Client. Useful
+  ///   as a well placed base station that you could also use to send messages.
+  case routerClient // = 3
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .client
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .client
+    case 1: self = .clientMute
+    case 2: self = .router
+    case 3: self = .routerClient
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .client: return 0
+    case .clientMute: return 1
+    case .router: return 2
+    case .routerClient: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension Role: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Role] = [
+    .client,
+    .clientMute,
+    .router,
+    .routerClient,
   ]
 }
 
@@ -125,22 +230,73 @@ extension RegionCode: CaseIterable {
 /// configured. This is passed into the axp power management chip like on the tbeam.
 enum ChargeCurrent: SwiftProtobuf.Enum {
   typealias RawValue = Int
+
+  ///
+  /// TODO: REPLACE
   case maunset // = 0
+
+  ///
+  /// TODO: REPLACE
   case ma100 // = 1
+
+  ///
+  /// TODO: REPLACE
   case ma190 // = 2
+
+  ///
+  /// TODO: REPLACE
   case ma280 // = 3
+
+  ///
+  /// TODO: REPLACE
   case ma360 // = 4
+
+  ///
+  /// TODO: REPLACE
   case ma450 // = 5
+
+  ///
+  /// TODO: REPLACE
   case ma550 // = 6
+
+  ///
+  /// TODO: REPLACE
   case ma630 // = 7
+
+  ///
+  /// TODO: REPLACE
   case ma700 // = 8
+
+  ///
+  /// TODO: REPLACE
   case ma780 // = 9
+
+  ///
+  /// TODO: REPLACE
   case ma880 // = 10
+
+  ///
+  /// TODO: REPLACE
   case ma960 // = 11
+
+  ///
+  /// TODO: REPLACE
   case ma1000 // = 12
+
+  ///
+  /// TODO: REPLACE
   case ma1080 // = 13
+
+  ///
+  /// TODO: REPLACE
   case ma1160 // = 14
+
+  ///
+  /// TODO: REPLACE
   case ma1240 // = 15
+
+  ///
+  /// TODO: REPLACE
   case ma1320 // = 16
   case UNRECOGNIZED(Int)
 
@@ -218,81 +374,6 @@ extension ChargeCurrent: CaseIterable {
     .ma1160,
     .ma1240,
     .ma1320,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-///
-/// How the GPS hardware in this unit is operated.
-/// Note: This is independent of how our location is shared with other devices.
-/// For that see LocationSharing
-enum GpsOperation: SwiftProtobuf.Enum {
-  typealias RawValue = Int
-
-  ///
-  /// This is treated as GpsOpMobile - it is the default setting
-  case gpsOpUnset // = 0
-
-  ///
-  /// Note: This mode was removed, because it is identical go GpsOpMobile with a gps_update_rate of once per day
-  /// This node is mostly stationary, we should try to get location only once per day,
-  /// Once we have that position we should turn the GPS to sleep mode
-  /// This is the recommended configuration for stationary 'router' nodes
-  case gpsOpStationary // = 1
-
-  ///
-  /// This node is mobile and we should get GPS position at a rate governed by gps_update_rate
-  case gpsOpMobile // = 2
-
-  ///
-  /// We should only use the GPS to get time (no location data should be acquired/stored)
-  /// Once we have the time we treat gps_update_interval as MAXINT (i.e. sleep forever)
-  case gpsOpTimeOnly // = 3
-
-  ///
-  /// GPS is always turned off - this mode is not recommended - use GpsOpTimeOnly instead
-  case gpsOpDisabled // = 4
-  case UNRECOGNIZED(Int)
-
-  init() {
-    self = .gpsOpUnset
-  }
-
-  init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .gpsOpUnset
-    case 1: self = .gpsOpStationary
-    case 2: self = .gpsOpMobile
-    case 3: self = .gpsOpTimeOnly
-    case 4: self = .gpsOpDisabled
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  var rawValue: Int {
-    switch self {
-    case .gpsOpUnset: return 0
-    case .gpsOpStationary: return 1
-    case .gpsOpMobile: return 2
-    case .gpsOpTimeOnly: return 3
-    case .gpsOpDisabled: return 4
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-}
-
-#if swift(>=4.2)
-
-extension GpsOperation: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [GpsOperation] = [
-    .gpsOpUnset,
-    .gpsOpStationary,
-    .gpsOpMobile,
-    .gpsOpTimeOnly,
-    .gpsOpDisabled,
   ]
 }
 
@@ -382,98 +463,52 @@ extension GpsCoordinateFormat: CaseIterable {
 #endif  // swift(>=4.2)
 
 ///
-/// How our location is shared with other nodes (or the local phone)
-enum LocationSharing: SwiftProtobuf.Enum {
-  typealias RawValue = Int
-
-  ///
-  /// This is the default and treated as LocEnabled.
-  case locUnset // = 0
-
-  ///
-  /// We are sharing our location
-  case locEnabled // = 1
-
-  ///
-  /// We are not sharing our location (if the unit has a GPS it will default to only get time - i.e. GpsOpTimeOnly)
-  case locDisabled // = 2
-  case UNRECOGNIZED(Int)
-
-  init() {
-    self = .locUnset
-  }
-
-  init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .locUnset
-    case 1: self = .locEnabled
-    case 2: self = .locDisabled
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  var rawValue: Int {
-    switch self {
-    case .locUnset: return 0
-    case .locEnabled: return 1
-    case .locDisabled: return 2
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-}
-
-#if swift(>=4.2)
-
-extension LocationSharing: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [LocationSharing] = [
-    .locUnset,
-    .locEnabled,
-    .locDisabled,
-  ]
-}
-
-#endif  // swift(>=4.2)
-
-///
 /// Bit field of boolean configuration options, indicating which optional
 ///   fields to include when assembling POSITION messages
 /// Longitude and latitude are always included (also time if GPS-synced)
-///
 /// NOTE: the more fields are included, the larger the message will be -
 ///   leading to longer airtime and a higher risk of packet loss
 enum PositionFlags: SwiftProtobuf.Enum {
   typealias RawValue = Int
 
-  /// Required for compilation 
+  ///
+  /// Required for compilation
   case posUndefined // = 0
 
-  /// Include an altitude value (if available) 
+  ///
+  /// Include an altitude value (if available)
   case posAltitude // = 1
 
-  /// Altitude value is MSL 
+  ///
+  /// Altitude value is MSL
   case posAltMsl // = 2
 
-  /// Include geoidal separation 
+  ///
+  /// Include geoidal separation
   case posGeoSep // = 4
 
-  /// Include the DOP value ; PDOP used by default, see below 
+  ///
+  /// Include the DOP value ; PDOP used by default, see below
   case posDop // = 8
 
-  /// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP 
+  ///
+  /// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP
   case posHvdop // = 16
 
-  /// Include battery level 
+  ///
+  /// Include battery level
   case posBattery // = 32
 
-  /// Include number of "satellites in view" 
+  ///
+  /// Include number of "satellites in view"
   case posSatinview // = 64
 
-  /// Include a sequence number incremented per packet 
+  ///
+  /// Include a sequence number incremented per packet
   case posSeqNos // = 128
 
-  /// Include positional timestamp (from GPS solution) 
+  ///
+  /// Include positional timestamp (from GPS solution)
   case posTimestamp // = 256
   case UNRECOGNIZED(Int)
 
@@ -535,17 +570,41 @@ extension PositionFlags: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+///
+/// TODO: REPLACE
 enum InputEventChar: SwiftProtobuf.Enum {
   typealias RawValue = Int
+
+  ///
+  /// TODO: REPLACE
   case keyNone // = 0
+
+  ///
+  /// TODO: REPLACE
   case keyUp // = 17
+
+  ///
+  /// TODO: REPLACE
   case keyDown // = 18
+
+  ///
+  /// TODO: REPLACE
   case keyLeft // = 19
+
+  ///
+  /// TODO: REPLACE
   case keyRight // = 20
 
-  /// '\n' 
+  ///
+  /// '\n'
   case keySelect // = 10
+
+  ///
+  /// TODO: REPLACE
   case keyBack // = 27
+
+  ///
+  /// TODO: REPLACE
   case keyCancel // = 24
   case UNRECOGNIZED(Int)
 
@@ -610,6 +669,8 @@ struct RadioConfig {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///
+  /// TODO: REPLACE
   var preferences: RadioConfig.UserPreferences {
     get {return _preferences ?? RadioConfig.UserPreferences()}
     set {_preferences = newValue}
@@ -622,7 +683,7 @@ struct RadioConfig {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
-  /// See [software design](/software/other/sw-design.md) for more information on these preferences
+  /// See [software design](/docs/software/other/sw-design) for more information on these preferences
   struct UserPreferences {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -638,22 +699,14 @@ struct RadioConfig {
 
     ///
     /// We should send our position this often (but only if it has changed significantly)
-    /// Defaults to 15 minutes
-    var positionBroadcastSmart: Bool {
-      get {return _storage._positionBroadcastSmart}
-      set {_uniqueStorage()._positionBroadcastSmart = newValue}
-    }
-
-    ///
-    /// Send our owner info at least this often (also we always send once at boot - to rejoin the mesh)
-    var sendOwnerInterval: UInt32 {
-      get {return _storage._sendOwnerInterval}
-      set {_uniqueStorage()._sendOwnerInterval = newValue}
+    var positionBroadcastSmartDisabled: Bool {
+      get {return _storage._positionBroadcastSmartDisabled}
+      set {_uniqueStorage()._positionBroadcastSmartDisabled = newValue}
     }
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of 1 minute
     var waitBluetoothSecs: UInt32 {
       get {return _storage._waitBluetoothSecs}
@@ -662,7 +715,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of one minute
     var screenOnSecs: UInt32 {
       get {return _storage._screenOnSecs}
@@ -671,7 +724,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of 15 minutes
     /// IMPORTANT NOTE FOR DEVICE CLIENTS: YOU MUST SEND SOME SORT OF PACKET TO THE PHONE AT LEAST THIS OFTEN OR THE DEVICE WILL DECIDE YOU ARE GONE!
     var phoneTimeoutSecs: UInt32 {
@@ -681,16 +734,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
-    /// 0 for default of two hours, MAXUINT for disabled
-    var phoneSdsTimeoutSec: UInt32 {
-      get {return _storage._phoneSdsTimeoutSec}
-      set {_uniqueStorage()._phoneSdsTimeoutSec = newValue}
-    }
-
-    ///
-    /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of two hours, MAXUINT for disabled
     var meshSdsTimeoutSecs: UInt32 {
       get {return _storage._meshSdsTimeoutSecs}
@@ -699,7 +743,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of one year
     var sdsSecs: UInt32 {
       get {return _storage._sdsSecs}
@@ -708,7 +752,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of 3600
     var lsSecs: UInt32 {
       get {return _storage._lsSecs}
@@ -717,7 +761,7 @@ struct RadioConfig {
 
     ///
     /// Power management state machine option.
-    /// See [power management](/software/other/power.md) for details.
+    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of 10 seconds
     var minWakeSecs: UInt32 {
       get {return _storage._minWakeSecs}
@@ -762,14 +806,10 @@ struct RadioConfig {
     }
 
     ///
-    /// Are we operating as a router.
-    /// Changes behavior in the following ways:
-    /// The device will only sleep for critically low battery level (i.e. always tries to stay alive for the mesh)
-    /// In the future routing decisions will preferentially route packets through nodes with this attribute (because assumed
-    /// good line of sight)
-    var isRouter: Bool {
-      get {return _storage._isRouter}
-      set {_uniqueStorage()._isRouter = newValue}
+    /// Sets the role of node
+    var role: Role {
+      get {return _storage._role}
+      set {_uniqueStorage()._role = newValue}
     }
 
     ///
@@ -798,23 +838,21 @@ struct RadioConfig {
     }
 
     ///
-    /// How our location is shared with other nodes (or the local phone)
-    var locationShare: LocationSharing {
-      get {return _storage._locationShare}
-      set {_uniqueStorage()._locationShare = newValue}
+    /// Should we disbale location sharing with other nodes (or the local phone)
+    var locationShareDisabled: Bool {
+      get {return _storage._locationShareDisabled}
+      set {_uniqueStorage()._locationShareDisabled = newValue}
     }
 
     ///
-    /// How the GPS hardware in this unit is operated.
-    /// Note: This is independent of how our location is shared with other devices.
-    /// For that see LocationSharing
-    var gpsOperation: GpsOperation {
-      get {return _storage._gpsOperation}
-      set {_uniqueStorage()._gpsOperation = newValue}
+    /// Should the GPS be disabled for this node?
+    var gpsDisabled: Bool {
+      get {return _storage._gpsDisabled}
+      set {_uniqueStorage()._gpsDisabled = newValue}
     }
 
     ///
-    /// How often should we try to get GPS position (in seconds) when we are in GpsOpMobile mode?
+    /// How often should we try to get GPS position (in seconds)
     /// or zero for the default of once every 30 seconds
     /// or a very large value (maxint) to update only once at boot.
     var gpsUpdateInterval: UInt32 {
@@ -916,179 +954,154 @@ struct RadioConfig {
     }
 
     ///
-    /// Preferences for the SerialPlugin
-    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration.
-    var serialpluginEnabled: Bool {
-      get {return _storage._serialpluginEnabled}
-      set {_uniqueStorage()._serialpluginEnabled = newValue}
-    }
-
-    var serialpluginEcho: Bool {
-      get {return _storage._serialpluginEcho}
-      set {_uniqueStorage()._serialpluginEcho = newValue}
-    }
-
-    var serialpluginRxd: UInt32 {
-      get {return _storage._serialpluginRxd}
-      set {_uniqueStorage()._serialpluginRxd = newValue}
-    }
-
-    var serialpluginTxd: UInt32 {
-      get {return _storage._serialpluginTxd}
-      set {_uniqueStorage()._serialpluginTxd = newValue}
-    }
-
-    var serialpluginTimeout: UInt32 {
-      get {return _storage._serialpluginTimeout}
-      set {_uniqueStorage()._serialpluginTimeout = newValue}
-    }
-
-    var serialpluginMode: UInt32 {
-      get {return _storage._serialpluginMode}
-      set {_uniqueStorage()._serialpluginMode = newValue}
+    /// Preferences for the SerialModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var serialModuleEnabled: Bool {
+      get {return _storage._serialModuleEnabled}
+      set {_uniqueStorage()._serialModuleEnabled = newValue}
     }
 
     ///
-    /// Preferences for the ExternalNotificationPlugin
-    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration.
-    var extNotificationPluginEnabled: Bool {
-      get {return _storage._extNotificationPluginEnabled}
-      set {_uniqueStorage()._extNotificationPluginEnabled = newValue}
-    }
-
-    var extNotificationPluginOutputMs: UInt32 {
-      get {return _storage._extNotificationPluginOutputMs}
-      set {_uniqueStorage()._extNotificationPluginOutputMs = newValue}
-    }
-
-    var extNotificationPluginOutput: UInt32 {
-      get {return _storage._extNotificationPluginOutput}
-      set {_uniqueStorage()._extNotificationPluginOutput = newValue}
-    }
-
-    var extNotificationPluginActive: Bool {
-      get {return _storage._extNotificationPluginActive}
-      set {_uniqueStorage()._extNotificationPluginActive = newValue}
-    }
-
-    var extNotificationPluginAlertMessage: Bool {
-      get {return _storage._extNotificationPluginAlertMessage}
-      set {_uniqueStorage()._extNotificationPluginAlertMessage = newValue}
-    }
-
-    var extNotificationPluginAlertBell: Bool {
-      get {return _storage._extNotificationPluginAlertBell}
-      set {_uniqueStorage()._extNotificationPluginAlertBell = newValue}
+    /// TODO: REPLACE
+    var serialModuleEcho: Bool {
+      get {return _storage._serialModuleEcho}
+      set {_uniqueStorage()._serialModuleEcho = newValue}
     }
 
     ///
-    /// Preferences for the RangeTestPlugin
-    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration.
-    var rangeTestPluginEnabled: Bool {
-      get {return _storage._rangeTestPluginEnabled}
-      set {_uniqueStorage()._rangeTestPluginEnabled = newValue}
-    }
-
-    var rangeTestPluginSender: UInt32 {
-      get {return _storage._rangeTestPluginSender}
-      set {_uniqueStorage()._rangeTestPluginSender = newValue}
-    }
-
-    var rangeTestPluginSave: Bool {
-      get {return _storage._rangeTestPluginSave}
-      set {_uniqueStorage()._rangeTestPluginSave = newValue}
+    /// TODO: REPLACE
+    var serialModuleRxd: UInt32 {
+      get {return _storage._serialModuleRxd}
+      set {_uniqueStorage()._serialModuleRxd = newValue}
     }
 
     ///
-    /// Preferences for the StoreForwardPlugin
-    ///FIXME - Move this out of UserPreferences and into a section for plugin configuration. (was 136)
-    var storeForwardPluginEnabled: Bool {
-      get {return _storage._storeForwardPluginEnabled}
-      set {_uniqueStorage()._storeForwardPluginEnabled = newValue}
-    }
-
-    var storeForwardPluginHeartbeat: Bool {
-      get {return _storage._storeForwardPluginHeartbeat}
-      set {_uniqueStorage()._storeForwardPluginHeartbeat = newValue}
-    }
-
-    var storeForwardPluginRecords: UInt32 {
-      get {return _storage._storeForwardPluginRecords}
-      set {_uniqueStorage()._storeForwardPluginRecords = newValue}
-    }
-
-    var storeForwardPluginHistoryReturnMax: UInt32 {
-      get {return _storage._storeForwardPluginHistoryReturnMax}
-      set {_uniqueStorage()._storeForwardPluginHistoryReturnMax = newValue}
-    }
-
-    var storeForwardPluginHistoryReturnWindow: UInt32 {
-      get {return _storage._storeForwardPluginHistoryReturnWindow}
-      set {_uniqueStorage()._storeForwardPluginHistoryReturnWindow = newValue}
+    /// TODO: REPLACE
+    var serialModuleTxd: UInt32 {
+      get {return _storage._serialModuleTxd}
+      set {_uniqueStorage()._serialModuleTxd = newValue}
     }
 
     ///
-    /// Preferences for the EnvironmentalMeasurement Plugin
-    /// FIXME - Move this out of UserPreferences and into a section for plugin configuration.
-    /// Enable/Disable the environmental measurement plugin measurement collection
-    var environmentalMeasurementPluginMeasurementEnabled: Bool {
-      get {return _storage._environmentalMeasurementPluginMeasurementEnabled}
-      set {_uniqueStorage()._environmentalMeasurementPluginMeasurementEnabled = newValue}
+    /// TODO: REPLACE
+    var serialModuleBaud: RadioConfig.UserPreferences.Serial_Baud {
+      get {return _storage._serialModuleBaud}
+      set {_uniqueStorage()._serialModuleBaud = newValue}
     }
 
     ///
-    /// Enable/Disable the environmental measurement plugin on-device display
-    var environmentalMeasurementPluginScreenEnabled: Bool {
-      get {return _storage._environmentalMeasurementPluginScreenEnabled}
-      set {_uniqueStorage()._environmentalMeasurementPluginScreenEnabled = newValue}
+    /// TODO: REPLACE
+    var serialModuleTimeout: UInt32 {
+      get {return _storage._serialModuleTimeout}
+      set {_uniqueStorage()._serialModuleTimeout = newValue}
     }
 
     ///
-    /// Sometimes sensor reads can fail.
-    /// If this happens, we will retry a configurable number of attempts,
-    /// each attempt will be delayed by the minimum required refresh rate for that sensor
-    var environmentalMeasurementPluginReadErrorCountThreshold: UInt32 {
-      get {return _storage._environmentalMeasurementPluginReadErrorCountThreshold}
-      set {_uniqueStorage()._environmentalMeasurementPluginReadErrorCountThreshold = newValue}
+    /// TODO: REPLACE
+    var serialModuleMode: RadioConfig.UserPreferences.Serial_Mode {
+      get {return _storage._serialModuleMode}
+      set {_uniqueStorage()._serialModuleMode = newValue}
     }
 
     ///
-    /// Interval in seconds of how often we should try to send our
-    /// measurements to the mesh
-    var environmentalMeasurementPluginUpdateInterval: UInt32 {
-      get {return _storage._environmentalMeasurementPluginUpdateInterval}
-      set {_uniqueStorage()._environmentalMeasurementPluginUpdateInterval = newValue}
+    /// Preferences for the ExternalNotificationModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var extNotificationModuleEnabled: Bool {
+      get {return _storage._extNotificationModuleEnabled}
+      set {_uniqueStorage()._extNotificationModuleEnabled = newValue}
     }
 
     ///
-    /// Sometimes we can end up with more than read_error_count_threshold failures.
-    /// In this case, we will stop trying to read from the sensor for a while.
-    /// Wait this long until trying to read from the sensor again
-    var environmentalMeasurementPluginRecoveryInterval: UInt32 {
-      get {return _storage._environmentalMeasurementPluginRecoveryInterval}
-      set {_uniqueStorage()._environmentalMeasurementPluginRecoveryInterval = newValue}
+    /// TODO: REPLACE
+    var extNotificationModuleOutputMs: UInt32 {
+      get {return _storage._extNotificationModuleOutputMs}
+      set {_uniqueStorage()._extNotificationModuleOutputMs = newValue}
     }
 
     ///
-    /// We'll always read the sensor in Celsius, but sometimes we might want to
-    /// display the results in Farenheit as a "user preference".
-    var environmentalMeasurementPluginDisplayFarenheit: Bool {
-      get {return _storage._environmentalMeasurementPluginDisplayFarenheit}
-      set {_uniqueStorage()._environmentalMeasurementPluginDisplayFarenheit = newValue}
+    /// TODO: REPLACE
+    var extNotificationModuleOutput: UInt32 {
+      get {return _storage._extNotificationModuleOutput}
+      set {_uniqueStorage()._extNotificationModuleOutput = newValue}
     }
 
     ///
-    /// Specify the sensor type
-    var environmentalMeasurementPluginSensorType: RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType {
-      get {return _storage._environmentalMeasurementPluginSensorType}
-      set {_uniqueStorage()._environmentalMeasurementPluginSensorType = newValue}
+    /// TODO: REPLACE
+    var extNotificationModuleActive: Bool {
+      get {return _storage._extNotificationModuleActive}
+      set {_uniqueStorage()._extNotificationModuleActive = newValue}
     }
 
     ///
-    /// Specify the peferred GPIO Pin for sensor readings
-    var environmentalMeasurementPluginSensorPin: UInt32 {
-      get {return _storage._environmentalMeasurementPluginSensorPin}
-      set {_uniqueStorage()._environmentalMeasurementPluginSensorPin = newValue}
+    /// TODO: REPLACE
+    var extNotificationModuleAlertMessage: Bool {
+      get {return _storage._extNotificationModuleAlertMessage}
+      set {_uniqueStorage()._extNotificationModuleAlertMessage = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var extNotificationModuleAlertBell: Bool {
+      get {return _storage._extNotificationModuleAlertBell}
+      set {_uniqueStorage()._extNotificationModuleAlertBell = newValue}
+    }
+
+    ///
+    /// Preferences for the RangeTestModule
+    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    var rangeTestModuleEnabled: Bool {
+      get {return _storage._rangeTestModuleEnabled}
+      set {_uniqueStorage()._rangeTestModuleEnabled = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var rangeTestModuleSender: UInt32 {
+      get {return _storage._rangeTestModuleSender}
+      set {_uniqueStorage()._rangeTestModuleSender = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var rangeTestModuleSave: Bool {
+      get {return _storage._rangeTestModuleSave}
+      set {_uniqueStorage()._rangeTestModuleSave = newValue}
+    }
+
+    ///
+    /// Preferences for the StoreForwardModule
+    ///FIXME - Move this out of UserPreferences and into a section for module configuration. (was 136)
+    var storeForwardModuleEnabled: Bool {
+      get {return _storage._storeForwardModuleEnabled}
+      set {_uniqueStorage()._storeForwardModuleEnabled = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var storeForwardModuleHeartbeat: Bool {
+      get {return _storage._storeForwardModuleHeartbeat}
+      set {_uniqueStorage()._storeForwardModuleHeartbeat = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var storeForwardModuleRecords: UInt32 {
+      get {return _storage._storeForwardModuleRecords}
+      set {_uniqueStorage()._storeForwardModuleRecords = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var storeForwardModuleHistoryReturnMax: UInt32 {
+      get {return _storage._storeForwardModuleHistoryReturnMax}
+      set {_uniqueStorage()._storeForwardModuleHistoryReturnMax = newValue}
+    }
+
+    ///
+    /// TODO: REPLACE
+    var storeForwardModuleHistoryReturnWindow: UInt32 {
+      get {return _storage._storeForwardModuleHistoryReturnWindow}
+      set {_uniqueStorage()._storeForwardModuleHistoryReturnWindow = newValue}
     }
 
     ///
@@ -1163,7 +1176,7 @@ struct RadioConfig {
     }
 
     ///
-    /// Enable the rotary encoder #1
+    /// Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
     var rotary1Enabled: Bool {
       get {return _storage._rotary1Enabled}
       set {_uniqueStorage()._rotary1Enabled = newValue}
@@ -1171,84 +1184,80 @@ struct RadioConfig {
 
     ///
     /// GPIO pin for rotary encoder A port.
-    var rotary1PinA: UInt32 {
-      get {return _storage._rotary1PinA}
-      set {_uniqueStorage()._rotary1PinA = newValue}
+    var inputbrokerPinA: UInt32 {
+      get {return _storage._inputbrokerPinA}
+      set {_uniqueStorage()._inputbrokerPinA = newValue}
     }
 
     ///
     /// GPIO pin for rotary encoder B port.
-    var rotary1PinB: UInt32 {
-      get {return _storage._rotary1PinB}
-      set {_uniqueStorage()._rotary1PinB = newValue}
+    var inputbrokerPinB: UInt32 {
+      get {return _storage._inputbrokerPinB}
+      set {_uniqueStorage()._inputbrokerPinB = newValue}
     }
 
     ///
     /// GPIO pin for rotary encoder Press port.
-    var rotary1PinPress: UInt32 {
-      get {return _storage._rotary1PinPress}
-      set {_uniqueStorage()._rotary1PinPress = newValue}
+    var inputbrokerPinPress: UInt32 {
+      get {return _storage._inputbrokerPinPress}
+      set {_uniqueStorage()._inputbrokerPinPress = newValue}
     }
 
     ///
     /// Generate input event on CW of this kind.
-    var rotary1EventCw: InputEventChar {
-      get {return _storage._rotary1EventCw}
-      set {_uniqueStorage()._rotary1EventCw = newValue}
+    var inputbrokerEventCw: InputEventChar {
+      get {return _storage._inputbrokerEventCw}
+      set {_uniqueStorage()._inputbrokerEventCw = newValue}
     }
 
     ///
     /// Generate input event on CCW of this kind.
-    var rotary1EventCcw: InputEventChar {
-      get {return _storage._rotary1EventCcw}
-      set {_uniqueStorage()._rotary1EventCcw = newValue}
+    var inputbrokerEventCcw: InputEventChar {
+      get {return _storage._inputbrokerEventCcw}
+      set {_uniqueStorage()._inputbrokerEventCcw = newValue}
     }
 
     ///
     /// Generate input event on Press of this kind.
-    var rotary1EventPress: InputEventChar {
-      get {return _storage._rotary1EventPress}
-      set {_uniqueStorage()._rotary1EventPress = newValue}
+    var inputbrokerEventPress: InputEventChar {
+      get {return _storage._inputbrokerEventPress}
+      set {_uniqueStorage()._inputbrokerEventPress = newValue}
     }
 
     ///
-    /// Enable/disable CannedMessagePlugin.
-    var cannedMessagePluginEnabled: Bool {
-      get {return _storage._cannedMessagePluginEnabled}
-      set {_uniqueStorage()._cannedMessagePluginEnabled = newValue}
+    /// Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
+    var updown1Enabled: Bool {
+      get {return _storage._updown1Enabled}
+      set {_uniqueStorage()._updown1Enabled = newValue}
     }
 
     ///
-    /// Input event origin accepted by the canned message plugin.
-    /// Can be e.g. "rotEnc1" or keyword "_any"
-    var cannedMessagePluginAllowInputSource: String {
-      get {return _storage._cannedMessagePluginAllowInputSource}
-      set {_uniqueStorage()._cannedMessagePluginAllowInputSource = newValue}
+    /// Enable/disable CannedMessageModule.
+    var cannedMessageModuleEnabled: Bool {
+      get {return _storage._cannedMessageModuleEnabled}
+      set {_uniqueStorage()._cannedMessageModuleEnabled = newValue}
     }
 
     ///
-    /// Predefined messages for CannedMessagePlugin separated by '|' characters.
-    /// Note: Split out the messages out to their own messages because we want to store 1,000 characters.
-    /// and the entire message must fit within 256 bytes.
-    /// Not sure if we should deprecate this or just remove it since we're in dev phase.
-    var cannedMessagePluginMessages: String {
-      get {return _storage._cannedMessagePluginMessages}
-      set {_uniqueStorage()._cannedMessagePluginMessages = newValue}
+    /// Input event origin accepted by the canned message module.
+    /// Can be e.g. "rotEnc1", "upDownEnc1" or keyword "_any"
+    var cannedMessageModuleAllowInputSource: String {
+      get {return _storage._cannedMessageModuleAllowInputSource}
+      set {_uniqueStorage()._cannedMessageModuleAllowInputSource = newValue}
     }
 
     ///
-    /// CannedMessagePlugin also sends a bell character with the messages.
-    /// ExternalNotificationPlugin can benefit from this feature.
-    var cannedMessagePluginSendBell: Bool {
-      get {return _storage._cannedMessagePluginSendBell}
-      set {_uniqueStorage()._cannedMessagePluginSendBell = newValue}
+    /// CannedMessageModule also sends a bell character with the messages.
+    /// ExternalNotificationModule can benefit from this feature.
+    var cannedMessageModuleSendBell: Bool {
+      get {return _storage._cannedMessageModuleSendBell}
+      set {_uniqueStorage()._cannedMessageModuleSendBell = newValue}
     }
 
     ///
     /// Whether to send encrypted or decrypted packets to MQTT.
     /// This parameter is only honoured if you also set mqtt_server
     /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
-    /// 
     /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
     var mqttEncryptionEnabled: Bool {
       get {return _storage._mqttEncryptionEnabled}
@@ -1265,46 +1274,105 @@ struct RadioConfig {
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum EnvironmentalMeasurementSensorType: SwiftProtobuf.Enum {
+    ///
+    /// TODO: REPLACE
+    enum Serial_Baud: SwiftProtobuf.Enum {
       typealias RawValue = Int
-      case dht11 // = 0
-      case ds18B20 // = 1
-      case dht12 // = 2
-      case dht21 // = 3
-      case dht22 // = 4
-      case bme280 // = 5
-      case bme680 // = 6
-      case mcp9808 // = 7
+      case baudDefault // = 0
+      case baud2400 // = 1
+      case baud4800 // = 2
+      case baud9600 // = 3
+      case baud19200 // = 4
+      case baud38400 // = 5
+      case baud57600 // = 6
+      case baud115200 // = 7
+      case baud230400 // = 8
+      case baud460800 // = 9
+      case baud576000 // = 10
+      case baud921600 // = 11
+      case baud110 // = 12
+      case baud300 // = 13
+      case baud600 // = 14
+      case baud1200 // = 15
       case UNRECOGNIZED(Int)
 
       init() {
-        self = .dht11
+        self = .baudDefault
       }
 
       init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .dht11
-        case 1: self = .ds18B20
-        case 2: self = .dht12
-        case 3: self = .dht21
-        case 4: self = .dht22
-        case 5: self = .bme280
-        case 6: self = .bme680
-        case 7: self = .mcp9808
+        case 0: self = .baudDefault
+        case 1: self = .baud2400
+        case 2: self = .baud4800
+        case 3: self = .baud9600
+        case 4: self = .baud19200
+        case 5: self = .baud38400
+        case 6: self = .baud57600
+        case 7: self = .baud115200
+        case 8: self = .baud230400
+        case 9: self = .baud460800
+        case 10: self = .baud576000
+        case 11: self = .baud921600
+        case 12: self = .baud110
+        case 13: self = .baud300
+        case 14: self = .baud600
+        case 15: self = .baud1200
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
 
       var rawValue: Int {
         switch self {
-        case .dht11: return 0
-        case .ds18B20: return 1
-        case .dht12: return 2
-        case .dht21: return 3
-        case .dht22: return 4
-        case .bme280: return 5
-        case .bme680: return 6
-        case .mcp9808: return 7
+        case .baudDefault: return 0
+        case .baud2400: return 1
+        case .baud4800: return 2
+        case .baud9600: return 3
+        case .baud19200: return 4
+        case .baud38400: return 5
+        case .baud57600: return 6
+        case .baud115200: return 7
+        case .baud230400: return 8
+        case .baud460800: return 9
+        case .baud576000: return 10
+        case .baud921600: return 11
+        case .baud110: return 12
+        case .baud300: return 13
+        case .baud600: return 14
+        case .baud1200: return 15
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    ///
+    /// TODO: REPLACE
+    enum Serial_Mode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+      case modeDefault // = 0
+      case modeSimple // = 1
+      case modeProto // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .modeDefault
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .modeDefault
+        case 1: self = .modeSimple
+        case 2: self = .modeProto
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .modeDefault: return 0
+        case .modeSimple: return 1
+        case .modeProto: return 2
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1323,21 +1391,51 @@ struct RadioConfig {
 
 #if swift(>=4.2)
 
-extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: CaseIterable {
+extension RadioConfig.UserPreferences.Serial_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType] = [
-    .dht11,
-    .ds18B20,
-    .dht12,
-    .dht21,
-    .dht22,
-    .bme280,
-    .bme680,
-    .mcp9808,
+  static var allCases: [RadioConfig.UserPreferences.Serial_Baud] = [
+    .baudDefault,
+    .baud2400,
+    .baud4800,
+    .baud9600,
+    .baud19200,
+    .baud38400,
+    .baud57600,
+    .baud115200,
+    .baud230400,
+    .baud460800,
+    .baud576000,
+    .baud921600,
+    .baud110,
+    .baud300,
+    .baud600,
+    .baud1200,
+  ]
+}
+
+extension RadioConfig.UserPreferences.Serial_Mode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [RadioConfig.UserPreferences.Serial_Mode] = [
+    .modeDefault,
+    .modeSimple,
+    .modeProto,
   ]
 }
 
 #endif  // swift(>=4.2)
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension RegionCode: @unchecked Sendable {}
+extension Role: @unchecked Sendable {}
+extension ChargeCurrent: @unchecked Sendable {}
+extension GpsCoordinateFormat: @unchecked Sendable {}
+extension PositionFlags: @unchecked Sendable {}
+extension InputEventChar: @unchecked Sendable {}
+extension RadioConfig: @unchecked Sendable {}
+extension RadioConfig.UserPreferences: @unchecked Sendable {}
+extension RadioConfig.UserPreferences.Serial_Baud: @unchecked Sendable {}
+extension RadioConfig.UserPreferences.Serial_Mode: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -1346,13 +1444,25 @@ extension RegionCode: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "Unset"),
     1: .same(proto: "US"),
     2: .same(proto: "EU433"),
-    3: .same(proto: "EU865"),
+    3: .same(proto: "EU868"),
     4: .same(proto: "CN"),
     5: .same(proto: "JP"),
     6: .same(proto: "ANZ"),
     7: .same(proto: "KR"),
     8: .same(proto: "TW"),
     9: .same(proto: "RU"),
+    10: .same(proto: "IN"),
+    11: .same(proto: "NZ865"),
+    12: .same(proto: "TH"),
+  ]
+}
+
+extension Role: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "Client"),
+    1: .same(proto: "ClientMute"),
+    2: .same(proto: "Router"),
+    3: .same(proto: "RouterClient"),
   ]
 }
 
@@ -1378,16 +1488,6 @@ extension ChargeCurrent: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension GpsOperation: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "GpsOpUnset"),
-    1: .same(proto: "GpsOpStationary"),
-    2: .same(proto: "GpsOpMobile"),
-    3: .same(proto: "GpsOpTimeOnly"),
-    4: .same(proto: "GpsOpDisabled"),
-  ]
-}
-
 extension GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "GpsFormatDec"),
@@ -1396,14 +1496,6 @@ extension GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "GpsFormatMGRS"),
     4: .same(proto: "GpsFormatOLC"),
     5: .same(proto: "GpsFormatOSGR"),
-  ]
-}
-
-extension LocationSharing: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "LocUnset"),
-    1: .same(proto: "LocEnabled"),
-    2: .same(proto: "LocDisabled"),
   ]
 }
 
@@ -1454,9 +1546,13 @@ extension RadioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._preferences {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._preferences {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1471,12 +1567,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
   static let protoMessageName: String = RadioConfig.protoMessageName + ".UserPreferences"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_broadcast_secs"),
-    17: .standard(proto: "position_broadcast_smart"),
-    2: .standard(proto: "send_owner_interval"),
+    17: .standard(proto: "position_broadcast_smart_disabled"),
     4: .standard(proto: "wait_bluetooth_secs"),
     5: .standard(proto: "screen_on_secs"),
     6: .standard(proto: "phone_timeout_secs"),
-    7: .standard(proto: "phone_sds_timeout_sec"),
     8: .standard(proto: "mesh_sds_timeout_secs"),
     9: .standard(proto: "sds_secs"),
     10: .standard(proto: "ls_secs"),
@@ -1486,12 +1580,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     14: .standard(proto: "wifi_ap_mode"),
     15: .same(proto: "region"),
     16: .standard(proto: "charge_current"),
-    37: .standard(proto: "is_router"),
+    18: .same(proto: "role"),
     38: .standard(proto: "is_low_power"),
     39: .standard(proto: "fixed_position"),
     40: .standard(proto: "serial_disabled"),
-    32: .standard(proto: "location_share"),
-    33: .standard(proto: "gps_operation"),
+    32: .standard(proto: "location_share_disabled"),
+    33: .standard(proto: "gps_disabled"),
     34: .standard(proto: "gps_update_interval"),
     36: .standard(proto: "gps_attempt_time"),
     45: .standard(proto: "gps_accept_2d"),
@@ -1503,34 +1597,27 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     100: .standard(proto: "factory_reset"),
     101: .standard(proto: "debug_log_enabled"),
     103: .standard(proto: "ignore_incoming"),
-    120: .standard(proto: "serialplugin_enabled"),
-    121: .standard(proto: "serialplugin_echo"),
-    122: .standard(proto: "serialplugin_rxd"),
-    123: .standard(proto: "serialplugin_txd"),
-    124: .standard(proto: "serialplugin_timeout"),
-    125: .standard(proto: "serialplugin_mode"),
-    126: .standard(proto: "ext_notification_plugin_enabled"),
-    127: .standard(proto: "ext_notification_plugin_output_ms"),
-    128: .standard(proto: "ext_notification_plugin_output"),
-    129: .standard(proto: "ext_notification_plugin_active"),
-    130: .standard(proto: "ext_notification_plugin_alert_message"),
-    131: .standard(proto: "ext_notification_plugin_alert_bell"),
-    132: .standard(proto: "range_test_plugin_enabled"),
-    133: .standard(proto: "range_test_plugin_sender"),
-    134: .standard(proto: "range_test_plugin_save"),
-    148: .standard(proto: "store_forward_plugin_enabled"),
-    149: .standard(proto: "store_forward_plugin_heartbeat"),
-    137: .standard(proto: "store_forward_plugin_records"),
-    138: .standard(proto: "store_forward_plugin_history_return_max"),
-    139: .standard(proto: "store_forward_plugin_history_return_window"),
-    140: .standard(proto: "environmental_measurement_plugin_measurement_enabled"),
-    141: .standard(proto: "environmental_measurement_plugin_screen_enabled"),
-    142: .standard(proto: "environmental_measurement_plugin_read_error_count_threshold"),
-    143: .standard(proto: "environmental_measurement_plugin_update_interval"),
-    144: .standard(proto: "environmental_measurement_plugin_recovery_interval"),
-    145: .standard(proto: "environmental_measurement_plugin_display_farenheit"),
-    146: .standard(proto: "environmental_measurement_plugin_sensor_type"),
-    147: .standard(proto: "environmental_measurement_plugin_sensor_pin"),
+    120: .standard(proto: "serial_module_enabled"),
+    121: .standard(proto: "serial_module_echo"),
+    122: .standard(proto: "serial_module_rxd"),
+    123: .standard(proto: "serial_module_txd"),
+    176: .standard(proto: "serial_module_baud"),
+    124: .standard(proto: "serial_module_timeout"),
+    125: .standard(proto: "serial_module_mode"),
+    126: .standard(proto: "ext_notification_module_enabled"),
+    127: .standard(proto: "ext_notification_module_output_ms"),
+    128: .standard(proto: "ext_notification_module_output"),
+    129: .standard(proto: "ext_notification_module_active"),
+    130: .standard(proto: "ext_notification_module_alert_message"),
+    131: .standard(proto: "ext_notification_module_alert_bell"),
+    132: .standard(proto: "range_test_module_enabled"),
+    133: .standard(proto: "range_test_module_sender"),
+    134: .standard(proto: "range_test_module_save"),
+    148: .standard(proto: "store_forward_module_enabled"),
+    149: .standard(proto: "store_forward_module_heartbeat"),
+    137: .standard(proto: "store_forward_module_records"),
+    138: .standard(proto: "store_forward_module_history_return_max"),
+    139: .standard(proto: "store_forward_module_history_return_window"),
     150: .standard(proto: "position_flags"),
     151: .standard(proto: "is_always_powered"),
     152: .standard(proto: "auto_screen_carousel_secs"),
@@ -1541,28 +1628,26 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     157: .standard(proto: "is_lora_tx_disabled"),
     158: .standard(proto: "is_power_saving"),
     160: .standard(proto: "rotary1_enabled"),
-    161: .standard(proto: "rotary1_pin_a"),
-    162: .standard(proto: "rotary1_pin_b"),
-    163: .standard(proto: "rotary1_pin_press"),
-    164: .standard(proto: "rotary1_event_cw"),
-    165: .standard(proto: "rotary1_event_ccw"),
-    166: .standard(proto: "rotary1_event_press"),
-    170: .standard(proto: "canned_message_plugin_enabled"),
-    171: .standard(proto: "canned_message_plugin_allow_input_source"),
-    172: .standard(proto: "canned_message_plugin_messages"),
-    173: .standard(proto: "canned_message_plugin_send_bell"),
+    161: .standard(proto: "inputbroker_pin_a"),
+    162: .standard(proto: "inputbroker_pin_b"),
+    163: .standard(proto: "inputbroker_pin_press"),
+    164: .standard(proto: "inputbroker_event_cw"),
+    165: .standard(proto: "inputbroker_event_ccw"),
+    166: .standard(proto: "inputbroker_event_press"),
+    167: .standard(proto: "updown1_enabled"),
+    170: .standard(proto: "canned_message_module_enabled"),
+    171: .standard(proto: "canned_message_module_allow_input_source"),
+    173: .standard(proto: "canned_message_module_send_bell"),
     174: .standard(proto: "mqtt_encryption_enabled"),
     175: .standard(proto: "adc_multiplier_override"),
   ]
 
   fileprivate class _StorageClass {
     var _positionBroadcastSecs: UInt32 = 0
-    var _positionBroadcastSmart: Bool = false
-    var _sendOwnerInterval: UInt32 = 0
+    var _positionBroadcastSmartDisabled: Bool = false
     var _waitBluetoothSecs: UInt32 = 0
     var _screenOnSecs: UInt32 = 0
     var _phoneTimeoutSecs: UInt32 = 0
-    var _phoneSdsTimeoutSec: UInt32 = 0
     var _meshSdsTimeoutSecs: UInt32 = 0
     var _sdsSecs: UInt32 = 0
     var _lsSecs: UInt32 = 0
@@ -1572,12 +1657,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _wifiApMode: Bool = false
     var _region: RegionCode = .unset
     var _chargeCurrent: ChargeCurrent = .maunset
-    var _isRouter: Bool = false
+    var _role: Role = .client
     var _isLowPower: Bool = false
     var _fixedPosition: Bool = false
     var _serialDisabled: Bool = false
-    var _locationShare: LocationSharing = .locUnset
-    var _gpsOperation: GpsOperation = .gpsOpUnset
+    var _locationShareDisabled: Bool = false
+    var _gpsDisabled: Bool = false
     var _gpsUpdateInterval: UInt32 = 0
     var _gpsAttemptTime: UInt32 = 0
     var _gpsAccept2D: Bool = false
@@ -1589,34 +1674,27 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _factoryReset: Bool = false
     var _debugLogEnabled: Bool = false
     var _ignoreIncoming: [UInt32] = []
-    var _serialpluginEnabled: Bool = false
-    var _serialpluginEcho: Bool = false
-    var _serialpluginRxd: UInt32 = 0
-    var _serialpluginTxd: UInt32 = 0
-    var _serialpluginTimeout: UInt32 = 0
-    var _serialpluginMode: UInt32 = 0
-    var _extNotificationPluginEnabled: Bool = false
-    var _extNotificationPluginOutputMs: UInt32 = 0
-    var _extNotificationPluginOutput: UInt32 = 0
-    var _extNotificationPluginActive: Bool = false
-    var _extNotificationPluginAlertMessage: Bool = false
-    var _extNotificationPluginAlertBell: Bool = false
-    var _rangeTestPluginEnabled: Bool = false
-    var _rangeTestPluginSender: UInt32 = 0
-    var _rangeTestPluginSave: Bool = false
-    var _storeForwardPluginEnabled: Bool = false
-    var _storeForwardPluginHeartbeat: Bool = false
-    var _storeForwardPluginRecords: UInt32 = 0
-    var _storeForwardPluginHistoryReturnMax: UInt32 = 0
-    var _storeForwardPluginHistoryReturnWindow: UInt32 = 0
-    var _environmentalMeasurementPluginMeasurementEnabled: Bool = false
-    var _environmentalMeasurementPluginScreenEnabled: Bool = false
-    var _environmentalMeasurementPluginReadErrorCountThreshold: UInt32 = 0
-    var _environmentalMeasurementPluginUpdateInterval: UInt32 = 0
-    var _environmentalMeasurementPluginRecoveryInterval: UInt32 = 0
-    var _environmentalMeasurementPluginDisplayFarenheit: Bool = false
-    var _environmentalMeasurementPluginSensorType: RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType = .dht11
-    var _environmentalMeasurementPluginSensorPin: UInt32 = 0
+    var _serialModuleEnabled: Bool = false
+    var _serialModuleEcho: Bool = false
+    var _serialModuleRxd: UInt32 = 0
+    var _serialModuleTxd: UInt32 = 0
+    var _serialModuleBaud: RadioConfig.UserPreferences.Serial_Baud = .baudDefault
+    var _serialModuleTimeout: UInt32 = 0
+    var _serialModuleMode: RadioConfig.UserPreferences.Serial_Mode = .modeDefault
+    var _extNotificationModuleEnabled: Bool = false
+    var _extNotificationModuleOutputMs: UInt32 = 0
+    var _extNotificationModuleOutput: UInt32 = 0
+    var _extNotificationModuleActive: Bool = false
+    var _extNotificationModuleAlertMessage: Bool = false
+    var _extNotificationModuleAlertBell: Bool = false
+    var _rangeTestModuleEnabled: Bool = false
+    var _rangeTestModuleSender: UInt32 = 0
+    var _rangeTestModuleSave: Bool = false
+    var _storeForwardModuleEnabled: Bool = false
+    var _storeForwardModuleHeartbeat: Bool = false
+    var _storeForwardModuleRecords: UInt32 = 0
+    var _storeForwardModuleHistoryReturnMax: UInt32 = 0
+    var _storeForwardModuleHistoryReturnWindow: UInt32 = 0
     var _positionFlags: UInt32 = 0
     var _isAlwaysPowered: Bool = false
     var _autoScreenCarouselSecs: UInt32 = 0
@@ -1627,16 +1705,16 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
     var _isLoraTxDisabled: Bool = false
     var _isPowerSaving: Bool = false
     var _rotary1Enabled: Bool = false
-    var _rotary1PinA: UInt32 = 0
-    var _rotary1PinB: UInt32 = 0
-    var _rotary1PinPress: UInt32 = 0
-    var _rotary1EventCw: InputEventChar = .keyNone
-    var _rotary1EventCcw: InputEventChar = .keyNone
-    var _rotary1EventPress: InputEventChar = .keyNone
-    var _cannedMessagePluginEnabled: Bool = false
-    var _cannedMessagePluginAllowInputSource: String = String()
-    var _cannedMessagePluginMessages: String = String()
-    var _cannedMessagePluginSendBell: Bool = false
+    var _inputbrokerPinA: UInt32 = 0
+    var _inputbrokerPinB: UInt32 = 0
+    var _inputbrokerPinPress: UInt32 = 0
+    var _inputbrokerEventCw: InputEventChar = .keyNone
+    var _inputbrokerEventCcw: InputEventChar = .keyNone
+    var _inputbrokerEventPress: InputEventChar = .keyNone
+    var _updown1Enabled: Bool = false
+    var _cannedMessageModuleEnabled: Bool = false
+    var _cannedMessageModuleAllowInputSource: String = String()
+    var _cannedMessageModuleSendBell: Bool = false
     var _mqttEncryptionEnabled: Bool = false
     var _adcMultiplierOverride: Float = 0
 
@@ -1646,12 +1724,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
 
     init(copying source: _StorageClass) {
       _positionBroadcastSecs = source._positionBroadcastSecs
-      _positionBroadcastSmart = source._positionBroadcastSmart
-      _sendOwnerInterval = source._sendOwnerInterval
+      _positionBroadcastSmartDisabled = source._positionBroadcastSmartDisabled
       _waitBluetoothSecs = source._waitBluetoothSecs
       _screenOnSecs = source._screenOnSecs
       _phoneTimeoutSecs = source._phoneTimeoutSecs
-      _phoneSdsTimeoutSec = source._phoneSdsTimeoutSec
       _meshSdsTimeoutSecs = source._meshSdsTimeoutSecs
       _sdsSecs = source._sdsSecs
       _lsSecs = source._lsSecs
@@ -1661,12 +1737,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _wifiApMode = source._wifiApMode
       _region = source._region
       _chargeCurrent = source._chargeCurrent
-      _isRouter = source._isRouter
+      _role = source._role
       _isLowPower = source._isLowPower
       _fixedPosition = source._fixedPosition
       _serialDisabled = source._serialDisabled
-      _locationShare = source._locationShare
-      _gpsOperation = source._gpsOperation
+      _locationShareDisabled = source._locationShareDisabled
+      _gpsDisabled = source._gpsDisabled
       _gpsUpdateInterval = source._gpsUpdateInterval
       _gpsAttemptTime = source._gpsAttemptTime
       _gpsAccept2D = source._gpsAccept2D
@@ -1678,34 +1754,27 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _factoryReset = source._factoryReset
       _debugLogEnabled = source._debugLogEnabled
       _ignoreIncoming = source._ignoreIncoming
-      _serialpluginEnabled = source._serialpluginEnabled
-      _serialpluginEcho = source._serialpluginEcho
-      _serialpluginRxd = source._serialpluginRxd
-      _serialpluginTxd = source._serialpluginTxd
-      _serialpluginTimeout = source._serialpluginTimeout
-      _serialpluginMode = source._serialpluginMode
-      _extNotificationPluginEnabled = source._extNotificationPluginEnabled
-      _extNotificationPluginOutputMs = source._extNotificationPluginOutputMs
-      _extNotificationPluginOutput = source._extNotificationPluginOutput
-      _extNotificationPluginActive = source._extNotificationPluginActive
-      _extNotificationPluginAlertMessage = source._extNotificationPluginAlertMessage
-      _extNotificationPluginAlertBell = source._extNotificationPluginAlertBell
-      _rangeTestPluginEnabled = source._rangeTestPluginEnabled
-      _rangeTestPluginSender = source._rangeTestPluginSender
-      _rangeTestPluginSave = source._rangeTestPluginSave
-      _storeForwardPluginEnabled = source._storeForwardPluginEnabled
-      _storeForwardPluginHeartbeat = source._storeForwardPluginHeartbeat
-      _storeForwardPluginRecords = source._storeForwardPluginRecords
-      _storeForwardPluginHistoryReturnMax = source._storeForwardPluginHistoryReturnMax
-      _storeForwardPluginHistoryReturnWindow = source._storeForwardPluginHistoryReturnWindow
-      _environmentalMeasurementPluginMeasurementEnabled = source._environmentalMeasurementPluginMeasurementEnabled
-      _environmentalMeasurementPluginScreenEnabled = source._environmentalMeasurementPluginScreenEnabled
-      _environmentalMeasurementPluginReadErrorCountThreshold = source._environmentalMeasurementPluginReadErrorCountThreshold
-      _environmentalMeasurementPluginUpdateInterval = source._environmentalMeasurementPluginUpdateInterval
-      _environmentalMeasurementPluginRecoveryInterval = source._environmentalMeasurementPluginRecoveryInterval
-      _environmentalMeasurementPluginDisplayFarenheit = source._environmentalMeasurementPluginDisplayFarenheit
-      _environmentalMeasurementPluginSensorType = source._environmentalMeasurementPluginSensorType
-      _environmentalMeasurementPluginSensorPin = source._environmentalMeasurementPluginSensorPin
+      _serialModuleEnabled = source._serialModuleEnabled
+      _serialModuleEcho = source._serialModuleEcho
+      _serialModuleRxd = source._serialModuleRxd
+      _serialModuleTxd = source._serialModuleTxd
+      _serialModuleBaud = source._serialModuleBaud
+      _serialModuleTimeout = source._serialModuleTimeout
+      _serialModuleMode = source._serialModuleMode
+      _extNotificationModuleEnabled = source._extNotificationModuleEnabled
+      _extNotificationModuleOutputMs = source._extNotificationModuleOutputMs
+      _extNotificationModuleOutput = source._extNotificationModuleOutput
+      _extNotificationModuleActive = source._extNotificationModuleActive
+      _extNotificationModuleAlertMessage = source._extNotificationModuleAlertMessage
+      _extNotificationModuleAlertBell = source._extNotificationModuleAlertBell
+      _rangeTestModuleEnabled = source._rangeTestModuleEnabled
+      _rangeTestModuleSender = source._rangeTestModuleSender
+      _rangeTestModuleSave = source._rangeTestModuleSave
+      _storeForwardModuleEnabled = source._storeForwardModuleEnabled
+      _storeForwardModuleHeartbeat = source._storeForwardModuleHeartbeat
+      _storeForwardModuleRecords = source._storeForwardModuleRecords
+      _storeForwardModuleHistoryReturnMax = source._storeForwardModuleHistoryReturnMax
+      _storeForwardModuleHistoryReturnWindow = source._storeForwardModuleHistoryReturnWindow
       _positionFlags = source._positionFlags
       _isAlwaysPowered = source._isAlwaysPowered
       _autoScreenCarouselSecs = source._autoScreenCarouselSecs
@@ -1716,16 +1785,16 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       _isLoraTxDisabled = source._isLoraTxDisabled
       _isPowerSaving = source._isPowerSaving
       _rotary1Enabled = source._rotary1Enabled
-      _rotary1PinA = source._rotary1PinA
-      _rotary1PinB = source._rotary1PinB
-      _rotary1PinPress = source._rotary1PinPress
-      _rotary1EventCw = source._rotary1EventCw
-      _rotary1EventCcw = source._rotary1EventCcw
-      _rotary1EventPress = source._rotary1EventPress
-      _cannedMessagePluginEnabled = source._cannedMessagePluginEnabled
-      _cannedMessagePluginAllowInputSource = source._cannedMessagePluginAllowInputSource
-      _cannedMessagePluginMessages = source._cannedMessagePluginMessages
-      _cannedMessagePluginSendBell = source._cannedMessagePluginSendBell
+      _inputbrokerPinA = source._inputbrokerPinA
+      _inputbrokerPinB = source._inputbrokerPinB
+      _inputbrokerPinPress = source._inputbrokerPinPress
+      _inputbrokerEventCw = source._inputbrokerEventCw
+      _inputbrokerEventCcw = source._inputbrokerEventCcw
+      _inputbrokerEventPress = source._inputbrokerEventPress
+      _updown1Enabled = source._updown1Enabled
+      _cannedMessageModuleEnabled = source._cannedMessageModuleEnabled
+      _cannedMessageModuleAllowInputSource = source._cannedMessageModuleAllowInputSource
+      _cannedMessageModuleSendBell = source._cannedMessageModuleSendBell
       _mqttEncryptionEnabled = source._mqttEncryptionEnabled
       _adcMultiplierOverride = source._adcMultiplierOverride
     }
@@ -1747,11 +1816,9 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
         case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionBroadcastSecs) }()
-        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._sendOwnerInterval) }()
         case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._waitBluetoothSecs) }()
         case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._screenOnSecs) }()
         case 6: try { try decoder.decodeSingularUInt32Field(value: &_storage._phoneTimeoutSecs) }()
-        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._phoneSdsTimeoutSec) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._meshSdsTimeoutSecs) }()
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._sdsSecs) }()
         case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._lsSecs) }()
@@ -1761,12 +1828,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._wifiApMode) }()
         case 15: try { try decoder.decodeSingularEnumField(value: &_storage._region) }()
         case 16: try { try decoder.decodeSingularEnumField(value: &_storage._chargeCurrent) }()
-        case 17: try { try decoder.decodeSingularBoolField(value: &_storage._positionBroadcastSmart) }()
-        case 32: try { try decoder.decodeSingularEnumField(value: &_storage._locationShare) }()
-        case 33: try { try decoder.decodeSingularEnumField(value: &_storage._gpsOperation) }()
+        case 17: try { try decoder.decodeSingularBoolField(value: &_storage._positionBroadcastSmartDisabled) }()
+        case 18: try { try decoder.decodeSingularEnumField(value: &_storage._role) }()
+        case 32: try { try decoder.decodeSingularBoolField(value: &_storage._locationShareDisabled) }()
+        case 33: try { try decoder.decodeSingularBoolField(value: &_storage._gpsDisabled) }()
         case 34: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsUpdateInterval) }()
         case 36: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsAttemptTime) }()
-        case 37: try { try decoder.decodeSingularBoolField(value: &_storage._isRouter) }()
         case 38: try { try decoder.decodeSingularBoolField(value: &_storage._isLowPower) }()
         case 39: try { try decoder.decodeSingularBoolField(value: &_storage._fixedPosition) }()
         case 40: try { try decoder.decodeSingularBoolField(value: &_storage._serialDisabled) }()
@@ -1779,34 +1846,26 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 100: try { try decoder.decodeSingularBoolField(value: &_storage._factoryReset) }()
         case 101: try { try decoder.decodeSingularBoolField(value: &_storage._debugLogEnabled) }()
         case 103: try { try decoder.decodeRepeatedUInt32Field(value: &_storage._ignoreIncoming) }()
-        case 120: try { try decoder.decodeSingularBoolField(value: &_storage._serialpluginEnabled) }()
-        case 121: try { try decoder.decodeSingularBoolField(value: &_storage._serialpluginEcho) }()
-        case 122: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialpluginRxd) }()
-        case 123: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialpluginTxd) }()
-        case 124: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialpluginTimeout) }()
-        case 125: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialpluginMode) }()
-        case 126: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationPluginEnabled) }()
-        case 127: try { try decoder.decodeSingularUInt32Field(value: &_storage._extNotificationPluginOutputMs) }()
-        case 128: try { try decoder.decodeSingularUInt32Field(value: &_storage._extNotificationPluginOutput) }()
-        case 129: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationPluginActive) }()
-        case 130: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationPluginAlertMessage) }()
-        case 131: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationPluginAlertBell) }()
-        case 132: try { try decoder.decodeSingularBoolField(value: &_storage._rangeTestPluginEnabled) }()
-        case 133: try { try decoder.decodeSingularUInt32Field(value: &_storage._rangeTestPluginSender) }()
-        case 134: try { try decoder.decodeSingularBoolField(value: &_storage._rangeTestPluginSave) }()
-        case 137: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginRecords) }()
-        case 138: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginHistoryReturnMax) }()
-        case 139: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardPluginHistoryReturnWindow) }()
-        case 140: try { try decoder.decodeSingularBoolField(value: &_storage._environmentalMeasurementPluginMeasurementEnabled) }()
-        case 141: try { try decoder.decodeSingularBoolField(value: &_storage._environmentalMeasurementPluginScreenEnabled) }()
-        case 142: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginReadErrorCountThreshold) }()
-        case 143: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginUpdateInterval) }()
-        case 144: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginRecoveryInterval) }()
-        case 145: try { try decoder.decodeSingularBoolField(value: &_storage._environmentalMeasurementPluginDisplayFarenheit) }()
-        case 146: try { try decoder.decodeSingularEnumField(value: &_storage._environmentalMeasurementPluginSensorType) }()
-        case 147: try { try decoder.decodeSingularUInt32Field(value: &_storage._environmentalMeasurementPluginSensorPin) }()
-        case 148: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardPluginEnabled) }()
-        case 149: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardPluginHeartbeat) }()
+        case 120: try { try decoder.decodeSingularBoolField(value: &_storage._serialModuleEnabled) }()
+        case 121: try { try decoder.decodeSingularBoolField(value: &_storage._serialModuleEcho) }()
+        case 122: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialModuleRxd) }()
+        case 123: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialModuleTxd) }()
+        case 124: try { try decoder.decodeSingularUInt32Field(value: &_storage._serialModuleTimeout) }()
+        case 125: try { try decoder.decodeSingularEnumField(value: &_storage._serialModuleMode) }()
+        case 126: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationModuleEnabled) }()
+        case 127: try { try decoder.decodeSingularUInt32Field(value: &_storage._extNotificationModuleOutputMs) }()
+        case 128: try { try decoder.decodeSingularUInt32Field(value: &_storage._extNotificationModuleOutput) }()
+        case 129: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationModuleActive) }()
+        case 130: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationModuleAlertMessage) }()
+        case 131: try { try decoder.decodeSingularBoolField(value: &_storage._extNotificationModuleAlertBell) }()
+        case 132: try { try decoder.decodeSingularBoolField(value: &_storage._rangeTestModuleEnabled) }()
+        case 133: try { try decoder.decodeSingularUInt32Field(value: &_storage._rangeTestModuleSender) }()
+        case 134: try { try decoder.decodeSingularBoolField(value: &_storage._rangeTestModuleSave) }()
+        case 137: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleRecords) }()
+        case 138: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleHistoryReturnMax) }()
+        case 139: try { try decoder.decodeSingularUInt32Field(value: &_storage._storeForwardModuleHistoryReturnWindow) }()
+        case 148: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardModuleEnabled) }()
+        case 149: try { try decoder.decodeSingularBoolField(value: &_storage._storeForwardModuleHeartbeat) }()
         case 150: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionFlags) }()
         case 151: try { try decoder.decodeSingularBoolField(value: &_storage._isAlwaysPowered) }()
         case 152: try { try decoder.decodeSingularUInt32Field(value: &_storage._autoScreenCarouselSecs) }()
@@ -1817,18 +1876,19 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         case 157: try { try decoder.decodeSingularBoolField(value: &_storage._isLoraTxDisabled) }()
         case 158: try { try decoder.decodeSingularBoolField(value: &_storage._isPowerSaving) }()
         case 160: try { try decoder.decodeSingularBoolField(value: &_storage._rotary1Enabled) }()
-        case 161: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinA) }()
-        case 162: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinB) }()
-        case 163: try { try decoder.decodeSingularUInt32Field(value: &_storage._rotary1PinPress) }()
-        case 164: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventCw) }()
-        case 165: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventCcw) }()
-        case 166: try { try decoder.decodeSingularEnumField(value: &_storage._rotary1EventPress) }()
-        case 170: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessagePluginEnabled) }()
-        case 171: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginAllowInputSource) }()
-        case 172: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessagePluginMessages) }()
-        case 173: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessagePluginSendBell) }()
+        case 161: try { try decoder.decodeSingularUInt32Field(value: &_storage._inputbrokerPinA) }()
+        case 162: try { try decoder.decodeSingularUInt32Field(value: &_storage._inputbrokerPinB) }()
+        case 163: try { try decoder.decodeSingularUInt32Field(value: &_storage._inputbrokerPinPress) }()
+        case 164: try { try decoder.decodeSingularEnumField(value: &_storage._inputbrokerEventCw) }()
+        case 165: try { try decoder.decodeSingularEnumField(value: &_storage._inputbrokerEventCcw) }()
+        case 166: try { try decoder.decodeSingularEnumField(value: &_storage._inputbrokerEventPress) }()
+        case 167: try { try decoder.decodeSingularBoolField(value: &_storage._updown1Enabled) }()
+        case 170: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessageModuleEnabled) }()
+        case 171: try { try decoder.decodeSingularStringField(value: &_storage._cannedMessageModuleAllowInputSource) }()
+        case 173: try { try decoder.decodeSingularBoolField(value: &_storage._cannedMessageModuleSendBell) }()
         case 174: try { try decoder.decodeSingularBoolField(value: &_storage._mqttEncryptionEnabled) }()
         case 175: try { try decoder.decodeSingularFloatField(value: &_storage._adcMultiplierOverride) }()
+        case 176: try { try decoder.decodeSingularEnumField(value: &_storage._serialModuleBaud) }()
         default: break
         }
       }
@@ -1840,9 +1900,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._positionBroadcastSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._positionBroadcastSecs, fieldNumber: 1)
       }
-      if _storage._sendOwnerInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._sendOwnerInterval, fieldNumber: 2)
-      }
       if _storage._waitBluetoothSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._waitBluetoothSecs, fieldNumber: 4)
       }
@@ -1851,9 +1908,6 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       }
       if _storage._phoneTimeoutSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._phoneTimeoutSecs, fieldNumber: 6)
-      }
-      if _storage._phoneSdsTimeoutSec != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._phoneSdsTimeoutSec, fieldNumber: 7)
       }
       if _storage._meshSdsTimeoutSecs != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._meshSdsTimeoutSecs, fieldNumber: 8)
@@ -1882,23 +1936,23 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._chargeCurrent != .maunset {
         try visitor.visitSingularEnumField(value: _storage._chargeCurrent, fieldNumber: 16)
       }
-      if _storage._positionBroadcastSmart != false {
-        try visitor.visitSingularBoolField(value: _storage._positionBroadcastSmart, fieldNumber: 17)
+      if _storage._positionBroadcastSmartDisabled != false {
+        try visitor.visitSingularBoolField(value: _storage._positionBroadcastSmartDisabled, fieldNumber: 17)
       }
-      if _storage._locationShare != .locUnset {
-        try visitor.visitSingularEnumField(value: _storage._locationShare, fieldNumber: 32)
+      if _storage._role != .client {
+        try visitor.visitSingularEnumField(value: _storage._role, fieldNumber: 18)
       }
-      if _storage._gpsOperation != .gpsOpUnset {
-        try visitor.visitSingularEnumField(value: _storage._gpsOperation, fieldNumber: 33)
+      if _storage._locationShareDisabled != false {
+        try visitor.visitSingularBoolField(value: _storage._locationShareDisabled, fieldNumber: 32)
+      }
+      if _storage._gpsDisabled != false {
+        try visitor.visitSingularBoolField(value: _storage._gpsDisabled, fieldNumber: 33)
       }
       if _storage._gpsUpdateInterval != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._gpsUpdateInterval, fieldNumber: 34)
       }
       if _storage._gpsAttemptTime != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._gpsAttemptTime, fieldNumber: 36)
-      }
-      if _storage._isRouter != false {
-        try visitor.visitSingularBoolField(value: _storage._isRouter, fieldNumber: 37)
       }
       if _storage._isLowPower != false {
         try visitor.visitSingularBoolField(value: _storage._isLowPower, fieldNumber: 38)
@@ -1936,89 +1990,65 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if !_storage._ignoreIncoming.isEmpty {
         try visitor.visitPackedUInt32Field(value: _storage._ignoreIncoming, fieldNumber: 103)
       }
-      if _storage._serialpluginEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._serialpluginEnabled, fieldNumber: 120)
+      if _storage._serialModuleEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._serialModuleEnabled, fieldNumber: 120)
       }
-      if _storage._serialpluginEcho != false {
-        try visitor.visitSingularBoolField(value: _storage._serialpluginEcho, fieldNumber: 121)
+      if _storage._serialModuleEcho != false {
+        try visitor.visitSingularBoolField(value: _storage._serialModuleEcho, fieldNumber: 121)
       }
-      if _storage._serialpluginRxd != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._serialpluginRxd, fieldNumber: 122)
+      if _storage._serialModuleRxd != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._serialModuleRxd, fieldNumber: 122)
       }
-      if _storage._serialpluginTxd != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._serialpluginTxd, fieldNumber: 123)
+      if _storage._serialModuleTxd != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._serialModuleTxd, fieldNumber: 123)
       }
-      if _storage._serialpluginTimeout != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._serialpluginTimeout, fieldNumber: 124)
+      if _storage._serialModuleTimeout != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._serialModuleTimeout, fieldNumber: 124)
       }
-      if _storage._serialpluginMode != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._serialpluginMode, fieldNumber: 125)
+      if _storage._serialModuleMode != .modeDefault {
+        try visitor.visitSingularEnumField(value: _storage._serialModuleMode, fieldNumber: 125)
       }
-      if _storage._extNotificationPluginEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._extNotificationPluginEnabled, fieldNumber: 126)
+      if _storage._extNotificationModuleEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._extNotificationModuleEnabled, fieldNumber: 126)
       }
-      if _storage._extNotificationPluginOutputMs != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._extNotificationPluginOutputMs, fieldNumber: 127)
+      if _storage._extNotificationModuleOutputMs != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._extNotificationModuleOutputMs, fieldNumber: 127)
       }
-      if _storage._extNotificationPluginOutput != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._extNotificationPluginOutput, fieldNumber: 128)
+      if _storage._extNotificationModuleOutput != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._extNotificationModuleOutput, fieldNumber: 128)
       }
-      if _storage._extNotificationPluginActive != false {
-        try visitor.visitSingularBoolField(value: _storage._extNotificationPluginActive, fieldNumber: 129)
+      if _storage._extNotificationModuleActive != false {
+        try visitor.visitSingularBoolField(value: _storage._extNotificationModuleActive, fieldNumber: 129)
       }
-      if _storage._extNotificationPluginAlertMessage != false {
-        try visitor.visitSingularBoolField(value: _storage._extNotificationPluginAlertMessage, fieldNumber: 130)
+      if _storage._extNotificationModuleAlertMessage != false {
+        try visitor.visitSingularBoolField(value: _storage._extNotificationModuleAlertMessage, fieldNumber: 130)
       }
-      if _storage._extNotificationPluginAlertBell != false {
-        try visitor.visitSingularBoolField(value: _storage._extNotificationPluginAlertBell, fieldNumber: 131)
+      if _storage._extNotificationModuleAlertBell != false {
+        try visitor.visitSingularBoolField(value: _storage._extNotificationModuleAlertBell, fieldNumber: 131)
       }
-      if _storage._rangeTestPluginEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._rangeTestPluginEnabled, fieldNumber: 132)
+      if _storage._rangeTestModuleEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._rangeTestModuleEnabled, fieldNumber: 132)
       }
-      if _storage._rangeTestPluginSender != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._rangeTestPluginSender, fieldNumber: 133)
+      if _storage._rangeTestModuleSender != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._rangeTestModuleSender, fieldNumber: 133)
       }
-      if _storage._rangeTestPluginSave != false {
-        try visitor.visitSingularBoolField(value: _storage._rangeTestPluginSave, fieldNumber: 134)
+      if _storage._rangeTestModuleSave != false {
+        try visitor.visitSingularBoolField(value: _storage._rangeTestModuleSave, fieldNumber: 134)
       }
-      if _storage._storeForwardPluginRecords != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginRecords, fieldNumber: 137)
+      if _storage._storeForwardModuleRecords != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._storeForwardModuleRecords, fieldNumber: 137)
       }
-      if _storage._storeForwardPluginHistoryReturnMax != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginHistoryReturnMax, fieldNumber: 138)
+      if _storage._storeForwardModuleHistoryReturnMax != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._storeForwardModuleHistoryReturnMax, fieldNumber: 138)
       }
-      if _storage._storeForwardPluginHistoryReturnWindow != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._storeForwardPluginHistoryReturnWindow, fieldNumber: 139)
+      if _storage._storeForwardModuleHistoryReturnWindow != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._storeForwardModuleHistoryReturnWindow, fieldNumber: 139)
       }
-      if _storage._environmentalMeasurementPluginMeasurementEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._environmentalMeasurementPluginMeasurementEnabled, fieldNumber: 140)
+      if _storage._storeForwardModuleEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._storeForwardModuleEnabled, fieldNumber: 148)
       }
-      if _storage._environmentalMeasurementPluginScreenEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._environmentalMeasurementPluginScreenEnabled, fieldNumber: 141)
-      }
-      if _storage._environmentalMeasurementPluginReadErrorCountThreshold != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._environmentalMeasurementPluginReadErrorCountThreshold, fieldNumber: 142)
-      }
-      if _storage._environmentalMeasurementPluginUpdateInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._environmentalMeasurementPluginUpdateInterval, fieldNumber: 143)
-      }
-      if _storage._environmentalMeasurementPluginRecoveryInterval != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._environmentalMeasurementPluginRecoveryInterval, fieldNumber: 144)
-      }
-      if _storage._environmentalMeasurementPluginDisplayFarenheit != false {
-        try visitor.visitSingularBoolField(value: _storage._environmentalMeasurementPluginDisplayFarenheit, fieldNumber: 145)
-      }
-      if _storage._environmentalMeasurementPluginSensorType != .dht11 {
-        try visitor.visitSingularEnumField(value: _storage._environmentalMeasurementPluginSensorType, fieldNumber: 146)
-      }
-      if _storage._environmentalMeasurementPluginSensorPin != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._environmentalMeasurementPluginSensorPin, fieldNumber: 147)
-      }
-      if _storage._storeForwardPluginEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._storeForwardPluginEnabled, fieldNumber: 148)
-      }
-      if _storage._storeForwardPluginHeartbeat != false {
-        try visitor.visitSingularBoolField(value: _storage._storeForwardPluginHeartbeat, fieldNumber: 149)
+      if _storage._storeForwardModuleHeartbeat != false {
+        try visitor.visitSingularBoolField(value: _storage._storeForwardModuleHeartbeat, fieldNumber: 149)
       }
       if _storage._positionFlags != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._positionFlags, fieldNumber: 150)
@@ -2050,41 +2080,44 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
       if _storage._rotary1Enabled != false {
         try visitor.visitSingularBoolField(value: _storage._rotary1Enabled, fieldNumber: 160)
       }
-      if _storage._rotary1PinA != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinA, fieldNumber: 161)
+      if _storage._inputbrokerPinA != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._inputbrokerPinA, fieldNumber: 161)
       }
-      if _storage._rotary1PinB != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinB, fieldNumber: 162)
+      if _storage._inputbrokerPinB != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._inputbrokerPinB, fieldNumber: 162)
       }
-      if _storage._rotary1PinPress != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._rotary1PinPress, fieldNumber: 163)
+      if _storage._inputbrokerPinPress != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._inputbrokerPinPress, fieldNumber: 163)
       }
-      if _storage._rotary1EventCw != .keyNone {
-        try visitor.visitSingularEnumField(value: _storage._rotary1EventCw, fieldNumber: 164)
+      if _storage._inputbrokerEventCw != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._inputbrokerEventCw, fieldNumber: 164)
       }
-      if _storage._rotary1EventCcw != .keyNone {
-        try visitor.visitSingularEnumField(value: _storage._rotary1EventCcw, fieldNumber: 165)
+      if _storage._inputbrokerEventCcw != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._inputbrokerEventCcw, fieldNumber: 165)
       }
-      if _storage._rotary1EventPress != .keyNone {
-        try visitor.visitSingularEnumField(value: _storage._rotary1EventPress, fieldNumber: 166)
+      if _storage._inputbrokerEventPress != .keyNone {
+        try visitor.visitSingularEnumField(value: _storage._inputbrokerEventPress, fieldNumber: 166)
       }
-      if _storage._cannedMessagePluginEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._cannedMessagePluginEnabled, fieldNumber: 170)
+      if _storage._updown1Enabled != false {
+        try visitor.visitSingularBoolField(value: _storage._updown1Enabled, fieldNumber: 167)
       }
-      if !_storage._cannedMessagePluginAllowInputSource.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginAllowInputSource, fieldNumber: 171)
+      if _storage._cannedMessageModuleEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._cannedMessageModuleEnabled, fieldNumber: 170)
       }
-      if !_storage._cannedMessagePluginMessages.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._cannedMessagePluginMessages, fieldNumber: 172)
+      if !_storage._cannedMessageModuleAllowInputSource.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._cannedMessageModuleAllowInputSource, fieldNumber: 171)
       }
-      if _storage._cannedMessagePluginSendBell != false {
-        try visitor.visitSingularBoolField(value: _storage._cannedMessagePluginSendBell, fieldNumber: 173)
+      if _storage._cannedMessageModuleSendBell != false {
+        try visitor.visitSingularBoolField(value: _storage._cannedMessageModuleSendBell, fieldNumber: 173)
       }
       if _storage._mqttEncryptionEnabled != false {
         try visitor.visitSingularBoolField(value: _storage._mqttEncryptionEnabled, fieldNumber: 174)
       }
       if _storage._adcMultiplierOverride != 0 {
         try visitor.visitSingularFloatField(value: _storage._adcMultiplierOverride, fieldNumber: 175)
+      }
+      if _storage._serialModuleBaud != .baudDefault {
+        try visitor.visitSingularEnumField(value: _storage._serialModuleBaud, fieldNumber: 176)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -2096,12 +2129,10 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         let _storage = _args.0
         let rhs_storage = _args.1
         if _storage._positionBroadcastSecs != rhs_storage._positionBroadcastSecs {return false}
-        if _storage._positionBroadcastSmart != rhs_storage._positionBroadcastSmart {return false}
-        if _storage._sendOwnerInterval != rhs_storage._sendOwnerInterval {return false}
+        if _storage._positionBroadcastSmartDisabled != rhs_storage._positionBroadcastSmartDisabled {return false}
         if _storage._waitBluetoothSecs != rhs_storage._waitBluetoothSecs {return false}
         if _storage._screenOnSecs != rhs_storage._screenOnSecs {return false}
         if _storage._phoneTimeoutSecs != rhs_storage._phoneTimeoutSecs {return false}
-        if _storage._phoneSdsTimeoutSec != rhs_storage._phoneSdsTimeoutSec {return false}
         if _storage._meshSdsTimeoutSecs != rhs_storage._meshSdsTimeoutSecs {return false}
         if _storage._sdsSecs != rhs_storage._sdsSecs {return false}
         if _storage._lsSecs != rhs_storage._lsSecs {return false}
@@ -2111,12 +2142,12 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._wifiApMode != rhs_storage._wifiApMode {return false}
         if _storage._region != rhs_storage._region {return false}
         if _storage._chargeCurrent != rhs_storage._chargeCurrent {return false}
-        if _storage._isRouter != rhs_storage._isRouter {return false}
+        if _storage._role != rhs_storage._role {return false}
         if _storage._isLowPower != rhs_storage._isLowPower {return false}
         if _storage._fixedPosition != rhs_storage._fixedPosition {return false}
         if _storage._serialDisabled != rhs_storage._serialDisabled {return false}
-        if _storage._locationShare != rhs_storage._locationShare {return false}
-        if _storage._gpsOperation != rhs_storage._gpsOperation {return false}
+        if _storage._locationShareDisabled != rhs_storage._locationShareDisabled {return false}
+        if _storage._gpsDisabled != rhs_storage._gpsDisabled {return false}
         if _storage._gpsUpdateInterval != rhs_storage._gpsUpdateInterval {return false}
         if _storage._gpsAttemptTime != rhs_storage._gpsAttemptTime {return false}
         if _storage._gpsAccept2D != rhs_storage._gpsAccept2D {return false}
@@ -2128,34 +2159,27 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._factoryReset != rhs_storage._factoryReset {return false}
         if _storage._debugLogEnabled != rhs_storage._debugLogEnabled {return false}
         if _storage._ignoreIncoming != rhs_storage._ignoreIncoming {return false}
-        if _storage._serialpluginEnabled != rhs_storage._serialpluginEnabled {return false}
-        if _storage._serialpluginEcho != rhs_storage._serialpluginEcho {return false}
-        if _storage._serialpluginRxd != rhs_storage._serialpluginRxd {return false}
-        if _storage._serialpluginTxd != rhs_storage._serialpluginTxd {return false}
-        if _storage._serialpluginTimeout != rhs_storage._serialpluginTimeout {return false}
-        if _storage._serialpluginMode != rhs_storage._serialpluginMode {return false}
-        if _storage._extNotificationPluginEnabled != rhs_storage._extNotificationPluginEnabled {return false}
-        if _storage._extNotificationPluginOutputMs != rhs_storage._extNotificationPluginOutputMs {return false}
-        if _storage._extNotificationPluginOutput != rhs_storage._extNotificationPluginOutput {return false}
-        if _storage._extNotificationPluginActive != rhs_storage._extNotificationPluginActive {return false}
-        if _storage._extNotificationPluginAlertMessage != rhs_storage._extNotificationPluginAlertMessage {return false}
-        if _storage._extNotificationPluginAlertBell != rhs_storage._extNotificationPluginAlertBell {return false}
-        if _storage._rangeTestPluginEnabled != rhs_storage._rangeTestPluginEnabled {return false}
-        if _storage._rangeTestPluginSender != rhs_storage._rangeTestPluginSender {return false}
-        if _storage._rangeTestPluginSave != rhs_storage._rangeTestPluginSave {return false}
-        if _storage._storeForwardPluginEnabled != rhs_storage._storeForwardPluginEnabled {return false}
-        if _storage._storeForwardPluginHeartbeat != rhs_storage._storeForwardPluginHeartbeat {return false}
-        if _storage._storeForwardPluginRecords != rhs_storage._storeForwardPluginRecords {return false}
-        if _storage._storeForwardPluginHistoryReturnMax != rhs_storage._storeForwardPluginHistoryReturnMax {return false}
-        if _storage._storeForwardPluginHistoryReturnWindow != rhs_storage._storeForwardPluginHistoryReturnWindow {return false}
-        if _storage._environmentalMeasurementPluginMeasurementEnabled != rhs_storage._environmentalMeasurementPluginMeasurementEnabled {return false}
-        if _storage._environmentalMeasurementPluginScreenEnabled != rhs_storage._environmentalMeasurementPluginScreenEnabled {return false}
-        if _storage._environmentalMeasurementPluginReadErrorCountThreshold != rhs_storage._environmentalMeasurementPluginReadErrorCountThreshold {return false}
-        if _storage._environmentalMeasurementPluginUpdateInterval != rhs_storage._environmentalMeasurementPluginUpdateInterval {return false}
-        if _storage._environmentalMeasurementPluginRecoveryInterval != rhs_storage._environmentalMeasurementPluginRecoveryInterval {return false}
-        if _storage._environmentalMeasurementPluginDisplayFarenheit != rhs_storage._environmentalMeasurementPluginDisplayFarenheit {return false}
-        if _storage._environmentalMeasurementPluginSensorType != rhs_storage._environmentalMeasurementPluginSensorType {return false}
-        if _storage._environmentalMeasurementPluginSensorPin != rhs_storage._environmentalMeasurementPluginSensorPin {return false}
+        if _storage._serialModuleEnabled != rhs_storage._serialModuleEnabled {return false}
+        if _storage._serialModuleEcho != rhs_storage._serialModuleEcho {return false}
+        if _storage._serialModuleRxd != rhs_storage._serialModuleRxd {return false}
+        if _storage._serialModuleTxd != rhs_storage._serialModuleTxd {return false}
+        if _storage._serialModuleBaud != rhs_storage._serialModuleBaud {return false}
+        if _storage._serialModuleTimeout != rhs_storage._serialModuleTimeout {return false}
+        if _storage._serialModuleMode != rhs_storage._serialModuleMode {return false}
+        if _storage._extNotificationModuleEnabled != rhs_storage._extNotificationModuleEnabled {return false}
+        if _storage._extNotificationModuleOutputMs != rhs_storage._extNotificationModuleOutputMs {return false}
+        if _storage._extNotificationModuleOutput != rhs_storage._extNotificationModuleOutput {return false}
+        if _storage._extNotificationModuleActive != rhs_storage._extNotificationModuleActive {return false}
+        if _storage._extNotificationModuleAlertMessage != rhs_storage._extNotificationModuleAlertMessage {return false}
+        if _storage._extNotificationModuleAlertBell != rhs_storage._extNotificationModuleAlertBell {return false}
+        if _storage._rangeTestModuleEnabled != rhs_storage._rangeTestModuleEnabled {return false}
+        if _storage._rangeTestModuleSender != rhs_storage._rangeTestModuleSender {return false}
+        if _storage._rangeTestModuleSave != rhs_storage._rangeTestModuleSave {return false}
+        if _storage._storeForwardModuleEnabled != rhs_storage._storeForwardModuleEnabled {return false}
+        if _storage._storeForwardModuleHeartbeat != rhs_storage._storeForwardModuleHeartbeat {return false}
+        if _storage._storeForwardModuleRecords != rhs_storage._storeForwardModuleRecords {return false}
+        if _storage._storeForwardModuleHistoryReturnMax != rhs_storage._storeForwardModuleHistoryReturnMax {return false}
+        if _storage._storeForwardModuleHistoryReturnWindow != rhs_storage._storeForwardModuleHistoryReturnWindow {return false}
         if _storage._positionFlags != rhs_storage._positionFlags {return false}
         if _storage._isAlwaysPowered != rhs_storage._isAlwaysPowered {return false}
         if _storage._autoScreenCarouselSecs != rhs_storage._autoScreenCarouselSecs {return false}
@@ -2166,16 +2190,16 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
         if _storage._isLoraTxDisabled != rhs_storage._isLoraTxDisabled {return false}
         if _storage._isPowerSaving != rhs_storage._isPowerSaving {return false}
         if _storage._rotary1Enabled != rhs_storage._rotary1Enabled {return false}
-        if _storage._rotary1PinA != rhs_storage._rotary1PinA {return false}
-        if _storage._rotary1PinB != rhs_storage._rotary1PinB {return false}
-        if _storage._rotary1PinPress != rhs_storage._rotary1PinPress {return false}
-        if _storage._rotary1EventCw != rhs_storage._rotary1EventCw {return false}
-        if _storage._rotary1EventCcw != rhs_storage._rotary1EventCcw {return false}
-        if _storage._rotary1EventPress != rhs_storage._rotary1EventPress {return false}
-        if _storage._cannedMessagePluginEnabled != rhs_storage._cannedMessagePluginEnabled {return false}
-        if _storage._cannedMessagePluginAllowInputSource != rhs_storage._cannedMessagePluginAllowInputSource {return false}
-        if _storage._cannedMessagePluginMessages != rhs_storage._cannedMessagePluginMessages {return false}
-        if _storage._cannedMessagePluginSendBell != rhs_storage._cannedMessagePluginSendBell {return false}
+        if _storage._inputbrokerPinA != rhs_storage._inputbrokerPinA {return false}
+        if _storage._inputbrokerPinB != rhs_storage._inputbrokerPinB {return false}
+        if _storage._inputbrokerPinPress != rhs_storage._inputbrokerPinPress {return false}
+        if _storage._inputbrokerEventCw != rhs_storage._inputbrokerEventCw {return false}
+        if _storage._inputbrokerEventCcw != rhs_storage._inputbrokerEventCcw {return false}
+        if _storage._inputbrokerEventPress != rhs_storage._inputbrokerEventPress {return false}
+        if _storage._updown1Enabled != rhs_storage._updown1Enabled {return false}
+        if _storage._cannedMessageModuleEnabled != rhs_storage._cannedMessageModuleEnabled {return false}
+        if _storage._cannedMessageModuleAllowInputSource != rhs_storage._cannedMessageModuleAllowInputSource {return false}
+        if _storage._cannedMessageModuleSendBell != rhs_storage._cannedMessageModuleSendBell {return false}
         if _storage._mqttEncryptionEnabled != rhs_storage._mqttEncryptionEnabled {return false}
         if _storage._adcMultiplierOverride != rhs_storage._adcMultiplierOverride {return false}
         return true
@@ -2187,15 +2211,31 @@ extension RadioConfig.UserPreferences: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension RadioConfig.UserPreferences.EnvironmentalMeasurementSensorType: SwiftProtobuf._ProtoNameProviding {
+extension RadioConfig.UserPreferences.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "DHT11"),
-    1: .same(proto: "DS18B20"),
-    2: .same(proto: "DHT12"),
-    3: .same(proto: "DHT21"),
-    4: .same(proto: "DHT22"),
-    5: .same(proto: "BME280"),
-    6: .same(proto: "BME680"),
-    7: .same(proto: "MCP9808"),
+    0: .same(proto: "BAUD_Default"),
+    1: .same(proto: "BAUD_2400"),
+    2: .same(proto: "BAUD_4800"),
+    3: .same(proto: "BAUD_9600"),
+    4: .same(proto: "BAUD_19200"),
+    5: .same(proto: "BAUD_38400"),
+    6: .same(proto: "BAUD_57600"),
+    7: .same(proto: "BAUD_115200"),
+    8: .same(proto: "BAUD_230400"),
+    9: .same(proto: "BAUD_460800"),
+    10: .same(proto: "BAUD_576000"),
+    11: .same(proto: "BAUD_921600"),
+    12: .same(proto: "BAUD_110"),
+    13: .same(proto: "BAUD_300"),
+    14: .same(proto: "BAUD_600"),
+    15: .same(proto: "BAUD_1200"),
+  ]
+}
+
+extension RadioConfig.UserPreferences.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "MODE_Default"),
+    1: .same(proto: "MODE_SIMPLE"),
+    2: .same(proto: "MODE_PROTO"),
   ]
 }

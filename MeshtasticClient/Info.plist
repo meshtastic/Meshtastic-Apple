@@ -45,6 +45,8 @@
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Bluetooth is used to connect an iPhone to a user's meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the camera to share channels using a QR Code</string>
 	<key>NSLocationUsageDescription</key>
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

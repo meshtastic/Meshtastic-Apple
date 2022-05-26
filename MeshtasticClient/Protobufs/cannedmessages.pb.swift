@@ -7,25 +7,6 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-///
-/// Meshtastic protobufs
-///
-/// For more information on protobufs (and tools to use them with the language of your choice) see
-/// https://developers.google.com/protocol-buffers/docs/proto3
-///
-/// We are not placing any of these defs inside a package, because if you do the
-/// resulting nanopb version is super verbose package mesh.
-///
-/// Protobuf build instructions:
-///
-/// To build java classes for reading writing:
-/// protoc -I=. --java_out /tmp mesh.proto
-///
-/// To generate Nanopb c code:
-/// /home/kevinh/packages/nanopb-0.4.0-linux-x86/generator-bin/protoc --nanopb_out=/tmp -I=app/src/main/proto mesh.proto
-///
-/// Nanopb binaries available here: https://jpa.kapsi.fi/nanopb/download/ use nanopb 0.4.0
-
 import Foundation
 import SwiftProtobuf
 
@@ -40,96 +21,46 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// Canned message plugin part 1
-struct CannedMessagePluginMessagePart1 {
+/// Canned message module configuration.
+struct CannedMessageModuleConfig {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
-  /// Predefined messages for canned message plugin separated by '|' characters.
-  /// This is part 1.
-  var text: String = String()
+  /// Predefined messages for canned message module separated by '|' characters.
+  var messagesPart1: String = String()
+
+  ///
+  /// TODO: REPLACE
+  var messagesPart2: String = String()
+
+  ///
+  /// TODO: REPLACE
+  var messagesPart3: String = String()
+
+  ///
+  /// TODO: REPLACE
+  var messagesPart4: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 }
 
-///
-/// Canned message plugin part 2
-struct CannedMessagePluginMessagePart2 {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// Predefined messages for canned message plugin separated by '|' characters.
-  /// This is part 2.
-  var text: String = String()
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
-///
-/// Canned message plugin part 3
-struct CannedMessagePluginMessagePart3 {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// Predefined messages for canned message plugin separated by '|' characters.
-  /// This is part 3.
-  var text: String = String()
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
-///
-/// Canned message plugin part 4
-struct CannedMessagePluginMessagePart4 {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// Predefined messages for canned message plugin separated by '|' characters.
-  /// This is part 4.
-  var text: String = String()
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
-///
-/// Canned message plugin part 5
-struct CannedMessagePluginMessagePart5 {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// Predefined messages for canned message plugin separated by '|' characters.
-  /// This is part 5.
-  var text: String = String()
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
+#if swift(>=5.5) && canImport(_Concurrency)
+extension CannedMessageModuleConfig: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-extension CannedMessagePluginMessagePart1: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "CannedMessagePluginMessagePart1"
+extension CannedMessageModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CannedMessageModuleConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "text"),
+    11: .same(proto: "messagesPart1"),
+    12: .same(proto: "messagesPart2"),
+    13: .same(proto: "messagesPart3"),
+    14: .same(proto: "messagesPart4"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -138,149 +69,36 @@ extension CannedMessagePluginMessagePart1: SwiftProtobuf.Message, SwiftProtobuf.
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      case 11: try { try decoder.decodeSingularStringField(value: &self.messagesPart1) }()
+      case 12: try { try decoder.decodeSingularStringField(value: &self.messagesPart2) }()
+      case 13: try { try decoder.decodeSingularStringField(value: &self.messagesPart3) }()
+      case 14: try { try decoder.decodeSingularStringField(value: &self.messagesPart4) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
+    if !self.messagesPart1.isEmpty {
+      try visitor.visitSingularStringField(value: self.messagesPart1, fieldNumber: 11)
+    }
+    if !self.messagesPart2.isEmpty {
+      try visitor.visitSingularStringField(value: self.messagesPart2, fieldNumber: 12)
+    }
+    if !self.messagesPart3.isEmpty {
+      try visitor.visitSingularStringField(value: self.messagesPart3, fieldNumber: 13)
+    }
+    if !self.messagesPart4.isEmpty {
+      try visitor.visitSingularStringField(value: self.messagesPart4, fieldNumber: 14)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: CannedMessagePluginMessagePart1, rhs: CannedMessagePluginMessagePart1) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension CannedMessagePluginMessagePart2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "CannedMessagePluginMessagePart2"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "text"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: CannedMessagePluginMessagePart2, rhs: CannedMessagePluginMessagePart2) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension CannedMessagePluginMessagePart3: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "CannedMessagePluginMessagePart3"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "text"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: CannedMessagePluginMessagePart3, rhs: CannedMessagePluginMessagePart3) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension CannedMessagePluginMessagePart4: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "CannedMessagePluginMessagePart4"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "text"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: CannedMessagePluginMessagePart4, rhs: CannedMessagePluginMessagePart4) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension CannedMessagePluginMessagePart5: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "CannedMessagePluginMessagePart5"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "text"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: CannedMessagePluginMessagePart5, rhs: CannedMessagePluginMessagePart5) -> Bool {
-    if lhs.text != rhs.text {return false}
+  static func ==(lhs: CannedMessageModuleConfig, rhs: CannedMessageModuleConfig) -> Bool {
+    if lhs.messagesPart1 != rhs.messagesPart1 {return false}
+    if lhs.messagesPart2 != rhs.messagesPart2 {return false}
+    if lhs.messagesPart3 != rhs.messagesPart3 {return false}
+    if lhs.messagesPart4 != rhs.messagesPart4 {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
