@@ -65,11 +65,18 @@ struct NodeList: View {
 								.padding(.bottom, 10)
 
 								if connected {
+									
 									HStack(alignment: .bottom) {
 
 										Image(systemName: "repeat.circle.fill").font(.title3)
 											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-										Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
+										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+											
+											Text("Currently Connected").font(.headline).foregroundColor(Color.accentColor)
+										} else {
+											
+											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
+										}
 									}
 									Spacer()
 								}
@@ -77,44 +84,23 @@ struct NodeList: View {
 								HStack(alignment: .bottom) {
 
 									Image(systemName: "clock.badge.checkmark.fill").font(.title3).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-
-									if node.lastHeard != nil {
-										Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.subheadline).foregroundColor(.gray)
+									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+										
+										LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
 									} else {
-										Text("Last Heard: Unknown").font(.subheadline).foregroundColor(.gray)
+										
+										LastHeardText(lastHeard: node.lastHeard).font(.title3).foregroundColor(.gray)
 									}
 								}
 							}
 							.padding([.leading, .top, .bottom])
 						}
-//						.swipeActions {
-//
-//						   Button {
-//
-//							   context.delete(node)
-//
-//							   do {
-//
-//								   try context.save()
-//								   print("Successfully Deleted NodeInfoEntiy: \(node.num)")
-//
-//							   } catch {
-//
-//								   print("Failed to save context after deleting NodeInfoEntity Num: \(node.num)")
-//							   }
-//
-//						   } label: {
-//
-//							   Label("Delete from app", systemImage: "trash")
-//						   }
-//						   .tint(.red)
-//					   }
 					}
                 }
              }
             .navigationTitle("All Nodes")
 			.onAppear {
-				// self.nodes.returnsObjectsAsFaults = false
+
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
 

@@ -65,19 +65,19 @@ struct NodeDetail: View {
 
 					ScrollView {
 
-						if node.lastHeard != nil {
 
-							HStack {
+						HStack {
 
-								Image(systemName: "clock.badge.checkmark.fill")
-									.font(.title)
-									.foregroundColor(.accentColor)
-									.symbolRenderingMode(.hierarchical)
-								Text("Last Heard: \(node.lastHeard!, style: .relative) ago").font(.title3)
-							}
-							.padding()
-							Divider()
+							Image(systemName: "clock.badge.checkmark.fill")
+								.font(.title)
+								.foregroundColor(.accentColor)
+								.symbolRenderingMode(.hierarchical)
+							
+							LastHeardText(lastHeard: node.lastHeard).font(.title3)
+							
 						}
+						.padding()
+						Divider()
 
 						HStack {
 
@@ -133,6 +133,15 @@ struct NodeDetail: View {
 
 									BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
 										.padding(.bottom)
+									Text(String(mostRecent.batteryLevel) + "%")
+										.font(.title3)
+										.foregroundColor(.gray)
+										.fixedSize()
+									Text(String(format: "%.2f", mostRecent.voltage) + " V")
+										.font(.title3)
+										.foregroundColor(.gray)
+										.fixedSize()
+									
 									
 								}
 								.padding(5)
@@ -194,6 +203,10 @@ struct NodeDetail: View {
 							Divider()
 							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 								
+								if mappin.coordinate != nil {
+									
+									
+								}
 								
 							}
 //							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
