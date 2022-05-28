@@ -8,6 +8,8 @@
 import Foundation
 import CoreData
 
+
+
 func nodeInfoPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -31,7 +33,6 @@ func nodeInfoPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			try context.save()
 
 			if meshLogging { MeshLogger.log("💾 Updated NodeInfo SNR \(packet.rxSnr) and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
-			print("💾 Updated NodeInfo SNR \(packet.rxSnr) and Time from Packet For: \(fetchedNode[0].num)")
 
 		} catch {
 
@@ -86,9 +87,8 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 		  try context.save()
 
 			if meshLogging {
-				MeshLogger.log("💾 Updated NodeInfo Position Coordinates, SNR \(packet.rxSnr) and Time from Position App Packet For: \(fetchedNode[0].num)")
+				MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 			}
-			print("💾 Updated NodeInfo Position Coordinates, SNR \(packet.rxSnr) and Time from Position App Packet For: \(fetchedNode[0].num)")
 
 		} catch {
 
@@ -143,7 +143,6 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 		}
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
-		print("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)")
 						
 		if routingMessage.errorReason == Routing.Error.none {
 			
@@ -169,7 +168,6 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 				  if meshLogging {
 					  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
 				  }
-				  print("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
 				
 			} catch {
 				
@@ -187,10 +185,8 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
 		let telemetry = TelemetryEntity(context: context)
-		print(packet.decoded.requestID)
 		
 		if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(telemetryMessage)") }
-		print("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(telemetryMessage)")
 		
 	} else {
 		
@@ -203,8 +199,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		print("💬 BLE FROMRADIO received for text message app \(messageText)")
-		if meshLogging { MeshLogger.log("💬 BLE FROMRADIO received for text message app \(messageText)") }
+		if meshLogging { MeshLogger.log("💬 Message received for text message app \(messageText)") }
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
