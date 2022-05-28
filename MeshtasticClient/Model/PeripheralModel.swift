@@ -7,6 +7,7 @@ struct Peripheral: Identifiable {
 	var name: String
 	var shortName: String
 	var longName: String
+	var lastFourCode: String
 	var firmwareVersion: String
 	var rssi: Int
 	var bitrate: Float?
@@ -16,12 +17,13 @@ struct Peripheral: Identifiable {
 	var subscribed: Bool
 	var peripheral: CBPeripheral
 
-	init(id: String, num: Int64, name: String, shortName: String, longName: String, firmwareVersion: String, rssi: Int, bitrate: Float?, channelUtilization: Float?, airTime: Float?, lastUpdate: Date, subscribed: Bool, peripheral: CBPeripheral) {
+	init(id: String, num: Int64, name: String, shortName: String, longName: String, lastFourCode: String, firmwareVersion: String, rssi: Int, bitrate: Float?, channelUtilization: Float?, airTime: Float?, lastUpdate: Date, subscribed: Bool, peripheral: CBPeripheral) {
 		self.id = id
 		self.num = num
 		self.name = name
 		self.shortName = shortName
 		self.longName = longName
+		self.lastFourCode = lastFourCode
 		self.firmwareVersion = firmwareVersion
 		self.rssi = rssi
 		self.bitrate = bitrate

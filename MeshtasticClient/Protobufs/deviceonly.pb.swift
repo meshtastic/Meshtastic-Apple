@@ -215,11 +215,180 @@ struct OEMStore {
   init() {}
 }
 
+struct LocalConfig {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// TODO: REPLACE
+  var device: Config.DeviceConfig {
+    get {return _storage._device ?? Config.DeviceConfig()}
+    set {_uniqueStorage()._device = newValue}
+  }
+  /// Returns true if `device` has been explicitly set.
+  var hasDevice: Bool {return _storage._device != nil}
+  /// Clears the value of `device`. Subsequent reads from it will return its default value.
+  mutating func clearDevice() {_uniqueStorage()._device = nil}
+
+  ///
+  /// TODO: REPLACE
+  var position: Config.PositionConfig {
+    get {return _storage._position ?? Config.PositionConfig()}
+    set {_uniqueStorage()._position = newValue}
+  }
+  /// Returns true if `position` has been explicitly set.
+  var hasPosition: Bool {return _storage._position != nil}
+  /// Clears the value of `position`. Subsequent reads from it will return its default value.
+  mutating func clearPosition() {_uniqueStorage()._position = nil}
+
+  ///
+  /// TODO: REPLACE
+  var power: Config.PowerConfig {
+    get {return _storage._power ?? Config.PowerConfig()}
+    set {_uniqueStorage()._power = newValue}
+  }
+  /// Returns true if `power` has been explicitly set.
+  var hasPower: Bool {return _storage._power != nil}
+  /// Clears the value of `power`. Subsequent reads from it will return its default value.
+  mutating func clearPower() {_uniqueStorage()._power = nil}
+
+  ///
+  /// TODO: REPLACE
+  var wifi: Config.WiFiConfig {
+    get {return _storage._wifi ?? Config.WiFiConfig()}
+    set {_uniqueStorage()._wifi = newValue}
+  }
+  /// Returns true if `wifi` has been explicitly set.
+  var hasWifi: Bool {return _storage._wifi != nil}
+  /// Clears the value of `wifi`. Subsequent reads from it will return its default value.
+  mutating func clearWifi() {_uniqueStorage()._wifi = nil}
+
+  ///
+  /// TODO: REPLACE
+  var display: Config.DisplayConfig {
+    get {return _storage._display ?? Config.DisplayConfig()}
+    set {_uniqueStorage()._display = newValue}
+  }
+  /// Returns true if `display` has been explicitly set.
+  var hasDisplay: Bool {return _storage._display != nil}
+  /// Clears the value of `display`. Subsequent reads from it will return its default value.
+  mutating func clearDisplay() {_uniqueStorage()._display = nil}
+
+  ///
+  /// TODO: REPLACE
+  var lora: Config.LoRaConfig {
+    get {return _storage._lora ?? Config.LoRaConfig()}
+    set {_uniqueStorage()._lora = newValue}
+  }
+  /// Returns true if `lora` has been explicitly set.
+  var hasLora: Bool {return _storage._lora != nil}
+  /// Clears the value of `lora`. Subsequent reads from it will return its default value.
+  mutating func clearLora() {_uniqueStorage()._lora = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+struct LocalModuleConfig {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// TODO: REPLACE
+  var mqtt: ModuleConfig.MQTTConfig {
+    get {return _storage._mqtt ?? ModuleConfig.MQTTConfig()}
+    set {_uniqueStorage()._mqtt = newValue}
+  }
+  /// Returns true if `mqtt` has been explicitly set.
+  var hasMqtt: Bool {return _storage._mqtt != nil}
+  /// Clears the value of `mqtt`. Subsequent reads from it will return its default value.
+  mutating func clearMqtt() {_uniqueStorage()._mqtt = nil}
+
+  ///
+  /// TODO: REPLACE
+  var serial: ModuleConfig.SerialConfig {
+    get {return _storage._serial ?? ModuleConfig.SerialConfig()}
+    set {_uniqueStorage()._serial = newValue}
+  }
+  /// Returns true if `serial` has been explicitly set.
+  var hasSerial: Bool {return _storage._serial != nil}
+  /// Clears the value of `serial`. Subsequent reads from it will return its default value.
+  mutating func clearSerial() {_uniqueStorage()._serial = nil}
+
+  ///
+  /// TODO: REPLACE
+  var externalNotification: ModuleConfig.ExternalNotificationConfig {
+    get {return _storage._externalNotification ?? ModuleConfig.ExternalNotificationConfig()}
+    set {_uniqueStorage()._externalNotification = newValue}
+  }
+  /// Returns true if `externalNotification` has been explicitly set.
+  var hasExternalNotification: Bool {return _storage._externalNotification != nil}
+  /// Clears the value of `externalNotification`. Subsequent reads from it will return its default value.
+  mutating func clearExternalNotification() {_uniqueStorage()._externalNotification = nil}
+
+  ///
+  /// TODO: REPLACE
+  var storeForward: ModuleConfig.StoreForwardConfig {
+    get {return _storage._storeForward ?? ModuleConfig.StoreForwardConfig()}
+    set {_uniqueStorage()._storeForward = newValue}
+  }
+  /// Returns true if `storeForward` has been explicitly set.
+  var hasStoreForward: Bool {return _storage._storeForward != nil}
+  /// Clears the value of `storeForward`. Subsequent reads from it will return its default value.
+  mutating func clearStoreForward() {_uniqueStorage()._storeForward = nil}
+
+  ///
+  /// TODO: REPLACE
+  var rangeTest: ModuleConfig.RangeTestConfig {
+    get {return _storage._rangeTest ?? ModuleConfig.RangeTestConfig()}
+    set {_uniqueStorage()._rangeTest = newValue}
+  }
+  /// Returns true if `rangeTest` has been explicitly set.
+  var hasRangeTest: Bool {return _storage._rangeTest != nil}
+  /// Clears the value of `rangeTest`. Subsequent reads from it will return its default value.
+  mutating func clearRangeTest() {_uniqueStorage()._rangeTest = nil}
+
+  ///
+  /// TODO: REPLACE
+  var telemetry: ModuleConfig.TelemetryConfig {
+    get {return _storage._telemetry ?? ModuleConfig.TelemetryConfig()}
+    set {_uniqueStorage()._telemetry = newValue}
+  }
+  /// Returns true if `telemetry` has been explicitly set.
+  var hasTelemetry: Bool {return _storage._telemetry != nil}
+  /// Clears the value of `telemetry`. Subsequent reads from it will return its default value.
+  mutating func clearTelemetry() {_uniqueStorage()._telemetry = nil}
+
+  ///
+  /// TODO: REPLACE
+  var cannedMessage: ModuleConfig.CannedMessageConfig {
+    get {return _storage._cannedMessage ?? ModuleConfig.CannedMessageConfig()}
+    set {_uniqueStorage()._cannedMessage = newValue}
+  }
+  /// Returns true if `cannedMessage` has been explicitly set.
+  var hasCannedMessage: Bool {return _storage._cannedMessage != nil}
+  /// Clears the value of `cannedMessage`. Subsequent reads from it will return its default value.
+  mutating func clearCannedMessage() {_uniqueStorage()._cannedMessage = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ScreenFonts: @unchecked Sendable {}
 extension DeviceState: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
 extension OEMStore: @unchecked Sendable {}
+extension LocalConfig: @unchecked Sendable {}
+extension LocalModuleConfig: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -439,6 +608,230 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.oemIconBits != rhs.oemIconBits {return false}
     if lhs.oemFont != rhs.oemFont {return false}
     if lhs.oemText != rhs.oemText {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "LocalConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "device"),
+    2: .same(proto: "position"),
+    3: .same(proto: "power"),
+    4: .same(proto: "wifi"),
+    5: .same(proto: "display"),
+    6: .same(proto: "lora"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _device: Config.DeviceConfig? = nil
+    var _position: Config.PositionConfig? = nil
+    var _power: Config.PowerConfig? = nil
+    var _wifi: Config.WiFiConfig? = nil
+    var _display: Config.DisplayConfig? = nil
+    var _lora: Config.LoRaConfig? = nil
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _device = source._device
+      _position = source._position
+      _power = source._power
+      _wifi = source._wifi
+      _display = source._display
+      _lora = source._lora
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._device) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._power) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._wifi) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._lora) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._device {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._position {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._power {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._wifi {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._display {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._lora {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: LocalConfig, rhs: LocalConfig) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._device != rhs_storage._device {return false}
+        if _storage._position != rhs_storage._position {return false}
+        if _storage._power != rhs_storage._power {return false}
+        if _storage._wifi != rhs_storage._wifi {return false}
+        if _storage._display != rhs_storage._display {return false}
+        if _storage._lora != rhs_storage._lora {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "LocalModuleConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "mqtt"),
+    2: .same(proto: "serial"),
+    3: .standard(proto: "external_notification"),
+    4: .standard(proto: "store_forward"),
+    5: .standard(proto: "range_test"),
+    6: .same(proto: "telemetry"),
+    7: .standard(proto: "canned_message"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _mqtt: ModuleConfig.MQTTConfig? = nil
+    var _serial: ModuleConfig.SerialConfig? = nil
+    var _externalNotification: ModuleConfig.ExternalNotificationConfig? = nil
+    var _storeForward: ModuleConfig.StoreForwardConfig? = nil
+    var _rangeTest: ModuleConfig.RangeTestConfig? = nil
+    var _telemetry: ModuleConfig.TelemetryConfig? = nil
+    var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _mqtt = source._mqtt
+      _serial = source._serial
+      _externalNotification = source._externalNotification
+      _storeForward = source._storeForward
+      _rangeTest = source._rangeTest
+      _telemetry = source._telemetry
+      _cannedMessage = source._cannedMessage
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._mqtt) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._serial) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._externalNotification) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._storeForward) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._rangeTest) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._telemetry) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._cannedMessage) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._mqtt {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._serial {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._externalNotification {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._storeForward {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._rangeTest {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._telemetry {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._cannedMessage {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: LocalModuleConfig, rhs: LocalModuleConfig) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._mqtt != rhs_storage._mqtt {return false}
+        if _storage._serial != rhs_storage._serial {return false}
+        if _storage._externalNotification != rhs_storage._externalNotification {return false}
+        if _storage._storeForward != rhs_storage._storeForward {return false}
+        if _storage._rangeTest != rhs_storage._rangeTest {return false}
+        if _storage._telemetry != rhs_storage._telemetry {return false}
+        if _storage._cannedMessage != rhs_storage._cannedMessage {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

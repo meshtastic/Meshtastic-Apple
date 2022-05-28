@@ -7,6 +7,7 @@ import SwiftUI
 //
 struct LastHeardText: View {
 	var lastHeard: Date?
+	
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 	var body: some View {
@@ -16,7 +17,7 @@ struct LastHeardText: View {
 			
 		} else {
 			
-			Text("Last Heard: Unknown Age")
+			Text("Unknown Age")
 		}
 	}
 }

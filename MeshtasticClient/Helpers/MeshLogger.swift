@@ -17,6 +17,7 @@ class MeshLogger {
 		formatter.dateFormat = "M/d/yy h:mm:ss.SSSS"
 		let timestamp = formatter.string(from: Date())
 		guard let data = (message + " - " + timestamp + "\n").data(using: String.Encoding.utf8) else { return }
+		print(message)
 
 		if FileManager.default.fileExists(atPath: logFile.path) {
 			if let fileHandle = try? FileHandle(forWritingTo: logFile) {

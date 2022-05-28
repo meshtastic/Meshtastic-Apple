@@ -74,6 +74,10 @@ enum PortNum: SwiftProtobuf.Enum {
   case adminApp // = 6
 
   ///
+  /// Compressed TEXT_MESSAGE payloads.
+  case textMessageCompressedApp // = 7
+
+  ///
   /// Provides a 'ping' service that replies to any packet it receives.
   /// Also serves as a small example module.
   case replyApp // = 32
@@ -111,10 +115,6 @@ enum PortNum: SwiftProtobuf.Enum {
   case zpsApp // = 68
 
   ///
-  /// Compressed payloads.
-  case compressionApp // = 69
-
-  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/Meshtastic-device/blob/master/bin/regen-protos.sh))
@@ -142,6 +142,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 4: self = .nodeinfoApp
     case 5: self = .routingApp
     case 6: self = .adminApp
+    case 7: self = .textMessageCompressedApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
     case 64: self = .serialApp
@@ -149,7 +150,6 @@ enum PortNum: SwiftProtobuf.Enum {
     case 66: self = .rangeTestApp
     case 67: self = .telemetryApp
     case 68: self = .zpsApp
-    case 69: self = .compressionApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -166,6 +166,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .nodeinfoApp: return 4
     case .routingApp: return 5
     case .adminApp: return 6
+    case .textMessageCompressedApp: return 7
     case .replyApp: return 32
     case .ipTunnelApp: return 33
     case .serialApp: return 64
@@ -173,7 +174,6 @@ enum PortNum: SwiftProtobuf.Enum {
     case .rangeTestApp: return 66
     case .telemetryApp: return 67
     case .zpsApp: return 68
-    case .compressionApp: return 69
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -195,6 +195,7 @@ extension PortNum: CaseIterable {
     .nodeinfoApp,
     .routingApp,
     .adminApp,
+    .textMessageCompressedApp,
     .replyApp,
     .ipTunnelApp,
     .serialApp,
@@ -202,7 +203,6 @@ extension PortNum: CaseIterable {
     .rangeTestApp,
     .telemetryApp,
     .zpsApp,
-    .compressionApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -226,6 +226,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "NODEINFO_APP"),
     5: .same(proto: "ROUTING_APP"),
     6: .same(proto: "ADMIN_APP"),
+    7: .same(proto: "TEXT_MESSAGE_COMPRESSED_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
     64: .same(proto: "SERIAL_APP"),
@@ -233,7 +234,6 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     66: .same(proto: "RANGE_TEST_APP"),
     67: .same(proto: "TELEMETRY_APP"),
     68: .same(proto: "ZPS_APP"),
-    69: .same(proto: "COMPRESSION_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),

@@ -1037,27 +1037,9 @@ struct DataMessage {
   /// Formerly named typ and of type Type
   var portnum: PortNum = .unknownApp
 
-  var payloadVariant: DataMessage.OneOf_PayloadVariant? = nil
-
   ///
   /// TODO: REPLACE
-  var payload: Data {
-    get {
-      if case .payload(let v)? = payloadVariant {return v}
-      return Data()
-    }
-    set {payloadVariant = .payload(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var payloadCompressed: Data {
-    get {
-      if case .payloadCompressed(let v)? = payloadVariant {return v}
-      return Data()
-    }
-    set {payloadVariant = .payloadCompressed(newValue)}
-  }
+  var payload: Data = Data()
 
   ///
   /// Not normally used, but for testing a sender can request that recipient
@@ -1105,34 +1087,6 @@ struct DataMessage {
   mutating func clearLocation() {self._location = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  enum OneOf_PayloadVariant: Equatable {
-    ///
-    /// TODO: REPLACE
-    case payload(Data)
-    ///
-    /// TODO: REPLACE
-    case payloadCompressed(Data)
-
-  #if !swift(>=4.1)
-    static func ==(lhs: DataMessage.OneOf_PayloadVariant, rhs: DataMessage.OneOf_PayloadVariant) -> Bool {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch (lhs, rhs) {
-      case (.payload, .payload): return {
-        guard case .payload(let l) = lhs, case .payload(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.payloadCompressed, .payloadCompressed): return {
-        guard case .payloadCompressed(let l) = lhs, case .payloadCompressed(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      default: return false
-      }
-    }
-  #endif
-  }
 
   init() {}
 
@@ -2142,7 +2096,6 @@ extension Routing: @unchecked Sendable {}
 extension Routing.OneOf_Variant: @unchecked Sendable {}
 extension Routing.Error: @unchecked Sendable {}
 extension DataMessage: @unchecked Sendable {}
-extension DataMessage.OneOf_PayloadVariant: @unchecked Sendable {}
 extension Location: @unchecked Sendable {}
 extension MeshPacket: @unchecked Sendable {}
 extension MeshPacket.OneOf_PayloadVariant: @unchecked Sendable {}
@@ -2684,7 +2637,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "portnum"),
     2: .same(proto: "payload"),
-    10: .standard(proto: "payload_compressed"),
     3: .standard(proto: "want_response"),
     4: .same(proto: "dest"),
     5: .same(proto: "source"),
@@ -2701,14 +2653,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.portnum) }()
-      case 2: try {
-        var v: Data?
-        try decoder.decodeSingularBytesField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .payload(v)
-        }
-      }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.payload) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.wantResponse) }()
       case 4: try { try decoder.decodeSingularFixed32Field(value: &self.dest) }()
       case 5: try { try decoder.decodeSingularFixed32Field(value: &self.source) }()
@@ -2716,14 +2661,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
       case 9: try { try decoder.decodeSingularMessageField(value: &self._location) }()
-      case 10: try {
-        var v: Data?
-        try decoder.decodeSingularBytesField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .payloadCompressed(v)
-        }
-      }()
       default: break
       }
     }
@@ -2737,9 +2674,9 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
-    try { if case .payload(let v)? = self.payloadVariant {
-      try visitor.visitSingularBytesField(value: v, fieldNumber: 2)
-    } }()
+    if !self.payload.isEmpty {
+      try visitor.visitSingularBytesField(value: self.payload, fieldNumber: 2)
+    }
     if self.wantResponse != false {
       try visitor.visitSingularBoolField(value: self.wantResponse, fieldNumber: 3)
     }
@@ -2761,15 +2698,12 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try { if let v = self._location {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     } }()
-    try { if case .payloadCompressed(let v)? = self.payloadVariant {
-      try visitor.visitSingularBytesField(value: v, fieldNumber: 10)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: DataMessage, rhs: DataMessage) -> Bool {
     if lhs.portnum != rhs.portnum {return false}
-    if lhs.payloadVariant != rhs.payloadVariant {return false}
+    if lhs.payload != rhs.payload {return false}
     if lhs.wantResponse != rhs.wantResponse {return false}
     if lhs.dest != rhs.dest {return false}
     if lhs.source != rhs.source {return false}

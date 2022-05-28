@@ -68,7 +68,7 @@ struct NodeList: View {
 									
 									HStack(alignment: .bottom) {
 
-										Image(systemName: "repeat.circle.fill").font(.title3)
+										Image(systemName: "repeat.circle.fill").font(.title2)
 											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 											
@@ -83,7 +83,8 @@ struct NodeList: View {
 
 								HStack(alignment: .bottom) {
 
-									Image(systemName: "clock.badge.checkmark.fill").font(.title3).foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+									Image(systemName: "clock.badge.checkmark.fill").font(.title3)
+										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 										
 										LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)

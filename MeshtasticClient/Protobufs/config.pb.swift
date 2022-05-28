@@ -257,7 +257,7 @@ struct Config {
     var positionBroadcastSecs: UInt32 = 0
 
     ///
-    /// We should send our position this often (but only if it has changed significantly)
+    /// Disable adaptive position braoadcast, which is now the default.
     var positionBroadcastSmartDisabled: Bool = false
 
     ///
@@ -265,10 +265,6 @@ struct Config {
     /// We will generate GPS position updates at the regular interval, but use whatever the last lat/lon/alt we have for the node.
     /// The lat/lon/alt can be set by an internal GPS or with the help of the app.
     var fixedPosition: Bool = false
-
-    ///
-    /// Should we disbale location sharing with other nodes (or the local phone)
-    var locationShareDisabled: Bool = false
 
     ///
     /// Should the GPS be disabled for this node?
@@ -618,6 +614,10 @@ struct Config {
     /// will be a station
     var apMode: Bool = false
 
+    ///
+    /// If set, the node AP will broadcast as a hidden SSID
+    var apHidden: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -738,7 +738,7 @@ struct Config {
     /// Because protobufs take ZERO space when the value is zero this works out nicely.
     /// This value is replaced by bandwidth/spread_factor/coding_rate.
     /// If you'd like to experiment with other options add them to MeshRadio.cpp in the device code.
-    var modemPreset: Config.LoRaConfig.ModemPreset = .vlongSlow
+    var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
 
     ///
     /// Bandwidth in MHz
@@ -898,7 +898,7 @@ struct Config {
 
       ///
       /// TODO: REPLACE
-      case vlongSlow // = 0
+      case longFast // = 0
 
       ///
       /// TODO: REPLACE
@@ -906,7 +906,7 @@ struct Config {
 
       ///
       /// TODO: REPLACE
-      case longFast // = 2
+      case vlongSlow // = 2
 
       ///
       /// TODO: REPLACE
@@ -926,14 +926,14 @@ struct Config {
       case UNRECOGNIZED(Int)
 
       init() {
-        self = .vlongSlow
+        self = .longFast
       }
 
       init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .vlongSlow
+        case 0: self = .longFast
         case 1: self = .longSlow
-        case 2: self = .longFast
+        case 2: self = .vlongSlow
         case 3: self = .midSlow
         case 4: self = .midFast
         case 5: self = .shortSlow
@@ -944,9 +944,9 @@ struct Config {
 
       var rawValue: Int {
         switch self {
-        case .vlongSlow: return 0
+        case .longFast: return 0
         case .longSlow: return 1
-        case .longFast: return 2
+        case .vlongSlow: return 2
         case .midSlow: return 3
         case .midFast: return 4
         case .shortSlow: return 5
@@ -1047,9 +1047,9 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
 extension Config.LoRaConfig.ModemPreset: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.LoRaConfig.ModemPreset] = [
-    .vlongSlow,
-    .longSlow,
     .longFast,
+    .longSlow,
+    .vlongSlow,
     .midSlow,
     .midFast,
     .shortSlow,
@@ -1291,7 +1291,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     1: .standard(proto: "position_broadcast_secs"),
     2: .standard(proto: "position_broadcast_smart_disabled"),
     3: .standard(proto: "fixed_position"),
-    4: .standard(proto: "location_share_disabled"),
     5: .standard(proto: "gps_disabled"),
     6: .standard(proto: "gps_update_interval"),
     7: .standard(proto: "gps_attempt_time"),
@@ -1309,7 +1308,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.positionBroadcastSecs) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.positionBroadcastSmartDisabled) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.fixedPosition) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.locationShareDisabled) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.gpsDisabled) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.gpsUpdateInterval) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.gpsAttemptTime) }()
@@ -1330,9 +1328,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     }
     if self.fixedPosition != false {
       try visitor.visitSingularBoolField(value: self.fixedPosition, fieldNumber: 3)
-    }
-    if self.locationShareDisabled != false {
-      try visitor.visitSingularBoolField(value: self.locationShareDisabled, fieldNumber: 4)
     }
     if self.gpsDisabled != false {
       try visitor.visitSingularBoolField(value: self.gpsDisabled, fieldNumber: 5)
@@ -1359,7 +1354,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.positionBroadcastSecs != rhs.positionBroadcastSecs {return false}
     if lhs.positionBroadcastSmartDisabled != rhs.positionBroadcastSmartDisabled {return false}
     if lhs.fixedPosition != rhs.fixedPosition {return false}
-    if lhs.locationShareDisabled != rhs.locationShareDisabled {return false}
     if lhs.gpsDisabled != rhs.gpsDisabled {return false}
     if lhs.gpsUpdateInterval != rhs.gpsUpdateInterval {return false}
     if lhs.gpsAttemptTime != rhs.gpsAttemptTime {return false}
@@ -1511,6 +1505,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     1: .same(proto: "ssid"),
     2: .same(proto: "psk"),
     3: .standard(proto: "ap_mode"),
+    4: .standard(proto: "ap_hidden"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1522,6 +1517,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 1: try { try decoder.decodeSingularStringField(value: &self.ssid) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.psk) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.apMode) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.apHidden) }()
       default: break
       }
     }
@@ -1537,6 +1533,9 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.apMode != false {
       try visitor.visitSingularBoolField(value: self.apMode, fieldNumber: 3)
     }
+    if self.apHidden != false {
+      try visitor.visitSingularBoolField(value: self.apHidden, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1544,6 +1543,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.ssid != rhs.ssid {return false}
     if lhs.psk != rhs.psk {return false}
     if lhs.apMode != rhs.apMode {return false}
+    if lhs.apHidden != rhs.apHidden {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1644,7 +1644,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.txPower != 0 {
       try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 1)
     }
-    if self.modemPreset != .vlongSlow {
+    if self.modemPreset != .longFast {
       try visitor.visitSingularEnumField(value: self.modemPreset, fieldNumber: 2)
     }
     if self.bandwidth != 0 {
@@ -1710,9 +1710,9 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
 
 extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "VLongSlow"),
+    0: .same(proto: "LongFast"),
     1: .same(proto: "LongSlow"),
-    2: .same(proto: "LongFast"),
+    2: .same(proto: "VLongSlow"),
     3: .same(proto: "MidSlow"),
     4: .same(proto: "MidFast"),
     5: .same(proto: "ShortSlow"),
