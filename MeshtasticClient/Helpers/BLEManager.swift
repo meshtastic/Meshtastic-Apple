@@ -355,7 +355,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     // MARK: Data Read / Update Characteristic Event
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
        
-		
 		if let e = error {
 			
 			print("🚫 didUpdateValueFor Characteristic error \(e)")
@@ -365,7 +364,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if errorCode == 5 { // CBATTErrorDomain Code=5 "Authentication is insufficient."
 
 				// BLE Pin connection error
-				// We will try and re-connect to this device
 				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
 				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully.") }
 				self.centralManager?.cancelPeripheralConnection(peripheral)
@@ -374,7 +372,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if errorCode == 15 { // CBATTErrorDomain Code=15 "Encryption is insufficient."
 
 				// BLE Pin connection error
-				// We will try and re-connect to this device
 				lastConnectionError = "🚫 BLE \(e.localizedDescription) This may be a Meshtastic Firmware bug affecting BLE 4.0 devices."
 				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again. You may need to forget the device under Settings > General > Bluetooth.") }
 				self.centralManager?.cancelPeripheralConnection(peripheral)
@@ -397,15 +394,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				case .unknownApp:
 					print("MyInfo or NodeInfo")
-					print("Sending nodeinfo: num=0x3b9c2510, lastseen=0, id=!3b9c2510, name=Unknown 2510")
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)
 				case .remoteHardwareApp:
 					print("remoteHardwareApp")
 				case .positionApp:
-					print("positionApp")
+					positionPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .nodeinfoApp:
-					print("nodeinfoApp")
+					nodeInfoPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .routingApp:
 					routingPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .adminApp:
@@ -725,22 +721,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 			}
 
-
 			if decodedInfo.configCompleteID != 0 {
 
 				if meshLoggingEnabled { MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				print("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
+				// Config conplete returns so we don't read the characteristic again
+				return
 			}
 
 		case FROMNUM_UUID :
 		
-			print("FROMNUM Notification, value will be read below")
+			print("🗞️ FROMNUM Notification, value will be read below")
 
 		default:
+			
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
+		
+		// Either Read the config complete value or from num notify value
 		peripheral.readValue(for: FROMRADIO_characteristic)
 	}
 
