@@ -195,8 +195,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		let today = Date()
-		let oneMinuteAgo = Calendar.current.date(byAdding: .minute, value: -1, to: today)!
-		peripherals.removeAll(where: { $0.lastUpdate <= oneMinuteAgo})
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
+		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 
     // Called when a peripheral is connected
