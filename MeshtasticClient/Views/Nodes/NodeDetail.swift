@@ -56,7 +56,7 @@ struct NodeDetail: View {
 										
 										   content: {
 											   
-											   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
+											   NodeAnnotation(time: location.time!)
 										   }
 									)
 								 }

@@ -8,8 +8,6 @@
 import Foundation
 import CoreData
 
-
-
 func nodeInfoPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -185,6 +183,8 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
 		let telemetry = TelemetryEntity(context: context)
+		
+		
 		
 		if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(telemetryMessage)") }
 		

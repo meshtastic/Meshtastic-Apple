@@ -38,6 +38,7 @@
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
+		DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */; };
 		DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5C26ED09490058C060 /* portnums.pb.swift */; };
@@ -110,6 +111,7 @@
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataSample.xcdatamodel; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
+		DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAnnotation.swift; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mesh.pb.swift; sourceTree = "<group>"; };
 		DDAF8C5C26ED09490058C060 /* portnums.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = portnums.pb.swift; sourceTree = "<group>"; };
@@ -358,6 +360,7 @@
 				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
+				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -546,6 +549,7 @@
 				DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
+				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
@@ -751,7 +755,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
@@ -783,7 +787,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeshtasticClient/MeshtasticClient.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticClient/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
