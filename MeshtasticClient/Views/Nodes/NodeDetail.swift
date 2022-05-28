@@ -37,17 +37,33 @@ struct NodeDetail: View {
 								},
 								set: { _ in }
 							)
-							let annotations = [MapLocation(name: node.user!.shortName ?? "???", coordinate: mostRecent.coordinate!)]
-
-							Map(coordinateRegion: regionBinding, showsUserLocation: true, userTrackingMode: .none, annotationItems: annotations) { location in
-								MapAnnotation(
-								   coordinate: location.coordinate,
-								   content: {
-									   CircleText(text: node.user!.shortName ?? "???", color: .accentColor, circleSize: 32, fontSize: 14)
-								   }
+							
+							ZStack {
+								
+								let annotations = node.positions?.array as! [PositionEntity]
+								
+								Map(coordinateRegion: regionBinding,
+									interactionModes: [.all],
+									showsUserLocation: true,
+									userTrackingMode: .constant(.follow),
+									annotationItems: annotations
+									
 								)
+								{ location in
+									
+									return MapAnnotation(
+										coordinate: location.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
+										
+										   content: {
+											   
+											   CircleText(text: node.user!.shortName ?? "???", color: .accentColor)
+										   }
+									)
+								 }
+								.frame(idealWidth: bounds.size.width, maxHeight: bounds.size.height / 2)
+							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
 							}
-							.frame(idealWidth: bounds.size.width, maxHeight: bounds.size.height / 3)
+							
 						} else {
 
 							Image(node.user?.hwModel ?? "UNSET")
@@ -74,7 +90,6 @@ struct NodeDetail: View {
 								.symbolRenderingMode(.hierarchical)
 							
 							LastHeardText(lastHeard: node.lastHeard).font(.title3)
-							
 						}
 						.padding()
 						Divider()
@@ -203,70 +218,50 @@ struct NodeDetail: View {
 							.padding()
 
 							Divider()
+							
 							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 								
 								if mappin.coordinate != nil {
 									
-									
+									VStack {
+										
+										HStack {
+										
+											Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
+											Text("Lat/Long:").font(.caption)
+											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+												.foregroundColor(.gray)
+												.font(.caption)
+
+											Image(systemName: "arrow.up.arrow.down.circle")
+												.font(.subheadline)
+												.foregroundColor(.accentColor)
+												.symbolRenderingMode(.hierarchical)
+
+											Text("Alt:")
+												.font(.caption)
+
+											Text("\(String(mappin.altitude))m")
+												.foregroundColor(.gray)
+												.font(.caption)
+										}
+										
+										HStack {
+										
+											Image(systemName: "clock.badge.checkmark.fill")
+												.font(.subheadline)
+												.foregroundColor(.accentColor)
+												.symbolRenderingMode(.hierarchical)
+											Text("Time:")
+												.font(.caption)
+											Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
+												.foregroundColor(.gray)
+												.font(.caption)
+											Divider()
+										}
+									}
 								}
-								
 							}
-//							ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-//
-//								if mappin.coordinate != nil {
-//
-//									VStack {
-//
-//										HStack {
-//
-//											Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
-//											Text("Lat/Long:").font(.caption)
-//											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-//												.foregroundColor(.gray)
-//												.font(.caption)
-//
-//											Image(systemName: "arrow.up.arrow.down.circle")
-//												.font(.subheadline)
-//												.foregroundColor(.accentColor)
-//												.symbolRenderingMode(.hierarchical)
-//
-//											Text("Alt:")
-//												.font(.caption)
-//
-//											Text("\(String(mappin.altitude))m")
-//												.foregroundColor(.gray)
-//												.font(.caption)
-//										}
-//										HStack {
-//
-//											Image(systemName: "clock.badge.checkmark.fill")
-//												.font(.subheadline)
-//												.foregroundColor(.accentColor)
-//												.symbolRenderingMode(.hierarchical)
-//											Text("Time:")
-//												.font(.caption)
-//											Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
-//												.foregroundColor(.gray)
-//												.font(.caption)
-//											Divider()
-//
-//											HStack {
-//
-//												BatteryIcon(batteryLevel: mappin.batteryLevel, font: .subheadline, color: .accentColor)
-//
-//												if mappin.batteryLevel > 0 {
-//
-//													Text(String(mappin.batteryLevel) + "%")
-//														.font(.caption2)
-//														.foregroundColor(.gray)
-//												}
-//											}
-//										}
-//									}
-//									.padding(1)
-//									Divider()
-//								}
-//							}
 						}
 					}
 				}

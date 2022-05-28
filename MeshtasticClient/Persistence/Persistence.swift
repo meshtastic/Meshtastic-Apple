@@ -34,7 +34,7 @@ class PersistenceController {
 	init(inMemory: Bool = false) {
 		
 		container = NSPersistentContainer(name: "Meshtastic")
-		//Likeself.clearDatabase()
+		//self.clearDatabase()
 		
 		if inMemory {
 			container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
