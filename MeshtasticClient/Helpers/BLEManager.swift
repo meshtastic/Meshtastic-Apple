@@ -397,7 +397,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)
 				case .remoteHardwareApp:
-					print("remoteHardwareApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .positionApp:
 					positionPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .nodeinfoApp:
@@ -408,26 +409,34 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 					print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .replyApp:
-					print("replyApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .ipTunnelApp:
-					print("ipTunnelApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for IP Tunnel App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for IP Tunnel App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .serialApp:
-					print("serialApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Serial App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Serial App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .storeForwardApp:
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 					print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .rangeTestApp:
-					print("rangeTestApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .telemetryApp:
 					telemetryPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .textMessageCompressedApp:
-					print("textMessageCompressedApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .zpsApp:
-					print("zpsApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .privateApp:
-					print("privateApp")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .atakForwarder:
-					print("atakForwarder")
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .UNRECOGNIZED(_):
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 					print("ℹ️ MESH PACKET received for UNRECOGNIZED App UNHANDLED \(try! decodedInfo.packet.jsonString())")
