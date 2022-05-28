@@ -171,12 +171,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 
         var peripheralName: String = peripheral.name ?? "Unknown"
+		let last4Code: String = (peripheral.name != nil ? String(peripheral.name!.suffix(4)) : "Unknown")
 
         if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -390,9 +391,54 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 			var decodedInfo = FromRadio()
-
 			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
 
+			switch decodedInfo.packet.decoded.portnum {
+				
+				case .unknownApp:
+					print("MyInfo or NodeInfo")
+					print("Sending nodeinfo: num=0x3b9c2510, lastseen=0, id=!3b9c2510, name=Unknown 2510")
+				case .textMessageApp:
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)
+				case .remoteHardwareApp:
+					print("remoteHardwareApp")
+				case .positionApp:
+					print("positionApp")
+				case .nodeinfoApp:
+					print("nodeinfoApp")
+				case .routingApp:
+					routingPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+				case .adminApp:
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+				case .replyApp:
+					print("replyApp")
+				case .ipTunnelApp:
+					print("ipTunnelApp")
+				case .serialApp:
+					print("serialApp")
+				case .storeForwardApp:
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+				case .rangeTestApp:
+					print("rangeTestApp")
+				case .telemetryApp:
+					telemetryPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+				case .textMessageCompressedApp:
+					print("textMessageCompressedApp")
+				case .zpsApp:
+					print("zpsApp")
+				case .privateApp:
+					print("privateApp")
+				case .atakForwarder:
+					print("atakForwarder")
+				case .UNRECOGNIZED(_):
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					print("ℹ️ MESH PACKET received for UNRECOGNIZED App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+				case .max:
+					print("MAX PORT NUM OF 511")
+			}
+			
 			// MARK: Incoming MyInfo Packet
 			if decodedInfo.myInfo.myNodeNum != 0 {
 
@@ -439,18 +485,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								bcu.userId = "BROADCASTNODE"
 								print("💾 Saved the All - Broadcast User")
 							}
-							
-							//var settingsCalled = self.getSettings()
-							
-							if false {
-								
-								print("💾 Called Get Settings")
-								
-							} else {
-								
-								print("💥 Get Settings Call Failed")
-							}
-							
 							
 						} catch {
 							
@@ -690,300 +724,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo saved for \(decodedInfo.nodeInfo.num)") }
 				}
 			}
-			// Handle other packet types
-			if decodedInfo.packet.id  != 0 {
 
-				do {
-
-					// MARK: Incoming Packet from the TEXTMESSAGE_APP
-					if decodedInfo.packet.decoded.portnum == PortNum.textMessageApp {
-
-						if let messageText = String(bytes: decodedInfo.packet.decoded.payload, encoding: .utf8) {
-
-							print("💬 BLE FROMRADIO received for text message app \(messageText)")
-							if meshLoggingEnabled { MeshLogger.log("💬 BLE FROMRADIO received for text message app \(messageText)") }
-
-							let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
-							messageUsers.predicate = NSPredicate(format: "num IN %@", [decodedInfo.packet.to, decodedInfo.packet.from])
-
-							do {
-
-								let fetchedUsers = try context?.fetch(messageUsers) as! [UserEntity]
-
-								let newMessage = MessageEntity(context: context!)
-								newMessage.messageId = Int64(decodedInfo.packet.id)
-								newMessage.messageTimestamp = Int32(bitPattern: decodedInfo.packet.rxTime)
-								newMessage.receivedACK = false
-								newMessage.direction = "IN"
-								newMessage.isEmoji = decodedInfo.packet.decoded.emoji == 1
-								
-								if decodedInfo.packet.decoded.replyID > 0 {
-									
-									newMessage.replyID = Int64(decodedInfo.packet.decoded.replyID)
-								}
-
-								if decodedInfo.packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
-
-									// Save the broadcast user if it does not exist
-									let bcu: UserEntity = UserEntity(context: context!)
-									bcu.shortName = "ALL"
-									bcu.longName = "All - Broadcast"
-									bcu.hwModel = "UNSET"
-									bcu.num = Int64(broadcastNodeNum)
-									bcu.userId = "BROADCASTNODE"
-									newMessage.toUser = bcu
-
-								} else {
-
-									newMessage.toUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.to })
-								}
-
-								newMessage.fromUser = fetchedUsers.first(where: { $0.num == decodedInfo.packet.from })
-								newMessage.messagePayload = messageText
-
-								do {
-
-									try context!.save()
-									print("💾 Saved a new message for \(decodedInfo.packet.id)")
-									if meshLoggingEnabled { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
-									
-									if newMessage.toUser != nil && newMessage.toUser!.num == self.broadcastNodeNum || self.connectedPeripheral != nil && self.connectedPeripheral.num == newMessage.toUser!.num {
-										
-										// Create an iOS Notification for the received message and schedule it immediately
-										let manager = LocalNotificationManager()
-
-										manager.notifications = [
-											Notification(
-												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-												content: messageText)
-										]
-										manager.schedule()
-										if meshLoggingEnabled { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
-
-									}
-								} catch {
-
-									context!.rollback()
-
-									let nsError = error as NSError
-									print("💥 Failed to save new MessageEntity \(nsError)")
-								}
-
-							} catch {
-
-							print("💥 Fetch Message To and From Users Error")
-						}
-					}
-				// MARK: Incoming NODEINFO_APP Packet
-				} else if decodedInfo.packet.decoded.portnum == PortNum.nodeinfoApp {
-
-					let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-					fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.packet.from))
-
-					do {
-
-						let fetchedNode = try context?.fetch(fetchNodeInfoAppRequest) as! [NodeInfoEntity]
-
-						if fetchedNode.count == 1 {
-							fetchedNode[0].id = Int64(decodedInfo.packet.from)
-							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
-							fetchedNode[0].snr = decodedInfo.packet.rxSnr
-
-						} else {
-							return
-						}
-						do {
-
-							try context!.save()
-
-							if meshLoggingEnabled { MeshLogger.log("💾 Updated NodeInfo SNR \(decodedInfo.packet.rxSnr) and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
-							print("💾 Updated NodeInfo SNR \(decodedInfo.packet.rxSnr) and Time from Packet For: \(fetchedNode[0].num)")
-
-						} catch {
-
-							context!.rollback()
-
-							let nsError = error as NSError
-							print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
-
-						}
-					} catch {
-
-						print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
-					}
-
-				// MARK: Incoming Packet from the POSITION_APP
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.positionApp {
-					let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-					fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(decodedInfo.packet.from))
-
-					do {
-
-						let fetchedNode = try context?.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
-
-						if fetchedNode.count == 1 {
-							fetchedNode[0].id = Int64(decodedInfo.packet.from)
-							fetchedNode[0].num = Int64(decodedInfo.packet.from)
-							fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
-							fetchedNode[0].snr = decodedInfo.packet.rxSnr
-								
-							if let positionMessage = try? Position(serializedData: decodedInfo.packet.decoded.payload) {
-								
-								let position = PositionEntity(context: context!)
-								position.latitudeI = positionMessage.latitudeI
-								position.longitudeI = positionMessage.longitudeI
-								position.altitude = positionMessage.altitude
-								position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-
-								let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-								mutablePositions.add(position)
-								
-								fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-							}
-							
-						} else {
-							
-							return
-						}
-						do {
-
-						  try context!.save()
-
-							if meshLoggingEnabled {
-								MeshLogger.log("💾 Updated NodeInfo Position Coordinates, SNR \(decodedInfo.packet.rxSnr) and Time from Position App Packet For: \(fetchedNode[0].num)")
-							}
-							print("💾 Updated NodeInfo Position Coordinates, SNR \(decodedInfo.packet.rxSnr) and Time from Position App Packet For:: \(fetchedNode[0].num)")
-
-						} catch {
-
-							context!.rollback()
-
-							let nsError = error as NSError
-							print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
-						}
-					} catch {
-
-						print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
-					}
-				// MARK: Incoming ROUTING_APP Packet
-				} else if decodedInfo.packet.decoded.portnum == PortNum.routingApp {
-					
-					
-					if let routingMessage = try? Routing(serializedData: decodedInfo.packet.decoded.payload) {
-											print(decodedInfo.packet.decoded.requestID)
-											print(routingMessage)
-						
-						let error = routingMessage.errorReason
-						
-						var errorExplanation = "Unknown Routing Error"
-						
-						switch error {
-							case Routing.Error.none:
-								errorExplanation = "This message is not a failure"
-							case Routing.Error.noRoute:
-								errorExplanation = "Our node doesn't have a route to the requested destination anymore."
-							case Routing.Error.gotNak:
-								errorExplanation = "We received a nak while trying to forward on your behalf"
-							case Routing.Error.timeout:
-								errorExplanation = "Timeout"
-							case Routing.Error.noInterface:
-								errorExplanation = "No suitable interface could be found for delivering this packet"
-							case Routing.Error.maxRetransmit:
-								errorExplanation = "We reached the max retransmission count (typically for naive flood routing)"
-							case Routing.Error.noChannel:
-								errorExplanation = "No suitable channel was found for sending this packet (i.e. was requested channel index disabled?)"
-							case Routing.Error.tooLarge:
-								errorExplanation = "The packet was too big for sending (exceeds interface MTU after encoding)"
-							case Routing.Error.noResponse:
-								errorExplanation = "The request had want_response set, the request reached the destination node, but no service on that node wants to send a response (possibly due to bad channel permissions)"
-							case Routing.Error.badRequest:
-								errorExplanation = "The application layer service on the remote node received your request, but considered your request somehow invalid"
-							case Routing.Error.notAuthorized:
-								errorExplanation = "The application layer service on the remote node received your request, but considered your request not authorized (i.e you did not send the request on the required bound channel)"
-							fallthrough
-							default:
-							print(error)
-						}
-						
-						if meshLoggingEnabled { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(decodedInfo.packet.decoded.requestID) Error: \(errorExplanation)") }
-						print("🕸️ ROUTING PACKET received for RequestID: \(decodedInfo.packet.decoded.requestID) Error: \(errorExplanation)")
-						
-										
-						if routingMessage.errorReason == Routing.Error.none {
-							
-							print("Priority ACK no Error")
-							
-							let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-							fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(decodedInfo.packet.decoded.requestID))
-
-							do {
-
-								let fetchedMessage = try context?.fetch(fetchMessageRequest)[0] as? MessageEntity
-								
-								if fetchedMessage != nil {
-									
-									fetchedMessage!.receivedACK = true
-									fetchedMessage!.ackSNR = decodedInfo.packet.rxSnr
-									fetchedMessage!.ackTimestamp = Int32(decodedInfo.packet.rxTime)
-									fetchedMessage!.objectWillChange.send()
-								}
-								
-								try context!.save()
-
-								  if meshLoggingEnabled {
-									  MeshLogger.log("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
-								  }
-								  print("💾 ACK Received and saved for MessageID \(decodedInfo.packet.decoded.requestID)")
-								
-							} catch {
-								
-								context!.rollback()
-
-								let nsError = error as NSError
-								print("💥 Error Saving ACK for message MessageID \(decodedInfo.packet.id) Error: \(nsError)")
-							}
-						}
-					}
-
-				// MARK: Incoming TELEMETRY_APP Packet
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.telemetryApp {
-
-					
-					if let telemetryMessage = try? Telemetry(serializedData: decodedInfo.packet.decoded.payload) {
-						
-						let telemetry = TelemetryEntity(context: context!)
-						print(decodedInfo.packet.decoded.requestID)
-						print(telemetryMessage)
-					}
-					
-					
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					print("ℹ️ MESH PACKET received for Telemetry App UNHANDLED \(try decodedInfo.packet.jsonString())")
-
-				} else if  decodedInfo.packet.decoded.portnum == PortNum.storeForwardApp {
-
-					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
-
-				 } else if  decodedInfo.packet.decoded.portnum == PortNum.adminApp {
-
-					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try decodedInfo.packet.jsonString())")
-
-				 } else {
-
-					 if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())") }
-					 print("ℹ️ MESH PACKET received for Other App UNHANDLED \(try decodedInfo.packet.jsonString())")
-				 }
-
-				} catch {
-					if meshLoggingEnabled { MeshLogger.log("⚰️ Fatal Error: Failed to decode json") }
-					print("⚰️ Fatal Error: Failed to decode json")
-				}
-			}
 
 			if decodedInfo.configCompleteID != 0 {
 
@@ -994,20 +735,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 		case FROMNUM_UUID :
-			print("🚨 FROMNUM Characteristic UUID: \(characteristic.uuid)")
-			if characteristic.value == nil || characteristic.value!.isEmpty {
-				return
-			}
+		
+			print("FROMNUM Notification, value will be read below")
 
-			var decodedInfo = FromRadio()
-
-			//decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-			
 		default:
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
-        peripheral.readValue(for: FROMRADIO_characteristic)
-    }
+		peripheral.readValue(for: FROMRADIO_characteristic)
+	}
 
 	// Send  Message
 	public func sendMessage(message: String, toUserNum: Int64, isEmoji: Bool, replyID: Int64) -> Bool {
@@ -1116,6 +851,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							print("💾 Saved a new sent message to \(toUserNum)")
 							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)") }
 							success = true
+							//sendShutdown(destNum: connectedPeripheral.num, wantResponse: true)
 
 						} catch {
 
@@ -1165,7 +901,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				var meshPacket = MeshPacket()
 				meshPacket.to = UInt32(destNum)
-				meshPacket.from	= UInt32(connectedPeripheral.num)
+				meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 				meshPacket.wantAck = wantResponse
 				
 				var dataMessage = DataMessage()
@@ -1179,13 +915,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				toRadio.packet = meshPacket
 				let binaryData: Data = try! toRadio.serializedData()
 				
-				if meshLoggingEnabled { MeshLogger.log("📍 Sent a Position Packet from the phone to the device for node: \(fromNodeNum)") }
-				print("📍 Sent a Position Packet from the phone to the device for node: \(fromNodeNum)")
+				if meshLoggingEnabled { MeshLogger.log("📍 Sent a Position Packet from the Apple device GPS to node: \(fromNodeNum)") }
+				print("📍 Sent a Position Packet from the Apple device GPS to node: \(fromNodeNum)")
 				
 				if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 					
 					connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 					success = true
+
 				}
 			}
 			
@@ -1218,7 +955,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func getSettings() -> Bool {
 		
 		var adminPacket = AdminMessage()
-		//adminPacket.getRadioRequest = true
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
@@ -1248,5 +984,42 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		return false
+	}
+	
+	// Send Position
+	public func sendShutdown(destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.rebootSeconds = 30
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = false
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
+		
 	}
 }

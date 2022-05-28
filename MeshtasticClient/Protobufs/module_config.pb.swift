@@ -253,21 +253,21 @@ struct ModuleConfig {
     enum Serial_Baud: SwiftProtobuf.Enum {
       typealias RawValue = Int
       case baudDefault // = 0
-      case baud2400 // = 1
-      case baud4800 // = 2
-      case baud9600 // = 3
-      case baud19200 // = 4
-      case baud38400 // = 5
-      case baud57600 // = 6
-      case baud115200 // = 7
-      case baud230400 // = 8
-      case baud460800 // = 9
-      case baud576000 // = 10
-      case baud921600 // = 11
-      case baud110 // = 12
-      case baud300 // = 13
-      case baud600 // = 14
-      case baud1200 // = 15
+      case baud110 // = 1
+      case baud300 // = 2
+      case baud600 // = 3
+      case baud1200 // = 4
+      case baud2400 // = 5
+      case baud4800 // = 6
+      case baud9600 // = 7
+      case baud19200 // = 8
+      case baud38400 // = 9
+      case baud57600 // = 10
+      case baud115200 // = 11
+      case baud230400 // = 12
+      case baud460800 // = 13
+      case baud576000 // = 14
+      case baud921600 // = 15
       case UNRECOGNIZED(Int)
 
       init() {
@@ -277,21 +277,21 @@ struct ModuleConfig {
       init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .baudDefault
-        case 1: self = .baud2400
-        case 2: self = .baud4800
-        case 3: self = .baud9600
-        case 4: self = .baud19200
-        case 5: self = .baud38400
-        case 6: self = .baud57600
-        case 7: self = .baud115200
-        case 8: self = .baud230400
-        case 9: self = .baud460800
-        case 10: self = .baud576000
-        case 11: self = .baud921600
-        case 12: self = .baud110
-        case 13: self = .baud300
-        case 14: self = .baud600
-        case 15: self = .baud1200
+        case 1: self = .baud110
+        case 2: self = .baud300
+        case 3: self = .baud600
+        case 4: self = .baud1200
+        case 5: self = .baud2400
+        case 6: self = .baud4800
+        case 7: self = .baud9600
+        case 8: self = .baud19200
+        case 9: self = .baud38400
+        case 10: self = .baud57600
+        case 11: self = .baud115200
+        case 12: self = .baud230400
+        case 13: self = .baud460800
+        case 14: self = .baud576000
+        case 15: self = .baud921600
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -299,21 +299,21 @@ struct ModuleConfig {
       var rawValue: Int {
         switch self {
         case .baudDefault: return 0
-        case .baud2400: return 1
-        case .baud4800: return 2
-        case .baud9600: return 3
-        case .baud19200: return 4
-        case .baud38400: return 5
-        case .baud57600: return 6
-        case .baud115200: return 7
-        case .baud230400: return 8
-        case .baud460800: return 9
-        case .baud576000: return 10
-        case .baud921600: return 11
-        case .baud110: return 12
-        case .baud300: return 13
-        case .baud600: return 14
-        case .baud1200: return 15
+        case .baud110: return 1
+        case .baud300: return 2
+        case .baud600: return 3
+        case .baud1200: return 4
+        case .baud2400: return 5
+        case .baud4800: return 6
+        case .baud9600: return 7
+        case .baud19200: return 8
+        case .baud38400: return 9
+        case .baud57600: return 10
+        case .baud115200: return 11
+        case .baud230400: return 12
+        case .baud460800: return 13
+        case .baud576000: return 14
+        case .baud921600: return 15
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -643,6 +643,10 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
     .baudDefault,
+    .baud110,
+    .baud300,
+    .baud600,
+    .baud1200,
     .baud2400,
     .baud4800,
     .baud9600,
@@ -654,10 +658,6 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
     .baud460800,
     .baud576000,
     .baud921600,
-    .baud110,
-    .baud300,
-    .baud600,
-    .baud1200,
   ]
 }
 
@@ -990,21 +990,21 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
 extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "BAUD_Default"),
-    1: .same(proto: "BAUD_2400"),
-    2: .same(proto: "BAUD_4800"),
-    3: .same(proto: "BAUD_9600"),
-    4: .same(proto: "BAUD_19200"),
-    5: .same(proto: "BAUD_38400"),
-    6: .same(proto: "BAUD_57600"),
-    7: .same(proto: "BAUD_115200"),
-    8: .same(proto: "BAUD_230400"),
-    9: .same(proto: "BAUD_460800"),
-    10: .same(proto: "BAUD_576000"),
-    11: .same(proto: "BAUD_921600"),
-    12: .same(proto: "BAUD_110"),
-    13: .same(proto: "BAUD_300"),
-    14: .same(proto: "BAUD_600"),
-    15: .same(proto: "BAUD_1200"),
+    1: .same(proto: "BAUD_110"),
+    2: .same(proto: "BAUD_300"),
+    3: .same(proto: "BAUD_600"),
+    4: .same(proto: "BAUD_1200"),
+    5: .same(proto: "BAUD_2400"),
+    6: .same(proto: "BAUD_4800"),
+    7: .same(proto: "BAUD_9600"),
+    8: .same(proto: "BAUD_19200"),
+    9: .same(proto: "BAUD_38400"),
+    10: .same(proto: "BAUD_57600"),
+    11: .same(proto: "BAUD_115200"),
+    12: .same(proto: "BAUD_230400"),
+    13: .same(proto: "BAUD_460800"),
+    14: .same(proto: "BAUD_576000"),
+    15: .same(proto: "BAUD_921600"),
   ]
 }
 

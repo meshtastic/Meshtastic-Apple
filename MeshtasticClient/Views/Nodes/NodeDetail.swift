@@ -133,16 +133,18 @@ struct NodeDetail: View {
 
 									BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
 										.padding(.bottom)
-									Text(String(mostRecent.batteryLevel) + "%")
-										.font(.title3)
-										.foregroundColor(.gray)
-										.fixedSize()
+									
+									if mostRecent.batteryLevel > 0 {
+										Text(String(mostRecent.batteryLevel) + "%")
+											.font(.title3)
+											.foregroundColor(.gray)
+											.fixedSize()
+									}
+									
 									Text(String(format: "%.2f", mostRecent.voltage) + " V")
 										.font(.title3)
 										.foregroundColor(.gray)
 										.fixedSize()
-									
-									
 								}
 								.padding(5)
 							}
@@ -281,7 +283,7 @@ struct NodeDetail: View {
 				ConnectedDevice(
 					bluetoothOn: bleManager.isSwitchedOn,
 					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "???")
+					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.lastFourCode : "????")
 			}
 		)
 		.onAppear(perform: {
