@@ -12,6 +12,9 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	
+	@State private var isPresentingShutdownConfirm: Bool = false
+	@State private var isPresentingRebootConfirm: Bool = false
 
 	var node: NodeInfoEntity
 
@@ -80,8 +83,66 @@ struct NodeDetail: View {
 					}
 
 					ScrollView {
+						
+						HStack {
+							if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num {
+								
+									Button(action: {
+										
+										isPresentingShutdownConfirm = true
+									}) {
+											
+										Image(systemName: "power")
+											.symbolRenderingMode(.hierarchical)
+											.imageScale(.small)
+											.foregroundColor(Color.accentColor)
+										Text("Power Off")
+											.font(.caption)
+											
+									}
+									.padding()
+									.background(Color(.systemGray6))
+									.clipShape(Capsule())
+									.confirmationDialog(
+										"Are you sure?",
+										isPresented: $isPresentingShutdownConfirm
+									) {
+										Button("Shutdown Node?", role: .destructive) {
+											let success = bleManager.sendShutdown(destNum: node.num, wantResponse: false)
+										}
+									}
+									
+									
+									Button(action: {
+										
+										isPresentingRebootConfirm = true
+										
+									}) {
+										
+										Image(systemName: "arrow.triangle.2.circlepath")
+											.symbolRenderingMode(.hierarchical)
+											.imageScale(.small)
+											.foregroundColor(Color.accentColor)
+										Text("Reboot")
+											.font(.caption)
 
-
+									}
+									.padding()
+									.background(Color(.systemGray6))
+									.clipShape(Capsule())
+									.confirmationDialog(
+										"Are you sure?",
+										isPresented: $isPresentingRebootConfirm
+									) {
+										Button("Reboot Node?", role: .destructive) {
+											let success = bleManager.sendReboot(destNum: node.num, wantResponse: false)
+									}
+								}
+							}
+							
+						}
+						.padding(5)
+						Divider()
 						HStack {
 
 							Image(systemName: "clock.badge.checkmark.fill")
