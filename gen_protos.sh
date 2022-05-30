@@ -8,7 +8,7 @@ fi
 
 # simple sanity checking for executable
 if [ ! -x "`which protoc`" ]; then
-  echo "Please install switf-protobuf by running: brew install swift-protobuf"
+  echo "Please install swift-protobuf by running: brew install swift-protobuf"
   exit
 fi
 
