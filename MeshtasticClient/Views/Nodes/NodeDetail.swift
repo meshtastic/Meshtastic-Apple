@@ -85,7 +85,7 @@ struct NodeDetail: View {
 					ScrollView {
 						
 						HStack {
-							if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num {
+							if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
 								
 									Button(action: {
 										
@@ -315,7 +315,7 @@ struct NodeDetail: View {
 												.symbolRenderingMode(.hierarchical)
 											Text("Time:")
 												.font(.caption)
-											Text("\(mappin.time!, style: .date) \(mappin.time!, style: .time)")
+											DateTimeText(dateTime: mappin.time)
 												.foregroundColor(.gray)
 												.font(.caption)
 											Divider()

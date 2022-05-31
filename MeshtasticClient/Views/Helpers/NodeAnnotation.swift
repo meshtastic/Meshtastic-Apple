@@ -14,12 +14,12 @@ struct NodeAnnotation: View {
 			.cornerRadius(10)
 
 		Image(systemName: "mappin.circle.fill")
-			.font(.title)
-			.foregroundColor(.red)
+			.font(.largeTitle)
+			.foregroundColor(.accentColor)
 
 		Image(systemName: "arrowtriangle.down.fill")
 			.font(.caption)
-			.foregroundColor(.red)
+			.foregroundColor(.accentColor)
 			.offset(x: 0, y: -5)
 		}
 	}
