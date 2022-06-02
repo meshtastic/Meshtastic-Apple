@@ -365,8 +365,6 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
-							print(packet.decoded.requestID)
-							print(routingMessage)
 		
 		let error = routingMessage.errorReason
 		
@@ -397,7 +395,7 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 				errorExplanation = "The application layer service on the remote node received your request, but considered your request not authorized (i.e you did not send the request on the required bound channel)"
 			fallthrough
 			default:
-			print(error)
+				break
 		}
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
