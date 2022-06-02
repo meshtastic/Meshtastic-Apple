@@ -460,7 +460,7 @@
 				TargetAttributes = {
 					DDC2E15326CE248E0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
-						LastSwiftMigration = 1320;
+						LastSwiftMigration = 1340;
 					};
 					DDC2E16926CE248F0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
@@ -805,6 +805,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "MeshtasticClient/Compression/MeshtasticClient-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
