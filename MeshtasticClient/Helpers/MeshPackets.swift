@@ -82,7 +82,6 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 	}
 	return nil
 }
-	
 
 func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
@@ -282,7 +281,24 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 			fetchedNode[0].num = Int64(packet.from)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			fetchedNode[0].snr = packet.rxSnr
-
+			
+			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+		
+				if nodeInfoMessage.hasDeviceMetrics {
+					
+					let telemetry = TelemetryEntity(context: context)
+					
+					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
+					telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
+					telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
+					telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
+					
+					var newTelemetries = [TelemetryEntity]()
+					newTelemetries.append(telemetry)
+					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
+				}
+			}
+			
 		} else {
 			return
 		}
@@ -394,8 +410,7 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 			case Routing.Error.notAuthorized:
 				errorExplanation = "The application layer service on the remote node received your request, but considered your request not authorized (i.e you did not send the request on the required bound channel)"
 			fallthrough
-			default:
-				break
+			default: ()
 		}
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }

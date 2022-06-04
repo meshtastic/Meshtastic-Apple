@@ -78,6 +78,10 @@ enum PortNum: SwiftProtobuf.Enum {
   case textMessageCompressedApp // = 7
 
   ///
+  /// Waypoint payloads.
+  case waypointApp // = 8
+
+  ///
   /// Provides a 'ping' service that replies to any packet it receives.
   /// Also serves as a small example module.
   case replyApp // = 32
@@ -143,6 +147,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 5: self = .routingApp
     case 6: self = .adminApp
     case 7: self = .textMessageCompressedApp
+    case 8: self = .waypointApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
     case 64: self = .serialApp
@@ -167,6 +172,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .routingApp: return 5
     case .adminApp: return 6
     case .textMessageCompressedApp: return 7
+    case .waypointApp: return 8
     case .replyApp: return 32
     case .ipTunnelApp: return 33
     case .serialApp: return 64
@@ -196,6 +202,7 @@ extension PortNum: CaseIterable {
     .routingApp,
     .adminApp,
     .textMessageCompressedApp,
+    .waypointApp,
     .replyApp,
     .ipTunnelApp,
     .serialApp,
@@ -227,6 +234,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "ROUTING_APP"),
     6: .same(proto: "ADMIN_APP"),
     7: .same(proto: "TEXT_MESSAGE_COMPRESSED_APP"),
+    8: .same(proto: "WAYPOINT_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
     64: .same(proto: "SERIAL_APP"),
