@@ -31,7 +31,7 @@ struct UserMessageList: View {
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
 	
-	@State var messageCount = 0
+	@State private var messageCount = 0
 
     var body: some View {
 		
@@ -46,11 +46,7 @@ struct UserMessageList: View {
 				ScrollView {
 					
 					if user.messageList.count > 0 {
-						
-						HStack{
-						// Padding at the top of the message list
-						}.padding(.bottom)
-						
+												
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							
 								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
@@ -59,7 +55,7 @@ struct UserMessageList: View {
 									
 									if message.replyID > 0 {
 										
-										let messageReply = allMessages.first(where: { $0.messageId == message.replyID })
+										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
 										
 										HStack {
 
@@ -297,12 +293,13 @@ struct UserMessageList: View {
 											
 										}
 										.padding(.bottom)
-										.id(allMessages.firstIndex(of: message))
+										.id(user.messageList.firstIndex(of: message))
 										
 										if !currentUser {
 											Spacer(minLength:50)
 										}
 									}
+									.id(message.messageId)
 									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
 									.alert(isPresented: $showDeleteMessageAlert) {
@@ -311,7 +308,7 @@ struct UserMessageList: View {
 										print("OK button tapped")
 										if deleteMessageId > 0 {
 
-											let message = allMessages.first(where: { $0.messageId == deleteMessageId })
+											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
 
 											context.delete(message!)
 											do {
@@ -336,19 +333,17 @@ struct UserMessageList: View {
 					
 					self.bleManager.context = context
 					self.bleManager.userSettings = userSettings
-				
-					if allMessages.count > 1 {
-						
-						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
-					}
+					
+					messageCount = user.messageList.count
+					
 				})
-				.onChange(of: allMessages.count, perform: { count in
+				.onChange(of: messageCount, perform: { value in
+					//scrollView.scrollTo(user.messageList.firstIndex(of: user.messageList.last! ), anchor: .bottom)
+					scrollView.scrollTo(user.messageList.last!.messageId)
+				})
+				.onChange(of: user.messageList, perform: { messages in
 					
-					if count > 1 {
-					
-						scrollView.scrollTo(allMessages.firstIndex(of: allMessages.last! ), anchor: .bottom)
-
-					}
+					messageCount = messages.count
 				})
 			}
 				

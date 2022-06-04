@@ -24,7 +24,7 @@ struct Connect: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.3.12"
+		let minimumVersion = "1.3.15"
 		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		NavigationView {
