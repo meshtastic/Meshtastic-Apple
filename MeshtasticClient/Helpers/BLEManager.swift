@@ -427,6 +427,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .positionApp:
 					positionPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+			    case .waypointApp:
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .nodeinfoApp:
 					nodeInfoAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .routingApp:

@@ -430,6 +430,8 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 					fetchedMessage!.ackSNR = packet.rxSnr
 					fetchedMessage!.ackTimestamp = Int32(packet.rxTime)
 					fetchedMessage!.objectWillChange.send()
+					fetchedMessage!.fromUser?.objectWillChange.send()
+					fetchedMessage!.toUser?.objectWillChange.send()
 				}
 				
 				try context.save()

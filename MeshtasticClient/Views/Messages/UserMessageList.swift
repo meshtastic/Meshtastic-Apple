@@ -40,20 +40,18 @@ struct UserMessageList: View {
 		let hasTapbackSupport = minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		VStack {
-			
-			let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
 
 			ScrollViewReader { scrollView in
 
 				ScrollView {
 					
-					if allMessages.count > 0 {
+					if user.messageList.count > 0 {
 						
 						HStack{
 						// Padding at the top of the message list
 						}.padding(.bottom)
 						
-						ForEach( allMessages ) { (message: MessageEntity) in
+						ForEach( user.messageList ) { (message: MessageEntity) in
 							
 								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
 								
