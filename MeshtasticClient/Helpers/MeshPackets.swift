@@ -550,6 +550,8 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 
 			newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			newMessage.messagePayload = messageText
+			newMessage.fromUser?.objectWillChange.send()
+			newMessage.toUser?.objectWillChange.send()
 
 			do {
 

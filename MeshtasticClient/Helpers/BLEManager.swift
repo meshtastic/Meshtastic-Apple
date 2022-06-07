@@ -194,9 +194,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		
-		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
-		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
+	//	let today = Date()
+	//	let visibleDuration = Calendar.current.date(byAdding: .second, value: -7, to: Date())!
+	//	peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 
     // Called when a peripheral is connected
@@ -296,6 +296,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             }
         }
     }
+	
+	func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+		
+		print(invalidatedServices)
+	}
 
     // MARK: Discover Characteristics Event
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {

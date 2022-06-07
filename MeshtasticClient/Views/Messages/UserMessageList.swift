@@ -32,6 +32,7 @@ struct UserMessageList: View {
 	@State private var sendPositionWithMessage: Bool = false
 	
 	@State private var messageCount = 0
+	@State private var refreshId = UUID()
 
     var body: some View {
 		
@@ -335,6 +336,7 @@ struct UserMessageList: View {
 					self.bleManager.userSettings = userSettings
 					
 					messageCount = user.messageList.count
+					refreshId = UUID()
 					
 				})
 				.onChange(of: messageCount, perform: { value in
@@ -343,6 +345,7 @@ struct UserMessageList: View {
 				})
 				.onChange(of: user.messageList, perform: { messages in
 					
+					refreshId = UUID()
 					messageCount = messages.count
 				})
 			}
