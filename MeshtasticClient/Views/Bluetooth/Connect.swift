@@ -24,7 +24,7 @@ struct Connect: View {
     var body: some View {
 		
 		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.3.15"
+		let minimumVersion = "1.3.16"
 		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 		
 		NavigationView {
@@ -38,7 +38,7 @@ struct Connect: View {
 
 							Section(header: Text("Upgrade your Firmware").font(.title)) {
 
-								Text("🚨 Your firmware version is unsupported, the minimum firmware version is \(minimumVersion).").font(.subheadline).foregroundColor(.red)
+								Text("🚨 1.3 ALPHA PREVIEW Your firmware version is unsupported by the preview the minimum firmware version is \(minimumVersion).").font(.subheadline).foregroundColor(.red)
 							}
 							.textCase(nil)
 						}
