@@ -36,8 +36,9 @@ struct ShareChannel: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 
+	let channelSet = ChannelSet()
 	
-	@State private var text = "meshtastic.org"
+	@State private var text =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {

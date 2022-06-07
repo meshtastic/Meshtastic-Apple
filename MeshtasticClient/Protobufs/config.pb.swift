@@ -284,20 +284,6 @@ struct Config {
     var gpsAttemptTime: UInt32 = 0
 
     ///
-    /// Shall we accept 2D GPS fixes? By default, only 3D fixes are accepted
-    /// (during a 2D fix, altitude values are unreliable and will be excluded)
-    var gpsAccept2D: Bool = false
-
-    ///
-    /// GPS maximum DOP accepted (dilution of precision)
-    /// Set a rejection threshold for GPS readings based on their precision,
-    /// relative to the GPS rated accuracy (which is typically ~3m)
-    /// Solutions above this value will be treated as retryable errors!
-    /// Useful range is between 1 - 64 (3m - <~200m)
-    /// By default (if zero), accept all GPS readings
-    var gpsMaxDop: UInt32 = 0
-
-    ///
     /// Bit field of boolean configuration options for POSITION messages
     /// (bitwise OR of PositionFlags)
     var positionFlags: UInt32 = 0
@@ -1294,8 +1280,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     5: .standard(proto: "gps_disabled"),
     6: .standard(proto: "gps_update_interval"),
     7: .standard(proto: "gps_attempt_time"),
-    8: .standard(proto: "gps_accept_2d"),
-    9: .standard(proto: "gps_max_dop"),
     10: .standard(proto: "position_flags"),
   ]
 
@@ -1311,8 +1295,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 5: try { try decoder.decodeSingularBoolField(value: &self.gpsDisabled) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.gpsUpdateInterval) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.gpsAttemptTime) }()
-      case 8: try { try decoder.decodeSingularBoolField(value: &self.gpsAccept2D) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.gpsMaxDop) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
       default: break
       }
@@ -1338,12 +1320,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.gpsAttemptTime != 0 {
       try visitor.visitSingularUInt32Field(value: self.gpsAttemptTime, fieldNumber: 7)
     }
-    if self.gpsAccept2D != false {
-      try visitor.visitSingularBoolField(value: self.gpsAccept2D, fieldNumber: 8)
-    }
-    if self.gpsMaxDop != 0 {
-      try visitor.visitSingularUInt32Field(value: self.gpsMaxDop, fieldNumber: 9)
-    }
     if self.positionFlags != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionFlags, fieldNumber: 10)
     }
@@ -1357,8 +1333,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.gpsDisabled != rhs.gpsDisabled {return false}
     if lhs.gpsUpdateInterval != rhs.gpsUpdateInterval {return false}
     if lhs.gpsAttemptTime != rhs.gpsAttemptTime {return false}
-    if lhs.gpsAccept2D != rhs.gpsAccept2D {return false}
-    if lhs.gpsMaxDop != rhs.gpsMaxDop {return false}
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

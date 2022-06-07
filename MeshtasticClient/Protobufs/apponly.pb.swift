@@ -32,12 +32,25 @@ struct ChannelSet {
   // methods supported on all messages.
 
   ///
-  /// TODO: REPLACE
+  /// Channel list with settings
   var settings: [ChannelSettings] = []
+
+  ///
+  /// LoRa config
+  var loraConfig: Config.LoRaConfig {
+    get {return _loraConfig ?? Config.LoRaConfig()}
+    set {_loraConfig = newValue}
+  }
+  /// Returns true if `loraConfig` has been explicitly set.
+  var hasLoraConfig: Bool {return self._loraConfig != nil}
+  /// Clears the value of `loraConfig`. Subsequent reads from it will return its default value.
+  mutating func clearLoraConfig() {self._loraConfig = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _loraConfig: Config.LoRaConfig? = nil
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -50,6 +63,7 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   static let protoMessageName: String = "ChannelSet"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "settings"),
+    2: .standard(proto: "lora_config"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -59,20 +73,29 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.settings) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._loraConfig) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.settings.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.settings, fieldNumber: 1)
     }
+    try { if let v = self._loraConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ChannelSet, rhs: ChannelSet) -> Bool {
     if lhs.settings != rhs.settings {return false}
+    if lhs._loraConfig != rhs._loraConfig {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
