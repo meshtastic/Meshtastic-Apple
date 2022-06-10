@@ -38,7 +38,7 @@ struct ShareChannel: View {
 
 	let channelSet = ChannelSet()
 	
-	@State private var text =  "https://www.meshtastic.org/e/#"
+	@State private var text =  "https://wwww.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
