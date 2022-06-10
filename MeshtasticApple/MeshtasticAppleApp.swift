@@ -2,7 +2,7 @@ import SwiftUI
 import CoreData
 
 @main
-struct MeshtasticClientApp: App {
+struct MeshtasticAppleApp: App {
 	
 	let persistenceController = PersistenceController.shared
 
