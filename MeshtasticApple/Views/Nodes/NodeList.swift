@@ -1,6 +1,6 @@
 //
 //  NodeList.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 8/7/21.
 //

@@ -1,6 +1,6 @@
 //
 //  LocalMBTileOverlay.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Joshua Pirihi on 16/01/22.
 //

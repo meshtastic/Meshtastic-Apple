@@ -1,6 +1,6 @@
 //
 //  PositionAnnotationView.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Joshua Pirihi on 24/12/21.
 //

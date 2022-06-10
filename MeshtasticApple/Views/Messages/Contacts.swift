@@ -1,6 +1,6 @@
 //
 //  Contacts.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 12/21/21.
 //

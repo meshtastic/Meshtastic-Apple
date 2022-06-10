@@ -1,6 +1,6 @@
 //
 //  Connect.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 8/18/21.
 //

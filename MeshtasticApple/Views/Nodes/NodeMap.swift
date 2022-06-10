@@ -1,9 +1,8 @@
 //
 //  NodeMap.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 8/7/21.
-//  Copyright © 2021 Apple. All rights reserved.
 //
 
 import SwiftUI

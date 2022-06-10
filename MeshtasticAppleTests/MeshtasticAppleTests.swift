@@ -1,12 +1,13 @@
 //
-//  MeshtasticClientTests.swift
-//  MeshtasticClientTests
+//  MeshtasticAppleTests.swift
+//  MeshtasticAppleTests
 //
 //  Created by Garth Vander Houwen on 8/18/21.
 //
 
 import XCTest
-// @testable import MeshtasticClient
+
+@testable import MeshtasticApple
 
 class MeshtasticAppleTests: XCTestCase {
 

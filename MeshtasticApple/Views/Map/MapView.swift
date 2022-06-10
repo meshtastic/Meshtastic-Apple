@@ -1,6 +1,6 @@
 //
 //  MapView.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Joshua Pirihi on 22/12/21.
 //

@@ -1,6 +1,6 @@
 //
 //  ShareChannel.swift
-//  MeshtasticClient
+//  MeshtasticApple
 //
 //  Created by Garth Vander Houwen on 4/8/22.
 //
