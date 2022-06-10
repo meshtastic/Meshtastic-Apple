@@ -17,6 +17,8 @@
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
+		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
+		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D826F3093800029299 /* MessageBubble.swift */; };
@@ -92,6 +94,8 @@
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
+		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v2.xcdatamodel"; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
@@ -221,6 +225,7 @@
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 				DD6B85A728009258000ACD6B /* ShareChannel.swift */,
+				DD3501882852FC3B000FC853 /* Settings.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -338,6 +343,7 @@
 			children = (
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
 				DD539501276DAA6A00AD86B1 /* MapLocation.swift */,
+				DD35018A2852FC79000FC853 /* UserSettings.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -559,6 +565,7 @@
 				DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
+				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
@@ -572,6 +579,7 @@
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
+				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
