@@ -34,6 +34,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
 	@Published var isConnected: Bool = false
+	
+	/// Used to make sure we never get foold by old BLE packets
+	private var configNonce: UInt32 = 1
 
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
@@ -320,7 +323,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				TORADIO_characteristic = characteristic
 				var toRadio: ToRadio = ToRadio()
-				toRadio.wantConfigID =  UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				configNonce += 1
+				toRadio.wantConfigID = configNonce
+
 				let binaryData: Data = try! toRadio.serializedData()
 				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
 
@@ -502,7 +507,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				RunLoop.current.add(self.positionTimer!, forMode: .common)
 			}
 
-			if decodedInfo.configCompleteID != 0 {
+			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 
 				if meshLoggingEnabled { MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				self.connectedPeripheral.subscribed = true
@@ -794,4 +799,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
+	
+	public func getConfig(destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var newConfig = Config.LoRaConfig()
+		var channel = ChannelSettings()
+		 //  var newPrefs = (value.loraConfig).toBuilder()
+//		newConfig.
+		return false
+	}
 }
