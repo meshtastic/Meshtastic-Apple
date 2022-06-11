@@ -556,7 +556,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 			do {
 
 				try context.save()
-				print("💾 Saved a new message for \(packet.id)")
+
 				if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
 				
 				if newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num {
