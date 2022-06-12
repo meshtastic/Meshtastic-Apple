@@ -37,7 +37,7 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 			case .eu868:
 				return "European Union 868mhz"
 			case .cn:
-				return "CN"
+				return "China"
 			case .jp:
 				return "Japan"
 			case .anz:
