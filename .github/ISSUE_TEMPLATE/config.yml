@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Test Flight Link
+  - name: Meshtastic Public Beta Test Flight  Link
     url: https://testflight.apple.com/join/c8nNl8q1
-    about: Please submit any bugs through TestFlight
+    about: Please submit any bugs through TestFlight, bugs submitted as GitHub issues will be closed.
