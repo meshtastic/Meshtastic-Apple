@@ -444,7 +444,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				case .routingApp:
 					routingPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .adminApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					adminAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .replyApp:
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .ipTunnelApp:
@@ -799,13 +799,42 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	
 	public func getConfig(destNum: Int64,  wantResponse: Bool) -> Bool {
 		
-		var newConfig = Config.LoRaConfig()
-		var channel = ChannelSettings()
-		 //  var newPrefs = (value.loraConfig).toBuilder()
-//		newConfig.
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.deviceConfig
+
+		adminPacket.variant = AdminMessage.OneOf_Variant.getConfigRequest(AdminMessage.ConfigType.loraConfig)
+
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = false
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
 		return false
 	}
 }

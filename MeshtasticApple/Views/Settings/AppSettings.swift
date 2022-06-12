@@ -91,110 +91,97 @@ struct AppSettings: View {
 
     var body: some View {
 
-        NavigationView {
+		VStack {
 
-            GeometryReader { _ in
+			Form {
+				Section(header: Text("USER DETAILS")) {
 
-				Form {
-					Section(header: Text("USER DETAILS")) {
-
-						HStack {
-							Label("Name", systemImage: "person.crop.rectangle.fill")
-							TextField("Username", text: $userSettings.meshtasticUsername)
-								.foregroundColor(.gray)
-						}
-						.keyboardType(.asciiCapable)
-						.disableAutocorrection(true)
-						.listRowSeparator(.visible)
-						
-						HStack {
-							Label("Radio", systemImage: "flipphone")
-							Text(userSettings.preferredPeripheralName)
-								.foregroundColor(.gray)
-							
-						}
-						Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
-							.font(.caption)
-							.listRowSeparator(.hidden)
-						Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
-							.font(.caption2)
+					HStack {
+						Label("Name", systemImage: "person.crop.rectangle.fill")
+						TextField("Username", text: $userSettings.meshtasticUsername)
 							.foregroundColor(.gray)
-
 					}
-					Section(header: Text("LOCATION OPTIONS")) {
+					.keyboardType(.asciiCapable)
+					.disableAutocorrection(true)
+					.listRowSeparator(.visible)
+					
+					HStack {
+						Label("Radio", systemImage: "flipphone")
+						Text(userSettings.preferredPeripheralName)
+							.foregroundColor(.gray)
 						
-						Toggle(isOn: $userSettings.provideLocation) {
-
-							Label("Provide location to mesh", systemImage: "location.circle.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-						if userSettings.provideLocation {
-							
-							Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
-								ForEach(LocationUpdateInterval.allCases) { lu in
-									Text(lu.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							
-							Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
-								.font(.caption)
-								.listRowSeparator(.visible)
-						}
 					}
-					Section(header: Text("MESH OPTIONS")) {
-							
-						NavigationLink(destination: ShareChannel()) {
-							Text("Share Your Channel vis QR Code")
-						}
-					
-					}
-					Section(header: Text("MESSAGING OPTIONS")) {
+					Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
+						.font(.caption)
+						.listRowSeparator(.hidden)
+					Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
+						.font(.caption2)
+						.foregroundColor(.gray)
 
-						Picker("Keyboard Type", selection: $userSettings.keyboardType) {
-							ForEach(KeyboardType.allCases) { kb in
-								Text(kb.description)
+				}
+				Section(header: Text("OPTIONS")) {
+					
+					Toggle(isOn: $userSettings.provideLocation) {
+
+						Label("Provide location to mesh", systemImage: "location.circle.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+					if userSettings.provideLocation {
+						
+						Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
+							ForEach(LocationUpdateInterval.allCases) { lu in
+								Text(lu.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-					}
-					Section(header: Text("MAP OPTIONS")) {
-						 Picker("Map Type", selection: $userSettings.meshMapType) {
-							 ForEach(MeshMapType.allCases) { map in
-								 Text(map.description)
-							 }
-						 }
-						 .pickerStyle(DefaultPickerStyle())
-					//	TextField("Custom Tile Server", text: $userSettings.meshMapCustomTileServer)
-					}
-					Section(header: Text("DEBUG OPTIONS")) {
-						 Toggle(isOn: $userSettings.meshActivityLog) {
-
-							Label("Log all Mesh activity", systemImage: "network")
-						 }
-						 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							if userSettings.meshActivityLog {
-								NavigationLink(destination: MeshLog()) {
-								Text("View Mesh Log")
-							}
+						
+						Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
+							.font(.caption)
 							.listRowSeparator(.visible)
+					}
+
+					Picker("Keyboard Type", selection: $userSettings.keyboardType) {
+						ForEach(KeyboardType.allCases) { kb in
+							Text(kb.description)
 						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+
+					 Picker("Map Type", selection: $userSettings.meshMapType) {
+						 ForEach(MeshMapType.allCases) { map in
+							 Text(map.description)
+						 }
+					 }
+					 .pickerStyle(DefaultPickerStyle())
+					
+				}
+				Section(header: Text("DEBUG")) {
+					 Toggle(isOn: $userSettings.meshActivityLog) {
+
+						Label("Log all Mesh activity", systemImage: "network")
+					 }
+					 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						if userSettings.meshActivityLog {
+							NavigationLink(destination: MeshLog()) {
+							Text("View Mesh Log")
+						}
+						.listRowSeparator(.visible)
 					}
 				}
 			}
-            .navigationTitle("App Settings")
-			.navigationBarItems(trailing:
+		}
+		.navigationTitle("App Settings")
+		.navigationBarItems(trailing:
 
-				ZStack {
+			ZStack {
 
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.lastFourCode : "????")
-			})
-			.onAppear {
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.lastFourCode : "????")
+		})
+		.onAppear {
 
-				self.bleManager.context = context
-			}
-        }
+			self.bleManager.context = context
+		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

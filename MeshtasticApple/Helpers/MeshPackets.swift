@@ -7,6 +7,8 @@
 
 import Foundation
 import CoreData
+import SwiftUI
+
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
 	
@@ -320,6 +322,49 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 
 		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
+}
+
+func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+	
+    if let deviceConfig = try? MeshtasticApple.Config.DeviceConfig(serializedData: packet.decoded.payload) {
+		
+		print(try! deviceConfig.jsonString())
+		
+	} else if let displayConfig = try? MeshtasticApple.Config.DisplayConfig(serializedData: packet.decoded.payload) {
+		
+		print(try! displayConfig.jsonUTF8Data())
+		print(displayConfig.gpsFormat)
+		
+	} else if let loraConfig = try? MeshtasticApple.Config.LoRaConfig(serializedData: packet.decoded.payload) {
+		
+		print(try! loraConfig.jsonUTF8Data())
+		print(loraConfig.region)
+		
+	} else if let positionConfig = try? MeshtasticApple.Config.PositionConfig(serializedData: packet.decoded.payload) {
+		
+		print(try! positionConfig.jsonUTF8Data())
+		print(positionConfig.positionBroadcastSecs)
+		
+	} else if let powerConfig = try? MeshtasticApple.Config.PowerConfig(serializedData: packet.decoded.payload) {
+		
+		print(try! powerConfig.jsonUTF8Data())
+		print(powerConfig.meshSdsTimeoutSecs)
+		
+	}
+	
+	
+	if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! packet.jsonString())") }
+	
+	//PowerConfig
+	//WiFiConfig
+	
+	
+	
+	
+	//if let loraConfig = try? MeshtasticApple.Config.LoRaConfig(serializedData: packet.serializedData) {
+		
+	//	print(loraConfig)
+	//}
 }
 
 func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {

@@ -1,5 +1,5 @@
 /*
-Abstract: Default App View
+Copyright (c) Garth Vander Houwen 2021
 */
 
 import SwiftUI
@@ -36,7 +36,7 @@ struct ContentView: View {
 //                .tag(Tab.messages)
 			Connect()
 				.tabItem {
-					Label("Bluetooth", systemImage: "dot.radiowaves.left.and.right")
+					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 						.symbolRenderingMode(.hierarchical)
 						.symbolVariant(.none)
 				}
@@ -55,7 +55,7 @@ struct ContentView: View {
                         .symbolVariant(.none)
                 }
                 .tag(Tab.map)
-            AppSettings()
+            Settings()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                         .symbolRenderingMode(.hierarchical)
