@@ -35,7 +35,7 @@ struct Settings: View {
 					}
 				}
 				
-				Section("Radio Configuration") {
+				Section("Radio Configuration (Non-Functional Interaction Previews)") {
 					
 					NavigationLink {
 						DisplayConfig()
