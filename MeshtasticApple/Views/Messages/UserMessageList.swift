@@ -74,7 +74,7 @@ struct UserMessageList: View {
 										if currentUser { Spacer(minLength:50) }
 										
 										if !currentUser {
-											CircleText(text: message.fromUser?.shortName ?? "???", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 36, fontSize: 16).padding(.all, 5)
+											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 36, fontSize: 16).padding(.all, 5)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
@@ -257,7 +257,7 @@ struct UserMessageList: View {
 																
 																let image = tapback.messagePayload!.image(fontSize: 20)
 																Image(uiImage: image!).font(.caption)
-																Text("\(tapback.fromUser?.shortName ?? "???")")
+																Text("\(tapback.fromUser?.shortName ?? "????")")
 																	.font(.caption2)
 																	.foregroundColor(.gray)
 																	.fixedSize()
