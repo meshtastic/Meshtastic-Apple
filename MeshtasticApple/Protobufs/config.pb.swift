@@ -390,7 +390,7 @@ struct Config {
     /// If set, we are powered from a low-current source (i.e. solar), so even if it looks like we have power flowing in
     /// we should try to minimize power consumption as much as possible.
     /// YOU DO NOT NEED TO SET THIS IF YOU'VE set is_router (it is implied in that case).
-    var isLowPower: Bool = false
+    var isPowerSaving: Bool = false
 
     ///
     /// Circumvents the logic block for determining whether the device is powered or not.
@@ -400,10 +400,6 @@ struct Config {
     ///
     /// If non-zero, the device will fully power off this many seconds after external power is removed.
     var onBatteryShutdownAfterSecs: UInt32 = 0
-
-    ///
-    /// If set to true, enable power saving features of the esp32
-    var isPowerSaving: Bool = false
 
     ///
     /// Ratio of voltage divider for battery pin eg. 3.20 (R1=100k, R2=220k)
@@ -1350,10 +1346,9 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   static let protoMessageName: String = Config.protoMessageName + ".PowerConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "charge_current"),
-    2: .standard(proto: "is_low_power"),
+    2: .standard(proto: "is_power_saving"),
     3: .standard(proto: "is_always_powered"),
     4: .standard(proto: "on_battery_shutdown_after_secs"),
-    5: .standard(proto: "is_power_saving"),
     6: .standard(proto: "adc_multiplier_override"),
     7: .standard(proto: "wait_bluetooth_secs"),
     9: .standard(proto: "mesh_sds_timeout_secs"),
@@ -1369,10 +1364,9 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.chargeCurrent) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.isLowPower) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.isPowerSaving) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.isAlwaysPowered) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.onBatteryShutdownAfterSecs) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.isPowerSaving) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.adcMultiplierOverride) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.waitBluetoothSecs) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.meshSdsTimeoutSecs) }()
@@ -1388,17 +1382,14 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.chargeCurrent != .maunset {
       try visitor.visitSingularEnumField(value: self.chargeCurrent, fieldNumber: 1)
     }
-    if self.isLowPower != false {
-      try visitor.visitSingularBoolField(value: self.isLowPower, fieldNumber: 2)
+    if self.isPowerSaving != false {
+      try visitor.visitSingularBoolField(value: self.isPowerSaving, fieldNumber: 2)
     }
     if self.isAlwaysPowered != false {
       try visitor.visitSingularBoolField(value: self.isAlwaysPowered, fieldNumber: 3)
     }
     if self.onBatteryShutdownAfterSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.onBatteryShutdownAfterSecs, fieldNumber: 4)
-    }
-    if self.isPowerSaving != false {
-      try visitor.visitSingularBoolField(value: self.isPowerSaving, fieldNumber: 5)
     }
     if self.adcMultiplierOverride != 0 {
       try visitor.visitSingularFloatField(value: self.adcMultiplierOverride, fieldNumber: 6)
@@ -1423,10 +1414,9 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
   static func ==(lhs: Config.PowerConfig, rhs: Config.PowerConfig) -> Bool {
     if lhs.chargeCurrent != rhs.chargeCurrent {return false}
-    if lhs.isLowPower != rhs.isLowPower {return false}
+    if lhs.isPowerSaving != rhs.isPowerSaving {return false}
     if lhs.isAlwaysPowered != rhs.isAlwaysPowered {return false}
     if lhs.onBatteryShutdownAfterSecs != rhs.onBatteryShutdownAfterSecs {return false}
-    if lhs.isPowerSaving != rhs.isPowerSaving {return false}
     if lhs.adcMultiplierOverride != rhs.adcMultiplierOverride {return false}
     if lhs.waitBluetoothSecs != rhs.waitBluetoothSecs {return false}
     if lhs.meshSdsTimeoutSecs != rhs.meshSdsTimeoutSecs {return false}
