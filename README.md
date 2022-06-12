@@ -8,11 +8,6 @@
 
 A description about the project
 
-**[Getting Started Guide](https://example.com)**
-
-**[Documentation/API Reference](https://example.com)**
-
-
 ## Stats
 
 <!--Repobeats image here (avaliable when public)-->
