@@ -1,3 +1,5 @@
+// Copyright (C) 2022 Garth Vander Houwen
+
 import SwiftUI
 import CoreData
 

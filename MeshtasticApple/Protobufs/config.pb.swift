@@ -419,13 +419,6 @@ struct Config {
     ///
     /// Power management state machine option.
     /// See [power management](/docs/software/other/power) for details.
-    /// 0 for default of 15 minutes
-    /// IMPORTANT NOTE FOR DEVICE CLIENTS: YOU MUST SEND SOME SORT OF PACKET TO THE PHONE AT LEAST THIS OFTEN OR THE DEVICE WILL DECIDE YOU ARE GONE!
-    var phoneTimeoutSecs: UInt32 = 0
-
-    ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
     /// 0 for default of two hours, MAXUINT for disabled
     var meshSdsTimeoutSecs: UInt32 = 0
 
@@ -1363,7 +1356,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     5: .standard(proto: "is_power_saving"),
     6: .standard(proto: "adc_multiplier_override"),
     7: .standard(proto: "wait_bluetooth_secs"),
-    8: .standard(proto: "phone_timeout_secs"),
     9: .standard(proto: "mesh_sds_timeout_secs"),
     10: .standard(proto: "sds_secs"),
     11: .standard(proto: "ls_secs"),
@@ -1383,7 +1375,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 5: try { try decoder.decodeSingularBoolField(value: &self.isPowerSaving) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.adcMultiplierOverride) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.waitBluetoothSecs) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.phoneTimeoutSecs) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.meshSdsTimeoutSecs) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.sdsSecs) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.lsSecs) }()
@@ -1415,9 +1406,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.waitBluetoothSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.waitBluetoothSecs, fieldNumber: 7)
     }
-    if self.phoneTimeoutSecs != 0 {
-      try visitor.visitSingularUInt32Field(value: self.phoneTimeoutSecs, fieldNumber: 8)
-    }
     if self.meshSdsTimeoutSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.meshSdsTimeoutSecs, fieldNumber: 9)
     }
@@ -1441,7 +1429,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.isPowerSaving != rhs.isPowerSaving {return false}
     if lhs.adcMultiplierOverride != rhs.adcMultiplierOverride {return false}
     if lhs.waitBluetoothSecs != rhs.waitBluetoothSecs {return false}
-    if lhs.phoneTimeoutSecs != rhs.phoneTimeoutSecs {return false}
     if lhs.meshSdsTimeoutSecs != rhs.meshSdsTimeoutSecs {return false}
     if lhs.sdsSecs != rhs.sdsSecs {return false}
     if lhs.lsSecs != rhs.lsSecs {return false}

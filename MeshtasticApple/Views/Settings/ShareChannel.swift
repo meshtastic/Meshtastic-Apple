@@ -38,7 +38,7 @@ struct ShareChannel: View {
 
 	let channelSet = ChannelSet()
 	
-	@State private var text =  "https://meshtastic.org/e/#"
+	@State private var text =  "https://meshtastic.org/e/#test"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -52,11 +52,9 @@ struct ShareChannel: View {
 				ScrollView {
 
 					VStack {
-						Text("Scan the QR code below with the Apple or Android device you would like to share with your channel settings with.")
+						Text("Scan the QR code below with the Apple or Android device you would like to share your channel settings with.")
 							.fixedSize(horizontal: false, vertical: true)
 							.font(.callout)
-							.padding()
-						Spacer()
 						
 						let image = qrCodeImage.generateQRCode(from: text)
 						Image(uiImage: image)

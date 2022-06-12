@@ -26,44 +26,52 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   typealias RawValue = Int
 
   ///
-  /// No external telemetry sensor
+  /// No external telemetry sensor explicitly set
   case notSet // = 0
 
   ///
-  /// TODO: REPLACE
+  /// Moderate accuracy temperature
   case dht11 // = 1
 
   ///
-  /// TODO: REPLACE
+  /// High accuracy temperature
   case ds18B20 // = 2
 
   ///
-  /// TODO: REPLACE
+  /// Moderate accuracy temperature and humidity
   case dht12 // = 3
 
   ///
-  /// TODO: REPLACE
+  /// Moderate accuracy temperature and humidity
   case dht21 // = 4
 
   ///
-  /// TODO: REPLACE
+  /// Moderate accuracy temperature and humidity
   case dht22 // = 5
 
   ///
-  /// TODO: REPLACE
+  /// High accuracy temperature, pressure, humidity
   case bme280 // = 6
 
   ///
-  /// TODO: REPLACE
+  /// High accuracy temperature, pressure, humidity, and air resistance
   case bme680 // = 7
 
   ///
-  /// TODO: REPLACE
+  /// Very high accuracy temperature
   case mcp9808 // = 8
 
   ///
-  /// TODO: REPLACE
+  /// Moderate accuracy temperature and humidity
   case shtc3 // = 9
+
+  ///
+  /// Moderate accuracy current and voltage
+  case ina260 // = 10
+
+  ///
+  /// Moderate accuracy current and voltage
+  case ina219 // = 11
   case UNRECOGNIZED(Int)
 
   init() {
@@ -82,6 +90,8 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 7: self = .bme680
     case 8: self = .mcp9808
     case 9: self = .shtc3
+    case 10: self = .ina260
+    case 11: self = .ina219
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -98,6 +108,8 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .bme680: return 7
     case .mcp9808: return 8
     case .shtc3: return 9
+    case .ina260: return 10
+    case .ina219: return 11
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -119,6 +131,8 @@ extension TelemetrySensorType: CaseIterable {
     .bme680,
     .mcp9808,
     .shtc3,
+    .ina260,
+    .ina219,
   ]
 }
 
@@ -280,6 +294,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     7: .same(proto: "BME680"),
     8: .same(proto: "MCP9808"),
     9: .same(proto: "SHTC3"),
+    10: .same(proto: "INA260"),
+    11: .same(proto: "INA219"),
   ]
 }
 
