@@ -18,6 +18,7 @@
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
+		DD25535D285666C700E55709 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD25535C285666C700E55709 /* PowerConfig.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
@@ -98,6 +99,7 @@
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
+		DD25535C285666C700E55709 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
@@ -231,6 +233,7 @@
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
+				DD25535C285666C700E55709 /* PowerConfig.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 			);
@@ -592,6 +595,7 @@
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
 				DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */,
+				DD25535D285666C700E55709 /* PowerConfig.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,

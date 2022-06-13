@@ -64,7 +64,7 @@ struct Settings: View {
 						Text("Position")
 					}
 					NavigationLink {
-						PositionConfig()
+						PowerConfig()
 					} label: {
 					
 						Image(systemName: "bolt")
@@ -72,7 +72,6 @@ struct Settings: View {
 
 						Text("Power")
 					}
-					.disabled(true)
 					
 				}
 				Section("Module Configuration") {

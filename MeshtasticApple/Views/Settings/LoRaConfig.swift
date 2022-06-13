@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 enum RegionCodes : Int, CaseIterable, Identifiable {
 
 	case unset = 0
@@ -96,9 +95,9 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	@State var region: Config.LoRaConfig.RegionCode = .us
-	
-	@State var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+	@State var region = 1
+	@State var modemPreset = 0
+	@State var numberOfHops = 0
 	
 	var body: some View {
 		
@@ -130,9 +129,20 @@ struct LoRaConfig: View {
 						.listRowSeparator(.visible)
 					.listRowSeparator(.visible)
 				}
-				
+				Section(header: Text("Mesh Options")) {
+					
+					Picker("Number of hops", selection: $numberOfHops) {
+						ForEach(0..<8) {
+							if $0 == 0 {
+								Text("Default")
+							} else {
+								Text("\($0) Hops")
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+				}
 			}
-			
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(trailing:
