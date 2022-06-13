@@ -46,6 +46,7 @@ enum ScreenOnSeconds: Int, CaseIterable, Identifiable {
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
+	case max = 2147483647
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -63,6 +64,8 @@ enum ScreenOnSeconds: Int, CaseIterable, Identifiable {
 				return "Ten Minutes"
 			case .fifteenMinutes:
 				return "Fifteen Minutes"
+			case .max:
+				return "Always On"
 			}
 		}
 	}

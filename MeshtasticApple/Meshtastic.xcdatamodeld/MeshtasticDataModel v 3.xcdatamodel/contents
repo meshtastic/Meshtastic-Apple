@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="modemPreset" optional="YES" attributeType="String"/>
+        <attribute name="num" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="regionCode" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -99,5 +104,6 @@
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
+        <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="74"/>
     </elements>
 </model>

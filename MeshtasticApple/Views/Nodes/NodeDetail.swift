@@ -87,6 +87,10 @@ struct NodeDetail: View {
 						HStack {
 							if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
 								
+								let hwModelString = node.user?.hwModel ?? "UNSET"
+								
+								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
+									
 									Button(action: {
 										
 										isPresentingShutdownConfirm = true
@@ -111,6 +115,8 @@ struct NodeDetail: View {
 											let success = bleManager.sendShutdown(destNum: node.num, wantResponse: false)
 										}
 									}
+								}
+							
 									
 									
 									Button(action: {
