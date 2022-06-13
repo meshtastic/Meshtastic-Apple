@@ -110,9 +110,9 @@ struct DisplayConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	@State var isConnected: Bool = false
-	
-	@State var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .gpsFormatDec
+	@State var screenOnSeconds = 0
+	@State var screenCarouselInterval = 0
+	@State var gpsFormat = 0
 	
 	var body: some View {
 		
@@ -121,9 +121,9 @@ struct DisplayConfig: View {
 			Form {
 				Section(header: Text("Timing")) {
 					
-					Picker("Screen on for", selection: $gpsFormat ) {
-						ForEach(ScreenOnSeconds.allCases) { lu in
-							Text(lu.description)
+					Picker("Screen on for", selection: $screenOnSeconds ) {
+						ForEach(ScreenOnSeconds.allCases) { sos in
+							Text(sos.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
@@ -132,9 +132,9 @@ struct DisplayConfig: View {
 						.font(.caption)
 						.listRowSeparator(.visible)
 					
-					Picker("Carousel Interval", selection: $gpsFormat ) {
-						ForEach(ScreenCarouselSeconds.allCases) { lu in
-							Text(lu.description)
+					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
+						ForEach(ScreenCarouselSeconds.allCases) { scs in
+							Text(scs.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())

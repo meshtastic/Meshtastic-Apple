@@ -233,9 +233,9 @@
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
+				DD25535C285666C700E55709 /* PowerConfig.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
-				DD25535C285666C700E55709 /* PowerConfig.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";

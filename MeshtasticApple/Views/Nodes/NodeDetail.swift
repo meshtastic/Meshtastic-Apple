@@ -19,6 +19,8 @@ struct NodeDetail: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
+		
+		let hwModelString = node.user?.hwModel ?? "UNSET"
 
 		HStack {
 
@@ -87,8 +89,6 @@ struct NodeDetail: View {
 						HStack {
 							if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
 								
-								let hwModelString = node.user?.hwModel ?? "UNSET"
-								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
 									
 									Button(action: {
@@ -117,35 +117,32 @@ struct NodeDetail: View {
 									}
 								}
 							
+								Button(action: {
 									
+									isPresentingRebootConfirm = true
 									
-									Button(action: {
-										
-										isPresentingRebootConfirm = true
-										
-									}) {
-										
-										Image(systemName: "arrow.triangle.2.circlepath")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.small)
-											.foregroundColor(Color.accentColor)
-										Text("Reboot")
-											.font(.caption)
+								}) {
+									
+									Image(systemName: "arrow.triangle.2.circlepath")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.small)
+										.foregroundColor(Color.accentColor)
+									Text("Reboot")
+										.font(.caption)
 
-									}
-									.padding()
-									.background(Color(.systemGray6))
-									.clipShape(Capsule())
-									.confirmationDialog(
-										"Are you sure?",
-										isPresented: $isPresentingRebootConfirm
+								}
+								.padding()
+								.background(Color(.systemGray6))
+								.clipShape(Capsule())
+								.confirmationDialog(
+									"Are you sure?",
+									isPresented: $isPresentingRebootConfirm
 									) {
-										Button("Reboot Node?", role: .destructive) {
-											let success = bleManager.sendReboot(destNum: node.num, wantResponse: false)
+									Button("Reboot Node?", role: .destructive) {
+										let success = bleManager.sendReboot(destNum: node.num, wantResponse: false)
 									}
 								}
 							}
-							
 						}
 						.padding(5)
 						Divider()

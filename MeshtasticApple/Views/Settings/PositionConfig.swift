@@ -114,9 +114,9 @@ struct PositionConfig: View {
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
 	@State var fixedPosition = false
-	@State var gpsUpdateInterval: Int32 = 0
-	@State var gpsAttemptTime: Int32 = 0
-	@State var positionBroadcastSeconds: Int32 = 0
+	@State var gpsUpdateInterval = 0
+	@State var gpsAttemptTime = 0
+	@State var positionBroadcastSeconds = 0
 	
 	var body: some View {
 		
