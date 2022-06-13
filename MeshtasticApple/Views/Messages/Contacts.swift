@@ -100,7 +100,7 @@ struct Contacts: View {
 
 							VStack {
 
-								CircleText(text: user.shortName ?? "???", color: Color.blue)
+								CircleText(text: user.shortName ?? "????", color: Color.blue)
 							}
 							.padding(.trailing)
 

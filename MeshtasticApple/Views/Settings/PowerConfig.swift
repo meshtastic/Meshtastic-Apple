@@ -21,7 +21,13 @@ struct PowerConfig: View {
 		VStack {
 
 			Form {
-
+				
+				Section(header: Text("Warning")) {
+				
+					Text("These power settings are designed for and and are only useful in very specific mostly solar use cases and should not be enabled by the majority of users, expecially if you are using your device as a messaging handset paired with a phone.")
+						.font(.callout)
+						.listRowSeparator(.visible)
+				}
 				Section(header: Text("States")) {
 					
 					Toggle(isOn: $isPowerSaving) {
@@ -30,7 +36,7 @@ struct PowerConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(isAlwaysPowered)
-					Text("If set, we are powered from a low-current source (i.e. solar), so even if it looks like we have power flowing in we should try to minimize power consumption as much as possible.")
+					Text("If set, we are powered from a low-current source (i.e. solar) and do not intend on using a client to connect via BLE, WiFi or Serial.  This setting is assumed and unnessary if you have turned on Router mode.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 					
@@ -40,7 +46,7 @@ struct PowerConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(isPowerSaving)
-					Text("Circumvents the logic block for determining whether the device is powered or not. Useful for devices with finicky ADC issues on the battery sense pins, or no battery pin at all.")
+					Text("Circumvents the logic block for determining whether the device is powered or not. Useful for devices with finicky ADC issues on the battery sense pins, or no battery pin at all. This mode increases battery use substantially")
 						.font(.caption)
 						.listRowSeparator(.visible)
 

@@ -74,7 +74,7 @@ struct UserMessageList: View {
 										if currentUser { Spacer(minLength:50) }
 										
 										if !currentUser {
-											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 36, fontSize: 16).padding(.all, 5)
+											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 46, fontSize: 16).padding(.all, 5)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
@@ -444,7 +444,7 @@ struct UserMessageList: View {
 
 				HStack {
 
-					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 42, fontSize: 20).fixedSize()
+					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 42, fontSize: 16).fixedSize()
 					Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 				}
 			}
