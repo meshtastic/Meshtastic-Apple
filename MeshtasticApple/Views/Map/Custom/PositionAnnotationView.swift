@@ -25,7 +25,7 @@ class PositionAnnotation: NSObject, MKAnnotation {
 
 class PositionAnnotationView: MKAnnotationView {
 
-	private let annotationFrame = CGRect(x: 0, y: 0, width: 32, height: 32)
+	private let annotationFrame = CGRect(x: 0, y: 0, width: 40, height: 40)
 	private let label: UILabel
 
 	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
@@ -52,7 +52,7 @@ class PositionAnnotationView: MKAnnotationView {
 	override func draw(_ rect: CGRect) {
 		guard let context = UIGraphicsGetCurrentContext() else { return }
 
-		let circleRect = CGRect(x: 1, y: 1, width: 30, height: 30)
+		let circleRect = CGRect(x: 1, y: 1, width: 38, height: 38)
 
 		context.setFillColor(CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
 

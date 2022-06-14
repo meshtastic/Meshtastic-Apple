@@ -38,6 +38,14 @@ struct Settings: View {
 				Section("Radio Configuration (Non-Functional Interaction Previews)") {
 					
 					NavigationLink {
+						DeviceConfig()
+					} label: {
+					
+						Image(systemName: "flipphone")
+							.symbolRenderingMode(.hierarchical)
+						Text("Device")
+					}
+					NavigationLink {
 						DisplayConfig()
 					} label: {
 					

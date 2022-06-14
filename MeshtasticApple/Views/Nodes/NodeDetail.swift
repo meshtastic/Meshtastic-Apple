@@ -219,11 +219,13 @@ struct NodeDetail: View {
 											.foregroundColor(.gray)
 											.fixedSize()
 									}
-									
-									Text(String(format: "%.2f", mostRecent.voltage) + " V")
-										.font(.title3)
-										.foregroundColor(.gray)
-										.fixedSize()
+									if mostRecent.voltage > 0 {
+										
+										Text(String(format: "%.2f", mostRecent.voltage) + " V")
+											.font(.title3)
+											.foregroundColor(.gray)
+											.fixedSize()
+									}
 								}
 								.padding(5)
 							}

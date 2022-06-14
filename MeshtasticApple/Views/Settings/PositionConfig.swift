@@ -124,7 +124,7 @@ struct PositionConfig: View {
 
 			Form {
 
-				Section(header: Text("Device GPS Options")) {
+				Section(header: Text("Device GPS")) {
 					
 					Toggle(isOn: $deviceGpsEnabled) {
 
@@ -133,7 +133,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if deviceGpsEnabled {
 											
-						Picker("GPS Update Interval", selection: $gpsUpdateInterval) {
+						Picker("Update Interval", selection: $gpsUpdateInterval) {
 							ForEach(GpsUpdateIntervals.allCases) { ui in
 								Text(ui.description)
 							}
@@ -144,7 +144,7 @@ struct PositionConfig: View {
 							.font(.caption)
 							.listRowSeparator(.visible)
 						
-						Picker("GPS Attempt Time", selection: $gpsAttemptTime) {
+						Picker("Attempt Time", selection: $gpsAttemptTime) {
 							ForEach(GpsAttemptTimes.allCases) { at in
 								Text(at.description)
 							}
@@ -172,7 +172,7 @@ struct PositionConfig: View {
 						
 					}
 				}
-				Section(header: Text("Position Packet Options")) {
+				Section(header: Text("Position Packet")) {
 					
 					Toggle(isOn: $smartPositionEnabled) {
 
