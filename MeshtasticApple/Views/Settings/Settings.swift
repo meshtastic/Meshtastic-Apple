@@ -95,7 +95,7 @@ struct Settings: View {
 					}
 					.disabled(true)
 					NavigationLink {
-						DisplayConfig()
+						RangeTestConfig()
 					} label: {
 					
 						Image(systemName: "point.3.connected.trianglepath.dotted")
@@ -103,9 +103,8 @@ struct Settings: View {
 
 						Text("Range Test")
 					}
-					.disabled(true)
 					NavigationLink {
-						DisplayConfig()
+						TelemetryConfig()
 					} label: {
 					
 						Image(systemName: "chart.xyaxis.line")
@@ -113,11 +112,8 @@ struct Settings: View {
 
 						Text("Telemetry (Sensors)")
 					}
-					.disabled(true)
 				}
 				// Not Implemented:
-				// Device Config - No interesting settings for end users
-				// Power Config - All confusion, should delete most and have sensible defaults
 				// External Notifications - Not Working
 				// Serial Config - Not sure what the point is
 				// Store Forward Config - Not Working

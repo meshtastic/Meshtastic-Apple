@@ -22,23 +22,13 @@ struct PowerConfig: View {
 
 			Form {
 				
-				Section(header: Text("Warning")) {
+				Section(header: Text("Enhanced Power Management")) {
 				
-					Text("These power settings are designed for and and are only useful mostly for solar use cases. Do not use these settings if you are planning on using your device for messaging paired with a phone.")
+					Text("Meshtastic devices have been improved with simplified role based power management.")
 						.font(.callout)
 						.listRowSeparator(.visible)
 				}
-				Section(header: Text("States")) {
-					
-					Toggle(isOn: $isPowerSaving) {
-
-						Label("Power Saving", systemImage: "powersleep")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(isAlwaysPowered)
-					Text("If set, we are powered from a low-current source (i.e. solar) and do not intend on using a client to connect via BLE, WiFi or Serial.  This setting is assumed and unnessary if you have turned on Router mode.")
-						.font(.caption)
-						.listRowSeparator(.visible)
+				Section(header: Text("State")) {
 					
 					Toggle(isOn: $isAlwaysPowered) {
 

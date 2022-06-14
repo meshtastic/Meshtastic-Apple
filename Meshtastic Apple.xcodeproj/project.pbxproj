@@ -23,6 +23,8 @@
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
+		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
+		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D826F3093800029299 /* MessageBubble.swift */; };
@@ -105,6 +107,8 @@
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
+		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
+		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
 		DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v2.xcdatamodel"; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
@@ -237,6 +241,8 @@
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				DD25535C285666C700E55709 /* PowerConfig.swift */,
+				DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
+				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 			);
@@ -626,9 +632,11 @@
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
+				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,
+				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticAppleApp.swift in Sources */,
