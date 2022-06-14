@@ -24,7 +24,7 @@ struct PowerConfig: View {
 				
 				Section(header: Text("Warning")) {
 				
-					Text("These power settings are designed for and and are only useful in very specific mostly solar use cases and should not be enabled by the majority of users, expecially if you are using your device as a messaging handset paired with a phone.")
+					Text("These power settings are designed for and and are only useful mostly for solar use cases. Do not use these settings if you are planning on using your device for messaging paired with a phone.")
 						.font(.callout)
 						.listRowSeparator(.visible)
 				}

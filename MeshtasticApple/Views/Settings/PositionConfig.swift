@@ -124,7 +124,7 @@ struct PositionConfig: View {
 
 			Form {
 
-				Section(header: Text("Device GPS Options")) {
+				Section(header: Text("Device GPS")) {
 					
 					Toggle(isOn: $deviceGpsEnabled) {
 
@@ -172,7 +172,7 @@ struct PositionConfig: View {
 						
 					}
 				}
-				Section(header: Text("Position Packet Options")) {
+				Section(header: Text("Position Packet")) {
 					
 					Toggle(isOn: $smartPositionEnabled) {
 

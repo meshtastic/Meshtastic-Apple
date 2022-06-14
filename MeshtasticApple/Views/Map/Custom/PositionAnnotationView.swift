@@ -25,7 +25,7 @@ class PositionAnnotation: NSObject, MKAnnotation {
 
 class PositionAnnotationView: MKAnnotationView {
 
-	private let annotationFrame = CGRect(x: 0, y: 0, width: 40, height: 40cen)
+	private let annotationFrame = CGRect(x: 0, y: 0, width: 40, height: 40)
 	private let label: UILabel
 
 	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
