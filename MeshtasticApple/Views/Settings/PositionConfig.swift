@@ -118,6 +118,9 @@ struct PositionConfig: View {
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	
+	@State var includeAltitude = false
+	@State var includeSatInView = false
+	
 	var body: some View {
 		
 		VStack {
@@ -195,9 +198,39 @@ struct PositionConfig: View {
 					}
 				}
 				Section(header: Text("Position Flags")) {
-					Text("TODO")
-					.font(.caption)
+					
+					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
+						.font(.caption)
+						.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includeAltitude) {
+
+						Label("Include Altitude", systemImage: "arrow.up")
+					}
+					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includeSatInView) {
+
+						Label("Include number of satellites in view", systemImage: "skew")
+					}
+					.toggleStyle(DefaultToggleStyle())
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includeSatInView) { //64
+
+						Label("Include a sequence number incremented per packet", systemImage: "number")
+					}
+					.toggleStyle(DefaultToggleStyle())
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includeSatInView) { //128
+
+						Label("Include positional timestamp", systemImage: "clock")
+					}
+					.toggleStyle(DefaultToggleStyle())
+					.listRowSeparator(.visible)
+					
 				}
 			}
 		}

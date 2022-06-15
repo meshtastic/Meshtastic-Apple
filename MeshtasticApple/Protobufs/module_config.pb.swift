@@ -21,7 +21,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// TODO: REPLACE
+/// Module Config
 struct ModuleConfig {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -169,7 +169,7 @@ struct ModuleConfig {
   }
 
   ///
-  /// TODO: REPLACE
+  /// MQTT Client Config
   struct MQTTConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -211,7 +211,7 @@ struct ModuleConfig {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Serial Config
   struct SerialConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -357,7 +357,7 @@ struct ModuleConfig {
   }
 
   ///
-  /// TODO: REPLACE
+  /// External Notifications Config
   struct ExternalNotificationConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -394,15 +394,14 @@ struct ModuleConfig {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Store and Forward Module Config
   struct StoreForwardConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
-    /// Preferences for the StoreForwardModule
-    ///FIXME - Move this out of UserPreferences and into a section for module configuration. (was 136)
+    /// Enable the Store and Forward Module
     var enabled: Bool = false
 
     ///
@@ -427,23 +426,23 @@ struct ModuleConfig {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Preferences for the RangeTestModule
   struct RangeTestConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     ///
-    /// Preferences for the RangeTestModule
-    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
+    /// Enable the Range Test Module
     var enabled: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// Send out range test messages from this node
     var sender: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// Bool value indicating that this node should save a RangeTest.csv file. 
+    /// ESP32 Only
     var save: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -460,7 +459,7 @@ struct ModuleConfig {
 
     ///
     /// Interval in seconds of how often we should try to send our
-    /// device measurements to the mesh
+    /// device metrics to the mesh
     var deviceUpdateInterval: UInt32 = 0
 
     var environmentUpdateInterval: UInt32 = 0

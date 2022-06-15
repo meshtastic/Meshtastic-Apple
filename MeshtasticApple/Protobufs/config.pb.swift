@@ -150,7 +150,7 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Configuration
   struct DeviceConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -182,10 +182,7 @@ struct Config {
 
     ///
     /// Defines the device's role on the Mesh network
-    ///   unset
-    ///     Behave normally.
-    ///   Router
-    ///     Functions as a router
+    ///   unset - 0
     enum Role: SwiftProtobuf.Enum {
       typealias RawValue = Int
 
@@ -202,7 +199,7 @@ struct Config {
       ///
       /// Router device role.
       ///   Uses an agressive algirithem for the flood networking so packets will
-      ///   prefer to be routed over this node. Also assume that this will be generally
+      ///   prefer to be routed over this node. Also assume that this will be
       ///   unattended and so will turn off the wifi/ble radio as well as the oled screen.
       case router // = 2
 
@@ -245,7 +242,7 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Position Config
   struct PositionConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -376,7 +373,8 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Power Config\
+  /// See [power management](/docs/software/other/power) for additional power management state machine option details.
   struct PowerConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -384,12 +382,14 @@ struct Config {
 
     ///
     /// Sets the current of the battery charger
+    /// TBEAM 1.1 Only
     var chargeCurrent: Config.PowerConfig.ChargeCurrent = .maunset
 
     ///
     /// If set, we are powered from a low-current source (i.e. solar), so even if it looks like we have power flowing in
     /// we should try to minimize power consumption as much as possible.
     /// YOU DO NOT NEED TO SET THIS IF YOU'VE set is_router (it is implied in that case).
+    /// CLI Only Option
     var isPowerSaving: Bool = false
 
     ///
@@ -407,40 +407,43 @@ struct Config {
     var adcMultiplierOverride: Float = 0
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
+    /// Wait Bluetooth Seconds
+    /// The number of seconds for to wait before turning of BLE in No Bluetooth states\
     /// 0 for default of 1 minute
     var waitBluetoothSecs: UInt32 = 0
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
+    /// Mesh Super Deep Sleep Timeout Seconds
+    /// While in Light Sleep if this value is exceeded we will lower into super deep sleep 
+    /// for sds_secs (default 1 year) or a button press
     /// 0 for default of two hours, MAXUINT for disabled
     var meshSdsTimeoutSecs: UInt32 = 0
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
+    /// Super Deep Sleep Seconds
+    /// While in Light Sleep if mesh_sds_timeout_secs is exceeded we will lower into super deep sleep
+    /// for this value (default 1 year) or a button press
     /// 0 for default of one year
     var sdsSecs: UInt32 = 0
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
+    /// Light Sleep Seconds
+    /// In light sleep the CPU is suspended, LoRa radio is on, BLE is off an GPS is on
+    /// ESP32 Only
     /// 0 for default of 3600
     var lsSecs: UInt32 = 0
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
+    /// Minimum Wake Seconds
+    /// While in light sleep when we receive packets on the LoRa radio we will wake and handle them and stay awake in no BLE mode for this value
     /// 0 for default of 10 seconds
     var minWakeSecs: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
-    /// Sets the charge control current of devices with a battery charger that can be
-    /// configured. This is passed into the axp power management chip like on the tbeam.
+    /// Sets the charge control current of devices with a battery charger that can be configured
+    /// **TBEAM 1.1 Only**
     enum ChargeCurrent: SwiftProtobuf.Enum {
       typealias RawValue = Int
 

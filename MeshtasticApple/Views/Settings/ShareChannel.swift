@@ -26,6 +26,8 @@ struct QrCodeImage {
 				qrImage = UIImage(cgImage: image)
 			}
 		}
+		let qrCode = filter.outputImage!.transformed(by: transform)
+
 		return qrImage
 	}
 }
