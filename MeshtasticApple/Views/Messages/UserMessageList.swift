@@ -69,6 +69,7 @@ struct UserMessageList: View {
 										}
 									}
 									
+									
 									HStack (alignment: .top) {
 									
 										if currentUser { Spacer(minLength:50) }
@@ -379,7 +380,6 @@ struct UserMessageList: View {
 										} else {
 											
 											typingMessage =  "📍 " + userLongName + " has shared their position with the mesh."
-											
 										}
 										
 									} else {
@@ -436,7 +436,6 @@ struct UserMessageList: View {
 			}
 			.padding(.all, 15)
 		}
-
 		.navigationViewStyle(.stack)
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {

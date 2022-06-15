@@ -26,7 +26,7 @@ struct LocalConfig {
   // methods supported on all messages.
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Device
   var device: Config.DeviceConfig {
     get {return _storage._device ?? Config.DeviceConfig()}
     set {_uniqueStorage()._device = newValue}
@@ -37,7 +37,7 @@ struct LocalConfig {
   mutating func clearDevice() {_uniqueStorage()._device = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the GPS Position
   var position: Config.PositionConfig {
     get {return _storage._position ?? Config.PositionConfig()}
     set {_uniqueStorage()._position = newValue}
@@ -48,7 +48,7 @@ struct LocalConfig {
   mutating func clearPosition() {_uniqueStorage()._position = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Power settings
   var power: Config.PowerConfig {
     get {return _storage._power ?? Config.PowerConfig()}
     set {_uniqueStorage()._power = newValue}
@@ -59,7 +59,7 @@ struct LocalConfig {
   mutating func clearPower() {_uniqueStorage()._power = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Wifi Settings
   var wifi: Config.WiFiConfig {
     get {return _storage._wifi ?? Config.WiFiConfig()}
     set {_uniqueStorage()._wifi = newValue}
@@ -70,7 +70,7 @@ struct LocalConfig {
   mutating func clearWifi() {_uniqueStorage()._wifi = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Display
   var display: Config.DisplayConfig {
     get {return _storage._display ?? Config.DisplayConfig()}
     set {_uniqueStorage()._display = newValue}
@@ -81,7 +81,7 @@ struct LocalConfig {
   mutating func clearDisplay() {_uniqueStorage()._display = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Lora Radio
   var lora: Config.LoRaConfig {
     get {return _storage._lora ?? Config.LoRaConfig()}
     set {_uniqueStorage()._lora = newValue}
@@ -90,6 +90,15 @@ struct LocalConfig {
   var hasLora: Bool {return _storage._lora != nil}
   /// Clears the value of `lora`. Subsequent reads from it will return its default value.
   mutating func clearLora() {_uniqueStorage()._lora = nil}
+
+  ///
+  /// A version integer used to invalidate old save files when we make
+  /// incompatible changes This integer is set at build time and is private to
+  /// NodeDB.cpp in the device code.
+  var version: UInt32 {
+    get {return _storage._version}
+    set {_uniqueStorage()._version = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -104,7 +113,7 @@ struct LocalModuleConfig {
   // methods supported on all messages.
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the MQTT module
   var mqtt: ModuleConfig.MQTTConfig {
     get {return _storage._mqtt ?? ModuleConfig.MQTTConfig()}
     set {_uniqueStorage()._mqtt = newValue}
@@ -115,7 +124,7 @@ struct LocalModuleConfig {
   mutating func clearMqtt() {_uniqueStorage()._mqtt = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Serial module
   var serial: ModuleConfig.SerialConfig {
     get {return _storage._serial ?? ModuleConfig.SerialConfig()}
     set {_uniqueStorage()._serial = newValue}
@@ -126,7 +135,7 @@ struct LocalModuleConfig {
   mutating func clearSerial() {_uniqueStorage()._serial = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the ExternalNotification module
   var externalNotification: ModuleConfig.ExternalNotificationConfig {
     get {return _storage._externalNotification ?? ModuleConfig.ExternalNotificationConfig()}
     set {_uniqueStorage()._externalNotification = newValue}
@@ -137,7 +146,7 @@ struct LocalModuleConfig {
   mutating func clearExternalNotification() {_uniqueStorage()._externalNotification = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Store & Forward module
   var storeForward: ModuleConfig.StoreForwardConfig {
     get {return _storage._storeForward ?? ModuleConfig.StoreForwardConfig()}
     set {_uniqueStorage()._storeForward = newValue}
@@ -148,7 +157,7 @@ struct LocalModuleConfig {
   mutating func clearStoreForward() {_uniqueStorage()._storeForward = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the RangeTest module
   var rangeTest: ModuleConfig.RangeTestConfig {
     get {return _storage._rangeTest ?? ModuleConfig.RangeTestConfig()}
     set {_uniqueStorage()._rangeTest = newValue}
@@ -159,7 +168,7 @@ struct LocalModuleConfig {
   mutating func clearRangeTest() {_uniqueStorage()._rangeTest = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Telemetry module
   var telemetry: ModuleConfig.TelemetryConfig {
     get {return _storage._telemetry ?? ModuleConfig.TelemetryConfig()}
     set {_uniqueStorage()._telemetry = newValue}
@@ -170,7 +179,7 @@ struct LocalModuleConfig {
   mutating func clearTelemetry() {_uniqueStorage()._telemetry = nil}
 
   ///
-  /// TODO: REPLACE
+  /// The part of the config that is specific to the Canned Message module
   var cannedMessage: ModuleConfig.CannedMessageConfig {
     get {return _storage._cannedMessage ?? ModuleConfig.CannedMessageConfig()}
     set {_uniqueStorage()._cannedMessage = newValue}
@@ -179,6 +188,15 @@ struct LocalModuleConfig {
   var hasCannedMessage: Bool {return _storage._cannedMessage != nil}
   /// Clears the value of `cannedMessage`. Subsequent reads from it will return its default value.
   mutating func clearCannedMessage() {_uniqueStorage()._cannedMessage = nil}
+
+  ///
+  /// A version integer used to invalidate old save files when we make
+  /// incompatible changes This integer is set at build time and is private to
+  /// NodeDB.cpp in the device code.
+  var version: UInt32 {
+    get {return _storage._version}
+    set {_uniqueStorage()._version = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -203,6 +221,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     4: .same(proto: "wifi"),
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
+    7: .same(proto: "version"),
   ]
 
   fileprivate class _StorageClass {
@@ -212,6 +231,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _wifi: Config.WiFiConfig? = nil
     var _display: Config.DisplayConfig? = nil
     var _lora: Config.LoRaConfig? = nil
+    var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -224,6 +244,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _wifi = source._wifi
       _display = source._display
       _lora = source._lora
+      _version = source._version
     }
   }
 
@@ -248,6 +269,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._wifi) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._lora) }()
+        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         default: break
         }
       }
@@ -278,6 +300,9 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._lora {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       } }()
+      if _storage._version != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 7)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -293,6 +318,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._wifi != rhs_storage._wifi {return false}
         if _storage._display != rhs_storage._display {return false}
         if _storage._lora != rhs_storage._lora {return false}
+        if _storage._version != rhs_storage._version {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -312,6 +338,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     5: .standard(proto: "range_test"),
     6: .same(proto: "telemetry"),
     7: .standard(proto: "canned_message"),
+    8: .same(proto: "version"),
   ]
 
   fileprivate class _StorageClass {
@@ -322,6 +349,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _rangeTest: ModuleConfig.RangeTestConfig? = nil
     var _telemetry: ModuleConfig.TelemetryConfig? = nil
     var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
+    var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -335,6 +363,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _rangeTest = source._rangeTest
       _telemetry = source._telemetry
       _cannedMessage = source._cannedMessage
+      _version = source._version
     }
   }
 
@@ -360,6 +389,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._rangeTest) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._telemetry) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._cannedMessage) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         default: break
         }
       }
@@ -393,6 +423,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._cannedMessage {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
       } }()
+      if _storage._version != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -409,6 +442,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._rangeTest != rhs_storage._rangeTest {return false}
         if _storage._telemetry != rhs_storage._telemetry {return false}
         if _storage._cannedMessage != rhs_storage._cannedMessage {return false}
+        if _storage._version != rhs_storage._version {return false}
         return true
       }
       if !storagesAreEqual {return false}
