@@ -71,16 +71,6 @@ struct Settings: View {
 
 						Text("Position")
 					}
-					NavigationLink {
-						PowerConfig()
-					} label: {
-					
-						Image(systemName: "bolt")
-							.symbolRenderingMode(.hierarchical)
-
-						Text("Power")
-					}
-					
 				}
 				Section("Module Configuration") {
 					
