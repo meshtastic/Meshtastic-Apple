@@ -198,7 +198,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -2, to: today)!
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -4, to: today)!
 		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 
@@ -580,7 +580,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					let newMessage = MessageEntity(context: context!)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-					//newMessage.messageId = Int64(0xFF | UInt32.random(in: UInt32(UInt8.max)..<UInt32(1147483647)))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"

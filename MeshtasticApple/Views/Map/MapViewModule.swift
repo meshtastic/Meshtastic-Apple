@@ -331,23 +331,18 @@ public struct MapView: UIViewRepresentable {
 				// Make a fast exit if the annotation is the `MKUserLocation`, as it's not an annotation view we wish to customize.
 				return nil
 			}
-
-			var annotationView: MKAnnotationView?
+			//var annotationView: MKAnnotationView?
 
 			if let annotation = annotation as? PositionAnnotation {
-				let identifier = NSStringFromClass(PositionAnnotationView.self)
 
-				//let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? PositionAnnotationView ?? PositionAnnotationView()
 				let annotationView = PositionAnnotationView(annotation: annotation, reuseIdentifier: "PositionAnnotation")
-
-				annotationView.name = annotation.shortName ?? "???"
-
+				annotationView.name = annotation.shortName ?? "????"
 				annotationView.canShowCallout = true
 				
 				return annotationView
 			}
 
-			return annotationView
+			return nil
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
