@@ -198,7 +198,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -4, to: today)!
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -2, to: today)!
 		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 
@@ -744,7 +744,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = false
+		meshPacket.wantAck = wantResponse
+
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -779,7 +780,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = false
+		meshPacket.wantAck = wantResponse
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
