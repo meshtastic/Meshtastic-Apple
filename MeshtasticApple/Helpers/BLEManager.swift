@@ -580,7 +580,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					let newMessage = MessageEntity(context: context!)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
-					//newMessage.messageId = Int64(0xFF | UInt32.random(in: UInt32(UInt8.max)..<UInt32(1147483647)))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.direction = "IN"
@@ -745,7 +744,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = false
+		meshPacket.wantAck = wantResponse
+
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -780,7 +780,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = false
+		meshPacket.wantAck = wantResponse
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()

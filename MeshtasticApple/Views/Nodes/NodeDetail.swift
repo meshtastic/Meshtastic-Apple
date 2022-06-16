@@ -112,7 +112,11 @@ struct NodeDetail: View {
 										isPresented: $isPresentingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
-											let success = bleManager.sendShutdown(destNum: node.num, wantResponse: false)
+											
+											if !bleManager.sendShutdown(destNum: node.num, wantResponse: false) {
+												
+												print("Shutdown Failed")
+											}
 										}
 									}
 								}
@@ -139,7 +143,11 @@ struct NodeDetail: View {
 									isPresented: $isPresentingRebootConfirm
 									) {
 									Button("Reboot Node?", role: .destructive) {
-										let success = bleManager.sendReboot(destNum: node.num, wantResponse: false)
+										
+										if !bleManager.sendReboot(destNum: node.num, wantResponse: false) {
+											
+											print("Reboot Failed")
+										}
 									}
 								}
 							}
