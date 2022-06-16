@@ -1810,6 +1810,16 @@ struct FromRadio {
   }
 
   ///
+  /// Include the entire config (was: RadioConfig radio)
+  var config: LocalConfig {
+    get {
+      if case .config(let v)? = _storage._payloadVariant {return v}
+      return LocalConfig()
+    }
+    set {_uniqueStorage()._payloadVariant = .config(newValue)}
+  }
+
+  ///
   /// Set to send debug console output over our protobuf stream
   var logRecord: LogRecord {
     get {
@@ -1862,6 +1872,9 @@ struct FromRadio {
     /// starts over with the first node in our DB
     case nodeInfo(NodeInfo)
     ///
+    /// Include the entire config (was: RadioConfig radio)
+    case config(LocalConfig)
+    ///
     /// Set to send debug console output over our protobuf stream
     case logRecord(LogRecord)
     ///
@@ -1893,6 +1906,10 @@ struct FromRadio {
       }()
       case (.nodeInfo, .nodeInfo): return {
         guard case .nodeInfo(let l) = lhs, case .nodeInfo(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.config, .config): return {
+        guard case .config(let l) = lhs, case .config(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.logRecord, .logRecord): return {
@@ -3276,6 +3293,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     11: .same(proto: "packet"),
     3: .standard(proto: "my_info"),
     4: .standard(proto: "node_info"),
+    6: .same(proto: "config"),
     7: .standard(proto: "log_record"),
     8: .standard(proto: "config_complete_id"),
     9: .same(proto: "rebooted"),
@@ -3335,6 +3353,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           if let v = v {
             if hadOneofValue {try decoder.handleConflictingOneOf()}
             _storage._payloadVariant = .nodeInfo(v)
+          }
+        }()
+        case 6: try {
+          var v: LocalConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .config(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .config(v)
           }
         }()
         case 7: try {
@@ -3402,6 +3433,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .nodeInfo?: try {
         guard case .nodeInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      }()
+      case .config?: try {
+        guard case .config(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       }()
       case .logRecord?: try {
         guard case .logRecord(let v)? = _storage._payloadVariant else { preconditionFailure() }

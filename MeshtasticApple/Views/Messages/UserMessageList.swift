@@ -69,18 +69,23 @@ struct UserMessageList: View {
 										}
 									}
 									
+									
 									HStack (alignment: .top) {
 									
 										if currentUser { Spacer(minLength:50) }
 										
 										if !currentUser {
-											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 46, fontSize: 16).padding(.all, 5)
+											
+											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
+												.padding(.all, 5)
+												.offset(y: -5)
 										}
 										
 										VStack(alignment: currentUser ? .trailing : .leading) {
 											
 											Text(message.messagePayload ?? "EMPTY MESSAGE")
 											.padding(10)
+											
 											.foregroundColor(.white)
 											.background(currentUser ? Color.blue : Color(.darkGray))
 											.cornerRadius(15)
@@ -283,8 +288,8 @@ struct UserMessageList: View {
 										}
 										.padding(.bottom)
 										.id(user.messageList.firstIndex(of: message))
-										
 										if !currentUser {
+											
 											Spacer(minLength:50)
 										}
 									}
@@ -379,7 +384,6 @@ struct UserMessageList: View {
 										} else {
 											
 											typingMessage =  "📍 " + userLongName + " has shared their position with the mesh."
-											
 										}
 										
 									} else {
@@ -436,7 +440,6 @@ struct UserMessageList: View {
 			}
 			.padding(.all, 15)
 		}
-
 		.navigationViewStyle(.stack)
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {

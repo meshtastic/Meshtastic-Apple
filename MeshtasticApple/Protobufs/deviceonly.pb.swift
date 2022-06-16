@@ -177,6 +177,12 @@ struct ChannelFile {
   /// The channels our node knows about
   var channels: [Channel] = []
 
+  ///
+  /// A version integer used to invalidate old save files when we make
+  /// incompatible changes This integer is set at build time and is private to
+  /// NodeDB.cpp in the device code.
+  var version: UInt32 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -360,6 +366,7 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   static let protoMessageName: String = "ChannelFile"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "channels"),
+    2: .same(proto: "version"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -369,6 +376,7 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.channels) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.version) }()
       default: break
       }
     }
@@ -378,11 +386,15 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if !self.channels.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.channels, fieldNumber: 1)
     }
+    if self.version != 0 {
+      try visitor.visitSingularUInt32Field(value: self.version, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ChannelFile, rhs: ChannelFile) -> Bool {
     if lhs.channels != rhs.channels {return false}
+    if lhs.version != rhs.version {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
