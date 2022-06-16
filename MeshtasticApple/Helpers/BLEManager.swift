@@ -197,9 +197,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		
-	//	let today = Date()
-	//	let visibleDuration = Calendar.current.date(byAdding: .second, value: -7, to: Date())!
-	//	peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
+		let today = Date()
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -2, to: today)!
+		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 
     // Called when a peripheral is connected
@@ -395,7 +395,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			switch decodedInfo.packet.decoded.portnum {
 				
+				// Handle Any local only packets we get over BLE
 				case .unknownApp:
+				
 					if decodedInfo.myInfo.myNodeNum	!= 0 {
 						
 						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
@@ -426,6 +428,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								}
 							}
 						}
+						
+					} else if decodedInfo.config.version == 13 {
+							
+						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeLongName: self.connectedPeripheral.longName)
 						
 					} else {
 						

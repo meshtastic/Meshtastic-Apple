@@ -9,6 +9,48 @@ import Foundation
 import CoreData
 import SwiftUI
 
+func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeLongName: String) {
+	
+	// We don't care about any of the Power settings
+	// We don't want to manage wifi from the phone app and disconnect our device
+	if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
+	
+	if (try! config.device.jsonString()) == "{}" {
+		
+		print("📟 Default Device config")
+		
+	} else {
+		
+		print("📟 Has Device config")
+	}
+	
+	if (try! config.display.jsonString()) == "{}" {
+		
+		print("🖥️ Default Display config")
+		
+	} else {
+		
+		print("🖥️ Has Display config")
+	}
+	
+	if (try! config.lora.jsonString()) == "{}" {
+		
+		print("📡 Default LoRa config")
+		
+	} else {
+		
+		print("📡 Has LoRa config")
+	}
+	
+	if (try! config.position.jsonString()) == "{}" {
+		
+		print("📍 Default Position config")
+		
+	} else {
+		
+		print("📍 Has Position config")
+	}
+}
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
 	
@@ -352,15 +394,10 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 		
 	}
 	
-	
 	if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! packet.jsonString())") }
 	
 	//PowerConfig
 	//WiFiConfig
-	
-	
-	
-	
 	//if let loraConfig = try? MeshtasticApple.Config.LoRaConfig(serializedData: packet.serializedData) {
 		
 	//	print(loraConfig)
