@@ -429,13 +429,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							}
 						}
 						
-					} else if decodedInfo.config.version == 13 {
+					} else if decodedInfo.config.isInitialized {
 							
-						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeLongName: self.connectedPeripheral.longName)
+						//localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeLongName: self.connectedPeripheral.longName)
+						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.config.jsonString())") }
 						
 					} else {
 						
-						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+						if decodedInfo.configCompleteID == 0 {
+						
+							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+						}
 					}
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)

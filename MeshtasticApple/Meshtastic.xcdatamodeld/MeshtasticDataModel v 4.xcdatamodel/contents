@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="modemPreset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="num" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="regionCode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="loRaConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="loraConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -46,6 +52,7 @@
         <attribute name="lastHeard" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="loraConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
@@ -93,9 +100,10 @@
         </fetchedProperty>
     </entity>
     <elements>
+        <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="89"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="164"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="179"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>

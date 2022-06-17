@@ -13,6 +13,8 @@ struct Settings: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
+//	var connectednode: NodeInfoEntity
+	
 	var body: some View {
 		NavigationView {
 			List {

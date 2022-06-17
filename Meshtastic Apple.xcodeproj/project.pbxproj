@@ -117,6 +117,7 @@
 		DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
+		DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 4.xcdatamodel"; sourceTree = "<group>"; };
 		DD6B85A728009258000ACD6B /* ShareChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannel.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
@@ -1013,11 +1014,12 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */,
 				DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */,
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */;
+			currentVersion = DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = MeshtasticApple/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
