@@ -41,39 +41,69 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	
+	@State private var isPresentingFactoryResetConfirm: Bool = false
+	
 	var body: some View {
 		
-		VStack {
+		ZStack {
+			
+			VStack {
 
-			Form {
-				
-				Section(header: Text("Options")) {
+				Form {
 					
-					Picker("Device Role", selection: $deviceRole ) {
-						ForEach(DeviceRoles.allCases) { dr in
-							Text(dr.description)
+					
+					Section(header: Text("Options")) {
+						
+						Picker("Device Role", selection: $deviceRole ) {
+							ForEach(DeviceRoles.allCases) { dr in
+								Text(dr.description)
+							}
+						}
+						.pickerStyle(InlinePickerStyle())
+						.padding(.top, 10)
+						.padding(.bottom, 10)
+					}
+					
+					Section(header: Text("Debug")) {
+						
+						Toggle(isOn: $serialEnabled) {
+
+							Label("Serial Console", systemImage: "terminal")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						
+						Toggle(isOn: $debugLogEnabled) {
+
+							Label("Debug Log", systemImage: "ant.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+				}
+				
+				Button("Factory Reset", role: .destructive) {
+					
+					isPresentingFactoryResetConfirm = true
+				}
+				.disabled(bleManager.connectedPeripheral == nil)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingFactoryResetConfirm
+				) {
+					Button("Erase all device settings?", role: .destructive) {
+						
+						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+							
+							print("Factory Reset Failed")
 						}
 					}
-					.pickerStyle(InlinePickerStyle())
-					.padding(.top, 10)
-					.padding(.bottom, 10)
 				}
-				
-				Section(header: Text("Debug")) {
-					
-					Toggle(isOn: $serialEnabled) {
-
-						Label("Serial Console", systemImage: "terminal")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $debugLogEnabled) {
-
-						Label("Debug Log", systemImage: "ant.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				}
+				Spacer()
 			}
+			
 			.navigationTitle("Device Config")
 			.navigationBarItems(trailing:
 

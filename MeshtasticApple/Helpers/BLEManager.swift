@@ -179,7 +179,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: String(peripheralName.suffix(3)), longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -409,6 +409,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
+							
 						}
 						
 					} else if decodedInfo.nodeInfo.num != 0 {
@@ -425,6 +426,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 								if nodeInfo!.user != nil {
 									
 									connectedPeripheral.name  = nodeInfo!.user!.longName ?? "Unknown"
+									connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "?????"
 								}
 							}
 						}
@@ -432,7 +434,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					} else if decodedInfo.config.isInitialized {
 							
 						//localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeLongName: self.connectedPeripheral.longName)
-						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.config.jsonString())") }
+						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App decodedInfo.config.isInitialized \(try! decodedInfo.packet.jsonString())") }
 						
 					} else {
 						
@@ -809,26 +811,60 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func getConfig(destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func sendFactoryReset(destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var deviceConfig = Config.DeviceConfig()
+		deviceConfig.factoryReset = true
 		
 		var adminPacket = AdminMessage()
-		adminPacket.getConfigRequest = AdminMessage.ConfigType.deviceConfig
-
-		adminPacket.variant = AdminMessage.OneOf_Variant.getConfigRequest(AdminMessage.ConfigType.loraConfig)
-
+		adminPacket.setConfig.device = deviceConfig
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = false
+		meshPacket.wantAck = wantResponse
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public func saveLoRaConfig(config: Config.LoRaConfig,  destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.lora = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
 

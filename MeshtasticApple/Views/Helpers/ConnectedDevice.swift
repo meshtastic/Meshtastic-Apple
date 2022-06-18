@@ -17,10 +17,10 @@ struct ConnectedDevice: View {
             if bluetoothOn {
                 if deviceConnected {
                     Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-                        .imageScale(.large)
+						.imageScale(.large)
                         .foregroundColor(.green)
                         .symbolRenderingMode(.hierarchical)
-                    Text(name!).font(.subheadline).foregroundColor(.gray)
+					Text(name!).font(.callout).foregroundColor(.gray)
                 } else {
 
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
