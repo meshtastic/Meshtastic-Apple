@@ -19,7 +19,7 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	case kr = 7
 	case tw = 8
 	case ru = 9
-	//case in = 10
+	case `in` = 10
 	case nz865
 	case th
 
@@ -47,10 +47,12 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return "Taiwan"
 			case .ru:
 				return "Russia"
+			case .in:
+				return "India"
 			case .nz865:
 				return "New Zealand 865mhz"
 			case .th:
-				return "TH"
+				return "Thailand"
 			}
 		}
 	}
