@@ -250,7 +250,7 @@ struct LoRaConfig: View {
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
-				Button("Save LoRa Config to device?") {
+				Button("Save LoRa Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
