@@ -44,78 +44,74 @@ struct DeviceConfig: View {
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	
 	var body: some View {
-		
-		ZStack {
 			
-			VStack {
+		VStack {
 
-				Form {
+			Form {
+				
+				Section(header: Text("Options")) {
 					
-					
-					Section(header: Text("Options")) {
-						
-						Picker("Device Role", selection: $deviceRole ) {
-							ForEach(DeviceRoles.allCases) { dr in
-								Text(dr.description)
-							}
+					Picker("Device Role", selection: $deviceRole ) {
+						ForEach(DeviceRoles.allCases) { dr in
+							Text(dr.description)
 						}
-						.pickerStyle(InlinePickerStyle())
-						.padding(.top, 10)
-						.padding(.bottom, 10)
 					}
-					
-					Section(header: Text("Debug")) {
-						
-						Toggle(isOn: $serialEnabled) {
-
-							Label("Serial Console", systemImage: "terminal")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
-						Toggle(isOn: $debugLogEnabled) {
-
-							Label("Debug Log", systemImage: "ant.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					}
+					.pickerStyle(InlinePickerStyle())
+					.padding(.top, 10)
+					.padding(.bottom, 10)
 				}
 				
-				Button("Factory Reset", role: .destructive) {
+				Section(header: Text("Debug")) {
 					
-					isPresentingFactoryResetConfirm = true
-				}
-				.disabled(bleManager.connectedPeripheral == nil)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"Are you sure?",
-					isPresented: $isPresentingFactoryResetConfirm
-				) {
-					Button("Erase all device settings?", role: .destructive) {
-						
-						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
-							
-							print("Factory Reset Failed")
-						}
+					Toggle(isOn: $serialEnabled) {
+
+						Label("Serial Console", systemImage: "terminal")
 					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $debugLogEnabled) {
+
+						Label("Debug Log", systemImage: "ant.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Spacer()
 			}
 			
-			.navigationTitle("Device Config")
-			.navigationBarItems(trailing:
-
-				ZStack {
-
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
-			})
-			.onAppear {
-
-				self.bleManager.context = context
+			Button("Factory Reset", role: .destructive) {
+				
+				isPresentingFactoryResetConfirm = true
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
+			.disabled(bleManager.connectedPeripheral == nil)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				"Are you sure?",
+				isPresented: $isPresentingFactoryResetConfirm
+			) {
+				Button("Erase all device settings?", role: .destructive) {
+					
+					if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						print("Factory Reset Failed")
+					}
+				}
+			}
+			Spacer()
 		}
+		
+		.navigationTitle("Device Config")
+		.navigationBarItems(trailing:
+
+			ZStack {
+
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+		})
+		.onAppear {
+
+			self.bleManager.context = context
+		}
+		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
