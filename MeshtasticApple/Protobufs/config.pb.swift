@@ -26,11 +26,9 @@ struct Config {
   // methods supported on all messages.
 
   ///
-  /// TODO: REPLACE
+  /// Payload Variant
   var payloadVariant: Config.OneOf_PayloadVariant? = nil
 
-  ///
-  /// TODO: REPLACE
   var device: Config.DeviceConfig {
     get {
       if case .device(let v)? = payloadVariant {return v}
@@ -39,8 +37,6 @@ struct Config {
     set {payloadVariant = .device(newValue)}
   }
 
-  ///
-  /// TODO: REPLACE
   var position: Config.PositionConfig {
     get {
       if case .position(let v)? = payloadVariant {return v}
@@ -49,8 +45,6 @@ struct Config {
     set {payloadVariant = .position(newValue)}
   }
 
-  ///
-  /// TODO: REPLACE
   var power: Config.PowerConfig {
     get {
       if case .power(let v)? = payloadVariant {return v}
@@ -59,8 +53,6 @@ struct Config {
     set {payloadVariant = .power(newValue)}
   }
 
-  ///
-  /// TODO: REPLACE
   var wifi: Config.WiFiConfig {
     get {
       if case .wifi(let v)? = payloadVariant {return v}
@@ -69,8 +61,6 @@ struct Config {
     set {payloadVariant = .wifi(newValue)}
   }
 
-  ///
-  /// TODO: REPLACE
   var display: Config.DisplayConfig {
     get {
       if case .display(let v)? = payloadVariant {return v}
@@ -79,8 +69,6 @@ struct Config {
     set {payloadVariant = .display(newValue)}
   }
 
-  ///
-  /// TODO: REPLACE
   var lora: Config.LoRaConfig {
     get {
       if case .lora(let v)? = payloadVariant {return v}
@@ -92,25 +80,13 @@ struct Config {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
-  /// TODO: REPLACE
+  /// Payload Variant
   enum OneOf_PayloadVariant: Equatable {
-    ///
-    /// TODO: REPLACE
     case device(Config.DeviceConfig)
-    ///
-    /// TODO: REPLACE
     case position(Config.PositionConfig)
-    ///
-    /// TODO: REPLACE
     case power(Config.PowerConfig)
-    ///
-    /// TODO: REPLACE
     case wifi(Config.WiFiConfig)
-    ///
-    /// TODO: REPLACE
     case display(Config.DisplayConfig)
-    ///
-    /// TODO: REPLACE
     case lora(Config.LoRaConfig)
 
   #if !swift(>=4.1)
@@ -166,7 +142,6 @@ struct Config {
 
     ///
     /// This setting is never saved to disk, but if set, all device settings will be returned to factory defaults.
-    /// (Region, serial number etc... will be preserved)
     var factoryReset: Bool = false
 
     ///
@@ -182,7 +157,6 @@ struct Config {
 
     ///
     /// Defines the device's role on the Mesh network
-    ///   unset - 0
     enum Role: SwiftProtobuf.Enum {
       typealias RawValue = Int
 
@@ -191,24 +165,19 @@ struct Config {
       case client // = 0
 
       ///
-      /// ClientMute device role
-      ///   This is like the client but packets will not hop over this node. Would be
-      ///   useful if you want to save power by not contributing to the mesh.
+      /// Client Mute device role
+      ///   Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh.
       case clientMute // = 1
 
       ///
       /// Router device role.
-      ///   Uses an agressive algirithem for the flood networking so packets will
-      ///   prefer to be routed over this node. Also assume that this will be
-      ///   unattended and so will turn off the wifi/ble radio as well as the oled screen.
+      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps. 
+      ///   The wifi/ble radios and the oled screen will be put to sleep.
       case router // = 2
 
       ///
-      /// RouterClient device role
-      ///   Uses an agressive algirithem for the flood networking so packets will
-      ///   prefer to be routed over this node. Similiar power management as a regular
-      ///   client, so the RouterClient can be used as both a Router and a Client. Useful
-      ///   as a well placed base station that you could also use to send messages.
+      /// Router Client device role
+      ///   Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client.
       case routerClient // = 3
       case UNRECOGNIZED(Int)
 
@@ -331,6 +300,18 @@ struct Config {
       ///
       /// Include positional timestamp (from GPS solution)
       case posTimestamp // = 128
+
+      ///
+      /// Include positional heading
+      /// Intended for use with vehicle not walking speeds
+      /// walking speeds are likely to be error prone like the compass
+      case posHeading // = 256
+
+      ///
+      /// Include positional speed
+      /// Intended for use with vehicle not walking speeds
+      /// walking speeds are likely to be error prone like the compass
+      case posSpeed // = 512
       case UNRECOGNIZED(Int)
 
       init() {
@@ -348,6 +329,8 @@ struct Config {
         case 32: self = .posSatinview
         case 64: self = .posSeqNos
         case 128: self = .posTimestamp
+        case 256: self = .posHeading
+        case 512: self = .posSpeed
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -363,6 +346,8 @@ struct Config {
         case .posSatinview: return 32
         case .posSeqNos: return 64
         case .posTimestamp: return 128
+        case .posHeading: return 256
+        case .posSpeed: return 512
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -389,7 +374,7 @@ struct Config {
     /// If set, we are powered from a low-current source (i.e. solar), so even if it looks like we have power flowing in
     /// we should try to minimize power consumption as much as possible.
     /// YOU DO NOT NEED TO SET THIS IF YOU'VE set is_router (it is implied in that case).
-    /// CLI Only Option
+    /// Advanced Option
     var isPowerSaving: Bool = false
 
     ///
@@ -399,11 +384,13 @@ struct Config {
     ///
     /// Ratio of voltage divider for battery pin eg. 3.20 (R1=100k, R2=220k)
     /// Overrides the ADC_MULTIPLIER defined in variant for battery voltage calculation.
+    /// Should be set to floating point value between 2 and 4
+    /// Fixes issues on Heltec v2
     var adcMultiplierOverride: Float = 0
 
     ///
     /// Wait Bluetooth Seconds
-    /// The number of seconds for to wait before turning of BLE in No Bluetooth states\
+    /// The number of seconds for to wait before turning off BLE in No Bluetooth states
     /// 0 for default of 1 minute
     var waitBluetoothSecs: UInt32 = 0
 
@@ -425,7 +412,7 @@ struct Config {
     /// Light Sleep Seconds
     /// In light sleep the CPU is suspended, LoRa radio is on, BLE is off an GPS is on
     /// ESP32 Only
-    /// 0 for default of 3600
+    /// 0 for default of 300
     var lsSecs: UInt32 = 0
 
     ///
@@ -441,73 +428,22 @@ struct Config {
     /// **TBEAM 1.1 Only**
     enum ChargeCurrent: SwiftProtobuf.Enum {
       typealias RawValue = Int
-
-      ///
-      /// TODO: REPLACE
       case maunset // = 0
-
-      ///
-      /// TODO: REPLACE
       case ma100 // = 1
-
-      ///
-      /// TODO: REPLACE
       case ma190 // = 2
-
-      ///
-      /// TODO: REPLACE
       case ma280 // = 3
-
-      ///
-      /// TODO: REPLACE
       case ma360 // = 4
-
-      ///
-      /// TODO: REPLACE
       case ma450 // = 5
-
-      ///
-      /// TODO: REPLACE
       case ma550 // = 6
-
-      ///
-      /// TODO: REPLACE
       case ma630 // = 7
-
-      ///
-      /// TODO: REPLACE
       case ma700 // = 8
-
-      ///
-      /// TODO: REPLACE
       case ma780 // = 9
-
-      ///
-      /// TODO: REPLACE
       case ma880 // = 10
-
-      ///
-      /// TODO: REPLACE
       case ma960 // = 11
-
-      ///
-      /// TODO: REPLACE
       case ma1000 // = 12
-
-      ///
-      /// TODO: REPLACE
       case ma1080 // = 13
-
-      ///
-      /// TODO: REPLACE
       case ma1160 // = 14
-
-      ///
-      /// TODO: REPLACE
       case ma1240 // = 15
-
-      ///
-      /// TODO: REPLACE
       case ma1320 // = 16
       case UNRECOGNIZED(Int)
 
@@ -567,7 +503,7 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// WiFi Config
   struct WiFiConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -604,13 +540,12 @@ struct Config {
     // methods supported on all messages.
 
     ///
-    /// Power management state machine option.
-    /// See [power management](/docs/software/other/power) for details.
-    /// 0 for default of one minute
+    /// Number of seconds the screen stays on after pressing the user button or receiving a message
+    /// 0 for default of one minute MAXUINT for always on
     var screenOnSecs: UInt32 = 0
 
     ///
-    /// How the GPS coordinates are displayed on the OLED screen.
+    /// How the GPS coordinates are formatted on the OLED screen.
     var gpsFormat: Config.DisplayConfig.GpsCoordinateFormat = .gpsFormatDec
 
     ///
@@ -636,24 +571,24 @@ struct Config {
       case gpsFormatDms // = 1
 
       ///
-      /// GPS coordinates are displayed in Universal Transverse Mercator format:
+      /// Universal Transverse Mercator format:
       /// ZZB EEEEEE NNNNNNN, where Z is zone, B is band, E is easting, N is northing
       case gpsFormatUtm // = 2
 
       ///
-      /// GPS coordinates are displayed in Military Grid Reference System format:
+      /// Military Grid Reference System format:
       /// ZZB CD EEEEE NNNNN, where Z is zone, B is band, C is the east 100k square, D is the north 100k square,
       /// E is easting, N is northing
       case gpsFormatMgrs // = 3
 
       ///
-      /// GPS coordinates are displayed in Open Location Code (aka Plus Codes).
+      /// Open Location Code (aka Plus Codes).
       case gpsFormatOlc // = 4
 
       ///
-      /// GPS coordinates are displayed in Ordnance Survey Grid Reference (the National Grid System of the UK).
-      /// Format: AB EEEEE NNNNN, where A is the east 100k square, B is the north 100k square, E is the easting,
-      /// N is the northing
+      /// Ordnance Survey Grid Reference (the National Grid System of the UK).
+      /// Format: AB EEEEE NNNNN, where A is the east 100k square, B is the north 100k square,
+      /// E is the easting, N is the northing
       case gpsFormatOsgr // = 5
       case UNRECOGNIZED(Int)
 
@@ -691,7 +626,7 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Lora Config
   struct LoRaConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -705,7 +640,6 @@ struct Config {
     var txPower: Int32 = 0
 
     ///
-    /// Note: This is the 'old' mechanism for specifying channel parameters.
     /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
     /// As a heuristic: If bandwidth is specified, do not use modem_config.
     /// Because protobufs take ZERO space when the value is zero this works out nicely.
@@ -736,11 +670,12 @@ struct Config {
     var frequencyOffset: Float = 0
 
     ///
-    /// The region code for my radio (US, CN, EU433, etc...)
+    /// The region code for the radio (US, CN, EU433, etc...)
     var region: Config.LoRaConfig.RegionCode = .unset
 
     ///
     /// Overrides HOPS_RELIABLE and sets the maximum number of hops. This can't be greater than 7.
+    /// 0 for default of 3
     var hopLimit: UInt32 = 0
 
     ///
@@ -756,66 +691,59 @@ struct Config {
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    ///
-    /// The frequency/regulatory region the user has selected.
-    /// Note: In 1.0 builds (which must still be supported by the android app for a
-    /// long time) this field will be unpopulated.
-    /// If firmware is ever upgraded from an old 1.0ish build, the old
-    /// MyNodeInfo.region string will be used to set UserPreferences.region and the
-    /// old value will be no longer set.
     enum RegionCode: SwiftProtobuf.Enum {
       typealias RawValue = Int
 
       ///
-      /// TODO: REPLACE
+      /// Region is not set
       case unset // = 0
 
       ///
-      /// TODO: REPLACE
+      /// United States
       case us // = 1
 
       ///
-      /// TODO: REPLACE
+      /// European Union 433mhz
       case eu433 // = 2
 
       ///
-      /// TODO: REPLACE
+      /// European Union 433mhz
       case eu868 // = 3
 
       ///
-      /// TODO: REPLACE
+      /// China
       case cn // = 4
 
       ///
-      /// TODO: REPLACE
+      /// Japan
       case jp // = 5
 
       ///
-      /// TODO: REPLACE
+      /// Australia / New Zealand
       case anz // = 6
 
       ///
-      /// TODO: REPLACE
+      /// Korea
       case kr // = 7
 
       ///
-      /// TODO: REPLACE
+      /// Taiwan
       case tw // = 8
 
       ///
-      /// TODO: REPLACE
+      /// Russia
       case ru // = 9
 
       ///
-      /// TODO: REPLACE
+      /// India
       case `in` // = 10
 
       ///
-      /// TODO: REPLACE
+      /// New Zealand 865mhz
       case nz865 // = 11
 
       ///
-      /// TODO: REPLACE
+      /// Thailand
       case th // = 12
       case UNRECOGNIZED(Int)
 
@@ -870,31 +798,31 @@ struct Config {
       typealias RawValue = Int
 
       ///
-      /// TODO: REPLACE
+      /// Long Range - Fast
       case longFast // = 0
 
       ///
-      /// TODO: REPLACE
+      /// Long Range - Slow
       case longSlow // = 1
 
       ///
-      /// TODO: REPLACE
+      /// Very Long Range - Slow
       case vlongSlow // = 2
 
       ///
-      /// TODO: REPLACE
+      /// Medium Range - Slow
       case midSlow // = 3
 
       ///
-      /// TODO: REPLACE
+      /// Medium Range - Fast
       case midFast // = 4
 
       ///
-      /// TODO: REPLACE
+      /// Short Range - Slow
       case shortSlow // = 5
 
       ///
-      /// TODO: REPLACE
+      /// Short Range - Fast
       case shortFast // = 6
       case UNRECOGNIZED(Int)
 
@@ -960,6 +888,8 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
     .posSatinview,
     .posSeqNos,
     .posTimestamp,
+    .posHeading,
+    .posSpeed,
   ]
 }
 
@@ -1337,6 +1267,8 @@ extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding
     32: .same(proto: "POS_SATINVIEW"),
     64: .same(proto: "POS_SEQ_NOS"),
     128: .same(proto: "POS_TIMESTAMP"),
+    256: .same(proto: "POS_HEADING"),
+    512: .same(proto: "POS_SPEED"),
   ]
 }
 

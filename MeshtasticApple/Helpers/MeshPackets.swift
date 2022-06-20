@@ -9,11 +9,11 @@ import Foundation
 import CoreData
 import SwiftUI
 
-func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeLongName: String) {
+func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectContext, nodeLongName: String) {
 	
 	// We don't care about any of the Power settings
 	// We don't want to manage wifi from the phone app and disconnect our device
-	if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
+	//if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
 	
 	if (try! config.device.jsonString()) == "{}" {
 		
@@ -22,6 +22,26 @@ func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjec
 	} else {
 		
 		print("📟 Has Device config")
+	}
+	
+	if (try! config.position.jsonString()) == "{}" {
+		
+		print("📍 Default Position config")
+		
+	} else {
+		
+		print("📍 Has Position config")
+	}
+	
+	if (try! config.power.jsonString() == "{\"lsSecs\":300}") {
+		
+		print("📍 Default Power config")
+		print(try! config.power.jsonString())
+		
+	} else {
+		
+		print("📍 Has Power config")
+		print(try! config.power.jsonString())
 	}
 	
 	if (try! config.display.jsonString()) == "{}" {
@@ -33,6 +53,10 @@ func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjec
 		print("🖥️ Has Display config")
 	}
 	
+
+	
+
+	
 	if (try! config.lora.jsonString()) == "{}" {
 		
 		print("📡 Default LoRa config")
@@ -40,15 +64,6 @@ func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjec
 	} else {
 		
 		print("📡 Has LoRa config")
-	}
-	
-	if (try! config.position.jsonString()) == "{}" {
-		
-		print("📍 Default Position config")
-		
-	} else {
-		
-		print("📍 Has Position config")
 	}
 }
 

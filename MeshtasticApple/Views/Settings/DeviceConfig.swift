@@ -22,7 +22,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			case .client:
 				return "Client (default)"
 			case .clientMute:
-				return "Client Mute - Packets will not hop over this node, does not contribute to routing packets for mesh."
+				return "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh."
 			case .router:
 				return "Router - Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep."
 			case .routerClient:

@@ -118,8 +118,14 @@ struct PositionConfig: View {
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	
-	@State var includeAltitude = false
-	@State var includeSatInView = false
+	@State var includePosAltitude = false
+	@State var includePosSatsinview = false
+	@State var includePosSeqNos = false
+	@State var includePosTimestamp = false
+	@State var includePosSpeed = false
+	@State var includePosHeading = false
+	
+	
 	
 	var body: some View {
 		
@@ -203,30 +209,44 @@ struct PositionConfig: View {
 						.font(.caption)
 						.listRowSeparator(.visible)
 					
-					Toggle(isOn: $includeAltitude) {
+					Toggle(isOn: $includePosAltitude) {
 
-						Label("Include Altitude", systemImage: "arrow.up")
+						Label("Altitude", systemImage: "arrow.up")
 					}
 					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)
 					
-					Toggle(isOn: $includeSatInView) {
+					Toggle(isOn: $includePosSatsinview) {
 
-						Label("Include number of satellites in view", systemImage: "skew")
+						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)
 					
-					Toggle(isOn: $includeSatInView) { //64
+					Toggle(isOn: $includePosSeqNos) { //64
 
-						Label("Include a sequence number incremented per packet", systemImage: "number")
+						Label("Sequence number", systemImage: "number")
 					}
 					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)
 					
-					Toggle(isOn: $includeSatInView) { //128
+					Toggle(isOn: $includePosTimestamp) { //128
 
-						Label("Include positional timestamp", systemImage: "clock")
+						Label("Timestamp", systemImage: "clock")
+					}
+					.toggleStyle(DefaultToggleStyle())
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includePosHeading) { //128
+
+						Label("Vehicle heading", systemImage: "location.circle")
+					}
+					.toggleStyle(DefaultToggleStyle())
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $includePosSpeed) { //128
+
+						Label("Vehicle speed", systemImage: "speedometer")
 					}
 					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)
