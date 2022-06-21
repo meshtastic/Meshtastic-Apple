@@ -48,7 +48,7 @@ struct Settings: View {
 				Section("Radio Configuration") {
 					
 					NavigationLink {
-						DeviceConfig()
+						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "flipphone")

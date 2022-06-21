@@ -52,6 +52,79 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 //
 //		print("🖥️ Has Display config")
 //	}
+	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+		
+		var isDefault = false
+		
+		if (try! config.device.jsonString()) == "{}" {
+			
+			isDefault = true
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].deviceConfig == nil {
+					
+					let newDeviceConfig = DeviceConfigEntity(context: context)
+					
+					if isDefault {
+
+						// Client default protobuf value of 0
+						newDeviceConfig.role = 0
+						newDeviceConfig.serialEnabled = true
+						newDeviceConfig.debugLogEnabled = false
+						
+					} else {
+
+						// Client default protobuf value of 0
+						newDeviceConfig.role = Int32(config.device.role.rawValue)
+						newDeviceConfig.serialEnabled = !config.device.serialDisabled
+						newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
+					}
+					fetchedNode[0].deviceConfig = newDeviceConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						// Client default protobuf value of 0
+						fetchedNode[0].deviceConfig?.role = 0
+						fetchedNode[0].deviceConfig?.serialEnabled = true
+						fetchedNode[0].deviceConfig?.debugLogEnabled = false
+						
+					} else {
+						// Client default protobuf value of 0
+						fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
+						fetchedNode[0].deviceConfig?.serialEnabled = !config.device.serialDisabled
+						fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Device Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
 		
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
@@ -119,14 +192,14 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated LoRaConfig for node number: \(String(nodeNum))") }
+					if meshlogging { MeshLogger.log("💾 Updated LoRa Config for node number: \(String(nodeNum))") }
 
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
+					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
 				}
 			}
 			

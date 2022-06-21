@@ -20,14 +20,28 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .client:
-				return "Client (default)"
+				return "Client (default) - App connected client."
 			case .clientMute:
 				return "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh."
 			case .router:
-				return "Router - Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep."
+				return "Router -  Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep."
 			case .routerClient:
 				return "Router Client - Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client."
 			}
+		}
+	}
+	func protoEnumValue() -> Config.DeviceConfig.Role {
+		
+		switch self {
+			
+		case .client:
+			return Config.DeviceConfig.Role.client
+		case .clientMute:
+			return Config.DeviceConfig.Role.clientMute
+		case .router:
+			return Config.DeviceConfig.Role.router
+		case .routerClient:
+			return Config.DeviceConfig.Role.routerClient
 		}
 	}
 }
@@ -36,12 +50,17 @@ struct DeviceConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
+	
+	var node: NodeInfoEntity
+	
+	@State private var isPresentingFactoryResetConfirm: Bool = false
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
+	
 	@State var deviceRole = 0
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
-	
-	@State private var isPresentingFactoryResetConfirm: Bool = false
 	
 	var body: some View {
 			
@@ -77,24 +96,64 @@ struct DeviceConfig: View {
 				}
 			}
 			
-			Button("Factory Reset", role: .destructive) {
+			HStack {
 				
-				isPresentingFactoryResetConfirm = true
-			}
-			.disabled(bleManager.connectedPeripheral == nil)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"Are you sure?",
-				isPresented: $isPresentingFactoryResetConfirm
-			) {
-				Button("Erase all device settings?", role: .destructive) {
+				Button {
+								
+					isPresentingSaveConfirm = true
 					
-					if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+				} label: {
+					
+					Label("Save", systemImage: "square.and.arrow.down")
+				}
+				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					
+					"Are you sure?",
+					isPresented: $isPresentingSaveConfirm
+				) {
+					Button("Save Device Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
-						print("Factory Reset Failed")
+						var dc = Config.DeviceConfig()
+						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+						dc.serialDisabled = !serialEnabled
+						dc.debugLogEnabled = debugLogEnabled
+						
+						if bleManager.saveDeviceConfig(config: dc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+							
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							
+						} else {
+							
+						}
+					}
+				}
+			
+				Button("Factory Reset", role: .destructive) {
+					
+					isPresentingFactoryResetConfirm = true
+				}
+				.disabled(bleManager.connectedPeripheral == nil)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingFactoryResetConfirm
+				) {
+					Button("Erase all device settings?", role: .destructive) {
+						
+						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+							
+							print("Factory Reset Failed")
+						}
 					}
 				}
 			}
@@ -110,7 +169,37 @@ struct DeviceConfig: View {
 		})
 		.onAppear {
 
-			self.bleManager.context = context
+			if self.initialLoad{
+				
+				self.bleManager.context = context
+
+				self.deviceRole = Int(node.deviceConfig?.role ?? 0)
+				self.serialEnabled = (node.deviceConfig?.serialEnabled ?? true)
+				self.debugLogEnabled = node.deviceConfig?.debugLogEnabled ?? false
+				self.hasChanges = false
+				self.initialLoad = false
+			}
+		}
+		.onChange(of: deviceRole) { newRole in
+			
+			if newRole != node.deviceConfig!.role {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: serialEnabled) { newSerial in
+			
+			if newSerial != node.deviceConfig!.serialEnabled {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: debugLogEnabled) { newDebugLog in
+			
+			if newDebugLog != node.deviceConfig!.debugLogEnabled {
+				
+				hasChanges = true
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

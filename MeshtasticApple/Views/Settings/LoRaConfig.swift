@@ -287,7 +287,6 @@ struct LoRaConfig: View {
 			if self.initialLoad{
 				
 				self.bleManager.context = context
-				print("got hops \(node.loRaConfig?.hopLimit ?? 0)")
 				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
 				self.region = Int(node.loRaConfig?.regionCode ?? 0)
 				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
