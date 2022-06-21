@@ -111,6 +111,8 @@ struct PositionConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	var node: NodeInfoEntity
+	
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
 	@State var fixedPosition = false
@@ -181,6 +183,8 @@ struct PositionConfig: View {
 						
 					}
 				}
+				.disabled(!(node.myInfo?.hasGps ?? true))
+				
 				Section(header: Text("Position Packet")) {
 					
 					Toggle(isOn: $smartPositionEnabled) {
@@ -213,44 +217,44 @@ struct PositionConfig: View {
 
 						Label("Altitude", systemImage: "arrow.up")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSatsinview) {
 
 						Label("Number of satellites", systemImage: "skew")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.disabled(!(node.myInfo?.hasGps ?? true))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSeqNos) { //64
 
 						Label("Sequence number", systemImage: "number")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosTimestamp) { //128
 
 						Label("Timestamp", systemImage: "clock")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosHeading) { //128
 
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSpeed) { //128
 
 						Label("Vehicle speed", systemImage: "speedometer")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
-					
 				}
 			}
 		}
