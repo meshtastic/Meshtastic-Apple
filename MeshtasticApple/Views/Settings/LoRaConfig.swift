@@ -185,8 +185,10 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	@State private var isPresentingSaveConfirm: Bool = false
+	var node: NodeInfoEntity
 	
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var loadCount = 0
 	@State var region = 0
 	@State var modemPreset  = 0
 	@State var hopLimit  = 0
@@ -210,7 +212,7 @@ struct LoRaConfig: View {
 						.listRowSeparator(.visible)
 				}
 				Section(header: Text("Modem")) {
-					Picker("Presets", selection: $region ) {
+					Picker("Presets", selection: $modemPreset ) {
 						ForEach(ModemPresets.allCases) { m in
 							Text(m.description)
 						}
@@ -280,6 +282,15 @@ struct LoRaConfig: View {
 		.onAppear {
 
 			self.bleManager.context = context
+			if loadCount == 0 {
+				
+				print("got hops \(node.loRaConfig?.hopLimit ?? 0)")
+				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
+				self.region = Int(node.loRaConfig?.regionCode ?? 0)
+				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
+				self.hasChanges = false
+			}
+			loadCount+=1
 		}
 		.onChange(of: region) { newModemPreset in
 			

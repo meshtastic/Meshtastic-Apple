@@ -427,15 +427,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 									
 									connectedPeripheral.name  = nodeInfo!.user!.longName ?? "Unknown"
 									connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "?????"
+									connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
 								}
 							}
 						}
 						
 					} else if decodedInfo.config.isInitialized {
 							
-						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeLongName: self.connectedPeripheral.longName)
-						if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App decodedInfo.config.isInitialized \(try! decodedInfo.config.jsonString())") }
-						
+						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 						
 					} else {
 						

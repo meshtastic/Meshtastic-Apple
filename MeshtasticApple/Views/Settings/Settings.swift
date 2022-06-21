@@ -13,7 +13,13 @@ struct Settings: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-//	var connectednode: NodeInfoEntity
+	
+	
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+		animation: .default)
+
+		private var nodes: FetchedResults<NodeInfoEntity>
 	
 	var body: some View {
 		NavigationView {
@@ -55,8 +61,12 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Display (Device Screen)")
 					}
-					NavigationLink {
-						LoRaConfig()
+					
+					let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
+					
+					NavigationLink() {
+						
+						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "dot.radiowaves.left.and.right")
@@ -64,6 +74,8 @@ struct Settings: View {
 
 						Text("LoRa")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
+				
 					NavigationLink {
 						PositionConfig()
 					} label: {
