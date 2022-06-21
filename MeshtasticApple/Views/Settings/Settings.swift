@@ -43,7 +43,7 @@ struct Settings: View {
 					}
 				}
 				
-				Section("Radio Configuration (Non-Functional Interaction Previews)") {
+				Section("Radio Configuration (Non-Functional Interaction Previews except for LoRa Config)") {
 					
 					NavigationLink {
 						DeviceConfig()
