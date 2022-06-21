@@ -189,8 +189,6 @@ struct LoRaConfig: View {
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
-	@State var loadComplete: Bool = false
-	
 	
 	@State var region = 0
 	@State var modemPreset  = 0
@@ -293,7 +291,6 @@ struct LoRaConfig: View {
 				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
-				self.loadComplete = true
 			}
 		}
 		.onChange(of: region) { newRegion in
