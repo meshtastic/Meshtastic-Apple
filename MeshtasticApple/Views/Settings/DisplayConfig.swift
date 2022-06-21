@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum GpsFormat: Int, CaseIterable, Identifiable {
+enum GpsFormats: Int, CaseIterable, Identifiable {
 
 	case gpsFormatDec = 0
 	case gpsFormatDms = 1
@@ -33,6 +33,24 @@ enum GpsFormat: Int, CaseIterable, Identifiable {
 			case .gpsFormatOsgr:
 				return "Ordnance Survey Grid Reference"
 			}
+		}
+	}
+	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {
+		
+		switch self {
+			
+		case .gpsFormatDec:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDec
+		case .gpsFormatDms:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDms
+		case .gpsFormatUtm:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatUtm
+		case .gpsFormatMgrs:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatMgrs
+		case .gpsFormatOlc:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOlc
+		case .gpsFormatOsgr:
+			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOsgr
 		}
 	}
 }
@@ -109,6 +127,11 @@ struct DisplayConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	var node: NodeInfoEntity
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
 
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
@@ -146,7 +169,7 @@ struct DisplayConfig: View {
 				}
 				Section(header: Text("Format")) {
 					Picker("GPS Format", selection: $gpsFormat ) {
-						ForEach(GpsFormat.allCases) { lu in
+						ForEach(GpsFormats.allCases) { lu in
 							Text(lu.description)
 						}
 					}
@@ -155,6 +178,43 @@ struct DisplayConfig: View {
 					Text("The format used to display GPS coordinates on the screen.")
 						.font(.caption)
 						.listRowSeparator(.visible)
+				}
+			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save Display Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+					
+					var dc = Config.DisplayConfig()
+					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+					dc.screenOnSecs = UInt32(screenOnSeconds)
+					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+					
+					if bleManager.saveDisplayConfig(config: dc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					} else {
+						
+					}
 				}
 			}
 		}
@@ -167,7 +227,37 @@ struct DisplayConfig: View {
 		})
 		.onAppear {
 
-			self.bleManager.context = context
+			if self.initialLoad{
+				
+				self.bleManager.context = context
+
+				self.gpsFormat = Int(node.displayConfig?.gpsFormat ?? 0)
+				self.screenOnSeconds = Int(node.displayConfig?.screenOnSeconds ?? 0)
+				self.screenCarouselInterval = Int(node.displayConfig?.screenCarouselInterval ?? 0)
+				self.hasChanges = false
+				self.initialLoad = false
+			}
+		}
+		.onChange(of: screenOnSeconds) { newScreenSecs in
+			
+			if newScreenSecs != node.displayConfig!.screenOnSeconds {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: screenCarouselInterval) { newCarouselSecs in
+			
+			if newCarouselSecs != node.displayConfig!.screenCarouselInterval {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: gpsFormat) { newGpsFormat in
+			
+			if newGpsFormat != node.displayConfig!.gpsFormat {
+				
+				hasChanges = true
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

@@ -14,25 +14,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	// We don't care about any of the Power settings
 	// We don't want to manage wifi from the phone app and disconnect our device
 	//if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
-	
-//	if (try! config.device.jsonString()) == "{}" {
-//
-//		print("📟 Default Device config")
-//
-//	} else {
-//
-//		print("📟 Has Device config")
-//	}
-//
-//	if (try! config.position.jsonString()) == "{}" {
-//
-//		print("📍 Default Position config")
-//
-//	} else {
-//
-//		print("📍 Has Position config")
-//	}
-//
+
 //	if (try! config.power.jsonString() == "{\"lsSecs\":300}") {
 //
 //		print("📍 Default Power config")
@@ -44,14 +26,6 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 //		print(try! config.power.jsonString())
 //	}
 //
-//	if (try! config.display.jsonString()) == "{}" {
-//
-//		print("🖥️ Default Display config")
-//
-//	} else {
-//
-//		print("🖥️ Has Display config")
-//	}
 	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 		
 		var isDefault = false
@@ -59,6 +33,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.device.jsonString()) == "{}" {
 			
 			isDefault = true
+			print("📟 Default Device config")
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -117,7 +92,79 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					context.rollback()
 
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
+					print("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+		
+		var isDefault = false
+		
+		if (try! config.display.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("🖥️ Default Display config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].displayConfig == nil {
+					
+					let newDisplayConfig = DisplayConfigEntity(context: context)
+					
+					if isDefault {
+
+						newDisplayConfig.screenOnSeconds = 0
+						newDisplayConfig.screenCarouselInterval = 0
+						newDisplayConfig.gpsFormat = 0
+						
+					} else {
+
+						newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
+						newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
+						newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+					}
+					fetchedNode[0].displayConfig = newDisplayConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].displayConfig?.screenOnSeconds = 0
+						fetchedNode[0].displayConfig?.screenCarouselInterval = 0
+						fetchedNode[0].displayConfig?.gpsFormat = 0
+						
+					} else {
+
+						fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
+						fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
+						fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Display Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
 				}
 			}
 			

@@ -58,7 +58,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						DisplayConfig()
+						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "display")
@@ -93,7 +93,7 @@ struct Settings: View {
 				Section("Module Configuration") {
 					
 					NavigationLink {
-						DisplayConfig()
+						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "list.bullet.rectangle.fill")
