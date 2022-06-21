@@ -188,7 +188,6 @@ struct LoRaConfig: View {
 	var node: NodeInfoEntity
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var loadCount = 0
 	@State var region = 0
 	@State var modemPreset  = 0
 	@State var hopLimit  = 0
@@ -282,17 +281,19 @@ struct LoRaConfig: View {
 		.onAppear {
 
 			self.bleManager.context = context
-			if loadCount == 0 {
-				
+		}
+		.task {
+			do {
 				print("got hops \(node.loRaConfig?.hopLimit ?? 0)")
 				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
 				self.region = Int(node.loRaConfig?.regionCode ?? 0)
 				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
 				self.hasChanges = false
+			} catch {
+				print("Failed to load node data")
 			}
-			loadCount+=1
 		}
-		.onChange(of: region) { newModemPreset in
+		.onChange(of: region) { newRegion in
 			
 			hasChanges = true
 		}
