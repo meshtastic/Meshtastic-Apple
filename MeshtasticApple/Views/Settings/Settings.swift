@@ -47,6 +47,10 @@ struct Settings: View {
 				
 				Section("Radio Configuration") {
 					
+					Text("Radio config values will be be enabled when there is a connected node. Save buttons will enable when there is a connected node and config changes to save.")
+						.font(.caption)
+						.listRowSeparator(.visible)
+					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {

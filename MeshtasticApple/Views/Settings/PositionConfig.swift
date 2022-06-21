@@ -184,7 +184,6 @@ struct PositionConfig: View {
 						
 					}
 				}
-				.disabled(!(node.myInfo?.hasGps ?? true))
 				
 				Section(header: Text("Position Packet")) {
 					
@@ -226,7 +225,6 @@ struct PositionConfig: View {
 						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(!(node.myInfo?.hasGps ?? true))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSeqNos) { //64
@@ -258,6 +256,7 @@ struct PositionConfig: View {
 					.listRowSeparator(.visible)
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
 							

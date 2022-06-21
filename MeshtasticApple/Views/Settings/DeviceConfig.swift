@@ -95,6 +95,7 @@ struct DeviceConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			HStack {
 				

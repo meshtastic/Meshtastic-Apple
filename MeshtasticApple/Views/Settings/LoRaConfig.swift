@@ -236,6 +236,7 @@ struct LoRaConfig: View {
 						.listRowSeparator(.visible)
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
 							
