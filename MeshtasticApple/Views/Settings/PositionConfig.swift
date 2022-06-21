@@ -258,6 +258,46 @@ struct PositionConfig: View {
 					.listRowSeparator(.visible)
 				}
 			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+					
+					var pc = Config.PositionConfig()
+					pc.positionBroadcastSmartDisabled = !smartPositionEnabled
+					pc.gpsDisabled = !deviceGpsEnabled
+					pc.fixedPosition = fixedPosition
+					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
+					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
+					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+					
+					if bleManager.savePositionConfig(config: pc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					} else {
+						
+					}
+				}
+			}
 		}
 		.navigationTitle("Position Config")
 		.navigationBarItems(trailing:
@@ -268,7 +308,39 @@ struct PositionConfig: View {
 		})
 		.onAppear {
 
-			self.bleManager.context = context
+			if self.initialLoad{
+				
+				self.bleManager.context = context
+				self.smartPositionEnabled = node.positionConfig?.smartPositionEnabled ?? true
+				self.deviceGpsEnabled = node.positionConfig?.deviceGpsEnabled ?? true
+				self.fixedPosition = node.positionConfig?.fixedPosition ?? false
+				self.gpsUpdateInterval = Int(node.positionConfig?.gpsUpdateInterval ?? 0)
+				self.gpsAttemptTime = Int(node.positionConfig?.gpsAttemptTime ?? 0)
+				self.positionBroadcastSeconds = Int(node.positionConfig?.positionBroadcastSeconds ?? 0)
+				self.hasChanges = false
+				self.initialLoad = false
+			}
+		}
+		.onChange(of: smartPositionEnabled) { newSmartPosition in
+			
+			if newSmartPosition != node.positionConfig!.smartPositionEnabled {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: deviceGpsEnabled) { newDeviceGps in
+			
+			if newDeviceGps != node.positionConfig!.deviceGpsEnabled {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: fixedPosition) { newFixed in
+			
+			if newFixed != node.positionConfig!.fixedPosition {
+				
+				hasChanges = true
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

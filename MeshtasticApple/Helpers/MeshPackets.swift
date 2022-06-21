@@ -254,6 +254,91 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 			
 		}
 	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+		
+		var isDefault = false
+		
+		if (try! config.position.jsonString()) == "{}" {
+			
+			isDefault = true
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save LoRa Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].positionConfig == nil {
+					
+					let newPositionConfig = PositionConfigEntity(context: context)
+					
+					if isDefault {
+						
+						newPositionConfig.smartPositionEnabled = true
+						newPositionConfig.deviceGpsEnabled = true
+						newPositionConfig.fixedPosition = false
+						newPositionConfig.gpsUpdateInterval = 0
+						newPositionConfig.gpsAttemptTime = 0
+						newPositionConfig.positionBroadcastSeconds = 0
+
+					} else {
+						
+						newPositionConfig.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+						newPositionConfig.deviceGpsEnabled = !config.position.gpsDisabled
+						newPositionConfig.fixedPosition = config.position.fixedPosition
+						newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+						newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+						newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+					}
+					
+					fetchedNode[0].positionConfig = newPositionConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].positionConfig?.smartPositionEnabled = true
+						fetchedNode[0].positionConfig?.deviceGpsEnabled = true
+						fetchedNode[0].positionConfig?.fixedPosition = false
+						fetchedNode[0].positionConfig?.gpsUpdateInterval = 0
+						fetchedNode[0].positionConfig?.gpsAttemptTime = 0
+						fetchedNode[0].positionConfig?.positionBroadcastSeconds = 0
+						
+					} else {
+						
+						fetchedNode[0].positionConfig?.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+						fetchedNode[0].positionConfig?.deviceGpsEnabled = !config.position.gpsDisabled
+						fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
+						fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+						fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+						fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+				
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Position Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
 }
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
