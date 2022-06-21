@@ -180,6 +180,7 @@ struct DisplayConfig: View {
 						.listRowSeparator(.visible)
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
 							

@@ -258,6 +258,7 @@ struct PositionConfig: View {
 					.listRowSeparator(.visible)
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
 							
