@@ -1810,11 +1810,11 @@ struct FromRadio {
   }
 
   ///
-  /// Include the entire config (was: RadioConfig radio)
-  var config: LocalConfig {
+  /// Include a part of the config (was: RadioConfig radio)
+  var config: Config {
     get {
       if case .config(let v)? = _storage._payloadVariant {return v}
-      return LocalConfig()
+      return Config()
     }
     set {_uniqueStorage()._payloadVariant = .config(newValue)}
   }
@@ -1872,8 +1872,8 @@ struct FromRadio {
     /// starts over with the first node in our DB
     case nodeInfo(NodeInfo)
     ///
-    /// Include the entire config (was: RadioConfig radio)
-    case config(LocalConfig)
+    /// Include a part of the config (was: RadioConfig radio)
+    case config(Config)
     ///
     /// Set to send debug console output over our protobuf stream
     case logRecord(LogRecord)
@@ -3356,7 +3356,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           }
         }()
         case 6: try {
-          var v: LocalConfig?
+          var v: Config?
           var hadOneofValue = false
           if let current = _storage._payloadVariant {
             hadOneofValue = true

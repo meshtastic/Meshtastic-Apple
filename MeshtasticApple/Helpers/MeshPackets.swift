@@ -9,46 +9,130 @@ import Foundation
 import CoreData
 import SwiftUI
 
-func localConfig (config: LocalConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeLongName: String) {
+func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	// We don't care about any of the Power settings
 	// We don't want to manage wifi from the phone app and disconnect our device
-	if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
+	//if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
 	
-	if (try! config.device.jsonString()) == "{}" {
+//	if (try! config.device.jsonString()) == "{}" {
+//
+//		print("📟 Default Device config")
+//
+//	} else {
+//
+//		print("📟 Has Device config")
+//	}
+//
+//	if (try! config.position.jsonString()) == "{}" {
+//
+//		print("📍 Default Position config")
+//
+//	} else {
+//
+//		print("📍 Has Position config")
+//	}
+//
+//	if (try! config.power.jsonString() == "{\"lsSecs\":300}") {
+//
+//		print("📍 Default Power config")
+//		print(try! config.power.jsonString())
+//
+//	} else {
+//
+//		print("📍 Has Power config")
+//		print(try! config.power.jsonString())
+//	}
+//
+//	if (try! config.display.jsonString()) == "{}" {
+//
+//		print("🖥️ Default Display config")
+//
+//	} else {
+//
+//		print("🖥️ Has Display config")
+//	}
 		
-		print("📟 Default Device config")
+	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
-	} else {
+		var isDefault = false
 		
-		print("📟 Has Device config")
-	}
-	
-	if (try! config.display.jsonString()) == "{}" {
+		if (try! config.lora.jsonString()) == "{}" {
+			
+			isDefault = true
+		}
 		
-		print("🖥️ Default Display config")
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		
-	} else {
-		
-		print("🖥️ Has Display config")
-	}
-	
-	if (try! config.lora.jsonString()) == "{}" {
-		
-		print("📡 Default LoRa config")
-		
-	} else {
-		
-		print("📡 Has LoRa config")
-	}
-	
-	if (try! config.position.jsonString()) == "{}" {
-		
-		print("📍 Default Position config")
-		
-	} else {
-		
-		print("📍 Has Position config")
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save LoRa Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].loRaConfig == nil {
+					
+					let newLoRaConfig = LoRaConfigEntity(context: context)
+					
+					if isDefault {
+						
+						// UNSET default protobuf value of 0
+						newLoRaConfig.regionCode = 0
+						// LongFast default protobuf value of 0
+						newLoRaConfig.modemPreset = 0
+						// 3 Hops default protobuf value of 0
+						newLoRaConfig.hopLimit = 0
+					} else {
+						
+						// UNSET default protobuf value of 0
+						newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
+						// LongFast default protobuf value of 0
+						newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
+						// 3 Hops default protobuf value of 0
+						newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
+					}
+					
+					fetchedNode[0].loRaConfig = newLoRaConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						// UNSET default protobuf value of 0
+						fetchedNode[0].loRaConfig?.regionCode = 0
+						// LongFast default protobuf value of 0
+						fetchedNode[0].loRaConfig?.modemPreset = 0
+						// 3 Hops default protobuf value of 0
+						fetchedNode[0].loRaConfig?.hopLimit = 0
+						
+					} else {
+						// UNSET default protobuf value of 0
+						fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
+						// LongFast default protobuf value of 0
+						fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
+						// 3 Hops default protobuf value of 0
+						fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated LoRaConfig for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
 	}
 }
 

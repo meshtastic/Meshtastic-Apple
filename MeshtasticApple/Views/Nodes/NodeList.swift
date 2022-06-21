@@ -105,7 +105,8 @@ struct NodeList: View {
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
 
-				if UIDevice.current.userInterfaceIdiom == .pad {
+				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+
 					if nodes.count > 0 {
 						selection = "0"
 					}

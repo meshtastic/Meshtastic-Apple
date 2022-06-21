@@ -19,7 +19,7 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	case kr = 7
 	case tw = 8
 	case ru = 9
-	//case in = 10
+	case `in` = 10
 	case nz865
 	case th
 
@@ -28,7 +28,7 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .unset:
-				return "UNSET - Please set a Region"
+				return "Please set a region"
 			case .us:
 				return "United States"
 			case .eu433:
@@ -47,11 +47,46 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return "Taiwan"
 			case .ru:
 				return "Russia"
+			case .in:
+				return "India"
 			case .nz865:
 				return "New Zealand 865mhz"
 			case .th:
-				return "TH"
+				return "Thailand"
 			}
+		}
+	}
+	
+	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
+		
+		switch self {
+		
+			case .unset:
+				return Config.LoRaConfig.RegionCode.unset
+			case .us:
+				return Config.LoRaConfig.RegionCode.us
+			case .eu433:
+				return Config.LoRaConfig.RegionCode.eu433
+			case .eu868:
+				return Config.LoRaConfig.RegionCode.eu868
+			case .cn:
+				return Config.LoRaConfig.RegionCode.cn
+			case .jp:
+				return Config.LoRaConfig.RegionCode.jp
+			case .anz:
+				return Config.LoRaConfig.RegionCode.anz
+			case .kr:
+				return Config.LoRaConfig.RegionCode.kr
+			case .tw:
+				return Config.LoRaConfig.RegionCode.tw
+			case .ru:
+				return Config.LoRaConfig.RegionCode.ru
+			case .in:
+				return Config.LoRaConfig.RegionCode.in
+			case .nz865:
+				return Config.LoRaConfig.RegionCode.nz865
+			case .th:
+				return Config.LoRaConfig.RegionCode.th
 		}
 	}
 }
@@ -72,19 +107,74 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 			switch self {
 				
 			case .LongFast:
-				return "Long Fast"
+				return "Long Range - Fast"
 			case .LongSlow:
-				return "Long Slow"
+				return "Long Range - Slow"
 			case .VLongSlow:
-				return "Very Long Slow"
+				return "Very Long Range - Slow"
 			case .MidSlow:
-				return "Mid Slow"
+				return "Medium Range - Slow"
 			case .MidFast:
-				return "Mid Fast"
+				return "Medium Range - Fast"
 			case .ShortSlow:
-				return "Short Slow"
+				return "Short Range - Slow"
 			case .ShortFast:
-				return "Short Fast"
+				return "Short Range - Fast"
+			}
+		}
+	}
+	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
+		
+		switch self {
+
+			case .LongFast:
+				return Config.LoRaConfig.ModemPreset.longFast
+			case .LongSlow:
+				return Config.LoRaConfig.ModemPreset.longSlow
+			case .VLongSlow:
+				return Config.LoRaConfig.ModemPreset.vlongSlow
+			case .MidSlow:
+				return Config.LoRaConfig.ModemPreset.midSlow
+			case .MidFast:
+				return Config.LoRaConfig.ModemPreset.midFast
+			case .ShortSlow:
+				return Config.LoRaConfig.ModemPreset.shortSlow
+			case .ShortFast:
+				return Config.LoRaConfig.ModemPreset.shortFast
+			
+		}
+	}
+}
+
+enum HopValues : Int, CaseIterable, Identifiable {
+	
+	case oneHop = 1
+	case twoHops = 2
+	case threeHops = 0
+	case fourHops = 4
+	case fiveHops = 5
+	case sixHops = 6
+	case sevenHops = 7
+	
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+				
+			case .oneHop:
+				return "One Hop"
+			case .twoHops:
+				return "Two Hops"
+			case .threeHops:
+				return "Three Hops"
+			case .fourHops:
+				return "Four Hops"
+			case .fiveHops:
+				return "Five Hops"
+			case .sixHops:
+				return "Six Hops"
+			case .sevenHops:
+				return "Seven Hops"
 			}
 		}
 	}
@@ -95,9 +185,13 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	@State var region = 1
-	@State var modemPreset = 0
-	@State var numberOfHops = 0
+	var node: NodeInfoEntity
+	
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var region = 0
+	@State var modemPreset  = 0
+	@State var hopLimit  = 0
+	@State var hasChanges = false
 	
 	var body: some View {
 		
@@ -112,49 +206,106 @@ struct LoRaConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("The region where you will be using your Meshtastic LoRa radios.")
+					Text("The region where you will be using your radios.")
 						.font(.caption)
 						.listRowSeparator(.visible)
-					.listRowSeparator(.visible)
 				}
 				Section(header: Text("Modem")) {
-					Picker("Presets", selection: $region ) {
+					Picker("Presets", selection: $modemPreset ) {
 						ForEach(ModemPresets.allCases) { m in
 							Text(m.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("Available modem presets.")
+					Text("Available modem presets, default is Long Fast.")
 						.font(.caption)
 						.listRowSeparator(.visible)
-					.listRowSeparator(.visible)
 				}
 				Section(header: Text("Mesh Options")) {
 					
-					Picker("Number of hops", selection: $numberOfHops) {
-						ForEach(0..<8) {
-							if $0 == 0 {
-								Text("Default")
-							} else {
-								Text("\($0) Hops")
-							}
+					Picker("Number of hops", selection: $hopLimit) {
+						ForEach(HopValues.allCases) { hop in
+							Text(hop.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Text("Sets the maximum number of hops, default is 3.")
+						.font(.caption)
+						.listRowSeparator(.visible)
 				}
 			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save LoRa Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+					
+					var lc = Config.LoRaConfig()
+					lc.hopLimit = UInt32(hopLimit)
+					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+					
+					if bleManager.saveLoRaConfig(config: lc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					} else {
+						
+					}
+				}
+			}
+
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(trailing:
 
 			ZStack {
 
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.lastFourCode : "????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
 		})
 		.onAppear {
 
 			self.bleManager.context = context
 		}
+		.task {
+			do {
+				print("got hops \(node.loRaConfig?.hopLimit ?? 0)")
+				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
+				self.region = Int(node.loRaConfig?.regionCode ?? 0)
+				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
+				self.hasChanges = false
+			} catch {
+				print("Failed to load node data")
+			}
+		}
+		.onChange(of: region) { newRegion in
+			
+			hasChanges = true
+		}
+		.onChange(of: modemPreset) { newModemPreset in
+			
+			hasChanges = true
+		}
+		.onChange(of: hopLimit) { newHopLimit in
+			
+			hasChanges = true
+		}
+		
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

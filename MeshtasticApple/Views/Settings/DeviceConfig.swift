@@ -22,7 +22,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			case .client:
 				return "Client (default)"
 			case .clientMute:
-				return "Client Mute - Packets will not hop over this node, does not contribute to routing packets for mesh."
+				return "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh."
 			case .router:
 				return "Router - Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep."
 			case .routerClient:
@@ -41,8 +41,10 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	
+	@State private var isPresentingFactoryResetConfirm: Bool = false
+	
 	var body: some View {
-		
+			
 		VStack {
 
 			Form {
@@ -74,18 +76,42 @@ struct DeviceConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			.navigationTitle("Device Config")
-			.navigationBarItems(trailing:
-
-				ZStack {
-
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.lastFourCode : "????")
-			})
-			.onAppear {
-
-				self.bleManager.context = context
+			
+			Button("Factory Reset", role: .destructive) {
+				
+				isPresentingFactoryResetConfirm = true
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
+			.disabled(bleManager.connectedPeripheral == nil)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				"Are you sure?",
+				isPresented: $isPresentingFactoryResetConfirm
+			) {
+				Button("Erase all device settings?", role: .destructive) {
+					
+					if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						print("Factory Reset Failed")
+					}
+				}
+			}
+			Spacer()
 		}
+		
+		.navigationTitle("Device Config")
+		.navigationBarItems(trailing:
+
+			ZStack {
+
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+		})
+		.onAppear {
+
+			self.bleManager.context = context
+		}
+		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

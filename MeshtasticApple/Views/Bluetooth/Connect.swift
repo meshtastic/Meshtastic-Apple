@@ -265,8 +265,8 @@ struct Connect: View {
                     ConnectedDevice(
 						bluetoothOn: self.bleManager.isSwitchedOn,
 						deviceConnected: self.bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.lastFourCode :
-							"????")
+						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName :
+							"?????")
                 }
             )
         }
