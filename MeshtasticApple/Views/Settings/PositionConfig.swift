@@ -112,6 +112,9 @@ struct PositionConfig: View {
 	@EnvironmentObject var bleManager: BLEManager
 	
 	var node: NodeInfoEntity
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
 	
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
@@ -126,8 +129,6 @@ struct PositionConfig: View {
 	@State var includePosTimestamp = false
 	@State var includePosSpeed = false
 	@State var includePosHeading = false
-	
-	
 	
 	var body: some View {
 		
@@ -207,7 +208,7 @@ struct PositionConfig: View {
 						
 					}
 				}
-				Section(header: Text("Position Flags")) {
+				Section(header: Text("Position Flags - Non Functional")) {
 					
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 						.font(.caption)
