@@ -14,25 +14,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	// We don't care about any of the Power settings
 	// We don't want to manage wifi from the phone app and disconnect our device
 	//if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
-	
-//	if (try! config.device.jsonString()) == "{}" {
-//
-//		print("📟 Default Device config")
-//
-//	} else {
-//
-//		print("📟 Has Device config")
-//	}
-//
-//	if (try! config.position.jsonString()) == "{}" {
-//
-//		print("📍 Default Position config")
-//
-//	} else {
-//
-//		print("📍 Has Position config")
-//	}
-//
+
 //	if (try! config.power.jsonString() == "{\"lsSecs\":300}") {
 //
 //		print("📍 Default Power config")
@@ -44,14 +26,152 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 //		print(try! config.power.jsonString())
 //	}
 //
-//	if (try! config.display.jsonString()) == "{}" {
-//
-//		print("🖥️ Default Display config")
-//
-//	} else {
-//
-//		print("🖥️ Has Display config")
-//	}
+	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+		
+		var isDefault = false
+		
+		if (try! config.device.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("📟 Default Device config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].deviceConfig == nil {
+					
+					let newDeviceConfig = DeviceConfigEntity(context: context)
+					
+					if isDefault {
+
+						// Client default protobuf value of 0
+						newDeviceConfig.role = 0
+						newDeviceConfig.serialEnabled = true
+						newDeviceConfig.debugLogEnabled = false
+						
+					} else {
+
+						// Client default protobuf value of 0
+						newDeviceConfig.role = Int32(config.device.role.rawValue)
+						newDeviceConfig.serialEnabled = !config.device.serialDisabled
+						newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
+					}
+					fetchedNode[0].deviceConfig = newDeviceConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						// Client default protobuf value of 0
+						fetchedNode[0].deviceConfig?.role = 0
+						fetchedNode[0].deviceConfig?.serialEnabled = true
+						fetchedNode[0].deviceConfig?.debugLogEnabled = false
+						
+					} else {
+						// Client default protobuf value of 0
+						fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
+						fetchedNode[0].deviceConfig?.serialEnabled = !config.device.serialDisabled
+						fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Device Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+		
+		var isDefault = false
+		
+		if (try! config.display.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("🖥️ Default Display config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].displayConfig == nil {
+					
+					let newDisplayConfig = DisplayConfigEntity(context: context)
+					
+					if isDefault {
+
+						newDisplayConfig.screenOnSeconds = 0
+						newDisplayConfig.screenCarouselInterval = 0
+						newDisplayConfig.gpsFormat = 0
+						
+					} else {
+
+						newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
+						newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
+						newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+					}
+					fetchedNode[0].displayConfig = newDisplayConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].displayConfig?.screenOnSeconds = 0
+						fetchedNode[0].displayConfig?.screenCarouselInterval = 0
+						fetchedNode[0].displayConfig?.gpsFormat = 0
+						
+					} else {
+
+						fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
+						fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
+						fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Display Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
 		
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
@@ -119,14 +239,99 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated LoRaConfig for node number: \(String(nodeNum))") }
+					if meshlogging { MeshLogger.log("💾 Updated LoRa Config for node number: \(String(nodeNum))") }
 
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
+					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+		
+		var isDefault = false
+		
+		if (try! config.position.jsonString()) == "{}" {
+			
+			isDefault = true
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save LoRa Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].positionConfig == nil {
+					
+					let newPositionConfig = PositionConfigEntity(context: context)
+					
+					if isDefault {
+						
+						newPositionConfig.smartPositionEnabled = true
+						newPositionConfig.deviceGpsEnabled = true
+						newPositionConfig.fixedPosition = false
+						newPositionConfig.gpsUpdateInterval = 0
+						newPositionConfig.gpsAttemptTime = 0
+						newPositionConfig.positionBroadcastSeconds = 0
+
+					} else {
+						
+						newPositionConfig.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+						newPositionConfig.deviceGpsEnabled = !config.position.gpsDisabled
+						newPositionConfig.fixedPosition = config.position.fixedPosition
+						newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+						newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+						newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+					}
+					
+					fetchedNode[0].positionConfig = newPositionConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].positionConfig?.smartPositionEnabled = true
+						fetchedNode[0].positionConfig?.deviceGpsEnabled = true
+						fetchedNode[0].positionConfig?.fixedPosition = false
+						fetchedNode[0].positionConfig?.gpsUpdateInterval = 0
+						fetchedNode[0].positionConfig?.gpsAttemptTime = 0
+						fetchedNode[0].positionConfig?.positionBroadcastSeconds = 0
+						
+					} else {
+						
+						fetchedNode[0].positionConfig?.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+						fetchedNode[0].positionConfig?.deviceGpsEnabled = !config.position.gpsDisabled
+						fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
+						fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+						fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+						fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+				
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Position Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
 				}
 			}
 			

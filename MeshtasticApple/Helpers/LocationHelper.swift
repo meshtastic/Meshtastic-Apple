@@ -8,10 +8,12 @@ class LocationHelper: NSObject, ObservableObject {
     static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
+	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
+	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
 
     static var currentLocation: CLLocationCoordinate2D {
 
-        guard let location = shared.locationManager.location else {
+		guard let location = shared.locationManager.location else {
             return DefaultLocation
         }
         return location.coordinate
@@ -23,6 +25,22 @@ class LocationHelper: NSObject, ObservableObject {
 			return DefaultAltitude
 		}
 		return altitude
+	}
+	
+	static var currentSpeed: CLLocationSpeed {
+
+		guard let speed = shared.locationManager.location?.speed else {
+			return DefaultSpeed
+		}
+		return speed
+	}
+	
+	static var currentHeading: CLLocationDirection {
+
+		guard let speed = shared.locationManager.location?.course else {
+			return DefaultHeading
+		}
+		return speed
 	}
 	
 	static var currentTimestamp: Date {

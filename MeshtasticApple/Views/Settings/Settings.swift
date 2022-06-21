@@ -25,6 +25,8 @@ struct Settings: View {
 		NavigationView {
 			List {
 				
+				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
+				
 				Section("General") {
 					NavigationLink {
 						AppSettings()
@@ -43,26 +45,27 @@ struct Settings: View {
 					}
 				}
 				
-				Section("Radio Configuration (Non-Functional Interaction Previews except for LoRa Config)") {
+				Section("Radio Configuration") {
 					
 					NavigationLink {
-						DeviceConfig()
+						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "flipphone")
 							.symbolRenderingMode(.hierarchical)
 						Text("Device")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
 					NavigationLink {
-						DisplayConfig()
+						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "display")
 							.symbolRenderingMode(.hierarchical)
 						Text("Display (Device Screen)")
 					}
-					
-					let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink() {
 						
@@ -77,7 +80,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 				
 					NavigationLink {
-						PositionConfig()
+						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "location")
@@ -85,11 +88,12 @@ struct Settings: View {
 
 						Text("Position")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
 				}
 				Section("Module Configuration") {
 					
 					NavigationLink {
-						DisplayConfig()
+						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "list.bullet.rectangle.fill")
@@ -107,6 +111,8 @@ struct Settings: View {
 
 						Text("Range Test")
 					}
+					.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
+					
 					NavigationLink {
 						TelemetryConfig()
 					} label: {
@@ -116,6 +122,7 @@ struct Settings: View {
 
 						Text("Telemetry (Sensors)")
 					}
+					.disabled(true)
 				}
 				// Not Implemented:
 				// External Notifications - Not Working

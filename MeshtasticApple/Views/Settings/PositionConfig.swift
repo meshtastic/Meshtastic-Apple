@@ -111,6 +111,11 @@ struct PositionConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	var node: NodeInfoEntity
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
+	
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
 	@State var fixedPosition = false
@@ -124,8 +129,6 @@ struct PositionConfig: View {
 	@State var includePosTimestamp = false
 	@State var includePosSpeed = false
 	@State var includePosHeading = false
-	
-	
 	
 	var body: some View {
 		
@@ -181,6 +184,8 @@ struct PositionConfig: View {
 						
 					}
 				}
+				.disabled(!(node.myInfo?.hasGps ?? true))
+				
 				Section(header: Text("Position Packet")) {
 					
 					Toggle(isOn: $smartPositionEnabled) {
@@ -203,7 +208,7 @@ struct PositionConfig: View {
 						
 					}
 				}
-				Section(header: Text("Position Flags")) {
+				Section(header: Text("Position Flags - Non Functional")) {
 					
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 						.font(.caption)
@@ -213,44 +218,84 @@ struct PositionConfig: View {
 
 						Label("Altitude", systemImage: "arrow.up")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSatsinview) {
 
 						Label("Number of satellites", systemImage: "skew")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.disabled(!(node.myInfo?.hasGps ?? true))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSeqNos) { //64
 
 						Label("Sequence number", systemImage: "number")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosTimestamp) { //128
 
 						Label("Timestamp", systemImage: "clock")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosHeading) { //128
 
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSpeed) { //128
 
 						Label("Vehicle speed", systemImage: "speedometer")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
+				}
+			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
+					var pc = Config.PositionConfig()
+					pc.positionBroadcastSmartDisabled = !smartPositionEnabled
+					pc.gpsDisabled = !deviceGpsEnabled
+					pc.fixedPosition = fixedPosition
+					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
+					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
+					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+					
+					if bleManager.savePositionConfig(config: pc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					} else {
+						
+					}
 				}
 			}
 		}
@@ -263,7 +308,39 @@ struct PositionConfig: View {
 		})
 		.onAppear {
 
-			self.bleManager.context = context
+			if self.initialLoad{
+				
+				self.bleManager.context = context
+				self.smartPositionEnabled = node.positionConfig?.smartPositionEnabled ?? true
+				self.deviceGpsEnabled = node.positionConfig?.deviceGpsEnabled ?? true
+				self.fixedPosition = node.positionConfig?.fixedPosition ?? false
+				self.gpsUpdateInterval = Int(node.positionConfig?.gpsUpdateInterval ?? 0)
+				self.gpsAttemptTime = Int(node.positionConfig?.gpsAttemptTime ?? 0)
+				self.positionBroadcastSeconds = Int(node.positionConfig?.positionBroadcastSeconds ?? 0)
+				self.hasChanges = false
+				self.initialLoad = false
+			}
+		}
+		.onChange(of: smartPositionEnabled) { newSmartPosition in
+			
+			if newSmartPosition != node.positionConfig!.smartPositionEnabled {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: deviceGpsEnabled) { newDeviceGps in
+			
+			if newDeviceGps != node.positionConfig!.deviceGpsEnabled {
+				
+				hasChanges = true
+			}
+		}
+		.onChange(of: fixedPosition) { newFixed in
+			
+			if newFixed != node.positionConfig!.fixedPosition {
+				
+				hasChanges = true
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

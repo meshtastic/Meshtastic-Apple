@@ -189,11 +189,11 @@ struct LoRaConfig: View {
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
+	@State var hasChanges = false
 	
 	@State var region = 0
 	@State var modemPreset  = 0
 	@State var hopLimit  = 0
-	@State var hasChanges = false
 	
 	var body: some View {
 		
@@ -242,6 +242,7 @@ struct LoRaConfig: View {
 				isPresentingSaveConfirm = true
 				
 			} label: {
+				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
@@ -250,6 +251,7 @@ struct LoRaConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
+				
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
@@ -285,7 +287,6 @@ struct LoRaConfig: View {
 			if self.initialLoad{
 				
 				self.bleManager.context = context
-				print("got hops \(node.loRaConfig?.hopLimit ?? 0)")
 				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
 				self.region = Int(node.loRaConfig?.regionCode ?? 0)
 				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
@@ -314,7 +315,6 @@ struct LoRaConfig: View {
 				hasChanges = true
 			}
 		}
-		
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
