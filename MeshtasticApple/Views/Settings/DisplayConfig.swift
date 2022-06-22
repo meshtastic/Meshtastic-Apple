@@ -151,7 +151,7 @@ struct DisplayConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Text("The number of seconds the screen remains on after the user button is pressed or messages are received.")
+					Text("How long the screen remains on after the user button is pressed or messages are received.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 					

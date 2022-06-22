@@ -73,6 +73,7 @@
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
+        <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
@@ -98,6 +99,13 @@
         <attribute name="satsInView" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="nodePosition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="positions" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="RangeTestConfigEntity" representedClassName="RangeTestConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="save" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sender" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="rangeTestConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rangeTestConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="class">
         <attribute name="airUtilTx" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -131,12 +139,13 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="224"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="239"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
+        <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
     </elements>
 </model>

@@ -304,6 +304,9 @@ struct NodeDetail: View {
 											Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
 											Text("Lat/Long:").font(.caption)
 											Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+											
+											
+											
 												.foregroundColor(.gray)
 												.font(.caption)
 

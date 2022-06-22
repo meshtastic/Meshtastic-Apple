@@ -25,7 +25,7 @@ struct RangeTestConfig: View {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "figure.walk")
+						Label("Module Enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(DefaultToggleStyle())
 					.listRowSeparator(.visible)

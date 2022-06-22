@@ -47,9 +47,10 @@ struct Settings: View {
 				
 				Section("Radio Configuration") {
 					
-					Text("Radio config values will be be enabled when there is a connected node. Save buttons will enable when there is a connected node and config changes to save.")
+					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
 						.font(.caption)
 						.listRowSeparator(.visible)
+						.fixedSize(horizontal: false, vertical: true)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -94,18 +95,28 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 				}
-				Section("Module Configuration") {
+				Section("Module Configuration - Non Functional interaction preview.") {
+					
+//					NavigationLink {
+//						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+//					} label: {
+//
+//						Image(systemName: "list.bullet.rectangle.fill")
+//							.symbolRenderingMode(.hierarchical)
+//
+//						Text("Canned Messages")
+//					}
 					
 					NavigationLink {
-						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
-						Image(systemName: "list.bullet.rectangle.fill")
+						Image(systemName: "megaphone")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Canned Messages")
+						Text("External Notification")
 					}
-					.disabled(true)
+					
 					NavigationLink {
 						RangeTestConfig()
 					} label: {
@@ -115,7 +126,7 @@ struct Settings: View {
 
 						Text("Range Test")
 					}
-					.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
+					//.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						TelemetryConfig()
@@ -126,10 +137,9 @@ struct Settings: View {
 
 						Text("Telemetry (Sensors)")
 					}
-					.disabled(true)
+					.disabled(false)
 				}
 				// Not Implemented:
-				// External Notifications - Not Working
 				// Serial Config - Not sure what the point is
 				// Store Forward Config - Not Working
 				// WiFi Config - Would break connection to device
