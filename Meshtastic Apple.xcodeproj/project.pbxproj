@@ -69,7 +69,6 @@
 		DDCFF601285453A7005FA625 /* localonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCFF600285453A7005FA625 /* localonly.pb.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
-		DDE393BA284E535700473991 /* ChannelHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE393B9284E535700473991 /* ChannelHelper.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 /* End PBXBuildFile section */
 
@@ -161,7 +160,6 @@
 		DDCFF600285453A7005FA625 /* localonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = localonly.pb.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
-		DDE393B9284E535700473991 /* ChannelHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelHelper.swift; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -405,7 +403,6 @@
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
-				DDE393B9284E535700473991 /* ChannelHelper.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -625,7 +622,6 @@
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
-				DDE393BA284E535700473991 /* ChannelHelper.swift in Sources */,
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
@@ -810,7 +806,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.20;
+				MARKETING_VERSION = 1.3.21;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -841,7 +837,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.20;
+				MARKETING_VERSION = 1.3.21;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;

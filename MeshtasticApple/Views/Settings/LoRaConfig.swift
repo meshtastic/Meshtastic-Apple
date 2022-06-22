@@ -231,7 +231,7 @@ struct LoRaConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("Sets the maximum number of hops, default is 3.")
+					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 				}
