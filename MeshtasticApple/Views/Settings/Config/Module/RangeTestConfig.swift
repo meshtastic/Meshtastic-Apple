@@ -25,30 +25,27 @@ struct RangeTestConfig: View {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Module Enabled", systemImage: "figure.walk")
+						Label("Enabled", systemImage: "figure.walk")
 					}
-					.toggleStyle(DefaultToggleStyle())
-					.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $sender) {
 
 						Label("Sender", systemImage: "paperplane")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("This device will send out range test messages.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 					
 					Toggle(isOn: $save) {
 
 						Label("Save", systemImage: "square.and.arrow.down.fill")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Text("Saves a CSV with the range test message details, only available on ESP32 devices with a web server.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 				}
-					
 			}
 			.navigationTitle("Range Test Config")
 			.navigationBarItems(trailing:

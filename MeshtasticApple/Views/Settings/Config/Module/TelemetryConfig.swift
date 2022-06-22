@@ -52,27 +52,27 @@ enum SensorTypes: Int, CaseIterable, Identifiable {
 			case .notSet:
 				return "Not Set"
 			case .dht11:
-				return "DHT11 temperature"
+				return "DHT11 - Temperature"
 			case .ds18B20:
-				return "DS18B20 temperature"
+				return "DS18B20 - Temperature"
 			case .dht12:
-				return "DHT12 temp and humidity"
+				return "DHT12 - Temperature & humidity"
 			case .dht21:
-				return "DHT21 temp and humidity"
+				return "DHT21 - Temperature & humidity"
 			case .dht22:
-				return "DHT22 temp and humidity"
+				return "DHT22 - Temperature & humidity"
 			case .bme280:
-				return "BME280 temp pressure and humidity"
+				return "BME280 - Temp, pressure & humidity"
 			case .bme680:
-				return "BME680 temp pressure humidity & air resistance"
+				return "BME680 - Temp, pressure, humidity & air resistance"
 			case .mcp9808:
-				return "MCP9808 high accuracy temperature"
+				return "MCP9808 - Temperature"
 			case .shtc3:
-				return "SHTC3 temp and humidity"
+				return "SHTC3 - Temperature & humidity"
 			case .ina260:
-				return "INA260 current and voltage"
+				return "INA260 - Current & voltage"
 			case .ina219:
-				return "INA219 current and voltage"
+				return "INA219 - Current & voltage"
 			}
 		}
 	}
@@ -96,7 +96,7 @@ enum ErrorRecoveryIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .off:
-				return "Off"
+				return "Unset"
 			case .fifteenSeconds:
 				return "Fifteen Seconds"
 			case .thirtySeconds:
@@ -120,22 +120,27 @@ enum ErrorRecoveryIntervals: Int, CaseIterable, Identifiable {
 
 enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
-	case off = 0
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
-	case fifteenMinutes = 900
+	case fifteenMinutes = 0
 	case thirtyMinutes = 1800
 	case oneHour = 3600
+	case twoHours = 7200
+	case threeHours = 10800
+	case fourHours = 14400
+	case fiveHours = 18000
+	case sixHours = 21600
+	case twelveHours = 43200
+	case eighteenHours = 64800
+	case twentyFourHours = 86400
 
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-			case .off:
-				return "Off"
 			case .fifteenSeconds:
 				return "Fifteen Seconds"
 			case .thirtySeconds:
@@ -152,6 +157,22 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 				return "Thirty Minutes"
 			case .oneHour:
 				return "One Hour"
+			case .twoHours:
+				return "Two Hours"
+			case .threeHours:
+				return "Three Hours"
+			case .fourHours:
+				return "Four Hours"
+			case .fiveHours:
+				return "Five Hours"
+			case .sixHours:
+				return "Six Hours"
+			case .twelveHours:
+				return "Twelve Hours"
+			case .eighteenHours:
+				return "Eighteen Hours"
+			case .twentyFourHours:
+				return "Twenty Four Hours"
 			}
 		}
 	}
@@ -187,6 +208,8 @@ struct TelemetryConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Text("How often device metrics are sent out over the mesh. Default is 15 minutes.")
+						.font(.caption)
 					
 					Picker("Sensor Metrics", selection: $environmentUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
@@ -194,9 +217,8 @@ struct TelemetryConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					//var deviceUpdateInterval: UInt32 = 0
-
-					//var environmentUpdateInterval: UInt32 = 0
+					Text("How often sensor metrics are sent out over the mesh. Default is 15 minutes.")
+						.font(.caption)
 				}
 				
 				Section(header: Text("Sensor Options")) {
@@ -205,8 +227,7 @@ struct TelemetryConfig: View {
 
 						Label("Enabled", systemImage: "chart.xyaxis.line")
 					}
-					.toggleStyle(DefaultToggleStyle())
-					.listRowSeparator(.visible)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Picker("Sensor", selection: $environmentSensorType ) {
 						ForEach(SensorTypes.allCases) { st in
@@ -219,24 +240,24 @@ struct TelemetryConfig: View {
 
 						Label("Show on device screen", systemImage: "display")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $environmentDisplayFahrenheit) {
 
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
-					.toggleStyle(DefaultToggleStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Picker("GPIO Pin for sensor readings", selection: $environmentSensorPin) {
-						ForEach(0..<26) {
+						ForEach(0..<40) {
 							
 							if $0 == 0 {
 								
-								Text("Off")
+								Text("Unset")
 								
 							} else {
 							
-								Text("\($0)")
+								Text("Pin \($0)")
 							}
 						}
 					}
@@ -250,7 +271,7 @@ struct TelemetryConfig: View {
 							
 							if $0 == 0 {
 								
-								Text("Off")
+								Text("Unset")
 								
 							} else if $0 % 5 == 0 {
 								
@@ -261,7 +282,6 @@ struct TelemetryConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sometimes sensor reads can fail. If this happens, we will retry a configurable number of attempts, each attempt will be delayed by the minimum required refresh rate for that sensor")
 						.font(.caption)
-						.listRowSeparator(.visible)
 					
 					Picker("Error Recovery Interval", selection: $environmentRecoveryInterval ) {
 						ForEach(ErrorRecoveryIntervals.allCases) { eri in
@@ -272,10 +292,6 @@ struct TelemetryConfig: View {
 					
 					Text("Sometimes we can end up with more failures than our error count threshold. In this case, we will stop trying to read from the sensor for a while. Wait this long until trying to read from the sensor again")
 						.font(.caption)
-						.listRowSeparator(.visible)
-
-
-
 				}
 			}
 			.navigationTitle("Telemetry Config")

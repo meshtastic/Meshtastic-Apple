@@ -30,7 +30,7 @@ struct ExternalNotificationConfig: View {
 					
 					Toggle(isOn: $enabled) {
 
-						Label("Module Enabled", systemImage: "megaphone")
+						Label("Enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
@@ -45,8 +45,6 @@ struct ExternalNotificationConfig: View {
 						Label("Alert when receiving a message", systemImage: "message")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					
 				}
 				
 				Section(header: Text("GPIO")) {
@@ -61,16 +59,22 @@ struct ExternalNotificationConfig: View {
 						.listRowSeparator(.visible)
 					
 					Picker("GPIO to monitor", selection: $output) {
-						ForEach(0..<25) {
+						ForEach(0..<40) {
 							
-							Text("\($0)")
+							if $0 == 0 {
+								
+								Text("Unset")
+								
+							} else {
+							
+								Text("Pin \($0)")
+							}
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					Text("Specifies the GPIO that your external circuit is attached to on the device.")
 						.font(.caption)
 						.listRowSeparator(.visible)
-					
 				}
 			}
 			.navigationTitle("External Notification Config")

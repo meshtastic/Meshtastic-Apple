@@ -94,6 +94,10 @@ struct Settings: View {
 						Text("Position")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
+					
+					Text("Default settings values are prefered whenever possible as they consume no bandwidth when sent over the mesh.")
+						.font(.caption2)
+						.fixedSize(horizontal: false, vertical: true)
 				}
 				Section("Module Configuration - Non Functional interaction preview.") {
 					
@@ -129,6 +133,17 @@ struct Settings: View {
 					//.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
+						SerialConfig()
+					} label: {
+					
+						Image(systemName: "terminal")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Serial")
+					}
+					.disabled(false)
+					
+					NavigationLink {
 						TelemetryConfig()
 					} label: {
 					
@@ -140,7 +155,6 @@ struct Settings: View {
 					.disabled(false)
 				}
 				// Not Implemented:
-				// Serial Config - Not sure what the point is
 				// Store Forward Config - Not Working
 				// WiFi Config - Would break connection to device
 				// MQTT Config - Part of WiFi

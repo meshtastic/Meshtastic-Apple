@@ -175,7 +175,7 @@ struct DisplayConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Text("The format used to display GPS coordinates on the screen.")
+					Text("The format used to display GPS coordinates on the device screen.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 				}
