@@ -134,9 +134,9 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 			case .VLongSlow:
 				return Config.LoRaConfig.ModemPreset.vlongSlow
 			case .MidSlow:
-				return Config.LoRaConfig.ModemPreset.midSlow
+				return Config.LoRaConfig.ModemPreset.medSlow
 			case .MidFast:
-				return Config.LoRaConfig.ModemPreset.midFast
+				return Config.LoRaConfig.ModemPreset.medFast
 			case .ShortSlow:
 				return Config.LoRaConfig.ModemPreset.shortSlow
 			case .ShortFast:
