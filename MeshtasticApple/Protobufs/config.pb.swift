@@ -811,11 +811,11 @@ struct Config {
 
       ///
       /// Medium Range - Slow
-      case midSlow // = 3
+      case medSlow // = 3
 
       ///
       /// Medium Range - Fast
-      case midFast // = 4
+      case medFast // = 4
 
       ///
       /// Short Range - Slow
@@ -835,8 +835,8 @@ struct Config {
         case 0: self = .longFast
         case 1: self = .longSlow
         case 2: self = .vlongSlow
-        case 3: self = .midSlow
-        case 4: self = .midFast
+        case 3: self = .medSlow
+        case 4: self = .medFast
         case 5: self = .shortSlow
         case 6: self = .shortFast
         default: self = .UNRECOGNIZED(rawValue)
@@ -848,8 +848,8 @@ struct Config {
         case .longFast: return 0
         case .longSlow: return 1
         case .vlongSlow: return 2
-        case .midSlow: return 3
-        case .midFast: return 4
+        case .medSlow: return 3
+        case .medFast: return 4
         case .shortSlow: return 5
         case .shortFast: return 6
         case .UNRECOGNIZED(let i): return i
@@ -953,8 +953,8 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
     .longFast,
     .longSlow,
     .vlongSlow,
-    .midSlow,
-    .midFast,
+    .medSlow,
+    .medFast,
     .shortSlow,
     .shortFast,
   ]
@@ -1588,8 +1588,8 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "LongFast"),
     1: .same(proto: "LongSlow"),
     2: .same(proto: "VLongSlow"),
-    3: .same(proto: "MidSlow"),
-    4: .same(proto: "MidFast"),
+    3: .same(proto: "MedSlow"),
+    4: .same(proto: "MedFast"),
     5: .same(proto: "ShortSlow"),
     6: .same(proto: "ShortFast"),
   ]

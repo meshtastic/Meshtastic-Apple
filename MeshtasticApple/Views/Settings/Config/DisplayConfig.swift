@@ -151,7 +151,7 @@ struct DisplayConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Text("The number of seconds the screen remains on after the user button is pressed or messages are received.")
+					Text("How long the screen remains on after the user button is pressed or messages are received.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 					
@@ -175,7 +175,7 @@ struct DisplayConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Text("The format used to display GPS coordinates on the screen.")
+					Text("The format used to display GPS coordinates on the device screen.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 				}

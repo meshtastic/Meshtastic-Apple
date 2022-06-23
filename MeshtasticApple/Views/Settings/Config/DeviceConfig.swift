@@ -75,7 +75,7 @@ struct DeviceConfig: View {
 							Text(dr.description)
 						}
 					}
-					.pickerStyle(InlinePickerStyle())
+					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 				}
