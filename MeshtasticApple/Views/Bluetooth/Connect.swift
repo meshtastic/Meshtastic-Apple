@@ -184,69 +184,66 @@ struct Connect: View {
                     }
 
                     HStack(alignment: .center) {
-                        Spacer()
-                        Button(action: {
+						
+					Spacer()
+						
+					if !bleManager.isScanning {
+						
+						Button(action: {
 							
-                            self.bleManager.startScanning()
+							self.bleManager.startScanning()
 							
-                        }) {
+						}) {
 							
-                            Image(systemName: "play.circle")
-								.symbolRenderingMode(.hierarchical)
-								.imageScale(.large)
-								.foregroundColor(self.bleManager.isScanning ? .gray : .accentColor)
-                            Text("Start Scanning").font(.caption)
-                            .font(.caption)
+							Label("Start Scanning", systemImage: "play.fill")
 
-                        }
-						.disabled(self.bleManager.isScanning)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-                        Button(action: {
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding()
+						
+					} else {
+
+						Button(action: {
 							
-                            self.bleManager.stopScanning()
+							self.bleManager.stopScanning()
 							
-                        }) {
+						}) {
 							
-							Image(systemName: "stop.circle")
-								.symbolRenderingMode(.hierarchical)
-								.imageScale(.large)
-								.foregroundColor(!self.bleManager.isScanning ? .gray : .accentColor)
-                            Text("Stop Scanning")
-                            .font(.caption)
+							Label("Stop Scanning", systemImage: "stop.fill")
 							
-                        }
-						.disabled(!self.bleManager.isScanning)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding()
+					}
                       
 					#if targetEnvironment(macCatalyst)
 						
-						if bleManager.connectedPeripheral != nil {
-							Button(role: .destructive, action: {
-								
-								if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-									bleManager.disconnectPeripheral()
-									isPreferredRadio = false
-								}
-								
-							}) {
-								
-								Image(systemName: "antenna.radiowaves.left.and.right.slash")
-									.symbolRenderingMode(.hierarchical)
-									.imageScale(.large)
-									.foregroundColor(.red)
-								Text("Disconnect").font(.caption)
-								.font(.caption)
-
+					if bleManager.connectedPeripheral != nil {
+						
+						Button(role: .destructive, action: {
+							
+							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+								bleManager.disconnectPeripheral()
+								isPreferredRadio = false
 							}
-							.padding()
-							.background(Color(.systemGray6))
-							.clipShape(Capsule())
+							
+						}) {
+							
+							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+
 						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding()
+						
+					}
 					#endif
+						
 						Spacer()
                     }
 					.padding(.bottom, 10)

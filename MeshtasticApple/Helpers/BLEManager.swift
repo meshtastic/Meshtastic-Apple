@@ -688,8 +688,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 				positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 				positionPacket.altitude = Int32(LocationHelper.currentAltitude)
-				positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
-				positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+				
+				// Get Errors without some speed
+				if LocationHelper.currentSpeed >= 5 {
+					
+					positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
+					positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+				}
 				
 				var meshPacket = MeshPacket()
 				meshPacket.to = UInt32(destNum)
