@@ -96,17 +96,12 @@ struct NodeDetail: View {
 										isPresentingShutdownConfirm = true
 									}) {
 											
-										Image(systemName: "power")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.small)
-											.foregroundColor(Color.accentColor)
-										Text("Power Off")
-											.font(.caption)
-											
+										Label("Power Off", systemImage: "power")
 									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
 									.padding()
-									.background(Color(.systemGray6))
-									.clipShape(Capsule())
 									.confirmationDialog(
 										"Are you sure?",
 										isPresented: $isPresentingShutdownConfirm
@@ -126,18 +121,13 @@ struct NodeDetail: View {
 									isPresentingRebootConfirm = true
 									
 								}) {
-									
-									Image(systemName: "arrow.triangle.2.circlepath")
-										.symbolRenderingMode(.hierarchical)
-										.imageScale(.small)
-										.foregroundColor(Color.accentColor)
-									Text("Reboot")
-										.font(.caption)
-
+				
+									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
 								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
 								.padding()
-								.background(Color(.systemGray6))
-								.clipShape(Capsule())
 								.confirmationDialog(
 									"Are you sure?",
 									isPresented: $isPresentingRebootConfirm
