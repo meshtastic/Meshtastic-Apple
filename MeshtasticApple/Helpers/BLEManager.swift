@@ -391,8 +391,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 			var decodedInfo = FromRadio()
-			decodedInfo = try! FromRadio(serializedData: characteristic.value!)
-
+			
+			do {
+				
+				decodedInfo = try FromRadio(serializedData: characteristic.value!)
+				
+			} catch {
+				
+				print(characteristic.value!)
+			}
 			switch decodedInfo.packet.decoded.portnum {
 				
 				// Handle Any local only packets we get over BLE

@@ -633,7 +633,7 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 			}
 			
 		} else {
-			return
+			//return
 		}
 		do {
 
@@ -725,7 +725,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			
 		} else {
 			
-			return
+			//return
 		}
 		do {
 
@@ -923,14 +923,27 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 			newMessage.messagePayload = messageText
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
+			
+				var messageSaved = false
 
-			do {
+				do {
 
-				try context.save()
+					try context.save()
 
-				if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
-				
-				if newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num {
+					if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
+					
+					messageSaved = true
+					
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Failed to save new MessageEntity \(nsError)")
+				}
+				do {
+					
+					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
 					
 					// Create an iOS Notification for the received message and schedule it immediately
 					let manager = LocalNotificationManager()
@@ -942,19 +955,15 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 							subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 							content: messageText)
 					]
-					manager.schedule()
-					if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
-
-				}
+					
+						manager.schedule()
+						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
+					}
+					
+				} catch {
 				
-			} catch {
-
-				context.rollback()
-
-					let nsError = error as NSError
-					print("💥 Failed to save new MessageEntity \(nsError)")
 				}
-
+			
 			} catch {
 
 			print("💥 Fetch Message To and From Users Error")
