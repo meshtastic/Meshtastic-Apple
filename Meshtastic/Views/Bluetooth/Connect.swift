@@ -18,6 +18,8 @@ struct Connect: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	
+	@State var initialLoad: Bool = true
 
 	@State var isPreferredRadio: Bool = false
 
@@ -269,10 +271,22 @@ struct Connect: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear(perform: {
-
+			
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-
+			
+			if initialLoad {
+				
+				// Ask for notification permission
+				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+					if success {
+						print("All set!")
+					} else if let error = error {
+						print(error.localizedDescription)
+					}
+				}
+				initialLoad = false
+			}
 			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
 			} else {

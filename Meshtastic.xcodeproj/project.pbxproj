@@ -60,7 +60,7 @@
 		DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */; };
 		DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6D26ED19040058C060 /* Extensions.swift */; };
 		DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */; };
-		DDC2E15826CE248E0042C5E4 /* MeshtasticAppleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticAppleApp.swift */; };
+		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
 		DDC2E16F26CE248F0042C5E4 /* MeshtasticAppleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E16E26CE248F0042C5E4 /* MeshtasticAppleTests.swift */; };
@@ -130,7 +130,7 @@
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD882F5C2772E4640005BF05 /* Contacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contacts.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
-		DD90860A26F645B700DC5189 /* MeshtasticApple.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticApple.entitlements; sourceTree = "<group>"; };
+		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
 		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
@@ -148,16 +148,16 @@
 		DDAF8C6D26ED19040058C060 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = telemetry.pb.swift; sourceTree = "<group>"; };
 		DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 3.xcdatamodel"; sourceTree = "<group>"; };
-		DDC2E15426CE248E0042C5E4 /* MeshtasticApple.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeshtasticApple.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DDC2E15726CE248E0042C5E4 /* MeshtasticAppleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppleApp.swift; sourceTree = "<group>"; };
+		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
 		DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DDC2E16526CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC2E16A26CE248F0042C5E4 /* MeshtasticAppleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticAppleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DDC2E16E26CE248F0042C5E4 /* MeshtasticAppleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppleTests.swift; sourceTree = "<group>"; };
+		DDC2E16A26CE248F0042C5E4 /* MeshtasticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC2E16E26CE248F0042C5E4 /* MeshtasticTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticTests.swift; sourceTree = "<group>"; };
 		DDC2E17026CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC2E17526CE248F0042C5E4 /* MeshtasticAppleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticAppleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		DDC2E17926CE248F0042C5E4 /* MeshtasticAppleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticAppleUITests.swift; sourceTree = "<group>"; };
+		DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeshtasticUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC2E17926CE248F0042C5E4 /* MeshtasticUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticUITests.swift; sourceTree = "<group>"; };
 		DDC2E17B26CE248F0042C5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
@@ -302,9 +302,9 @@
 			isa = PBXGroup;
 			children = (
 				DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */,
-				DDC2E15626CE248E0042C5E4 /* MeshtasticApple */,
-				DDC2E16D26CE248F0042C5E4 /* MeshtasticAppleTests */,
-				DDC2E17826CE248F0042C5E4 /* MeshtasticAppleUITests */,
+				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
+				DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */,
+				DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
 			);
@@ -314,28 +314,28 @@
 		DDC2E15526CE248E0042C5E4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DDC2E15426CE248E0042C5E4 /* MeshtasticApple.app */,
-				DDC2E16A26CE248F0042C5E4 /* MeshtasticAppleTests.xctest */,
-				DDC2E17526CE248F0042C5E4 /* MeshtasticAppleUITests.xctest */,
+				DDC2E15426CE248E0042C5E4 /* Meshtastic.app */,
+				DDC2E16A26CE248F0042C5E4 /* MeshtasticTests.xctest */,
+				DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		DDC2E15626CE248E0042C5E4 /* MeshtasticApple */ = {
+		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
-				DD90860A26F645B700DC5189 /* MeshtasticApple.entitlements */,
+				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDAF8C5626ED07740058C060 /* Protobufs */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18726CE24E40042C5E4 /* Views */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC2E18926CE24F70042C5E4 /* Resources */,
-				DDC2E15726CE248E0042C5E4 /* MeshtasticAppleApp.swift */,
+				DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
 			);
-			path = MeshtasticApple;
+			path = Meshtastic;
 			sourceTree = "<group>";
 		};
 		DDC2E15D26CE248F0042C5E4 /* Preview Content */ = {
@@ -346,22 +346,22 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		DDC2E16D26CE248F0042C5E4 /* MeshtasticAppleTests */ = {
+		DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */ = {
 			isa = PBXGroup;
 			children = (
-				DDC2E16E26CE248F0042C5E4 /* MeshtasticAppleTests.swift */,
+				DDC2E16E26CE248F0042C5E4 /* MeshtasticTests.swift */,
 				DDC2E17026CE248F0042C5E4 /* Info.plist */,
 			);
-			path = MeshtasticAppleTests;
+			path = MeshtasticTests;
 			sourceTree = "<group>";
 		};
-		DDC2E17826CE248F0042C5E4 /* MeshtasticAppleUITests */ = {
+		DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */ = {
 			isa = PBXGroup;
 			children = (
-				DDC2E17926CE248F0042C5E4 /* MeshtasticAppleUITests.swift */,
+				DDC2E17926CE248F0042C5E4 /* MeshtasticUITests.swift */,
 				DDC2E17B26CE248F0042C5E4 /* Info.plist */,
 			);
-			path = MeshtasticAppleUITests;
+			path = MeshtasticUITests;
 			sourceTree = "<group>";
 		};
 		DDC2E18726CE24E40042C5E4 /* Views */ = {
@@ -445,9 +445,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DDC2E15326CE248E0042C5E4 /* MeshtasticApple */ = {
+		DDC2E15326CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticApple" */;
+			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
 			buildPhases = (
 				DDC2E15026CE248E0042C5E4 /* Sources */,
 				DDC2E15126CE248E0042C5E4 /* Frameworks */,
@@ -458,18 +458,18 @@
 			);
 			dependencies = (
 			);
-			name = MeshtasticApple;
+			name = Meshtastic;
 			packageProductDependencies = (
 				DD5394FB276993AD00AD86B1 /* SwiftProtobuf */,
 				C9697FA427933B8C00250207 /* SQLite */,
 			);
 			productName = MeshtasticClient;
-			productReference = DDC2E15426CE248E0042C5E4 /* MeshtasticApple.app */;
+			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
 			productType = "com.apple.product-type.application";
 		};
-		DDC2E16926CE248F0042C5E4 /* MeshtasticAppleTests */ = {
+		DDC2E16926CE248F0042C5E4 /* MeshtasticTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DDC2E18126CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticAppleTests" */;
+			buildConfigurationList = DDC2E18126CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */;
 			buildPhases = (
 				DDC2E16626CE248F0042C5E4 /* Sources */,
 				DDC2E16726CE248F0042C5E4 /* Frameworks */,
@@ -480,14 +480,14 @@
 			dependencies = (
 				DDC2E16C26CE248F0042C5E4 /* PBXTargetDependency */,
 			);
-			name = MeshtasticAppleTests;
+			name = MeshtasticTests;
 			productName = MeshtasticClientTests;
-			productReference = DDC2E16A26CE248F0042C5E4 /* MeshtasticAppleTests.xctest */;
+			productReference = DDC2E16A26CE248F0042C5E4 /* MeshtasticTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		DDC2E17426CE248F0042C5E4 /* MeshtasticAppleUITests */ = {
+		DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticAppleUITests" */;
+			buildConfigurationList = DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */;
 			buildPhases = (
 				DDC2E17126CE248F0042C5E4 /* Sources */,
 				DDC2E17226CE248F0042C5E4 /* Frameworks */,
@@ -498,9 +498,9 @@
 			dependencies = (
 				DDC2E17726CE248F0042C5E4 /* PBXTargetDependency */,
 			);
-			name = MeshtasticAppleUITests;
+			name = MeshtasticUITests;
 			productName = MeshtasticClientUITests;
-			productReference = DDC2E17526CE248F0042C5E4 /* MeshtasticAppleUITests.xctest */;
+			productReference = DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -526,7 +526,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic Apple" */;
+			buildConfigurationList = DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -543,9 +543,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DDC2E15326CE248E0042C5E4 /* MeshtasticApple */,
-				DDC2E16926CE248F0042C5E4 /* MeshtasticAppleTests */,
-				DDC2E17426CE248F0042C5E4 /* MeshtasticAppleUITests */,
+				DDC2E15326CE248E0042C5E4 /* Meshtastic */,
+				DDC2E16926CE248F0042C5E4 /* MeshtasticTests */,
+				DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -660,7 +660,7 @@
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
-				DDC2E15826CE248E0042C5E4 /* MeshtasticAppleApp.swift in Sources */,
+				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -676,7 +676,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DDC2E17A26CE248F0042C5E4 /* MeshtasticAppleUITests.swift in Sources */,
+				DDC2E17A26CE248F0042C5E4 /* MeshtasticUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -685,12 +685,12 @@
 /* Begin PBXTargetDependency section */
 		DDC2E16C26CE248F0042C5E4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DDC2E15326CE248E0042C5E4 /* MeshtasticApple */;
+			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
 			targetProxy = DDC2E16B26CE248F0042C5E4 /* PBXContainerItemProxy */;
 		};
 		DDC2E17726CE248F0042C5E4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DDC2E15326CE248E0042C5E4 /* MeshtasticApple */;
+			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
 			targetProxy = DDC2E17626CE248F0042C5E4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -821,14 +821,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = MeshtasticApple/MeshtasticApple.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticApple/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = MeshtasticApple/Info.plist;
+				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -853,14 +853,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = MeshtasticApple/MeshtasticApple.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"MeshtasticApple/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = MeshtasticApple/Info.plist;
+				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -885,18 +885,18 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticAppleTests/Info.plist;
+				INFOPLIST_FILE = MeshtasticTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticAppleTests;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MeshtasticApple.app/MeshtasticApple";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/Meshtastic";
 			};
 			name = Debug;
 		};
@@ -908,18 +908,18 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticAppleTests/Info.plist;
+				INFOPLIST_FILE = MeshtasticTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticAppleTests;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MeshtasticApple.app/MeshtasticApple";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Meshtastic.app/Meshtastic";
 			};
 			name = Release;
 		};
@@ -929,17 +929,17 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticAppleUITests/Info.plist;
+				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticAppleUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MeshtasticApple;
+				TEST_TARGET_NAME = Meshtastic;
 			};
 			name = Debug;
 		};
@@ -949,24 +949,24 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
-				INFOPLIST_FILE = MeshtasticAppleUITests/Info.plist;
+				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticAppleUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MeshtasticApple;
+				TEST_TARGET_NAME = Meshtastic;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic Apple" */ = {
+		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DDC2E17C26CE248F0042C5E4 /* Debug */,
@@ -975,7 +975,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticApple" */ = {
+		DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DDC2E17F26CE248F0042C5E4 /* Debug */,
@@ -984,7 +984,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DDC2E18126CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticAppleTests" */ = {
+		DDC2E18126CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DDC2E18226CE248F0042C5E4 /* Debug */,
@@ -993,7 +993,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticAppleUITests" */ = {
+		DDC2E18426CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "MeshtasticUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DDC2E18526CE248F0042C5E4 /* Debug */,
@@ -1047,7 +1047,7 @@
 			);
 			currentVersion = DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
-			path = MeshtasticApple/Meshtastic.xcdatamodeld;
+			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

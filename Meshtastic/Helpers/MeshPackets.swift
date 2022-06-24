@@ -632,9 +632,8 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 				}
 			}
 			
-		} else {
-			return
 		}
+		
 		do {
 
 			try context.save()
@@ -657,26 +656,26 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 	
-    if let deviceConfig = try? MeshtasticApple.Config.DeviceConfig(serializedData: packet.decoded.payload) {
+    if let deviceConfig = try? Config.DeviceConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! deviceConfig.jsonString())
 		
-	} else if let displayConfig = try? MeshtasticApple.Config.DisplayConfig(serializedData: packet.decoded.payload) {
+	} else if let displayConfig = try? Config.DisplayConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! displayConfig.jsonUTF8Data())
 		print(displayConfig.gpsFormat)
 		
-	} else if let loraConfig = try? MeshtasticApple.Config.LoRaConfig(serializedData: packet.decoded.payload) {
+	} else if let loraConfig = try? Config.LoRaConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! loraConfig.jsonUTF8Data())
 		print(loraConfig.region)
 		
-	} else if let positionConfig = try? MeshtasticApple.Config.PositionConfig(serializedData: packet.decoded.payload) {
+	} else if let positionConfig = try? Config.PositionConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! positionConfig.jsonUTF8Data())
 		print(positionConfig.positionBroadcastSecs)
 		
-	} else if let powerConfig = try? MeshtasticApple.Config.PowerConfig(serializedData: packet.decoded.payload) {
+	} else if let powerConfig = try? Config.PowerConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! powerConfig.jsonUTF8Data())
 		print(powerConfig.meshSdsTimeoutSecs)
@@ -723,10 +722,8 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 				fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 			}
 			
-		} else {
-			
-			return
 		}
+		
 		do {
 
 		  try context.save()
@@ -923,14 +920,27 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 			newMessage.messagePayload = messageText
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
+			
+				var messageSaved = false
 
-			do {
+				do {
 
-				try context.save()
+					try context.save()
 
-				if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
-				
-				if newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num {
+					if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
+					
+					messageSaved = true
+					
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Failed to save new MessageEntity \(nsError)")
+				}
+				do {
+					
+					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
 					
 					// Create an iOS Notification for the received message and schedule it immediately
 					let manager = LocalNotificationManager()
@@ -942,19 +952,15 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 							subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 							content: messageText)
 					]
-					manager.schedule()
-					if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
-
-				}
+					
+						manager.schedule()
+						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
+					}
+					
+				} catch {
 				
-			} catch {
-
-				context.rollback()
-
-					let nsError = error as NSError
-					print("💥 Failed to save new MessageEntity \(nsError)")
 				}
-
+			
 			} catch {
 
 			print("💥 Fetch Message To and From Users Error")

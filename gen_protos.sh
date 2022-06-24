@@ -13,7 +13,7 @@ if [ ! -x "`which protoc`" ]; then
 fi
 
 pdir=$(realpath "../Meshtastic-protobufs")
-sdir=$(realpath "./MeshtasticApple/Protobufs")
+sdir=$(realpath "./Meshtastic/Protobufs")
 echo "pdir:$pdir sdir:$sdir"
 pfiles="admin.proto apponly.proto cannedmessages.proto channel.proto config.proto deviceonly.proto localonly.proto mesh.proto module_config.proto mqtt.proto portnums.proto remote_hardware.proto 
 storeforward.proto telemetry.proto"
