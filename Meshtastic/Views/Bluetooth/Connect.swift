@@ -272,10 +272,10 @@ struct Connect: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear(perform: {
 			
+			self.bleManager.context = context
+			self.bleManager.userSettings = userSettings
+			
 			if initialLoad {
-
-				self.bleManager.context = context
-				self.bleManager.userSettings = userSettings
 				
 				// Ask for notification permission
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
