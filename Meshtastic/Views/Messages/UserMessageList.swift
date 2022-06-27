@@ -21,7 +21,7 @@ struct UserMessageList: View {
 	@State var typingMessage: String = ""
 	@State private var totalBytes = 0
 	var maxbytes = 228
-	@State var lastTypingMessage = ""
+	//@State var lastTypingMessage = ""
 	@FocusState var focusedField: Field?
 
 	@ObservedObject var user: UserEntity
@@ -33,6 +33,8 @@ struct UserMessageList: View {
 	
 	@State private var messageCount = 0
 	@State private var refreshId = UUID()
+	
+	//@State var hasReachedMessageSizeLimit = false
 
     var body: some View {
 		
@@ -352,15 +354,22 @@ struct UserMessageList: View {
 					TextEditor(text: $typingMessage)
 						.onChange(of: typingMessage, perform: { value in
 
-							let size = value.utf8.count
-							totalBytes = size
-							if totalBytes <= maxbytes {
-								// Allow the user to type
-								lastTypingMessage = typingMessage
-							} else {
-								// Set the message back and remove the bytes over the count
-								self.typingMessage = lastTypingMessage
+							let size = typingMessage.utf8.count
+							
+							// Only mess with the value if it is too big
+							if size > maxbytes {
+
+								let firstNBytes = Data(typingMessage.utf8.prefix(maxbytes))
+						
+								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+									
+									// Set the message back to the last place where it was the right size
+									typingMessage = maxBytesString
+								} else {
+									print("not a valid UTF-8 sequence")
+								}
 							}
+							
 						})
 						.keyboardType(kbType!)
 						.toolbar {
