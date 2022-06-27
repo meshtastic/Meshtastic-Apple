@@ -13,8 +13,6 @@ struct Settings: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	
-	
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
@@ -53,6 +51,29 @@ struct Settings: View {
 						.fixedSize(horizontal: false, vertical: true)
 					
 					NavigationLink {
+						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+					} label: {
+					
+						Image(systemName: "person.crop.rectangle.fill")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("User")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink() {
+						
+						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+					} label: {
+					
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("LoRa")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
@@ -69,18 +90,6 @@ struct Settings: View {
 						Image(systemName: "display")
 							.symbolRenderingMode(.hierarchical)
 						Text("Display (Device Screen)")
-					}
-					.disabled(bleManager.connectedPeripheral == nil)
-					
-					NavigationLink() {
-						
-						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
-					} label: {
-					
-						Image(systemName: "dot.radiowaves.left.and.right")
-							.symbolRenderingMode(.hierarchical)
-
-						Text("LoRa")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 				
