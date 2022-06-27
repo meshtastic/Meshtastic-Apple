@@ -352,10 +352,10 @@ struct UserMessageList: View {
 					TextEditor(text: $typingMessage)
 						.onChange(of: typingMessage, perform: { value in
 
-							let size = typingMessage.utf8.count
+							totalBytes = typingMessage.utf8.count
 							
 							// Only mess with the value if it is too big
-							if size > maxbytes {
+							if totalBytes > maxbytes {
 
 								let firstNBytes = Data(typingMessage.utf8.prefix(maxbytes))
 						
