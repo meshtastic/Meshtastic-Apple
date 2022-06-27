@@ -66,7 +66,7 @@ struct UserConfig: View {
 							})
 							.foregroundColor(.gray)
 					}
-					.keyboardType(.asciiCapable)
+					.keyboardType(.default)
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 					
@@ -75,7 +75,7 @@ struct UserConfig: View {
 						TextField("Long Name", text: $shortName)
 							.foregroundColor(.gray)
 					}
-					.keyboardType(.asciiCapable)
+					.keyboardType(.default)
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 					
