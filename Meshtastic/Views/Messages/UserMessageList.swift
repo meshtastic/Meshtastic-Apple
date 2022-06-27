@@ -21,9 +21,8 @@ struct UserMessageList: View {
 	@State var typingMessage: String = ""
 	@State private var totalBytes = 0
 	var maxbytes = 228
-	//@State var lastTypingMessage = ""
 	@FocusState var focusedField: Field?
-
+	
 	@ObservedObject var user: UserEntity
 	
 	@State var showDeleteMessageAlert = false
@@ -34,7 +33,6 @@ struct UserMessageList: View {
 	@State private var messageCount = 0
 	@State private var refreshId = UUID()
 	
-	//@State var hasReachedMessageSizeLimit = false
 
     var body: some View {
 		
