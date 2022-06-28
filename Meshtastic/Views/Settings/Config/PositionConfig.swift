@@ -192,20 +192,16 @@ struct PositionConfig: View {
 						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if !smartPositionEnabled {
 						
-						Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
-							ForEach(PositionBroadcastIntervals.allCases) { at in
-								Text(at.description)
-							}
+					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
+						ForEach(PositionBroadcastIntervals.allCases) { at in
+							Text(at.description)
 						}
-						.pickerStyle(DefaultPickerStyle())
-						
-						Text("We should send our position this often (but only if it has changed significantly)")
-							.font(.caption)
-							.listRowSeparator(.visible)
-						
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
+					Text("We should send our position this often (but only if it has changed significantly)")
+						.font(.caption)
 				}
 				Section(header: Text("Position Flags - Non Functional")) {
 					

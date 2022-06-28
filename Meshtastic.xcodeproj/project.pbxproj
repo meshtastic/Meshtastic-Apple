@@ -243,8 +243,8 @@
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 				DD6B85A728009258000ACD6B /* ShareChannel.swift */,
-				DD61937A2863876A00E59241 /* Config */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
+				DD61937A2863876A00E59241 /* Config */,
 			);
 			path = Settings;
 			sourceTree = "<group>";

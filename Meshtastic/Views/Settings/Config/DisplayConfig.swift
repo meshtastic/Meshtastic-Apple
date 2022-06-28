@@ -153,7 +153,6 @@ struct DisplayConfig: View {
 					
 					Text("How long the screen remains on after the user button is pressed or messages are received.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 					
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselSeconds.allCases) { scs in

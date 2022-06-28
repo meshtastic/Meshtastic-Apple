@@ -19,7 +19,8 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
-			.onOpenURL(perform: { (url) in 
+			.onOpenURL(perform: { (url) in
+				
 				//we are expecting a .mbtiles map file that contains raster data
 				//save it to the documents directory, and name it offline_map.mbtiles
 				let fileManager = FileManager.default
@@ -43,9 +44,7 @@ struct MeshtasticAppleApp: App {
 				} else {
 					print("💥 Didn't save the map file")
 				}
-				
-			}
-			)
+			})
 		}
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {

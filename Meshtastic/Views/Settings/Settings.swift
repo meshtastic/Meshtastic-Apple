@@ -34,6 +34,14 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("App Settings")
 					}
+					Text("Apple app specific settings and features, app username, share position with mesh options, map and keyboard type, mesh log.")
+						.font(.caption)
+						.fixedSize(horizontal: false, vertical: true)
+		
+				}
+				
+				Section("Radio Configuration") {
+					
 					NavigationLink {
 						ShareChannel()
 					} label: {
@@ -41,13 +49,9 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Share Channel QR Code")
 					}
-				}
-				
-				Section("Radio Configuration") {
 					
 					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 						.fixedSize(horizontal: false, vertical: true)
 					
 					NavigationLink {
@@ -110,15 +114,15 @@ struct Settings: View {
 				}
 				Section("Module Configuration - Non Functional interaction preview.") {
 					
-//					NavigationLink {
-//						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
-//					} label: {
-//
-//						Image(systemName: "list.bullet.rectangle.fill")
-//							.symbolRenderingMode(.hierarchical)
-//
-//						Text("Canned Messages")
-//					}
+					NavigationLink {
+						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+					} label: {
+
+						Image(systemName: "list.bullet.rectangle.fill")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Canned Messages")
+					}
 					
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -131,15 +135,15 @@ struct Settings: View {
 					}
 					
 					NavigationLink {
-						RangeTestConfig()
+						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Range Test")
+						Text("Range Test (ESP32 Only)")
 					}
-					//.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
+					.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						SerialConfig()

@@ -297,9 +297,12 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: region) { newRegion in
 			
-			if newRegion != node.loRaConfig!.regionCode {
+			if node.loRaConfig != nil {
 				
-				hasChanges = true
+				if newRegion != node.loRaConfig!.regionCode {
+					
+					hasChanges = true
+				}
 			}
 		}
 		.onChange(of: modemPreset) { newModemPreset in
