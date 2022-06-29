@@ -68,16 +68,18 @@ struct UserConfig: View {
 					}
 					.keyboardType(.default)
 					.disableAutocorrection(true)
-					.listRowSeparator(.visible)
+					Text("Long name can me 40 bytes long.")
+						.font(.caption)
 					
 					HStack {
 						Label("Short Name", systemImage: "circlebadge.fill")
 						TextField("Long Name", text: $shortName)
 							.foregroundColor(.gray)
 					}
-					.keyboardType(.default)
+					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
-					.listRowSeparator(.visible)
+					Text("The short name is used in maps and messaging and will be appended to the last 4 of the device MAC address to set the device's BLE Name.  It can be up to 5 bytes long.")
+						.font(.caption)
 					
 				}
 

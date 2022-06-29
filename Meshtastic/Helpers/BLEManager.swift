@@ -1037,4 +1037,109 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		return false
 	}
+	
+	public func getModuleConfig (configType: AdminMessage.ModuleConfigType, destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = configType
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig,  destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.rangeTest = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig,  destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.serial = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			return true
+		}
+		
+		return false
+	}
 }

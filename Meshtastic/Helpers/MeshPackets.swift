@@ -13,19 +13,6 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	
 	// We don't care about any of the Power settings
 	// We don't want to manage wifi from the phone app and disconnect our device
-	//if meshlogging { MeshLogger.log("⚙️ Local Config version \(config.version) received for \(nodeLongName)") }
-
-//	if (try! config.power.jsonString() == "{\"lsSecs\":300}") {
-//
-//		print("📍 Default Power config")
-//		print(try! config.power.jsonString())
-//
-//	} else {
-//
-//		print("📍 Has Power config")
-//		print(try! config.power.jsonString())
-//	}
-//
 	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 		
 		var isDefault = false
@@ -339,6 +326,11 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 			
 		}
 	}
+}
+
+func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObject, nodeNum: Int64, nodeLongName: String) {
+	
+	
 }
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {

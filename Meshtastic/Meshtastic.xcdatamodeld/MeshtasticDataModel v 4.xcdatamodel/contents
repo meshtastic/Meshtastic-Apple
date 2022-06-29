@@ -104,7 +104,7 @@
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="save" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="sender" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sender" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
         <relationship name="rangeTestConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rangeTestConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="class">
@@ -136,16 +136,16 @@
         </fetchedProperty>
     </entity>
     <elements>
+        <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
+        <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="239"/>
+        <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
+        <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
-        <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
-        <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
-        <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
-        <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
     </elements>
 </model>
