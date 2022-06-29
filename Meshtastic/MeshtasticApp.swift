@@ -19,7 +19,21 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
+			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+				  
+				  print("Continue activity \(userActivity)")
+				  guard let url = userActivity.webpageURL else {
+					  return
+				  }
+				  
+				  print("User wants to open URL: \(url)")
+				  // TODO same handling as done in onOpenURL()
+
+			}
 			.onOpenURL(perform: { (url) in
+				
+				print("URL OPENED")
+				print(url) 
 				
 				//we are expecting a .mbtiles map file that contains raster data
 				//save it to the documents directory, and name it offline_map.mbtiles

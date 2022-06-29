@@ -127,6 +127,10 @@ struct SerialConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
+	
 	@State var enabled = false
 	@State var echo = false
 	@State var rxd = 0
@@ -154,6 +158,8 @@ struct SerialConfig: View {
 						Label("Echo", systemImage: "repeat")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("If set, any packets you send will be echoed back to your device.")
+						.font(.caption)
 					
 					Picker("Baud Rate", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
@@ -168,6 +174,8 @@ struct SerialConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Text("The amount of time to wait before we consider your packet as done.")
+						.font(.caption)
 					
 					Picker("Mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
@@ -207,8 +215,48 @@ struct SerialConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Text("Set the GPIO pins for RXD and TXD.")
+						.font(.caption)
 				}
 			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+						
+					var sc = ModuleConfig.SerialConfig()
+					sc.enabled = enabled
+					//sc.save = save
+					//sc.sender = sender ? 1 : 0
+					
+					if bleManager.saveSerialModuleConfig(config: sc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					} else {
+						
+					}
+				}
+			}
+			
 			.navigationTitle("Serial Config")
 			.navigationBarItems(trailing:
 

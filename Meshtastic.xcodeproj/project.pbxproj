@@ -70,6 +70,8 @@
 		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
+		DDCE4E2E286B7BC400BE9F8F /* StoreForwaredConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2D286B7BC400BE9F8F /* StoreForwaredConfig.swift */; };
+		DDCE4E30286B7BD800BE9F8F /* InputBrokerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2F286B7BD800BE9F8F /* InputBrokerConfig.swift */; };
 		DDCFF601285453A7005FA625 /* localonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCFF600285453A7005FA625 /* localonly.pb.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
@@ -165,6 +167,8 @@
 		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
+		DDCE4E2D286B7BC400BE9F8F /* StoreForwaredConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForwaredConfig.swift; sourceTree = "<group>"; };
+		DDCE4E2F286B7BD800BE9F8F /* InputBrokerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputBrokerConfig.swift; sourceTree = "<group>"; };
 		DDCFF600285453A7005FA625 /* localonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = localonly.pb.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
@@ -269,6 +273,8 @@
 				DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
+				DDCE4E2D286B7BC400BE9F8F /* StoreForwaredConfig.swift */,
+				DDCE4E2F286B7BD800BE9F8F /* InputBrokerConfig.swift */,
 			);
 			path = Module;
 			sourceTree = "<group>";
@@ -636,6 +642,7 @@
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
+				DDCE4E30286B7BD800BE9F8F /* InputBrokerConfig.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
@@ -665,6 +672,7 @@
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
+				DDCE4E2E286B7BC400BE9F8F /* StoreForwaredConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

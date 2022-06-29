@@ -17,7 +17,7 @@ struct Settings: View {
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
-		private var nodes: FetchedResults<NodeInfoEntity>
+	private var nodes: FetchedResults<NodeInfoEntity>
 	
 	var body: some View {
 		NavigationView {
@@ -123,6 +123,7 @@ struct Settings: View {
 
 						Text("Canned Messages")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -143,7 +144,9 @@ struct Settings: View {
 
 						Text("Range Test (ESP32 Only)")
 					}
-					.disabled(!(nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) || bleManager.connectedPeripheral == nil)
+					.disabled(!(bleManager.connectedPeripheral == nil))
+						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) ||
+						//	  nodes.first(where: { $0.num == connectedNodeNum })!.rangeTestConfig != nil)
 					
 					NavigationLink {
 						SerialConfig()
@@ -174,6 +177,18 @@ struct Settings: View {
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")
+			.onAppear {
+				
+			//	
+				
+			//	let connectedNode =
+
+//				if nodes.first(where: { $0.num == (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0) })!.rangeTestConfig == nil {
+//					 
+//					// We have no Range Test Config, go get it
+//					self.bleManager.getModuleConfig(configType: AdminMessage.ModuleConfigType.rangetestConfig, destNum: bleManager.connectedPeripheral.num, wantResponse: tr)
+//				}
+			}
 		}
 	}
 }

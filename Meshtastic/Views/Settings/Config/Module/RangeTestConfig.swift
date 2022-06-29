@@ -104,34 +104,34 @@ struct RangeTestConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node.rangeTestConfig?.enabled ?? false
-					self.save = node.rangeTestConfig?.save ?? false
-					
-					if node.rangeTestConfig?.sender != nil {
-						
-						self.sender = node.rangeTestConfig!.sender == 1 ? true : false
-						
-					} else {
-						self.sender = false
-					}
-					self.sender = node.rangeTestConfig?.sender != nil
+//					self.enabled = node.rangeTestConfig?.enabled ?? false
+//					self.save = node.rangeTestConfig?.save ?? false
+//					
+//					if node.rangeTestConfig?.sender != nil {
+//						
+//						self.sender = node.rangeTestConfig!.sender == 1 ? true : false
+//						
+//					} else {
+//						self.sender = false
+//					}
+//					self.sender = node.rangeTestConfig?.sender != nil
 					self.hasChanges = false
 					self.initialLoad = false
 				}
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node.rangeTestConfig!.enabled {
+				//if newEnabled != node.rangeTestConfig!.enabled {
 					
 					hasChanges = true
-				}
+				//}
 			}
 			.onChange(of: save) { newSave in
 				
-				if newSave != node.rangeTestConfig!.save {
+				//if newSave != node.rangeTestConfig!.save {
 					
 					hasChanges = true
-				}
+				//}
 			}
 			.onChange(of: sender) { newSender in
 				
