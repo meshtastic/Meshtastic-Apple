@@ -55,13 +55,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 
-	private var meshLoggingEnabled: Bool = false
+	private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
     // MARK: init BLEManager
     override init() {
 
-		self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
+		//self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
         self.lastConnectionError = ""
 		self.lastConnnectionVersion = "0.0.0"
         super.init()
@@ -443,10 +443,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							
 						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 						
+					} else if decodedInfo.moduleConfig.isInitialized {
+						
+						moduleConfig(config: decodedInfo.moduleConfig, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+						
 					} else {
 						
 						if decodedInfo.configCompleteID == 0 {
 						
+							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+						} else {
+							
 							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 						}
 					}
@@ -1038,10 +1045,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func getModuleConfig (configType: AdminMessage.ModuleConfigType, destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func getChannelSet (destNum: Int64,  wantResponse: Bool) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.getModuleConfigRequest = configType
+		adminPacket.getChannelRequest = 1
+		
+		
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)

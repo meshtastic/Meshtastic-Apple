@@ -1855,6 +1855,16 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .rebooted(newValue)}
   }
 
+  ///
+  /// Include module config
+  var moduleConfig: ModuleConfig {
+    get {
+      if case .moduleConfig(let v)? = _storage._payloadVariant {return v}
+      return ModuleConfig()
+    }
+    set {_uniqueStorage()._payloadVariant = .moduleConfig(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -1889,6 +1899,9 @@ struct FromRadio {
     /// Not used on all transports, currently just used for the serial console.
     /// NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
     case rebooted(Bool)
+    ///
+    /// Include module config
+    case moduleConfig(ModuleConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -1922,6 +1935,10 @@ struct FromRadio {
       }()
       case (.rebooted, .rebooted): return {
         guard case .rebooted(let l) = lhs, case .rebooted(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.moduleConfig, .moduleConfig): return {
+        guard case .moduleConfig(let l) = lhs, case .moduleConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -3297,6 +3314,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     7: .standard(proto: "log_record"),
     8: .standard(proto: "config_complete_id"),
     9: .same(proto: "rebooted"),
+    10: .same(proto: "moduleConfig"),
   ]
 
   fileprivate class _StorageClass {
@@ -3397,6 +3415,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .rebooted(v)
           }
         }()
+        case 10: try {
+          var v: ModuleConfig?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .moduleConfig(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .moduleConfig(v)
+          }
+        }()
         case 11: try {
           var v: MeshPacket?
           var hadOneofValue = false
@@ -3449,6 +3480,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .rebooted?: try {
         guard case .rebooted(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+      }()
+      case .moduleConfig?: try {
+        guard case .moduleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
       }()
       case .packet?: try {
         guard case .packet(let v)? = _storage._payloadVariant else { preconditionFailure() }

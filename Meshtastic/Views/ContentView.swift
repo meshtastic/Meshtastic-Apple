@@ -27,13 +27,6 @@ struct ContentView: View {
 
 				}
 				.tag(Tab.contacts)
-//            Channels()
-//                .tabItem {
-//                    Label("Messages", systemImage: "text.bubble")
-//						.symbolRenderingMode(.hierarchical)
-//                        .symbolVariant(.none)
-//                }
-//                .tag(Tab.messages)
 			Connect()
 				.tabItem {
 					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")

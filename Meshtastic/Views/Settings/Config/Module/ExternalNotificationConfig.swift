@@ -6,6 +6,46 @@
 //
 import SwiftUI
 
+enum OutputIntervals: Int, CaseIterable, Identifiable {
+
+	case oneSecond = 0
+	case twoSeconds = 2000
+	case threeSeconds = 3000
+	case fourSeconds = 4000
+	case fiveSeconds = 5000
+	case tenSeconds = 10000
+	case fifteenSeconds = 15000
+	case thirtySeconds = 30000
+	case oneMinute = 60000
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			
+			case .oneSecond:
+				return "One Second"
+			case .twoSeconds:
+				return "Two Seconds"
+			case .threeSeconds:
+				return "Three Seconds"
+			case .fourSeconds:
+				return "Four Seconds"
+			case .fiveSeconds:
+				return "Five Seconds"
+			case .tenSeconds:
+				return "Ten Seconds"
+			case .fifteenSeconds:
+				return "Fifteen Seconds"
+			case .thirtySeconds:
+				return "Thirty Seconds"
+			case .oneMinute:
+				return "One Minute"
+			}
+		}
+	}
+}
+
 struct ExternalNotificationConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -73,6 +113,16 @@ struct ExternalNotificationConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					Text("Specifies the GPIO that your external circuit is attached to on the device.")
+						.font(.caption)
+						.listRowSeparator(.visible)
+					
+					Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
+						ForEach(OutputIntervals.allCases) { oi in
+							Text(oi.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Specifies how long the monitored GPIO should output.")
 						.font(.caption)
 						.listRowSeparator(.visible)
 				}
