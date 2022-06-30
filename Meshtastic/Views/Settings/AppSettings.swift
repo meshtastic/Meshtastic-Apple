@@ -157,16 +157,9 @@ struct AppSettings: View {
 					
 				}
 				Section(header: Text("DEBUG")) {
-					 Toggle(isOn: $userSettings.meshActivityLog) {
 
-						Label("Log all Mesh activity", systemImage: "network")
-					 }
-					 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if userSettings.meshActivityLog {
-							NavigationLink(destination: MeshLog()) {
-							Text("View Mesh Log")
-						}
-						.listRowSeparator(.visible)
+					NavigationLink(destination: MeshLog()) {
+						Text("View Mesh Log")
 					}
 				}
 			}

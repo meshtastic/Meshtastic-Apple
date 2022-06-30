@@ -56,7 +56,7 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 }
 
 // Default of 0 is One Minute
-enum ScreenOnSeconds: Int, CaseIterable, Identifiable {
+enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
@@ -90,7 +90,7 @@ enum ScreenOnSeconds: Int, CaseIterable, Identifiable {
 }
 
 // Default of 0 is off
-enum ScreenCarouselSeconds: Int, CaseIterable, Identifiable {
+enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
 	case off = 0
 	case fifteenSeconds = 15
@@ -145,8 +145,8 @@ struct DisplayConfig: View {
 				Section(header: Text("Timing")) {
 					
 					Picker("Screen on for", selection: $screenOnSeconds ) {
-						ForEach(ScreenOnSeconds.allCases) { sos in
-							Text(sos.description)
+						ForEach(ScreenOnIntervals.allCases) { soi in
+							Text(soi.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
@@ -155,8 +155,8 @@ struct DisplayConfig: View {
 						.font(.caption)
 					
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
-						ForEach(ScreenCarouselSeconds.allCases) { scs in
-							Text(scs.description)
+						ForEach(ScreenCarouselIntervals.allCases) { sci in
+							Text(sci.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())

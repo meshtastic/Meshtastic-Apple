@@ -328,9 +328,81 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	}
 }
 
-func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObject, nodeNum: Int64, nodeLongName: String) {
+func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
-	
+	// We don't care about any of the WiFi related MQTT settings
+	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
+		
+		var isDefault = false
+		
+		if (try! config.rangeTest.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("⛰️ Default Range Test Module config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].rangeTestConfig == nil {
+					
+					let newRangeTestConfig = RangeTestConfigEntity(context: context)
+					
+					if isDefault {
+
+						newRangeTestConfig.sender = 0
+						newRangeTestConfig.enabled = false
+						newRangeTestConfig.save = false
+						
+					} else {
+
+						newRangeTestConfig.sender = Int32(config.rangeTest.sender)
+						newRangeTestConfig.enabled = !config.rangeTest.enabled
+						newRangeTestConfig.save = config.rangeTest.save
+					}
+					
+					fetchedNode[0].rangeTestConfig = newRangeTestConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].rangeTestConfig?.sender = 0
+						fetchedNode[0].rangeTestConfig?.enabled = false
+						fetchedNode[0].rangeTestConfig?.save = false
+						
+					} else {
+						// Client default protobuf value of 0
+						fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
+						fetchedNode[0].rangeTestConfig?.enabled = !config.rangeTest.enabled
+						fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Range Test Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
 }
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
@@ -782,16 +854,20 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 
 			do {
 
-				let fetchedMessage = try context.fetch(fetchMessageRequest)[0] as? MessageEntity
+				let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
 				
-				if fetchedMessage != nil {
+				if fetchedMessage?.count ?? 0 > 0 {
 					
-					fetchedMessage!.receivedACK = true
-					fetchedMessage!.ackSNR = packet.rxSnr
-					fetchedMessage!.ackTimestamp = Int32(packet.rxTime)
-					fetchedMessage!.objectWillChange.send()
-					fetchedMessage!.fromUser?.objectWillChange.send()
-					fetchedMessage!.toUser?.objectWillChange.send()
+					fetchedMessage![0].receivedACK = true
+					fetchedMessage![0].ackSNR = packet.rxSnr
+					fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+					fetchedMessage![0].objectWillChange.send()
+					fetchedMessage![0].fromUser?.objectWillChange.send()
+					fetchedMessage![0].toUser?.objectWillChange.send()
+					
+				} else {
+					
+					return
 				}
 				
 				try context.save()

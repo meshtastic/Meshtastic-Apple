@@ -43,12 +43,13 @@ struct Settings: View {
 				Section("Radio Configuration") {
 					
 					NavigationLink {
-						ShareChannel()
+						ShareChannel(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 						Image(systemName: "qrcode")
 							.symbolRenderingMode(.hierarchical)
 						Text("Share Channel QR Code")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
 						.font(.caption)
@@ -144,8 +145,9 @@ struct Settings: View {
 
 						Text("Range Test (ESP32 Only)")
 					}
-					.disabled(!(bleManager.connectedPeripheral == nil))
-						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true) ||
+					.disabled(true)
+					//.disabled(bleManager.connectedPeripheral == nil)
+						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true)//||
 						//	  nodes.first(where: { $0.num == connectedNodeNum })!.rangeTestConfig != nil)
 					
 					NavigationLink {
