@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CannedMessageConfig" representedClassName="CannedMessageConfig" syncable="YES" codeGenerationType="class">
+        <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="inputbrokerPinA" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="inputbrokerPinB" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
+        <attribute name="inputbrokerPinPress" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="rotary1Enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sendBell" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="updown1Enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="cannedMessagesConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="cannedMessagesConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -67,6 +78,7 @@
         <attribute name="lastHeard" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="cannedMessagesConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfig" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfig"/>
         <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
         <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
@@ -141,11 +153,12 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="239"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="254"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
+        <element name="CannedMessageConfig" positionX="45" positionY="144" width="128" height="164"/>
     </elements>
 </model>

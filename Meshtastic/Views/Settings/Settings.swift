@@ -42,6 +42,10 @@ struct Settings: View {
 				
 				Section("Radio Configuration") {
 					
+					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
+						.font(.caption)
+						.fixedSize(horizontal: false, vertical: true)
+					
 					NavigationLink {
 						ShareChannel(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
@@ -50,10 +54,6 @@ struct Settings: View {
 						Text("Share Channel QR Code")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
-					
-					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
-						.font(.caption)
-						.fixedSize(horizontal: false, vertical: true)
 					
 					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -116,7 +116,7 @@ struct Settings: View {
 				Section("Module Configuration - Non Functional interaction preview.") {
 					
 					NavigationLink {
-						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 
 						Image(systemName: "list.bullet.rectangle.fill")
@@ -135,6 +135,7 @@ struct Settings: View {
 
 						Text("External Notification")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -145,8 +146,7 @@ struct Settings: View {
 
 						Text("Range Test (ESP32 Only)")
 					}
-					.disabled(true)
-					//.disabled(bleManager.connectedPeripheral == nil)
+					.disabled(bleManager.connectedPeripheral == nil)
 						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true)//||
 						//	  nodes.first(where: { $0.num == connectedNodeNum })!.rangeTestConfig != nil)
 					
@@ -161,8 +161,9 @@ struct Settings: View {
 					}
 					.disabled(false)
 					
+
 					NavigationLink {
-						TelemetryConfig()
+						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "chart.xyaxis.line")
@@ -173,7 +174,7 @@ struct Settings: View {
 					.disabled(false)
 				}
 				// Not Implemented:
-				// Store Forward Config - Not Working
+				// Store Forward Config - Not Working, TBEAM Only
 				// WiFi Config - Would break connection to device
 				// MQTT Config - Part of WiFi
 			}
