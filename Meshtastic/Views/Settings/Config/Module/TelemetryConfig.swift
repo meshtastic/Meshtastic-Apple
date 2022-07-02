@@ -187,7 +187,6 @@ struct TelemetryConfig: View {
 	
 	@State var deviceUpdateInterval = 0
 	@State var environmentUpdateInterval = 0
-	
 	@State var environmentMeasurementEnabled = false
 	@State var environmentSensorType = 0
 	@State var environmentScreenEnabled = false
@@ -303,6 +302,8 @@ struct TelemetryConfig: View {
 				Button("Save Telemetry Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
 					var tc = ModuleConfig.TelemetryConfig()
+					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentSensorType = SensorTypes(rawValue: environmentSensorType)!.protoEnumValue()
 					tc.environmentScreenEnabled = environmentScreenEnabled

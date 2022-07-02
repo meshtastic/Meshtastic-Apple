@@ -680,6 +680,101 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 			
 		}
 	}
+	
+	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
+		
+		var isDefault = false
+		
+		if (try! config.telemetry.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("📈 Default Telemetry Module config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Telemetry Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].telemetryConfig == nil {
+					
+					let newTelemetryConfig = TelemetryConfigEntity(context: context)
+					
+					if isDefault {
+						
+						newTelemetryConfig.deviceUpdateInterval = 0
+						newTelemetryConfig.environmentUpdateInterval = 0
+						newTelemetryConfig.environmentMeasurementEnabled = false
+						newTelemetryConfig.environmentSensorType = 0
+						newTelemetryConfig.environmentScreenEnabled = false
+						newTelemetryConfig.environmentDisplayFahrenheit = false
+						newTelemetryConfig.environmentRecoveryInterval = 0
+						newTelemetryConfig.environmentReadErrorCountThreshold = 0
+						
+					} else {
+						
+						newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
+						newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
+						newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
+						newTelemetryConfig.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
+						newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
+						newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
+						newTelemetryConfig.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
+						newTelemetryConfig.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
+				
+					}
+					
+					fetchedNode[0].telemetryConfig = newTelemetryConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = 0
+						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = 0
+						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = false
+						fetchedNode[0].telemetryConfig?.environmentSensorType = 0
+						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = false
+						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = false
+						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = 0
+						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = 0
+												
+						
+					} else {
+						
+						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
+						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
+						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
+						fetchedNode[0].telemetryConfig?.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
+						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
+						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
+						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
+						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
 }
 
 func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {

@@ -103,6 +103,7 @@
         <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
         <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
+        <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -146,6 +147,18 @@
         <attribute name="txd" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="serialConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="serialConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="TelemetryConfigEntity" representedClassName="TelemetryConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="deviceUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="environmentDisplayFahrenheit" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="environmentMeasurementEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="environmentReadErrorCountThreshold" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="environmentRecoveryInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="environmentScreenEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="environmentSensorType" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="environmentUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="telemetryConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="telemetryConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="TelemetryEntity" representedClassName="TelemetryEntity" syncable="YES" codeGenerationType="class">
         <attribute name="airUtilTx" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="barometricPressure" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -181,7 +194,7 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="284"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="299"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
@@ -189,5 +202,6 @@
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
         <element name="SerialConfigEntity" positionX="54" positionY="153" width="128" height="164"/>
         <element name="ExternalNotificationConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
+        <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="179"/>
     </elements>
 </model>
