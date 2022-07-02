@@ -307,12 +307,12 @@ struct CannedMessagesConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node.cannedMessagesConfig?.enabled ?? false
-					self.rotary1Enabled = node.cannedMessagesConfig?.rotary1Enabled ?? false
-					self.updown1Enabled = node.cannedMessagesConfig?.updown1Enabled ?? false
-					self.inputbrokerPinA = Int(node.cannedMessagesConfig?.inputbrokerPinA ?? 0)
-					self.inputbrokerPinB = Int(node.cannedMessagesConfig?.inputbrokerPinB ?? 0)
-					self.inputbrokerPinPress = Int(node.cannedMessagesConfig?.inputbrokerPinPress ?? 0)
+					self.enabled = node.cannedMessageConfig?.enabled ?? false
+					self.rotary1Enabled = node.cannedMessageConfig?.rotary1Enabled ?? false
+					self.updown1Enabled = node.cannedMessageConfig?.updown1Enabled ?? false
+					self.inputbrokerPinA = Int(node.cannedMessageConfig?.inputbrokerPinA ?? 0)
+					self.inputbrokerPinB = Int(node.cannedMessageConfig?.inputbrokerPinB ?? 0)
+					self.inputbrokerPinPress = Int(node.cannedMessageConfig?.inputbrokerPinPress ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}

@@ -151,7 +151,7 @@ struct Settings: View {
 						//	  nodes.first(where: { $0.num == connectedNodeNum })!.rangeTestConfig != nil)
 					
 					NavigationLink {
-						SerialConfig()
+						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
 					} label: {
 					
 						Image(systemName: "terminal")
