@@ -11,21 +11,6 @@ enum SensorTypes: Int, CaseIterable, Identifiable {
 	/// No external telemetry sensor explicitly set
 	case notSet = 0
 
-	/// Moderate accuracy temperature
-	case dht11 = 1
-
-	/// High accuracy temperature
-	case ds18B20 = 2
-
-	/// Moderate accuracy temperature and humidity
-	case dht12 = 3
-
-	/// Moderate accuracy temperature and humidity
-	case dht21 = 4
-
-	/// Moderate accuracy temperature and humidity
-	case dht22 = 5
-
 	/// High accuracy temperature, pressure, humidity
 	case bme280 = 6
 
@@ -51,16 +36,6 @@ enum SensorTypes: Int, CaseIterable, Identifiable {
 			
 			case .notSet:
 				return "Not Set"
-			case .dht11:
-				return "DHT11 - Temperature"
-			case .ds18B20:
-				return "DS18B20 - Temperature"
-			case .dht12:
-				return "DHT12 - Temperature & humidity"
-			case .dht21:
-				return "DHT21 - Temperature & humidity"
-			case .dht22:
-				return "DHT22 - Temperature & humidity"
 			case .bme280:
 				return "BME280 - Temp, pressure & humidity"
 			case .bme680:
@@ -83,16 +58,6 @@ enum SensorTypes: Int, CaseIterable, Identifiable {
 
 		case .notSet:
 			return TelemetrySensorType.notSet
-		case .dht11:
-			return TelemetrySensorType.dht11
-		case .ds18B20:
-			return TelemetrySensorType.ds18B20
-		case .dht12:
-			return TelemetrySensorType.dht12
-		case .dht21:
-			return TelemetrySensorType.dht21
-		case .dht22:
-			return TelemetrySensorType.dht22
 		case .bme280:
 			return TelemetrySensorType.bme280
 		case .bme680:
@@ -227,7 +192,6 @@ struct TelemetryConfig: View {
 	@State var environmentSensorType = 0
 	@State var environmentScreenEnabled = false
 	@State var environmentDisplayFahrenheit = false
-	@State var environmentSensorPin = 0
 	@State var environmentRecoveryInterval = 0
 	@State var environmentReadErrorCountThreshold = 0
 	
@@ -285,20 +249,6 @@ struct TelemetryConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					Picker("GPIO Pin for sensor readings", selection: $environmentSensorPin) {
-						ForEach(0..<40) {
-							
-							if $0 == 0 {
-								
-								Text("Unset")
-								
-							} else {
-							
-								Text("Pin \($0)")
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 				
 				Section(header: Text("Errors")) {
@@ -357,7 +307,6 @@ struct TelemetryConfig: View {
 					tc.environmentSensorType = SensorTypes(rawValue: environmentSensorType)!.protoEnumValue()
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-					tc.environmentSensorPin = UInt32(environmentSensorPin)
 					tc.environmentRecoveryInterval = UInt32(environmentRecoveryInterval)
 					tc.environmentReadErrorCountThreshold = UInt32(environmentReadErrorCountThreshold)
 					
