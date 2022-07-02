@@ -144,7 +144,7 @@ struct Settings: View {
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Range Test (ESP32 Only)")
+						Text("Range Test")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true)//||
@@ -159,7 +159,7 @@ struct Settings: View {
 
 						Text("Serial")
 					}
-					.disabled(false)
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 
 					NavigationLink {
@@ -171,7 +171,7 @@ struct Settings: View {
 
 						Text("Telemetry (Sensors)")
 					}
-					.disabled(false)
+					.disabled(bleManager.connectedPeripheral == nil)
 				}
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only

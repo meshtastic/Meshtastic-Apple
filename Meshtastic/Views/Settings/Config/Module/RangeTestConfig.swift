@@ -80,8 +80,9 @@ struct RangeTestConfig: View {
 						Label("Save", systemImage: "square.and.arrow.down.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.disabled(!(node.myInfo?.hasWifi ?? false))
 					
-					Text("Saves a CSV with the range test message details, only available on ESP32 devices with a web server.")
+					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 						.font(.caption)
 				}
 			}
