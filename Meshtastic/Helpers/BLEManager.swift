@@ -54,6 +54,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	
+	// Meshtastic DFU details
+	let DFUSERVICE_UUID = CBUUID(string : "cb0b9a0b-a84c-4c0d-bdbb-442e3144ee30")
+	let DFUSIZE_UUID = CBUUID(string: "e74dd9c0-a301-4a6f-95a1-f0e1dbea8e1e")
+	let DFUDATA_UUID = CBUUID(string: "e272ebac-d463-4b98-bc84-5cc1a39ee517")
+	let DFUCRC32_UUID = CBUUID(string: "4826129c-c22a-43a3-b066-ce8f0d5bacc6")
+	let DFURESULT_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c77")
+	let DFUREGION_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c67")
+
+	var DFUSIZE_characteristic: CBCharacteristic?
+	var DFUDATA_characteristic: CBCharacteristic?
+	var DFUCRC32_characteristic: CBCharacteristic?
+	var DFURESULT_characteristic: CBCharacteristic?
+	var DFUREGION_characteristic: CBCharacteristic?
 
 	private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
@@ -217,7 +231,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		connectedPeripheral.peripheral.delegate = self
 
 		// Discover Services
-        peripheral.discoverServices([meshtasticServiceCBUUID])
+		peripheral.discoverServices([meshtasticServiceCBUUID, DFUSERVICE_UUID])
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
 		
     }
@@ -296,7 +310,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
                 //peripheral.discoverCharacteristics(nil, for: service)
                 peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-            }
+				
+            }  else if (service.uuid == DFUSERVICE_UUID) {
+				
+				print("✅ Meshtastic DFU service discovered OK")
+			   if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic DFU discovered by \(peripheral.name ?? "Unknown")") }
+			   peripheral.discoverCharacteristics([DFUDATA_UUID, DFUSIZE_UUID, DFUREGION_UUID, DFURESULT_UUID, DFUCRC32_UUID], for: service)
+				
+		   }
         }
     }
 	
@@ -340,6 +361,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
+				
+			case DFUSIZE_UUID:
+				
+				print("✅ DFU Size characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Size characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUSIZE_characteristic = characteristic
+
+			case DFUDATA_UUID:
+				
+				print("✅ DFU Data characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Data characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUDATA_characteristic = characteristic
+
+			case DFUCRC32_UUID:
+				
+				print("✅ DFU CRC32 characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU CRC32 characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUCRC32_characteristic = characteristic
+
+			case DFURESULT_UUID:
+				
+				print("✅ DFU Result characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Result characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFURESULT_characteristic = characteristic
+
+			case DFUREGION_UUID:
+				
+				print("✅ DFU Region characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUREGION_characteristic = characteristic
 
 			default:
 				break
@@ -416,6 +467,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
+							self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
 							
 						}
 						
@@ -432,8 +484,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 								if nodeInfo!.user != nil {
 									
-									connectedPeripheral.name  = nodeInfo!.user!.longName ?? "Unknown"
-									connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "?????"
+									connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "????"
 									connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
 								}
 							}

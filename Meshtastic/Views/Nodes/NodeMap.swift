@@ -126,7 +126,7 @@ struct NodeMap: View {
 					bluetoothOn: bleManager.isSwitchedOn,
 					deviceConnected: bleManager.connectedPeripheral != nil,
 					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-						"?????")
+						"????")
 			})
 			.onAppear(perform: {
 
