@@ -37,9 +37,9 @@ struct UserConfig: View {
 								let totalBytes = longName.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 40 {
+								if totalBytes > 36 {
 
-									let firstNBytes = Data(longName.utf8.prefix(40))
+									let firstNBytes = Data(longName.utf8.prefix(36))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
@@ -53,9 +53,9 @@ struct UserConfig: View {
 								let totalBytes = shortName.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 5 {
+								if totalBytes > 4 {
 
-									let firstNBytes = Data(shortName.utf8.prefix(5))
+									let firstNBytes = Data(shortName.utf8.prefix(4))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										

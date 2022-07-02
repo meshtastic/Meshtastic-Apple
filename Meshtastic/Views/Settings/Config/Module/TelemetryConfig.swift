@@ -76,6 +76,37 @@ enum SensorTypes: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
+	func protoEnumValue() -> TelemetrySensorType {
+		
+		switch self {
+			
+
+		case .notSet:
+			return TelemetrySensorType.notSet
+		case .dht11:
+			return TelemetrySensorType.dht11
+		case .ds18B20:
+			return TelemetrySensorType.ds18B20
+		case .dht12:
+			return TelemetrySensorType.dht12
+		case .dht21:
+			return TelemetrySensorType.dht21
+		case .dht22:
+			return TelemetrySensorType.dht22
+		case .bme280:
+			return TelemetrySensorType.bme280
+		case .bme680:
+			return TelemetrySensorType.bme680
+		case .mcp9808:
+			return TelemetrySensorType.mcp9808
+		case .shtc3:
+			return TelemetrySensorType.shtc3
+		case .ina260:
+			return TelemetrySensorType.ina260
+		case .ina219:
+			return TelemetrySensorType.ina219
+		}
+	}
 }
 
 // Default of 0 is off
@@ -182,6 +213,12 @@ struct TelemetryConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	var node: NodeInfoEntity
+	
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
 	
 	@State var deviceUpdateInterval = 0
 	@State var environmentUpdateInterval = 0
@@ -294,6 +331,48 @@ struct TelemetryConfig: View {
 						.font(.caption)
 				}
 			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node.myInfo?.hasWifi ?? false))
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save Telemetry Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+						
+					var tc = ModuleConfig.TelemetryConfig()
+					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+					tc.environmentSensorType = SensorTypes(rawValue: environmentSensorType)!.protoEnumValue()
+					tc.environmentScreenEnabled = environmentScreenEnabled
+					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					tc.environmentSensorPin = UInt32(environmentSensorPin)
+					tc.environmentRecoveryInterval = UInt32(environmentRecoveryInterval)
+					tc.environmentReadErrorCountThreshold = UInt32(environmentReadErrorCountThreshold)
+					
+					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					//} else {
+						
+					//}
+				}
+			}
+			
 			.navigationTitle("Telemetry Config")
 			.navigationBarItems(trailing:
 

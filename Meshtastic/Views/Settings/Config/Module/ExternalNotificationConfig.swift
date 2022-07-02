@@ -53,12 +53,19 @@ struct ExternalNotificationConfig: View {
 	
 	var node: NodeInfoEntity
 	
+	@State private var isPresentingSaveConfirm: Bool = false
+	@State var initialLoad: Bool = true
+	@State var hasChanges = false
+	
 	@State var enabled = false
-	@State var outputMilliseconds = 0
-	@State var output = 0
-	@State var active = false
-	@State var alertMessage = false
 	@State var alertBell = false
+	@State var alertMessage = false
+	@State var active = false
+	@State var output = 0
+	@State var outputMilliseconds = 0
+
+	
+	
 	
 	var body: some View {
 		
@@ -114,7 +121,6 @@ struct ExternalNotificationConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Specifies the GPIO that your external circuit is attached to on the device.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 					
 					Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
 						ForEach(OutputIntervals.allCases) { oi in
@@ -124,9 +130,49 @@ struct ExternalNotificationConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Specifies how long the monitored GPIO should output.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 				}
 			}
+			
+			Button {
+							
+				isPresentingSaveConfirm = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node.myInfo?.hasWifi ?? false))
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				
+				"Are you sure?",
+				isPresented: $isPresentingSaveConfirm
+			) {
+				Button("Save External Notification Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+						
+					var enc = ModuleConfig.ExternalNotificationConfig()
+					enc.enabled = enabled
+					enc.alertBell = alertBell
+					enc.alertMessage = alertMessage
+					enc.active = active
+					enc.output = UInt32(output)
+					enc.outputMs = UInt32(outputMilliseconds)
+					
+					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						
+					//} else {
+						
+					//}
+				}
+			}
+			
 			.navigationTitle("External Notification Config")
 			.navigationBarItems(trailing:
 

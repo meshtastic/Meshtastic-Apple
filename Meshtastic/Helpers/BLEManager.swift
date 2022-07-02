@@ -456,6 +456,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							
 							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 						}
+						
+						print(decodedInfo.moduleConfig.isInitialized)
 					}
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)

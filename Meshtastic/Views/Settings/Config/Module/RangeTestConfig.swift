@@ -1,5 +1,5 @@
 //
-//  TelemetryConfig.swift
+//  RangeTestConfig.swift
 //  Meshtastic Apple
 //
 //  Copyright (c) Garth Vander Houwen 6/13/22.
@@ -112,15 +112,15 @@ struct RangeTestConfig: View {
 					rtc.save = save
 					rtc.sender = UInt32(sender)
 					
-					if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
 						
-					} else {
+					//} else {
 						
-					}
+					//}
 				}
 			}
 			
@@ -145,17 +145,17 @@ struct RangeTestConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node.rangeTestConfig!.enabled {
+				//if newEnabled != node.rangeTestConfig!.enabled {
 					
 					hasChanges = true
-				}
+				//}
 			}
 			.onChange(of: save) { newSave in
 				
-				if newSave != node.rangeTestConfig!.save {
+				//if newSave != node.rangeTestConfig!.save {
 					
 					hasChanges = true
-				}
+				//}
 			}
 			.onChange(of: sender) { newSender in
 				
