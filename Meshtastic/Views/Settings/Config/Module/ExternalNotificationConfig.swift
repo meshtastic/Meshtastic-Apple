@@ -63,9 +63,6 @@ struct ExternalNotificationConfig: View {
 	@State var active = false
 	@State var output = 0
 	@State var outputMilliseconds = 0
-
-	
-	
 	
 	var body: some View {
 		

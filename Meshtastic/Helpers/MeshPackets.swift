@@ -335,7 +335,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		
 		var isDefault = false
 		
-		if (try! config.serial.jsonString()) == "{}" {
+		if (try! config.cannedMessage.jsonString()) == "{}" {
 			
 			isDefault = true
 			print("🥫 Default Canned Message Module config")
@@ -347,7 +347,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save Device Config
+			// Found a node, save Canned Message Config
 			if !fetchedNode.isEmpty {
 				
 				if fetchedNode[0].cannedMessageConfig == nil {
@@ -424,6 +424,93 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
+	
+	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
+		
+		var isDefault = false
+		
+		if (try! config.externalNotification.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("🚨 Default External Notifiation Module config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save External Notificaitone Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].externalNotificationConfig == nil {
+					
+					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
+
+					if isDefault {
+
+
+						newExternalNotificationConfig.enabled = false
+						newExternalNotificationConfig.alertBell = false
+						newExternalNotificationConfig.alertMessage = false
+						newExternalNotificationConfig.active = false
+						newExternalNotificationConfig.output = 0
+						newExternalNotificationConfig.outputMilliseconds = 0
+
+
+					} else {
+
+						newExternalNotificationConfig.enabled = config.externalNotification.enabled
+						newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
+						newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
+						newExternalNotificationConfig.active = config.externalNotification.active
+						newExternalNotificationConfig.output = Int32(config.externalNotification.output)
+						newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					}
+
+					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].externalNotificationConfig?.enabled = false
+						fetchedNode[0].externalNotificationConfig?.alertBell = false
+						fetchedNode[0].externalNotificationConfig?.alertMessage = false
+						fetchedNode[0].externalNotificationConfig?.active = false
+						fetchedNode[0].externalNotificationConfig?.output = 0
+						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = 0
+						
+					} else {
+
+						fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
+						fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
+						fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
+						fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
+						fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
+						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated External Notification Module Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 				}
 			}
 			

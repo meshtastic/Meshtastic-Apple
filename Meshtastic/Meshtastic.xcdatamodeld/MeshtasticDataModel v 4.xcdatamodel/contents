@@ -28,6 +28,16 @@
         <attribute name="screenOnSeconds" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="displayConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="displayConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="ExternalNotificationConfigEntity" representedClassName="ExternalNotificationConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="active" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="alertBell" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="alertMessage" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="output" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="outputMilliseconds" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="externalNotificationConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="externalNotificationConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="hopLimit" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="modemPreset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -85,6 +95,7 @@
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
         <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
+        <relationship name="externalNotificationConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExternalNotificationConfigEntity" inverseName="externalNotificationConfigNode" inverseEntity="ExternalNotificationConfigEntity"/>
         <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
@@ -170,12 +181,13 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="269"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="284"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
         <element name="SerialConfigEntity" positionX="54" positionY="153" width="128" height="164"/>
+        <element name="ExternalNotificationConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
     </elements>
 </model>
