@@ -113,7 +113,7 @@ struct Settings: View {
 						.font(.caption2)
 						.fixedSize(horizontal: false, vertical: true)
 				}
-				Section("Module Configuration - Non Functional interaction preview.") {
+				Section("Module Configuration") {
 					
 					NavigationLink {
 						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -180,18 +180,6 @@ struct Settings: View {
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")
-			.onAppear {
-				
-			//	
-				
-			//	let connectedNode =
-
-//				if nodes.first(where: { $0.num == (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0) })!.rangeTestConfig == nil {
-//					 
-//					// We have no Range Test Config, go get it
-//					self.bleManager.getModuleConfig(configType: AdminMessage.ModuleConfigType.rangetestConfig, destNum: bleManager.connectedPeripheral.num, wantResponse: tr)
-//				}
-			}
 		}
 	}
 }
