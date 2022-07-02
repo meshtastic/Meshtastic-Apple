@@ -68,6 +68,28 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
+	func protoEnumValue() -> ModuleConfig.CannedMessageConfig.InputEventChar {
+		
+		switch self {
+
+		case .keyNone:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyNone
+		case .keyUp:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyUp
+		case .keyDown:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyDown
+		case .keyLeft:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyLeft
+		case .keyRight:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyRight
+		case .keySelect:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keySelect
+		case .keyBack:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyBack
+		case .keyCancel:
+			return ModuleConfig.CannedMessageConfig.InputEventChar.keyCancel
+		}
+	}
 }
 
 struct CannedMessagesConfig: View {
@@ -282,16 +304,18 @@ struct CannedMessagesConfig: View {
 					cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
 					cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
 					cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+					cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+					cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+					cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 					
-					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
 						
+					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-						
-					//} else {
-						
-					//}
+					}
+			
 				}
 			}
 			
@@ -300,19 +324,20 @@ struct CannedMessagesConfig: View {
 
 				ZStack {
 
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
 
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node.cannedMessagesConfig?.enabled ?? false
-					self.rotary1Enabled = node.cannedMessagesConfig?.rotary1Enabled ?? false
-					self.updown1Enabled = node.cannedMessagesConfig?.updown1Enabled ?? false
-					self.inputbrokerPinA = Int(node.cannedMessagesConfig?.inputbrokerPinA ?? 0)
-					self.inputbrokerPinB = Int(node.cannedMessagesConfig?.inputbrokerPinB ?? 0)
-					self.inputbrokerPinPress = Int(node.cannedMessagesConfig?.inputbrokerPinPress ?? 0)
+					self.enabled = node.cannedMessageConfig?.enabled ?? false
+					self.sendBell = node.cannedMessageConfig?.sendBell ?? false
+					self.rotary1Enabled = node.cannedMessageConfig?.rotary1Enabled ?? false
+					self.updown1Enabled = node.cannedMessageConfig?.updown1Enabled ?? false
+					self.inputbrokerPinA = Int(node.cannedMessageConfig?.inputbrokerPinA ?? 0)
+					self.inputbrokerPinB = Int(node.cannedMessageConfig?.inputbrokerPinB ?? 0)
+					self.inputbrokerPinPress = Int(node.cannedMessageConfig?.inputbrokerPinPress ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}
@@ -336,17 +361,35 @@ struct CannedMessagesConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				//if newEnabled != node.cannedMessagesConfig!.enabled {
-					
-					hasChanges = true
-				//}
+				if newEnabled != node.cannedMessageConfig!.enabled { hasChanges = true }
 			}
 			.onChange(of: sendBell) { newBell in
 				
-				//if newBell != node.rangeTestConfig!.save {
-					
-					hasChanges = true
-				//}
+				if newBell != node.cannedMessageConfig!.sendBell { hasChanges = true }
+			}
+			.onChange(of: inputbrokerPinA) { newPinA in
+				
+				if newPinA != node.cannedMessageConfig!.inputbrokerPinA { hasChanges = true	}
+			}
+			.onChange(of: inputbrokerPinB) { newPinB in
+				
+				if newPinB != node.cannedMessageConfig!.inputbrokerPinB { hasChanges = true	}
+			}
+			.onChange(of: inputbrokerPinPress) { newPinPress in
+				
+				if newPinPress != node.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true	}
+			}
+			.onChange(of: inputbrokerEventCw) { newKeyA in
+				
+				if newKeyA != node.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
+			}
+			.onChange(of: inputbrokerEventCcw) { newKeyB in
+				
+				if newKeyB != node.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true	}
+			}
+			.onChange(of: inputbrokerEventPress) { newKeyPress in
+				
+				if newKeyPress != node.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

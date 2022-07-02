@@ -65,6 +65,45 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
+	
+	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Baud {
+		
+		switch self {
+			
+		case .baudDefault:
+			return ModuleConfig.SerialConfig.Serial_Baud.baudDefault
+		case .baud110:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud110
+		case .baud300:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud300
+		case .baud600:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud600
+		case .baud1200:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud1200
+		case .baud2400:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud2400
+		case .baud4800:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud4800
+		case .baud9600:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud9600
+		case .baud19200:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud19200
+		case .baud38400:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud38400
+		case .baud57600:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud57600
+		case .baud115200:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud115200
+		case .baud230400:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud230400
+		case .baud460800:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud460800
+		case .baud576000:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud576000
+		case .baud921600:
+			return ModuleConfig.SerialConfig.Serial_Baud.baud921600
+		}
+	}
 }
 
 enum SerialModeTypes: Int, CaseIterable, Identifiable {
@@ -84,6 +123,18 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 			case .modeProto:
 				return "Protobufs"
 			}
+		}
+	}
+	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
+		
+		switch self {
+			
+		case .modeDefault:
+			return ModuleConfig.SerialConfig.Serial_Mode.modeDefault
+		case .modeSimple:
+			return ModuleConfig.SerialConfig.Serial_Mode.modeSimple
+		case .modeProto:
+			return ModuleConfig.SerialConfig.Serial_Mode.modeProto
 		}
 	}
 }
@@ -126,6 +177,8 @@ struct SerialConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	var node: NodeInfoEntity
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -238,14 +291,20 @@ struct SerialConfig: View {
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
-				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Serial Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
 					var sc = ModuleConfig.SerialConfig()
 					sc.enabled = enabled
-					//sc.save = save
-					//sc.sender = sender ? 1 : 0
+					sc.echo = echo
+					sc.rxd = UInt32(rxd)
+					sc.txd = UInt32(txd)
+					sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+					sc.timeout = UInt32(timeout)
+					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					if bleManager.saveSerialModuleConfig(config: sc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -262,11 +321,53 @@ struct SerialConfig: View {
 
 				ZStack {
 
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
 
-				self.bleManager.context = context
+				if self.initialLoad{
+					
+					self.bleManager.context = context
+					
+					self.enabled = node.serialConfig?.enabled ?? false
+					self.echo = node.serialConfig?.echo ?? false
+					self.rxd = Int(node.serialConfig?.rxd ?? 0)
+					self.txd = Int(node.serialConfig?.txd ?? 0)
+					self.baudRate = Int(node.serialConfig?.baudRate ?? 0)
+					self.timeout = Int(node.serialConfig?.timeout ?? 0)
+					self.mode = Int(node.serialConfig?.mode ?? 0)
+					
+					self.hasChanges = false
+					self.initialLoad = false
+				}
+			}
+			.onChange(of: enabled) { newEnabled in
+				
+				if newEnabled != node.serialConfig!.enabled { hasChanges = true	}
+			}
+			.onChange(of: echo) { newEcho in
+				
+				if newEcho != node.serialConfig!.echo { hasChanges = true	}
+			}
+			.onChange(of: rxd) { newRxd in
+				
+				if newRxd != node.serialConfig!.rxd { hasChanges = true	}
+			}
+			.onChange(of: txd) { newTxd in
+				
+				if newTxd != node.serialConfig!.txd { hasChanges = true	}
+			}
+			.onChange(of: baudRate) { newBaud in
+				
+				if newBaud != node.serialConfig!.baudRate { hasChanges = true	}
+			}
+			.onChange(of: timeout) { newTimeout in
+				
+				if newTimeout != node.serialConfig!.timeout { hasChanges = true	}
+			}
+			.onChange(of: mode) { newMode in
+				
+				if newMode != node.serialConfig!.mode { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

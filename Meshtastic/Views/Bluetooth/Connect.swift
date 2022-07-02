@@ -68,7 +68,7 @@ struct Connect: View {
 
 										if bleManager.connectedPeripheral != nil {
 
-											Text(bleManager.connectedPeripheral.name).font(.title2)
+											Text(bleManager.connectedPeripheral.longName).font(.title2)
 
 										}
 										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
@@ -265,7 +265,7 @@ struct Connect: View {
 						bluetoothOn: self.bleManager.isSwitchedOn,
 						deviceConnected: self.bleManager.connectedPeripheral != nil,
 						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName :
-							"?????")
+							"????")
                 }
             )
         }

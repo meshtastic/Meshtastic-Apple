@@ -54,6 +54,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
     let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
     let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	
+	// Meshtastic DFU details
+	let DFUSERVICE_UUID = CBUUID(string : "cb0b9a0b-a84c-4c0d-bdbb-442e3144ee30")
+	let DFUSIZE_UUID = CBUUID(string: "e74dd9c0-a301-4a6f-95a1-f0e1dbea8e1e")
+	let DFUDATA_UUID = CBUUID(string: "e272ebac-d463-4b98-bc84-5cc1a39ee517")
+	let DFUCRC32_UUID = CBUUID(string: "4826129c-c22a-43a3-b066-ce8f0d5bacc6")
+	let DFURESULT_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c77")
+	let DFUREGION_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c67")
+
+	var DFUSIZE_characteristic: CBCharacteristic?
+	var DFUDATA_characteristic: CBCharacteristic?
+	var DFUCRC32_characteristic: CBCharacteristic?
+	var DFURESULT_characteristic: CBCharacteristic?
+	var DFUREGION_characteristic: CBCharacteristic?
 
 	private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
@@ -217,7 +231,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		connectedPeripheral.peripheral.delegate = self
 
 		// Discover Services
-        peripheral.discoverServices([meshtasticServiceCBUUID])
+		peripheral.discoverServices([meshtasticServiceCBUUID, DFUSERVICE_UUID])
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
 		
     }
@@ -296,7 +310,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
                 //peripheral.discoverCharacteristics(nil, for: service)
                 peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-            }
+				
+            }  else if (service.uuid == DFUSERVICE_UUID) {
+				
+				print("✅ Meshtastic DFU service discovered OK")
+			   if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic DFU discovered by \(peripheral.name ?? "Unknown")") }
+			   peripheral.discoverCharacteristics([DFUDATA_UUID, DFUSIZE_UUID, DFUREGION_UUID, DFURESULT_UUID, DFUCRC32_UUID], for: service)
+				
+		   }
         }
     }
 	
@@ -340,6 +361,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
+				
+			case DFUSIZE_UUID:
+				
+				print("✅ DFU Size characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Size characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUSIZE_characteristic = characteristic
+
+			case DFUDATA_UUID:
+				
+				print("✅ DFU Data characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Data characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUDATA_characteristic = characteristic
+
+			case DFUCRC32_UUID:
+				
+				print("✅ DFU CRC32 characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU CRC32 characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUCRC32_characteristic = characteristic
+
+			case DFURESULT_UUID:
+				
+				print("✅ DFU Result characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Result characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFURESULT_characteristic = characteristic
+
+			case DFUREGION_UUID:
+				
+				print("✅ DFU Region characteristic OK")
+				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				DFUREGION_characteristic = characteristic
 
 			default:
 				break
@@ -405,60 +456,65 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// Handle Any local only packets we get over BLE
 				case .unknownApp:
 				
-					if decodedInfo.myInfo.myNodeNum	!= 0 {
+				var nowKnown = false
+				
+				// MyInfo
+				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 						
-						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
+					nowKnown = true
+					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
+					
+					if myInfo != nil {
 						
-						if myInfo != nil {
-							
-							self.connectedPeripheral.bitrate = myInfo!.bitrate
-							self.connectedPeripheral.num = myInfo!.myNodeNum
-							lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
-							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
-							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
-							
-						}
-						
-					} else if decodedInfo.nodeInfo.num != 0 {
+						self.connectedPeripheral.bitrate = myInfo!.bitrate
+						self.connectedPeripheral.num = myInfo!.myNodeNum
+						lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
+						self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
+						self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
 
-						let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, meshLogging: meshLoggingEnabled, context: context!)
+					}
+				}
+				// NodeInfo
+				if decodedInfo.nodeInfo.num != 0 {
+
+					nowKnown = true
+					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, meshLogging: meshLoggingEnabled, context: context!)
+					
+					if nodeInfo != nil {
 						
-						if nodeInfo != nil {
-							
-							self.connectedPeripheral.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
-							self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
+						self.connectedPeripheral.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
+						self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
 
-							if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 
-								if nodeInfo!.user != nil {
-									
-									connectedPeripheral.name  = nodeInfo!.user!.longName ?? "Unknown"
-									connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "?????"
-									connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
-								}
+							if nodeInfo!.user != nil {
+								
+								connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "????"
+								connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
 							}
 						}
-						
-					} else if decodedInfo.config.isInitialized {
-							
-						localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-						
-					} else if decodedInfo.moduleConfig.isInitialized {
-						
-						moduleConfig(config: decodedInfo.moduleConfig, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-						
-					} else {
-						
-						if decodedInfo.configCompleteID == 0 {
-						
-							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
-						} else {
-							
-							if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
-						}
-						
-						print(decodedInfo.moduleConfig.isInitialized)
 					}
+				}
+				// Config
+				if decodedInfo.config.isInitialized {
+					
+					nowKnown = true
+					localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+				
+				}
+				// Module Config
+				if decodedInfo.moduleConfig.isInitialized {
+					
+					nowKnown = true
+					moduleConfig(config: decodedInfo.moduleConfig, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+				}
+				// Log any other unknownApp calls
+				if !nowKnown {
+					
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+				}
+				
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)
 				case .remoteHardwareApp:
@@ -607,6 +663,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.direction = "IN"
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
 					newMessage.isEmoji = isEmoji
+					newMessage.admin = false
 					
 					if replyID > 0 {
 						
@@ -793,6 +850,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			
+			
 			return true
 		}
 		
@@ -834,7 +892,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func saveUser(config: User,  destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func saveUser(config: User,  entity: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
@@ -860,13 +920,35 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = entity
+			newMessage.toUser = entity
+			newMessage.messagePayload = try! dataMessage.jsonString()
 			
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
-			return true
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Admin Message for node number: \(String(entity.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
 		}
 		
-		return false
+		return newMessageId
 	}
 	
 	public func sendFactoryReset(destNum: Int64,  wantResponse: Bool) -> Bool {
@@ -1047,20 +1129,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func getChannelSet (destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
-		adminPacket.getChannelRequest = 1
-		
-		
+		adminPacket.setModuleConfig.cannedMessage = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
-		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1075,27 +1156,108 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = try! dataMessage.jsonString()
 			
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
-			return true
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Canned Message Module Config Admin Message for node number: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
 		}
-		
-		return false
+		return newMessageId
 	}
 	
-	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig,  destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.externalNotification = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = try! dataMessage.jsonString()
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Canned Message Module Config Admin Message for node number: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
+		}
+		
+		return newMessageId
+		
+	}
+	
+	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.rangeTest = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
-		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1110,16 +1272,41 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = try! dataMessage.jsonString()
 			
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
-			return true
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Range Test Module Config Admin Message for node number: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
 		}
 		
-		return false
+		return newMessageId
+		
 	}
 	
-	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig,  destNum: Int64,  wantResponse: Bool) -> Bool {
+	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.serial = config
@@ -1145,12 +1332,93 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = try! dataMessage.jsonString()
 			
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			
-			return true
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Telemetry Module Config Admin Message for node number: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
 		}
 		
-		return false
+		return newMessageId
+	}
+	
+	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.telemetry = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.direction = "OUT"
+			newMessage.admin = true
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = try! dataMessage.jsonString()
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new Canned Message Module Config Admin Message for node number: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
+		}
+		
+		return newMessageId
+		
 	}
 }

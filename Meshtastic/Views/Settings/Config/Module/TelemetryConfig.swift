@@ -187,7 +187,6 @@ struct TelemetryConfig: View {
 	
 	@State var deviceUpdateInterval = 0
 	@State var environmentUpdateInterval = 0
-	
 	@State var environmentMeasurementEnabled = false
 	@State var environmentSensorType = 0
 	@State var environmentScreenEnabled = false
@@ -303,6 +302,8 @@ struct TelemetryConfig: View {
 				Button("Save Telemetry Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
 					var tc = ModuleConfig.TelemetryConfig()
+					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentSensorType = SensorTypes(rawValue: environmentSensorType)!.protoEnumValue()
 					tc.environmentScreenEnabled = environmentScreenEnabled
@@ -327,11 +328,58 @@ struct TelemetryConfig: View {
 
 				ZStack {
 
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
 
-				self.bleManager.context = context
+				if self.initialLoad{
+					
+					self.bleManager.context = context
+					
+					self.deviceUpdateInterval = Int(node.telemetryConfig?.deviceUpdateInterval ?? 0)
+					self.environmentUpdateInterval = Int(node.telemetryConfig?.environmentUpdateInterval ?? 0)
+					self.environmentMeasurementEnabled = node.telemetryConfig?.environmentMeasurementEnabled ?? false
+					self.environmentSensorType = Int(node.telemetryConfig?.environmentSensorType ?? 0)
+					self.environmentScreenEnabled = node.telemetryConfig?.environmentScreenEnabled ?? false
+					self.environmentDisplayFahrenheit = node.telemetryConfig?.environmentDisplayFahrenheit ?? false
+					self.environmentRecoveryInterval = Int(node.telemetryConfig?.environmentRecoveryInterval ?? 0)
+					self.environmentReadErrorCountThreshold = Int(node.telemetryConfig?.environmentReadErrorCountThreshold ?? 0)
+					
+					self.hasChanges = false
+					self.initialLoad = false
+				}
+			}
+			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
+				
+				if newDeviceInterval != node.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
+			}
+			.onChange(of: environmentUpdateInterval) { newEnvInterval in
+				
+				if newEnvInterval != node.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
+			}
+			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
+				
+				if newEnvEnabled != node.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
+			}
+			.onChange(of: environmentSensorType) { newEnvSensorType in
+				
+				if newEnvSensorType != node.telemetryConfig!.environmentSensorType { hasChanges = true	}
+			}
+			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
+				
+				if newEnvScreenEnabled != node.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
+			}
+			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
+				
+				if newEnvDisplayF != node.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
+			}
+			.onChange(of: environmentRecoveryInterval) { newEnvRecoveryInterval in
+				
+				if newEnvRecoveryInterval != node.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
+			}
+			.onChange(of: environmentReadErrorCountThreshold) { newEnvReadErrorCountThreshold in
+				
+				if newEnvReadErrorCountThreshold != node.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

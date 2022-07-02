@@ -63,9 +63,6 @@ struct ExternalNotificationConfig: View {
 	@State var active = false
 	@State var output = 0
 	@State var outputMilliseconds = 0
-
-	
-	
 	
 	var body: some View {
 		
@@ -161,15 +158,17 @@ struct ExternalNotificationConfig: View {
 					enc.output = UInt32(output)
 					enc.outputMs = UInt32(outputMilliseconds)
 					
-					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node.user!, toUser: node.user!,  wantResponse: true)
+					
+					if adminMessageId > 0{
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
 						
-					//} else {
+					} else {
 						
-					//}
+					}
 				}
 			}
 			
@@ -178,11 +177,48 @@ struct ExternalNotificationConfig: View {
 
 				ZStack {
 
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
 
-				self.bleManager.context = context
+				if self.initialLoad{
+					
+					self.bleManager.context = context
+					
+					self.enabled = node.externalNotificationConfig?.enabled ?? false
+					self.alertBell = node.externalNotificationConfig?.alertBell ?? false
+					self.alertMessage = node.externalNotificationConfig?.alertMessage ?? false
+					self.active = node.externalNotificationConfig?.active ?? false
+					self.output = Int(node.externalNotificationConfig?.output ?? 0)
+					self.outputMilliseconds = Int(node.externalNotificationConfig?.outputMilliseconds ?? 0)
+					
+					self.hasChanges = false
+					self.initialLoad = false
+				}
+			}
+			.onChange(of: enabled) { newEnabled in
+				
+				if newEnabled != node.externalNotificationConfig!.enabled { hasChanges = true	}
+			}
+			.onChange(of: alertBell) { newAlertBell in
+				
+				if newAlertBell != node.externalNotificationConfig!.alertBell { hasChanges = true	}
+			}
+			.onChange(of: alertMessage) { newAlertMessage in
+				
+				if newAlertMessage != node.externalNotificationConfig!.alertMessage { hasChanges = true	}
+			}
+			.onChange(of: active) { newActuve in
+				
+				if newActuve != node.externalNotificationConfig!.active { hasChanges = true	}
+			}
+			.onChange(of: output) { newOutput in
+				
+				if newOutput != node.externalNotificationConfig!.output { hasChanges = true	}
+			}
+			.onChange(of: outputMilliseconds) { newOutputMs in
+				
+				if newOutputMs != node.externalNotificationConfig!.outputMilliseconds { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

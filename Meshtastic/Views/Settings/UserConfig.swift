@@ -112,14 +112,11 @@ struct UserConfig: View {
 						u.shortName = shortName
 						u.longName = longName
 						
-						if bleManager.saveUser(config: u, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						let adminMessageId = bleManager.saveUser(config: u, entity: node.user!, wantResponse: true)
+						
+						if adminMessageId > 0 {
 							
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
 							hasChanges = false
-							
-						} else {
-							
 						}
 					}
 				}
@@ -132,7 +129,7 @@ struct UserConfig: View {
 
 			ZStack {
 
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 
