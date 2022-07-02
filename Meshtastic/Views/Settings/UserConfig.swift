@@ -68,7 +68,7 @@ struct UserConfig: View {
 					}
 					.keyboardType(.default)
 					.disableAutocorrection(true)
-					Text("Long name can me 40 bytes long.")
+					Text("Long name can be up to 36 bytes long.")
 						.font(.caption)
 					
 					HStack {
@@ -78,7 +78,7 @@ struct UserConfig: View {
 					}
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
-					Text("The short name is used in maps and messaging and will be appended to the last 4 of the device MAC address to set the device's BLE Name.  It can be up to 5 bytes long.")
+					Text("The short name is used in maps and messaging and will be appended to the last 4 of the device MAC address to set the device's BLE Name.  It can be up to 4 bytes long.")
 						.font(.caption)
 					
 				}

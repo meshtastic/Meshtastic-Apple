@@ -72,7 +72,7 @@ struct NodeList: View {
 											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 											
-											Text("Currently Connected").font(.headline).foregroundColor(Color.accentColor)
+											Text("Currently Connected").font(.callout).foregroundColor(Color.accentColor)
 										} else {
 											
 											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)

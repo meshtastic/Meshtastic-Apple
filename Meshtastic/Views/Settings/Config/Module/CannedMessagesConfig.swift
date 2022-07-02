@@ -12,7 +12,8 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 	case unset = 0
 	case rakRotaryEncoder = 1
 	case tbeamThreeButtonScreen = 2
-
+	case cardKB = 3
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
@@ -24,6 +25,8 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 				return "RAK Rotary Encoder Module"
 			case .tbeamThreeButtonScreen:
 				return "TBEAM 3 Button OLED Screen"
+			case .cardKB:
+				return "Card KB"
 			}
 		}
 	}
