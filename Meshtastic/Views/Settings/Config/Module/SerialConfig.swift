@@ -291,7 +291,7 @@ struct SerialConfig: View {
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
-				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Serial Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
 					var sc = ModuleConfig.SerialConfig()
 					sc.enabled = enabled
@@ -302,7 +302,9 @@ struct SerialConfig: View {
 					sc.timeout = UInt32(timeout)
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					if bleManager.saveSerialModuleConfig(config: sc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
