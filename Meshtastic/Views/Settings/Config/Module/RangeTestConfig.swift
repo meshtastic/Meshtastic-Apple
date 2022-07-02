@@ -113,15 +113,17 @@ struct RangeTestConfig: View {
 					rtc.save = save
 					rtc.sender = UInt32(sender)
 					
-					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
 						
-					//} else {
+					} else {
 						
-					//}
+					}
 				}
 			}
 			
@@ -146,21 +148,24 @@ struct RangeTestConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				//if newEnabled != node.rangeTestConfig!.enabled {
+				if newEnabled != node.rangeTestConfig!.enabled {
 					
 					hasChanges = true
-				//}
+				}
 			}
 			.onChange(of: save) { newSave in
 				
-				//if newSave != node.rangeTestConfig!.save {
+				if newSave != node.rangeTestConfig!.save {
 					
 					hasChanges = true
-				//}
+				}
 			}
 			.onChange(of: sender) { newSender in
 				
-				hasChanges = true
+				if newSender != node.rangeTestConfig!.sender {
+				
+					hasChanges = true
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

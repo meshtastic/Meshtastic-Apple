@@ -363,7 +363,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					} else {
 
 						newRangeTestConfig.sender = Int32(config.rangeTest.sender)
-						newRangeTestConfig.enabled = !config.rangeTest.enabled
+						newRangeTestConfig.enabled = config.rangeTest.enabled
 						newRangeTestConfig.save = config.rangeTest.save
 					}
 					
@@ -378,9 +378,9 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].rangeTestConfig?.save = false
 						
 					} else {
-						// Client default protobuf value of 0
+
 						fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
-						fetchedNode[0].rangeTestConfig?.enabled = !config.rangeTest.enabled
+						fetchedNode[0].rangeTestConfig?.enabled = config.rangeTest.enabled
 						fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
 					}
 				}

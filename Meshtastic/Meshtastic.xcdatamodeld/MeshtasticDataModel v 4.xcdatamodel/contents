@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="CannedMessageConfig" representedClassName="CannedMessageConfig" syncable="YES" codeGenerationType="class">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="inputbrokerPinA" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -35,6 +35,7 @@
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="admin" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="direction" attributeType="String"/>
         <attribute name="isEmoji" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="messageId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -144,14 +145,15 @@
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
         <fetchedProperty name="allMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND isEmoji == false"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND isEmoji == false AND admin = false"/>
         </fetchedProperty>
     </entity>
     <elements>
+        <element name="CannedMessageConfig" positionX="45" positionY="144" width="128" height="164"/>
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
-        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="215"/>
+        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="254"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
@@ -159,6 +161,5 @@
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="200"/>
-        <element name="CannedMessageConfig" positionX="45" positionY="144" width="128" height="164"/>
     </elements>
 </model>
