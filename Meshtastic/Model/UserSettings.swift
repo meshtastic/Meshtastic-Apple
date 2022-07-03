@@ -38,12 +38,6 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
 		}
 	}
-	@Published var meshActivityLog: Bool {
-		didSet {
-			UserDefaults.standard.set(meshActivityLog, forKey: "meshActivityLog")
-		}
-	}
-
 	@Published var meshMapType: String {
 		didSet {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
@@ -63,7 +57,6 @@ class UserSettings: ObservableObject {
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshActivityLog = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? true
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 	}

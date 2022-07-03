@@ -46,7 +46,9 @@ struct MeshLog: View {
 
 		HStack(alignment: .center) {
 			Spacer()
-			Button(action: {
+			
+			Button(role: .destructive) {
+							
 				let text = ""
 				do {
 					 try text.write(to: logFile!, atomically: false, encoding: .utf8)
@@ -54,35 +56,31 @@ struct MeshLog: View {
 				   } catch {
 					 print(error)
 				   }
-
-			}) {
-				Image(systemName: "trash.circle.fill")
-					.symbolRenderingMode(.hierarchical)
-					.imageScale(.large).foregroundColor(.accentColor)
-				Text("Clear Log").font(.caption)
-				.font(.caption)
-					.foregroundColor(.accentColor)
+				
+			} label: {
+				
+				Label("Clear Log", systemImage: "trash.fill")
 			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
 			.padding()
-			.background(Color(.systemGray6))
-			.clipShape(Capsule())
 
 			Spacer()
-
-			Button(action: {
+			
+			Button {
+							
 				isExporting = true
-			}) {
-				Image(systemName: "arrow.down.circle.fill")
-					.symbolRenderingMode(.hierarchical)
-					.imageScale(.large).foregroundColor(.accentColor)
-				Text("Download Log")
-				.font(.caption)
-				.foregroundColor(.accentColor)
+				
+			} label: {
+				
+				Label("Download Log", systemImage: "arrow.down.circle.fill")
 			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
 			.padding()
-			.background(Color(.systemGray6))
-			.clipShape(Capsule())
-
+			
 			Spacer()
 
 		}
