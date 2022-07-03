@@ -960,7 +960,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1020,7 +1020,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1079,7 +1079,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1119,6 +1119,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
 		meshPacket.hopLimit = 0
@@ -1138,11 +1139,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
-			newMessage.direction = "OUT"
+			newMessage.direction = "IN"
 			newMessage.admin = true
 			newMessage.adminDescription = "Saved LoRa Config for \(toUser.longName ?? "Unknown")"
 			newMessage.fromUser = fromUser
@@ -1197,7 +1198,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1256,7 +1257,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1314,7 +1315,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1374,7 +1375,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1435,7 +1436,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
@@ -1494,7 +1495,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						
 			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
+			newMessage.messageId =  Int64(meshPacket.id)
 			newMessageId = newMessage.messageId
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false

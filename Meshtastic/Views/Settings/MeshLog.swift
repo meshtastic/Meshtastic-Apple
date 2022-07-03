@@ -42,7 +42,7 @@ struct MeshLog: View {
 		)
 
 		.textSelection(.enabled)
-		.font(.caption2)
+		.font(.caption)
 
 		HStack(alignment: .center) {
 			Spacer()

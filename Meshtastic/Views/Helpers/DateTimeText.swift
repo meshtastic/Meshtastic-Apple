@@ -1,8 +1,8 @@
 //
 //  DateTimeText.swift
-//  MeshtasticApple
+//  Meshtastic Apple
 //
-//  Created by Garth Vander Houwen on 5/30/22.
+// Copyright(C) Garth Vander Houwen  5/30/22.
 //
 
 import SwiftUI

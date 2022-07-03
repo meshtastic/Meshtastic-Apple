@@ -25,26 +25,16 @@ struct Settings: View {
 				
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
-				Section("General") {
-					NavigationLink {
-						AppSettings()
-					} label: {
-						
-						Image(systemName: "gearshape")
-							.symbolRenderingMode(.hierarchical)
-						Text("App Settings")
-					}
-					Text("Apple app specific settings and features, app username, share position with mesh options, map and keyboard type, mesh log.")
-						.font(.caption)
-						.fixedSize(horizontal: false, vertical: true)
-		
+				NavigationLink {
+					AppSettings()
+				} label: {
+					
+					Image(systemName: "gearshape")
+						.symbolRenderingMode(.hierarchical)
+					Text("App Settings")
 				}
 				
 				Section("Radio Configuration") {
-					
-					Text("Radio config views will be be enabled when there is a connected node. Save buttons will be enabled when there are config changes to save.")
-						.font(.caption)
-						.fixedSize(horizontal: false, vertical: true)
 					
 					NavigationLink {
 						ShareChannel(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
@@ -109,7 +99,7 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
-					Text("Default settings values are prefered whenever possible as they consume no bandwidth when sent over the mesh.")
+					Text("Default settings values are prefered as they consume no bandwidth when sent over the mesh.")
 						.font(.caption2)
 						.fixedSize(horizontal: false, vertical: true)
 				}
@@ -173,6 +163,35 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 				}
+				Section(header: Text("Logging")) {
+					
+					NavigationLink {
+						
+						MeshLog()
+						
+					} label: {
+
+						Image(systemName: "list.bullet.rectangle")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Mesh Log")
+					}
+					
+					NavigationLink {
+						
+						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+						
+						AdminMessageList(user: connectedNode?.user ?? UserEntity())
+					} label: {
+
+						Image(systemName: "building.columns")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Admin Message Log")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+				}
+				
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only
 				// WiFi Config - Would break connection to device
