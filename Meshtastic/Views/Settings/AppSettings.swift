@@ -156,12 +156,6 @@ struct AppSettings: View {
 					 .pickerStyle(DefaultPickerStyle())
 					
 				}
-				Section(header: Text("DEBUG")) {
-
-					NavigationLink(destination: MeshLog()) {
-						Text("View Mesh Log")
-					}
-				}
 			}
 		}
 		.navigationTitle("App Settings")

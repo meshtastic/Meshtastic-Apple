@@ -282,7 +282,9 @@ struct PositionConfig: View {
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 					
-					if bleManager.savePositionConfig(config: pc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0{
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

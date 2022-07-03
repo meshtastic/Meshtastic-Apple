@@ -311,15 +311,17 @@ struct TelemetryConfig: View {
 					tc.environmentRecoveryInterval = UInt32(environmentRecoveryInterval)
 					tc.environmentReadErrorCountThreshold = UInt32(environmentReadErrorCountThreshold)
 					
-					//if bleManager.saveRangeTestModuleConfig(config: rtc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node.user!, toUser:  node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
 						
-					//} else {
+					} else {
 						
-					//}
+					}
 				}
 			}
 			

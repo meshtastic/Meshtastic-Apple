@@ -124,7 +124,9 @@ struct DeviceConfig: View {
 						dc.serialDisabled = !serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
 						
-						if bleManager.saveDeviceConfig(config: dc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+						
+						if adminMessageId > 0 {
 							
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

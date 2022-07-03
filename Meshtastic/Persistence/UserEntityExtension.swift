@@ -13,4 +13,9 @@ extension UserEntity {
 		
 		self.value(forKey: "allMessages") as! [MessageEntity]
 	}
+	
+	var adminMessageList: [MessageEntity] {
+		
+		self.value(forKey: "adminMessages") as! [MessageEntity]
+	}
 }

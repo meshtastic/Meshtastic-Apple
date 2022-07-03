@@ -24,16 +24,15 @@ struct Contacts: View {
 
 			List(users) { (user: UserEntity) in
 				
-				let allMessages = user.value(forKey: "allMessages") as! [MessageEntity]
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
 				if  user.num != connectedNodeNum {
 				
 					NavigationLink(destination: UserMessageList(user: user)) {
 								
-					if allMessages.count > 0 {
+						if user.messageList.count > 0 {
 						
-						let mostRecent = allMessages.last
+						let mostRecent = user.messageList.last
 						let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent!.messageTimestamp ))))
 						let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 						let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
