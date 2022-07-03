@@ -263,7 +263,9 @@ struct LoRaConfig: View {
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
 					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 					
-					if bleManager.saveLoRaConfig(config: lc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

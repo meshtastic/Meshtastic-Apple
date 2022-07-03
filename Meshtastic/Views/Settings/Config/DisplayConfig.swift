@@ -203,7 +203,9 @@ struct DisplayConfig: View {
 					dc.screenOnSecs = UInt32(screenOnSeconds)
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					
-					if bleManager.saveDisplayConfig(config: dc, destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					
+					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
