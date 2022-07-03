@@ -19,13 +19,15 @@ struct Settings: View {
 
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
+	@State private var selection: String? = ""
+	
 	var body: some View {
 		NavigationView {
 			List {
 				
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
-				NavigationLink {
+				NavigationLink(tag: String("0"), selection: $selection) {
 					AppSettings()
 				} label: {
 					
@@ -196,6 +198,18 @@ struct Settings: View {
 				// Store Forward Config - Not Working, TBEAM Only
 				// WiFi Config - Would break connection to device
 				// MQTT Config - Part of WiFi
+			}
+			.onAppear {
+
+				self.bleManager.context = context
+				self.bleManager.userSettings = userSettings
+
+				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+
+					if nodes.count > 0 {
+						selection = "0"
+					}
+				}
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")
