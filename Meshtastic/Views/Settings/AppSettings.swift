@@ -119,28 +119,8 @@ struct AppSettings: View {
 						.foregroundColor(.gray)
 
 				}
-				Section(header: Text("OPTIONS")) {
+				Section(header: Text("Options")) {
 					
-					Toggle(isOn: $userSettings.provideLocation) {
-
-						Label("Provide location to mesh", systemImage: "location.circle.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
-					if userSettings.provideLocation {
-						
-						Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
-							ForEach(LocationUpdateInterval.allCases) { lu in
-								Text(lu.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						
-						Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
-							.font(.caption)
-							.listRowSeparator(.visible)
-					}
-
 					Picker("Keyboard Type", selection: $userSettings.keyboardType) {
 						ForEach(KeyboardType.allCases) { kb in
 							Text(kb.description)
@@ -155,6 +135,28 @@ struct AppSettings: View {
 					 }
 					 .pickerStyle(DefaultPickerStyle())
 					
+				}
+				
+				Section(header: Text("Phone GPS")) {
+					
+					Toggle(isOn: $userSettings.provideLocation) {
+
+						Label("Provide location to mesh", systemImage: "location.circle.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					if userSettings.provideLocation {
+						
+						Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
+							ForEach(LocationUpdateInterval.allCases) { lu in
+								Text(lu.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						
+						Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
+							.font(.caption)
+							.listRowSeparator(.visible)
+					}
 				}
 			}
 		}

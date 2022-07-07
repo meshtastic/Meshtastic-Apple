@@ -896,15 +896,18 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 				newNode.user = newUser
 			}
 
-			let position = PositionEntity(context: context)
-			position.latitudeI = nodeInfo.position.latitudeI
-			position.longitudeI = nodeInfo.position.longitudeI
-			position.altitude = nodeInfo.position.altitude
-			position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-			
-			var newPostions = [PositionEntity]()
-			newPostions.append(position)
-			newNode.positions? = NSOrderedSet(array: newPostions)
+			if nodeInfo.position.latitudeI > 0 || nodeInfo.position.longitudeI > 0 {
+				
+				let position = PositionEntity(context: context)
+				position.latitudeI = nodeInfo.position.latitudeI
+				position.longitudeI = nodeInfo.position.longitudeI
+				position.altitude = nodeInfo.position.altitude
+				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
+				
+				var newPostions = [PositionEntity]()
+				newPostions.append(position)
+				newNode.positions? = NSOrderedSet(array: newPostions)
+			}
 
 			// Look for a MyInfo
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -1132,54 +1135,59 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	
 	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-
+	
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
-
-		if fetchedNode.count == 1 {
-			
-			fetchedNode[0].id = Int64(packet.from)
-			fetchedNode[0].num = Int64(packet.from)
-			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-			fetchedNode[0].snr = packet.rxSnr
-				
-			if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
-				
-				let position = PositionEntity(context: context)
-				position.latitudeI = positionMessage.latitudeI
-				position.longitudeI = positionMessage.longitudeI
-				position.altitude = positionMessage.altitude
-				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-
-				let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-				mutablePositions.add(position)
-				
-				fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-			}
-			
-		}
 		
-		do {
+		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+			
+			// Don't save empty position packets
+			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 {
+				
+				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 
-		  try context.save()
+				if fetchedNode.count == 1 {
+			
+					let position = PositionEntity(context: context)
+					position.latitudeI = positionMessage.latitudeI
+					position.longitudeI = positionMessage.longitudeI
+					position.altitude = positionMessage.altitude
+					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 
-			if meshLogging {
-				MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					mutablePositions.add(position)
+				
+					fetchedNode[0].id = Int64(packet.from)
+					fetchedNode[0].num = Int64(packet.from)
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					fetchedNode[0].snr = packet.rxSnr
+					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+					
+					do {
+
+						try context.save()
+
+						if meshLogging {
+							MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+						}
+
+					} catch {
+
+						context.rollback()
+
+						let nsError = error as NSError
+						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+					}
+				}
+			} else {
+				
+				print("💥 Empty POSITION_APP Packet")
 			}
-
-		} catch {
-
-			context.rollback()
-
-			let nsError = error as NSError
-			print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 		}
+
 	} catch {
 
 		print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
 	}
-
 }
 
 func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
@@ -1332,7 +1340,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 			newMessage.receivedACK = false
-			newMessage.direction = "IN"
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			
 			if packet.decoded.replyID > 0 {

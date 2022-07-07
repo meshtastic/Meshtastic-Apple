@@ -51,7 +51,7 @@ struct ExternalNotificationConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -138,7 +138,7 @@ struct ExternalNotificationConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node!.myInfo?.hasWifi ?? false))
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -158,7 +158,7 @@ struct ExternalNotificationConfig: View {
 					enc.output = UInt32(output)
 					enc.outputMs = UInt32(outputMilliseconds)
 					
-					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node.user!, toUser: node.user!,  wantResponse: true)
+					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node!.user!, toUser: node!.user!,  wantResponse: true)
 					
 					if adminMessageId > 0{
 						
@@ -185,12 +185,12 @@ struct ExternalNotificationConfig: View {
 					
 					self.bleManager.context = context
 					
-					self.enabled = node.externalNotificationConfig?.enabled ?? false
-					self.alertBell = node.externalNotificationConfig?.alertBell ?? false
-					self.alertMessage = node.externalNotificationConfig?.alertMessage ?? false
-					self.active = node.externalNotificationConfig?.active ?? false
-					self.output = Int(node.externalNotificationConfig?.output ?? 0)
-					self.outputMilliseconds = Int(node.externalNotificationConfig?.outputMilliseconds ?? 0)
+					self.enabled = node!.externalNotificationConfig?.enabled ?? false
+					self.alertBell = node!.externalNotificationConfig?.alertBell ?? false
+					self.alertMessage = node!.externalNotificationConfig?.alertMessage ?? false
+					self.active = node!.externalNotificationConfig?.active ?? false
+					self.output = Int(node!.externalNotificationConfig?.output ?? 0)
+					self.outputMilliseconds = Int(node!.externalNotificationConfig?.outputMilliseconds ?? 0)
 					
 					self.hasChanges = false
 					self.initialLoad = false
@@ -198,27 +198,27 @@ struct ExternalNotificationConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node.externalNotificationConfig!.enabled { hasChanges = true	}
+				if newEnabled != node!.externalNotificationConfig!.enabled { hasChanges = true	}
 			}
 			.onChange(of: alertBell) { newAlertBell in
 				
-				if newAlertBell != node.externalNotificationConfig!.alertBell { hasChanges = true	}
+				if newAlertBell != node!.externalNotificationConfig!.alertBell { hasChanges = true	}
 			}
 			.onChange(of: alertMessage) { newAlertMessage in
 				
-				if newAlertMessage != node.externalNotificationConfig!.alertMessage { hasChanges = true	}
+				if newAlertMessage != node!.externalNotificationConfig!.alertMessage { hasChanges = true	}
 			}
 			.onChange(of: active) { newActuve in
 				
-				if newActuve != node.externalNotificationConfig!.active { hasChanges = true	}
+				if newActuve != node!.externalNotificationConfig!.active { hasChanges = true	}
 			}
 			.onChange(of: output) { newOutput in
 				
-				if newOutput != node.externalNotificationConfig!.output { hasChanges = true	}
+				if newOutput != node!.externalNotificationConfig!.output { hasChanges = true	}
 			}
 			.onChange(of: outputMilliseconds) { newOutputMs in
 				
-				if newOutputMs != node.externalNotificationConfig!.outputMilliseconds { hasChanges = true	}
+				if newOutputMs != node!.externalNotificationConfig!.outputMilliseconds { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

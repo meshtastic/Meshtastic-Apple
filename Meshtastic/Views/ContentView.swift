@@ -21,7 +21,7 @@ struct ContentView: View {
         TabView(selection: $selection) {
 			Contacts()
 				.tabItem {
-					Label("Messages", systemImage: "text.bubble")
+					Label("Messages", systemImage: "message")
 						.symbolRenderingMode(.hierarchical)
 						.symbolVariant(.none)
 

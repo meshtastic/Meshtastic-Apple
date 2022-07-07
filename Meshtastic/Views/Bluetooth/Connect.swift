@@ -1,12 +1,9 @@
 //
 //  Connect.swift
-//  MeshtasticApple
+//  Meshtastic Apple
 //
-//  Created by Garth Vander Houwen on 8/18/21.
+//  Copyright(c) Garth Vander Houwen 8/18/21.
 //
-
-// Abstract:
-//  A view allowing you to interact with nearby meshtastic nodes
 
 import SwiftUI
 import MapKit
@@ -20,7 +17,6 @@ struct Connect: View {
 	@EnvironmentObject var userSettings: UserSettings
 	
 	@State var initialLoad: Bool = true
-
 	@State var isPreferredRadio: Bool = false
 
     var body: some View {
@@ -32,158 +28,167 @@ struct Connect: View {
 		NavigationView {
 
             VStack {
-                if bleManager.isSwitchedOn {
 
-                    List {
+				List {
+					
+					if bleManager.isSwitchedOn {
 						
-						if supportedVersion == false {
+				
+					
+					if supportedVersion == false {
 
-							Section(header: Text("Upgrade your Firmware").font(.title)) {
+						Section(header: Text("Upgrade your Firmware").font(.title)) {
 
-								Text("🚨 1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion).").font(.subheadline).foregroundColor(.red)
-							}
-							.textCase(nil)
+							Text("🚨 1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion).").font(.subheadline).foregroundColor(.red)
 						}
-						
-						if bleManager.lastConnectionError.count > 0 {
+						.textCase(nil)
+					}
+					
+					if bleManager.lastConnectionError.count > 0 {
 
-							Section(header: Text("Connection Error").font(.title)) {
+						Section(header: Text("Connection Error").font(.title)) {
 
-								Text(bleManager.lastConnectionError).font(.title3).foregroundColor(.red)
-							}
-							.textCase(nil)
+							Text(bleManager.lastConnectionError).font(.title3).foregroundColor(.red)
 						}
+						.textCase(nil)
+					}
 
-						Section(header: Text("Connected Radio").font(.title)) {
+					Section(header: Text("Connected Radio").font(.title)) {
 
-                            if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
-                                HStack {
+						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+							HStack {
 
-                                    Image(systemName: "antenna.radiowaves.left.and.right")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .imageScale(.large).foregroundColor(.green)
-                                        .padding(.trailing)
+								Image(systemName: "antenna.radiowaves.left.and.right")
+									.symbolRenderingMode(.hierarchical)
+									.imageScale(.large).foregroundColor(.green)
+									.padding(.trailing)
 
-									VStack(alignment: .leading) {
+								VStack(alignment: .leading) {
 
-										if bleManager.connectedPeripheral != nil {
+									if bleManager.connectedPeripheral != nil {
 
-											Text(bleManager.connectedPeripheral.longName).font(.title2)
+										Text(bleManager.connectedPeripheral.longName).font(.title2)
 
-										}
-										Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
-											.font(.caption).foregroundColor(Color.gray)
-										if bleManager.connectedPeripheral != nil {
-											Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
-												.font(.caption).foregroundColor(Color.gray)
-											Text("Bitrate: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))
-												.font(.caption).foregroundColor(Color.gray)
-											
-											
-											Text("Channel Utilization: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))
-												.font(.caption).foregroundColor(Color.gray)
-											Text("Air Time: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))
-												.font(.caption).foregroundColor(Color.gray)
-										}
-										if bleManager.connectedPeripheral.subscribed {
-											Text("Properly Subscribed").font(.caption)
-										}
 									}
-									Spacer()
+									Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
+										.font(.caption).foregroundColor(Color.gray)
+									if bleManager.connectedPeripheral != nil {
+										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
+											.font(.caption).foregroundColor(Color.gray)
+										Text("Bitrate: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))
+											.font(.caption).foregroundColor(Color.gray)
+										
+										
+										Text("Channel Utilization: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))
+											.font(.caption).foregroundColor(Color.gray)
+										Text("Air Time: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))
+											.font(.caption).foregroundColor(Color.gray)
+									}
+									if bleManager.connectedPeripheral.subscribed {
+										Text("Properly Subscribed").font(.caption)
+									}
+								}
+								Spacer()
 
-									VStack(alignment: .center) {
+								VStack(alignment: .center) {
 
-										Text("Preferred").font(.caption2)
-										Text("Radio").font(.caption2)
-										Toggle("Preferred Radio", isOn: $isPreferredRadio)
-											.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-											.labelsHidden()
-											.onChange(of: isPreferredRadio) { value in
-												if value {
+									Text("Preferred").font(.caption2)
+									Text("Radio").font(.caption2)
+									Toggle("Preferred Radio", isOn: $isPreferredRadio)
+										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+										.labelsHidden()
+										.onChange(of: isPreferredRadio) { value in
+											if value {
 
-													if bleManager.connectedPeripheral != nil {
+												if bleManager.connectedPeripheral != nil {
 
-														let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
-														userSettings.preferredPeripheralName = deviceName
-
-													} else {
-
-														userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
-													}
-
-													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+													let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
+													userSettings.preferredPeripheralName = deviceName
 
 												} else {
 
-												if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
-
-													userSettings.preferredPeripheralId = ""
-													userSettings.preferredPeripheralName = ""
+													userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
 												}
-											}
-										}
-									}
-									
-                                }
-								.swipeActions {
 
-									Button(role: .destructive) {
-										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-											bleManager.disconnectPeripheral()
-											isPreferredRadio = false
-										}
-									} label: {
-										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-									}
-								}
-								.padding([.top, .bottom])
-								
-								
-                            } else {
-                                HStack {
-                                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .imageScale(.large).foregroundColor(.red)
-                                        .padding(.trailing)
-                                    Text("No device connected").font(.title3)
-                                }
-                                .padding()
-                            }
+												userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
 
-                        }
-						.textCase(nil)
-
-						if bleManager.peripherals.count > 0 {
-							Section(header: Text("Available Radios").font(.title)) {
-								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
-									HStack {
-										Image(systemName: "circle.fill")
-											.imageScale(.large).foregroundColor(.gray)
-											.padding(.trailing)
-										Button(action: {
-											self.bleManager.stopScanning()
-											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-
-												self.bleManager.disconnectPeripheral()
-											}
-											self.bleManager.connectTo(peripheral: peripheral.peripheral)
-											if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-
-												isPreferredRadio = true
 											} else {
 
-												isPreferredRadio = false
+											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+
+												userSettings.preferredPeripheralId = ""
+												userSettings.preferredPeripheralName = ""
 											}
-										}) {
-											Text(peripheral.name).font(.title3)
 										}
-										Spacer()
-										Text(String(peripheral.rssi) + " dB").font(.title3)
-									}.padding([.bottom, .top])
+									}
 								}
-							}.textCase(nil)
+								
+							}
+							.swipeActions {
+
+								Button(role: .destructive) {
+									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										bleManager.disconnectPeripheral()
+										isPreferredRadio = false
+									}
+								} label: {
+									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+								}
+							}
+							.padding([.top, .bottom])
+							
+							
+						} else {
+							HStack {
+								Image(systemName: "antenna.radiowaves.left.and.right.slash")
+									.symbolRenderingMode(.hierarchical)
+									.imageScale(.large).foregroundColor(.red)
+									.padding(.trailing)
+								Text("No device connected").font(.title3)
+							}
+							.padding()
 						}
-                    }
+
+					}
+					.textCase(nil)
+
+					if bleManager.peripherals.count > 0 {
+						Section(header: Text("Available Radios").font(.title)) {
+							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
+								HStack {
+									Image(systemName: "circle.fill")
+										.imageScale(.large).foregroundColor(.gray)
+										.padding(.trailing)
+									Button(action: {
+										self.bleManager.stopScanning()
+										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+
+											self.bleManager.disconnectPeripheral()
+										}
+										self.bleManager.connectTo(peripheral: peripheral.peripheral)
+										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+
+											isPreferredRadio = true
+										} else {
+
+											isPreferredRadio = false
+										}
+									}) {
+										Text(peripheral.name).font(.title3)
+									}
+									Spacer()
+									Text(String(peripheral.rssi) + " dB").font(.title3)
+								}.padding([.bottom, .top])
+							}
+						}.textCase(nil)
+					}
+						
+					} else {
+						Text("Bluetooth: OFF")
+							.foregroundColor(.red)
+							.font(.title)
+					}
+				}
 
                     HStack(alignment: .center) {
 						
@@ -250,11 +255,7 @@ struct Connect: View {
                     }
 					.padding(.bottom, 10)
 
-                } else {
-                    Text("Bluetooth: OFF")
-                        .foregroundColor(.red)
-                        .font(.title)
-                }
+         
             }
             .navigationTitle("Bluetooth Radios")
             .navigationBarItems(trailing:
@@ -272,10 +273,10 @@ struct Connect: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear(perform: {
 			
-			self.bleManager.context = context
-			self.bleManager.userSettings = userSettings
-			
 			if initialLoad {
+				
+				self.bleManager.context = context
+				self.bleManager.userSettings = userSettings
 				
 				// Ask for notification permission
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in

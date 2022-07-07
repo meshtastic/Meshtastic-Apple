@@ -178,7 +178,7 @@ struct SerialConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -302,7 +302,7 @@ struct SerialConfig: View {
 					sc.timeout = UInt32(timeout)
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
 					if adminMessageId > 0 {
 						
@@ -329,13 +329,13 @@ struct SerialConfig: View {
 					
 					self.bleManager.context = context
 					
-					self.enabled = node.serialConfig?.enabled ?? false
-					self.echo = node.serialConfig?.echo ?? false
-					self.rxd = Int(node.serialConfig?.rxd ?? 0)
-					self.txd = Int(node.serialConfig?.txd ?? 0)
-					self.baudRate = Int(node.serialConfig?.baudRate ?? 0)
-					self.timeout = Int(node.serialConfig?.timeout ?? 0)
-					self.mode = Int(node.serialConfig?.mode ?? 0)
+					self.enabled = node!.serialConfig?.enabled ?? false
+					self.echo = node!.serialConfig?.echo ?? false
+					self.rxd = Int(node!.serialConfig?.rxd ?? 0)
+					self.txd = Int(node!.serialConfig?.txd ?? 0)
+					self.baudRate = Int(node!.serialConfig?.baudRate ?? 0)
+					self.timeout = Int(node!.serialConfig?.timeout ?? 0)
+					self.mode = Int(node!.serialConfig?.mode ?? 0)
 					
 					self.hasChanges = false
 					self.initialLoad = false
@@ -343,31 +343,31 @@ struct SerialConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node.serialConfig!.enabled { hasChanges = true	}
+				if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
 			}
 			.onChange(of: echo) { newEcho in
 				
-				if newEcho != node.serialConfig!.echo { hasChanges = true	}
+				if newEcho != node!.serialConfig!.echo { hasChanges = true	}
 			}
 			.onChange(of: rxd) { newRxd in
 				
-				if newRxd != node.serialConfig!.rxd { hasChanges = true	}
+				if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
 			}
 			.onChange(of: txd) { newTxd in
 				
-				if newTxd != node.serialConfig!.txd { hasChanges = true	}
+				if newTxd != node!.serialConfig!.txd { hasChanges = true	}
 			}
 			.onChange(of: baudRate) { newBaud in
 				
-				if newBaud != node.serialConfig!.baudRate { hasChanges = true	}
+				if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
 			}
 			.onChange(of: timeout) { newTimeout in
 				
-				if newTimeout != node.serialConfig!.timeout { hasChanges = true	}
+				if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
 			}
 			.onChange(of: mode) { newMode in
 				
-				if newMode != node.serialConfig!.mode { hasChanges = true	}
+				if newMode != node!.serialConfig!.mode { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
