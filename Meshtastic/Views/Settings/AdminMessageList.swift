@@ -16,7 +16,6 @@ import CoreLocation
 struct AdminMessageList: View {
 	
 	@Environment(\.managedObjectContext) var context
-	
 	@EnvironmentObject var bleManager: BLEManager
 
 	var user: UserEntity?
@@ -38,10 +37,7 @@ struct AdminMessageList: View {
 							Image(systemName: "checkmark.square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Acknowledged: ")
-								.foregroundColor(.gray)
-								.font(.caption)
-							DateTimeText(dateTime: Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)))
+							Text("Acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .time)")
 								.foregroundColor(.gray)
 								.font(.caption)
 							
@@ -49,7 +45,7 @@ struct AdminMessageList: View {
 							Image(systemName: "square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Acknowledged")
+							Text("Not Acknowledged")
 								.foregroundColor(.gray)
 								.font(.caption)
 						}
@@ -57,7 +53,7 @@ struct AdminMessageList: View {
 				}
 			}
 		}
-		.navigationTitle("Admin Message History")
+		.navigationTitle("Admin Message Log")
 		.navigationBarItems(trailing:
 
 			ZStack {

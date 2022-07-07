@@ -58,22 +58,18 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 // Default of 0 is One Minute
 enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 0
+	case oneMinute = 60
 	case fiveMinutes = 300
-	case tenMinutes = 600
+	case tenMinutes = 0
 	case fifteenMinutes = 900
-	case max = 2147483647
+	case thirtyMinutes = 1800
+	case oneHour = 3600
+	case max = 31536000 // One Year
 
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-			case .fifteenSeconds:
-				return "Fifteen Seconds"
-			case .thirtySeconds:
-				return "Thirty Seconds"
 			case .oneMinute:
 				return "One Minute"
 			case .fiveMinutes:
@@ -82,6 +78,10 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 				return "Ten Minutes"
 			case .fifteenMinutes:
 				return "Fifteen Minutes"
+			case .thirtyMinutes:
+				return "Thirty Minutes"
+			case .oneHour:
+				return "One Hour"
 			case .max:
 				return "Always On"
 			}
@@ -125,7 +125,8 @@ struct DisplayConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges = false
@@ -203,7 +204,7 @@ struct DisplayConfig: View {
 					dc.screenOnSecs = UInt32(screenOnSeconds)
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
 					if adminMessageId > 0 {
 						
@@ -230,30 +231,30 @@ struct DisplayConfig: View {
 				
 				self.bleManager.context = context
 
-				self.gpsFormat = Int(node.displayConfig?.gpsFormat ?? 0)
-				self.screenOnSeconds = Int(node.displayConfig?.screenOnSeconds ?? 0)
-				self.screenCarouselInterval = Int(node.displayConfig?.screenCarouselInterval ?? 0)
+				self.gpsFormat = Int(node!.displayConfig?.gpsFormat ?? 0)
+				self.screenOnSeconds = Int(node!.displayConfig?.screenOnSeconds ?? 0)
+				self.screenCarouselInterval = Int(node!.displayConfig?.screenCarouselInterval ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
 			
-			if newScreenSecs != node.displayConfig!.screenOnSeconds {
+			if newScreenSecs != node!.displayConfig!.screenOnSeconds {
 				
 				hasChanges = true
 			}
 		}
 		.onChange(of: screenCarouselInterval) { newCarouselSecs in
 			
-			if newCarouselSecs != node.displayConfig!.screenCarouselInterval {
+			if newCarouselSecs != node!.displayConfig!.screenCarouselInterval {
 				
 				hasChanges = true
 			}
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in
 			
-			if newGpsFormat != node.displayConfig!.gpsFormat {
+			if newGpsFormat != node!.displayConfig!.gpsFormat {
 				
 				hasChanges = true
 			}

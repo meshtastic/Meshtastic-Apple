@@ -96,8 +96,8 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 	case LongFast = 0
 	case LongSlow = 1
 	case VLongSlow = 2
-	case MidSlow = 3
-	case MidFast = 4
+	case MedSlow = 3
+	case MedFast = 4
 	case ShortSlow = 5
 	case ShortFast = 6
 	
@@ -112,9 +112,9 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 				return "Long Range - Slow"
 			case .VLongSlow:
 				return "Very Long Range - Slow"
-			case .MidSlow:
+			case .MedSlow:
 				return "Medium Range - Slow"
-			case .MidFast:
+			case .MedFast:
 				return "Medium Range - Fast"
 			case .ShortSlow:
 				return "Short Range - Slow"
@@ -133,9 +133,9 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 				return Config.LoRaConfig.ModemPreset.longSlow
 			case .VLongSlow:
 				return Config.LoRaConfig.ModemPreset.vlongSlow
-			case .MidSlow:
+			case .MedSlow:
 				return Config.LoRaConfig.ModemPreset.medSlow
-			case .MidFast:
+			case .MedFast:
 				return Config.LoRaConfig.ModemPreset.medFast
 			case .ShortSlow:
 				return Config.LoRaConfig.ModemPreset.shortSlow
@@ -185,7 +185,7 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -263,7 +263,7 @@ struct LoRaConfig: View {
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
 					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 					
-					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
 					if adminMessageId > 0 {
 						
@@ -290,35 +290,29 @@ struct LoRaConfig: View {
 			if self.initialLoad{
 				
 				self.bleManager.context = context
-				self.hopLimit = Int(node.loRaConfig?.hopLimit ?? 0)
-				self.region = Int(node.loRaConfig?.regionCode ?? 0)
-				self.modemPreset = Int(node.loRaConfig?.modemPreset ?? 0)
+				self.hopLimit = Int(node!.loRaConfig?.hopLimit ?? 0)
+				self.region = Int(node!.loRaConfig?.regionCode ?? 0)
+				self.modemPreset = Int(node!.loRaConfig?.modemPreset ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
 		.onChange(of: region) { newRegion in
 			
-			if node.loRaConfig != nil {
-				
-				if newRegion != node.loRaConfig!.regionCode {
-					
-					hasChanges = true
-				}
+			if node!.loRaConfig != nil {
+				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
 			}
 		}
 		.onChange(of: modemPreset) { newModemPreset in
 			
-			if newModemPreset != node.loRaConfig!.modemPreset {
-				
-				hasChanges = true
+			if node!.loRaConfig != nil {
+				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
 			}
 		}
 		.onChange(of: hopLimit) { newHopLimit in
 			
-			if newHopLimit != node.loRaConfig!.hopLimit {
-				
-				hasChanges = true
+			if node!.loRaConfig != nil {
+				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

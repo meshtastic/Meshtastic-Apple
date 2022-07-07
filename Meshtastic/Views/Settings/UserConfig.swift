@@ -11,7 +11,7 @@ struct UserConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -112,7 +112,7 @@ struct UserConfig: View {
 						u.shortName = shortName
 						u.longName = longName
 						
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+						let adminMessageId = bleManager.saveUser(config: u, fromUser: node?.user, toUser: node?.user, wantResponse: true)
 						
 						if adminMessageId > 0 {
 							
@@ -137,22 +137,22 @@ struct UserConfig: View {
 				
 				self.bleManager.context = context
 
-				self.shortName = node.user!.shortName ?? ""
-				self.longName = node.user!.longName ?? ""
+				self.shortName = node?.user!.shortName ?? ""
+				self.longName = node?.user!.longName ?? ""
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
 		.onChange(of: shortName) { newShort in
 			
-			if newShort != node.user!.shortName {
+			if newShort != node?.user!.shortName {
 				
 				hasChanges = true
 			}
 		}
 		.onChange(of: longName) { newLong in
 			
-			if newLong != node.user!.longName {
+			if newLong != node?.user!.longName {
 				
 				hasChanges = true
 			}

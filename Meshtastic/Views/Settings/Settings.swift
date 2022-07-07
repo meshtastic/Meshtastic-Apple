@@ -19,18 +19,17 @@ struct Settings: View {
 
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
-	@State private var selection: String? = ""
-	
 	var body: some View {
 		NavigationView {
+			
 			List {
 				
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
-				NavigationLink(tag: String("0"), selection: $selection) {
+				NavigationLink() {
 					AppSettings()
 				} label: {
-					
+
 					Image(systemName: "gearshape")
 						.symbolRenderingMode(.hierarchical)
 					Text("App Settings")
@@ -39,7 +38,7 @@ struct Settings: View {
 				Section("Radio Configuration") {
 					
 					NavigationLink {
-						ShareChannel(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						ShareChannel(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "qrcode")
 							.symbolRenderingMode(.hierarchical)
@@ -48,7 +47,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "person.crop.rectangle.fill")
@@ -60,7 +59,7 @@ struct Settings: View {
 					
 					NavigationLink() {
 						
-						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "dot.radiowaves.left.and.right")
@@ -71,7 +70,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "flipphone")
@@ -81,7 +80,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "display")
@@ -91,7 +90,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 				
 					NavigationLink {
-						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "location")
@@ -108,7 +107,7 @@ struct Settings: View {
 				Section("Module Configuration") {
 					
 					NavigationLink {
-						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 
 						Image(systemName: "list.bullet.rectangle.fill")
@@ -119,7 +118,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "megaphone")
@@ -130,7 +129,7 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
-						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "point.3.connected.trianglepath.dotted")
@@ -139,11 +138,9 @@ struct Settings: View {
 						Text("Range Test")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
-						//nodes.first(where: { $0.num == connectedNodeNum })?.myInfo?.hasWifi ?? true)//||
-						//	  nodes.first(where: { $0.num == connectedNodeNum })!.rangeTestConfig != nil)
 					
 					NavigationLink {
-						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "terminal")
@@ -155,7 +152,7 @@ struct Settings: View {
 					
 
 					NavigationLink {
-						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }) ?? NodeInfoEntity())
+						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "chart.xyaxis.line")
@@ -183,7 +180,7 @@ struct Settings: View {
 						
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 						
-						AdminMessageList(user: connectedNode?.user ?? UserEntity())
+						AdminMessageList(user: connectedNode?.user)
 					} label: {
 
 						Image(systemName: "building.columns")
@@ -203,13 +200,7 @@ struct Settings: View {
 
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
-
-				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-
-					if nodes.count > 0 {
-						selection = "0"
-					}
-				}
+				
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")

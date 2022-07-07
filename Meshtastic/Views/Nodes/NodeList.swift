@@ -15,14 +15,16 @@ struct NodeList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	
+	@State var initialLoad: Bool = true
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
-		private var nodes: FetchedResults<NodeInfoEntity>
+	private var nodes: FetchedResults<NodeInfoEntity>
 
-	@State private var selection: String?
+	@State private var selection: String? = ""
 
     var body: some View {
 
@@ -102,13 +104,17 @@ struct NodeList: View {
             .navigationTitle("All Nodes")
 			.onAppear {
 
-				self.bleManager.context = context
-				self.bleManager.userSettings = userSettings
+				if initialLoad {
+					
+					self.bleManager.context = context
+					self.bleManager.userSettings = userSettings
+					self.initialLoad = false
 
-				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 
-					if nodes.count > 0 {
-						selection = "0"
+						if nodes.count > 0 {
+							selection = "0"
+						}
 					}
 				}
 			}

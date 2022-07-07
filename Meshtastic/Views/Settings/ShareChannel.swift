@@ -37,7 +37,7 @@ struct ShareChannel: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var text =  "https://meshtastic.org/e/#test"
 	var qrCodeImage = QrCodeImage()

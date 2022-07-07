@@ -179,7 +179,7 @@ struct TelemetryConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -289,7 +289,7 @@ struct TelemetryConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -311,7 +311,7 @@ struct TelemetryConfig: View {
 					tc.environmentRecoveryInterval = UInt32(environmentRecoveryInterval)
 					tc.environmentReadErrorCountThreshold = UInt32(environmentReadErrorCountThreshold)
 					
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node.user!, toUser:  node.user!, wantResponse: true)
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!, wantResponse: true)
 					
 					if adminMessageId > 0 {
 						
@@ -338,14 +338,14 @@ struct TelemetryConfig: View {
 					
 					self.bleManager.context = context
 					
-					self.deviceUpdateInterval = Int(node.telemetryConfig?.deviceUpdateInterval ?? 0)
-					self.environmentUpdateInterval = Int(node.telemetryConfig?.environmentUpdateInterval ?? 0)
-					self.environmentMeasurementEnabled = node.telemetryConfig?.environmentMeasurementEnabled ?? false
-					self.environmentSensorType = Int(node.telemetryConfig?.environmentSensorType ?? 0)
-					self.environmentScreenEnabled = node.telemetryConfig?.environmentScreenEnabled ?? false
-					self.environmentDisplayFahrenheit = node.telemetryConfig?.environmentDisplayFahrenheit ?? false
-					self.environmentRecoveryInterval = Int(node.telemetryConfig?.environmentRecoveryInterval ?? 0)
-					self.environmentReadErrorCountThreshold = Int(node.telemetryConfig?.environmentReadErrorCountThreshold ?? 0)
+					self.deviceUpdateInterval = Int(node!.telemetryConfig?.deviceUpdateInterval ?? 0)
+					self.environmentUpdateInterval = Int(node!.telemetryConfig?.environmentUpdateInterval ?? 0)
+					self.environmentMeasurementEnabled = node!.telemetryConfig?.environmentMeasurementEnabled ?? false
+					self.environmentSensorType = Int(node!.telemetryConfig?.environmentSensorType ?? 0)
+					self.environmentScreenEnabled = node!.telemetryConfig?.environmentScreenEnabled ?? false
+					self.environmentDisplayFahrenheit = node!.telemetryConfig?.environmentDisplayFahrenheit ?? false
+					self.environmentRecoveryInterval = Int(node!.telemetryConfig?.environmentRecoveryInterval ?? 0)
+					self.environmentReadErrorCountThreshold = Int(node!.telemetryConfig?.environmentReadErrorCountThreshold ?? 0)
 					
 					self.hasChanges = false
 					self.initialLoad = false
@@ -353,35 +353,35 @@ struct TelemetryConfig: View {
 			}
 			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
 				
-				if newDeviceInterval != node.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
+				if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
 			}
 			.onChange(of: environmentUpdateInterval) { newEnvInterval in
 				
-				if newEnvInterval != node.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
+				if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
 			}
 			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
 				
-				if newEnvEnabled != node.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
+				if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
 			}
 			.onChange(of: environmentSensorType) { newEnvSensorType in
 				
-				if newEnvSensorType != node.telemetryConfig!.environmentSensorType { hasChanges = true	}
+				if newEnvSensorType != node!.telemetryConfig!.environmentSensorType { hasChanges = true	}
 			}
 			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
 				
-				if newEnvScreenEnabled != node.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
+				if newEnvScreenEnabled != node!.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
 			}
 			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
 				
-				if newEnvDisplayF != node.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
+				if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
 			}
 			.onChange(of: environmentRecoveryInterval) { newEnvRecoveryInterval in
 				
-				if newEnvRecoveryInterval != node.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
+				if newEnvRecoveryInterval != node!.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
 			}
 			.onChange(of: environmentReadErrorCountThreshold) { newEnvReadErrorCountThreshold in
 				
-				if newEnvReadErrorCountThreshold != node.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
+				if newEnvReadErrorCountThreshold != node!.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

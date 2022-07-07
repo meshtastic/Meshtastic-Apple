@@ -74,7 +74,7 @@ struct MeshLog: View {
 				
 			} label: {
 				
-				Label("Download Log", systemImage: "arrow.down.circle.fill")
+				Label("Save Log", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)

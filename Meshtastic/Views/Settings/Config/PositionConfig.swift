@@ -111,7 +111,8 @@ struct PositionConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
+	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges = false
@@ -282,7 +283,7 @@ struct PositionConfig: View {
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 					
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
 					if adminMessageId > 0{
 						
@@ -308,36 +309,27 @@ struct PositionConfig: View {
 			if self.initialLoad{
 				
 				self.bleManager.context = context
-				self.smartPositionEnabled = node.positionConfig?.smartPositionEnabled ?? true
-				self.deviceGpsEnabled = node.positionConfig?.deviceGpsEnabled ?? true
-				self.fixedPosition = node.positionConfig?.fixedPosition ?? false
-				self.gpsUpdateInterval = Int(node.positionConfig?.gpsUpdateInterval ?? 0)
-				self.gpsAttemptTime = Int(node.positionConfig?.gpsAttemptTime ?? 0)
-				self.positionBroadcastSeconds = Int(node.positionConfig?.positionBroadcastSeconds ?? 0)
+				self.smartPositionEnabled = node!.positionConfig?.smartPositionEnabled ?? true
+				self.deviceGpsEnabled = node!.positionConfig?.deviceGpsEnabled ?? true
+				self.fixedPosition = node!.positionConfig?.fixedPosition ?? false
+				self.gpsUpdateInterval = Int(node!.positionConfig?.gpsUpdateInterval ?? 0)
+				self.gpsAttemptTime = Int(node!.positionConfig?.gpsAttemptTime ?? 0)
+				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPosition in
 			
-			if newSmartPosition != node.positionConfig!.smartPositionEnabled {
-				
-				hasChanges = true
-			}
+			if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
 			
-			if newDeviceGps != node.positionConfig!.deviceGpsEnabled {
-				
-				hasChanges = true
-			}
+			if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
 		}
 		.onChange(of: fixedPosition) { newFixed in
 			
-			if newFixed != node.positionConfig!.fixedPosition {
-				
-				hasChanges = true
-			}
+			if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

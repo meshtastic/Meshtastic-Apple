@@ -13,6 +13,7 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 	case rakRotaryEncoder = 1
 	case tbeamThreeButtonScreen = 2
 	case cardKB = 3
+	case facesKB = 4
 	
 	var id: Int { self.rawValue }
 	var description: String {
@@ -26,7 +27,9 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 			case .tbeamThreeButtonScreen:
 				return "TBEAM 3 Button OLED Screen"
 			case .cardKB:
-				return "Card KB"
+				return "M5 Stack Card KeyBoard"
+			case .facesKB:
+				return "M5 Stack Faces KeyBoard"
 			}
 		}
 	}
@@ -97,7 +100,7 @@ struct CannedMessagesConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
@@ -260,7 +263,6 @@ struct CannedMessagesConfig: View {
 				}
 				.disabled(configPreset > 0)
 			}
-			.disabled(!(node.myInfo?.hasWifi ?? false))
 			
 			Button {
 							
@@ -270,7 +272,7 @@ struct CannedMessagesConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -290,7 +292,7 @@ struct CannedMessagesConfig: View {
 					if rotary1Enabled {
 						
 						/// Input event origin accepted by the canned messages
-						/// Can be e.g. "rotEnc1", "upDownEnc1" or keyword "_any"
+						/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" 623or keyword "_any"
 						cmc.allowInputSource = "rotEnc1"
 						
 					} else if updown1Enabled {
@@ -308,7 +310,7 @@ struct CannedMessagesConfig: View {
 					cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 					cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 						
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -331,13 +333,13 @@ struct CannedMessagesConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node.cannedMessageConfig?.enabled ?? false
-					self.sendBell = node.cannedMessageConfig?.sendBell ?? false
-					self.rotary1Enabled = node.cannedMessageConfig?.rotary1Enabled ?? false
-					self.updown1Enabled = node.cannedMessageConfig?.updown1Enabled ?? false
-					self.inputbrokerPinA = Int(node.cannedMessageConfig?.inputbrokerPinA ?? 0)
-					self.inputbrokerPinB = Int(node.cannedMessageConfig?.inputbrokerPinB ?? 0)
-					self.inputbrokerPinPress = Int(node.cannedMessageConfig?.inputbrokerPinPress ?? 0)
+					self.enabled = node!.cannedMessageConfig?.enabled ?? false
+					self.sendBell = node!.cannedMessageConfig?.sendBell ?? false
+					self.rotary1Enabled = node!.cannedMessageConfig?.rotary1Enabled ?? false
+					self.updown1Enabled = node!.cannedMessageConfig?.updown1Enabled ?? false
+					self.inputbrokerPinA = Int(node!.cannedMessageConfig?.inputbrokerPinA ?? 0)
+					self.inputbrokerPinB = Int(node!.cannedMessageConfig?.inputbrokerPinB ?? 0)
+					self.inputbrokerPinPress = Int(node!.cannedMessageConfig?.inputbrokerPinPress ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}
@@ -361,35 +363,35 @@ struct CannedMessagesConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node.cannedMessageConfig!.enabled { hasChanges = true }
+				if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
 			}
 			.onChange(of: sendBell) { newBell in
 				
-				if newBell != node.cannedMessageConfig!.sendBell { hasChanges = true }
+				if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
 			}
 			.onChange(of: inputbrokerPinA) { newPinA in
 				
-				if newPinA != node.cannedMessageConfig!.inputbrokerPinA { hasChanges = true	}
+				if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerPinB) { newPinB in
 				
-				if newPinB != node.cannedMessageConfig!.inputbrokerPinB { hasChanges = true	}
+				if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerPinPress) { newPinPress in
 				
-				if newPinPress != node.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true	}
+				if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerEventCw) { newKeyA in
 				
-				if newKeyA != node.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
+				if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerEventCcw) { newKeyB in
 				
-				if newKeyB != node.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true	}
+				if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerEventPress) { newKeyPress in
 				
-				if newKeyPress != node.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true	}
+				if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true	}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

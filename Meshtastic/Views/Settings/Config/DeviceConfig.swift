@@ -51,7 +51,7 @@ struct DeviceConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
-	var node: NodeInfoEntity
+	var node: NodeInfoEntity?
 	
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -124,7 +124,7 @@ struct DeviceConfig: View {
 						dc.serialDisabled = !serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
 						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node.user!, toUser: node.user!, wantResponse: true)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 						
 						if adminMessageId > 0 {
 							
@@ -153,7 +153,7 @@ struct DeviceConfig: View {
 				) {
 					Button("Erase all device settings?", role: .destructive) {
 						
-						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: false) {
+						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: true) {
 							
 							print("Factory Reset Failed")
 						}
@@ -176,33 +176,24 @@ struct DeviceConfig: View {
 				
 				self.bleManager.context = context
 
-				self.deviceRole = Int(node.deviceConfig?.role ?? 0)
-				self.serialEnabled = (node.deviceConfig?.serialEnabled ?? true)
-				self.debugLogEnabled = node.deviceConfig?.debugLogEnabled ?? false
+				self.deviceRole = Int(node!.deviceConfig?.role ?? 0)
+				self.serialEnabled = (node!.deviceConfig?.serialEnabled ?? true)
+				self.debugLogEnabled = node!.deviceConfig?.debugLogEnabled ?? false
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
 		.onChange(of: deviceRole) { newRole in
 			
-			if newRole != node.deviceConfig!.role {
-				
-				hasChanges = true
-			}
+			if newRole != node!.deviceConfig!.role { hasChanges = true }
 		}
 		.onChange(of: serialEnabled) { newSerial in
 			
-			if newSerial != node.deviceConfig!.serialEnabled {
-				
-				hasChanges = true
-			}
+			if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
 		}
 		.onChange(of: debugLogEnabled) { newDebugLog in
 			
-			if newDebugLog != node.deviceConfig!.debugLogEnabled {
-				
-				hasChanges = true
-			}
+			if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
