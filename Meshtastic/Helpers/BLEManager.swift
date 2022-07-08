@@ -1259,12 +1259,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 	}
 	
-	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
 		
 		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
+		//adminPacket.setCannedMessageModulePart1 = messages
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -1315,6 +1316,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		return newMessageId
 	}
+	
+	
 	
 	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
 		

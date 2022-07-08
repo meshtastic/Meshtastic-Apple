@@ -32,6 +32,7 @@
 		DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158B2824A91E0032668E /* module_config.pb.swift */; };
 		DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158D2824AA7E0032668E /* config.pb.swift */; };
 		DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */; };
+		DD4F23CD28779A3C001D37CB /* TelemetryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */; };
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
@@ -121,6 +122,7 @@
 		DD4C158B2824A91E0032668E /* module_config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = module_config.pb.swift; sourceTree = "<group>"; };
 		DD4C158D2824AA7E0032668E /* config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = config.pb.swift; sourceTree = "<group>"; };
 		DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
+		DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
 		DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 4.xcdatamodel"; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
 				DD2E65252767A01F00E45FC5 /* NodeDetail.swift */,
 				DD73FD1028750779000852D6 /* LocationHistory.swift */,
+				DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */,
 			);
 			path = Nodes;
 			sourceTree = "<group>";
@@ -620,6 +623,7 @@
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
+				DD4F23CD28779A3C001D37CB /* TelemetryLog.swift in Sources */,
 				DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,

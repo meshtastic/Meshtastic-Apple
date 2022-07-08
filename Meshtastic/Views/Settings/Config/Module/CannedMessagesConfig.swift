@@ -127,6 +127,8 @@ struct CannedMessagesConfig: View {
 	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
 	
+	@State var messagesPart1 = ""
+	
 	var body: some View {
 		
 		VStack {
@@ -156,6 +158,10 @@ struct CannedMessagesConfig: View {
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 					
+				}
+				Section(header: Text("Messages")) {
+					
+					TextEditor(text: $messagesPart1)
 				}
 				Section(header: Text("Control Type")) {
 					
@@ -310,7 +316,7 @@ struct CannedMessagesConfig: View {
 					cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 					cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, messages: "Where are you garth?, Hello",fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 						
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -363,11 +369,22 @@ struct CannedMessagesConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
+				if node!.cannedMessageConfig != nil {
+				
+					if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
+				}
 			}
 			.onChange(of: sendBell) { newBell in
 				
 				if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
+			}
+			.onChange(of: rotary1Enabled) { newRot1 in
+				
+				if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
+			}
+			.onChange(of: updown1Enabled) { newUpDown in
+				
+				if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true	}
 			}
 			.onChange(of: inputbrokerPinA) { newPinA in
 				

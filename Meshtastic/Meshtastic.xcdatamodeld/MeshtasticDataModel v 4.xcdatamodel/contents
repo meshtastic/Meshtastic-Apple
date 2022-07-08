@@ -166,6 +166,7 @@
         <attribute name="channelUtilization" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="current" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="gasResistance" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="metricsType" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="relativeHumidity" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="temperature" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -204,7 +205,7 @@
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
         <element name="SerialConfigEntity" positionX="54" positionY="153" width="128" height="164"/>
         <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="179"/>
-        <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="194"/>
+        <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="215"/>
     </elements>
 </model>
