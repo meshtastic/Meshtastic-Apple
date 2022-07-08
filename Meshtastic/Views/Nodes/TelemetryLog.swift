@@ -179,7 +179,7 @@ struct TelemetryLog: View {
 							if tel.metricsType == 0 {
 								
 								// Device Metrics
-								HStack {
+								VStack {
 								
 									Text("Device Metrics")
 										.font(.title3)
@@ -208,9 +208,6 @@ struct TelemetryLog: View {
 											.font(.callout)
 									}
 									
-								}
-								HStack {
-									
 									Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
 										.foregroundColor(.gray)
 										.font(.callout)
@@ -237,7 +234,7 @@ struct TelemetryLog: View {
 								
 								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°F" : "°C"
 								
-								HStack {
+								VStack {
 								
 									Text("Environment Metrics")
 										.font(.title3)
@@ -288,8 +285,6 @@ struct TelemetryLog: View {
 											.foregroundColor(.gray)
 											.font(.callout)
 									}
-								}
-								HStack {
 									
 									if  sensor == SensorTypes.bme280 ||
 										sensor == SensorTypes.bme680 {
