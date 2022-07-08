@@ -1271,7 +1271,7 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
-		let telemetry = TelemetryEntity(context: context)
+			let telemetry = TelemetryEntity(context: context)
 		
 		let fetchNodeTelemetryRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -1282,24 +1282,32 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 
 			if fetchedNode.count == 1 {
 				
-				// Device Metrics
-				telemetry.airUtilTx = telemetryMessage.deviceMetrics.airUtilTx
-				telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
-				telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
-				telemetry.voltage = telemetryMessage.deviceMetrics.voltage
+				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
+					
+					// Device Metrics
+					telemetry.airUtilTx = telemetryMessage.deviceMetrics.airUtilTx
+					telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
+					telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
+					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
+					telemetry.metricsType = 0
+					
+				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 				
-				// Environment Metrics
-				telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
-				telemetry.current = telemetryMessage.environmentMetrics.current
-				telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
-				telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
-				telemetry.temperature = telemetryMessage.environmentMetrics.temperature
+					// Environment Metrics
+					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
+					telemetry.current = telemetryMessage.environmentMetrics.current
+					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
+					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
+					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
+					telemetry.metricsType = 1
+					
+				}
+				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
 				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
 				mutableTelemetries.add(telemetry)
 				
-				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
+				fetchedNode[0].lastHeard = telemetry.time
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
-				fetchedNode[0].objectWillChange.send()
 			}
 			
 			try context.save()

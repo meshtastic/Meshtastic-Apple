@@ -69,6 +69,21 @@ struct NodeDetail: View {
 							}
 							
 							
+							
+						}
+					} else {
+						
+						Image(node.user?.hwModel ?? "UNSET")
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+							.cornerRadius(10)
+							.frame(width: bounds.size.width, height: bounds.size.height / 2)
+					}
+						
+					List {
+						
+						if (node.positions?.count ?? 0) > 0 {
+							
 							NavigationLink {
 								LocationHistory(node: node)
 							} label: {
@@ -80,20 +95,30 @@ struct NodeDetail: View {
 								Text("Position History \(node.positions?.count ?? 0) Points")
 									.font(.title2)
 							}
+							.fixedSize(horizontal: false, vertical: true)
 						}
-					} else {
 						
-						Image(node.user?.hwModel ?? "UNSET")
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.cornerRadius(10)
-							.frame(width: bounds.size.width, height: bounds.size.height / 2)
+						NavigationLink {
+							TelemetryLog(node: node)
+						} label: {
+
+							Image(systemName: "chart.xyaxis.line")
+								.symbolRenderingMode(.hierarchical)
+								.font(.title)
+
+							Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+								.font(.title2)
+						}
+						.fixedSize(horizontal: false, vertical: true)
+						
 					}
-					
-	
+					.frame(height: 160)
+									  
 					
 					ScrollView {
-													
+											
+
+						
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
 							HStack {
 								
