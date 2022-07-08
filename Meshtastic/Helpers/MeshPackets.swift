@@ -1299,6 +1299,8 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
 					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
 					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
+					telemetry.current = telemetryMessage.environmentMetrics.current
+					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
 					telemetry.metricsType = 1
 					
 				}
