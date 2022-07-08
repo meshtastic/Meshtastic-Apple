@@ -272,6 +272,7 @@ struct SerialConfig: View {
 						.font(.caption)
 				}
 			}
+			.disabled(!(node!.myInfo?.hasWifi ?? false))
 			
 			Button {
 							
@@ -281,7 +282,7 @@ struct SerialConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node!.myInfo?.hasWifi ?? false))
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)

@@ -1259,13 +1259,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 	}
 	
-	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
 		
 		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
-		//adminPacket.setCannedMessageModulePart1 = messages
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -1317,7 +1316,62 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return newMessageId
 	}
 	
-	
+	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+		
+		var newMessageId: Int64 = 0
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setCannedMessageModulePart1 = messages
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId =  Int64(meshPacket.id)
+			newMessageId = newMessage.messageId
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.admin = true
+			newMessage.adminDescription = "Saved Canned Message Module Messages for \(toUser.longName ?? "Unknown")"
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			newMessage.messagePayload = messages
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved Canned Message Module Messages Admin Message for node: \(String(toUser.num))") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
+		}
+		return newMessageId
+	}
 	
 	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
 		
@@ -1546,5 +1600,36 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		return newMessageId
+	}
+	
+	// Send an admin message to a radio, save a message to core data for logging
+	private func sendAdminMessageToRadio(adminDescription: String, messageId: Int64, fromUser: UserEntity, toUser: UserEntity, binaryData: Data) {
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						
+			let newMessage = MessageEntity(context: context!)
+			newMessage.messageId =  Int64(messageId)
+			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
+			newMessage.receivedACK = false
+			newMessage.admin = true
+			newMessage.adminDescription = adminDescription
+			newMessage.fromUser = fromUser
+			newMessage.toUser = toUser
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 \(adminDescription)") }
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error inserting new core data MessageEntity: \(nsError)")
+			}
+		}
 	}
 }

@@ -135,7 +135,7 @@ struct Settings: View {
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Range Test")
+						Text("Range Test (ESP32 Only)")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
@@ -146,7 +146,7 @@ struct Settings: View {
 						Image(systemName: "terminal")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Serial")
+						Text("Serial (ESP32 Only)")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
