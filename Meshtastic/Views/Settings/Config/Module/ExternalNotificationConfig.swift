@@ -198,27 +198,45 @@ struct ExternalNotificationConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node!.externalNotificationConfig!.enabled { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+					
+					if newEnabled != node!.externalNotificationConfig!.enabled { hasChanges = true }
+				}
 			}
 			.onChange(of: alertBell) { newAlertBell in
 				
-				if newAlertBell != node!.externalNotificationConfig!.alertBell { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+					
+					if newAlertBell != node!.externalNotificationConfig!.alertBell { hasChanges = true }
+				}
 			}
 			.onChange(of: alertMessage) { newAlertMessage in
 				
-				if newAlertMessage != node!.externalNotificationConfig!.alertMessage { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+					
+					if newAlertMessage != node!.externalNotificationConfig!.alertMessage { hasChanges = true }
+				}
 			}
 			.onChange(of: active) { newActuve in
 				
-				if newActuve != node!.externalNotificationConfig!.active { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+				
+					if newActuve != node!.externalNotificationConfig!.active { hasChanges = true }
+				}
 			}
 			.onChange(of: output) { newOutput in
 				
-				if newOutput != node!.externalNotificationConfig!.output { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+				
+					if newOutput != node!.externalNotificationConfig!.output { hasChanges = true }
+				}
 			}
 			.onChange(of: outputMilliseconds) { newOutputMs in
 				
-				if newOutputMs != node!.externalNotificationConfig!.outputMilliseconds { hasChanges = true	}
+				if node != nil && node!.externalNotificationConfig != nil {
+				
+					if newOutputMs != node!.externalNotificationConfig!.outputMilliseconds { hasChanges = true }
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

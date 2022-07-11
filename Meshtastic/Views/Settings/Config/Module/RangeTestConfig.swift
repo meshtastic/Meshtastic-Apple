@@ -148,15 +148,24 @@ struct RangeTestConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node!.rangeTestConfig!.enabled { hasChanges = true }
+				if node != nil && node!.rangeTestConfig != nil {
+					
+					if newEnabled != node!.rangeTestConfig!.enabled { hasChanges = true }
+				}
 			}
 			.onChange(of: save) { newSave in
 				
-				if newSave != node!.rangeTestConfig!.save { hasChanges = true }
+				if node != nil && node!.rangeTestConfig != nil {
+					
+					if newSave != node!.rangeTestConfig!.save { hasChanges = true }
+				}
 			}
 			.onChange(of: sender) { newSender in
 				
-				if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
+				if node != nil && node!.rangeTestConfig != nil {
+				
+					if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

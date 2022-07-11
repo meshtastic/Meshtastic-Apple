@@ -299,19 +299,22 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: region) { newRegion in
 			
-			if node!.loRaConfig != nil {
+			if node != nil && node!.loRaConfig != nil {
+				
 				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
 			}
 		}
 		.onChange(of: modemPreset) { newModemPreset in
 			
-			if node!.loRaConfig != nil {
+			if node != nil && node!.loRaConfig != nil {
+				
 				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
 			}
 		}
 		.onChange(of: hopLimit) { newHopLimit in
 			
-			if node!.loRaConfig != nil {
+			if node != nil && node!.loRaConfig != nil {
+				
 				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
 			}
 		}

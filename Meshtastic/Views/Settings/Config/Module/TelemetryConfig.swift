@@ -353,28 +353,28 @@ struct TelemetryConfig: View {
 			}
 			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentUpdateInterval) { newEnvInterval in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentSensorType) { newEnvSensorType in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvSensorType != node!.telemetryConfig!.environmentSensorType { hasChanges = true	}
 				}
@@ -388,21 +388,21 @@ struct TelemetryConfig: View {
 			}
 			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentRecoveryInterval) { newEnvRecoveryInterval in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvRecoveryInterval != node!.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentReadErrorCountThreshold) { newEnvReadErrorCountThreshold in
 				
-				if node!.telemetryConfig != nil {
+				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvReadErrorCountThreshold != node!.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
 				}

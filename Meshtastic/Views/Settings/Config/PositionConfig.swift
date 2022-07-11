@@ -321,15 +321,24 @@ struct PositionConfig: View {
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPosition in
 			
-			if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
+			if node != nil && node!.positionConfig != nil {
+				
+				if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
+			}
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
 			
-			if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
+			if node != nil && node!.positionConfig != nil {
+				
+				if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
+			}
 		}
 		.onChange(of: fixedPosition) { newFixed in
 			
-			if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
+			if node != nil && node!.positionConfig != nil {
+			
+				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

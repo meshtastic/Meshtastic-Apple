@@ -185,15 +185,23 @@ struct DeviceConfig: View {
 		}
 		.onChange(of: deviceRole) { newRole in
 			
-			if newRole != node!.deviceConfig!.role { hasChanges = true }
+			if node != nil && node!.deviceConfig != nil {
+			
+				if newRole != node!.deviceConfig!.role { hasChanges = true }
+			}
 		}
 		.onChange(of: serialEnabled) { newSerial in
+			if node != nil && node!.deviceConfig != nil {
 			
-			if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
+				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
+			}
 		}
 		.onChange(of: debugLogEnabled) { newDebugLog in
 			
-			if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
+			if node != nil && node!.deviceConfig != nil {
+				
+				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

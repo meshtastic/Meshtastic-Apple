@@ -344,31 +344,52 @@ struct SerialConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+				
+					if newEnabled != node!.serialConfig!.enabled { hasChanges = true	}
+				}
 			}
 			.onChange(of: echo) { newEcho in
 				
-				if newEcho != node!.serialConfig!.echo { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+				
+					if newEcho != node!.serialConfig!.echo { hasChanges = true	}
+				}
 			}
 			.onChange(of: rxd) { newRxd in
 				
-				if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+				
+					if newRxd != node!.serialConfig!.rxd { hasChanges = true	}
+				}
 			}
 			.onChange(of: txd) { newTxd in
 				
-				if newTxd != node!.serialConfig!.txd { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+
+					if newTxd != node!.serialConfig!.txd { hasChanges = true	}
+				}
 			}
 			.onChange(of: baudRate) { newBaud in
 				
-				if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+				
+					if newBaud != node!.serialConfig!.baudRate { hasChanges = true	}
+				}
 			}
 			.onChange(of: timeout) { newTimeout in
 				
-				if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+					
+					if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
+				}
 			}
 			.onChange(of: mode) { newMode in
 				
-				if newMode != node!.serialConfig!.mode { hasChanges = true	}
+				if node != nil && node!.serialConfig != nil {
+					
+					if newMode != node!.serialConfig!.mode { hasChanges = true	}
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
