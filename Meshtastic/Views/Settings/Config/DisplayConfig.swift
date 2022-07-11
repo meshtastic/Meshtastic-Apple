@@ -240,23 +240,23 @@ struct DisplayConfig: View {
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
 			
-			if newScreenSecs != node!.displayConfig!.screenOnSeconds {
+			if node != nil && node!.displayConfig != nil {
 				
-				hasChanges = true
+				if newScreenSecs != node!.displayConfig!.screenOnSeconds { hasChanges = true }
 			}
 		}
 		.onChange(of: screenCarouselInterval) { newCarouselSecs in
 			
-			if newCarouselSecs != node!.displayConfig!.screenCarouselInterval {
+			if node != nil && node!.displayConfig != nil {
 				
-				hasChanges = true
+				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
 			}
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in
 			
-			if newGpsFormat != node!.displayConfig!.gpsFormat {
-				
-				hasChanges = true
+			if node != nil && node!.displayConfig != nil {
+			
+				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

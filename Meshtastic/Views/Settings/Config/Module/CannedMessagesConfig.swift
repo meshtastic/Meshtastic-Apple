@@ -390,50 +390,77 @@ struct CannedMessagesConfig: View {
 			}
 			.onChange(of: enabled) { newEnabled in
 				
-				if node!.cannedMessageConfig != nil {
+				if node != nil && node!.cannedMessageConfig != nil {
 				
 					if newEnabled != node!.cannedMessageConfig!.enabled { hasChanges = true }
 				}
 			}
 			.onChange(of: sendBell) { newBell in
 				
-				if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
+				if node != nil && node!.cannedMessageConfig != nil {
+					
+					if newBell != node!.cannedMessageConfig!.sendBell { hasChanges = true }
+				}
 			}
 			.onChange(of: rotary1Enabled) { newRot1 in
 				
-				if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
+				if node != nil && node!.cannedMessageConfig != nil {
+				
+					if newRot1 != node!.cannedMessageConfig!.rotary1Enabled { hasChanges = true	}
+				}
 			}
 			.onChange(of: updown1Enabled) { newUpDown in
 				
-				if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true	}
+				if node != nil && node!.cannedMessageConfig != nil {
+					
+					if newUpDown != node!.cannedMessageConfig!.updown1Enabled { hasChanges = true }
+				}
 			}
 			.onChange(of: inputbrokerPinA) { newPinA in
 				
-				if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true	}
+				if node != nil && node!.cannedMessageConfig != nil {
+					
+					if newPinA != node!.cannedMessageConfig!.inputbrokerPinA { hasChanges = true }
+				}
 			}
 			.onChange(of: inputbrokerPinB) { newPinB in
+				if node != nil && node!.cannedMessageConfig != nil {
 				
-				if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true	}
+					if newPinB != node!.cannedMessageConfig!.inputbrokerPinB { hasChanges = true }
+				}
 			}
 			.onChange(of: inputbrokerPinPress) { newPinPress in
+				if node != nil && node!.cannedMessageConfig != nil {
 				
-				if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true	}
+					if newPinPress != node!.cannedMessageConfig!.inputbrokerPinPress { hasChanges = true }
+				}
 			}
 			.onChange(of: inputbrokerEventCw) { newKeyA in
+				if node != nil && node!.cannedMessageConfig != nil {
 				
-				if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
+					if newKeyA != node!.cannedMessageConfig!.inputbrokerEventCw { hasChanges = true	}
+				}
 			}
 			.onChange(of: inputbrokerEventCcw) { newKeyB in
 				
-				if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true	}
+				if node != nil && node!.cannedMessageConfig != nil {
+				
+					if newKeyB != node!.cannedMessageConfig!.inputbrokerEventCcw { hasChanges = true }
+				}
 			}
 			.onChange(of: inputbrokerEventPress) { newKeyPress in
 				
-				if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true	}
+				if node != nil && node!.cannedMessageConfig != nil {
+					
+					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
+				}
 			}
 			.onChange(of: messagesPart1) { newMessagesChanges in
 				
-				hasMessagesChanges = true
+				if node != nil && node!.cannedMessageConfig != nil {
+					
+					hasMessagesChanges = true
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
