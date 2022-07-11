@@ -112,7 +112,7 @@ struct UserConfig: View {
 						u.shortName = shortName
 						u.longName = longName
 						
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: node?.user, toUser: node?.user, wantResponse: true)
+						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 						
 						if adminMessageId > 0 {
 							
@@ -145,16 +145,16 @@ struct UserConfig: View {
 		}
 		.onChange(of: shortName) { newShort in
 			
-			if newShort != node?.user!.shortName {
-				
-				hasChanges = true
+			if node != nil && node!.user != nil {
+			
+				if newShort != node?.user!.shortName { hasChanges = true }
 			}
 		}
 		.onChange(of: longName) { newLong in
 			
-			if newLong != node?.user!.longName {
-				
-				hasChanges = true
+			if node != nil && node!.user != nil {
+			
+				if newLong != node?.user!.longName { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

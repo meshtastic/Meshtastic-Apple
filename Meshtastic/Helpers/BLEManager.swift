@@ -966,9 +966,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func saveUser(config: User, fromUser: UserEntity?, toUser: UserEntity?, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
+	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
@@ -986,48 +984,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved User Config for \(toUser!.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved Position Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a new User Config Admin Message for node: \(String(toUser!.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
 		
-		return newMessageId
+		return 0
 	}
 	
 	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.device = config
@@ -1045,47 +1013,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved Device Config for \(toUser.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved Device Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved Device Config Admin Message for node: \(String(toUser.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
-		return newMessageId
+		
+		return 0
 	}
 	
 	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
@@ -1103,48 +1042,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved Display Config for \(toUser.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved Display Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved Display Config Admin Message for node: \(String(toUser.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
-		return newMessageId
+		
+		return 0
 	}
 	
 	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
-		
+
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
 		
@@ -1162,47 +1072,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved LoRa Config for \(toUser.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved LoRa Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved LoRa Config Admin Message for node: \(String(toUser.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
-		return newMessageId
+		
+		return 0
 	}
 	
 	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.position = config
@@ -1220,49 +1101,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved Position Config for \(toUser.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved Position Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved Position Config Admin Message for node: \(String(toUser.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
-		return newMessageId
 		
+		return 0
 	}
 	
 	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
-		
-		var newMessageId: Int64 = 0
-		
+
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
 		
@@ -1278,42 +1129,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
-			let newMessage = MessageEntity(context: context!)
-			newMessage.messageId =  Int64(meshPacket.id)
-			newMessageId = newMessage.messageId
-			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
-			newMessage.receivedACK = false
-			newMessage.admin = true
-			newMessage.adminDescription = "Saved Canned Message Module Config for \(toUser.longName ?? "Unknown")"
-			newMessage.fromUser = fromUser
-			newMessage.toUser = toUser
-			newMessage.messagePayload = try! config.jsonString()
+		let messageDescription = "Saved Canned Message Module Config for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved Canned Message Module Config Admin Message for node: \(String(toUser.num))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+			return Int64(meshPacket.id)
 		}
-		return newMessageId
+		
+		return 0
 	}
 	
 	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
