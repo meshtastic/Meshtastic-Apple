@@ -289,7 +289,7 @@ struct TelemetryConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || node!.telemetryConfig == nil)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -353,35 +353,59 @@ struct TelemetryConfig: View {
 			}
 			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
 				
-				if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentUpdateInterval) { newEnvInterval in
 				
-				if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
 				
-				if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentSensorType) { newEnvSensorType in
 				
-				if newEnvSensorType != node!.telemetryConfig!.environmentSensorType { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvSensorType != node!.telemetryConfig!.environmentSensorType { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
 				
-				if newEnvScreenEnabled != node!.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvScreenEnabled != node!.telemetryConfig!.environmentScreenEnabled { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
 				
-				if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentRecoveryInterval) { newEnvRecoveryInterval in
 				
-				if newEnvRecoveryInterval != node!.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvRecoveryInterval != node!.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
+				}
 			}
 			.onChange(of: environmentReadErrorCountThreshold) { newEnvReadErrorCountThreshold in
 				
-				if newEnvReadErrorCountThreshold != node!.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
+				if node!.telemetryConfig != nil {
+				
+					if newEnvReadErrorCountThreshold != node!.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}

@@ -15,174 +15,173 @@ struct TelemetryLog: View {
 
 	var body: some View {
 		
-		VStack {
-		
-			List {
+		List {
+			
+			ForEach(node.telemetries!.array as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
 				
-				
-				ForEach(node.telemetries!.array as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
+				VStack (alignment: .leading)  {
 					
-					VStack {
-						
-						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 
+						
+						if tel.metricsType == 0 {
 							
-							if tel.metricsType == 0 {
+							// Device Metrics
+							HStack {
+							
+								Text("Device Metrics")
+									.font(.title)
 								
-								// Device Metrics
-								HStack {
-								
-									Text("Device Metrics")
-										.font(.title3)
-									BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
+								BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
+								if tel.batteryLevel == 0 {
 									
-									if tel.batteryLevel == 0 {
-										
-										Text("Plugged In")
-											.font(.callout)
-											.foregroundColor(.gray)
-										
-									} else {
-										
-										Text("Battery Level: \(String(tel.batteryLevel))%")
-											.font(.callout)
-											.foregroundColor(.gray)
-									}
-									if tel.batteryLevel > 0 {
-										
-										Image(systemName: "bolt")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-										Text("Voltage: \(String(tel.voltage))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
-										.foregroundColor(.gray)
+									Text("Plugged In")
 										.font(.callout)
+										.foregroundColor(.gray)
 									
-									Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
-										.foregroundColor(.gray)
-										.font(.callout)
+								} else {
 									
-									Image(systemName: "clock.badge.checkmark.fill")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Time:")
-										.foregroundColor(.gray)
+									Text("Battery Level: \(String(tel.batteryLevel))%")
 										.font(.callout)
-									DateTimeText(dateTime: tel.time)
+										.foregroundColor(.gray)
+								}
+								if tel.batteryLevel > 0 {
+									
+									Image(systemName: "bolt")
+										.font(.callout)
+										.foregroundColor(.accentColor)
+										.symbolRenderingMode(.hierarchical)
+									Text("Voltage: \(String(tel.voltage))")
 										.foregroundColor(.gray)
 										.font(.callout)
 								}
+								Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
+									.foregroundColor(.gray)
+									.font(.callout)
 								
-							} else if tel.metricsType == 1 {
+								Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
+									.foregroundColor(.gray)
+									.font(.callout)
 								
-								// Environment Metrics
-								HStack {
-								
-									Text("Environment Metrics")
-										.font(.title3)
-									
-									let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
-									
-									let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°F" : "°C"
-									
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 ||
-										sensor == SensorTypes.mcp9808 {
-										
-										Image(systemName: "thermometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-																		
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 {
-										
-										Image(systemName: "humidity")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 {
-										
-										Image(systemName: "barometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									if sensor == SensorTypes.bme680 {
-										
-										Image(systemName: "aqi.medium")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									if  sensor == SensorTypes.ina219 ||
-										sensor == SensorTypes.ina260 {
-										
-										Image(systemName: "directcurrent")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Current: \(String(format: "%.2f", tel.current))")
-											.foregroundColor(.gray)
-											.font(.callout)
-										
-										Image(systemName: "bolt")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Voltage: \(String(format: "%.2f", tel.voltage))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									Image(systemName: "clock.badge.checkmark.fill")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Time:")
-										.foregroundColor(.gray)
+								Image(systemName: "clock.badge.checkmark.fill")
 										.font(.callout)
-									DateTimeText(dateTime: tel.time)
-										.foregroundColor(.gray)
-										.font(.callout)
-									
-								}
+										.foregroundColor(.accentColor)
+										.symbolRenderingMode(.hierarchical)
+								Text("Time:")
+									.foregroundColor(.gray)
+									.font(.callout)
+								DateTimeText(dateTime: tel.time)
+									.foregroundColor(.gray)
+									.font(.callout)
 							}
 							
-						} else {
-						
-							if tel.metricsType == 0 {
+						} else if tel.metricsType == 1 {
+							
+							// Environment Metrics
+							HStack {
+							
+								Text("Environment Metrics")
+									.font(.title)
 								
-								// Device Metrics
-								HStack {
+								let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
+								
+								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°F" : "°C"
+								
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 ||
+									sensor == SensorTypes.shtc3 ||
+									sensor == SensorTypes.mcp9808 {
+									
+									Image(systemName: "thermometer")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+																	
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 ||
+									sensor == SensorTypes.shtc3 {
+									
+									Image(systemName: "humidity")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 {
+									
+									Image(systemName: "barometer")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								if sensor == SensorTypes.bme680 {
+									
+									Image(systemName: "aqi.medium")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								if  sensor == SensorTypes.ina219 ||
+									sensor == SensorTypes.ina260 {
+									
+									Image(systemName: "directcurrent")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Current: \(String(format: "%.2f", tel.current))")
+										.foregroundColor(.gray)
+										.font(.callout)
+									
+									Image(systemName: "bolt")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Voltage: \(String(format: "%.2f", tel.voltage))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								Image(systemName: "clock.badge.checkmark.fill")
+										.font(.callout)
+										.foregroundColor(.accentColor)
+										.symbolRenderingMode(.hierarchical)
+								Text("Time:")
+									.foregroundColor(.gray)
+									.font(.callout)
+								DateTimeText(dateTime: tel.time)
+									.foregroundColor(.gray)
+									.font(.callout)
+								
+							}
+						}
+						
+					} else {
+					
+						if tel.metricsType == 0 {
+							
+							// Device Metrics
+							VStack {
+							
 								
 									Text("Device Metrics")
-										.font(.title3)
+										.font(.title)
+								HStack {
 									BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
 									
 									if tel.batteryLevel == 0 {
@@ -197,6 +196,8 @@ struct TelemetryLog: View {
 											.font(.callout)
 											.foregroundColor(.gray)
 									}
+								}
+								HStack {
 									if tel.batteryLevel > 0 {
 										
 										Image(systemName: "bolt")
@@ -207,18 +208,16 @@ struct TelemetryLog: View {
 											.foregroundColor(.gray)
 											.font(.callout)
 									}
-									
 								}
+								
+								Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
+									.foregroundColor(.gray)
+									.font(.callout)
+								
+								Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
+									.foregroundColor(.gray)
+									.font(.callout)
 								HStack {
-									
-									Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
-										.foregroundColor(.gray)
-										.font(.callout)
-									
-									Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
-										.foregroundColor(.gray)
-										.font(.callout)
-									
 									Image(systemName: "clock.badge.checkmark.fill")
 										.font(.callout)
 										.foregroundColor(.accentColor)
@@ -230,108 +229,107 @@ struct TelemetryLog: View {
 										.foregroundColor(.gray)
 										.font(.callout)
 								}
-							} else if tel.metricsType == 1 {
+							}
+						} else if tel.metricsType == 1 {
+							
+							// Environment Metrics
+							let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
+							
+							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°F" : "°C"
+							
+							VStack {
+							
+								Text("Environment Metrics")
+									.font(.title3)
 								
-								// Environment Metrics
-								let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
-								
-								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°F" : "°C"
-								
-								HStack {
-								
-									Text("Environment Metrics")
-										.font(.title3)
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 ||
+									sensor == SensorTypes.shtc3 ||
+									sensor == SensorTypes.mcp9808 {
 									
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 ||
-										sensor == SensorTypes.mcp9808 {
-										
-										Image(systemName: "thermometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-																		
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 {
-										
-										Image(systemName: "humidity")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									if  sensor == SensorTypes.ina219 ||
-										sensor == SensorTypes.ina260 {
-										
-										Image(systemName: "directcurrent")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Current: \(String(format: "%.2f", tel.current))")
-											.foregroundColor(.gray)
-											.font(.callout)
-										
-										Image(systemName: "bolt")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Voltage: \(String(format: "%.2f", tel.voltage))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								HStack {
-									
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 {
-										
-										Image(systemName: "barometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									if sensor == SensorTypes.bme680 {
-										
-										Image(systemName: "aqi.medium")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									Image(systemName: "clock.badge.checkmark.fill")
+									Image(systemName: "thermometer")
 											.font(.callout)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
-									Text("Time:")
+									Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
 										.foregroundColor(.gray)
 										.font(.callout)
-									DateTimeText(dateTime: tel.time)
+								}
+																	
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 ||
+									sensor == SensorTypes.shtc3 {
+									
+									Image(systemName: "humidity")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								if  sensor == SensorTypes.ina219 ||
+									sensor == SensorTypes.ina260 {
+									
+									Image(systemName: "directcurrent")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Current: \(String(format: "%.2f", tel.current))")
 										.foregroundColor(.gray)
 										.font(.callout)
 									
+									Image(systemName: "bolt")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Voltage: \(String(format: "%.2f", tel.voltage))")
+										.foregroundColor(.gray)
+										.font(.callout)
 								}
+								
+								if  sensor == SensorTypes.bme280 ||
+									sensor == SensorTypes.bme680 {
+									
+									Image(systemName: "barometer")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								if sensor == SensorTypes.bme680 {
+									
+									Image(systemName: "aqi.medium")
+											.font(.callout)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
+									Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+								
+								Image(systemName: "clock.badge.checkmark.fill")
+										.font(.callout)
+										.foregroundColor(.accentColor)
+										.symbolRenderingMode(.hierarchical)
+								Text("Time:")
+									.foregroundColor(.gray)
+									.font(.callout)
+								DateTimeText(dateTime: tel.time)
+									.foregroundColor(.gray)
+									.font(.callout)
+								
 							}
 						}
 					}
 				}
 			}
 		}
+
 		.padding()
 		.navigationTitle("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
 		.navigationBarTitleDisplayMode(.inline)

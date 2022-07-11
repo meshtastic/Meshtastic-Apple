@@ -105,6 +105,7 @@ struct CannedMessagesConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges = false
+	@State var hasMessagesChanges = false
 	@State var configPreset = 0
 	
 	@State var enabled = false
@@ -278,7 +279,7 @@ struct CannedMessagesConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.disabled(bleManager.connectedPeripheral == nil || (!hasChanges && !hasMessagesChanges))
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -290,40 +291,54 @@ struct CannedMessagesConfig: View {
 			) {
 				Button("Save Canned Messages Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
-					var cmc = ModuleConfig.CannedMessageConfig()
-					cmc.enabled = enabled
-					cmc.sendBell = sendBell
-					cmc.rotary1Enabled = rotary1Enabled
-					cmc.updown1Enabled = updown1Enabled
-					if rotary1Enabled {
-						
-						/// Input event origin accepted by the canned messages
-						/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" 623or keyword "_any"
-						cmc.allowInputSource = "rotEnc1"
-						
-					} else if updown1Enabled {
-						
-						cmc.allowInputSource = "upDownEnc1"
-						
-					} else {
-						
-						cmc.allowInputSource = "_any"
-					}
-					cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-					cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-					cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-					cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-					cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-					cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+					if hasChanges {
 					
-					let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						var cmc = ModuleConfig.CannedMessageConfig()
+						cmc.enabled = enabled
+						cmc.sendBell = sendBell
+						cmc.rotary1Enabled = rotary1Enabled
+						cmc.updown1Enabled = updown1Enabled
+						if rotary1Enabled {
+							
+							/// Input event origin accepted by the canned messages
+							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" 623or keyword "_any"
+							cmc.allowInputSource = "rotEnc1"
+							
+						} else if updown1Enabled {
+							
+							cmc.allowInputSource = "upDownEnc1"
+							
+						} else {
+							
+							cmc.allowInputSource = "_any"
+						}
+						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 						
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
+						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+							
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+						}
 					}
-			
+					
+					if hasMessagesChanges {
+						
+						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messagesPart1, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+							
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasMessagesChanges = false
+						}
+						
+					}
 				}
 			}
 			
@@ -363,6 +378,12 @@ struct CannedMessagesConfig: View {
 					// TBeam Three Button 1.3" OLED Screen
 					updown1Enabled = true
 					rotary1Enabled = false
+					inputbrokerPinA = 25
+					inputbrokerPinB = 39
+					inputbrokerPinPress	= 36
+					inputbrokerEventCw = InputEventChars.keyUp.rawValue
+					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
+					inputbrokerEventPress = InputEventChars.keySelect.rawValue
 				}
 				
 				hasChanges = true
@@ -409,6 +430,10 @@ struct CannedMessagesConfig: View {
 			.onChange(of: inputbrokerEventPress) { newKeyPress in
 				
 				if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true	}
+			}
+			.onChange(of: messagesPart1) { newMessagesChanges in
+				
+				hasMessagesChanges = true
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
