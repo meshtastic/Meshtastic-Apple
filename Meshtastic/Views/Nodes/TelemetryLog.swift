@@ -177,10 +177,15 @@ struct TelemetryLog: View {
 							
 							// Device Metrics
 							VStack {
-							
-								
+								HStack {
+									
+									Spacer()
 									Text("Device Metrics")
 										.font(.title)
+									Spacer()
+								}
+								
+									
 								HStack {
 									BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
 									
@@ -329,8 +334,6 @@ struct TelemetryLog: View {
 				}
 			}
 		}
-
-		.padding()
 		.navigationTitle("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
