@@ -428,6 +428,7 @@ struct NodeDetail: View {
 						}
 						.listStyle(GroupedListStyle())
 						.frame(minHeight:170)
+						.padding(0)
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])

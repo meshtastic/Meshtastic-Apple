@@ -124,10 +124,10 @@ struct PositionConfig: View {
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	
-	@State var includePosAltitude = false
-	@State var includePosSatsinview = false
+	@State var includePosAltitude = true
+	@State var includePosSatsinview = true
 	@State var includePosSeqNos = false
-	@State var includePosTimestamp = false
+	@State var includePosTimestamp = true
 	@State var includePosSpeed = false
 	@State var includePosHeading = false
 	
@@ -317,6 +317,10 @@ struct PositionConfig: View {
 				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
+				
+				self.includePosAltitude = true
+				self.includePosTimestamp = true
+				self.includePosSatsinview = true
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPosition in
