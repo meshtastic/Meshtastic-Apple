@@ -68,20 +68,19 @@ struct LocationHistory: View {
 									.foregroundColor(.gray)
 									.font(.caption)
 
+							}
+						
+							HStack {
+							
 								Image(systemName: "arrow.up.arrow.down.circle")
 									.font(.subheadline)
 									.foregroundColor(.accentColor)
 									.symbolRenderingMode(.hierarchical)
 								Text("Alt:")
 									.font(.caption)
-
 								Text("\(String(mappin.altitude))m")
 									.foregroundColor(.gray)
 									.font(.caption)
-							}
-						
-							HStack {
-							
 								Image(systemName: "clock.badge.checkmark.fill")
 									.font(.subheadline)
 									.foregroundColor(.accentColor)
@@ -98,7 +97,6 @@ struct LocationHistory: View {
 				}
 			}
 		}
-		.padding()
 		.navigationTitle("Location History \(node.positions?.count ?? 0) Points")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:

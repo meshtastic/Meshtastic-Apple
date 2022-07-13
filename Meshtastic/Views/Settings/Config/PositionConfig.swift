@@ -124,11 +124,30 @@ struct PositionConfig: View {
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	
-	@State var includePosAltitude = false
+	/// Position Flags
+	/// Altitude value - 1
+	@State var includePosAltitude = true
+	/// Altitude value is MSL - 2
+	@State var includePosAltMsl = false
+	/// Include geoidal separation - 4
+	@State var includePosGeoSep = false
+	/// Include the DOP value ; PDOP used by default, see below - 8
+	@State var includePosDop = false
+	/// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP - 16
+	@State var includePosHvdop = false
+	/// Include number of "satellites in view" - 32
 	@State var includePosSatsinview = false
+	/// Include a sequence number incremented per packet - 64
 	@State var includePosSeqNos = false
-	@State var includePosTimestamp = false
+	/// Include positional timestamp (from GPS solution) - 128
+	@State var includePosTimestamp = true
+	/// Include positional heading - 256
+	/// Intended for use with vehicle not walking speeds
+	/// walking speeds are likely to be error prone like the compass
 	@State var includePosSpeed = false
+	/// Include positional speed - 512
+	/// Intended for use with vehicle not walking speeds
+	/// walking speeds are likely to be error prone like the compass
 	@State var includePosHeading = false
 	
 	var body: some View {
@@ -215,42 +234,62 @@ struct PositionConfig: View {
 						Label("Altitude", systemImage: "arrow.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSatsinview) {
 
 						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSeqNos) { //64
 
 						Label("Sequence number", systemImage: "number")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosTimestamp) { //128
 
 						Label("Timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosHeading) { //128
 
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includePosSpeed) { //128
 
 						Label("Vehicle speed", systemImage: "speedometer")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
+				}
+				Section(header: Text("Advanced Position Flags - Non Functional")) {
+					
+					Toggle(isOn: $includePosAltMsl) {
+
+						Text("Altitude is MSL")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $includePosGeoSep) {
+
+						Text("Geoidal Seperation")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $includePosDop) {
+
+						Text("Dilution of precision (DOP) PDOP used by default")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $includePosHvdop) {
+
+						Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
@@ -271,7 +310,8 @@ struct PositionConfig: View {
 			.confirmationDialog(
 				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
@@ -317,6 +357,10 @@ struct PositionConfig: View {
 				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
+				
+				self.includePosAltitude = true
+				self.includePosTimestamp = true
+				self.includePosSatsinview = true
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPosition in

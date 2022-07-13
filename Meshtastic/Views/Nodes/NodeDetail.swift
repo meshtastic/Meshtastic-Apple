@@ -63,13 +63,9 @@ struct NodeDetail: View {
 									   }
 									)
 								 }
-
 							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
 								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
 							}
-							
-							
-							
 						}
 					} else {
 						
@@ -79,46 +75,9 @@ struct NodeDetail: View {
 							.cornerRadius(10)
 							.frame(width: bounds.size.width, height: bounds.size.height / 2)
 					}
-						
-					List {
-						
-						if (node.positions?.count ?? 0) > 0 {
-							
-							NavigationLink {
-								LocationHistory(node: node)
-							} label: {
-
-								Image(systemName: "building.columns")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-
-								Text("Position History \(node.positions?.count ?? 0) Points")
-									.font(.title2)
-							}
-							.fixedSize(horizontal: false, vertical: true)
-						}
-						
-						NavigationLink {
-							TelemetryLog(node: node)
-						} label: {
-
-							Image(systemName: "chart.xyaxis.line")
-								.symbolRenderingMode(.hierarchical)
-								.font(.title)
-
-							Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
-								.font(.title2)
-						}
-						.fixedSize(horizontal: false, vertical: true)
-						
-					}
-					.frame(height: 160)
-									  
 					
 					ScrollView {
-											
-
-						
+																	
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
 							HStack {
 								
@@ -263,12 +222,12 @@ struct NodeDetail: View {
 									}
 									.padding()
 								}
+								Divider()
 							}
 							.padding()
-
-							Divider()
 							
 							HStack(alignment: .center) {
+								
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -398,6 +357,8 @@ struct NodeDetail: View {
 							}
 							.padding(4)
 							
+							Divider()
+							
 							HStack(alignment: .center) {
 								VStack {
 									HStack {
@@ -431,8 +392,43 @@ struct NodeDetail: View {
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
-							.padding()
 						}
+						
+						List {
+							
+							if (node.positions?.count ?? 0) > 0 {
+								
+								NavigationLink {
+									LocationHistory(node: node)
+								} label: {
+
+									Image(systemName: "building.columns")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+
+									Text("Position History \(node.positions?.count ?? 0) Points")
+										.font(.title3)
+								}
+								.fixedSize(horizontal: false, vertical: true)
+							}
+							if (node.telemetries?.count ?? 0) > 0 {
+								NavigationLink {
+									TelemetryLog(node: node)
+								} label: {
+
+									Image(systemName: "chart.xyaxis.line")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+
+									Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+										.font(.title3)
+								}
+								.fixedSize(horizontal: false, vertical: true)
+							}
+						}
+						.listStyle(GroupedListStyle())
+						.frame(minHeight:170)
+						.padding(0)
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])

@@ -16,15 +16,18 @@ struct Connect: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
+	@State private var showingVersionSheet = false
+	
 	@State var initialLoad: Bool = true
 	@State var isPreferredRadio: Bool = false
+	
+	@State var firmwareVersion = "0.0.0"
+	@State var minimumVersion = "1.3.25"
+	@State var invalidVersion = false
+	
 
     var body: some View {
-		
-		let firmwareVersion = bleManager.lastConnnectionVersion
-		let minimumVersion = "1.3.25"
-		let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
-		
+	
 		NavigationView {
 
             VStack {
@@ -32,17 +35,6 @@ struct Connect: View {
 				List {
 					
 					if bleManager.isSwitchedOn {
-						
-				
-					
-					if supportedVersion == false {
-
-						Section(header: Text("Upgrade your Firmware").font(.title)) {
-
-							Text("🚨 1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion).").font(.subheadline).foregroundColor(.red)
-						}
-						.textCase(nil)
-					}
 					
 					if bleManager.lastConnectionError.count > 0 {
 
@@ -271,8 +263,28 @@ struct Connect: View {
             )
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear(perform: {
+		.sheet(isPresented: $invalidVersion) {
 			
+			InvalidVersion(errorText: "1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
+		}
+		.onChange(of: firmwareVersion) { iv in
+			
+			bleManager.disconnectPeripheral()
+		}
+		.onChange(of: self.bleManager.isConnected) { ic in
+			
+			firmwareVersion = bleManager.lastConnnectionVersion
+			let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
+			
+			invalidVersion = !supportedVersion
+			
+			if invalidVersion {
+				bleManager.disconnectPeripheral()
+			}
+			
+		}
+        .onAppear(perform: {
+						
 			if initialLoad {
 				
 				self.bleManager.context = context
@@ -281,13 +293,15 @@ struct Connect: View {
 				// Ask for notification permission
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
 					if success {
-						print("All set!")
+						print("Notifications are all set!")
 					} else if let error = error {
 						print(error.localizedDescription)
 					}
 				}
+		
 				initialLoad = false
 			}
+			
 			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
 				isPreferredRadio = true
 			} else {
