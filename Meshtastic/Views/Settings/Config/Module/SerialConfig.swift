@@ -272,7 +272,7 @@ struct SerialConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(!(node!.myInfo?.hasWifi ?? false))
+			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 			
 			Button {
 							

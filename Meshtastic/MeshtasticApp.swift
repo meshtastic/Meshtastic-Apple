@@ -11,6 +11,9 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
+	@State var saveQR = false
+	@State var channelUrl = ""
+	
 	@Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
@@ -19,15 +22,22 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
+
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
-				  print("QR Code URL received from the Camera \(userActivity)")
-				  guard let url = userActivity.webpageURL else {
-					  return
-				  }
+				print("QR Code URL received from the Camera \(userActivity)")
+				guard let url = userActivity.webpageURL else {
+				  return
+				}
 
-				  print("User wants to open URL: \(url)")
+				print("User wants to open URL: \(url)")
+				channelUrl = url.absoluteString
+				saveQR = true
 
+			}
+			.sheet(isPresented: $saveQR) {
+				
+				SaveChannelQRCode(channelHash: channelUrl)
 			}
 			.onOpenURL(perform: { (url) in
 				
@@ -56,6 +66,7 @@ struct MeshtasticAppleApp: App {
 				}
 			})
 		}
+
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:

@@ -267,6 +267,8 @@ struct Connect: View {
 			
 			InvalidVersion(errorText: "1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
 		}
+		
+		
 		.onChange(of: firmwareVersion) { iv in
 			
 			bleManager.disconnectPeripheral()
