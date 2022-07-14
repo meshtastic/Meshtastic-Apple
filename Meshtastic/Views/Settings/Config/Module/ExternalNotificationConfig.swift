@@ -129,6 +129,7 @@ struct ExternalNotificationConfig: View {
 						.font(.caption)
 				}
 			}
+			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
 							
