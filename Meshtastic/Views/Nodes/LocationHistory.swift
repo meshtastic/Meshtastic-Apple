@@ -11,6 +11,9 @@ struct LocationHistory: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State var isExporting = false
+	@State var exportString = ""
+	
 	var node: NodeInfoEntity
 
 	var body: some View {
@@ -96,7 +99,38 @@ struct LocationHistory: View {
 					}
 				}
 			}
+			Button {
+							
+				exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
+				isExporting = true
+				
+			} label: {
+				
+				Label("Export", systemImage: "square.and.arrow.down")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
 		}
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
+			onCompletion: { result in
+
+				if case .success = result {
+					
+					print("Position activity log download: success.")
+					self.isExporting = false
+					
+				} else {
+					
+					print("Mesh activity log download \(result).")
+				}
+			}
+		)
 		.navigationTitle("Location History \(node.positions?.count ?? 0) Points")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
