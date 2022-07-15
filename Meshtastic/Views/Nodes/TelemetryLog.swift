@@ -371,12 +371,13 @@ struct TelemetryLog: View {
 
 				if case .success = result {
 					
-					print("Mesh activity log download: success.")
+					print("Telemetry log download succeeded.")
+					
 					self.isExporting = false
 					
 				} else {
 					
-					print("Mesh activity log download \(result).")
+					print("Telemetry log download failed: \(result).")
 				}
 			}
 		)

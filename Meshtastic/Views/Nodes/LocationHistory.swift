@@ -122,12 +122,12 @@ struct LocationHistory: View {
 
 				if case .success = result {
 					
-					print("Position activity log download: success.")
+					print("Position log download succeeded.")
 					self.isExporting = false
 					
 				} else {
 					
-					print("Mesh activity log download \(result).")
+					print("Position log download failed: \(result).")
 				}
 			}
 		)
