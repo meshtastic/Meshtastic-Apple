@@ -302,7 +302,7 @@ struct CannedMessagesConfig: View {
 						if rotary1Enabled {
 							
 							/// Input event origin accepted by the canned messages
-							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" 623or keyword "_any"
+							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" or keyword "_any"
 							cmc.allowInputSource = "rotEnc1"
 							
 						} else if updown1Enabled {
@@ -373,6 +373,9 @@ struct CannedMessagesConfig: View {
 					// RAK Rotary Encoder
 					updown1Enabled = true
 					rotary1Enabled = false
+					inputbrokerEventCw = InputEventChars.keyUp.rawValue
+					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
+					inputbrokerEventPress = InputEventChars.keySelect.rawValue
 					
 				} else if newPreset == 2 {
 					

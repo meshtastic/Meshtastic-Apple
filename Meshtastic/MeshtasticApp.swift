@@ -12,7 +12,7 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
 	@State var saveQR = false
-	@State var channelUrl = ""
+	@State private var channelUrl: URL?
 	
 	@Environment(\.scenePhase) var scenePhase
 
@@ -26,12 +26,11 @@ struct MeshtasticAppleApp: App {
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
 				print("QR Code URL received from the Camera \(userActivity)")
-				guard let url = userActivity.webpageURL else {
+				guard let channelUrl = userActivity.webpageURL else {
 				  return
 				}
 
-				print("User wants to open URL: \(url)")
-				channelUrl = url.absoluteString
+				print("User wants to open URL: \(channelUrl)")
 				saveQR = true
 
 			}

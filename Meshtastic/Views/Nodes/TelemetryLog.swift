@@ -11,6 +11,9 @@ struct TelemetryLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State var isExporting = false
+	@State var exportString = ""
+	
 	var node: NodeInfoEntity
 
 	var body: some View {
@@ -334,6 +337,19 @@ struct TelemetryLog: View {
 				}
 			}
 		}
+		Button {
+						
+			exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
+			isExporting = true
+			
+		} label: {
+			
+			Label("Export", systemImage: "square.and.arrow.down")
+		}
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding()
 		.navigationTitle("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
@@ -346,5 +362,24 @@ struct TelemetryLog: View {
 
 			self.bleManager.context = context
 		}
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("\(node.user!.longName ?? "Node") Telemetry Log"),
+			onCompletion: { result in
+
+				if case .success = result {
+					
+					print("Telemetry log download succeeded.")
+					
+					self.isExporting = false
+					
+				} else {
+					
+					print("Telemetry log download failed: \(result).")
+				}
+			}
+		)
 	}
 }

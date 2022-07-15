@@ -47,6 +47,8 @@
 		DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD836AE626F6B38600ABCC23 /* Connect.swift */; };
 		DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D409287F04F100BAEB7A /* InvalidVersion.swift */; };
 		DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */; };
+		DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */; };
+		DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */; };
 		DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD882F5C2772E4640005BF05 /* Contacts.swift */; };
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
@@ -139,6 +141,8 @@
 		DD836AE626F6B38600ABCC23 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DD86D409287F04F100BAEB7A /* InvalidVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvalidVersion.swift; sourceTree = "<group>"; };
 		DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveChannelQRCode.swift; sourceTree = "<group>"; };
+		DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvDocument.swift; sourceTree = "<group>"; };
+		DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteCsvFile.swift; sourceTree = "<group>"; };
 		DD882F5C2772E4640005BF05 /* Contacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contacts.swift; sourceTree = "<group>"; };
 		DD8EBF42285058FA00426DCA /* DisplayConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayConfig.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
@@ -254,7 +258,6 @@
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
-				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
 				DD6B85A728009258000ACD6B /* ShareChannel.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
@@ -286,6 +289,16 @@
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
 			);
 			path = Module;
+			sourceTree = "<group>";
+		};
+		DD86D40D2881BDB300BAEB7A /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				DD8169FE272476C700F4AB02 /* LogDocument.swift */,
+				DD86D40E2881BE4C00BAEB7A /* CsvDocument.swift */,
+				DD86D4102881D16900BAEB7A /* WriteCsvFile.swift */,
+			);
+			path = Export;
 			sourceTree = "<group>";
 		};
 		DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
@@ -345,6 +358,7 @@
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDAF8C5626ED07740058C060 /* Protobufs */,
+				DD86D40D2881BDB300BAEB7A /* Export */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18726CE24E40042C5E4 /* Views */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
@@ -667,6 +681,8 @@
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
+				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
+				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
