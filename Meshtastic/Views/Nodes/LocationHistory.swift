@@ -106,7 +106,7 @@ struct LocationHistory: View {
 				
 			} label: {
 				
-				Label("Export", systemImage: "square.and.arrow.down")
+				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
