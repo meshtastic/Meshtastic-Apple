@@ -79,10 +79,12 @@ struct NodeDetail: View {
 					ScrollView {
 																	
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
+							
+							Divider()
 							HStack {
 								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
-									
+								
 									Button(action: {
 										
 										isPresentingShutdownConfirm = true
@@ -136,7 +138,6 @@ struct NodeDetail: View {
 								}
 							}
 							.padding(5)
-							Divider()
 						}
 						
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
