@@ -362,6 +362,9 @@ struct CannedMessagesConfig: View {
 					self.inputbrokerPinA = Int(node!.cannedMessageConfig?.inputbrokerPinA ?? 0)
 					self.inputbrokerPinB = Int(node!.cannedMessageConfig?.inputbrokerPinB ?? 0)
 					self.inputbrokerPinPress = Int(node!.cannedMessageConfig?.inputbrokerPinPress ?? 0)
+					self.inputbrokerEventCw = Int(node!.cannedMessageConfig?.inputbrokerEventCw ?? 0)
+					self.inputbrokerEventCcw = Int(node!.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
+					self.inputbrokerEventPress = Int(node!.cannedMessageConfig?.inputbrokerEventPress ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}

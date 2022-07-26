@@ -190,14 +190,16 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						newLoRaConfig.modemPreset = 0
 						// 3 Hops default protobuf value of 0
 						newLoRaConfig.hopLimit = 0
+						// Default value of 0 is 22dbm
+						newLoRaConfig.txPower = 0
+						
 					} else {
 						
-						// UNSET default protobuf value of 0
 						newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-						// LongFast default protobuf value of 0
 						newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-						// 3 Hops default protobuf value of 0
 						newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
+						newLoRaConfig.txPower = Int32(config.lora.txPower)
+						
 					}
 					
 					fetchedNode[0].loRaConfig = newLoRaConfig
@@ -212,14 +214,15 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						fetchedNode[0].loRaConfig?.modemPreset = 0
 						// 3 Hops default protobuf value of 0
 						fetchedNode[0].loRaConfig?.hopLimit = 0
+						// Default value of 0 is 22dbm
+						fetchedNode[0].loRaConfig?.txPower = 0
 						
 					} else {
-						// UNSET default protobuf value of 0
+
 						fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-						// LongFast default protobuf value of 0
 						fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-						// 3 Hops default protobuf value of 0
 						fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
+						fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
 					}
 				}
 				
@@ -417,6 +420,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 
 					try context.save()
 					if meshlogging { MeshLogger.log("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))") }
+					print(try config.cannedMessage.jsonString())
 
 				} catch {
 

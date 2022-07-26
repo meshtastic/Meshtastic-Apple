@@ -43,6 +43,7 @@
         <attribute name="modemPreset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="regionCode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="txPower" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="loRaConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="loRaConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
@@ -175,6 +176,7 @@
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
         <attribute name="hwModel" attributeType="String"/>
+        <attribute name="isLicensed" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="longName" attributeType="String"/>
         <attribute name="macaddr" optional="YES" attributeType="Binary"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -196,7 +198,7 @@
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
         <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
         <element name="ExternalNotificationConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
-        <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
+        <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="299"/>
@@ -206,6 +208,6 @@
         <element name="SerialConfigEntity" positionX="54" positionY="153" width="128" height="164"/>
         <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="179"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
-        <element name="UserEntity" positionX="0" positionY="144" width="128" height="215"/>
+        <element name="UserEntity" positionX="0" positionY="144" width="128" height="230"/>
     </elements>
 </model>

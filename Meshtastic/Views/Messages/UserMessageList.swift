@@ -225,7 +225,16 @@ struct UserMessageList: View {
 														VStack {
 															
 															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-															Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
+															
+															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+															if ackDate >= sixMonthsAgo! {
+																
+																Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
+																
+															} else {
+																
+																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+															}
 														}
 													}
 													if message.ackSNR != 0 {
