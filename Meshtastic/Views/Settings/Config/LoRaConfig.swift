@@ -20,8 +20,8 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	case tw = 8
 	case ru = 9
 	case `in` = 10
-	case nz865
-	case th
+	case nz865 = 11
+	case th = 12
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -187,13 +187,14 @@ struct LoRaConfig: View {
 	
 	var node: NodeInfoEntity?
 	
-	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
+	@State var isPresentingSaveConfirm = false
+	@State var initialLoad = true
 	@State var hasChanges = false
 	
 	@State var region = 0
 	@State var modemPreset  = 0
 	@State var hopLimit  = 0
+	@State var txPower  = 0
 	
 	var body: some View {
 		
@@ -210,7 +211,6 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("The region where you will be using your radios.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 				}
 				Section(header: Text("Modem")) {
 					Picker("Presets", selection: $modemPreset ) {
@@ -221,7 +221,6 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Available modem presets, default is Long Fast.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 				}
 				Section(header: Text("Mesh Options")) {
 					
@@ -233,10 +232,9 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
-						.listRowSeparator(.visible)
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil)
 			
 			Button {
 							
@@ -286,13 +284,16 @@ struct LoRaConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
+			
+			self.bleManager.context = context
 
 			if self.initialLoad{
 				
-				self.bleManager.context = context
+			
 				self.hopLimit = Int(node!.loRaConfig?.hopLimit ?? 0)
 				self.region = Int(node!.loRaConfig?.regionCode ?? 0)
 				self.modemPreset = Int(node!.loRaConfig?.modemPreset ?? 0)
+				self.txPower = Int(node!.loRaConfig?.txPower ?? 0)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
