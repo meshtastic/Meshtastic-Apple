@@ -29,7 +29,7 @@ struct AdminMessageList: View {
 				
 					HStack {
 						
-						Text("\(am.adminDescription ?? "Unknown") - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .time)")
+						Text("\(am.adminDescription ?? "Unknown") - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: "h:mm:ss a"))")
 							.font(.caption)
 						
 						if am.receivedACK {
@@ -37,10 +37,10 @@ struct AdminMessageList: View {
 							Image(systemName: "checkmark.square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .time)")
+							Text("Acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
 								.foregroundColor(.gray)
 								.font(.caption)
-							
+
 						} else {
 							Image(systemName: "square")
 								.foregroundColor(.gray)

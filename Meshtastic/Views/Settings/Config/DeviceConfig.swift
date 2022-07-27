@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-// Default of 0 is One Minute
+// Default of 0 is Client
 enum DeviceRoles: Int, CaseIterable, Identifiable {
 
 	case client = 0
@@ -53,8 +53,8 @@ struct DeviceConfig: View {
 	
 	var node: NodeInfoEntity?
 	
-	@State private var isPresentingFactoryResetConfirm: Bool = false
-	@State private var isPresentingSaveConfirm: Bool = false
+	@State private var isPresentingFactoryResetConfirm = false
+	@State private var isPresentingSaveConfirm = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 	
@@ -191,6 +191,7 @@ struct DeviceConfig: View {
 			}
 		}
 		.onChange(of: serialEnabled) { newSerial in
+			
 			if node != nil && node!.deviceConfig != nil {
 			
 				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }

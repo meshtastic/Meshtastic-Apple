@@ -22,7 +22,7 @@ struct Connect: View {
 	@State var isPreferredRadio: Bool = false
 	
 	@State var firmwareVersion = "0.0.0"
-	@State var minimumVersion = "1.3.25"
+	@State var minimumVersion = "1.3.27"
 	@State var invalidVersion = false
 	
 
