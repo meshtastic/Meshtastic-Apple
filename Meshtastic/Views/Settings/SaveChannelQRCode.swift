@@ -12,8 +12,6 @@ struct SaveChannelQRCode: View {
 
 	var body: some View {
 		
-		// Show an error if there is no e/ or other validation problems
-		
 		VStack {
 			
 			Text("Save Channel Settings?")
@@ -24,16 +22,16 @@ struct SaveChannelQRCode: View {
 				.font(.callout)
 				.padding()
 
-			Text(String(channelHash?.path ?? "empty"))
+			Text(String(channelHash?.path ?? "URL did not pass through properly"))
 				.font(.title2)
 				.padding()
 			
-			Text("Blah blah.")
+			Text("This does not work yet.")
 				.font(.callout)
 				.padding()
 			
 			
-			Text("This is forever")
+			Text("Swipe down to dismiss.")
 				.padding()
 		}
 	}

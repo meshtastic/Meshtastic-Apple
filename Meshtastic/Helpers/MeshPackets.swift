@@ -167,6 +167,11 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.lora.jsonString()) == "{}" {
 			
 			isDefault = true
+			if meshlogging { MeshLogger.log("📻 Default LoRa config \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("📻 Custom LoRa config \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -603,7 +608,12 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		if (try! config.serial.jsonString()) == "{}" {
 			
 			isDefault = true
-			print("🤖 Default Serial Module config")
+			
+			if meshlogging { MeshLogger.log("🤖 Default Serial Module config \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🤖 Custom Serial Module config \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
