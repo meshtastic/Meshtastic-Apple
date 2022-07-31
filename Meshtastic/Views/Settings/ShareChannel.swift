@@ -86,13 +86,13 @@ struct ShareChannel: View {
 			.onAppear {
 
 				self.bleManager.context = context
-				var i: UInt32 = 1;
-				while i < 9 {
+				let i: UInt32 = 1;
+//				while i < 9 { // this should actually loop over MyNodeInfo.maxChannels to get all channels
 					print("requesting channel",i)
 					let resp = self.bleManager.getChannel(channelIndex: i, wantResponse: true)
 					print("resp from getChannel", resp)
-					i+=1;
-				}
+//					i+=1;
+//				}
 			}
 			
 		}

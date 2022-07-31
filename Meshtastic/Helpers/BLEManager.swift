@@ -448,11 +448,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 				
 			} catch {
-				
 				print(characteristic.value!)
 			}
-			print("Incoming packet with portnum", decodedInfo.packet.decoded.portnum)
-			print("decodedInfo.packet.decoded", decodedInfo.packet.decoded)
 
 			switch decodedInfo.packet.decoded.portnum {
 				
@@ -468,7 +465,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
 					
 					if myInfo != nil {
-						print("my info packet", decodedInfo.myInfo)
 						self.connectedPeripheral.bitrate = myInfo!.bitrate
 						self.connectedPeripheral.num = myInfo!.myNodeNum
 						lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
@@ -1188,6 +1184,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
 		
 		meshPacket.decoded = dataMessage
 
