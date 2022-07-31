@@ -1205,6 +1205,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 }
 
 func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		
