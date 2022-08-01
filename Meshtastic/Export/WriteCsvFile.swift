@@ -35,6 +35,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		}
 		
 	} else {
+		
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, Voltage, Current"
 		

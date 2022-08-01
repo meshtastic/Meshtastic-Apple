@@ -152,7 +152,7 @@ struct TelemetryConfig: View {
 				
 				Section(header: Text("Sensor Options")) {
 					
-					Text("")
+					Text("I2C Connected sensors will be detected automatically.  Supported sensors are BMP280, BME280, BME680, MCP9808, INA219 and INA260.")
 						.font(.caption)
 				
 					Toggle(isOn: $environmentMeasurementEnabled) {
