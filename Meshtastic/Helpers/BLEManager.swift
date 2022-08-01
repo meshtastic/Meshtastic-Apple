@@ -465,6 +465,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
 					
 					if myInfo != nil {
+						
 						self.connectedPeripheral.bitrate = myInfo!.bitrate
 						self.connectedPeripheral.num = myInfo!.myNodeNum
 						lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
