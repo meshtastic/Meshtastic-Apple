@@ -474,29 +474,9 @@ struct ModuleConfig {
     var environmentScreenEnabled: Bool = false
 
     ///
-    /// Sometimes sensor reads can fail.
-    /// If this happens, we will retry a configurable number of attempts,
-    /// each attempt will be delayed by the minimum required refresh rate for that sensor
-    var environmentReadErrorCountThreshold: UInt32 = 0
-
-    ///
-    /// Sometimes we can end up with more than read_error_count_threshold failures.
-    /// In this case, we will stop trying to read from the sensor for a while.
-    /// Wait this long until trying to read from the sensor again
-    var environmentRecoveryInterval: UInt32 = 0
-
-    ///
     /// We'll always read the sensor in Celsius, but sometimes we might want to
     /// display the results in Fahrenheit as a "user preference".
     var environmentDisplayFahrenheit: Bool = false
-
-    ///
-    /// Specify the sensor type
-    var environmentSensorType: TelemetrySensorType = .notSet
-
-    ///
-    /// Specify the peferred GPIO Pin for sensor readings
-    var environmentSensorPin: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1184,11 +1164,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     2: .standard(proto: "environment_update_interval"),
     3: .standard(proto: "environment_measurement_enabled"),
     4: .standard(proto: "environment_screen_enabled"),
-    5: .standard(proto: "environment_read_error_count_threshold"),
-    6: .standard(proto: "environment_recovery_interval"),
     7: .standard(proto: "environment_display_fahrenheit"),
-    8: .standard(proto: "environment_sensor_type"),
-    9: .standard(proto: "environment_sensor_pin"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1201,11 +1177,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.environmentUpdateInterval) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.environmentMeasurementEnabled) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.environmentScreenEnabled) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.environmentReadErrorCountThreshold) }()
-      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.environmentRecoveryInterval) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.environmentDisplayFahrenheit) }()
-      case 8: try { try decoder.decodeSingularEnumField(value: &self.environmentSensorType) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.environmentSensorPin) }()
       default: break
       }
     }
@@ -1224,20 +1196,8 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.environmentScreenEnabled != false {
       try visitor.visitSingularBoolField(value: self.environmentScreenEnabled, fieldNumber: 4)
     }
-    if self.environmentReadErrorCountThreshold != 0 {
-      try visitor.visitSingularUInt32Field(value: self.environmentReadErrorCountThreshold, fieldNumber: 5)
-    }
-    if self.environmentRecoveryInterval != 0 {
-      try visitor.visitSingularUInt32Field(value: self.environmentRecoveryInterval, fieldNumber: 6)
-    }
     if self.environmentDisplayFahrenheit != false {
       try visitor.visitSingularBoolField(value: self.environmentDisplayFahrenheit, fieldNumber: 7)
-    }
-    if self.environmentSensorType != .notSet {
-      try visitor.visitSingularEnumField(value: self.environmentSensorType, fieldNumber: 8)
-    }
-    if self.environmentSensorPin != 0 {
-      try visitor.visitSingularUInt32Field(value: self.environmentSensorPin, fieldNumber: 9)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1247,11 +1207,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.environmentUpdateInterval != rhs.environmentUpdateInterval {return false}
     if lhs.environmentMeasurementEnabled != rhs.environmentMeasurementEnabled {return false}
     if lhs.environmentScreenEnabled != rhs.environmentScreenEnabled {return false}
-    if lhs.environmentReadErrorCountThreshold != rhs.environmentReadErrorCountThreshold {return false}
-    if lhs.environmentRecoveryInterval != rhs.environmentRecoveryInterval {return false}
     if lhs.environmentDisplayFahrenheit != rhs.environmentDisplayFahrenheit {return false}
-    if lhs.environmentSensorType != rhs.environmentSensorType {return false}
-    if lhs.environmentSensorPin != rhs.environmentSensorPin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

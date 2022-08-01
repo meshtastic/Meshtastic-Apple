@@ -723,25 +723,17 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newTelemetryConfig.deviceUpdateInterval = 0
 						newTelemetryConfig.environmentUpdateInterval = 0
 						newTelemetryConfig.environmentMeasurementEnabled = false
-						newTelemetryConfig.environmentSensorType = 0
 						newTelemetryConfig.environmentScreenEnabled = false
 						newTelemetryConfig.environmentDisplayFahrenheit = false
-						newTelemetryConfig.environmentRecoveryInterval = 0
-						newTelemetryConfig.environmentReadErrorCountThreshold = 0
 						
 					} else {
 						
 						newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
 						newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
 						newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						newTelemetryConfig.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
 						newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
 						newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-						newTelemetryConfig.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
-						newTelemetryConfig.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
-				
 					}
-					
 					fetchedNode[0].telemetryConfig = newTelemetryConfig
 					
 				} else {
@@ -751,23 +743,16 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = 0
 						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = 0
 						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = false
-						fetchedNode[0].telemetryConfig?.environmentSensorType = 0
 						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = false
 						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = false
-						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = 0
-						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = 0
-												
 						
 					} else {
 						
 						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
 						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
 						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						fetchedNode[0].telemetryConfig?.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
 						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
 						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
-						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
 					}
 				}
 				
