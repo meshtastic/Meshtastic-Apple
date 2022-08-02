@@ -257,6 +257,11 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.position.jsonString()) == "{}" {
 			
 			isDefault = true
+			if meshlogging { MeshLogger.log("🗺️ Default Position config received \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🗺️ Custom Position config received \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -327,6 +332,87 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
+				}
+			}
+			
+		} catch {
+			
+		}
+	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.wifi(config.wifi) {
+		
+		var isDefault = false
+		
+		if (try! config.wifi.jsonString()) == "{}" {
+			
+			isDefault = true
+			if meshlogging { MeshLogger.log("📶 Default WiFi config received \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("📶 Custom WiFi config received \(String(nodeNum))") }
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save WiFi Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].wiFiConfig == nil {
+					
+					let newWiFiConfig = WiFiConfigEntity(context: context)
+					
+					if isDefault {
+						
+						newWiFiConfig.ssid = ""
+						newWiFiConfig.password = ""
+						newWiFiConfig.apMode = false
+						newWiFiConfig.apHidden = false
+
+					} else {
+						
+						newWiFiConfig.ssid = config.wifi.ssid
+						newWiFiConfig.password = config.wifi.psk
+						newWiFiConfig.apMode = config.wifi.apMode
+						newWiFiConfig.apHidden = config.wifi.apHidden
+					}
+					newWiFiConfig.num = fetchedNode[0].num
+					fetchedNode[0].wiFiConfig = newWiFiConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].wiFiConfig?.ssid = ""
+						fetchedNode[0].wiFiConfig?.password = ""
+						fetchedNode[0].wiFiConfig?.apMode = false
+						fetchedNode[0].wiFiConfig?.apHidden = false
+						
+					} else {
+						
+						fetchedNode[0].wiFiConfig?.ssid = config.wifi.ssid
+						fetchedNode[0].wiFiConfig?.password = config.wifi.psk
+						fetchedNode[0].wiFiConfig?.apMode = config.wifi.apMode
+						fetchedNode[0].wiFiConfig?.apHidden = config.wifi.apHidden
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated WiFi Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data WifionfigEntity: \(nsError)")
 				}
 			}
 			
@@ -425,7 +511,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 
 					try context.save()
 					if meshlogging { MeshLogger.log("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))") }
-					print(try config.cannedMessage.jsonString())
+					
 
 				} catch {
 

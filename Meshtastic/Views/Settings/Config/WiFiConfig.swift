@@ -36,6 +36,55 @@ struct WiFiConfig: View {
 				
 				Section(header: Text("SSID & Password")) {
 					
+					HStack {
+						Label("SSID", systemImage: "wifi")
+						TextField("SSID", text: $ssid)
+							.foregroundColor(.gray)
+							.onChange(of: ssid, perform: { value in
+
+								let totalBytes = ssid.utf8.count
+								
+								// Only mess with the value if it is too big
+								if totalBytes > 30 {
+
+									let firstNBytes = Data(ssid.utf8.prefix(30))
+							
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										
+										// Set the shortName back to the last place where it was the right size
+										ssid = maxBytesString
+									}
+								}
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.default)
+					.disableAutocorrection(true)
+					
+					HStack {
+						Label("Password", systemImage: "wallet.pass")
+						TextField("Password", text: $password)
+							.foregroundColor(.gray)
+							.onChange(of: password, perform: { value in
+
+								let totalBytes = password.utf8.count
+								
+								// Only mess with the value if it is too big
+								if totalBytes > 60 {
+
+									let firstNBytes = Data(ssid.utf8.prefix(60))
+							
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										
+										// Set the shortName back to the last place where it was the right size
+										ssid = maxBytesString
+									}
+								}
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.default)
+					.disableAutocorrection(true)
 
 				}
 				Section(header: Text("AP Settings")) {
@@ -81,18 +130,18 @@ struct WiFiConfig: View {
 				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var wifi = Config.WiFiConfig()
-					wifi.ssid = ssid
-					wifi.psk = password
-					wifi.apMode = apMode
-					wifi.apHidden = apHidden
+					wifi.ssid = self.ssid
+					wifi.psk = self.password
+					wifi.apMode = self.apMode
+					wifi.apHidden = self.apHidden
 					
-					//let adminMessageId =  bleManager.saveWiFiConfig(config: wiFi, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
-					let adminMessageId = 0
+					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					
 					if adminMessageId > 0 {
 						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
-						hasChanges = false
+						self.hasChanges = false
 						
 					} else {
 						
@@ -124,23 +173,31 @@ struct WiFiConfig: View {
 		}
 		.onChange(of: ssid) { newSsid in
 			
-			hasChanges = true
-			//if node != nil && node!.wiFiConfig != nil {  newSsid != node!.wiFiConfig.ssid { hasChanges = true }}
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newSsid != node!.wiFiConfig!.ssid { hasChanges = true }
+			}
 		}
 		.onChange(of: password) { newPassword in
 			
-			hasChanges = true
-			//if node != nil && node!.wiFiConfig != nil {  newPassword != node!.wiFiConfig!.password { hasChanges = true }}
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newPassword != node!.wiFiConfig!.password { hasChanges = true }
+			}
 		}
-		.onChange(of: apMode) { newAPMode in
+		.onChange(of: apMode) { newApMode in
 			
-			hasChanges = true
-			//if node != nil && node!.wiFiConfig != nil {  newAPMode != node!.wiFiConfig!.apMode { self.hasChanges = true }}
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newApMode != node!.wiFiConfig!.apMode { hasChanges = true }
+			}
 		}
-		.onChange(of: apHidden) { newAPHidden in
+		.onChange(of: apHidden) { newApHidden in
 			
-			hasChanges = true
-			//if node != nil && node!.wiFiConfig != nil {  newAPHidden != node!.wiFiConfig!.apHidden { hasChanges = true }}
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newApHidden != node!.wiFiConfig!.apHidden { hasChanges = true }
+			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
