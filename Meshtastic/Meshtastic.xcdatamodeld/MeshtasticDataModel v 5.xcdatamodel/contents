@@ -195,8 +195,8 @@
         <attribute name="apHidden" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="apMode" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="password" optional="YES" attributeType="String" minValueString="1" maxValueString="60"/>
-        <attribute name="ssid" optional="YES" attributeType="String" minValueString="1" maxValueString="30"/>
+        <attribute name="password" optional="YES" attributeType="String" minValueString="0" maxValueString="60"/>
+        <attribute name="ssid" optional="YES" attributeType="String" minValueString="0" maxValueString="30"/>
         <relationship name="wiFiConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="wiFiConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <elements>
