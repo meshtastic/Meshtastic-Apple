@@ -107,7 +107,7 @@ struct WiFiConfig: View {
 					
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 			
 			Button {
 							

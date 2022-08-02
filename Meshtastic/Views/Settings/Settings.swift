@@ -107,7 +107,7 @@ struct Settings: View {
 						Image(systemName: "wifi")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("WiFi")
+						Text("WiFi (ESP32 Only)")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
