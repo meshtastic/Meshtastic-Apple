@@ -106,6 +106,7 @@
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
         <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
+        <relationship name="wiFiConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="WiFiConfigEntity" inverseName="wiFiConfigNode" inverseEntity="WiFiConfigEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="num"/>
@@ -190,6 +191,14 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND isEmoji == false AND admin = false"/>
         </fetchedProperty>
     </entity>
+    <entity name="WiFiConfigEntity" representedClassName="WiFiConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="apHidden" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="apMode" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" minValueString="1" maxValueString="60"/>
+        <attribute name="ssid" optional="YES" attributeType="String" minValueString="1" maxValueString="30"/>
+        <relationship name="wiFiConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="wiFiConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <elements>
         <element name="CannedMessageConfigEntity" positionX="45" positionY="144" width="128" height="209"/>
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
@@ -198,7 +207,7 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="299"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="314"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
@@ -206,5 +215,6 @@
         <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="134"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="230"/>
+        <element name="WiFiConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
     </elements>
 </model>

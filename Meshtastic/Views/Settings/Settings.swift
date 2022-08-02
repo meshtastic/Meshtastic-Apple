@@ -100,6 +100,17 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
+					NavigationLink {
+						WiFiConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "wifi")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("WiFi (ESP32 Only)")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
 					Text("Default settings values are prefered as they consume no bandwidth when sent over the mesh.")
 						.font(.caption2)
 						.fixedSize(horizontal: false, vertical: true)
@@ -193,8 +204,7 @@ struct Settings: View {
 				
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only
-				// WiFi Config - Would break connection to device
-				// MQTT Config - Part of WiFi
+				// MQTT Config - Can do from WebUI once WiFi is enabled
 			}
 			.onAppear {
 
