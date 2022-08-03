@@ -1422,7 +1422,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		if meshLogging { MeshLogger.log("💬 Message received for text message app \(messageText)") }
+		if meshLogging { MeshLogger.log("💬 Message received for text message app") }
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
@@ -1496,7 +1496,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 					]
 					
 						manager.schedule()
-						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
+						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
 					}
 					
 				} catch {

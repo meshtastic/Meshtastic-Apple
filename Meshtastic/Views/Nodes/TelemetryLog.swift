@@ -177,7 +177,7 @@ struct TelemetryLog: View {
 									
 									Spacer()
 									Text("Device Metrics")
-										.font(.title)
+										.font(.title3)
 									Spacer()
 								}
 								
@@ -234,7 +234,6 @@ struct TelemetryLog: View {
 						} else if tel.metricsType == 1 {
 							
 							// Environment Metrics
-							
 							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°C" : "°F"
 							
 							
