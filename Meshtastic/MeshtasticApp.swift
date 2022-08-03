@@ -12,7 +12,7 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
 	@State var saveQR = false
-	@State private var channelUrl: URL?
+	@State var channelUrl: URL?
 	
 	@Environment(\.scenePhase) var scenePhase
 
@@ -26,20 +26,28 @@ struct MeshtasticAppleApp: App {
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
 				print("QR Code URL received from the Camera \(userActivity)")
-				guard let channelUrl = userActivity.webpageURL else {
-				  return
+				channelUrl = userActivity.webpageURL
+				if channelUrl!.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
+					saveQR = true
 				}
-
-				print("User wants to open URL: \(channelUrl)")
-				saveQR = true
+				
+				print("User wants to open URL: \(channelUrl?.relativeString)")
 
 			}
 			.sheet(isPresented: $saveQR) {
 				
-				SaveChannelQRCode(channelHash: channelUrl)
+				SaveChannelQRCode(channelHash: channelUrl?.absoluteString ?? "Empty Channel URL")
 			}
 			.onOpenURL(perform: { (url) in
 				
+				print("QR Code URL received from the Camera \(url)")
+				channelUrl = url
+				print("User wants to open URL: \(channelUrl?.absoluteString ?? "No QR Code Link")")
+				
+				if url.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
+					saveQR = true
+				}
+
 				//we are expecting a .mbtiles map file that contains raster data
 				//save it to the documents directory, and name it offline_map.mbtiles
 				let fileManager = FileManager.default

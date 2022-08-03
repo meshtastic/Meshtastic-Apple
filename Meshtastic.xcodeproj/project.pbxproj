@@ -866,7 +866,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-				DEVELOPMENT_TEAM = QWER3PMRVZ;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -876,7 +876,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.27;
-				PRODUCT_BUNDLE_IDENTIFIER = cvc.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -898,7 +898,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-				DEVELOPMENT_TEAM = QWER3PMRVZ;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -908,7 +908,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.27;
-				PRODUCT_BUNDLE_IDENTIFIER = cvc.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
