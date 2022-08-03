@@ -243,10 +243,16 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in core data matching connected node number \(nodeNum)")
 			}
+			
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
 		}
 	}
 	
