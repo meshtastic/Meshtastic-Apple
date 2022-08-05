@@ -30,26 +30,18 @@ struct WiFiConfig: View {
 		
 		VStack {
 			
-			Text("Enabling WiFi will disable the bluetooth connection to the app.")
-				.font(.callout)
-				.padding()
-
 			Form {
 				
+				Text("Enabling WiFi will disable the bluetooth connection to the app.")
+					.font(.title3)
 				
 				Section(header: Text("Options")) {
-					
-					Text("WiFi client mode is enabled by default, if Soft AP is enabled the SSID and psk will be used as the default credentials for the access point.")
-						.font(.caption)
-					
-					//HStack {
 						
-						Toggle(isOn: $enabled) {
+					Toggle(isOn: $enabled) {
 
-							Label("Enable", systemImage: "wifi")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				//	}
+						Label("Enable", systemImage: "wifi")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					HStack {
 						Label("SSID", systemImage: "network")
@@ -102,7 +94,10 @@ struct WiFiConfig: View {
 					.disableAutocorrection(true)
 
 				}
-				Section(header: Text("AP Settings")) {
+				Section(header: Text("Sofware Access Point")) {
+					
+					Text("WiFi uses client mode by default, if Software Access Point(AP) is on the SSID and password will be used to access the AP at meshtastic.local.")
+						.font(.caption)
 					
 					Toggle(isOn: $apMode) {
 
@@ -114,14 +109,10 @@ struct WiFiConfig: View {
 						
 						Toggle(isOn: $apHidden) {
 
-							Label("Hidden AP", systemImage: "eye.slash")
+							Label("Hidden SSID", systemImage: "eye.slash")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If set the SSID for the AP will be hidden.")
-							.font(.caption)
 					}
-
-					
 				}
 			}
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
@@ -147,6 +138,7 @@ struct WiFiConfig: View {
 				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var wifi = Config.WiFiConfig()
+					wifi.enabled = self.enabled
 					wifi.ssid = self.ssid
 					wifi.psk = self.password
 					wifi.apMode = self.apMode
@@ -179,6 +171,7 @@ struct WiFiConfig: View {
 				
 				self.bleManager.context = context
 
+				self.enabled = (node!.wiFiConfig?.enabled ?? false)
 				self.ssid = node!.wiFiConfig?.ssid ?? ""
 				self.password = node!.wiFiConfig?.password ?? ""
 				self.apMode = (node!.wiFiConfig?.apMode ?? false)
