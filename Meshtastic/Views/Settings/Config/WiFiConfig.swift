@@ -17,6 +17,8 @@ struct WiFiConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges: Bool = false
+	
+	@State var enabled = false
 
 	@State var ssid = ""
 	@State var password = ""
@@ -28,16 +30,29 @@ struct WiFiConfig: View {
 		
 		VStack {
 			
-			Text("Enabling WiFi will disable bluetooth, only one connection method works at a time. Saving these settings will disconnect your device from the app.")
-				.font(.title3)
+			Text("Enabling WiFi will disable the bluetooth connection to the app.")
+				.font(.callout)
 				.padding()
 
 			Form {
 				
-				Section(header: Text("SSID & Password")) {
+				
+				Section(header: Text("Options")) {
+					
+					Text("WiFi client mode is enabled by default, if Soft AP is enabled the SSID and psk will be used as the default credentials for the access point.")
+						.font(.caption)
+					
+					//HStack {
+						
+						Toggle(isOn: $enabled) {
+
+							Label("Enable", systemImage: "wifi")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				//	}
 					
 					HStack {
-						Label("SSID", systemImage: "wifi")
+						Label("SSID", systemImage: "network")
 						TextField("SSID", text: $ssid)
 							.foregroundColor(.gray)
 							.onChange(of: ssid, perform: { value in
@@ -91,19 +106,21 @@ struct WiFiConfig: View {
 					
 					Toggle(isOn: $apMode) {
 
-						Label("Soft AP Mode", systemImage: "wifi")
+						Label("Soft AP Mode", systemImage: "externaldrive.fill.badge.wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If set the software access point mode will be activated.")
-						.font(.caption)
 					
-					Toggle(isOn: $apHidden) {
+					if apMode {
+						
+						Toggle(isOn: $apHidden) {
 
-						Label("Hidden AP", systemImage: "eye.slash")
+							Label("Hidden AP", systemImage: "eye.slash")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("If set the SSID for the AP will be hidden.")
+							.font(.caption)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If set the SSID for the AP will be hidden.")
-						.font(.caption)
+
 					
 				}
 			}
@@ -169,6 +186,13 @@ struct WiFiConfig: View {
 				
 				self.hasChanges = false
 				self.initialLoad = false
+			}
+		}
+		.onChange(of: enabled) { newEnabled in
+			
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newEnabled != node!.wiFiConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: ssid) { newSsid in

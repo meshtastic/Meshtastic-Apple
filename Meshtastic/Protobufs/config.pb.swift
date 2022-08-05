@@ -527,6 +527,10 @@ struct Config {
     /// If set, the node AP will broadcast as a hidden SSID
     var apHidden: Bool = false
 
+    ///
+    /// If set, wifi is enabled. Previously done through setting ssid and psk
+    var enabled: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1381,6 +1385,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     2: .same(proto: "psk"),
     3: .standard(proto: "ap_mode"),
     4: .standard(proto: "ap_hidden"),
+    5: .same(proto: "enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1393,6 +1398,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 2: try { try decoder.decodeSingularStringField(value: &self.psk) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.apMode) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.apHidden) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       default: break
       }
     }
@@ -1411,6 +1417,9 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.apHidden != false {
       try visitor.visitSingularBoolField(value: self.apHidden, fieldNumber: 4)
     }
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1419,6 +1428,7 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.psk != rhs.psk {return false}
     if lhs.apMode != rhs.apMode {return false}
     if lhs.apHidden != rhs.apHidden {return false}
+    if lhs.enabled != rhs.enabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

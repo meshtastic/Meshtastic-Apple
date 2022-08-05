@@ -1318,43 +1318,45 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
 						
-		if routingMessage.errorReason == Routing.Error.none {
 			
-			let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-			fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
+		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
-			do {
+		do {
 
-				let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			
+			if fetchedMessage?.count ?? 0 > 0 {
 				
-				if fetchedMessage?.count ?? 0 > 0 {
+				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
+				
+				if routingMessage.errorReason == Routing.Error.none {
 					
 					fetchedMessage![0].receivedACK = true
-					fetchedMessage![0].ackSNR = packet.rxSnr
-					fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-					fetchedMessage![0].objectWillChange.send()
-					fetchedMessage![0].fromUser?.objectWillChange.send()
-					fetchedMessage![0].toUser?.objectWillChange.send()
-					
-				} else {
-					
-					return
 				}
+				fetchedMessage![0].ackSNR = packet.rxSnr
+				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				fetchedMessage![0].objectWillChange.send()
 				
-				try context.save()
-
-				  if meshLogging {
-					  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
-				  }
+			} else {
 				
-			} catch {
-				
-				context.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
+				return
 			}
+			
+			try context.save()
+
+			  if meshLogging {
+				  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
+			  }
+			
+		} catch {
+			
+			context.rollback()
+
+			let nsError = error as NSError
+			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
+		
 	}
 }
 	
