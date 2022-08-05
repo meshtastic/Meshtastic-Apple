@@ -168,6 +168,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		self.centralManager?.connect(peripheral)
 
+		// Invalidate any existing timer
+		self.timeoutTimer?.invalidate()
+
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
 		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
