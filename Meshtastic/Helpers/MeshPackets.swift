@@ -1337,6 +1337,8 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
 				fetchedMessage![0].objectWillChange.send()
+				fetchedMessage![0].fromUser?.objectWillChange.send()
+				fetchedMessage![0].toUser?.objectWillChange.send()
 				
 			} else {
 				

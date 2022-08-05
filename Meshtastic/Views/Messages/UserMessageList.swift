@@ -213,37 +213,41 @@ struct UserMessageList: View {
 														
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 
-														Text("Sent \(messageDate, style: .date) \(messageDate, style: .time)").font(.caption2).foregroundColor(.gray)
+														Text("Sent \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 													}
 													
-													VStack {
-																
-														Text("Received ACK: \(message.receivedACK ? "✔️" : "")")
-														
-													}
+								
 													if message.receivedACK {
-														VStack {
-															
-															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-															
-															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-															if ackDate >= sixMonthsAgo! {
-																
-																Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
-																
-															} else {
-																
-																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
-															}
-														}
-													} else if message.ackError > 0 {
 														
-														Text("Ack Failure")
+														VStack {
+																	
+															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
+														}
 													}
+													if message.ackError > 0 {
+
+														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													}
+													VStack {
+														
+														let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
+														
+														let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+														if ackDate >= sixMonthsAgo! {
+															
+															Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+															
+														} else {
+															
+															Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+														}
+													}
+
 													if message.ackSNR != 0 {
 														VStack {
 															
-															Text("ACK SNR \(String(message.ackSNR))")
+															Text("Ack SNR \(String(message.ackSNR))")
 																.font(.caption2)
 																.foregroundColor(.gray)
 														}
@@ -295,6 +299,13 @@ struct UserMessageList: View {
 												if message.receivedACK {
 
 													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+												}
+												
+												if message.ackError > 0 {
+													
+													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+														.font(.caption2).foregroundColor(.red)
 												}
 											}
 										}
