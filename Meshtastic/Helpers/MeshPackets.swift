@@ -243,10 +243,16 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in core data matching connected node number \(nodeNum)")
 			}
+			
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -1312,43 +1318,45 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
 						
-		if routingMessage.errorReason == Routing.Error.none {
 			
-			let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-			fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
+		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
-			do {
+		do {
 
-				let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			
+			if fetchedMessage?.count ?? 0 > 0 {
 				
-				if fetchedMessage?.count ?? 0 > 0 {
+				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
+				
+				if routingMessage.errorReason == Routing.Error.none {
 					
 					fetchedMessage![0].receivedACK = true
-					fetchedMessage![0].ackSNR = packet.rxSnr
-					fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-					fetchedMessage![0].objectWillChange.send()
-					fetchedMessage![0].fromUser?.objectWillChange.send()
-					fetchedMessage![0].toUser?.objectWillChange.send()
-					
-				} else {
-					
-					return
 				}
+				fetchedMessage![0].ackSNR = packet.rxSnr
+				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				fetchedMessage![0].objectWillChange.send()
 				
-				try context.save()
-
-				  if meshLogging {
-					  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
-				  }
+			} else {
 				
-			} catch {
-				
-				context.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
+				return
 			}
+			
+			try context.save()
+
+			  if meshLogging {
+				  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
+			  }
+			
+		} catch {
+			
+			context.rollback()
+
+			let nsError = error as NSError
+			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
+		
 	}
 }
 	
@@ -1422,7 +1430,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		if meshLogging { MeshLogger.log("💬 Message received for text message app \(messageText)") }
+		if meshLogging { MeshLogger.log("💬 Message received for text message app") }
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
@@ -1496,7 +1504,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 					]
 					
 						manager.schedule()
-						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
+						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
 					}
 					
 				} catch {

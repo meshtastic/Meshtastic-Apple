@@ -131,6 +131,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case m5Stack // = 44
 
   ///
+  /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
+  case stationG1 // = 45
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -166,6 +170,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 42: self = .nrf52840Pca10059
     case 43: self = .drDev
     case 44: self = .m5Stack
+    case 45: self = .stationG1
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -198,6 +203,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nrf52840Pca10059: return 42
     case .drDev: return 43
     case .m5Stack: return 44
+    case .stationG1: return 45
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -235,6 +241,7 @@ extension HardwareModel: CaseIterable {
     .nrf52840Pca10059,
     .drDev,
     .m5Stack,
+    .stationG1,
     .privateHw,
   ]
 }
@@ -2176,6 +2183,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     42: .same(proto: "NRF52840_PCA10059"),
     43: .same(proto: "DR_DEV"),
     44: .same(proto: "M5STACK"),
+    45: .same(proto: "STATION_G1"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

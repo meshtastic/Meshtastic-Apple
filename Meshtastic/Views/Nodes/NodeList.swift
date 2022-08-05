@@ -19,7 +19,7 @@ struct NodeList: View {
 	@State var initialLoad: Bool = true
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "user.shortName", ascending: true)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
@@ -61,7 +61,7 @@ struct NodeList: View {
 									if UIDevice.current.userInterfaceIdiom == .pad { Text(node.user?.longName ?? "Unknown").font(.headline)
 											.offset(x: -15)
 									} else {
-										Text(node.user?.longName ?? "Unknown").font(.title).offset(x: -15)
+										Text(node.user?.longName ?? "Unknown").font(.title2).offset(x: -15)
 									}
 								}
 								.padding(.bottom, 10)
@@ -106,16 +106,16 @@ struct NodeList: View {
 
 				if initialLoad {
 					
-					self.bleManager.context = context
 					self.bleManager.userSettings = userSettings
+					self.bleManager.context = context
 					self.initialLoad = false
 
-					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-
-						if nodes.count > 0 {
-							selection = "0"
-						}
-					}
+//					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+//
+//						if nodes.count > 0 {
+//							selection = "0"
+//						}
+//					}
 				}
 			}
         }

@@ -17,6 +17,8 @@ struct WiFiConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges: Bool = false
+	
+	@State var enabled = false
 
 	@State var ssid = ""
 	@State var password = ""
@@ -28,16 +30,21 @@ struct WiFiConfig: View {
 		
 		VStack {
 			
-			Text("Enabling WiFi will disable bluetooth, only one connection method works at a time. Saving these settings will disconnect your device from the app.")
-				.font(.title3)
-				.padding()
-
 			Form {
 				
-				Section(header: Text("SSID & Password")) {
+				Text("Enabling WiFi will disable the bluetooth connection to the app.")
+					.font(.title3)
+				
+				Section(header: Text("Options")) {
+						
+					Toggle(isOn: $enabled) {
+
+						Label("Enable", systemImage: "wifi")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					HStack {
-						Label("SSID", systemImage: "wifi")
+						Label("SSID", systemImage: "network")
 						TextField("SSID", text: $ssid)
 							.foregroundColor(.gray)
 							.onChange(of: ssid, perform: { value in
@@ -87,24 +94,25 @@ struct WiFiConfig: View {
 					.disableAutocorrection(true)
 
 				}
-				Section(header: Text("AP Settings")) {
+				Section(header: Text("Sofware Access Point")) {
+					
+					Text("WiFi uses client mode by default, if Software Access Point(AP) is on the SSID and password will be used to access the AP at meshtastic.local.")
+						.font(.caption)
 					
 					Toggle(isOn: $apMode) {
 
-						Label("Soft AP Mode", systemImage: "wifi")
+						Label("Soft AP Mode", systemImage: "externaldrive.fill.badge.wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If set the software access point mode will be activated.")
-						.font(.caption)
 					
-					Toggle(isOn: $apHidden) {
+					if apMode {
+						
+						Toggle(isOn: $apHidden) {
 
-						Label("Hidden AP", systemImage: "eye.slash")
+							Label("Hidden SSID", systemImage: "eye.slash")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If set the SSID for the AP will be hidden.")
-						.font(.caption)
-					
 				}
 			}
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
@@ -130,6 +138,7 @@ struct WiFiConfig: View {
 				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var wifi = Config.WiFiConfig()
+					wifi.enabled = self.enabled
 					wifi.ssid = self.ssid
 					wifi.psk = self.password
 					wifi.apMode = self.apMode
@@ -162,6 +171,7 @@ struct WiFiConfig: View {
 				
 				self.bleManager.context = context
 
+				self.enabled = (node!.wiFiConfig?.enabled ?? false)
 				self.ssid = node!.wiFiConfig?.ssid ?? ""
 				self.password = node!.wiFiConfig?.password ?? ""
 				self.apMode = (node!.wiFiConfig?.apMode ?? false)
@@ -169,6 +179,13 @@ struct WiFiConfig: View {
 				
 				self.hasChanges = false
 				self.initialLoad = false
+			}
+		}
+		.onChange(of: enabled) { newEnabled in
+			
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newEnabled != node!.wiFiConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: ssid) { newSsid in

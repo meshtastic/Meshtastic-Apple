@@ -236,6 +236,9 @@ struct UserMessageList: View {
 																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
 															}
 														}
+													} else if message.ackError > 0 {
+														
+														Text("Ack Failure")
 													}
 													if message.ackSNR != 0 {
 														VStack {

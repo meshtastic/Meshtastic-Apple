@@ -47,6 +47,7 @@
         <relationship name="loRaConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="loRaConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="ackError" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="ackSNR" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="ackTimestamp" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="admin" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -194,6 +195,7 @@
     <entity name="WiFiConfigEntity" representedClassName="WiFiConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="apHidden" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="apMode" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="enabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="password" optional="YES" attributeType="String" minValueString="0" maxValueString="60"/>
         <attribute name="ssid" optional="YES" attributeType="String" minValueString="0" maxValueString="30"/>
@@ -205,7 +207,7 @@
         <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
         <element name="ExternalNotificationConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
-        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="230"/>
+        <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="245"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
         <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="314"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
@@ -215,6 +217,6 @@
         <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="134"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="230"/>
-        <element name="WiFiConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
+        <element name="WiFiConfigEntity" positionX="45" positionY="144" width="128" height="134"/>
     </elements>
 </model>
