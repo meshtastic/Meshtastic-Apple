@@ -510,6 +510,15 @@ struct Config {
     // methods supported on all messages.
 
     ///
+    /// Enable WiFi (disables Bluetooth)
+    var enabled: Bool = false
+
+    ///
+    /// If set, this node will try to join the specified wifi network and
+    /// acquire an address via DHCP
+    var mode: Config.WiFiConfig.WiFiMode = .client
+
+    ///
     /// If set, this node will try to join the specified wifi network and
     /// acquire an address via DHCP
     var ssid: String = String()
@@ -518,20 +527,47 @@ struct Config {
     /// If set, will be use to authenticate to the named wifi
     var psk: String = String()
 
-    ///
-    /// If set, the node will operate as an AP (and DHCP server), otherwise it
-    /// will be a station
-    var apMode: Bool = false
-
-    ///
-    /// If set, the node AP will broadcast as a hidden SSID
-    var apHidden: Bool = false
-
-    ///
-    /// If set, wifi is enabled. Previously done through setting ssid and psk
-    var enabled: Bool = false
-
     var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    enum WiFiMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// This mode is used to connect to an external WiFi network
+      case client // = 0
+
+      ///
+      /// In this mode the node will operate as an AP (and DHCP server)
+      case accessPoint // = 1
+
+      ///
+      /// If set, the node AP will broadcast as a hidden SSID
+      case accessPointHidden // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .client
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .client
+        case 1: self = .accessPoint
+        case 2: self = .accessPointHidden
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .client: return 0
+        case .accessPoint: return 1
+        case .accessPointHidden: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
 
     init() {}
   }
@@ -556,6 +592,11 @@ struct Config {
     /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds.
     /// Potentially useful for devices without user buttons.
     var autoScreenCarouselSecs: UInt32 = 0
+
+    ///
+    /// If this is set, the displayed compass will always point north. if unset, the old behaviour 
+    /// (top of display is heading direction) is used.
+    var compassNorthTop: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -920,6 +961,15 @@ extension Config.PowerConfig.ChargeCurrent: CaseIterable {
   ]
 }
 
+extension Config.WiFiConfig.WiFiMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.WiFiConfig.WiFiMode] = [
+    .client,
+    .accessPoint,
+    .accessPointHidden,
+  ]
+}
+
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
@@ -976,6 +1026,7 @@ extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.PowerConfig.ChargeCurrent: @unchecked Sendable {}
 extension Config.WiFiConfig: @unchecked Sendable {}
+extension Config.WiFiConfig.WiFiMode: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
@@ -1381,11 +1432,10 @@ extension Config.PowerConfig.ChargeCurrent: SwiftProtobuf._ProtoNameProviding {
 extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = Config.protoMessageName + ".WiFiConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "ssid"),
-    2: .same(proto: "psk"),
-    3: .standard(proto: "ap_mode"),
-    4: .standard(proto: "ap_hidden"),
-    5: .same(proto: "enabled"),
+    1: .same(proto: "enabled"),
+    2: .same(proto: "mode"),
+    3: .same(proto: "ssid"),
+    4: .same(proto: "psk"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1394,44 +1444,47 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.ssid) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.psk) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.apMode) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.apHidden) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.ssid) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.psk) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.mode != .client {
+      try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 2)
+    }
     if !self.ssid.isEmpty {
-      try visitor.visitSingularStringField(value: self.ssid, fieldNumber: 1)
+      try visitor.visitSingularStringField(value: self.ssid, fieldNumber: 3)
     }
     if !self.psk.isEmpty {
-      try visitor.visitSingularStringField(value: self.psk, fieldNumber: 2)
-    }
-    if self.apMode != false {
-      try visitor.visitSingularBoolField(value: self.apMode, fieldNumber: 3)
-    }
-    if self.apHidden != false {
-      try visitor.visitSingularBoolField(value: self.apHidden, fieldNumber: 4)
-    }
-    if self.enabled != false {
-      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 5)
+      try visitor.visitSingularStringField(value: self.psk, fieldNumber: 4)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Config.WiFiConfig, rhs: Config.WiFiConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.mode != rhs.mode {return false}
     if lhs.ssid != rhs.ssid {return false}
     if lhs.psk != rhs.psk {return false}
-    if lhs.apMode != rhs.apMode {return false}
-    if lhs.apHidden != rhs.apHidden {return false}
-    if lhs.enabled != rhs.enabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Config.WiFiConfig.WiFiMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "Client"),
+    1: .same(proto: "AccessPoint"),
+    2: .same(proto: "AccessPointHidden"),
+  ]
 }
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1440,6 +1493,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     1: .standard(proto: "screen_on_secs"),
     2: .standard(proto: "gps_format"),
     3: .standard(proto: "auto_screen_carousel_secs"),
+    4: .standard(proto: "compass_north_top"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1451,6 +1505,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.screenOnSecs) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.gpsFormat) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.autoScreenCarouselSecs) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.compassNorthTop) }()
       default: break
       }
     }
@@ -1466,6 +1521,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.autoScreenCarouselSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.autoScreenCarouselSecs, fieldNumber: 3)
     }
+    if self.compassNorthTop != false {
+      try visitor.visitSingularBoolField(value: self.compassNorthTop, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1473,6 +1531,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.screenOnSecs != rhs.screenOnSecs {return false}
     if lhs.gpsFormat != rhs.gpsFormat {return false}
     if lhs.autoScreenCarouselSecs != rhs.autoScreenCarouselSecs {return false}
+    if lhs.compassNorthTop != rhs.compassNorthTop {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

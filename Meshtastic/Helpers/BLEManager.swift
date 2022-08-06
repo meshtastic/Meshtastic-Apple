@@ -29,7 +29,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
     @Published var connectedPeripheral: Peripheral!
     @Published var lastConnectionError: String
-	@Published var lastConnnectionVersion: String
+	@Published var connectedVersion: String
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
@@ -77,7 +77,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		//self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
         self.lastConnectionError = ""
-		self.lastConnnectionVersion = "0.0.0"
+		self.connectedVersion = "0.0.0"
         super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -159,13 +159,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connecting: \(peripheral.name ?? "Unknown")") }
 
         stopScanning()
+		
 
 		if self.connectedPeripheral != nil {
 			
 			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")") }
             self.disconnectPeripheral()
         }
-
+		
+		self.connectedVersion = "0.0.0"
 		self.centralManager?.connect(peripheral)
 
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
@@ -460,15 +462,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				// MyInfo
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+					
+					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
+					var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						
 					nowKnown = true
+					connectedVersion = String(version)
+					
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
 					
 					if myInfo != nil {
 						
 						self.connectedPeripheral.bitrate = myInfo!.bitrate
 						self.connectedPeripheral.num = myInfo!.myNodeNum
-						lastConnnectionVersion = myInfo?.firmwareVersion ??  myInfo!.firmwareVersion ?? "Unknown"
+						
 						self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
 						self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"

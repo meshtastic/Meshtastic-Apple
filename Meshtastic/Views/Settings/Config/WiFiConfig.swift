@@ -7,6 +7,40 @@
 
 import SwiftUI
 
+enum WiFiModes: Int, CaseIterable, Identifiable {
+
+	case client = 0
+	case accessPoint = 1
+	case accessPointHidden = 2
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .client:
+				return "Client"
+			case .accessPoint:
+				return "Software Access Point"
+			case .accessPointHidden:
+				return "Software Access Point (Hidden)"
+			
+			}
+		}
+	}
+	func protoEnumValue() -> Config.WiFiConfig.WiFiMode {
+		
+		switch self {
+			
+		case .client:
+			return Config.WiFiConfig.WiFiMode.client
+		case .accessPoint:
+			return Config.WiFiConfig.WiFiMode.accessPoint
+		case .accessPointHidden:
+			return Config.WiFiConfig.WiFiMode.accessPointHidden
+		}
+	}
+}
+
 struct WiFiConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -19,12 +53,9 @@ struct WiFiConfig: View {
 	@State var hasChanges: Bool = false
 	
 	@State var enabled = false
-
 	@State var ssid = ""
 	@State var password = ""
-	
-	@State var apMode = false
-	@State var apHidden = false
+	@State var mode = 0
 	
 	var body: some View {
 		
@@ -39,22 +70,35 @@ struct WiFiConfig: View {
 						
 					Toggle(isOn: $enabled) {
 
-						Label("Enable", systemImage: "wifi")
+						Label("Enabled", systemImage: "wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+
+					Picker("Mode", selection: $mode ) {
+						ForEach(WiFiModes.allCases) { lu in
+							Text(lu.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					
+				}
+				Section(header: Text("SSID & Password")) {
 					
 					HStack {
 						Label("SSID", systemImage: "network")
 						TextField("SSID", text: $ssid)
 							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
 							.onChange(of: ssid, perform: { value in
 
 								let totalBytes = ssid.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 30 {
+								if totalBytes > 32 {
 
-									let firstNBytes = Data(ssid.utf8.prefix(30))
+									let firstNBytes = Data(ssid.utf8.prefix(32))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
@@ -66,20 +110,22 @@ struct WiFiConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
-					.disableAutocorrection(true)
+					
 					
 					HStack {
 						Label("Password", systemImage: "wallet.pass")
 						TextField("Password", text: $password)
 							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
 							.onChange(of: password, perform: { value in
 
 								let totalBytes = password.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 60 {
+								if totalBytes > 63 {
 
-									let firstNBytes = Data(ssid.utf8.prefix(60))
+									let firstNBytes = Data(ssid.utf8.prefix(63))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
@@ -91,28 +137,6 @@ struct WiFiConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
-					.disableAutocorrection(true)
-
-				}
-				Section(header: Text("Sofware Access Point")) {
-					
-					Text("WiFi uses client mode by default, if Software Access Point(AP) is on the SSID and password will be used to access the AP at meshtastic.local.")
-						.font(.caption)
-					
-					Toggle(isOn: $apMode) {
-
-						Label("Soft AP Mode", systemImage: "externaldrive.fill.badge.wifi")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					if apMode {
-						
-						Toggle(isOn: $apHidden) {
-
-							Label("Hidden SSID", systemImage: "eye.slash")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					}
 				}
 			}
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
@@ -141,8 +165,7 @@ struct WiFiConfig: View {
 					wifi.enabled = self.enabled
 					wifi.ssid = self.ssid
 					wifi.psk = self.password
-					wifi.apMode = self.apMode
-					wifi.apHidden = self.apHidden
+					wifi.mode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
 					
 					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
@@ -174,9 +197,8 @@ struct WiFiConfig: View {
 				self.enabled = (node!.wiFiConfig?.enabled ?? false)
 				self.ssid = node!.wiFiConfig?.ssid ?? ""
 				self.password = node!.wiFiConfig?.password ?? ""
-				self.apMode = (node!.wiFiConfig?.apMode ?? false)
-				self.apHidden = (node!.wiFiConfig?.apHidden ?? false)
-				
+				self.mode = Int(node!.wiFiConfig?.mode ?? 0)
+
 				self.hasChanges = false
 				self.initialLoad = false
 			}
@@ -202,18 +224,11 @@ struct WiFiConfig: View {
 				if newPassword != node!.wiFiConfig!.password { hasChanges = true }
 			}
 		}
-		.onChange(of: apMode) { newApMode in
+		.onChange(of: mode) { newMode in
 			
 			if node != nil && node!.wiFiConfig != nil {
 				
-				if newApMode != node!.wiFiConfig!.apMode { hasChanges = true }
-			}
-		}
-		.onChange(of: apHidden) { newApHidden in
-			
-			if node != nil && node!.wiFiConfig != nil {
-				
-				if newApHidden != node!.wiFiConfig!.apHidden { hasChanges = true }
+				if newMode != node!.wiFiConfig!.mode { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
