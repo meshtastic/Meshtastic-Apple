@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:meshtastic.org/E/*</string>
+		<string>applinks:meshtastic.org/e/*</string>
 	</array>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>

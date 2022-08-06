@@ -16,15 +16,12 @@ struct Connect: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	@State private var showingVersionSheet = false
-	
 	@State var initialLoad: Bool = true
 	@State var isPreferredRadio: Bool = false
 	
 	@State var firmwareVersion = "0.0.0"
-	@State var minimumVersion = "1.3.30"
+	@State var minimumVersion = "1.3.36"
 	@State var invalidVersion = false
-	
 
     var body: some View {
 	
@@ -267,23 +264,18 @@ struct Connect: View {
 			
 			InvalidVersion(errorText: "1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
 		}
-		
-		
-		.onChange(of: firmwareVersion) { iv in
+	
+		.onChange(of: (self.bleManager.connectedVersion)) { ic in
 			
-			bleManager.disconnectPeripheral()
-		}
-		.onChange(of: self.bleManager.isConnected) { ic in
-			
-			firmwareVersion = bleManager.lastConnnectionVersion
+			firmwareVersion = self.bleManager.connectedVersion
 			let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
 			
 			invalidVersion = !supportedVersion
 			
 			if invalidVersion {
+				
 				bleManager.disconnectPeripheral()
 			}
-			
 		}
         .onAppear(perform: {
 						

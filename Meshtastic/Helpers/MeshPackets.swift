@@ -377,15 +377,13 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						
 						newWiFiConfig.ssid = ""
 						newWiFiConfig.password = ""
-						newWiFiConfig.apMode = false
-						newWiFiConfig.apHidden = false
+						newWiFiConfig.mode = 0
 
 					} else {
 						
 						newWiFiConfig.ssid = config.wifi.ssid
 						newWiFiConfig.password = config.wifi.psk
-						newWiFiConfig.apMode = config.wifi.apMode
-						newWiFiConfig.apHidden = config.wifi.apHidden
+						newWiFiConfig.mode = Int32(config.wifi.mode.rawValue)
 					}
 					newWiFiConfig.num = fetchedNode[0].num
 					fetchedNode[0].wiFiConfig = newWiFiConfig
@@ -396,15 +394,13 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						
 						fetchedNode[0].wiFiConfig?.ssid = ""
 						fetchedNode[0].wiFiConfig?.password = ""
-						fetchedNode[0].wiFiConfig?.apMode = false
-						fetchedNode[0].wiFiConfig?.apHidden = false
+						fetchedNode[0].wiFiConfig?.mode = 0
 						
 					} else {
 						
 						fetchedNode[0].wiFiConfig?.ssid = config.wifi.ssid
 						fetchedNode[0].wiFiConfig?.password = config.wifi.psk
-						fetchedNode[0].wiFiConfig?.apMode = config.wifi.apMode
-						fetchedNode[0].wiFiConfig?.apHidden = config.wifi.apHidden
+						fetchedNode[0].wiFiConfig?.mode = Int32(config.wifi.mode.rawValue)
 					}
 				}
 				
