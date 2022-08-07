@@ -134,13 +134,14 @@ struct DisplayConfig: View {
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
 	@State var gpsFormat = 0
+	@State var compassNorthTop = false
 	
 	var body: some View {
 		
 		VStack {
 
 			Form {
-				Section(header: Text("Timing")) {
+				Section(header: Text("Device Screen")) {
 					
 					Picker("Screen on for", selection: $screenOnSeconds ) {
 						ForEach(ScreenOnIntervals.allCases) { soi in
@@ -161,8 +162,15 @@ struct DisplayConfig: View {
 					
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.font(.caption)
-						.listRowSeparator(.visible)
+					
+					Toggle(isOn: $compassNorthTop) {
 
+						Label("Always point north", systemImage: "location.north.circle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("The compass heading on the screen outside of the circle will always point north.")
+						.font(.caption)
+					
 				}
 				Section(header: Text("Format")) {
 					Picker("GPS Format", selection: $gpsFormat ) {
@@ -203,6 +211,7 @@ struct DisplayConfig: View {
 					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
 					dc.screenOnSecs = UInt32(screenOnSeconds)
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+					dc.compassNorthTop = compassNorthTop
 					
 					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 					
@@ -234,6 +243,7 @@ struct DisplayConfig: View {
 				self.gpsFormat = Int(node!.displayConfig?.gpsFormat ?? 0)
 				self.screenOnSeconds = Int(node!.displayConfig?.screenOnSeconds ?? 0)
 				self.screenCarouselInterval = Int(node!.displayConfig?.screenCarouselInterval ?? 0)
+				self.compassNorthTop = node!.displayConfig?.compassNorthTop ?? false
 				self.hasChanges = false
 				self.initialLoad = false
 			}
@@ -250,6 +260,13 @@ struct DisplayConfig: View {
 			if node != nil && node!.displayConfig != nil {
 				
 				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
+			}
+		}
+		.onChange(of: compassNorthTop) { newCompassNorthTop in
+			
+			if node != nil && node!.displayConfig != nil {
+				
+				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
 			}
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in

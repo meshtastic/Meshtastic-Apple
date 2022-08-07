@@ -241,7 +241,7 @@ struct CannedMessagesConfig: View {
 				
 				Section(header: Text("Key Mapping")) {
 					
-					Picker("inputbrokerEventCw", selection: $inputbrokerEventCw ) {
+					Picker("Clockwise Rotary Event", selection: $inputbrokerEventCw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -250,7 +250,7 @@ struct CannedMessagesConfig: View {
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 					
-					Picker("inputbrokerEventCcw", selection: $inputbrokerEventCcw ) {
+					Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -259,7 +259,7 @@ struct CannedMessagesConfig: View {
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 					
-					Picker("inputBrokerEventPress", selection: $inputbrokerEventPress ) {
+					Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -379,9 +379,9 @@ struct CannedMessagesConfig: View {
 					inputbrokerPinA = 4
 					inputbrokerPinB = 10
 					inputbrokerPinPress = 3
-					inputbrokerEventCw = InputEventChars.keyNone.rawValue
-					inputbrokerEventCcw = InputEventChars.keyNone.rawValue
-					inputbrokerEventPress = InputEventChars.keyNone.rawValue
+					inputbrokerEventCw = InputEventChars.keyUp.rawValue
+					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
+					inputbrokerEventPress = InputEventChars.keySelect.rawValue
 					
 				} else if newPreset == 2 {
 					
@@ -391,8 +391,8 @@ struct CannedMessagesConfig: View {
 					inputbrokerPinA = 25
 					inputbrokerPinB = 39
 					inputbrokerPinPress	= 36
-					inputbrokerEventCw = InputEventChars.keyUp.rawValue
-					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
+					inputbrokerEventCw = InputEventChars.keyLeft.rawValue
+					inputbrokerEventCcw = InputEventChars.keyRight.rawValue
 					inputbrokerEventPress = InputEventChars.keySelect.rawValue
 				}
 				
