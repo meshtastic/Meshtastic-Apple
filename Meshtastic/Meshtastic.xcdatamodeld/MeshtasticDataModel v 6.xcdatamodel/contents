@@ -22,6 +22,7 @@
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="DisplayConfigEntity" representedClassName="DisplayConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="compassNorthTop" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="gpsFormat" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="screenCarouselInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -203,7 +204,7 @@
     <elements>
         <element name="CannedMessageConfigEntity" positionX="45" positionY="144" width="128" height="209"/>
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
-        <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
+        <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="119"/>
         <element name="ExternalNotificationConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="245"/>
