@@ -102,7 +102,7 @@ struct NodeDetail: View {
 									) {
 										Button("Shutdown Node?", role: .destructive) {
 											
-											if !bleManager.sendShutdown(destNum: node.num, wantResponse: true) {
+											if !bleManager.sendShutdown(destNum: node.num) {
 												
 												print("Shutdown Failed")
 											}
@@ -130,7 +130,7 @@ struct NodeDetail: View {
 										
 									Button("Reboot Node?", role: .destructive) {
 										
-										if !bleManager.sendReboot(destNum: node.num, wantResponse: true) {
+										if !bleManager.sendReboot(destNum: node.num) {
 											
 											print("Reboot Failed")
 										}

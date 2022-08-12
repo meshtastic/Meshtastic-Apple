@@ -1540,7 +1540,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 					
 					messageSaved = true
 					
-					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
+					if messageSaved { //&& (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
 					
 						// Create an iOS Notification for the received message and schedule it immediately
 						let manager = LocalNotificationManager()

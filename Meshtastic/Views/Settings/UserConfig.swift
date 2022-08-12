@@ -113,7 +113,7 @@ struct UserConfig: View {
 						u.shortName = shortName
 						u.longName = longName
 						
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!, wantAck: true)
+						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!)
 						
 						if adminMessageId > 0 {
 							

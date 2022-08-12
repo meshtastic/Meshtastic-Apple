@@ -167,7 +167,7 @@ struct WiFiConfig: View {
 					wifi.psk = self.password
 					wifi.mode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!, wantAck: true)
+					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

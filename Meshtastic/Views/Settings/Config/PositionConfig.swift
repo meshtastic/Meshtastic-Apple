@@ -323,7 +323,7 @@ struct PositionConfig: View {
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 					
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!, wantAck: true)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0{
 						
