@@ -261,7 +261,7 @@ struct LoRaConfig: View {
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
 					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 					
-					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

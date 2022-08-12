@@ -213,7 +213,7 @@ struct DisplayConfig: View {
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					dc.compassNorthTop = compassNorthTop
 					
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

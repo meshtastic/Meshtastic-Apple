@@ -1127,6 +1127,14 @@ struct Location {
   /// If true, only allow the original sender to update the location.
   var locked: Bool = false
 
+  ///
+  /// Name of the location - max 30 chars
+  var name: String = String()
+
+  ///*
+  /// Description of the location - max 100 chars
+  var description_p: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -2766,6 +2774,8 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     3: .standard(proto: "longitude_i"),
     4: .same(proto: "expire"),
     5: .same(proto: "locked"),
+    6: .same(proto: "name"),
+    7: .same(proto: "description"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2779,6 +2789,8 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 3: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.expire) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.locked) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 7: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
       default: break
       }
     }
@@ -2800,6 +2812,12 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.locked != false {
       try visitor.visitSingularBoolField(value: self.locked, fieldNumber: 5)
     }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 6)
+    }
+    if !self.description_p.isEmpty {
+      try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2809,6 +2827,8 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.longitudeI != rhs.longitudeI {return false}
     if lhs.expire != rhs.expire {return false}
     if lhs.locked != rhs.locked {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.description_p != rhs.description_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -124,7 +124,7 @@ struct DeviceConfig: View {
 						dc.serialDisabled = !serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
 						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 						
 						if adminMessageId > 0 {
 							
@@ -153,7 +153,7 @@ struct DeviceConfig: View {
 				) {
 					Button("Erase all device settings?", role: .destructive) {
 						
-						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num, wantResponse: true) {
+						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
 							
 							print("Factory Reset Failed")
 						}

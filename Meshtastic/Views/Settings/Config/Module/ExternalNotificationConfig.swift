@@ -159,7 +159,7 @@ struct ExternalNotificationConfig: View {
 					enc.output = UInt32(output)
 					enc.outputMs = UInt32(outputMilliseconds)
 					
-					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node!.user!, toUser: node!.user!,  wantResponse: true)
+					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0{
 						

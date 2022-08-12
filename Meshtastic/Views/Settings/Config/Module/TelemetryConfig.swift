@@ -203,7 +203,7 @@ struct TelemetryConfig: View {
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
 					
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!, wantResponse: true)
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!)
 					
 					if adminMessageId > 0 {
 						

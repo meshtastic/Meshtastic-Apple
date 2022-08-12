@@ -113,7 +113,7 @@ struct RangeTestConfig: View {
 					rtc.save = save
 					rtc.sender = UInt32(sender)
 					
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

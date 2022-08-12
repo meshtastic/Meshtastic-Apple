@@ -15,7 +15,7 @@ fi
 pdir=$(realpath "../Meshtastic-protobufs")
 sdir=$(realpath "./Meshtastic/Protobufs")
 echo "pdir:$pdir sdir:$sdir"
-pfiles="admin.proto apponly.proto cannedmessages.proto channel.proto config.proto deviceonly.proto localonly.proto mesh.proto module_config.proto mqtt.proto portnums.proto remote_hardware.proto 
+pfiles="admin.proto apponly.proto cannedmessages.proto channel.proto config.proto device_metadata.proto deviceonly.proto localonly.proto mesh.proto module_config.proto mqtt.proto portnums.proto remote_hardware.proto 
 storeforward.proto telemetry.proto"
 for pf in $pfiles
 do

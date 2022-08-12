@@ -69,6 +69,7 @@
 		DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */; };
 		DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6D26ED19040058C060 /* Extensions.swift */; };
 		DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */; };
+		DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -169,6 +170,7 @@
 		DDAF8C6D26ED19040058C060 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = telemetry.pb.swift; sourceTree = "<group>"; };
 		DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 3.xcdatamodel"; sourceTree = "<group>"; };
+		DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = device_metadata.pb.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -326,6 +328,7 @@
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
+				DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */,
 				DDCFF600285453A7005FA625 /* localonly.pb.swift */,
 				DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */,
 				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
@@ -690,6 +693,7 @@
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
+				DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
