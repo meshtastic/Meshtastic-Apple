@@ -320,7 +320,7 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 						
-						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantAck: true)
 							
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -391,8 +391,8 @@ struct CannedMessagesConfig: View {
 					inputbrokerPinA = 25
 					inputbrokerPinB = 39
 					inputbrokerPinPress	= 36
-					inputbrokerEventCw = InputEventChars.keyLeft.rawValue
-					inputbrokerEventCcw = InputEventChars.keyRight.rawValue
+					inputbrokerEventCw = InputEventChars.keyUp.rawValue
+					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
 					inputbrokerEventPress = InputEventChars.keySelect.rawValue
 				}
 				

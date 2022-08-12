@@ -22,7 +22,7 @@ struct LocationHistory: View {
 		
 			List {
 				
-				ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+				ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 						
 					VStack {
 						

@@ -179,6 +179,16 @@ struct AdminMessage {
   }
 
   ///
+  /// Send all channels in the response to this message
+  var getAllChannelRequest: Bool {
+    get {
+      if case .getAllChannelRequest(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getAllChannelRequest(newValue)}
+  }
+
+  ///
   /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
   /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
   /// If you fail to do so, the radio will assume loss of comms and revert your changes.
@@ -352,6 +362,26 @@ struct AdminMessage {
     set {variant = .shutdownSeconds(newValue)}
   }
 
+  ///
+  /// Request the node to send device metadata (firmware, protobuf version, etc)
+  var getDeviceMetadataRequest: UInt32 {
+    get {
+      if case .getDeviceMetadataRequest(let v)? = variant {return v}
+      return 0
+    }
+    set {variant = .getDeviceMetadataRequest(newValue)}
+  }
+
+  ///
+  /// Device metadata response
+  var getDeviceMetadataResponse: DeviceMetadata {
+    get {
+      if case .getDeviceMetadataResponse(let v)? = variant {return v}
+      return DeviceMetadata()
+    }
+    set {variant = .getDeviceMetadataResponse(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -404,6 +434,9 @@ struct AdminMessage {
     ///
     /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
     case confirmSetModuleConfig(Bool)
+    ///
+    /// Send all channels in the response to this message
+    case getAllChannelRequest(Bool)
     ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
@@ -459,6 +492,12 @@ struct AdminMessage {
     ///
     /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
     case shutdownSeconds(Int32)
+    ///
+    /// Request the node to send device metadata (firmware, protobuf version, etc)
+    case getDeviceMetadataRequest(UInt32)
+    ///
+    /// Device metadata response
+    case getDeviceMetadataResponse(DeviceMetadata)
 
   #if !swift(>=4.1)
     static func ==(lhs: AdminMessage.OneOf_Variant, rhs: AdminMessage.OneOf_Variant) -> Bool {
@@ -520,6 +559,10 @@ struct AdminMessage {
       }()
       case (.confirmSetModuleConfig, .confirmSetModuleConfig): return {
         guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getAllChannelRequest, .getAllChannelRequest): return {
+        guard case .getAllChannelRequest(let l) = lhs, case .getAllChannelRequest(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.confirmSetChannel, .confirmSetChannel): return {
@@ -588,6 +631,14 @@ struct AdminMessage {
       }()
       case (.shutdownSeconds, .shutdownSeconds): return {
         guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataRequest, .getDeviceMetadataRequest): return {
+        guard case .getDeviceMetadataRequest(let l) = lhs, case .getDeviceMetadataRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataResponse, .getDeviceMetadataResponse): return {
+        guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -780,6 +831,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     15: .standard(proto: "get_module_config_response"),
     16: .standard(proto: "set_module_config"),
     17: .standard(proto: "confirm_set_module_config"),
+    18: .standard(proto: "get_all_channel_request"),
     32: .standard(proto: "confirm_set_channel"),
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
@@ -797,6 +849,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     46: .standard(proto: "set_canned_message_module_part3"),
     47: .standard(proto: "set_canned_message_module_part4"),
     51: .standard(proto: "shutdown_seconds"),
+    52: .standard(proto: "get_device_metadata_request"),
+    53: .standard(proto: "get_device_metadata_response"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -957,6 +1011,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.variant = .confirmSetModuleConfig(v)
         }
       }()
+      case 18: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getAllChannelRequest(v)
+        }
+      }()
       case 32: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1093,6 +1155,27 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.variant = .shutdownSeconds(v)
         }
       }()
+      case 52: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getDeviceMetadataRequest(v)
+        }
+      }()
+      case 53: try {
+        var v: DeviceMetadata?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getDeviceMetadataResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getDeviceMetadataResponse(v)
+        }
+      }()
       default: break
       }
     }
@@ -1159,6 +1242,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .confirmSetModuleConfig?: try {
       guard case .confirmSetModuleConfig(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 17)
+    }()
+    case .getAllChannelRequest?: try {
+      guard case .getAllChannelRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 18)
     }()
     case .confirmSetChannel?: try {
       guard case .confirmSetChannel(let v)? = self.variant else { preconditionFailure() }
@@ -1227,6 +1314,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .shutdownSeconds?: try {
       guard case .shutdownSeconds(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 51)
+    }()
+    case .getDeviceMetadataRequest?: try {
+      guard case .getDeviceMetadataRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 52)
+    }()
+    case .getDeviceMetadataResponse?: try {
+      guard case .getDeviceMetadataResponse(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 53)
     }()
     case nil: break
     }

@@ -145,7 +145,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if meshLoggingEnabled { MeshLogger.log(self.lastConnectionError + " This can occur when a device has been taken out of BLE range, or if a device is already connected to another phone, tablet or computer.") }
 
 			self.timeoutTimerCount = 0
-			self.timeoutTimer?.invalidate()
+			if self.timeoutTimer != nil {
+				
+				self.timeoutTimer!.invalidate()
+			}
 
 		} else {
 
@@ -171,7 +174,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		self.centralManager?.connect(peripheral)
 
 		// Invalidate any existing timer
-		self.timeoutTimer?.invalidate()
+		if self.timeoutTimer != nil {
+			
+			self.timeoutTimer!.invalidate()
+		}
 
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
@@ -228,8 +234,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		// Invalidate and reset connection timer count, remove any connection errors
 		self.lastConnectionError = ""
-		self.timeoutTimer!.invalidate()
 		self.timeoutTimerCount = 0
+		if self.timeoutTimer != nil {
+			
+			self.timeoutTimer!.invalidate()
+		}
 
 		// Map the peripheral to the connectedNode and connectedPeripheral ObservedObjects
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
@@ -467,7 +476,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
-					var version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
+					let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						
 					nowKnown = true
 					connectedVersion = String(version)
@@ -594,6 +603,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if userSettings?.provideLocation ?? false {
 				
 				if self.positionTimer != nil {
+					
 					self.positionTimer!.invalidate()
 				}
 				let context = ["name": "@\(peripheral.name ?? "Unknown")"]
@@ -741,6 +751,67 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			}
 		}
+		return success
+	}
+	
+	public func sendLocation(destNum: Int64) -> Bool {
+		
+		var success = false
+		
+		let fromNodeNum = connectedPeripheral.num
+		
+		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
+			
+			return false
+		}
+		
+		//let fetchNode: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		//fetchNode.predicate = NSPredicate(format: "num == %lld", fromNodeNum)
+
+		//do {
+
+		//	let fetchedNode = try context?.fetch(fetchNode) as! [NodeInfoEntity]
+			
+
+		//	if fetchedNode.count == 1 {
+				
+				var waypointPacket = Location()
+				waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+				waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+				waypointPacket.expire = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
+				waypointPacket.name = "Test Waypoint"
+				
+				
+				var meshPacket = MeshPacket()
+				meshPacket.to = UInt32(destNum)
+				meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
+				meshPacket.wantAck = true
+				
+				var dataMessage = DataMessage()
+				dataMessage.payload = try! waypointPacket.serializedData()
+				dataMessage.portnum = PortNum.waypointApp
+				
+				meshPacket.decoded = dataMessage
+
+				var toRadio: ToRadio!
+				toRadio = ToRadio()
+				toRadio.packet = meshPacket
+				let binaryData: Data = try! toRadio.serializedData()
+				
+				if meshLoggingEnabled { MeshLogger.log("📍 Sent a Location Packet from the Apple device GPS to node: \(fromNodeNum)") }
+				
+				if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					
+					connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+					success = true
+
+				}
+		//	}
+			
+		//} catch {
+		//	success = false
+		//}
+		
 		return success
 	}
 	
@@ -976,7 +1047,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
@@ -986,16 +1057,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
+
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Position Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved User Config for \(toUser.longName ?? "Unknown")"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1005,7 +1076,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.device = config
@@ -1015,7 +1086,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1034,7 +1105,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
@@ -1044,7 +1115,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1063,7 +1134,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
@@ -1074,7 +1145,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1093,7 +1164,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.position = config
@@ -1103,7 +1174,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1122,7 +1193,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveWiFiConfig(config: Config.WiFiConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveWiFiConfig(config: Config.WiFiConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.wifi = config
@@ -1132,7 +1203,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1151,7 +1222,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, wantAck: Bool) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
@@ -1161,7 +1232,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = wantAck
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1195,6 +1266,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = wantResponse
 		
 		meshPacket.decoded = dataMessage
 		
@@ -1218,7 +1290,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = true
 		meshPacket.decoded.wantResponse = wantResponse
 		
 		var dataMessage = DataMessage()
@@ -1257,7 +1329,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
-	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.externalNotification = config
@@ -1267,7 +1339,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1285,7 +1357,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.rangeTest = config
@@ -1295,7 +1367,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1313,7 +1385,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.serial = config
@@ -1323,7 +1395,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = true
 		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
@@ -1342,7 +1414,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity,  wantResponse: Bool) -> Int64 {
+	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 				
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.telemetry = config
@@ -1352,7 +1424,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = wantResponse
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()

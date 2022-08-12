@@ -303,7 +303,7 @@ struct SerialConfig: View {
 					sc.timeout = UInt32(timeout)
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

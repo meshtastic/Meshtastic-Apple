@@ -124,7 +124,7 @@ struct DeviceConfig: View {
 						dc.serialDisabled = !serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
 						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!, wantAck: true)
 						
 						if adminMessageId > 0 {
 							

@@ -359,7 +359,7 @@ struct Config {
 
   ///
   /// Power Config\
-  /// See [power management](/docs/software/other/power) for additional power management state machine option details.
+  /// See [Power Config](/docs/settings/config/power) for additional power config details.
   struct PowerConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -573,7 +573,7 @@ struct Config {
   }
 
   ///
-  /// TODO: REPLACE
+  /// Display Config
   struct DisplayConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for

@@ -20,7 +20,7 @@ struct TelemetryLog: View {
 		
 		List {
 			
-			ForEach(node.telemetries!.array as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
+			ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
 				
 				VStack (alignment: .leading)  {
 					

@@ -1540,34 +1540,30 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 					
 					messageSaved = true
 					
+					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
+					
+						// Create an iOS Notification for the received message and schedule it immediately
+						let manager = LocalNotificationManager()
+
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+								content: messageText)
+						]
+					
+						manager.schedule()
+						
+						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
+					}
+					
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
 					print("💥 Failed to save new MessageEntity \(nsError)")
-				}
-				do {
-					print(newMessage)
-					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
-					
-					// Create an iOS Notification for the received message and schedule it immediately
-					let manager = LocalNotificationManager()
-
-					manager.notifications = [
-						Notification(
-							id: ("notification.id.\(newMessage.messageId)"),
-							title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-							subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-							content: messageText)
-					]
-					
-						manager.schedule()
-						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
-					}
-					
-				} catch {
-				
 				}
 			
 			} catch {
