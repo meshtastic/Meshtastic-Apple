@@ -1225,7 +1225,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.setCannedMessageModulePart1 = messages
+		adminPacket.setCannedMessageModuleMessages = messages
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -1254,7 +1254,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func getCannedMessageModuleMessages(destNum: Int64,  wantResponse: Bool) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.getCannedMessageModulePart1Request = true
+		adminPacket.getCannedMessageModuleMessagesRequest = true
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
