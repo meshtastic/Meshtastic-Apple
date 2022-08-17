@@ -29,19 +29,7 @@ struct CannedMessageModuleConfig {
 
   ///
   /// Predefined messages for canned message module separated by '|' characters.
-  var messagesPart1: String = String()
-
-  ///
-  /// TODO: REPLACE
-  var messagesPart2: String = String()
-
-  ///
-  /// TODO: REPLACE
-  var messagesPart3: String = String()
-
-  ///
-  /// TODO: REPLACE
-  var messagesPart4: String = String()
+  var messages: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -57,10 +45,7 @@ extension CannedMessageModuleConfig: @unchecked Sendable {}
 extension CannedMessageModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "CannedMessageModuleConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    11: .same(proto: "messagesPart1"),
-    12: .same(proto: "messagesPart2"),
-    13: .same(proto: "messagesPart3"),
-    14: .same(proto: "messagesPart4"),
+    1: .same(proto: "messages"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -69,36 +54,21 @@ extension CannedMessageModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 11: try { try decoder.decodeSingularStringField(value: &self.messagesPart1) }()
-      case 12: try { try decoder.decodeSingularStringField(value: &self.messagesPart2) }()
-      case 13: try { try decoder.decodeSingularStringField(value: &self.messagesPart3) }()
-      case 14: try { try decoder.decodeSingularStringField(value: &self.messagesPart4) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.messages) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.messagesPart1.isEmpty {
-      try visitor.visitSingularStringField(value: self.messagesPart1, fieldNumber: 11)
-    }
-    if !self.messagesPart2.isEmpty {
-      try visitor.visitSingularStringField(value: self.messagesPart2, fieldNumber: 12)
-    }
-    if !self.messagesPart3.isEmpty {
-      try visitor.visitSingularStringField(value: self.messagesPart3, fieldNumber: 13)
-    }
-    if !self.messagesPart4.isEmpty {
-      try visitor.visitSingularStringField(value: self.messagesPart4, fieldNumber: 14)
+    if !self.messages.isEmpty {
+      try visitor.visitSingularStringField(value: self.messages, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: CannedMessageModuleConfig, rhs: CannedMessageModuleConfig) -> Bool {
-    if lhs.messagesPart1 != rhs.messagesPart1 {return false}
-    if lhs.messagesPart2 != rhs.messagesPart2 {return false}
-    if lhs.messagesPart3 != rhs.messagesPart3 {return false}
-    if lhs.messagesPart4 != rhs.messagesPart4 {return false}
+    if lhs.messages != rhs.messages {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
