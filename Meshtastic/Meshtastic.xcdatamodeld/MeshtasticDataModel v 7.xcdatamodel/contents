@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21G83" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
+        <attribute name="mode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="bluetoothConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="bluetoothConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="CannedMessageConfigEntity" representedClassName="CannedMessageConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="inputbrokerEventCcw" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -95,6 +102,7 @@
         <attribute name="lastHeard" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
         <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
@@ -209,7 +217,7 @@
         <element name="LoRaConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
         <element name="MessageEntity" positionX="-36" positionY="63" width="128" height="245"/>
         <element name="MyInfoEntity" positionX="-18" positionY="81" width="128" height="209"/>
-        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="314"/>
+        <element name="NodeInfoEntity" positionX="-63" positionY="-18" width="128" height="329"/>
         <element name="PositionConfigEntity" positionX="63" positionY="162" width="128" height="149"/>
         <element name="PositionEntity" positionX="-54" positionY="54" width="128" height="119"/>
         <element name="RangeTestConfigEntity" positionX="72" positionY="171" width="128" height="104"/>
@@ -218,5 +226,6 @@
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="230"/>
         <element name="WiFiConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
+        <element name="BluetoothConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
     </elements>
 </model>
