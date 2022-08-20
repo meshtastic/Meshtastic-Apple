@@ -7,40 +7,6 @@
 
 import SwiftUI
 
-enum WiFiModes: Int, CaseIterable, Identifiable {
-
-	case client = 0
-	case accessPoint = 1
-	case accessPointHidden = 2
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			case .client:
-				return "Client"
-			case .accessPoint:
-				return "Software Access Point"
-			case .accessPointHidden:
-				return "Software Access Point (Hidden)"
-			
-			}
-		}
-	}
-	func protoEnumValue() -> Config.WiFiConfig.WiFiMode {
-		
-		switch self {
-			
-		case .client:
-			return Config.WiFiConfig.WiFiMode.client
-		case .accessPoint:
-			return Config.WiFiConfig.WiFiMode.accessPoint
-		case .accessPointHidden:
-			return Config.WiFiConfig.WiFiMode.accessPointHidden
-		}
-	}
-}
-
 struct WiFiConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -125,12 +91,12 @@ struct WiFiConfig: View {
 								// Only mess with the value if it is too big
 								if totalBytes > 63 {
 
-									let firstNBytes = Data(ssid.utf8.prefix(63))
+									let firstNBytes = Data(password.utf8.prefix(63))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
 										// Set the shortName back to the last place where it was the right size
-										ssid = maxBytesString
+										password = maxBytesString
 									}
 								}
 							})

@@ -23,6 +23,17 @@ extension Date {
 	}
 }
 
+extension Int {
+
+	func numberOfDigits() -> Int {
+		if abs(self) < 10 {
+			return 1
+		} else {
+			return 1 + (self/10).numberOfDigits()
+		}
+	}
+}
+
 extension String {
 
     /// Create `Data` from hexadecimal string representation

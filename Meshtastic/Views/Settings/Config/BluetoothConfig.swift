@@ -23,7 +23,13 @@ struct BluetoothConfig: View {
 	@State var mode = 0
 	
 	/// Specified pin for PairingMode.FixedPin
-	@State var fixedPin = 123456
+	@State var fixedPin = "123456"
+	
+	let numberFormatter: NumberFormatter = {
+			let formatter = NumberFormatter()
+		formatter.numberStyle = .none
+			return formatter
+		}()
 	
 	var body: some View {
 		
@@ -40,16 +46,36 @@ struct BluetoothConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					
-					Picker("Pairing PIN", selection: $mode ) {
+					Picker("Pairing Mode", selection: $mode ) {
 						ForEach(BluetoothModes.allCases) { bm in
 							Text(bm.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					if mode == 2 {
+					if mode == 1 {
 						
-						
+						HStack {
+							Label("Fixed PIN", systemImage: "wallet.pass")
+							TextField("Fixed PIN", text: $fixedPin)
+								.foregroundColor(.gray)
+								.onChange(of: fixedPin, perform: { value in
+
+									let digitCount = fixedPin.utf8.count
+									// Only mess with the value if it is too big
+									if digitCount > 6 || digitCount < 6 {
+
+										fixedPin = "123456"
+									}
+									
+									if digitCount < 6 {
+
+										fixedPin = "123456"
+									}
+								})
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.decimalPad)
 					}
 				}
 			}
@@ -78,7 +104,7 @@ struct BluetoothConfig: View {
 					var bc = Config.BluetoothConfig()
 					bc.enabled = enabled
 					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-					bc.fixedPin = UInt32(fixedPin)
+					bc.fixedPin = UInt32(fixedPin) ?? 123456
 					
 					let adminMessageId =  0//bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
 					
@@ -109,7 +135,7 @@ struct BluetoothConfig: View {
 
 				self.enabled = node!.bluetoothConfig?.enabled ?? true
 				self.mode = Int(node!.bluetoothConfig?.mode ?? 0)
-				self.fixedPin = Int(node!.bluetoothConfig?.fixedPin ?? 123456)
+				//self.fixedPin = (String(node!.bluetoothConfig?.fixedPin) ?? "123456")
 				self.hasChanges = false
 				self.initialLoad = false
 			}
@@ -132,7 +158,7 @@ struct BluetoothConfig: View {
 			
 			if node != nil && node!.bluetoothConfig != nil {
 
-				if newFixedPin != node!.bluetoothConfig!.fixedPin { hasChanges = true }
+				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
 

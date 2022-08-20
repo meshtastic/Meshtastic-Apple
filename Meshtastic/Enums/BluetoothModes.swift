@@ -16,11 +16,11 @@ enum BluetoothModes: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .randomPin:
-				return "Random"
+				return "Random PIN"
 			case .fixedPin:
-				return "Fixed"
+				return "Fixed PIN"
 			case .noPin:
-				return "None"
+				return "No PIN (Just Works)"
 			}
 		}
 	}
