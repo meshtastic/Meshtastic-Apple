@@ -131,7 +131,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 
 						newBluetoothConfig.enabled = config.bluetooth.enabled
 						newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
-						newBluetoothConfig.fixedPin = Int32(config.display.autoScreenCarouselSecs)
+						newBluetoothConfig.fixedPin = Int32(config.bluetooth.fixedPin)
 
 					}
 					fetchedNode[0].bluetoothConfig = newBluetoothConfig
@@ -140,41 +140,40 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					
 					if isDefault {
 						
-						fetchedNode[0].displayConfig?.screenOnSeconds = 0
-						fetchedNode[0].displayConfig?.screenCarouselInterval = 0
-						fetchedNode[0].displayConfig?.gpsFormat = 0
-						fetchedNode[0].displayConfig?.compassNorthTop = false
+						fetchedNode[0].bluetoothConfig?.enabled = true
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32("123456") ?? 123456
 						
 					} else {
 
-						fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
-						fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
-						fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
-						fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
+						fetchedNode[0].bluetoothConfig?.enabled = config.bluetooth.enabled
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.bluetooth.fixedPin)
+
 					}
 				}
 				
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Display Config for node number: \(String(nodeNum))") }
+					if meshlogging { MeshLogger.log("💾 Updated Bluetooth Config for node number: \(String(nodeNum))") }
 
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
+					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
 				}
 			} else {
 				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
 			}
 			
 		} catch {
 			
 			let nsError = error as NSError
-			print("💥 Fetching node for core data DisplayConfigEntity failed: \(nsError)")
+			print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
 		}
 	}
 	

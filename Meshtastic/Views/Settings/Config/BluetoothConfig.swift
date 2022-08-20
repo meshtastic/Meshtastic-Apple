@@ -106,7 +106,7 @@ struct BluetoothConfig: View {
 					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 					bc.fixedPin = UInt32(fixedPin) ?? 123456
 					
-					let adminMessageId =  0//bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						
