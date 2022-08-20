@@ -7,39 +7,6 @@
 
 import SwiftUI
 
-enum BluetoothModes: Int, CaseIterable, Identifiable {
-
-	case randomPin = 0
-	case fixedPin = 1
-	case noPin = 2
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			case .randomPin:
-				return "Random"
-			case .fixedPin:
-				return "Fixed"
-			case .noPin:
-				return "None"
-			}
-		}
-	}
-	func protoEnumValue() -> Config.BluetoothConfig.PairingMode {
-		
-		switch self {
-			
-		case .randomPin:
-			return Config.BluetoothConfig.PairingMode.randomPin
-		case .fixedPin:
-			return Config.BluetoothConfig.PairingMode.fixedPin
-		case .noPin:
-			return Config.BluetoothConfig.PairingMode.noPin
-		}
-	}
-}
-
 struct BluetoothConfig: View {
 	
 	@Environment(\.managedObjectContext) var context

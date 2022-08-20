@@ -71,6 +71,8 @@
 		DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */; };
 		DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
+		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
+		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -174,6 +176,8 @@
 		DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = device_metadata.pb.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 7.xcdatamodel"; sourceTree = "<group>"; };
+		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
+		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -318,6 +322,7 @@
 			isa = PBXGroup;
 			children = (
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
+				DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -470,6 +475,7 @@
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
+				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -687,6 +693,7 @@
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
+				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
@@ -695,6 +702,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
+				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
