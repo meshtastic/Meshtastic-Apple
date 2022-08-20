@@ -69,6 +69,18 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
+					NavigationLink() {
+						
+						BluetoothConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "antenna.radiowaves.left.and.right")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Bluetooth (BLE)")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {

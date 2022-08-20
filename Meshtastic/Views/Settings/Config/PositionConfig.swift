@@ -370,6 +370,13 @@ struct PositionConfig: View {
 				if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
+			
+			if node != nil && node!.positionConfig != nil {
+				
+				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
+			}
+		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
 			
 			if node != nil && node!.positionConfig != nil {

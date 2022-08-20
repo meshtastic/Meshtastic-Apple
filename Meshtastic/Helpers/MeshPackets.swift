@@ -92,6 +92,91 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		}
 	}
 	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+		
+		var isDefault = false
+		
+		if (try! config.bluetooth.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("📶 Default Bluetooth config")
+			if meshlogging { MeshLogger.log("🖥️ Default Bluetooth config \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🖥️ Custom Bluetooth config \(String(nodeNum))") }
+			print("📶 Custom Bluetooth config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].bluetoothConfig == nil {
+					
+					let newBluetoothConfig = BluetoothConfigEntity(context: context)
+					
+					if isDefault {
+
+						newBluetoothConfig.enabled = true
+						newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
+						newBluetoothConfig.fixedPin = Int32("123456") ?? 123456
+						
+					} else {
+
+						newBluetoothConfig.enabled = config.bluetooth.enabled
+						newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
+						newBluetoothConfig.fixedPin = Int32(config.bluetooth.fixedPin)
+
+					}
+					fetchedNode[0].bluetoothConfig = newBluetoothConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].bluetoothConfig?.enabled = true
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32("123456") ?? 123456
+						
+					} else {
+
+						fetchedNode[0].bluetoothConfig?.enabled = config.bluetooth.enabled
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.bluetooth.fixedPin)
+
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Bluetooth Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+			}
+			
+		} catch {
+			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+		}
+	}
+	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 		
 		var isDefault = false
@@ -99,11 +184,12 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.display.jsonString()) == "{}" {
 			
 			isDefault = true
-			print("🖥️ Default Display config")
+			
+			if meshlogging { MeshLogger.log("🖥️ Default Display config \(String(nodeNum))") }
 			
 		} else {
 			
-			print("🖥️ Custom Display config")
+			if meshlogging { MeshLogger.log("🖥️ Custom Display config \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")

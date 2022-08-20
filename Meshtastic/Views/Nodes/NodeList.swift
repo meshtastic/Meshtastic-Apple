@@ -9,6 +9,7 @@
 //  A view showing a list of devices that have been seen on the mesh network from the perspective of the connected device.
 
 import SwiftUI
+import CoreLocation
 
 struct NodeList: View {
 
@@ -35,8 +36,8 @@ struct NodeList: View {
 				if nodes.count == 0 {
 
                     Text("Scan for Radios").font(.largeTitle)
-                    Text("No LoRa Mesh Nodes Found").font(.title2)
-                    Text("Go to the bluetooth section in the bottom right menu and click the Start Scanning button to scan for nearby radios and find your Meshtastic device. Make sure your device is powered on and near your phone or tablet.")
+                    Text("No Meshtastic Nodes Found").font(.title2)
+                    Text("Go to the bluetooth section in the bottom right menu and click the Start Scanning button to scan for nearby radios and find your Meshtastic device. Make sure your device is powered on and near your iPhone, iPad or Mac.")
                         .font(.body)
                     Text("Once the device shows under Available Devices touch the device you want to connect to and it will pull node information over BLE and populate the node list and mesh map in the Meshtastic app.")
                     Text("Views with bluetooth functionality will show an indicator in the upper right hand corner show if bluetooth is on, and if a device is connected.")
@@ -87,12 +88,41 @@ struct NodeList: View {
 
 									Image(systemName: "clock.badge.checkmark.fill").font(.title3)
 										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+									
 									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 										
 										LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
+										
 									} else {
 										
 										LastHeardText(lastHeard: node.lastHeard).font(.title3).foregroundColor(.gray)
+									}
+								}
+								
+								if node.positions?.count ?? 0 > 0 {
+								
+									Spacer()
+									HStack(alignment: .bottom) {
+									
+										let lastPostion = node.positions!.reversed()[0] as! PositionEntity
+										
+										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+										
+										let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
+										
+										let metersAway = nodeCoord.distance(from: myCoord)
+										
+										Image(systemName: "lines.measurement.horizontal").font(.title3)
+											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+										
+										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+											
+											DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
+											
+										} else {
+											
+											DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
+										}
 									}
 								}
 							}
@@ -109,13 +139,6 @@ struct NodeList: View {
 					self.bleManager.userSettings = userSettings
 					self.bleManager.context = context
 					self.initialLoad = false
-
-//					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-//
-//						if nodes.count > 0 {
-//							selection = "0"
-//						}
-//					}
 				}
 			}
         }

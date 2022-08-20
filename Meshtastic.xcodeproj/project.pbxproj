@@ -70,6 +70,14 @@
 		DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C6D26ED19040058C060 /* Extensions.swift */; };
 		DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */; };
 		DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */; };
+		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
+		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
+		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
+		DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */; };
+		DDB6ABE228B13FB500384BA1 /* GpsFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */; };
+		DDB6ABE428B13FFF00384BA1 /* ScreenIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */; };
+		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
+		DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -171,6 +179,15 @@
 		DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = telemetry.pb.swift; sourceTree = "<group>"; };
 		DDB2CC6F27F3F0AC009C5FCC /* MeshtasticDataModel v 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 3.xcdatamodel"; sourceTree = "<group>"; };
 		DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = device_metadata.pb.swift; sourceTree = "<group>"; };
+		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
+		DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 7.xcdatamodel"; sourceTree = "<group>"; };
+		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
+		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
+		DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRoles.swift; sourceTree = "<group>"; };
+		DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GpsFormats.swift; sourceTree = "<group>"; };
+		DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenIntervals.swift; sourceTree = "<group>"; };
+		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
+		DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiModes.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -278,6 +295,7 @@
 		DD61937A2863876A00E59241 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
 				DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
@@ -313,7 +331,13 @@
 		DD8ED9C6289CE4A100B3B0AB /* Enums */ = {
 			isa = PBXGroup;
 			children = (
+				DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */,
+				DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */,
+				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
+				DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
+				DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */,
+				DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -466,6 +490,7 @@
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
+				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -662,8 +687,10 @@
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
+				DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* TelemetryLog.swift in Sources */,
 				DD6B85A828009258000ACD6B /* ShareChannel.swift in Sources */,
+				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
@@ -680,8 +707,10 @@
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
+				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
 				DDB2CC6E27F3EB47009C5FCC /* telemetry.pb.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
+				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
@@ -690,11 +719,13 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
+				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				C9A88B55278B503C00BD810A /* MapViewModule.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
+				DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
@@ -708,11 +739,13 @@
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
+				DDB6ABE428B13FFF00384BA1 /* ScreenIntervals.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
+				DDB6ABE228B13FB500384BA1 /* GpsFormats.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DD73FD1128750779000852D6 /* LocationHistory.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
@@ -1102,6 +1135,7 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */,
 				DD8ED9C9289EA77E00B3B0AB /* MeshtasticDataModel v 6.xcdatamodel */,
 				DD8ED9C328978D9D00B3B0AB /* MeshtasticDataModel v 5.xcdatamodel */,
 				DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */,
@@ -1109,7 +1143,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD8ED9C9289EA77E00B3B0AB /* MeshtasticDataModel v 6.xcdatamodel */;
+			currentVersion = DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
