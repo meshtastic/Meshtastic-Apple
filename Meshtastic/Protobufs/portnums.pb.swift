@@ -79,6 +79,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// Waypoint payloads.
+  /// Payload is a [Waypoint](/docs/developers/protobufs/api#waypoint) message
   case waypointApp // = 8
 
   ///

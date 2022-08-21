@@ -179,7 +179,7 @@ struct ModuleConfig {
     /// If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
     /// is_uplink_enabled or is_downlink_enabled.
     /// But if this flag is set, all MQTT features will be disabled and no servers will be contacted.
-    var disabled: Bool = false
+    var enabled: Bool = false
 
     ///
     /// The server to use for our MQTT global message gateway feature.
@@ -845,7 +845,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
 extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "disabled"),
+    1: .same(proto: "enabled"),
     2: .same(proto: "address"),
     3: .same(proto: "username"),
     4: .same(proto: "password"),
@@ -858,7 +858,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBoolField(value: &self.disabled) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.address) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.username) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.password) }()
@@ -869,8 +869,8 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.disabled != false {
-      try visitor.visitSingularBoolField(value: self.disabled, fieldNumber: 1)
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
     if !self.address.isEmpty {
       try visitor.visitSingularStringField(value: self.address, fieldNumber: 2)
@@ -888,7 +888,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 
   static func ==(lhs: ModuleConfig.MQTTConfig, rhs: ModuleConfig.MQTTConfig) -> Bool {
-    if lhs.disabled != rhs.disabled {return false}
+    if lhs.enabled != rhs.enabled {return false}
     if lhs.address != rhs.address {return false}
     if lhs.username != rhs.username {return false}
     if lhs.password != rhs.password {return false}
