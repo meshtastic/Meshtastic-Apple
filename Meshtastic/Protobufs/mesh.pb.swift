@@ -1065,33 +1065,20 @@ struct DataMessage {
   /// a message a heart or poop emoji.
   var emoji: UInt32 = 0
 
-  ///
-  /// Location structure
-  var location: Location {
-    get {return _location ?? Location()}
-    set {_location = newValue}
-  }
-  /// Returns true if `location` has been explicitly set.
-  var hasLocation: Bool {return self._location != nil}
-  /// Clears the value of `location`. Subsequent reads from it will return its default value.
-  mutating func clearLocation() {self._location = nil}
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
-
-  fileprivate var _location: Location? = nil
 }
 
 ///
-/// Location of a waypoint to associate with a message
-struct Location {
+/// Waypoint message, used to share arbitrary locations across the mesh
+struct Waypoint {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
-  /// Id of the location
+  /// Id of the waypoint
   var id: UInt32 = 0
 
   ///
@@ -1103,19 +1090,19 @@ struct Location {
   var longitudeI: Int32 = 0
 
   ///
-  /// Time the location is to expire (epoch)
+  /// Time the waypoint is to expire (epoch)
   var expire: UInt32 = 0
 
   ///
-  /// If true, only allow the original sender to update the location.
+  /// If true, only allow the original sender to update the waypoint.
   var locked: Bool = false
 
   ///
-  /// Name of the location - max 30 chars
+  /// Name of the waypoint - max 30 chars
   var name: String = String()
 
   ///*
-  /// Description of the location - max 100 chars
+  /// Description of the waypoint - max 100 chars
   var description_p: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -2121,7 +2108,7 @@ extension Routing: @unchecked Sendable {}
 extension Routing.OneOf_Variant: @unchecked Sendable {}
 extension Routing.Error: @unchecked Sendable {}
 extension DataMessage: @unchecked Sendable {}
-extension Location: @unchecked Sendable {}
+extension Waypoint: @unchecked Sendable {}
 extension MeshPacket: @unchecked Sendable {}
 extension MeshPacket.OneOf_PayloadVariant: @unchecked Sendable {}
 extension MeshPacket.Priority: @unchecked Sendable {}
@@ -2651,7 +2638,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     6: .standard(proto: "request_id"),
     7: .standard(proto: "reply_id"),
     8: .same(proto: "emoji"),
-    9: .same(proto: "location"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2668,17 +2654,12 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 6: try { try decoder.decodeSingularFixed32Field(value: &self.requestID) }()
       case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
-      case 9: try { try decoder.decodeSingularMessageField(value: &self._location) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
@@ -2703,9 +2684,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.emoji != 0 {
       try visitor.visitSingularFixed32Field(value: self.emoji, fieldNumber: 8)
     }
-    try { if let v = self._location {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2718,14 +2696,13 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.requestID != rhs.requestID {return false}
     if lhs.replyID != rhs.replyID {return false}
     if lhs.emoji != rhs.emoji {return false}
-    if lhs._location != rhs._location {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "Location"
+extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "Waypoint"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .standard(proto: "latitude_i"),
@@ -2779,7 +2756,7 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Location, rhs: Location) -> Bool {
+  static func ==(lhs: Waypoint, rhs: Waypoint) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}

@@ -88,12 +88,9 @@ struct LocationHistory: View {
 									.font(.subheadline)
 									.foregroundColor(.accentColor)
 									.symbolRenderingMode(.hierarchical)
-								Text("Time:")
-									.font(.caption)
 								DateTimeText(dateTime: mappin.time)
 									.foregroundColor(.gray)
 									.font(.caption)
-
 							}
 						}
 					}

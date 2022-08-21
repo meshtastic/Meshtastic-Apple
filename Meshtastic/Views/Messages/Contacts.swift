@@ -11,6 +11,8 @@ struct Contacts: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	@State var onboarding = true
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
