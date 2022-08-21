@@ -74,7 +74,7 @@
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
 		DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */; };
 		DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */; };
-		DDB6ABE228B13FB500384BA1 /* GpsFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */; };
+		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* ScreenIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
 		DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */; };
@@ -184,7 +184,7 @@
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
 		DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceText.swift; sourceTree = "<group>"; };
 		DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRoles.swift; sourceTree = "<group>"; };
-		DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GpsFormats.swift; sourceTree = "<group>"; };
+		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenIntervals.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiModes.swift; sourceTree = "<group>"; };
@@ -334,7 +334,7 @@
 				DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */,
 				DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */,
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
-				DDB6ABE128B13FB500384BA1 /* GpsFormats.swift */,
+				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
 				DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */,
 				DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */,
@@ -745,7 +745,7 @@
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
-				DDB6ABE228B13FB500384BA1 /* GpsFormats.swift in Sources */,
+				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DD73FD1128750779000852D6 /* LocationHistory.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
