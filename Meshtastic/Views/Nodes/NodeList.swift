@@ -81,9 +81,8 @@ struct NodeList: View {
 											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
 										}
 									}
-									Spacer()
 								}
-
+								Spacer()
 								HStack(alignment: .bottom) {
 
 									Image(systemName: "clock.badge.checkmark.fill").font(.title3)
@@ -99,7 +98,7 @@ struct NodeList: View {
 									}
 								}
 								
-								if node.positions?.count ?? 0 > 0 {
+								if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
 								
 									Spacer()
 									HStack(alignment: .bottom) {
