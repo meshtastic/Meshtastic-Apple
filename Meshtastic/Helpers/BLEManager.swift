@@ -765,7 +765,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			return false
 		}
 				
-		var waypointPacket = Location()
+		var waypointPacket = Waypoint()
 		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 		
