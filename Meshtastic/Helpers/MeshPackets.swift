@@ -592,7 +592,8 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
-
+					
+					newCannedMessageConfig.num = nodeNum
 					fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
 					
 				} else {
@@ -623,6 +624,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
+					fetchedNode[0].cannedMessageConfig?.num = nodeNum
 				}
 				
 				do {
@@ -698,6 +700,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
 
+					newExternalNotificationConfig.num = nodeNum
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
@@ -720,6 +723,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
 						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
+					fetchedNode[0].externalNotificationConfig?.num = nodeNum
 				}
 				
 				do {
@@ -781,7 +785,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newRangeTestConfig.enabled = config.rangeTest.enabled
 						newRangeTestConfig.save = config.rangeTest.save
 					}
-					
+					newRangeTestConfig.num = nodeNum
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
 					
 				} else {
@@ -1391,7 +1395,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 				
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 					
