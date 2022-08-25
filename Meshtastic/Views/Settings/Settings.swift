@@ -69,6 +69,18 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
+					NavigationLink() {
+						
+						BluetoothConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "antenna.radiowaves.left.and.right")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Bluetooth (BLE)")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
@@ -97,6 +109,17 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 
 						Text("Position")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink {
+						WiFiConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "wifi")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("WiFi (ESP32 Only)")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
@@ -193,8 +216,7 @@ struct Settings: View {
 				
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only
-				// WiFi Config - Would break connection to device
-				// MQTT Config - Part of WiFi
+				// MQTT Config - Can do from WebUI once WiFi is enabled
 			}
 			.onAppear {
 

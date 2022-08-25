@@ -30,48 +30,28 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   case notSet // = 0
 
   ///
-  /// Moderate accuracy temperature
-  case dht11 // = 1
-
-  ///
-  /// High accuracy temperature
-  case ds18B20 // = 2
-
-  ///
-  /// Moderate accuracy temperature and humidity
-  case dht12 // = 3
-
-  ///
-  /// Moderate accuracy temperature and humidity
-  case dht21 // = 4
-
-  ///
-  /// Moderate accuracy temperature and humidity
-  case dht22 // = 5
-
-  ///
   /// High accuracy temperature, pressure, humidity
-  case bme280 // = 6
+  case bme280 // = 1
 
   ///
   /// High accuracy temperature, pressure, humidity, and air resistance
-  case bme680 // = 7
+  case bme680 // = 2
 
   ///
   /// Very high accuracy temperature
-  case mcp9808 // = 8
-
-  ///
-  /// Moderate accuracy temperature and humidity
-  case shtc3 // = 9
+  case mcp9808 // = 3
 
   ///
   /// Moderate accuracy current and voltage
-  case ina260 // = 10
+  case ina260 // = 4
 
   ///
   /// Moderate accuracy current and voltage
-  case ina219 // = 11
+  case ina219 // = 5
+
+  ///
+  /// High accuracy temperature and pressure
+  case bmp280 // = 6
   case UNRECOGNIZED(Int)
 
   init() {
@@ -81,17 +61,12 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   init?(rawValue: Int) {
     switch rawValue {
     case 0: self = .notSet
-    case 1: self = .dht11
-    case 2: self = .ds18B20
-    case 3: self = .dht12
-    case 4: self = .dht21
-    case 5: self = .dht22
-    case 6: self = .bme280
-    case 7: self = .bme680
-    case 8: self = .mcp9808
-    case 9: self = .shtc3
-    case 10: self = .ina260
-    case 11: self = .ina219
+    case 1: self = .bme280
+    case 2: self = .bme680
+    case 3: self = .mcp9808
+    case 4: self = .ina260
+    case 5: self = .ina219
+    case 6: self = .bmp280
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -99,17 +74,12 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   var rawValue: Int {
     switch self {
     case .notSet: return 0
-    case .dht11: return 1
-    case .ds18B20: return 2
-    case .dht12: return 3
-    case .dht21: return 4
-    case .dht22: return 5
-    case .bme280: return 6
-    case .bme680: return 7
-    case .mcp9808: return 8
-    case .shtc3: return 9
-    case .ina260: return 10
-    case .ina219: return 11
+    case .bme280: return 1
+    case .bme680: return 2
+    case .mcp9808: return 3
+    case .ina260: return 4
+    case .ina219: return 5
+    case .bmp280: return 6
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -122,17 +92,12 @@ extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [TelemetrySensorType] = [
     .notSet,
-    .dht11,
-    .ds18B20,
-    .dht12,
-    .dht21,
-    .dht22,
     .bme280,
     .bme680,
     .mcp9808,
-    .shtc3,
     .ina260,
     .ina219,
+    .bmp280,
   ]
 }
 
@@ -285,17 +250,12 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "NotSet"),
-    1: .same(proto: "DHT11"),
-    2: .same(proto: "DS18B20"),
-    3: .same(proto: "DHT12"),
-    4: .same(proto: "DHT21"),
-    5: .same(proto: "DHT22"),
-    6: .same(proto: "BME280"),
-    7: .same(proto: "BME680"),
-    8: .same(proto: "MCP9808"),
-    9: .same(proto: "SHTC3"),
-    10: .same(proto: "INA260"),
-    11: .same(proto: "INA219"),
+    1: .same(proto: "BME280"),
+    2: .same(proto: "BME680"),
+    3: .same(proto: "MCP9808"),
+    4: .same(proto: "INA260"),
+    5: .same(proto: "INA219"),
+    6: .same(proto: "BMP280"),
   ]
 }
 

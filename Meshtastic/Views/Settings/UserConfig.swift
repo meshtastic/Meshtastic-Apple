@@ -48,6 +48,17 @@ struct UserConfig: View {
 									}
 								}
 							})
+							
+					}
+					.keyboardType(.default)
+					.disableAutocorrection(true)
+					Text("Long name can be up to 36 bytes long.")
+						.font(.caption)
+					
+					HStack {
+						Label("Short Name", systemImage: "circlebadge.fill")
+						TextField("Long Name", text: $shortName)
+							.foregroundColor(.gray)
 							.onChange(of: shortName, perform: { value in
 
 								let totalBytes = shortName.utf8.count
@@ -64,16 +75,6 @@ struct UserConfig: View {
 									}
 								}
 							})
-							.foregroundColor(.gray)
-					}
-					.keyboardType(.default)
-					.disableAutocorrection(true)
-					Text("Long name can be up to 36 bytes long.")
-						.font(.caption)
-					
-					HStack {
-						Label("Short Name", systemImage: "circlebadge.fill")
-						TextField("Long Name", text: $shortName)
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
@@ -112,7 +113,7 @@ struct UserConfig: View {
 						u.shortName = shortName
 						u.longName = longName
 						
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!)
 						
 						if adminMessageId > 0 {
 							

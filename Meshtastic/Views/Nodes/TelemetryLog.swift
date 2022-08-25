@@ -20,7 +20,7 @@ struct TelemetryLog: View {
 		
 		List {
 			
-			ForEach(node.telemetries!.array as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
+			ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
 				
 				VStack (alignment: .leading)  {
 					
@@ -86,14 +86,10 @@ struct TelemetryLog: View {
 								Text("Environment Metrics")
 									.font(.title)
 								
-								let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
 								
 								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°C" : "°F"
 								
-								if  sensor == SensorTypes.bme280 ||
-									sensor == SensorTypes.bme680 ||
-									sensor == SensorTypes.shtc3 ||
-									sensor == SensorTypes.mcp9808 {
+								if  tel.temperature > 0 {
 									
 									Image(systemName: "thermometer")
 											.font(.callout)
@@ -104,9 +100,7 @@ struct TelemetryLog: View {
 										.font(.callout)
 								}
 																	
-								if  sensor == SensorTypes.bme280 ||
-									sensor == SensorTypes.bme680 ||
-									sensor == SensorTypes.shtc3 {
+								if tel.relativeHumidity > 0 {
 									
 									Image(systemName: "humidity")
 											.font(.callout)
@@ -117,8 +111,7 @@ struct TelemetryLog: View {
 										.font(.callout)
 								}
 								
-								if  sensor == SensorTypes.bme280 ||
-									sensor == SensorTypes.bme680 {
+								if tel.barometricPressure > 0 {
 									
 									Image(systemName: "barometer")
 											.font(.callout)
@@ -129,7 +122,7 @@ struct TelemetryLog: View {
 										.font(.callout)
 								}
 								
-								if sensor == SensorTypes.bme680 {
+								if tel.gasResistance > 0 {
 									
 									Image(systemName: "aqi.medium")
 											.font(.callout)
@@ -140,8 +133,7 @@ struct TelemetryLog: View {
 										.font(.callout)
 								}
 								
-								if  sensor == SensorTypes.ina219 ||
-									sensor == SensorTypes.ina260 {
+								if  tel.current > 0 {
 									
 									Image(systemName: "directcurrent")
 											.font(.callout)
@@ -185,7 +177,7 @@ struct TelemetryLog: View {
 									
 									Spacer()
 									Text("Device Metrics")
-										.font(.title)
+										.font(.title3)
 									Spacer()
 								}
 								
@@ -242,8 +234,6 @@ struct TelemetryLog: View {
 						} else if tel.metricsType == 1 {
 							
 							// Environment Metrics
-							let sensor = SensorTypes(rawValue: Int(node.telemetryConfig?.environmentSensorType ?? 0))
-							
 							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°C" : "°F"
 							
 							
@@ -260,10 +250,7 @@ struct TelemetryLog: View {
 								
 								HStack {
 								
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 ||
-										sensor == SensorTypes.mcp9808 {
+									if  tel.temperature > 0 {
 										
 										Image(systemName: "thermometer")
 												.font(.callout)
@@ -277,9 +264,7 @@ struct TelemetryLog: View {
 								
 								HStack {
 									
-									if  sensor == SensorTypes.bme280 ||
-										sensor == SensorTypes.bme680 ||
-										sensor == SensorTypes.shtc3 {
+									if  tel.relativeHumidity > 0 {
 										
 										Image(systemName: "humidity")
 												.font(.callout)
@@ -291,8 +276,7 @@ struct TelemetryLog: View {
 									}
 								}
 								
-								if  sensor == SensorTypes.ina219 ||
-									sensor == SensorTypes.ina260 {
+								if  tel.current > 0 {
 									
 									HStack {
 										
@@ -317,8 +301,7 @@ struct TelemetryLog: View {
 									}
 								}
 								
-								if  sensor == SensorTypes.bme280 ||
-									sensor == SensorTypes.bme680 {
+								if  tel.barometricPressure > 0 {
 									
 									HStack {
 										
@@ -332,7 +315,7 @@ struct TelemetryLog: View {
 									}
 								}
 								
-								if sensor == SensorTypes.bme680 {
+								if tel.gasResistance > 0 {
 									
 									HStack {
 									

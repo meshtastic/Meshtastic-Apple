@@ -213,34 +213,41 @@ struct UserMessageList: View {
 														
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 
-														Text("Sent \(messageDate, style: .date) \(messageDate, style: .time)").font(.caption2).foregroundColor(.gray)
+														Text("Sent \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 													}
 													
-													VStack {
-																
-														Text("Received ACK: \(message.receivedACK ? "✔️" : "")")
-														
-													}
+								
 													if message.receivedACK {
+														
 														VStack {
-															
-															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-															
-															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-															if ackDate >= sixMonthsAgo! {
-																
-																Text("ACK \(ackDate, style: .date) \(ackDate, style: .time)").font(.caption2).foregroundColor(.gray)
-																
-															} else {
-																
-																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
-															}
+																	
+															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
 														}
 													}
+													if message.ackError > 0 {
+
+														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													}
+													VStack {
+														
+														let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
+														
+														let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+														if ackDate >= sixMonthsAgo! {
+															
+															Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+															
+														} else {
+															
+															Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+														}
+													}
+
 													if message.ackSNR != 0 {
 														VStack {
 															
-															Text("ACK SNR \(String(message.ackSNR))")
+															Text("Ack SNR \(String(message.ackSNR))")
 																.font(.caption2)
 																.foregroundColor(.gray)
 														}
@@ -289,9 +296,21 @@ struct UserMessageList: View {
 											
 											HStack {
 
-												if message.receivedACK {
-
+												if currentUser && message.receivedACK {
+														
+													// Ack Received
 													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+													
+												} else if currentUser && message.ackError == 0 {
+													
+													// Empty Error
+													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
+													
+												} else if currentUser && message.ackError > 0 {
+													
+													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+														.font(.caption2).foregroundColor(.red)
 												}
 											}
 										}
@@ -302,9 +321,9 @@ struct UserMessageList: View {
 											Spacer(minLength:50)
 										}
 									}
-									.id(message.messageId)
 									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
+									.id(message.messageId)
 									.alert(isPresented: $showDeleteMessageAlert) {
 										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
 										primaryButton: .destructive(Text("Delete")) {
@@ -443,8 +462,8 @@ struct UserMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: user.num, wantResponse: false) {
-								print("Position Sent")
+							if bleManager.sendLocation(destNum: user.num, wantAck: true) {
+								print("Location Sent")
 							}
 						}
 					}

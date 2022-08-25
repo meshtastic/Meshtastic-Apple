@@ -179,6 +179,16 @@ struct AdminMessage {
   }
 
   ///
+  /// Send all channels in the response to this message
+  var getAllChannelRequest: Bool {
+    get {
+      if case .getAllChannelRequest(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .getAllChannelRequest(newValue)}
+  }
+
+  ///
   /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
   /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
   /// If you fail to do so, the radio will assume loss of comms and revert your changes.
@@ -223,123 +233,33 @@ struct AdminMessage {
   }
 
   ///
-  /// Get the Canned Message Module message part1 in the response to this message.
-  var getCannedMessageModulePart1Request: Bool {
+  /// Get the Canned Message Module messages in the response to this message.
+  var getCannedMessageModuleMessagesRequest: Bool {
     get {
-      if case .getCannedMessageModulePart1Request(let v)? = variant {return v}
+      if case .getCannedMessageModuleMessagesRequest(let v)? = variant {return v}
       return false
     }
-    set {variant = .getCannedMessageModulePart1Request(newValue)}
+    set {variant = .getCannedMessageModuleMessagesRequest(newValue)}
   }
 
   ///
-  /// TODO: REPLACE
-  var getCannedMessageModulePart1Response: String {
+  /// Get the Canned Message Module messages in the response to this message.
+  var getCannedMessageModuleMessagesResponse: String {
     get {
-      if case .getCannedMessageModulePart1Response(let v)? = variant {return v}
+      if case .getCannedMessageModuleMessagesResponse(let v)? = variant {return v}
       return String()
     }
-    set {variant = .getCannedMessageModulePart1Response(newValue)}
+    set {variant = .getCannedMessageModuleMessagesResponse(newValue)}
   }
 
   ///
-  /// Get the Canned Message Module message part2 in the response to this message.
-  var getCannedMessageModulePart2Request: Bool {
+  /// Set the Canned Message Module messages text.
+  var setCannedMessageModuleMessages: String {
     get {
-      if case .getCannedMessageModulePart2Request(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getCannedMessageModulePart2Request(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getCannedMessageModulePart2Response: String {
-    get {
-      if case .getCannedMessageModulePart2Response(let v)? = variant {return v}
+      if case .setCannedMessageModuleMessages(let v)? = variant {return v}
       return String()
     }
-    set {variant = .getCannedMessageModulePart2Response(newValue)}
-  }
-
-  ///
-  /// Get the Canned Message Module message part3 in the response to this message.
-  var getCannedMessageModulePart3Request: Bool {
-    get {
-      if case .getCannedMessageModulePart3Request(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getCannedMessageModulePart3Request(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getCannedMessageModulePart3Response: String {
-    get {
-      if case .getCannedMessageModulePart3Response(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .getCannedMessageModulePart3Response(newValue)}
-  }
-
-  ///
-  /// Get the Canned Message Module message part4 in the response to this message.
-  var getCannedMessageModulePart4Request: Bool {
-    get {
-      if case .getCannedMessageModulePart4Request(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getCannedMessageModulePart4Request(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getCannedMessageModulePart4Response: String {
-    get {
-      if case .getCannedMessageModulePart4Response(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .getCannedMessageModulePart4Response(newValue)}
-  }
-
-  ///
-  /// Set the canned message module part 1 text.
-  var setCannedMessageModulePart1: String {
-    get {
-      if case .setCannedMessageModulePart1(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .setCannedMessageModulePart1(newValue)}
-  }
-
-  ///
-  /// Set the canned message module part 2 text.
-  var setCannedMessageModulePart2: String {
-    get {
-      if case .setCannedMessageModulePart2(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .setCannedMessageModulePart2(newValue)}
-  }
-
-  ///
-  /// Set the canned message module part 3 text.
-  var setCannedMessageModulePart3: String {
-    get {
-      if case .setCannedMessageModulePart3(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .setCannedMessageModulePart3(newValue)}
-  }
-
-  ///
-  /// Set the canned message module part 4 text.
-  var setCannedMessageModulePart4: String {
-    get {
-      if case .setCannedMessageModulePart4(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .setCannedMessageModulePart4(newValue)}
+    set {variant = .setCannedMessageModuleMessages(newValue)}
   }
 
   ///
@@ -350,6 +270,26 @@ struct AdminMessage {
       return 0
     }
     set {variant = .shutdownSeconds(newValue)}
+  }
+
+  ///
+  /// Request the node to send device metadata (firmware, protobuf version, etc)
+  var getDeviceMetadataRequest: UInt32 {
+    get {
+      if case .getDeviceMetadataRequest(let v)? = variant {return v}
+      return 0
+    }
+    set {variant = .getDeviceMetadataRequest(newValue)}
+  }
+
+  ///
+  /// Device metadata response
+  var getDeviceMetadataResponse: DeviceMetadata {
+    get {
+      if case .getDeviceMetadataResponse(let v)? = variant {return v}
+      return DeviceMetadata()
+    }
+    set {variant = .getDeviceMetadataResponse(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -405,6 +345,9 @@ struct AdminMessage {
     /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
     case confirmSetModuleConfig(Bool)
     ///
+    /// Send all channels in the response to this message
+    case getAllChannelRequest(Bool)
+    ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
     /// If you fail to do so, the radio will assume loss of comms and revert your changes.
@@ -421,44 +364,23 @@ struct AdminMessage {
     /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
     case rebootSeconds(Int32)
     ///
-    /// Get the Canned Message Module message part1 in the response to this message.
-    case getCannedMessageModulePart1Request(Bool)
+    /// Get the Canned Message Module messages in the response to this message.
+    case getCannedMessageModuleMessagesRequest(Bool)
     ///
-    /// TODO: REPLACE
-    case getCannedMessageModulePart1Response(String)
+    /// Get the Canned Message Module messages in the response to this message.
+    case getCannedMessageModuleMessagesResponse(String)
     ///
-    /// Get the Canned Message Module message part2 in the response to this message.
-    case getCannedMessageModulePart2Request(Bool)
-    ///
-    /// TODO: REPLACE
-    case getCannedMessageModulePart2Response(String)
-    ///
-    /// Get the Canned Message Module message part3 in the response to this message.
-    case getCannedMessageModulePart3Request(Bool)
-    ///
-    /// TODO: REPLACE
-    case getCannedMessageModulePart3Response(String)
-    ///
-    /// Get the Canned Message Module message part4 in the response to this message.
-    case getCannedMessageModulePart4Request(Bool)
-    ///
-    /// TODO: REPLACE
-    case getCannedMessageModulePart4Response(String)
-    ///
-    /// Set the canned message module part 1 text.
-    case setCannedMessageModulePart1(String)
-    ///
-    /// Set the canned message module part 2 text.
-    case setCannedMessageModulePart2(String)
-    ///
-    /// Set the canned message module part 3 text.
-    case setCannedMessageModulePart3(String)
-    ///
-    /// Set the canned message module part 4 text.
-    case setCannedMessageModulePart4(String)
+    /// Set the Canned Message Module messages text.
+    case setCannedMessageModuleMessages(String)
     ///
     /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
     case shutdownSeconds(Int32)
+    ///
+    /// Request the node to send device metadata (firmware, protobuf version, etc)
+    case getDeviceMetadataRequest(UInt32)
+    ///
+    /// Device metadata response
+    case getDeviceMetadataResponse(DeviceMetadata)
 
   #if !swift(>=4.1)
     static func ==(lhs: AdminMessage.OneOf_Variant, rhs: AdminMessage.OneOf_Variant) -> Bool {
@@ -522,6 +444,10 @@ struct AdminMessage {
         guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getAllChannelRequest, .getAllChannelRequest): return {
+        guard case .getAllChannelRequest(let l) = lhs, case .getAllChannelRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.confirmSetChannel, .confirmSetChannel): return {
         guard case .confirmSetChannel(let l) = lhs, case .confirmSetChannel(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -538,56 +464,28 @@ struct AdminMessage {
         guard case .rebootSeconds(let l) = lhs, case .rebootSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getCannedMessageModulePart1Request, .getCannedMessageModulePart1Request): return {
-        guard case .getCannedMessageModulePart1Request(let l) = lhs, case .getCannedMessageModulePart1Request(let r) = rhs else { preconditionFailure() }
+      case (.getCannedMessageModuleMessagesRequest, .getCannedMessageModuleMessagesRequest): return {
+        guard case .getCannedMessageModuleMessagesRequest(let l) = lhs, case .getCannedMessageModuleMessagesRequest(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getCannedMessageModulePart1Response, .getCannedMessageModulePart1Response): return {
-        guard case .getCannedMessageModulePart1Response(let l) = lhs, case .getCannedMessageModulePart1Response(let r) = rhs else { preconditionFailure() }
+      case (.getCannedMessageModuleMessagesResponse, .getCannedMessageModuleMessagesResponse): return {
+        guard case .getCannedMessageModuleMessagesResponse(let l) = lhs, case .getCannedMessageModuleMessagesResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getCannedMessageModulePart2Request, .getCannedMessageModulePart2Request): return {
-        guard case .getCannedMessageModulePart2Request(let l) = lhs, case .getCannedMessageModulePart2Request(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModulePart2Response, .getCannedMessageModulePart2Response): return {
-        guard case .getCannedMessageModulePart2Response(let l) = lhs, case .getCannedMessageModulePart2Response(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModulePart3Request, .getCannedMessageModulePart3Request): return {
-        guard case .getCannedMessageModulePart3Request(let l) = lhs, case .getCannedMessageModulePart3Request(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModulePart3Response, .getCannedMessageModulePart3Response): return {
-        guard case .getCannedMessageModulePart3Response(let l) = lhs, case .getCannedMessageModulePart3Response(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModulePart4Request, .getCannedMessageModulePart4Request): return {
-        guard case .getCannedMessageModulePart4Request(let l) = lhs, case .getCannedMessageModulePart4Request(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModulePart4Response, .getCannedMessageModulePart4Response): return {
-        guard case .getCannedMessageModulePart4Response(let l) = lhs, case .getCannedMessageModulePart4Response(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setCannedMessageModulePart1, .setCannedMessageModulePart1): return {
-        guard case .setCannedMessageModulePart1(let l) = lhs, case .setCannedMessageModulePart1(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setCannedMessageModulePart2, .setCannedMessageModulePart2): return {
-        guard case .setCannedMessageModulePart2(let l) = lhs, case .setCannedMessageModulePart2(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setCannedMessageModulePart3, .setCannedMessageModulePart3): return {
-        guard case .setCannedMessageModulePart3(let l) = lhs, case .setCannedMessageModulePart3(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setCannedMessageModulePart4, .setCannedMessageModulePart4): return {
-        guard case .setCannedMessageModulePart4(let l) = lhs, case .setCannedMessageModulePart4(let r) = rhs else { preconditionFailure() }
+      case (.setCannedMessageModuleMessages, .setCannedMessageModuleMessages): return {
+        guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.shutdownSeconds, .shutdownSeconds): return {
         guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataRequest, .getDeviceMetadataRequest): return {
+        guard case .getDeviceMetadataRequest(let l) = lhs, case .getDeviceMetadataRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataResponse, .getDeviceMetadataResponse): return {
+        guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -624,6 +522,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case loraConfig // = 5
+
+    ///
+    /// TODO: REPLACE
+    case bluetoothConfig // = 6
     case UNRECOGNIZED(Int)
 
     init() {
@@ -638,6 +540,7 @@ struct AdminMessage {
       case 3: self = .wifiConfig
       case 4: self = .displayConfig
       case 5: self = .loraConfig
+      case 6: self = .bluetoothConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -650,6 +553,7 @@ struct AdminMessage {
       case .wifiConfig: return 3
       case .displayConfig: return 4
       case .loraConfig: return 5
+      case .bluetoothConfig: return 6
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -736,6 +640,7 @@ extension AdminMessage.ConfigType: CaseIterable {
     .wifiConfig,
     .displayConfig,
     .loraConfig,
+    .bluetoothConfig,
   ]
 }
 
@@ -780,23 +685,17 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     15: .standard(proto: "get_module_config_response"),
     16: .standard(proto: "set_module_config"),
     17: .standard(proto: "confirm_set_module_config"),
+    18: .standard(proto: "get_all_channel_request"),
     32: .standard(proto: "confirm_set_channel"),
     33: .standard(proto: "confirm_set_radio"),
     34: .standard(proto: "exit_simulator"),
     35: .standard(proto: "reboot_seconds"),
-    36: .standard(proto: "get_canned_message_module_part1_request"),
-    37: .standard(proto: "get_canned_message_module_part1_response"),
-    38: .standard(proto: "get_canned_message_module_part2_request"),
-    39: .standard(proto: "get_canned_message_module_part2_response"),
-    40: .standard(proto: "get_canned_message_module_part3_request"),
-    41: .standard(proto: "get_canned_message_module_part3_response"),
-    42: .standard(proto: "get_canned_message_module_part4_request"),
-    43: .standard(proto: "get_canned_message_module_part4_response"),
-    44: .standard(proto: "set_canned_message_module_part1"),
-    45: .standard(proto: "set_canned_message_module_part2"),
-    46: .standard(proto: "set_canned_message_module_part3"),
-    47: .standard(proto: "set_canned_message_module_part4"),
+    36: .standard(proto: "get_canned_message_module_messages_request"),
+    37: .standard(proto: "get_canned_message_module_messages_response"),
+    44: .standard(proto: "set_canned_message_module_messages"),
     51: .standard(proto: "shutdown_seconds"),
+    52: .standard(proto: "get_device_metadata_request"),
+    53: .standard(proto: "get_device_metadata_response"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -957,6 +856,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.variant = .confirmSetModuleConfig(v)
         }
       }()
+      case 18: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getAllChannelRequest(v)
+        }
+      }()
       case 32: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -994,7 +901,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart1Request(v)
+          self.variant = .getCannedMessageModuleMessagesRequest(v)
         }
       }()
       case 37: try {
@@ -1002,55 +909,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularStringField(value: &v)
         if let v = v {
           if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart1Response(v)
-        }
-      }()
-      case 38: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart2Request(v)
-        }
-      }()
-      case 39: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart2Response(v)
-        }
-      }()
-      case 40: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart3Request(v)
-        }
-      }()
-      case 41: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart3Response(v)
-        }
-      }()
-      case 42: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart4Request(v)
-        }
-      }()
-      case 43: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModulePart4Response(v)
+          self.variant = .getCannedMessageModuleMessagesResponse(v)
         }
       }()
       case 44: try {
@@ -1058,31 +917,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularStringField(value: &v)
         if let v = v {
           if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .setCannedMessageModulePart1(v)
-        }
-      }()
-      case 45: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .setCannedMessageModulePart2(v)
-        }
-      }()
-      case 46: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .setCannedMessageModulePart3(v)
-        }
-      }()
-      case 47: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .setCannedMessageModulePart4(v)
+          self.variant = .setCannedMessageModuleMessages(v)
         }
       }()
       case 51: try {
@@ -1091,6 +926,27 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if self.variant != nil {try decoder.handleConflictingOneOf()}
           self.variant = .shutdownSeconds(v)
+        }
+      }()
+      case 52: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .getDeviceMetadataRequest(v)
+        }
+      }()
+      case 53: try {
+        var v: DeviceMetadata?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .getDeviceMetadataResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .getDeviceMetadataResponse(v)
         }
       }()
       default: break
@@ -1160,6 +1016,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .confirmSetModuleConfig(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 17)
     }()
+    case .getAllChannelRequest?: try {
+      guard case .getAllChannelRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 18)
+    }()
     case .confirmSetChannel?: try {
       guard case .confirmSetChannel(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 32)
@@ -1176,57 +1036,29 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .rebootSeconds(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 35)
     }()
-    case .getCannedMessageModulePart1Request?: try {
-      guard case .getCannedMessageModulePart1Request(let v)? = self.variant else { preconditionFailure() }
+    case .getCannedMessageModuleMessagesRequest?: try {
+      guard case .getCannedMessageModuleMessagesRequest(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 36)
     }()
-    case .getCannedMessageModulePart1Response?: try {
-      guard case .getCannedMessageModulePart1Response(let v)? = self.variant else { preconditionFailure() }
+    case .getCannedMessageModuleMessagesResponse?: try {
+      guard case .getCannedMessageModuleMessagesResponse(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 37)
     }()
-    case .getCannedMessageModulePart2Request?: try {
-      guard case .getCannedMessageModulePart2Request(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 38)
-    }()
-    case .getCannedMessageModulePart2Response?: try {
-      guard case .getCannedMessageModulePart2Response(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 39)
-    }()
-    case .getCannedMessageModulePart3Request?: try {
-      guard case .getCannedMessageModulePart3Request(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 40)
-    }()
-    case .getCannedMessageModulePart3Response?: try {
-      guard case .getCannedMessageModulePart3Response(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 41)
-    }()
-    case .getCannedMessageModulePart4Request?: try {
-      guard case .getCannedMessageModulePart4Request(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
-    }()
-    case .getCannedMessageModulePart4Response?: try {
-      guard case .getCannedMessageModulePart4Response(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 43)
-    }()
-    case .setCannedMessageModulePart1?: try {
-      guard case .setCannedMessageModulePart1(let v)? = self.variant else { preconditionFailure() }
+    case .setCannedMessageModuleMessages?: try {
+      guard case .setCannedMessageModuleMessages(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 44)
-    }()
-    case .setCannedMessageModulePart2?: try {
-      guard case .setCannedMessageModulePart2(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 45)
-    }()
-    case .setCannedMessageModulePart3?: try {
-      guard case .setCannedMessageModulePart3(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 46)
-    }()
-    case .setCannedMessageModulePart4?: try {
-      guard case .setCannedMessageModulePart4(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 47)
     }()
     case .shutdownSeconds?: try {
       guard case .shutdownSeconds(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 51)
+    }()
+    case .getDeviceMetadataRequest?: try {
+      guard case .getDeviceMetadataRequest(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 52)
+    }()
+    case .getDeviceMetadataResponse?: try {
+      guard case .getDeviceMetadataResponse(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 53)
     }()
     case nil: break
     }
@@ -1248,6 +1080,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "WIFI_CONFIG"),
     4: .same(proto: "DISPLAY_CONFIG"),
     5: .same(proto: "LORA_CONFIG"),
+    6: .same(proto: "BLUETOOTH_CONFIG"),
   ]
 }
 

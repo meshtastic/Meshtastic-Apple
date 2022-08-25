@@ -241,7 +241,7 @@ struct CannedMessagesConfig: View {
 				
 				Section(header: Text("Key Mapping")) {
 					
-					Picker("inputbrokerEventCw", selection: $inputbrokerEventCw ) {
+					Picker("Clockwise Rotary Event", selection: $inputbrokerEventCw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -250,7 +250,7 @@ struct CannedMessagesConfig: View {
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 					
-					Picker("inputbrokerEventCcw", selection: $inputbrokerEventCcw ) {
+					Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -259,7 +259,7 @@ struct CannedMessagesConfig: View {
 					.padding(.top, 10)
 					.padding(.bottom, 10)
 					
-					Picker("inputBrokerEventPress", selection: $inputbrokerEventPress ) {
+					Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
 						}
@@ -320,7 +320,7 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
 						
-						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
 							
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -376,6 +376,9 @@ struct CannedMessagesConfig: View {
 					// RAK Rotary Encoder
 					updown1Enabled = true
 					rotary1Enabled = false
+					inputbrokerPinA = 4
+					inputbrokerPinB = 10
+					inputbrokerPinPress = 3
 					inputbrokerEventCw = InputEventChars.keyUp.rawValue
 					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
 					inputbrokerEventPress = InputEventChars.keySelect.rawValue

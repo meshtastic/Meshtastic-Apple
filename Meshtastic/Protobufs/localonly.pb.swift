@@ -92,6 +92,17 @@ struct LocalConfig {
   mutating func clearLora() {_uniqueStorage()._lora = nil}
 
   ///
+  /// The part of the config that is specific to the Bluetooth settings
+  var bluetooth: Config.BluetoothConfig {
+    get {return _storage._bluetooth ?? Config.BluetoothConfig()}
+    set {_uniqueStorage()._bluetooth = newValue}
+  }
+  /// Returns true if `bluetooth` has been explicitly set.
+  var hasBluetooth: Bool {return _storage._bluetooth != nil}
+  /// Clears the value of `bluetooth`. Subsequent reads from it will return its default value.
+  mutating func clearBluetooth() {_uniqueStorage()._bluetooth = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -221,7 +232,8 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     4: .same(proto: "wifi"),
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
-    7: .same(proto: "version"),
+    7: .same(proto: "bluetooth"),
+    8: .same(proto: "version"),
   ]
 
   fileprivate class _StorageClass {
@@ -231,6 +243,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _wifi: Config.WiFiConfig? = nil
     var _display: Config.DisplayConfig? = nil
     var _lora: Config.LoRaConfig? = nil
+    var _bluetooth: Config.BluetoothConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -244,6 +257,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _wifi = source._wifi
       _display = source._display
       _lora = source._lora
+      _bluetooth = source._bluetooth
       _version = source._version
     }
   }
@@ -269,7 +283,8 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 4: try { try decoder.decodeSingularMessageField(value: &_storage._wifi) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._lora) }()
-        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._bluetooth) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         default: break
         }
       }
@@ -300,8 +315,11 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._lora {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       } }()
+      try { if let v = _storage._bluetooth {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
       if _storage._version != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 7)
+        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -318,6 +336,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._wifi != rhs_storage._wifi {return false}
         if _storage._display != rhs_storage._display {return false}
         if _storage._lora != rhs_storage._lora {return false}
+        if _storage._bluetooth != rhs_storage._bluetooth {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

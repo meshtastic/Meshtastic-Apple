@@ -131,6 +131,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case m5Stack // = 44
 
   ///
+  /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
+  case stationG1 // = 45
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -166,6 +170,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 42: self = .nrf52840Pca10059
     case 43: self = .drDev
     case 44: self = .m5Stack
+    case 45: self = .stationG1
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -198,6 +203,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nrf52840Pca10059: return 42
     case .drDev: return 43
     case .m5Stack: return 44
+    case .stationG1: return 45
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -235,6 +241,7 @@ extension HardwareModel: CaseIterable {
     .nrf52840Pca10059,
     .drDev,
     .m5Stack,
+    .stationG1,
     .privateHw,
   ]
 }
@@ -791,23 +798,6 @@ struct User {
   /// Also, "long_name" should be their licence number.
   var isLicensed: Bool = false
 
-  ///
-  /// Transmit power at antenna connector, in decibel-milliwatt
-  /// An optional self-reported value useful in network planning, discovery
-  /// and positioning - along with ant_gain_dbi and ant_azimuth below
-  var txPowerDbm: UInt32 = 0
-
-  ///
-  /// Antenna gain (applicable to both Tx and Rx), in decibel-isotropic
-  var antGainDbi: UInt32 = 0
-
-  ///
-  /// Directional antenna true azimuth *if applicable*, in degrees (0-360)
-  /// Only applicable in case of stationary nodes with a directional antenna
-  /// Zero = not applicable (mobile or omni) or not specified
-  /// (use a value of 360 to indicate an antenna azimuth of zero degrees)
-  var antAzimuth: UInt32 = 0
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -1075,33 +1065,20 @@ struct DataMessage {
   /// a message a heart or poop emoji.
   var emoji: UInt32 = 0
 
-  ///
-  /// Location structure
-  var location: Location {
-    get {return _location ?? Location()}
-    set {_location = newValue}
-  }
-  /// Returns true if `location` has been explicitly set.
-  var hasLocation: Bool {return self._location != nil}
-  /// Clears the value of `location`. Subsequent reads from it will return its default value.
-  mutating func clearLocation() {self._location = nil}
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
-
-  fileprivate var _location: Location? = nil
 }
 
 ///
-/// Location of a waypoint to associate with a message
-struct Location {
+/// Waypoint message, used to share arbitrary locations across the mesh
+struct Waypoint {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
-  /// Id of the location
+  /// Id of the waypoint
   var id: UInt32 = 0
 
   ///
@@ -1113,12 +1090,20 @@ struct Location {
   var longitudeI: Int32 = 0
 
   ///
-  /// Time the location is to expire (epoch)
+  /// Time the waypoint is to expire (epoch)
   var expire: UInt32 = 0
 
   ///
-  /// If true, only allow the original sender to update the location.
+  /// If true, only allow the original sender to update the waypoint.
   var locked: Bool = false
+
+  ///
+  /// Name of the waypoint - max 30 chars
+  var name: String = String()
+
+  ///*
+  /// Description of the waypoint - max 100 chars
+  var description_p: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1485,65 +1470,58 @@ struct NodeInfo {
 
   ///
   /// The node number
-  var num: UInt32 {
-    get {return _storage._num}
-    set {_uniqueStorage()._num = newValue}
-  }
+  var num: UInt32 = 0
 
   ///
   /// The user info for this node
   var user: User {
-    get {return _storage._user ?? User()}
-    set {_uniqueStorage()._user = newValue}
+    get {return _user ?? User()}
+    set {_user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return _storage._user != nil}
+  var hasUser: Bool {return self._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {_uniqueStorage()._user = nil}
+  mutating func clearUser() {self._user = nil}
 
   ///
   /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
   /// Position.time now indicates the last time we received a POSITION from that node.
   var position: Position {
-    get {return _storage._position ?? Position()}
-    set {_uniqueStorage()._position = newValue}
+    get {return _position ?? Position()}
+    set {_position = newValue}
   }
   /// Returns true if `position` has been explicitly set.
-  var hasPosition: Bool {return _storage._position != nil}
+  var hasPosition: Bool {return self._position != nil}
   /// Clears the value of `position`. Subsequent reads from it will return its default value.
-  mutating func clearPosition() {_uniqueStorage()._position = nil}
+  mutating func clearPosition() {self._position = nil}
 
   ///
   /// Returns the Signal-to-noise ratio (SNR) of the last received message,
   /// as measured by the receiver. Return SNR of the last received message in dB
-  var snr: Float {
-    get {return _storage._snr}
-    set {_uniqueStorage()._snr = newValue}
-  }
+  var snr: Float = 0
 
   ///
   /// Set to indicate the last time we received a packet from this node
-  var lastHeard: UInt32 {
-    get {return _storage._lastHeard}
-    set {_uniqueStorage()._lastHeard = newValue}
-  }
+  var lastHeard: UInt32 = 0
 
   ///
   /// The latest device metrics for the node.
   var deviceMetrics: DeviceMetrics {
-    get {return _storage._deviceMetrics ?? DeviceMetrics()}
-    set {_uniqueStorage()._deviceMetrics = newValue}
+    get {return _deviceMetrics ?? DeviceMetrics()}
+    set {_deviceMetrics = newValue}
   }
   /// Returns true if `deviceMetrics` has been explicitly set.
-  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
+  var hasDeviceMetrics: Bool {return self._deviceMetrics != nil}
   /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
-  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
+  mutating func clearDeviceMetrics() {self._deviceMetrics = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _user: User? = nil
+  fileprivate var _position: Position? = nil
+  fileprivate var _deviceMetrics: DeviceMetrics? = nil
 }
 
 ///
@@ -2130,7 +2108,7 @@ extension Routing: @unchecked Sendable {}
 extension Routing.OneOf_Variant: @unchecked Sendable {}
 extension Routing.Error: @unchecked Sendable {}
 extension DataMessage: @unchecked Sendable {}
-extension Location: @unchecked Sendable {}
+extension Waypoint: @unchecked Sendable {}
 extension MeshPacket: @unchecked Sendable {}
 extension MeshPacket.OneOf_PayloadVariant: @unchecked Sendable {}
 extension MeshPacket.Priority: @unchecked Sendable {}
@@ -2176,6 +2154,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     42: .same(proto: "NRF52840_PCA10059"),
     43: .same(proto: "DR_DEV"),
     44: .same(proto: "M5STACK"),
+    45: .same(proto: "STATION_G1"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -2464,9 +2443,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     4: .same(proto: "macaddr"),
     6: .standard(proto: "hw_model"),
     7: .standard(proto: "is_licensed"),
-    10: .standard(proto: "tx_power_dbm"),
-    11: .standard(proto: "ant_gain_dbi"),
-    12: .standard(proto: "ant_azimuth"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2481,9 +2457,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 4: try { try decoder.decodeSingularBytesField(value: &self.macaddr) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
-      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.txPowerDbm) }()
-      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.antGainDbi) }()
-      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.antAzimuth) }()
       default: break
       }
     }
@@ -2508,15 +2481,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.isLicensed != false {
       try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 7)
     }
-    if self.txPowerDbm != 0 {
-      try visitor.visitSingularUInt32Field(value: self.txPowerDbm, fieldNumber: 10)
-    }
-    if self.antGainDbi != 0 {
-      try visitor.visitSingularUInt32Field(value: self.antGainDbi, fieldNumber: 11)
-    }
-    if self.antAzimuth != 0 {
-      try visitor.visitSingularUInt32Field(value: self.antAzimuth, fieldNumber: 12)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2527,9 +2491,6 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.macaddr != rhs.macaddr {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.isLicensed != rhs.isLicensed {return false}
-    if lhs.txPowerDbm != rhs.txPowerDbm {return false}
-    if lhs.antGainDbi != rhs.antGainDbi {return false}
-    if lhs.antAzimuth != rhs.antAzimuth {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2677,7 +2638,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     6: .standard(proto: "request_id"),
     7: .standard(proto: "reply_id"),
     8: .same(proto: "emoji"),
-    9: .same(proto: "location"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2694,17 +2654,12 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 6: try { try decoder.decodeSingularFixed32Field(value: &self.requestID) }()
       case 7: try { try decoder.decodeSingularFixed32Field(value: &self.replyID) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
-      case 9: try { try decoder.decodeSingularMessageField(value: &self._location) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
     if self.portnum != .unknownApp {
       try visitor.visitSingularEnumField(value: self.portnum, fieldNumber: 1)
     }
@@ -2729,9 +2684,6 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.emoji != 0 {
       try visitor.visitSingularFixed32Field(value: self.emoji, fieldNumber: 8)
     }
-    try { if let v = self._location {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2744,20 +2696,21 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.requestID != rhs.requestID {return false}
     if lhs.replyID != rhs.replyID {return false}
     if lhs.emoji != rhs.emoji {return false}
-    if lhs._location != rhs._location {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "Location"
+extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "Waypoint"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .standard(proto: "latitude_i"),
     3: .standard(proto: "longitude_i"),
     4: .same(proto: "expire"),
     5: .same(proto: "locked"),
+    6: .same(proto: "name"),
+    7: .same(proto: "description"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2771,6 +2724,8 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 3: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.expire) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.locked) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 7: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
       default: break
       }
     }
@@ -2792,15 +2747,23 @@ extension Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.locked != false {
       try visitor.visitSingularBoolField(value: self.locked, fieldNumber: 5)
     }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 6)
+    }
+    if !self.description_p.isEmpty {
+      try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Location, rhs: Location) -> Bool {
+  static func ==(lhs: Waypoint, rhs: Waypoint) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}
     if lhs.expire != rhs.expire {return false}
     if lhs.locked != rhs.locked {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.description_p != rhs.description_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3022,98 +2985,56 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     6: .standard(proto: "device_metrics"),
   ]
 
-  fileprivate class _StorageClass {
-    var _num: UInt32 = 0
-    var _user: User? = nil
-    var _position: Position? = nil
-    var _snr: Float = 0
-    var _lastHeard: UInt32 = 0
-    var _deviceMetrics: DeviceMetrics? = nil
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _num = source._num
-      _user = source._user
-      _position = source._position
-      _snr = source._snr
-      _lastHeard = source._lastHeard
-      _deviceMetrics = source._deviceMetrics
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._num) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._user) }()
-        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
-        case 4: try { try decoder.decodeSingularFloatField(value: &_storage._snr) }()
-        case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._user) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._position) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self.snr) }()
+      case 5: try { try decoder.decodeSingularFixed32Field(value: &self.lastHeard) }()
+      case 6: try { try decoder.decodeSingularMessageField(value: &self._deviceMetrics) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._num != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._num, fieldNumber: 1)
-      }
-      try { if let v = _storage._user {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      try { if let v = _storage._position {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      } }()
-      if _storage._snr != 0 {
-        try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
-      }
-      if _storage._lastHeard != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._lastHeard, fieldNumber: 5)
-      }
-      try { if let v = _storage._deviceMetrics {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.num != 0 {
+      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
     }
+    try { if let v = self._user {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._position {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    if self.snr != 0 {
+      try visitor.visitSingularFloatField(value: self.snr, fieldNumber: 4)
+    }
+    if self.lastHeard != 0 {
+      try visitor.visitSingularFixed32Field(value: self.lastHeard, fieldNumber: 5)
+    }
+    try { if let v = self._deviceMetrics {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: NodeInfo, rhs: NodeInfo) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._num != rhs_storage._num {return false}
-        if _storage._user != rhs_storage._user {return false}
-        if _storage._position != rhs_storage._position {return false}
-        if _storage._snr != rhs_storage._snr {return false}
-        if _storage._lastHeard != rhs_storage._lastHeard {return false}
-        if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.num != rhs.num {return false}
+    if lhs._user != rhs._user {return false}
+    if lhs._position != rhs._position {return false}
+    if lhs.snr != rhs.snr {return false}
+    if lhs.lastHeard != rhs.lastHeard {return false}
+    if lhs._deviceMetrics != rhs._deviceMetrics {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

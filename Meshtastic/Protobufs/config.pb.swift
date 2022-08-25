@@ -77,6 +77,14 @@ struct Config {
     set {payloadVariant = .lora(newValue)}
   }
 
+  var bluetooth: Config.BluetoothConfig {
+    get {
+      if case .bluetooth(let v)? = payloadVariant {return v}
+      return Config.BluetoothConfig()
+    }
+    set {payloadVariant = .bluetooth(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -88,6 +96,7 @@ struct Config {
     case wifi(Config.WiFiConfig)
     case display(Config.DisplayConfig)
     case lora(Config.LoRaConfig)
+    case bluetooth(Config.BluetoothConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: Config.OneOf_PayloadVariant, rhs: Config.OneOf_PayloadVariant) -> Bool {
@@ -117,6 +126,10 @@ struct Config {
       }()
       case (.lora, .lora): return {
         guard case .lora(let l) = lhs, case .lora(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.bluetooth, .bluetooth): return {
+        guard case .bluetooth(let l) = lhs, case .bluetooth(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -359,7 +372,7 @@ struct Config {
 
   ///
   /// Power Config\
-  /// See [power management](/docs/software/other/power) for additional power management state machine option details.
+  /// See [Power Config](/docs/settings/config/power) for additional power config details.
   struct PowerConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -510,6 +523,15 @@ struct Config {
     // methods supported on all messages.
 
     ///
+    /// Enable WiFi (disables Bluetooth)
+    var enabled: Bool = false
+
+    ///
+    /// If set, this node will try to join the specified wifi network and
+    /// acquire an address via DHCP
+    var mode: Config.WiFiConfig.WiFiMode = .client
+
+    ///
     /// If set, this node will try to join the specified wifi network and
     /// acquire an address via DHCP
     var ssid: String = String()
@@ -518,22 +540,53 @@ struct Config {
     /// If set, will be use to authenticate to the named wifi
     var psk: String = String()
 
-    ///
-    /// If set, the node will operate as an AP (and DHCP server), otherwise it
-    /// will be a station
-    var apMode: Bool = false
-
-    ///
-    /// If set, the node AP will broadcast as a hidden SSID
-    var apHidden: Bool = false
-
     var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    enum WiFiMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// This mode is used to connect to an external WiFi network
+      case client // = 0
+
+      ///
+      /// In this mode the node will operate as an AP (and DHCP server)
+      case accessPoint // = 1
+
+      ///
+      /// If set, the node AP will broadcast as a hidden SSID
+      case accessPointHidden // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .client
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .client
+        case 1: self = .accessPoint
+        case 2: self = .accessPointHidden
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .client: return 0
+        case .accessPoint: return 1
+        case .accessPointHidden: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
 
     init() {}
   }
 
   ///
-  /// TODO: REPLACE
+  /// Display Config
   struct DisplayConfig {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -552,6 +605,11 @@ struct Config {
     /// Automatically toggles to the next page on the screen like a carousel, based the specified interval in seconds.
     /// Potentially useful for devices without user buttons.
     var autoScreenCarouselSecs: UInt32 = 0
+
+    ///
+    /// If this is set, the displayed compass will always point north. if unset, the old behaviour 
+    /// (top of display is heading direction) is used.
+    var compassNorthTop: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -861,6 +919,68 @@ struct Config {
     init() {}
   }
 
+  struct BluetoothConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Enable Bluetooth on the device
+    var enabled: Bool = false
+
+    ///
+    /// Determines the pairing strategy for the device
+    var mode: Config.BluetoothConfig.PairingMode = .randomPin
+
+    ///
+    /// Specified pin for PairingMode.FixedPin
+    var fixedPin: UInt32 = 0
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    enum PairingMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// Device generates a random pin that will be shown on the screen of the device for pairing
+      case randomPin // = 0
+
+      ///
+      /// Device requires a specified fixed pin for pairing
+      case fixedPin // = 1
+
+      ///
+      /// Device requires no pin for pairing
+      case noPin // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .randomPin
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .randomPin
+        case 1: self = .fixedPin
+        case 2: self = .noPin
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .randomPin: return 0
+        case .fixedPin: return 1
+        case .noPin: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    init() {}
+  }
+
   init() {}
 }
 
@@ -916,6 +1036,15 @@ extension Config.PowerConfig.ChargeCurrent: CaseIterable {
   ]
 }
 
+extension Config.WiFiConfig.WiFiMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.WiFiConfig.WiFiMode] = [
+    .client,
+    .accessPoint,
+    .accessPointHidden,
+  ]
+}
+
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
@@ -960,6 +1089,15 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
   ]
 }
 
+extension Config.BluetoothConfig.PairingMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.BluetoothConfig.PairingMode] = [
+    .randomPin,
+    .fixedPin,
+    .noPin,
+  ]
+}
+
 #endif  // swift(>=4.2)
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -972,11 +1110,14 @@ extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.PowerConfig.ChargeCurrent: @unchecked Sendable {}
 extension Config.WiFiConfig: @unchecked Sendable {}
+extension Config.WiFiConfig.WiFiMode: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
 extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
+extension Config.BluetoothConfig: @unchecked Sendable {}
+extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -990,6 +1131,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     4: .same(proto: "wifi"),
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
+    7: .same(proto: "bluetooth"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1076,6 +1218,19 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
           self.payloadVariant = .lora(v)
         }
       }()
+      case 7: try {
+        var v: Config.BluetoothConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .bluetooth(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .bluetooth(v)
+        }
+      }()
       default: break
       }
     }
@@ -1110,6 +1265,10 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     case .lora?: try {
       guard case .lora(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .bluetooth?: try {
+      guard case .bluetooth(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     }()
     case nil: break
     }
@@ -1377,10 +1536,10 @@ extension Config.PowerConfig.ChargeCurrent: SwiftProtobuf._ProtoNameProviding {
 extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = Config.protoMessageName + ".WiFiConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "ssid"),
-    2: .same(proto: "psk"),
-    3: .standard(proto: "ap_mode"),
-    4: .standard(proto: "ap_hidden"),
+    1: .same(proto: "enabled"),
+    2: .same(proto: "mode"),
+    3: .same(proto: "ssid"),
+    4: .same(proto: "psk"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1389,39 +1548,47 @@ extension Config.WiFiConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.ssid) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.psk) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.apMode) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.apHidden) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.ssid) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.psk) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.mode != .client {
+      try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 2)
+    }
     if !self.ssid.isEmpty {
-      try visitor.visitSingularStringField(value: self.ssid, fieldNumber: 1)
+      try visitor.visitSingularStringField(value: self.ssid, fieldNumber: 3)
     }
     if !self.psk.isEmpty {
-      try visitor.visitSingularStringField(value: self.psk, fieldNumber: 2)
-    }
-    if self.apMode != false {
-      try visitor.visitSingularBoolField(value: self.apMode, fieldNumber: 3)
-    }
-    if self.apHidden != false {
-      try visitor.visitSingularBoolField(value: self.apHidden, fieldNumber: 4)
+      try visitor.visitSingularStringField(value: self.psk, fieldNumber: 4)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Config.WiFiConfig, rhs: Config.WiFiConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.mode != rhs.mode {return false}
     if lhs.ssid != rhs.ssid {return false}
     if lhs.psk != rhs.psk {return false}
-    if lhs.apMode != rhs.apMode {return false}
-    if lhs.apHidden != rhs.apHidden {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Config.WiFiConfig.WiFiMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "Client"),
+    1: .same(proto: "AccessPoint"),
+    2: .same(proto: "AccessPointHidden"),
+  ]
 }
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -1430,6 +1597,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     1: .standard(proto: "screen_on_secs"),
     2: .standard(proto: "gps_format"),
     3: .standard(proto: "auto_screen_carousel_secs"),
+    4: .standard(proto: "compass_north_top"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1441,6 +1609,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.screenOnSecs) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.gpsFormat) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.autoScreenCarouselSecs) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.compassNorthTop) }()
       default: break
       }
     }
@@ -1456,6 +1625,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.autoScreenCarouselSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.autoScreenCarouselSecs, fieldNumber: 3)
     }
+    if self.compassNorthTop != false {
+      try visitor.visitSingularBoolField(value: self.compassNorthTop, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1463,6 +1635,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.screenOnSecs != rhs.screenOnSecs {return false}
     if lhs.gpsFormat != rhs.gpsFormat {return false}
     if lhs.autoScreenCarouselSecs != rhs.autoScreenCarouselSecs {return false}
+    if lhs.compassNorthTop != rhs.compassNorthTop {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1592,5 +1765,57 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "MedFast"),
     5: .same(proto: "ShortSlow"),
     6: .same(proto: "ShortFast"),
+  ]
+}
+
+extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = Config.protoMessageName + ".BluetoothConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .same(proto: "mode"),
+    3: .standard(proto: "fixed_pin"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.fixedPin) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.mode != .randomPin {
+      try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 2)
+    }
+    if self.fixedPin != 0 {
+      try visitor.visitSingularUInt32Field(value: self.fixedPin, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Config.BluetoothConfig, rhs: Config.BluetoothConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.mode != rhs.mode {return false}
+    if lhs.fixedPin != rhs.fixedPin {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "RandomPin"),
+    1: .same(proto: "FixedPin"),
+    2: .same(proto: "NoPin"),
   ]
 }

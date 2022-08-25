@@ -70,6 +70,7 @@ struct ShareChannel: View {
 							)
 						Spacer()
 						Text("Channel Name (Long/Slow)").font(.title)
+						Text(String(node!.myInfo!.maxChannels))
 						Spacer()
 					}
 					.frame(width: bounds.size.width, height: bounds.size.height)

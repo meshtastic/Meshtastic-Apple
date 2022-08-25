@@ -35,8 +35,30 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		}
 		
 	} else {
-		// Create Device Telemetry Header
-		csvString = "Battery Level, Voltage, Channel Utilization, Airtime, Timestamp"
+		
+		// Create Environment Telemetry Header
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, Voltage, Current"
+		
+		for dm in telemetry{
+			
+			if dm.metricsType == 0 {
+			
+				csvString += "\n"
+				csvString += String("\(dm.temperature)°")
+				csvString += ", "
+				csvString += String(dm.relativeHumidity)
+				csvString += ", "
+				csvString += String(dm.barometricPressure)
+				csvString += ", "
+				csvString += String(dm.gasResistance)
+				csvString += ", "
+				csvString += String(dm.voltage)
+				csvString += ", "
+				csvString += String(dm.current)
+				csvString += ", "
+				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? "Unknown Age"
+			}
+		}
 	}
 	
 	return csvString

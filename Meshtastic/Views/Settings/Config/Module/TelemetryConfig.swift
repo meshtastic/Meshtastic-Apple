@@ -6,74 +6,6 @@
 //
 import SwiftUI
 
-enum SensorTypes: Int, CaseIterable, Identifiable {
-
-	/// No external telemetry sensor explicitly set
-	case notSet = 0
-
-	/// High accuracy temperature, pressure, humidity
-	case bme280 = 6
-
-	/// High accuracy temperature, pressure, humidity, and air resistance
-	case bme680 = 7
-
-	/// Very high accuracy temperature
-	case mcp9808 = 8
-
-	/// Moderate accuracy temperature and humidity
-	case shtc3 = 9
-
-	/// Moderate accuracy current and voltage
-	case ina260 = 10
-
-	/// Moderate accuracy current and voltage
-	case ina219 = 11
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			
-			case .notSet:
-				return "Not Set"
-			case .bme280:
-				return "BME280 - Temp, pressure & humidity"
-			case .bme680:
-				return "BME680 - Temp, pressure, humidity & air resistance"
-			case .mcp9808:
-				return "MCP9808 - Temperature"
-			case .shtc3:
-				return "SHTC3 - Temperature & humidity"
-			case .ina260:
-				return "INA260 - Current & voltage"
-			case .ina219:
-				return "INA219 - Current & voltage"
-			}
-		}
-	}
-	func protoEnumValue() -> TelemetrySensorType {
-		
-		switch self {
-			
-
-		case .notSet:
-			return TelemetrySensorType.notSet
-		case .bme280:
-			return TelemetrySensorType.bme280
-		case .bme680:
-			return TelemetrySensorType.bme680
-		case .mcp9808:
-			return TelemetrySensorType.mcp9808
-		case .shtc3:
-			return TelemetrySensorType.shtc3
-		case .ina260:
-			return TelemetrySensorType.ina260
-		case .ina219:
-			return TelemetrySensorType.ina219
-		}
-	}
-}
-
 // Default of 0 is off
 enum ErrorRecoveryIntervals: Int, CaseIterable, Identifiable {
 
@@ -188,11 +120,8 @@ struct TelemetryConfig: View {
 	@State var deviceUpdateInterval = 0
 	@State var environmentUpdateInterval = 0
 	@State var environmentMeasurementEnabled = false
-	@State var environmentSensorType = 0
 	@State var environmentScreenEnabled = false
 	@State var environmentDisplayFahrenheit = false
-	@State var environmentRecoveryInterval = 0
-	@State var environmentReadErrorCountThreshold = 0
 	
 	var body: some View {
 		
@@ -222,19 +151,15 @@ struct TelemetryConfig: View {
 				}
 				
 				Section(header: Text("Sensor Options")) {
+					
+					Text("I2C Connected sensors will be detected automatically.  Supported sensors are BMP280, BME280, BME680, MCP9808, INA219 and INA260.")
+						.font(.caption)
 				
 					Toggle(isOn: $environmentMeasurementEnabled) {
 
 						Label("Enabled", systemImage: "chart.xyaxis.line")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Picker("Sensor", selection: $environmentSensorType ) {
-						ForEach(SensorTypes.allCases) { st in
-							Text(st.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
 					
 					Toggle(isOn: $environmentScreenEnabled) {
 
@@ -247,37 +172,6 @@ struct TelemetryConfig: View {
 						Label("Display Fahrenheit", systemImage: "thermometer")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				}
-				
-				Section(header: Text("Errors")) {
-					
-					Picker("Error Count Threshold", selection: $environmentReadErrorCountThreshold) {
-						ForEach(0..<101) {
-							
-							if $0 == 0 {
-								
-								Text("Unset")
-								
-							} else if $0 % 5 == 0 {
-								
-								Text("\($0)")
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Sometimes sensor reads can fail. If this happens, we will retry a configurable number of attempts, each attempt will be delayed by the minimum required refresh rate for that sensor")
-						.font(.caption)
-					
-					Picker("Error Recovery Interval", selection: $environmentRecoveryInterval ) {
-						ForEach(ErrorRecoveryIntervals.allCases) { eri in
-							Text(eri.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Text("Sometimes we can end up with more failures than our error count threshold. In this case, we will stop trying to read from the sensor for a while. Wait this long until trying to read from the sensor again")
-						.font(.caption)
 				}
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
@@ -306,13 +200,10 @@ struct TelemetryConfig: View {
 					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
 					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-					tc.environmentSensorType = SensorTypes(rawValue: environmentSensorType)!.protoEnumValue()
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-					tc.environmentRecoveryInterval = UInt32(environmentRecoveryInterval)
-					tc.environmentReadErrorCountThreshold = UInt32(environmentReadErrorCountThreshold)
 					
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!, wantResponse: true)
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!)
 					
 					if adminMessageId > 0 {
 						
@@ -338,16 +229,11 @@ struct TelemetryConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					
 					self.deviceUpdateInterval = Int(node!.telemetryConfig?.deviceUpdateInterval ?? 0)
 					self.environmentUpdateInterval = Int(node!.telemetryConfig?.environmentUpdateInterval ?? 0)
 					self.environmentMeasurementEnabled = node!.telemetryConfig?.environmentMeasurementEnabled ?? false
-					self.environmentSensorType = Int(node!.telemetryConfig?.environmentSensorType ?? 0)
 					self.environmentScreenEnabled = node!.telemetryConfig?.environmentScreenEnabled ?? false
 					self.environmentDisplayFahrenheit = node!.telemetryConfig?.environmentDisplayFahrenheit ?? false
-					self.environmentRecoveryInterval = Int(node!.telemetryConfig?.environmentRecoveryInterval ?? 0)
-					self.environmentReadErrorCountThreshold = Int(node!.telemetryConfig?.environmentReadErrorCountThreshold ?? 0)
-					
 					self.hasChanges = false
 					self.initialLoad = false
 				}
@@ -373,13 +259,6 @@ struct TelemetryConfig: View {
 					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
 				}
 			}
-			.onChange(of: environmentSensorType) { newEnvSensorType in
-				
-				if node != nil && node!.telemetryConfig != nil {
-				
-					if newEnvSensorType != node!.telemetryConfig!.environmentSensorType { hasChanges = true	}
-				}
-			}
 			.onChange(of: environmentScreenEnabled) { newEnvScreenEnabled in
 				
 				if node!.telemetryConfig != nil {
@@ -392,20 +271,6 @@ struct TelemetryConfig: View {
 				if node != nil && node!.telemetryConfig != nil {
 				
 					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
-				}
-			}
-			.onChange(of: environmentRecoveryInterval) { newEnvRecoveryInterval in
-				
-				if node != nil && node!.telemetryConfig != nil {
-				
-					if newEnvRecoveryInterval != node!.telemetryConfig!.environmentRecoveryInterval { hasChanges = true	}
-				}
-			}
-			.onChange(of: environmentReadErrorCountThreshold) { newEnvReadErrorCountThreshold in
-				
-				if node != nil && node!.telemetryConfig != nil {
-				
-					if newEnvReadErrorCountThreshold != node!.telemetryConfig!.environmentReadErrorCountThreshold { hasChanges = true	}
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())

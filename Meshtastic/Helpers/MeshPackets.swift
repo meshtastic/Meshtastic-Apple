@@ -21,6 +21,10 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 			
 			isDefault = true
 			print("📟 Default Device config")
+			
+		} else {
+			
+			print("📟 Custom Device config")
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -88,6 +92,91 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		}
 	}
 	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+		
+		var isDefault = false
+		
+		if (try! config.bluetooth.jsonString()) == "{}" {
+			
+			isDefault = true
+			print("📶 Default Bluetooth config")
+			if meshlogging { MeshLogger.log("🖥️ Default Bluetooth config \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🖥️ Custom Bluetooth config \(String(nodeNum))") }
+			print("📶 Custom Bluetooth config")
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save Device Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].bluetoothConfig == nil {
+					
+					let newBluetoothConfig = BluetoothConfigEntity(context: context)
+					
+					if isDefault {
+
+						newBluetoothConfig.enabled = true
+						newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
+						newBluetoothConfig.fixedPin = Int32("123456") ?? 123456
+						
+					} else {
+
+						newBluetoothConfig.enabled = config.bluetooth.enabled
+						newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
+						newBluetoothConfig.fixedPin = Int32(config.bluetooth.fixedPin)
+
+					}
+					fetchedNode[0].bluetoothConfig = newBluetoothConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].bluetoothConfig?.enabled = true
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32("123456") ?? 123456
+						
+					} else {
+
+						fetchedNode[0].bluetoothConfig?.enabled = config.bluetooth.enabled
+						fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
+						fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.bluetooth.fixedPin)
+
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated Bluetooth Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+			}
+			
+		} catch {
+			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+		}
+	}
+	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 		
 		var isDefault = false
@@ -95,7 +184,12 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.display.jsonString()) == "{}" {
 			
 			isDefault = true
-			print("🖥️ Default Display config")
+			
+			if meshlogging { MeshLogger.log("🖥️ Default Display config \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🖥️ Custom Display config \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -116,12 +210,14 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						newDisplayConfig.screenOnSeconds = 0
 						newDisplayConfig.screenCarouselInterval = 0
 						newDisplayConfig.gpsFormat = 0
+						newDisplayConfig.compassNorthTop = false
 						
 					} else {
 
 						newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
 						newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
 						newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+						newDisplayConfig.compassNorthTop = config.display.compassNorthTop
 					}
 					fetchedNode[0].displayConfig = newDisplayConfig
 					
@@ -132,12 +228,14 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						fetchedNode[0].displayConfig?.screenOnSeconds = 0
 						fetchedNode[0].displayConfig?.screenCarouselInterval = 0
 						fetchedNode[0].displayConfig?.gpsFormat = 0
+						fetchedNode[0].displayConfig?.compassNorthTop = false
 						
 					} else {
 
 						fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
 						fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
 						fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
+						fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
 					}
 				}
 				
@@ -153,10 +251,15 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data DisplayConfigEntity failed: \(nsError)")
 		}
 	}
 		
@@ -243,10 +346,16 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
 			}
+			
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -257,6 +366,11 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		if (try! config.position.jsonString()) == "{}" {
 			
 			isDefault = true
+			if meshlogging { MeshLogger.log("🗺️ Default Position config received \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("🗺️ Custom Position config received \(String(nodeNum))") }
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -328,10 +442,97 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
+		}
+	}
+	
+	if config.payloadVariant == Config.OneOf_PayloadVariant.wifi(config.wifi) {
+		
+		var isDefault = false
+		
+		if (try! config.wifi.jsonString()) == "{}" {
+			
+			isDefault = true
+			if meshlogging { MeshLogger.log("📶 Default WiFi config received \(String(nodeNum))") }
+			
+		} else {
+			
+			if meshlogging { MeshLogger.log("📶 Custom WiFi config received \(String(nodeNum))") }
+		}
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			// Found a node, save WiFi Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].wiFiConfig == nil {
+					
+					let newWiFiConfig = WiFiConfigEntity(context: context)
+					
+					if isDefault {
+						
+						newWiFiConfig.ssid = ""
+						newWiFiConfig.password = ""
+						newWiFiConfig.mode = 0
+
+					} else {
+						
+						newWiFiConfig.ssid = config.wifi.ssid
+						newWiFiConfig.password = config.wifi.psk
+						newWiFiConfig.mode = Int32(config.wifi.mode.rawValue)
+					}
+					newWiFiConfig.num = fetchedNode[0].num
+					fetchedNode[0].wiFiConfig = newWiFiConfig
+					
+				} else {
+					
+					if isDefault {
+						
+						fetchedNode[0].wiFiConfig?.ssid = ""
+						fetchedNode[0].wiFiConfig?.password = ""
+						fetchedNode[0].wiFiConfig?.mode = 0
+						
+					} else {
+						
+						fetchedNode[0].wiFiConfig?.ssid = config.wifi.ssid
+						fetchedNode[0].wiFiConfig?.password = config.wifi.psk
+						fetchedNode[0].wiFiConfig?.mode = Int32(config.wifi.mode.rawValue)
+					}
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated WiFi Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data WiFiConfigEntity: \(nsError)")
+				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save WiFi Config")
+			}
+			
+		} catch {
+			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data WiFiConfigEntity failed: \(nsError)")
 		}
 	}
 }
@@ -347,6 +548,9 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 			
 			isDefault = true
 			print("🥫 Default Canned Message Module config")
+		} else {
+			
+			print("🥫 Custom Canned Message Module config")
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -388,7 +592,8 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
-
+					
+					newCannedMessageConfig.num = nodeNum
 					fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
 					
 				} else {
@@ -419,13 +624,14 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
+					fetchedNode[0].cannedMessageConfig?.num = nodeNum
 				}
 				
 				do {
 
 					try context.save()
 					if meshlogging { MeshLogger.log("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))") }
-					print(try config.cannedMessage.jsonString())
+					
 
 				} catch {
 
@@ -434,10 +640,15 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -449,6 +660,10 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 			
 			isDefault = true
 			print("🚨 Default External Notifiation Module config")
+			
+		} else {
+			
+			print("🚨 Custom External Notifiation Module config")
 		}
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -485,6 +700,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
 
+					newExternalNotificationConfig.num = nodeNum
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
@@ -507,6 +723,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
 						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
+					fetchedNode[0].externalNotificationConfig?.num = nodeNum
 				}
 				
 				do {
@@ -521,10 +738,15 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -563,7 +785,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newRangeTestConfig.enabled = config.rangeTest.enabled
 						newRangeTestConfig.save = config.rangeTest.save
 					}
-					
+					newRangeTestConfig.num = nodeNum
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
 					
 				} else {
@@ -594,10 +816,15 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
 		}
 	}
 
@@ -688,10 +915,15 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data SerialConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data SerialConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -723,25 +955,17 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newTelemetryConfig.deviceUpdateInterval = 0
 						newTelemetryConfig.environmentUpdateInterval = 0
 						newTelemetryConfig.environmentMeasurementEnabled = false
-						newTelemetryConfig.environmentSensorType = 0
 						newTelemetryConfig.environmentScreenEnabled = false
 						newTelemetryConfig.environmentDisplayFahrenheit = false
-						newTelemetryConfig.environmentRecoveryInterval = 0
-						newTelemetryConfig.environmentReadErrorCountThreshold = 0
 						
 					} else {
 						
 						newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
 						newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
 						newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						newTelemetryConfig.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
 						newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
 						newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-						newTelemetryConfig.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
-						newTelemetryConfig.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
-				
 					}
-					
 					fetchedNode[0].telemetryConfig = newTelemetryConfig
 					
 				} else {
@@ -751,23 +975,16 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = 0
 						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = 0
 						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = false
-						fetchedNode[0].telemetryConfig?.environmentSensorType = 0
 						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = false
 						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = false
-						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = 0
-						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = 0
-												
 						
 					} else {
 						
 						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
 						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
 						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						fetchedNode[0].telemetryConfig?.environmentSensorType = Int32(config.telemetry.environmentSensorType.rawValue)
 						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
 						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-						fetchedNode[0].telemetryConfig?.environmentRecoveryInterval = Int32(config.telemetry.environmentRecoveryInterval)
-						fetchedNode[0].telemetryConfig?.environmentReadErrorCountThreshold = Int32(config.telemetry.environmentReadErrorCountThreshold)
 					}
 				}
 				
@@ -783,10 +1000,15 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
 				}
+			} else {
+				
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
 			}
 			
 		} catch {
 			
+			let nsError = error as NSError
+			print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
 		}
 	}
 }
@@ -1138,6 +1360,7 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 		print("channel settings:", channel.settings)
 	}
 	
+
 	if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! packet.jsonString())") }
 	
 	//PowerConfig
@@ -1175,7 +1398,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 				
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 					
@@ -1195,6 +1418,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 					}
 				}
+				
 			} else {
 				
 				print("💥 Empty POSITION_APP Packet")
@@ -1245,43 +1469,47 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 		
 		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
 						
-		if routingMessage.errorReason == Routing.Error.none {
 			
-			let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-			fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
+		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
-			do {
+		do {
 
-				let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
+			
+			if fetchedMessage?.count ?? 0 > 0 {
 				
-				if fetchedMessage?.count ?? 0 > 0 {
+				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
+				
+				if routingMessage.errorReason == Routing.Error.none {
 					
 					fetchedMessage![0].receivedACK = true
-					fetchedMessage![0].ackSNR = packet.rxSnr
-					fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-					fetchedMessage![0].objectWillChange.send()
-					fetchedMessage![0].fromUser?.objectWillChange.send()
-					fetchedMessage![0].toUser?.objectWillChange.send()
-					
-				} else {
-					
-					return
 				}
+				fetchedMessage![0].ackSNR = packet.rxSnr
+				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				fetchedMessage![0].objectWillChange.send()
+				fetchedMessage![0].fromUser?.objectWillChange.send()
+				fetchedMessage![0].toUser?.objectWillChange.send()
 				
-				try context.save()
-
-				  if meshLogging {
-					  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
-				  }
+			} else {
 				
-			} catch {
-				
-				context.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
+				return
 			}
+			
+			try context.save()
+
+			  if meshLogging {
+				  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
+			  }
+			
+		} catch {
+			
+			context.rollback()
+
+			let nsError = error as NSError
+			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
+		
 	}
 }
 	
@@ -1355,7 +1583,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		if meshLogging { MeshLogger.log("💬 Message received for text message app \(messageText)") }
+		if meshLogging { MeshLogger.log("💬 Message received for text message app") }
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
@@ -1406,34 +1634,34 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 					
 					messageSaved = true
 					
+					if messageSaved { //&& (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
+					
+						
+						if newMessage.fromUser != nil {
+							
+							// Create an iOS Notification for the received message and schedule it immediately
+							let manager = LocalNotificationManager()
+
+							manager.notifications = [
+								Notification(
+									id: ("notification.id.\(newMessage.messageId)"),
+									title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+									content: messageText)
+							]
+						
+							manager.schedule()
+							
+							if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
+						}
+					}
+					
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
 					print("💥 Failed to save new MessageEntity \(nsError)")
-				}
-				do {
-					
-					if messageSaved && (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
-					
-					// Create an iOS Notification for the received message and schedule it immediately
-					let manager = LocalNotificationManager()
-
-					manager.notifications = [
-						Notification(
-							id: ("notification.id.\(newMessage.messageId)"),
-							title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-							subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-							content: messageText)
-					]
-					
-						manager.schedule()
-						if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown") \(messageText)") }
-					}
-					
-				} catch {
-				
 				}
 			
 			} catch {

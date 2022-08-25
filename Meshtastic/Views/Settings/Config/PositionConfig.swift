@@ -7,71 +7,6 @@
 
 import SwiftUI
 
-enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
-
-	case thirtySeconds = 0
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-	case maxInt32 = 2147483647
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			case .thirtyMinutes:
-				return "Thirty Minutes"
-			case .oneHour:
-				return "One Hour"
-			case .maxInt32:
-				return "On Boot Only"
-			}
-		}
-	}
-}
-
-enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
-
-	case thirtySeconds = 0
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			}
-		}
-	}
-}
-
 enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
 
 	case thirtySeconds = 30
@@ -323,7 +258,7 @@ struct PositionConfig: View {
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 					
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0{
 						
@@ -368,6 +303,13 @@ struct PositionConfig: View {
 			if node != nil && node!.positionConfig != nil {
 				
 				if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
+			
+			if node != nil && node!.positionConfig != nil {
+				
+				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
 			}
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in

@@ -22,7 +22,7 @@ struct LocationHistory: View {
 		
 			List {
 				
-				ForEach(node.positions!.array as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+				ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 						
 					VStack {
 						
@@ -88,12 +88,9 @@ struct LocationHistory: View {
 									.font(.subheadline)
 									.foregroundColor(.accentColor)
 									.symbolRenderingMode(.hierarchical)
-								Text("Time:")
-									.font(.caption)
 								DateTimeText(dateTime: mappin.time)
 									.foregroundColor(.gray)
 									.font(.caption)
-
 							}
 						}
 					}
