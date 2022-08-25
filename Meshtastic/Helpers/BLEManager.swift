@@ -131,7 +131,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		self.timeoutTimerCount += 1
 
-		if timeoutTimerCount == 5 {
+		if timeoutTimerCount == 10 {
 
 			if connectedPeripheral != nil {
 
@@ -182,7 +182,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
 		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
-		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
+		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(self.timeoutTimer!, forMode: .common)
     }
 
@@ -273,7 +273,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 				// Happens when device is manually reset / powered off
 				// We will try and re-connect to this device
-				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within 10 seconds."
+				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within one minute."
 				if peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")") }
 					self.connectTo(peripheral: peripheral)

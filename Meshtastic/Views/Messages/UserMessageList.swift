@@ -321,9 +321,9 @@ struct UserMessageList: View {
 											Spacer(minLength:50)
 										}
 									}
-									.id(message.messageId)
 									.padding([.leading, .trailing])
 									.frame(maxWidth: .infinity)
+									.id(message.messageId)
 									.alert(isPresented: $showDeleteMessageAlert) {
 										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
 										primaryButton: .destructive(Text("Delete")) {
