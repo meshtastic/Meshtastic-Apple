@@ -213,37 +213,45 @@ struct UserMessageList: View {
 														
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 
-														Text("Sent \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
+														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 													}
 													
-								
-													if message.receivedACK {
+													if currentUser && message.receivedACK {
 														
 														VStack {
 																	
 															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
 														}
-													}
-													if message.ackError > 0 {
-
+														
+													} else if currentUser && message.ackError == 0 {
+														
+														// Empty Error
+														Text("Waiting. . .")
+														
+													} else if currentUser && message.ackError > 0 {
+														
 														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
 													}
-													VStack {
+													
+													if currentUser {
 														
-														let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-														
-														let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-														if ackDate >= sixMonthsAgo! {
+														VStack {
 															
-															Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
 															
-														} else {
-															
-															Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+															if ackDate >= sixMonthsAgo! {
+																
+																Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+																
+															} else {
+																
+																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+															}
 														}
 													}
-
+													
 													if message.ackSNR != 0 {
 														VStack {
 															
