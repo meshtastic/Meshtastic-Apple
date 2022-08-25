@@ -462,9 +462,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 				
 			} catch {
-				
 				print(characteristic.value!)
 			}
+
 			switch decodedInfo.packet.decoded.portnum {
 				
 				// Handle Any local only packets we get over BLE
@@ -1278,6 +1278,55 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		return 0
+	}
+	
+	public func getChannel(channelIndex: UInt32, wantResponse: Bool) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getChannelRequest = channelIndex
+		
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = wantResponse
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
+				
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				return true
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
+		}
+		
+		return false
 	}
 	
 	public func getCannedMessageModuleMessages(destNum: Int64,  wantResponse: Bool) -> Bool {

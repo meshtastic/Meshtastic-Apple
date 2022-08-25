@@ -1355,6 +1355,9 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 		print(try! powerConfig.jsonUTF8Data())
 		print(powerConfig.meshSdsTimeoutSecs)
 		
+	} else if let channel = try? Channel(serializedData: packet.decoded.payload) {
+		print(try! channel.jsonUTF8Data())
+		print("channel settings:", channel.settings)
 	}
 	
 
@@ -1429,6 +1432,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 }
 
 func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		

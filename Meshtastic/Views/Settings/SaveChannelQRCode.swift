@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SaveChannelQRCode: View {
 	
-	var channelHash: URL?
+	var channelHash: String
 
 	var body: some View {
 		
@@ -22,7 +22,7 @@ struct SaveChannelQRCode: View {
 				.font(.callout)
 				.padding()
 
-			Text(String(channelHash?.path ?? "URL did not pass through properly"))
+			Text(channelHash)
 				.font(.title2)
 				.padding()
 			
