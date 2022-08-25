@@ -296,12 +296,17 @@ struct UserMessageList: View {
 											
 											HStack {
 
-												if message.receivedACK {
-
+												if currentUser && message.receivedACK {
+														
+													// Ack Received
 													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
-												}
-												
-												if message.ackError > 0 {
+													
+												} else if currentUser && message.ackError == 0 {
+													
+													// Empty Error
+													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
+													
+												} else if currentUser && message.ackError > 0 {
 													
 													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
