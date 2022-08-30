@@ -409,7 +409,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
     }
 	
-	@objc func sendWantConfig() {
+	func sendWantConfig() {
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
 		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
