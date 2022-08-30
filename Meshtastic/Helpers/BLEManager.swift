@@ -324,7 +324,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
                 //peripheral.discoverCharacteristics(nil, for: service)
                 peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-				
+
             }  else if (service.uuid == DFUSERVICE_UUID) {
 				
 				print("✅ Meshtastic DFU service discovered OK")
@@ -357,12 +357,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
 				TORADIO_characteristic = characteristic
-				var toRadio: ToRadio = ToRadio()
-				configNonce += 1
-				toRadio.wantConfigID = configNonce
-
-				let binaryData: Data = try! toRadio.serializedData()
-				peripheral.writeValue(binaryData, for: characteristic, type: .withResponse)
 
 			case FROMRADIO_UUID:
 				
@@ -410,7 +404,25 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				break
 			}
 		}
+		if (![FROMNUM_characteristic, FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
+			sendWantConfig()
+		}
     }
+	
+	@objc func sendWantConfig() {
+		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
+
+		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
+		//BLE Characteristics discovered, issue wantConfig
+		var toRadio: ToRadio = ToRadio()
+		configNonce += 1
+		toRadio.wantConfigID = configNonce
+		let binaryData: Data = try! toRadio.serializedData()
+		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+		
+		// Either Read the config complete value or from num notify value
+		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 
