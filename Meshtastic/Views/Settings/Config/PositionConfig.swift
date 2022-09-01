@@ -41,6 +41,22 @@ enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
 	}
 }
 
+struct PositionFlags: OptionSet
+{
+	let rawValue: Int
+	
+	static let posAltitude = PositionFlags(rawValue: 1)
+	static let posAltMsl = PositionFlags(rawValue: 2)
+	static let posGeoSep = PositionFlags(rawValue: 4)
+	static let posDop = PositionFlags(rawValue: 8)
+	static let posHvdop = PositionFlags(rawValue: 16)
+	static let posSatsinview = PositionFlags(rawValue: 32)
+	static let posSeqNos = PositionFlags(rawValue: 64)
+	static let posTimestamp = PositionFlags(rawValue: 128)
+	static let posSpeed = PositionFlags(rawValue: 256)
+	static let posHeading = PositionFlags(rawValue: 512)
+}
+
 struct PositionConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -58,10 +74,11 @@ struct PositionConfig: View {
 	@State var gpsUpdateInterval = 0
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
+	@State var positionFlags = 3
 	
 	/// Position Flags
 	/// Altitude value - 1
-	@State var includePosAltitude = true
+	@State var includePosAltitude = false
 	/// Altitude value is MSL - 2
 	@State var includePosAltMsl = false
 	/// Include geoidal separation - 4
@@ -75,7 +92,7 @@ struct PositionConfig: View {
 	/// Include a sequence number incremented per packet - 64
 	@State var includePosSeqNos = false
 	/// Include positional timestamp (from GPS solution) - 128
-	@State var includePosTimestamp = true
+	@State var includePosTimestamp = false
 	/// Include positional heading - 256
 	/// Intended for use with vehicle not walking speeds
 	/// walking speeds are likely to be error prone like the compass
@@ -158,7 +175,7 @@ struct PositionConfig: View {
 					Text("We should send our position this often (but only if it has changed significantly)")
 						.font(.caption)
 				}
-				Section(header: Text("Position Flags - Non Functional")) {
+				Section(header: Text("Position Flags")) {
 					
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 						.font(.caption)
@@ -200,7 +217,7 @@ struct PositionConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Section(header: Text("Advanced Position Flags - Non Functional")) {
+				Section(header: Text("Advanced Position Flags")) {
 					
 					Toggle(isOn: $includePosAltMsl) {
 
@@ -258,6 +275,21 @@ struct PositionConfig: View {
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 					
+					var pf : PositionFlags = []
+					
+					if includePosAltitude { pf.insert(.posAltitude) }
+					if includePosAltMsl { pf.insert(.posAltMsl) }
+					if includePosGeoSep { pf.insert(.posGeoSep) }
+					if includePosDop { pf.insert(.posDop) }
+					if includePosHvdop { pf.insert(.posHvdop) }
+					if includePosSatsinview { pf.insert(.posSatsinview) }
+					if includePosSeqNos { pf.insert(.posSeqNos) }
+					if includePosTimestamp { pf.insert(.posTimestamp) }
+					if includePosSpeed { pf.insert(.posSpeed) }
+					if includePosHeading { pf.insert(.posHeading) }
+					
+					pc.positionFlags = UInt32(pf.rawValue)
+
 					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0{
@@ -290,12 +322,24 @@ struct PositionConfig: View {
 				self.gpsUpdateInterval = Int(node!.positionConfig?.gpsUpdateInterval ?? 0)
 				self.gpsAttemptTime = Int(node!.positionConfig?.gpsAttemptTime ?? 0)
 				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 0)
+				self.positionFlags = Int(node!.positionConfig?.positionFlags ?? 3)
+				
+				let pf = PositionFlags(rawValue: self.positionFlags)
+				
+				if pf.contains(.posAltitude) { self.includePosAltitude = true } else { self.includePosAltitude = false }
+				if pf.contains(.posAltMsl) { self.includePosAltMsl = true } else { self.includePosAltMsl = false }
+				if pf.contains(.posGeoSep) { self.includePosGeoSep = true } else { self.includePosGeoSep = false }
+				if pf.contains(.posDop) { self.includePosDop = true  } else { self.includePosDop = false }
+				if pf.contains(.posHvdop) { self.includePosHvdop = true } else { self.includePosHvdop = false }
+				if pf.contains(.posSatsinview) { self.includePosSatsinview = true } else { self.includePosSatsinview = false }
+				if pf.contains(.posSeqNos) { self.includePosSeqNos = true } else { self.includePosSeqNos = false }
+				if pf.contains(.posTimestamp) { self.includePosTimestamp = true } else { self.includePosTimestamp = false }
+				if pf.contains(.posSpeed) { self.includePosSpeed = true } else { self.includePosSpeed = false }
+				if pf.contains(.posHeading) { self.includePosHeading = true } else { self.includePosHeading = false }
+				
 				self.hasChanges = false
 				self.initialLoad = false
-				
-				self.includePosAltitude = true
-				self.includePosTimestamp = true
-				self.includePosSatsinview = true
+			
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPosition in
