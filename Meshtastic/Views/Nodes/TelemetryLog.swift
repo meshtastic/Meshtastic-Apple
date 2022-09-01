@@ -87,7 +87,7 @@ struct TelemetryLog: View {
 									.font(.title)
 								
 								
-								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°C" : "°F"
+								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
 								
 								if  tel.temperature > 0 {
 									

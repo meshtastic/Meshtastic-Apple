@@ -107,20 +107,23 @@ struct NodeList: View {
 										
 										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
 										
-										let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
-										
-										let metersAway = nodeCoord.distance(from: myCoord)
-										
-										Image(systemName: "lines.measurement.horizontal").font(.title3)
-											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-										
-										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+										if lastPostion.coordinate != nil {
+									
+											let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
 											
-											DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
+											let metersAway = nodeCoord.distance(from: myCoord)
 											
-										} else {
+											Image(systemName: "lines.measurement.horizontal").font(.title3)
+												.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
 											
-											DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
+											if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+												
+												DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
+												
+											} else {
+												
+												DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
+											}
 										}
 									}
 								}
