@@ -23,7 +23,7 @@ struct NodeDetail: View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
-		HStack {
+		ZStack {
 
 			GeometryReader { bounds in
 
@@ -64,10 +64,10 @@ struct NodeDetail: View {
 									)
 								 }
 							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.75)
 							}
 						}
-						//Text("\(mostRecent.satsInView)")
+						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
 					} else {
 						
 						Image(node.user?.hwModel ?? "UNSET")
@@ -432,6 +432,7 @@ struct NodeDetail: View {
 						.frame(minHeight:170)
 						.padding(0)
 					}
+					.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
