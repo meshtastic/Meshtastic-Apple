@@ -87,15 +87,9 @@ struct NodeList: View {
 
 									Image(systemName: "clock.badge.checkmark.fill").font(.title3)
 										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-									
-									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 										
 										LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
-										
-									} else {
-										
-										LastHeardText(lastHeard: node.lastHeard).font(.title3).foregroundColor(.gray)
-									}
+									
 								}
 								
 								if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {

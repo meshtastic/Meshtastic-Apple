@@ -120,7 +120,7 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.navigationTitle("Display Config")
+		.navigationTitle("Bluetooth (BLE) Config")
 		.navigationBarItems(trailing:
 
 			ZStack {
