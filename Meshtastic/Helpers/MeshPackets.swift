@@ -394,6 +394,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						newPositionConfig.gpsUpdateInterval = 0
 						newPositionConfig.gpsAttemptTime = 0
 						newPositionConfig.positionBroadcastSeconds = 0
+						newPositionConfig.positionFlags = 3
 
 					} else {
 						
@@ -403,6 +404,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
 						newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
 						newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+						newPositionConfig.positionFlags = Int32(config.position.positionFlags)
 					}
 					
 					fetchedNode[0].positionConfig = newPositionConfig
@@ -417,6 +419,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						fetchedNode[0].positionConfig?.gpsUpdateInterval = 0
 						fetchedNode[0].positionConfig?.gpsAttemptTime = 0
 						fetchedNode[0].positionConfig?.positionBroadcastSeconds = 0
+						fetchedNode[0].positionConfig?.positionFlags = 3
 						
 					} else {
 						
@@ -426,6 +429,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
 						fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
 						fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+						fetchedNode[0].positionConfig?.positionFlags = Int32(config.position.positionFlags)
 				
 					}
 				}
@@ -1138,6 +1142,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 				position.latitudeI = nodeInfo.position.latitudeI
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
+				position.satsInView = Int32(nodeInfo.position.satsInView)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				
 				var newPostions = [PositionEntity]()
@@ -1219,6 +1224,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 				position.latitudeI = nodeInfo.position.latitudeI
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
+				position.satsInView = Int32(nodeInfo.position.satsInView)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 
 				let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
@@ -1391,6 +1397,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 					position.latitudeI = positionMessage.latitudeI
 					position.longitudeI = positionMessage.longitudeI
 					position.altitude = positionMessage.altitude
+					position.satsInView = Int32(positionMessage.satsInView)
 					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 
 					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet

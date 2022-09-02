@@ -13,7 +13,7 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	
 	@State var initialLoad: Bool = true
-	
+	@State var satsInView = 0
 	@State private var isPresentingShutdownConfirm: Bool = false
 	@State private var isPresentingRebootConfirm: Bool = false
 
@@ -67,6 +67,7 @@ struct NodeDetail: View {
 								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
 							}
 						}
+						//Text("\(mostRecent.satsInView)")
 					} else {
 						
 						Image(node.user?.hwModel ?? "UNSET")

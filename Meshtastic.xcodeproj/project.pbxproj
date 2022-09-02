@@ -143,6 +143,7 @@
 		DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
+		DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 9.xcdatamodel"; sourceTree = "<group>"; };
 		DD619373285CC7D600E59241 /* MeshtasticDataModel v 4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 4.xcdatamodel"; sourceTree = "<group>"; };
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
@@ -1140,6 +1141,7 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */,
 				DD4033C328B405A60096A444 /* MeshtasticDataModel v 8.xcdatamodel */,
 				DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */,
 				DD8ED9C9289EA77E00B3B0AB /* MeshtasticDataModel v 6.xcdatamodel */,
@@ -1149,7 +1151,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD4033C328B405A60096A444 /* MeshtasticDataModel v 8.xcdatamodel */;
+			currentVersion = DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
