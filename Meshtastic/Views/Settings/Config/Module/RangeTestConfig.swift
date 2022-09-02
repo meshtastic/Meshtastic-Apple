@@ -10,11 +10,14 @@ import SwiftUI
 enum SenderIntervals: Int, CaseIterable, Identifiable {
 
 	case off = 0
+	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
+	case thirtyMinutes = 1800
+
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -22,6 +25,8 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 			switch self {
 			case .off:
 				return "Off"
+			case .fifteenSeconds:
+				return "Fifteen Seconds"
 			case .thirtySeconds:
 				return "Thirty Seconds"
 			case .oneMinute:
@@ -32,6 +37,8 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 				return "Ten Minutes"
 			case .fifteenMinutes:
 				return "Fifteen Minutes"
+			case .thirtyMinutes:
+				return "Thirty Minutes"
 			}
 		}
 	}
