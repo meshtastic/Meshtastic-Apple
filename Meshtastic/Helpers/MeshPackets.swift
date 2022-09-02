@@ -1359,7 +1359,6 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	} else if let powerConfig = try? Config.PowerConfig(serializedData: packet.decoded.payload) {
 		
 		print(try! powerConfig.jsonUTF8Data())
-		print(powerConfig.meshSdsTimeoutSecs)
 		
 	} else if let channel = try? Channel(serializedData: packet.decoded.payload) {
 		print(try! channel.jsonUTF8Data())
@@ -1368,13 +1367,7 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	
 
 	if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! packet.jsonString())") }
-	
-	//PowerConfig
-	//WiFiConfig
-	//if let loraConfig = try? MeshtasticApple.Config.LoRaConfig(serializedData: packet.serializedData) {
-		
-	//	print(loraConfig)
-	//}
+
 }
 
 func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {

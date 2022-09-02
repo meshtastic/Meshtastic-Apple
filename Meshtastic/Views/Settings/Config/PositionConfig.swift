@@ -7,40 +7,6 @@
 
 import SwiftUI
 
-enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
-
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 0
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			case .thirtyMinutes:
-				return "Thirty Minutes"
-			case .oneHour:
-				return "One Hour"
-			}
-		}
-	}
-}
-
 struct PositionFlags: OptionSet
 {
 	let rawValue: Int
@@ -187,6 +153,12 @@ struct PositionConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
+					Toggle(isOn: $includePosAltMsl) {
+
+						Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $includePosSatsinview) {
 
 						Label("Number of satellites", systemImage: "skew")
@@ -218,12 +190,6 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Advanced Position Flags")) {
-					
-					Toggle(isOn: $includePosAltMsl) {
-
-						Text("Altitude is MSL")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includePosGeoSep) {
 
@@ -369,6 +335,10 @@ struct PositionConfig: View {
 			
 				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
 			}
+		}
+		.onChange(of: includePosAltitude || includePosAltMsl || includePosGeoSep || includePosDop || includePosHvdop || includePosSatsinview || includePosSeqNos || includePosTimestamp || includePosSpeed || includePosHeading) { newFlags in
+			
+			hasChanges = true
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
