@@ -17,6 +17,9 @@ enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
 	case fifteenMinutes = 0
 	case thirtyMinutes = 1800
 	case oneHour = 3600
+	case sixHours = 21600
+	case twelveHours = 43200
+	case twentyFourHours = 86400
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -39,6 +42,12 @@ enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
 				return "Thirty Minutes"
 			case .oneHour:
 				return "One Hour"
+			case .sixHours:
+				return "Six Hours"
+			case .twelveHours:
+				return "Twelve Hours"
+			case .twentyFourHours:
+				return "Twenty Four Hours"
 			}
 		}
 	}
@@ -105,13 +114,15 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600
+	case sixHours = 21600
+	case twelveHours = 43200
+	case twentyFourHours = 86400
 	case maxInt32 = 2147483647
 
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-				
 				
 			case .fiveSeconds:
 				return "Five Seconds"
@@ -133,6 +144,12 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 				return "Thirty Minutes"
 			case .oneHour:
 				return "One Hour"
+			case .sixHours:
+				return "Six Hours"
+			case .twelveHours:
+				return "Twelve Hours"
+			case .twentyFourHours:
+				return "Twenty Four Hours"
 			case .maxInt32:
 				return "On Boot Only"
 			}
@@ -142,6 +159,8 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 
 enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 
+	case fiveSeconds = 5
+	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 0
 	case oneMinute = 60
@@ -154,6 +173,10 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 
+			case .fiveSeconds:
+				return "Five Seconds"
+			case .tenSeconds:
+				return "Ten Seconds"
 			case .fifteenSeconds:
 				return "Fifteen Seconds"
 			case .thirtySeconds:
