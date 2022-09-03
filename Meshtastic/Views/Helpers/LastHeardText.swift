@@ -13,7 +13,7 @@ struct LastHeardText: View {
 	var body: some View {
 		if (lastHeard != nil && lastHeard! >= sixMonthsAgo!){
 			
-			Text("Last Heard: \(lastHeard!, style: .relative) ago")
+			Text("Heard: \(lastHeard!, style: .relative) ago")
 			
 		} else {
 			
