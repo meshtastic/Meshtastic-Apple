@@ -432,7 +432,7 @@ struct NodeDetail: View {
 						.frame(minHeight:170)
 						.padding(0)
 					}
-					.offset( y:-40)
+					.offset( y: (node.myInfo!.hasGps ? 0 : -40))
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 			}

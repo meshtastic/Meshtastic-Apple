@@ -65,7 +65,7 @@ struct NodeList: View {
 										Text(node.user?.longName ?? "Unknown").font(.title2).offset(x: -15)
 									}
 								}
-								.padding(.bottom, 10)
+								.padding(.bottom, 5)
 
 								if connected {
 									
@@ -81,20 +81,10 @@ struct NodeList: View {
 											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
 										}
 									}
+									.padding(.bottom, 2)
 								}
-								Spacer()
-								HStack(alignment: .bottom) {
-
-									Image(systemName: "clock.badge.checkmark.fill").font(.title3)
-										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-										
-										LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
-									
-								}
-								
 								if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
 								
-									Spacer()
 									HStack(alignment: .bottom) {
 									
 										let lastPostion = node.positions!.reversed()[0] as! PositionEntity
@@ -117,6 +107,15 @@ struct NodeList: View {
 											DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
 										}
 									}
+									.padding(.bottom, 2)
+									
+								}
+								HStack(alignment: .bottom) {
+
+									Image(systemName: "clock.badge.checkmark.fill").font(.headline)
+										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+				
+									LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
 								}
 							}
 							.padding([.leading, .top, .bottom])
