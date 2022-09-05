@@ -68,20 +68,19 @@ struct ShareChannel: View {
 								maxHeight: smallest * 0.8,
 								alignment: .center
 							)
-						Spacer()
+						
+						if node?.loRaConfig != nil {
+							
+							HStack {
+								
+								let preset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))
+								Text("Modem Preset \(preset!.description)").font(.title3)
+							}
+						}
 						HStack {
 							
-							let preset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))
-							
-							Text("Modem Preset \(preset!.description)").font(.title)
+							Text("Number of Channels: \(node!.myInfo!.maxChannels)").font(.title2)
 						}
-						Spacer()
-						HStack {
-							
-							Text("Number of Channels").font(.title)
-							Text(String(node!.myInfo!.maxChannels)).font(.title)
-						}
-						Spacer()
 					}
 					.frame(width: bounds.size.width, height: bounds.size.height)
 				}
