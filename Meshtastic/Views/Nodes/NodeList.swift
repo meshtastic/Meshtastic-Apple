@@ -123,6 +123,7 @@ struct NodeList: View {
 							}
 							.padding([.leading, .top, .bottom])
 						}
+						.isDetailLink(false)
 					}
                 }
              }

@@ -128,7 +128,7 @@ struct CannedMessagesConfig: View {
 	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
 	
-	@State var messagesPart1 = ""
+	@State var messages = ""
 	
 	var body: some View {
 		
@@ -160,10 +160,34 @@ struct CannedMessagesConfig: View {
 					.padding(.bottom, 10)
 					
 				}
-				Section(header: Text("Messages")) {
-					
-					TextEditor(text: $messagesPart1)
+				
+				HStack {
+					Label("Messages", systemImage: "message.fill")
+					TextField("Messages seperate with |", text: $messages)
+						.foregroundColor(.gray)
+						.autocapitalization(.none)
+						.disableAutocorrection(true)
+						.onChange(of: messages, perform: { value in
+
+							let totalBytes = messages.utf8.count
+							
+							// Only mess with the value if it is too big
+							if totalBytes > 198 {
+
+								let firstNBytes = Data(messages.utf8.prefix(198))
+						
+								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+									
+									// Set the shortName back to the last place where it was the right size
+									messages = maxBytesString
+								}
+							}
+							hasMessagesChanges = true
+						})
+						.foregroundColor(.gray)
 				}
+				.keyboardType(.default)
+				
 				Section(header: Text("Control Type")) {
 					
 					
@@ -331,7 +355,7 @@ struct CannedMessagesConfig: View {
 					
 					if hasMessagesChanges {
 						
-						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messagesPart1, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
 							
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -463,13 +487,6 @@ struct CannedMessagesConfig: View {
 				if node != nil && node!.cannedMessageConfig != nil {
 					
 					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
-				}
-			}
-			.onChange(of: messagesPart1) { newMessagesChanges in
-				
-				if node != nil && node!.cannedMessageConfig != nil {
-					
-					hasMessagesChanges = true
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())

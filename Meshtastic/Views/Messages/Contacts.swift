@@ -23,6 +23,11 @@ struct Contacts: View {
     var body: some View {
 
 		NavigationView {
+			
+			// Display Contact for Primary Channel
+			// Display Contacts for DM's on the Primary Channel
+			// Display Contacts for the rest of the non admin channels
+			
 
 			List(users) { (user: UserEntity) in
 				

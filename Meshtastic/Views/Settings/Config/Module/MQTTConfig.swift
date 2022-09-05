@@ -1,13 +1,12 @@
 //
-//  WiFiConfig.swift
+//  MQTT.swift
 //  Meshtastic
 //
-//  Copyright (c) Garth Vander Houwen 8/1/2022
+//  Copyright (c) Garth Vander Houwen 9/4/22.
 //
-
 import SwiftUI
 
-struct WiFiConfig: View {
+struct MQTTConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -19,9 +18,11 @@ struct WiFiConfig: View {
 	@State var hasChanges: Bool = false
 	
 	@State var enabled = false
-	@State var ssid = ""
+	@State var address = ""
+	@State var username = ""
 	@State var password = ""
-	@State var mode = 0
+	@State var encryptionEnabled = false
+	@State var jsonEnabled = false
 	
 	var body: some View {
 		
@@ -29,50 +30,81 @@ struct WiFiConfig: View {
 			
 			Form {
 				
-				Text("Enabling WiFi will disable the bluetooth connection to the app.")
+				Text("WiFi must also be enabled for MQTT to work. You can set uplink and downlink for each channel.")
 					.font(.title3)
 				
 				Section(header: Text("Options")) {
 						
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "wifi")
+						Label("Enabled", systemImage: "dot.radiowaves.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
+					Toggle(isOn: $encryptionEnabled) {
 
-					Picker("Mode", selection: $mode ) {
-						ForEach(WiFiModes.allCases) { lu in
-							Text(lu.description)
-						}
+						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
-					.pickerStyle(DefaultPickerStyle())
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					Toggle(isOn: $jsonEnabled) {
+
+						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 				}
-				Section(header: Text("SSID & Password")) {
+				Section(header: Text("Custom Server")) {
 					
 					HStack {
-						Label("SSID", systemImage: "network")
-						TextField("SSID", text: $ssid)
+						Label("Address", systemImage: "server.rack")
+						TextField("Server Address", text: $username)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: ssid, perform: { value in
+							.onChange(of: address, perform: { value in
 
-								let totalBytes = ssid.utf8.count
+								let totalBytes = address.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 32 {
+								if totalBytes > 30 {
 
-									let firstNBytes = Data(ssid.utf8.prefix(32))
+									let firstNBytes = Data(username.utf8.prefix(30))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
 										// Set the shortName back to the last place where it was the right size
-										ssid = maxBytesString
+										address = maxBytesString
 									}
 								}
-								hasChanges = true 
+								hasChanges = true
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.default)
+					
+					HStack {
+						Label("Username", systemImage: "person.text.rectangle")
+						TextField("Server Username", text: $username)
+							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
+							.onChange(of: username, perform: { value in
+
+								let totalBytes = username.utf8.count
+								
+								// Only mess with the value if it is too big
+								if totalBytes > 30 {
+
+									let firstNBytes = Data(username.utf8.prefix(30))
+							
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										
+										// Set the shortName back to the last place where it was the right size
+										username = maxBytesString
+									}
+								}
+								hasChanges = true
 							})
 							.foregroundColor(.gray)
 					}
@@ -81,7 +113,7 @@ struct WiFiConfig: View {
 					
 					HStack {
 						Label("Password", systemImage: "wallet.pass")
-						TextField("Password", text: $password)
+						TextField("Server Password", text: $password)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -90,9 +122,9 @@ struct WiFiConfig: View {
 								let totalBytes = password.utf8.count
 								
 								// Only mess with the value if it is too big
-								if totalBytes > 63 {
+								if totalBytes > 30 {
 
-									let firstNBytes = Data(password.utf8.prefix(63))
+									let firstNBytes = Data(password.utf8.prefix(30))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
@@ -129,13 +161,15 @@ struct WiFiConfig: View {
 			) {
 				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
-					var wifi = Config.WiFiConfig()
-					wifi.enabled = self.enabled
-					wifi.ssid = self.ssid
-					wifi.psk = self.password
-					wifi.mode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
-					
-					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!)
+					var mqtt = ModuleConfig.MQTTConfig()
+					mqtt.enabled = self.enabled
+					mqtt.address = self.address
+					mqtt.username = self.username
+					mqtt.password = self.password
+					mqtt.encryptionEnabled = self.encryptionEnabled
+					mqtt.jsonEnabled = self.jsonEnabled
+									
+					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						
@@ -149,7 +183,7 @@ struct WiFiConfig: View {
 				}
 			}
 		}
-		.navigationTitle("WiFi Config")
+		.navigationTitle("MQTT Config")
 		.navigationBarItems(trailing:
 
 			ZStack {
@@ -162,10 +196,12 @@ struct WiFiConfig: View {
 				
 				self.bleManager.context = context
 
-				self.enabled = (node!.wiFiConfig?.enabled ?? false)
-				self.ssid = node!.wiFiConfig?.ssid ?? ""
-				self.password = node!.wiFiConfig?.password ?? ""
-				self.mode = Int(node!.wiFiConfig?.mode ?? 0)
+				self.enabled = (node!.mqttConfig?.enabled ?? false)
+				self.address = node!.mqttConfig?.address ?? ""
+				self.username = node!.mqttConfig?.username ?? ""
+				self.password = node!.mqttConfig?.password ?? ""
+				self.encryptionEnabled = (node!.mqttConfig?.encryptionEnabled ?? false)
+				self.jsonEnabled = (node!.mqttConfig?.jsonEnabled ?? false)
 
 				self.hasChanges = false
 				self.initialLoad = false
@@ -178,11 +214,18 @@ struct WiFiConfig: View {
 				if newEnabled != node!.wiFiConfig!.enabled { hasChanges = true }
 			}
 		}
-		.onChange(of: mode) { newMode in
+		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
 			
 			if node != nil && node!.wiFiConfig != nil {
 				
-				if newMode != node!.wiFiConfig!.mode { hasChanges = true }
+				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: jsonEnabled) { newJsonEnabled in
+			
+			if node != nil && node!.wiFiConfig != nil {
+				
+				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

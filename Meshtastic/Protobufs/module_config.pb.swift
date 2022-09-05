@@ -205,6 +205,10 @@ struct ModuleConfig {
     /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
     var encryptionEnabled: Bool = false
 
+    ///
+    /// Whether to send / consume json packets on MQTT
+    var jsonEnabled: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -850,6 +854,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     3: .same(proto: "username"),
     4: .same(proto: "password"),
     5: .standard(proto: "encryption_enabled"),
+    6: .standard(proto: "json_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -863,6 +868,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 3: try { try decoder.decodeSingularStringField(value: &self.username) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.password) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.encryptionEnabled) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.jsonEnabled) }()
       default: break
       }
     }
@@ -884,6 +890,9 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.encryptionEnabled != false {
       try visitor.visitSingularBoolField(value: self.encryptionEnabled, fieldNumber: 5)
     }
+    if self.jsonEnabled != false {
+      try visitor.visitSingularBoolField(value: self.jsonEnabled, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -893,6 +902,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.username != rhs.username {return false}
     if lhs.password != rhs.password {return false}
     if lhs.encryptionEnabled != rhs.encryptionEnabled {return false}
+    if lhs.jsonEnabled != rhs.jsonEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

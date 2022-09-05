@@ -732,8 +732,8 @@ struct Config {
     var region: Config.LoRaConfig.RegionCode = .unset
 
     ///
-    /// Overrides HOPS_RELIABLE and sets the maximum number of hops. This can't be greater than 7.
-    /// 0 for default of 3
+    /// Maximum number of hops. This can't be greater than 7.
+    /// Default of 3
     var hopLimit: UInt32 = 0
 
     ///
