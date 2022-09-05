@@ -16,6 +16,7 @@
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
+		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
@@ -121,6 +122,8 @@
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
+		DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 10.xcdatamodel"; sourceTree = "<group>"; };
+		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
@@ -260,6 +263,13 @@
 			path = Custom;
 			sourceTree = "<group>";
 		};
+		DD2160AC28C5019400C17253 /* Messages */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Messages;
+			sourceTree = "<group>";
+		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -318,6 +328,7 @@
 				DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
+				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 			);
 			path = Module;
 			sourceTree = "<group>";
@@ -488,6 +499,7 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DD2160AC28C5019400C17253 /* Messages */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
 				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
@@ -705,6 +717,7 @@
 				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
+				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
@@ -1141,6 +1154,7 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */,
 				DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */,
 				DD4033C328B405A60096A444 /* MeshtasticDataModel v 8.xcdatamodel */,
 				DDB6ABD728AE8F5D00384BA1 /* MeshtasticDataModel v 7.xcdatamodel */,
@@ -1151,7 +1165,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */;
+			currentVersion = DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

@@ -497,7 +497,6 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						newWiFiConfig.password = config.wifi.psk
 						newWiFiConfig.mode = Int32(config.wifi.mode.rawValue)
 					}
-					newWiFiConfig.num = fetchedNode[0].num
 					fetchedNode[0].wiFiConfig = newWiFiConfig
 					
 				} else {
@@ -596,8 +595,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
-					
-					newCannedMessageConfig.num = nodeNum
 					fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
 					
 				} else {
@@ -628,7 +625,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
 						fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 					}
-					fetchedNode[0].cannedMessageConfig?.num = nodeNum
 				}
 				
 				do {
@@ -703,8 +699,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newExternalNotificationConfig.output = Int32(config.externalNotification.output)
 						newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
-
-					newExternalNotificationConfig.num = nodeNum
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
@@ -727,7 +721,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
 						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
 					}
-					fetchedNode[0].externalNotificationConfig?.num = nodeNum
 				}
 				
 				do {
@@ -789,7 +782,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 						newRangeTestConfig.enabled = config.rangeTest.enabled
 						newRangeTestConfig.save = config.rangeTest.save
 					}
-					newRangeTestConfig.num = nodeNum
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
 					
 				} else {

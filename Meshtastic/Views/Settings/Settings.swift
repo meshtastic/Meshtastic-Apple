@@ -152,6 +152,17 @@ struct Settings: View {
 					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
+						MQTTConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "dot.radiowaves.right")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("MQTT (ESP32 Only)")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					

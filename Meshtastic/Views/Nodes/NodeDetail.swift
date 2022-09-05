@@ -64,17 +64,21 @@ struct NodeDetail: View {
 									)
 								 }
 							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.75)
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.6)
 							}
 						}
 						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
 					} else {
 						
-						Image(node.user?.hwModel ?? "UNSET")
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.cornerRadius(10)
-							.frame(width: bounds.size.width, height: bounds.size.height / 2)
+						HStack {
+							Image(node.user?.hwModel ?? "UNSET")
+								.resizable()
+								.aspectRatio(contentMode: .fit)
+								.cornerRadius(10)
+								.frame(width: bounds.size.width, height: bounds.size.height / 2.3)
+								.padding([.top], 40)
+						}
+						.offset( y:-40)
 					}
 					
 					ScrollView {
@@ -168,6 +172,7 @@ struct NodeDetail: View {
 										
 										Image(hwModelString)
 											.resizable()
+											.aspectRatio(contentMode: .fit)
 											.frame(width: 90, height: 90)
 											.cornerRadius(5)
 
@@ -429,16 +434,16 @@ struct NodeDetail: View {
 							}
 						}
 						.listStyle(GroupedListStyle())
-						.frame(minHeight:170)
+						.frame(minHeight: 170)
 						.padding(0)
 					}
-					.offset( y: (node.myInfo!.hasGps ? 0 : -40))
+					.offset( y: (node.myInfo?.hasGps ?? false ? 0 : -40))
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
 		}
 		.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
-		.navigationBarTitleDisplayMode(.automatic)
+		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
 			ZStack {
