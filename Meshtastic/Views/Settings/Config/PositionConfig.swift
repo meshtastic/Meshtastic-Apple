@@ -113,12 +113,9 @@ struct PositionConfig: View {
 							Label("Fixed Position", systemImage: "location.square.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						if fixedPosition {
-							
-							Text("Set to current location here")
+						Text("If enabled your current location will be set as a fixed position.")
 							.font(.caption)
 							.listRowSeparator(.visible)
-						}
 						
 					}
 				}
@@ -255,6 +252,11 @@ struct PositionConfig: View {
 					if includePosHeading { pf.insert(.posHeading) }
 					
 					pc.positionFlags = UInt32(pf.rawValue)
+					
+					if fixedPosition {
+						
+						let sendPosition = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
+					}
 
 					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
 					

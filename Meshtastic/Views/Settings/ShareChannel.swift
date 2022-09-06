@@ -69,7 +69,7 @@ struct ShareChannel: View {
 								alignment: .center
 							)
 						
-						if node?.loRaConfig != nil {
+						if node!.loRaConfig != nil {
 							
 							HStack {
 								
