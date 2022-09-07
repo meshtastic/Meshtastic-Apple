@@ -58,7 +58,7 @@ struct MQTTConfig: View {
 					
 					HStack {
 						Label("Address", systemImage: "server.rack")
-						TextField("Server Address", text: $username)
+						TextField("Server Address", text: $address)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
