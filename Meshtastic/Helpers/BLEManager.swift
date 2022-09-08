@@ -984,6 +984,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func sendFactoryReset(destNum: Int64) -> Bool {
 		
 		var adminPacket = AdminMessage()
+		adminPacket.factoryReset = true
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
