@@ -458,11 +458,11 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		}
 	}
 	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.wifi(config.wifi) {
+	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 		
 		var isDefault = false
 		
-		if (try! config.wifi.jsonString()) == "{}" {
+		if (try! config.network.jsonString()) == "{}" {
 			
 			isDefault = true
 			if meshlogging { MeshLogger.log("📶 Default WiFi config received \(String(nodeNum))") }
@@ -493,9 +493,9 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 
 					} else {
 						
-						newWiFiConfig.ssid = config.wifi.ssid
-						newWiFiConfig.password = config.wifi.psk
-						newWiFiConfig.mode = Int32(config.wifi.mode.rawValue)
+						newWiFiConfig.ssid = config.network.wifiSsid
+						newWiFiConfig.password = config.network.wifiPsk
+						newWiFiConfig.mode = Int32(config.network.wifiMode.rawValue)
 					}
 					fetchedNode[0].wiFiConfig = newWiFiConfig
 					
@@ -509,9 +509,9 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 						
 					} else {
 						
-						fetchedNode[0].wiFiConfig?.ssid = config.wifi.ssid
-						fetchedNode[0].wiFiConfig?.password = config.wifi.psk
-						fetchedNode[0].wiFiConfig?.mode = Int32(config.wifi.mode.rawValue)
+						fetchedNode[0].wiFiConfig?.ssid = config.network.wifiSsid
+						fetchedNode[0].wiFiConfig?.password = config.network.wifiPsk
+						fetchedNode[0].wiFiConfig?.mode = Int32(config.network.wifiMode.rawValue)
 					}
 				}
 				

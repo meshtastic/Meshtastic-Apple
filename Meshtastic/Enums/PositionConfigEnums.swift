@@ -86,17 +86,17 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		switch self {
 			
 		case .gpsFormatDec:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDec
+			return Config.DisplayConfig.GpsCoordinateFormat.dec
 		case .gpsFormatDms:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDms
+			return Config.DisplayConfig.GpsCoordinateFormat.dms
 		case .gpsFormatUtm:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatUtm
+			return Config.DisplayConfig.GpsCoordinateFormat.utm
 		case .gpsFormatMgrs:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatMgrs
+			return Config.DisplayConfig.GpsCoordinateFormat.mgrs
 		case .gpsFormatOlc:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOlc
+			return Config.DisplayConfig.GpsCoordinateFormat.olc
 		case .gpsFormatOsgr:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOsgr
+			return Config.DisplayConfig.GpsCoordinateFormat.osgr
 		}
 	}
 }

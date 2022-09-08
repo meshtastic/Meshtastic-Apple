@@ -129,13 +129,13 @@ struct WiFiConfig: View {
 			) {
 				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
-					var wifi = Config.WiFiConfig()
-					wifi.enabled = self.enabled
-					wifi.ssid = self.ssid
-					wifi.psk = self.password
-					wifi.mode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
+					var network = Config.NetworkConfig()
+					network.wifiEnabled = self.enabled
+					network.wifiSsid = self.ssid
+					network.wifiPsk = self.password
+					network.wifiMode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						

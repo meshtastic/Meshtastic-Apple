@@ -240,7 +240,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _device: Config.DeviceConfig? = nil
     var _position: Config.PositionConfig? = nil
     var _power: Config.PowerConfig? = nil
-    var _wifi: Config.WiFiConfig? = nil
+	  var _wifi: Config.NetworkConfig? = nil
     var _display: Config.DisplayConfig? = nil
     var _lora: Config.LoRaConfig? = nil
     var _bluetooth: Config.BluetoothConfig? = nil
