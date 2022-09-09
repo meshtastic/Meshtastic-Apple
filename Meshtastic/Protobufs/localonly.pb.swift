@@ -60,14 +60,14 @@ struct LocalConfig {
 
   ///
   /// The part of the config that is specific to the Wifi Settings
-  var wifi: Config.WiFiConfig {
-    get {return _storage._wifi ?? Config.WiFiConfig()}
-    set {_uniqueStorage()._wifi = newValue}
+  var network: Config.NetworkConfig {
+    get {return _storage._network ?? Config.NetworkConfig()}
+    set {_uniqueStorage()._network = newValue}
   }
-  /// Returns true if `wifi` has been explicitly set.
-  var hasWifi: Bool {return _storage._wifi != nil}
-  /// Clears the value of `wifi`. Subsequent reads from it will return its default value.
-  mutating func clearWifi() {_uniqueStorage()._wifi = nil}
+  /// Returns true if `network` has been explicitly set.
+  var hasNetwork: Bool {return _storage._network != nil}
+  /// Clears the value of `network`. Subsequent reads from it will return its default value.
+  mutating func clearNetwork() {_uniqueStorage()._network = nil}
 
   ///
   /// The part of the config that is specific to the Display
@@ -229,7 +229,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     1: .same(proto: "device"),
     2: .same(proto: "position"),
     3: .same(proto: "power"),
-    4: .same(proto: "wifi"),
+    4: .same(proto: "network"),
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
     7: .same(proto: "bluetooth"),
@@ -240,7 +240,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _device: Config.DeviceConfig? = nil
     var _position: Config.PositionConfig? = nil
     var _power: Config.PowerConfig? = nil
-	  var _wifi: Config.NetworkConfig? = nil
+    var _network: Config.NetworkConfig? = nil
     var _display: Config.DisplayConfig? = nil
     var _lora: Config.LoRaConfig? = nil
     var _bluetooth: Config.BluetoothConfig? = nil
@@ -254,7 +254,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _device = source._device
       _position = source._position
       _power = source._power
-      _wifi = source._wifi
+      _network = source._network
       _display = source._display
       _lora = source._lora
       _bluetooth = source._bluetooth
@@ -280,7 +280,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 1: try { try decoder.decodeSingularMessageField(value: &_storage._device) }()
         case 2: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._power) }()
-        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._wifi) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._network) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._lora) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._bluetooth) }()
@@ -306,7 +306,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._power {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      try { if let v = _storage._wifi {
+      try { if let v = _storage._network {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
       } }()
       try { if let v = _storage._display {
@@ -333,7 +333,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._device != rhs_storage._device {return false}
         if _storage._position != rhs_storage._position {return false}
         if _storage._power != rhs_storage._power {return false}
-        if _storage._wifi != rhs_storage._wifi {return false}
+        if _storage._network != rhs_storage._network {return false}
         if _storage._display != rhs_storage._display {return false}
         if _storage._lora != rhs_storage._lora {return false}
         if _storage._bluetooth != rhs_storage._bluetooth {return false}

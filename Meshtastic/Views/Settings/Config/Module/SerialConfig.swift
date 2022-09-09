@@ -130,11 +130,11 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		switch self {
 			
 		case .modeDefault:
-			return ModuleConfig.SerialConfig.Serial_Mode.modeDefault
+			return ModuleConfig.SerialConfig.Serial_Mode.default
 		case .modeSimple:
-			return ModuleConfig.SerialConfig.Serial_Mode.modeSimple
+			return ModuleConfig.SerialConfig.Serial_Mode.simple
 		case .modeProto:
-			return ModuleConfig.SerialConfig.Serial_Mode.modeProto
+			return ModuleConfig.SerialConfig.Serial_Mode.proto
 		}
 	}
 }

@@ -76,21 +76,21 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .keyNone:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyNone
+			return ModuleConfig.CannedMessageConfig.InputEventChar.none
 		case .keyUp:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyUp
+			return ModuleConfig.CannedMessageConfig.InputEventChar.up
 		case .keyDown:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyDown
+			return ModuleConfig.CannedMessageConfig.InputEventChar.down
 		case .keyLeft:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyLeft
+			return ModuleConfig.CannedMessageConfig.InputEventChar.left
 		case .keyRight:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyRight
+			return ModuleConfig.CannedMessageConfig.InputEventChar.right
 		case .keySelect:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keySelect
+			return ModuleConfig.CannedMessageConfig.InputEventChar.select
 		case .keyBack:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyBack
+			return ModuleConfig.CannedMessageConfig.InputEventChar.back
 		case .keyCancel:
-			return ModuleConfig.CannedMessageConfig.InputEventChar.keyCancel
+			return ModuleConfig.CannedMessageConfig.InputEventChar.cancel
 		}
 	}
 }

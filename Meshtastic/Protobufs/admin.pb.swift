@@ -31,16 +31,147 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  var variant: AdminMessage.OneOf_Variant? = nil
+  var payloadVariant: AdminMessage.OneOf_PayloadVariant? = nil
+
+  ///
+  /// Send the specified channel in the response to this message
+  /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
+  var getChannelRequest: UInt32 {
+    get {
+      if case .getChannelRequest(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .getChannelRequest(newValue)}
+  }
+
+  ///
+  /// TODO: REPLACE
+  var getChannelResponse: Channel {
+    get {
+      if case .getChannelResponse(let v)? = payloadVariant {return v}
+      return Channel()
+    }
+    set {payloadVariant = .getChannelResponse(newValue)}
+  }
+
+  ///
+  /// Send the current owner data in the response to this message.
+  var getOwnerRequest: Bool {
+    get {
+      if case .getOwnerRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getOwnerRequest(newValue)}
+  }
+
+  ///
+  /// TODO: REPLACE
+  var getOwnerResponse: User {
+    get {
+      if case .getOwnerResponse(let v)? = payloadVariant {return v}
+      return User()
+    }
+    set {payloadVariant = .getOwnerResponse(newValue)}
+  }
+
+  ///
+  /// Ask for the following config data to be sent
+  var getConfigRequest: AdminMessage.ConfigType {
+    get {
+      if case .getConfigRequest(let v)? = payloadVariant {return v}
+      return .deviceConfig
+    }
+    set {payloadVariant = .getConfigRequest(newValue)}
+  }
+
+  ///
+  /// Send the current Config in the response to this message.
+  var getConfigResponse: Config {
+    get {
+      if case .getConfigResponse(let v)? = payloadVariant {return v}
+      return Config()
+    }
+    set {payloadVariant = .getConfigResponse(newValue)}
+  }
+
+  ///
+  /// Ask for the following config data to be sent
+  var getModuleConfigRequest: AdminMessage.ModuleConfigType {
+    get {
+      if case .getModuleConfigRequest(let v)? = payloadVariant {return v}
+      return .mqttConfig
+    }
+    set {payloadVariant = .getModuleConfigRequest(newValue)}
+  }
+
+  ///
+  /// Send the current Config in the response to this message.
+  var getModuleConfigResponse: ModuleConfig {
+    get {
+      if case .getModuleConfigResponse(let v)? = payloadVariant {return v}
+      return ModuleConfig()
+    }
+    set {payloadVariant = .getModuleConfigResponse(newValue)}
+  }
+
+  ///
+  /// Send all channels in the response to this message
+  var getAllChannelRequest: Bool {
+    get {
+      if case .getAllChannelRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getAllChannelRequest(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Module messages in the response to this message.
+  var getCannedMessageModuleMessagesRequest: Bool {
+    get {
+      if case .getCannedMessageModuleMessagesRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getCannedMessageModuleMessagesRequest(newValue)}
+  }
+
+  ///
+  /// Get the Canned Message Module messages in the response to this message.
+  var getCannedMessageModuleMessagesResponse: String {
+    get {
+      if case .getCannedMessageModuleMessagesResponse(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .getCannedMessageModuleMessagesResponse(newValue)}
+  }
+
+  ///
+  /// Request the node to send device metadata (firmware, protobuf version, etc)
+  var getDeviceMetadataRequest: UInt32 {
+    get {
+      if case .getDeviceMetadataRequest(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .getDeviceMetadataRequest(newValue)}
+  }
+
+  ///
+  /// Device metadata response
+  var getDeviceMetadataResponse: DeviceMetadata {
+    get {
+      if case .getDeviceMetadataResponse(let v)? = payloadVariant {return v}
+      return DeviceMetadata()
+    }
+    set {payloadVariant = .getDeviceMetadataResponse(newValue)}
+  }
 
   ///
   /// Set the owner for this node
   var setOwner: User {
     get {
-      if case .setOwner(let v)? = variant {return v}
+      if case .setOwner(let v)? = payloadVariant {return v}
       return User()
     }
-    set {variant = .setOwner(newValue)}
+    set {payloadVariant = .setOwner(newValue)}
   }
 
   ///
@@ -51,141 +182,60 @@ struct AdminMessage {
   /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
   var setChannel: Channel {
     get {
-      if case .setChannel(let v)? = variant {return v}
+      if case .setChannel(let v)? = payloadVariant {return v}
       return Channel()
     }
-    set {variant = .setChannel(newValue)}
-  }
-
-  ///
-  /// Send the specified channel in the response to this message
-  /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
-  var getChannelRequest: UInt32 {
-    get {
-      if case .getChannelRequest(let v)? = variant {return v}
-      return 0
-    }
-    set {variant = .getChannelRequest(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getChannelResponse: Channel {
-    get {
-      if case .getChannelResponse(let v)? = variant {return v}
-      return Channel()
-    }
-    set {variant = .getChannelResponse(newValue)}
-  }
-
-  ///
-  /// Send the current owner data in the response to this message.
-  var getOwnerRequest: Bool {
-    get {
-      if case .getOwnerRequest(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getOwnerRequest(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var getOwnerResponse: User {
-    get {
-      if case .getOwnerResponse(let v)? = variant {return v}
-      return User()
-    }
-    set {variant = .getOwnerResponse(newValue)}
-  }
-
-  ///
-  /// Ask for the following config data to be sent
-  var getConfigRequest: AdminMessage.ConfigType {
-    get {
-      if case .getConfigRequest(let v)? = variant {return v}
-      return .deviceConfig
-    }
-    set {variant = .getConfigRequest(newValue)}
-  }
-
-  ///
-  /// Send the current Config in the response to this message.
-  var getConfigResponse: Config {
-    get {
-      if case .getConfigResponse(let v)? = variant {return v}
-      return Config()
-    }
-    set {variant = .getConfigResponse(newValue)}
+    set {payloadVariant = .setChannel(newValue)}
   }
 
   ///
   /// Set the current Config
   var setConfig: Config {
     get {
-      if case .setConfig(let v)? = variant {return v}
+      if case .setConfig(let v)? = payloadVariant {return v}
       return Config()
     }
-    set {variant = .setConfig(newValue)}
-  }
-
-  ///
-  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-  var confirmSetConfig: Bool {
-    get {
-      if case .confirmSetConfig(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .confirmSetConfig(newValue)}
-  }
-
-  ///
-  /// Ask for the following config data to be sent
-  var getModuleConfigRequest: AdminMessage.ModuleConfigType {
-    get {
-      if case .getModuleConfigRequest(let v)? = variant {return v}
-      return .mqttConfig
-    }
-    set {variant = .getModuleConfigRequest(newValue)}
-  }
-
-  ///
-  /// Send the current Config in the response to this message.
-  var getModuleConfigResponse: ModuleConfig {
-    get {
-      if case .getModuleConfigResponse(let v)? = variant {return v}
-      return ModuleConfig()
-    }
-    set {variant = .getModuleConfigResponse(newValue)}
+    set {payloadVariant = .setConfig(newValue)}
   }
 
   ///
   /// Set the current Config
   var setModuleConfig: ModuleConfig {
     get {
-      if case .setModuleConfig(let v)? = variant {return v}
+      if case .setModuleConfig(let v)? = payloadVariant {return v}
       return ModuleConfig()
     }
-    set {variant = .setModuleConfig(newValue)}
+    set {payloadVariant = .setModuleConfig(newValue)}
+  }
+
+  ///
+  /// Set the Canned Message Module messages text.
+  var setCannedMessageModuleMessages: String {
+    get {
+      if case .setCannedMessageModuleMessages(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .setCannedMessageModuleMessages(newValue)}
+  }
+
+  ///
+  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+  var confirmSetConfig: Bool {
+    get {
+      if case .confirmSetConfig(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .confirmSetConfig(newValue)}
   }
 
   ///
   /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
   var confirmSetModuleConfig: Bool {
     get {
-      if case .confirmSetModuleConfig(let v)? = variant {return v}
+      if case .confirmSetModuleConfig(let v)? = payloadVariant {return v}
       return false
     }
-    set {variant = .confirmSetModuleConfig(newValue)}
-  }
-
-  ///
-  /// Send all channels in the response to this message
-  var getAllChannelRequest: Bool {
-    get {
-      if case .getAllChannelRequest(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getAllChannelRequest(newValue)}
+    set {payloadVariant = .confirmSetModuleConfig(newValue)}
   }
 
   ///
@@ -195,20 +245,20 @@ struct AdminMessage {
   /// These messages are optional when changing the local node.
   var confirmSetChannel: Bool {
     get {
-      if case .confirmSetChannel(let v)? = variant {return v}
+      if case .confirmSetChannel(let v)? = payloadVariant {return v}
       return false
     }
-    set {variant = .confirmSetChannel(newValue)}
+    set {payloadVariant = .confirmSetChannel(newValue)}
   }
 
   ///
   /// TODO: REPLACE
   var confirmSetRadio: Bool {
     get {
-      if case .confirmSetRadio(let v)? = variant {return v}
+      if case .confirmSetRadio(let v)? = payloadVariant {return v}
       return false
     }
-    set {variant = .confirmSetRadio(newValue)}
+    set {payloadVariant = .confirmSetRadio(newValue)}
   }
 
   ///
@@ -216,97 +266,47 @@ struct AdminMessage {
   /// If received the simulator will exit successfully.
   var exitSimulator: Bool {
     get {
-      if case .exitSimulator(let v)? = variant {return v}
+      if case .exitSimulator(let v)? = payloadVariant {return v}
       return false
     }
-    set {variant = .exitSimulator(newValue)}
+    set {payloadVariant = .exitSimulator(newValue)}
   }
 
   ///
   /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
   var rebootSeconds: Int32 {
     get {
-      if case .rebootSeconds(let v)? = variant {return v}
+      if case .rebootSeconds(let v)? = payloadVariant {return v}
       return 0
     }
-    set {variant = .rebootSeconds(newValue)}
-  }
-
-  ///
-  /// Get the Canned Message Module messages in the response to this message.
-  var getCannedMessageModuleMessagesRequest: Bool {
-    get {
-      if case .getCannedMessageModuleMessagesRequest(let v)? = variant {return v}
-      return false
-    }
-    set {variant = .getCannedMessageModuleMessagesRequest(newValue)}
-  }
-
-  ///
-  /// Get the Canned Message Module messages in the response to this message.
-  var getCannedMessageModuleMessagesResponse: String {
-    get {
-      if case .getCannedMessageModuleMessagesResponse(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .getCannedMessageModuleMessagesResponse(newValue)}
-  }
-
-  ///
-  /// Set the Canned Message Module messages text.
-  var setCannedMessageModuleMessages: String {
-    get {
-      if case .setCannedMessageModuleMessages(let v)? = variant {return v}
-      return String()
-    }
-    set {variant = .setCannedMessageModuleMessages(newValue)}
+    set {payloadVariant = .rebootSeconds(newValue)}
   }
 
   ///
   /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
   var shutdownSeconds: Int32 {
     get {
-      if case .shutdownSeconds(let v)? = variant {return v}
+      if case .shutdownSeconds(let v)? = payloadVariant {return v}
       return 0
     }
-    set {variant = .shutdownSeconds(newValue)}
+    set {payloadVariant = .shutdownSeconds(newValue)}
   }
 
   ///
-  /// Request the node to send device metadata (firmware, protobuf version, etc)
-  var getDeviceMetadataRequest: UInt32 {
+  /// Tell the node to factory reset, all device settings will be returned to factory defaults.
+  var factoryReset: Int32 {
     get {
-      if case .getDeviceMetadataRequest(let v)? = variant {return v}
+      if case .factoryReset(let v)? = payloadVariant {return v}
       return 0
     }
-    set {variant = .getDeviceMetadataRequest(newValue)}
-  }
-
-  ///
-  /// Device metadata response
-  var getDeviceMetadataResponse: DeviceMetadata {
-    get {
-      if case .getDeviceMetadataResponse(let v)? = variant {return v}
-      return DeviceMetadata()
-    }
-    set {variant = .getDeviceMetadataResponse(newValue)}
+    set {payloadVariant = .factoryReset(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// TODO: REPLACE
-  enum OneOf_Variant: Equatable {
-    ///
-    /// Set the owner for this node
-    case setOwner(User)
-    ///
-    /// Set channels (using the new API).
-    /// A special channel is the "primary channel".
-    /// The other records are secondary channels.
-    /// Note: only one channel can be marked as primary.
-    /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
-    case setChannel(Channel)
+  enum OneOf_PayloadVariant: Equatable {
     ///
     /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
@@ -327,26 +327,51 @@ struct AdminMessage {
     /// Send the current Config in the response to this message.
     case getConfigResponse(Config)
     ///
-    /// Set the current Config
-    case setConfig(Config)
-    ///
-    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-    case confirmSetConfig(Bool)
-    ///
     /// Ask for the following config data to be sent
     case getModuleConfigRequest(AdminMessage.ModuleConfigType)
     ///
     /// Send the current Config in the response to this message.
     case getModuleConfigResponse(ModuleConfig)
     ///
+    /// Send all channels in the response to this message
+    case getAllChannelRequest(Bool)
+    ///
+    /// Get the Canned Message Module messages in the response to this message.
+    case getCannedMessageModuleMessagesRequest(Bool)
+    ///
+    /// Get the Canned Message Module messages in the response to this message.
+    case getCannedMessageModuleMessagesResponse(String)
+    ///
+    /// Request the node to send device metadata (firmware, protobuf version, etc)
+    case getDeviceMetadataRequest(UInt32)
+    ///
+    /// Device metadata response
+    case getDeviceMetadataResponse(DeviceMetadata)
+    ///
+    /// Set the owner for this node
+    case setOwner(User)
+    ///
+    /// Set channels (using the new API).
+    /// A special channel is the "primary channel".
+    /// The other records are secondary channels.
+    /// Note: only one channel can be marked as primary.
+    /// If the client sets a particular channel to be primary, the previous channel will be set to SECONDARY automatically.
+    case setChannel(Channel)
+    ///
+    /// Set the current Config
+    case setConfig(Config)
+    ///
     /// Set the current Config
     case setModuleConfig(ModuleConfig)
     ///
+    /// Set the Canned Message Module messages text.
+    case setCannedMessageModuleMessages(String)
+    ///
+    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
+    case confirmSetConfig(Bool)
+    ///
     /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
     case confirmSetModuleConfig(Bool)
-    ///
-    /// Send all channels in the response to this message
-    case getAllChannelRequest(Bool)
     ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
@@ -364,38 +389,18 @@ struct AdminMessage {
     /// Tell the node to reboot in this many seconds (or <0 to cancel reboot)
     case rebootSeconds(Int32)
     ///
-    /// Get the Canned Message Module messages in the response to this message.
-    case getCannedMessageModuleMessagesRequest(Bool)
-    ///
-    /// Get the Canned Message Module messages in the response to this message.
-    case getCannedMessageModuleMessagesResponse(String)
-    ///
-    /// Set the Canned Message Module messages text.
-    case setCannedMessageModuleMessages(String)
-    ///
     /// Tell the node to shutdown in this many seconds (or <0 to cancel shutdown)
     case shutdownSeconds(Int32)
     ///
-    /// Request the node to send device metadata (firmware, protobuf version, etc)
-    case getDeviceMetadataRequest(UInt32)
-    ///
-    /// Device metadata response
-    case getDeviceMetadataResponse(DeviceMetadata)
+    /// Tell the node to factory reset, all device settings will be returned to factory defaults.
+    case factoryReset(Int32)
 
   #if !swift(>=4.1)
-    static func ==(lhs: AdminMessage.OneOf_Variant, rhs: AdminMessage.OneOf_Variant) -> Bool {
+    static func ==(lhs: AdminMessage.OneOf_PayloadVariant, rhs: AdminMessage.OneOf_PayloadVariant) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch (lhs, rhs) {
-      case (.setOwner, .setOwner): return {
-        guard case .setOwner(let l) = lhs, case .setOwner(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setChannel, .setChannel): return {
-        guard case .setChannel(let l) = lhs, case .setChannel(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.getChannelRequest, .getChannelRequest): return {
         guard case .getChannelRequest(let l) = lhs, case .getChannelRequest(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -420,14 +425,6 @@ struct AdminMessage {
         guard case .getConfigResponse(let l) = lhs, case .getConfigResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.setConfig, .setConfig): return {
-        guard case .setConfig(let l) = lhs, case .setConfig(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.confirmSetConfig, .confirmSetConfig): return {
-        guard case .confirmSetConfig(let l) = lhs, case .confirmSetConfig(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.getModuleConfigRequest, .getModuleConfigRequest): return {
         guard case .getModuleConfigRequest(let l) = lhs, case .getModuleConfigRequest(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -436,16 +433,52 @@ struct AdminMessage {
         guard case .getModuleConfigResponse(let l) = lhs, case .getModuleConfigResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getAllChannelRequest, .getAllChannelRequest): return {
+        guard case .getAllChannelRequest(let l) = lhs, case .getAllChannelRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessageModuleMessagesRequest, .getCannedMessageModuleMessagesRequest): return {
+        guard case .getCannedMessageModuleMessagesRequest(let l) = lhs, case .getCannedMessageModuleMessagesRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getCannedMessageModuleMessagesResponse, .getCannedMessageModuleMessagesResponse): return {
+        guard case .getCannedMessageModuleMessagesResponse(let l) = lhs, case .getCannedMessageModuleMessagesResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataRequest, .getDeviceMetadataRequest): return {
+        guard case .getDeviceMetadataRequest(let l) = lhs, case .getDeviceMetadataRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getDeviceMetadataResponse, .getDeviceMetadataResponse): return {
+        guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setOwner, .setOwner): return {
+        guard case .setOwner(let l) = lhs, case .setOwner(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setChannel, .setChannel): return {
+        guard case .setChannel(let l) = lhs, case .setChannel(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setConfig, .setConfig): return {
+        guard case .setConfig(let l) = lhs, case .setConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.setModuleConfig, .setModuleConfig): return {
         guard case .setModuleConfig(let l) = lhs, case .setModuleConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.confirmSetModuleConfig, .confirmSetModuleConfig): return {
-        guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
+      case (.setCannedMessageModuleMessages, .setCannedMessageModuleMessages): return {
+        guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getAllChannelRequest, .getAllChannelRequest): return {
-        guard case .getAllChannelRequest(let l) = lhs, case .getAllChannelRequest(let r) = rhs else { preconditionFailure() }
+      case (.confirmSetConfig, .confirmSetConfig): return {
+        guard case .confirmSetConfig(let l) = lhs, case .confirmSetConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.confirmSetModuleConfig, .confirmSetModuleConfig): return {
+        guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.confirmSetChannel, .confirmSetChannel): return {
@@ -464,28 +497,12 @@ struct AdminMessage {
         guard case .rebootSeconds(let l) = lhs, case .rebootSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getCannedMessageModuleMessagesRequest, .getCannedMessageModuleMessagesRequest): return {
-        guard case .getCannedMessageModuleMessagesRequest(let l) = lhs, case .getCannedMessageModuleMessagesRequest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getCannedMessageModuleMessagesResponse, .getCannedMessageModuleMessagesResponse): return {
-        guard case .getCannedMessageModuleMessagesResponse(let l) = lhs, case .getCannedMessageModuleMessagesResponse(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.setCannedMessageModuleMessages, .setCannedMessageModuleMessages): return {
-        guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.shutdownSeconds, .shutdownSeconds): return {
         guard case .shutdownSeconds(let l) = lhs, case .shutdownSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getDeviceMetadataRequest, .getDeviceMetadataRequest): return {
-        guard case .getDeviceMetadataRequest(let l) = lhs, case .getDeviceMetadataRequest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.getDeviceMetadataResponse, .getDeviceMetadataResponse): return {
-        guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
+      case (.factoryReset, .factoryReset): return {
+        guard case .factoryReset(let l) = lhs, case .factoryReset(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -513,7 +530,7 @@ struct AdminMessage {
 
     ///
     /// TODO: REPLACE
-    case wifiConfig // = 3
+    case networkConfig // = 3
 
     ///
     /// TODO: REPLACE
@@ -537,7 +554,7 @@ struct AdminMessage {
       case 0: self = .deviceConfig
       case 1: self = .positionConfig
       case 2: self = .powerConfig
-      case 3: self = .wifiConfig
+      case 3: self = .networkConfig
       case 4: self = .displayConfig
       case 5: self = .loraConfig
       case 6: self = .bluetoothConfig
@@ -550,7 +567,7 @@ struct AdminMessage {
       case .deviceConfig: return 0
       case .positionConfig: return 1
       case .powerConfig: return 2
-      case .wifiConfig: return 3
+      case .networkConfig: return 3
       case .displayConfig: return 4
       case .loraConfig: return 5
       case .bluetoothConfig: return 6
@@ -637,7 +654,7 @@ extension AdminMessage.ConfigType: CaseIterable {
     .deviceConfig,
     .positionConfig,
     .powerConfig,
-    .wifiConfig,
+    .networkConfig,
     .displayConfig,
     .loraConfig,
     .bluetoothConfig,
@@ -661,7 +678,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension AdminMessage: @unchecked Sendable {}
-extension AdminMessage.OneOf_Variant: @unchecked Sendable {}
+extension AdminMessage.OneOf_PayloadVariant: @unchecked Sendable {}
 extension AdminMessage.ConfigType: @unchecked Sendable {}
 extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -671,31 +688,32 @@ extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "AdminMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .standard(proto: "set_owner"),
-    3: .standard(proto: "set_channel"),
-    6: .standard(proto: "get_channel_request"),
-    7: .standard(proto: "get_channel_response"),
-    8: .standard(proto: "get_owner_request"),
-    9: .standard(proto: "get_owner_response"),
-    10: .standard(proto: "get_config_request"),
-    11: .standard(proto: "get_config_response"),
-    12: .standard(proto: "set_config"),
-    13: .standard(proto: "confirm_set_config"),
-    14: .standard(proto: "get_module_config_request"),
-    15: .standard(proto: "get_module_config_response"),
-    16: .standard(proto: "set_module_config"),
-    17: .standard(proto: "confirm_set_module_config"),
-    18: .standard(proto: "get_all_channel_request"),
-    32: .standard(proto: "confirm_set_channel"),
-    33: .standard(proto: "confirm_set_radio"),
-    34: .standard(proto: "exit_simulator"),
-    35: .standard(proto: "reboot_seconds"),
-    36: .standard(proto: "get_canned_message_module_messages_request"),
-    37: .standard(proto: "get_canned_message_module_messages_response"),
-    44: .standard(proto: "set_canned_message_module_messages"),
-    51: .standard(proto: "shutdown_seconds"),
-    52: .standard(proto: "get_device_metadata_request"),
-    53: .standard(proto: "get_device_metadata_response"),
+    1: .standard(proto: "get_channel_request"),
+    2: .standard(proto: "get_channel_response"),
+    3: .standard(proto: "get_owner_request"),
+    4: .standard(proto: "get_owner_response"),
+    5: .standard(proto: "get_config_request"),
+    6: .standard(proto: "get_config_response"),
+    7: .standard(proto: "get_module_config_request"),
+    8: .standard(proto: "get_module_config_response"),
+    9: .standard(proto: "get_all_channel_request"),
+    10: .standard(proto: "get_canned_message_module_messages_request"),
+    11: .standard(proto: "get_canned_message_module_messages_response"),
+    12: .standard(proto: "get_device_metadata_request"),
+    13: .standard(proto: "get_device_metadata_response"),
+    32: .standard(proto: "set_owner"),
+    33: .standard(proto: "set_channel"),
+    34: .standard(proto: "set_config"),
+    35: .standard(proto: "set_module_config"),
+    36: .standard(proto: "set_canned_message_module_messages"),
+    64: .standard(proto: "confirm_set_config"),
+    65: .standard(proto: "confirm_set_module_config"),
+    66: .standard(proto: "confirm_set_channel"),
+    67: .standard(proto: "confirm_set_radio"),
+    96: .standard(proto: "exit_simulator"),
+    97: .standard(proto: "reboot_seconds"),
+    98: .standard(proto: "shutdown_seconds"),
+    99: .standard(proto: "factory_reset"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -704,249 +722,257 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 2: try {
-        var v: User?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .setOwner(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .setOwner(v)
-        }
-      }()
-      case 3: try {
-        var v: Channel?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .setChannel(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .setChannel(v)
-        }
-      }()
-      case 6: try {
+      case 1: try {
         var v: UInt32?
         try decoder.decodeSingularUInt32Field(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getChannelRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getChannelRequest(v)
         }
       }()
-      case 7: try {
+      case 2: try {
         var v: Channel?
         var hadOneofValue = false
-        if let current = self.variant {
+        if let current = self.payloadVariant {
           hadOneofValue = true
           if case .getChannelResponse(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getChannelResponse(v)
+          self.payloadVariant = .getChannelResponse(v)
         }
       }()
-      case 8: try {
+      case 3: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getOwnerRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getOwnerRequest(v)
         }
       }()
-      case 9: try {
+      case 4: try {
         var v: User?
         var hadOneofValue = false
-        if let current = self.variant {
+        if let current = self.payloadVariant {
           hadOneofValue = true
           if case .getOwnerResponse(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getOwnerResponse(v)
+          self.payloadVariant = .getOwnerResponse(v)
         }
       }()
-      case 10: try {
+      case 5: try {
         var v: AdminMessage.ConfigType?
         try decoder.decodeSingularEnumField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getConfigRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getConfigRequest(v)
         }
       }()
-      case 11: try {
+      case 6: try {
         var v: Config?
         var hadOneofValue = false
-        if let current = self.variant {
+        if let current = self.payloadVariant {
           hadOneofValue = true
           if case .getConfigResponse(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getConfigResponse(v)
+          self.payloadVariant = .getConfigResponse(v)
         }
       }()
-      case 12: try {
-        var v: Config?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .setConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .setConfig(v)
-        }
-      }()
-      case 13: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .confirmSetConfig(v)
-        }
-      }()
-      case 14: try {
+      case 7: try {
         var v: AdminMessage.ModuleConfigType?
         try decoder.decodeSingularEnumField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getModuleConfigRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getModuleConfigRequest(v)
         }
       }()
-      case 15: try {
+      case 8: try {
         var v: ModuleConfig?
         var hadOneofValue = false
-        if let current = self.variant {
+        if let current = self.payloadVariant {
           hadOneofValue = true
           if case .getModuleConfigResponse(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getModuleConfigResponse(v)
+          self.payloadVariant = .getModuleConfigResponse(v)
         }
       }()
-      case 16: try {
-        var v: ModuleConfig?
-        var hadOneofValue = false
-        if let current = self.variant {
-          hadOneofValue = true
-          if case .setModuleConfig(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .setModuleConfig(v)
-        }
-      }()
-      case 17: try {
+      case 9: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .confirmSetModuleConfig(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getAllChannelRequest(v)
         }
       }()
-      case 18: try {
+      case 10: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getAllChannelRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getCannedMessageModuleMessagesRequest(v)
         }
       }()
-      case 32: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .confirmSetChannel(v)
-        }
-      }()
-      case 33: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .confirmSetRadio(v)
-        }
-      }()
-      case 34: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .exitSimulator(v)
-        }
-      }()
-      case 35: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .rebootSeconds(v)
-        }
-      }()
-      case 36: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModuleMessagesRequest(v)
-        }
-      }()
-      case 37: try {
+      case 11: try {
         var v: String?
         try decoder.decodeSingularStringField(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getCannedMessageModuleMessagesResponse(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getCannedMessageModuleMessagesResponse(v)
         }
       }()
-      case 44: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .setCannedMessageModuleMessages(v)
-        }
-      }()
-      case 51: try {
-        var v: Int32?
-        try decoder.decodeSingularInt32Field(value: &v)
-        if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .shutdownSeconds(v)
-        }
-      }()
-      case 52: try {
+      case 12: try {
         var v: UInt32?
         try decoder.decodeSingularUInt32Field(value: &v)
         if let v = v {
-          if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .getDeviceMetadataRequest(v)
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getDeviceMetadataRequest(v)
         }
       }()
-      case 53: try {
+      case 13: try {
         var v: DeviceMetadata?
         var hadOneofValue = false
-        if let current = self.variant {
+        if let current = self.payloadVariant {
           hadOneofValue = true
           if case .getDeviceMetadataResponse(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.variant = .getDeviceMetadataResponse(v)
+          self.payloadVariant = .getDeviceMetadataResponse(v)
+        }
+      }()
+      case 32: try {
+        var v: User?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .setOwner(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setOwner(v)
+        }
+      }()
+      case 33: try {
+        var v: Channel?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .setChannel(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setChannel(v)
+        }
+      }()
+      case 34: try {
+        var v: Config?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .setConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setConfig(v)
+        }
+      }()
+      case 35: try {
+        var v: ModuleConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .setModuleConfig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setModuleConfig(v)
+        }
+      }()
+      case 36: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setCannedMessageModuleMessages(v)
+        }
+      }()
+      case 64: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .confirmSetConfig(v)
+        }
+      }()
+      case 65: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .confirmSetModuleConfig(v)
+        }
+      }()
+      case 66: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .confirmSetChannel(v)
+        }
+      }()
+      case 67: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .confirmSetRadio(v)
+        }
+      }()
+      case 96: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .exitSimulator(v)
+        }
+      }()
+      case 97: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .rebootSeconds(v)
+        }
+      }()
+      case 98: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .shutdownSeconds(v)
+        }
+      }()
+      case 99: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .factoryReset(v)
         }
       }()
       default: break
@@ -959,106 +985,110 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    switch self.variant {
-    case .setOwner?: try {
-      guard case .setOwner(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
-    case .setChannel?: try {
-      guard case .setChannel(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }()
+    switch self.payloadVariant {
     case .getChannelRequest?: try {
-      guard case .getChannelRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 6)
+      guard case .getChannelRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
     }()
     case .getChannelResponse?: try {
-      guard case .getChannelResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      guard case .getChannelResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }()
     case .getOwnerRequest?: try {
-      guard case .getOwnerRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+      guard case .getOwnerRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
     }()
     case .getOwnerResponse?: try {
-      guard case .getOwnerResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      guard case .getOwnerResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     }()
     case .getConfigRequest?: try {
-      guard case .getConfigRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 10)
+      guard case .getConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 5)
     }()
     case .getConfigResponse?: try {
-      guard case .getConfigResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
-    }()
-    case .setConfig?: try {
-      guard case .setConfig(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
-    }()
-    case .confirmSetConfig?: try {
-      guard case .confirmSetConfig(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 13)
+      guard case .getConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
     case .getModuleConfigRequest?: try {
-      guard case .getModuleConfigRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 14)
+      guard case .getModuleConfigRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 7)
     }()
     case .getModuleConfigResponse?: try {
-      guard case .getModuleConfigResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
-    }()
-    case .setModuleConfig?: try {
-      guard case .setModuleConfig(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
-    }()
-    case .confirmSetModuleConfig?: try {
-      guard case .confirmSetModuleConfig(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 17)
+      guard case .getModuleConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     }()
     case .getAllChannelRequest?: try {
-      guard case .getAllChannelRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 18)
-    }()
-    case .confirmSetChannel?: try {
-      guard case .confirmSetChannel(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 32)
-    }()
-    case .confirmSetRadio?: try {
-      guard case .confirmSetRadio(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 33)
-    }()
-    case .exitSimulator?: try {
-      guard case .exitSimulator(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 34)
-    }()
-    case .rebootSeconds?: try {
-      guard case .rebootSeconds(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 35)
+      guard case .getAllChannelRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
     }()
     case .getCannedMessageModuleMessagesRequest?: try {
-      guard case .getCannedMessageModuleMessagesRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 36)
+      guard case .getCannedMessageModuleMessagesRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
     }()
     case .getCannedMessageModuleMessagesResponse?: try {
-      guard case .getCannedMessageModuleMessagesResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 37)
-    }()
-    case .setCannedMessageModuleMessages?: try {
-      guard case .setCannedMessageModuleMessages(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 44)
-    }()
-    case .shutdownSeconds?: try {
-      guard case .shutdownSeconds(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 51)
+      guard case .getCannedMessageModuleMessagesResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 11)
     }()
     case .getDeviceMetadataRequest?: try {
-      guard case .getDeviceMetadataRequest(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 52)
+      guard case .getDeviceMetadataRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
     }()
     case .getDeviceMetadataResponse?: try {
-      guard case .getDeviceMetadataResponse(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 53)
+      guard case .getDeviceMetadataResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .setOwner?: try {
+      guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
+    }()
+    case .setChannel?: try {
+      guard case .setChannel(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 33)
+    }()
+    case .setConfig?: try {
+      guard case .setConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 34)
+    }()
+    case .setModuleConfig?: try {
+      guard case .setModuleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 35)
+    }()
+    case .setCannedMessageModuleMessages?: try {
+      guard case .setCannedMessageModuleMessages(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 36)
+    }()
+    case .confirmSetConfig?: try {
+      guard case .confirmSetConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
+    }()
+    case .confirmSetModuleConfig?: try {
+      guard case .confirmSetModuleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
+    }()
+    case .confirmSetChannel?: try {
+      guard case .confirmSetChannel(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 66)
+    }()
+    case .confirmSetRadio?: try {
+      guard case .confirmSetRadio(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 67)
+    }()
+    case .exitSimulator?: try {
+      guard case .exitSimulator(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 96)
+    }()
+    case .rebootSeconds?: try {
+      guard case .rebootSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 97)
+    }()
+    case .shutdownSeconds?: try {
+      guard case .shutdownSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 98)
+    }()
+    case .factoryReset?: try {
+      guard case .factoryReset(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 99)
     }()
     case nil: break
     }
@@ -1066,7 +1096,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 
   static func ==(lhs: AdminMessage, rhs: AdminMessage) -> Bool {
-    if lhs.variant != rhs.variant {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1077,7 +1107,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "DEVICE_CONFIG"),
     1: .same(proto: "POSITION_CONFIG"),
     2: .same(proto: "POWER_CONFIG"),
-    3: .same(proto: "WIFI_CONFIG"),
+    3: .same(proto: "NETWORK_CONFIG"),
     4: .same(proto: "DISPLAY_CONFIG"),
     5: .same(proto: "LORA_CONFIG"),
     6: .same(proto: "BLUETOOTH_CONFIG"),

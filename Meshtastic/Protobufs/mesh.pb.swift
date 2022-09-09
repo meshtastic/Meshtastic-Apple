@@ -55,7 +55,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
 
   ///
   /// TODO: REPLACE
-  case tbeam0P7 // = 6
+  case tbeamV0P7 // = 6
 
   ///
   /// TODO: REPLACE
@@ -77,6 +77,22 @@ enum HardwareModel: SwiftProtobuf.Enum {
   ///
   /// Ancient heltec WiFi_Lora_32 board
   case heltecV1 // = 11
+
+  ///
+  /// New T-BEAM with ESP32-S3 CPU
+  case lilygoTbeamS3Core // = 12
+
+  ///
+  /// RAK WisBlock ESP32 core: https://docs.rakwireless.com/Product-Categories/WisBlock/RAK11200/Overview/
+  case rak11200 // = 13
+
+  ///
+  /// B&Q Consulting Nano Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:nano
+  case nanoG1 // = 14
+
+  ///
+  /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
+  case stationG1 // = 25
 
   ///
   /// Less common/prototype boards listed here (needs one more byte over the air)
@@ -111,28 +127,16 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case diyV1 // = 39
 
   ///
-  /// RAK WisBlock ESP32 core: https://docs.rakwireless.com/Product-Categories/WisBlock/RAK11200/Overview/
-  case rak11200 // = 40
-
-  ///
-  /// B&Q Consulting Nano Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:nano
-  case nanoG1 // = 41
-
-  ///
   /// nRF52840 Dongle : https://www.nordicsemi.com/Products/Development-hardware/nrf52840-dongle/
-  case nrf52840Pca10059 // = 42
+  case nrf52840Pca10059 // = 40
 
   ///
   /// Custom Disaster Radio esp32 v3 device https://github.com/sudomesh/disaster-radio/tree/master/hardware/board_esp32_v3
-  case drDev // = 43
+  case drDev // = 41
 
   ///
   /// M5 esp32 based MCU modules with enclosure, TFT and LORA Shields. All Variants (Basic, Core, Fire, Core2, Paper) https://m5stack.com/
-  case m5Stack // = 44
-
-  ///
-  /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
-  case stationG1 // = 45
+  case m5Stack // = 42
 
   ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
@@ -151,12 +155,16 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 3: self = .tloraV211P6
     case 4: self = .tbeam
     case 5: self = .heltecV20
-    case 6: self = .tbeam0P7
+    case 6: self = .tbeamV0P7
     case 7: self = .tEcho
     case 8: self = .tloraV11P3
     case 9: self = .rak4631
     case 10: self = .heltecV21
     case 11: self = .heltecV1
+    case 12: self = .lilygoTbeamS3Core
+    case 13: self = .rak11200
+    case 14: self = .nanoG1
+    case 25: self = .stationG1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -165,12 +173,9 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 37: self = .portduino
     case 38: self = .androidSim
     case 39: self = .diyV1
-    case 40: self = .rak11200
-    case 41: self = .nanoG1
-    case 42: self = .nrf52840Pca10059
-    case 43: self = .drDev
-    case 44: self = .m5Stack
-    case 45: self = .stationG1
+    case 40: self = .nrf52840Pca10059
+    case 41: self = .drDev
+    case 42: self = .m5Stack
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -184,12 +189,16 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tloraV211P6: return 3
     case .tbeam: return 4
     case .heltecV20: return 5
-    case .tbeam0P7: return 6
+    case .tbeamV0P7: return 6
     case .tEcho: return 7
     case .tloraV11P3: return 8
     case .rak4631: return 9
     case .heltecV21: return 10
     case .heltecV1: return 11
+    case .lilygoTbeamS3Core: return 12
+    case .rak11200: return 13
+    case .nanoG1: return 14
+    case .stationG1: return 25
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -198,12 +207,9 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .portduino: return 37
     case .androidSim: return 38
     case .diyV1: return 39
-    case .rak11200: return 40
-    case .nanoG1: return 41
-    case .nrf52840Pca10059: return 42
-    case .drDev: return 43
-    case .m5Stack: return 44
-    case .stationG1: return 45
+    case .nrf52840Pca10059: return 40
+    case .drDev: return 41
+    case .m5Stack: return 42
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -222,12 +228,16 @@ extension HardwareModel: CaseIterable {
     .tloraV211P6,
     .tbeam,
     .heltecV20,
-    .tbeam0P7,
+    .tbeamV0P7,
     .tEcho,
     .tloraV11P3,
     .rak4631,
     .heltecV21,
     .heltecV1,
+    .lilygoTbeamS3Core,
+    .rak11200,
+    .nanoG1,
+    .stationG1,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -236,12 +246,9 @@ extension HardwareModel: CaseIterable {
     .portduino,
     .androidSim,
     .diyV1,
-    .rak11200,
-    .nanoG1,
     .nrf52840Pca10059,
     .drDev,
     .m5Stack,
-    .stationG1,
     .privateHw,
   ]
 }
@@ -256,7 +263,7 @@ enum Constants: SwiftProtobuf.Enum {
   ///
   /// First enum must be zero, and we are just using this enum to
   /// pass int constants between two very different environments
-  case unused // = 0
+  case zero // = 0
 
   ///
   /// From mesh.options
@@ -266,12 +273,12 @@ enum Constants: SwiftProtobuf.Enum {
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .unused
+    self = .zero
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .unused
+    case 0: self = .zero
     case 237: self = .dataPayloadLen
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -279,7 +286,7 @@ enum Constants: SwiftProtobuf.Enum {
 
   var rawValue: Int {
     switch self {
-    case .unused: return 0
+    case .zero: return 0
     case .dataPayloadLen: return 237
     case .UNRECOGNIZED(let i): return i
     }
@@ -292,7 +299,7 @@ enum Constants: SwiftProtobuf.Enum {
 extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Constants] = [
-    .unused,
+    .zero,
     .dataPayloadLen,
   ]
 }
@@ -329,7 +336,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
 
   ///
   /// We failed while configuring a UBlox GPS
-  case ubloxInitFailed // = 5
+  case ubloxUnitFailed // = 5
 
   ///
   /// This board was expected to have a power management chip and it is missing or broken
@@ -369,7 +376,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
     case 2: self = .sleepEnterWait
     case 3: self = .noRadio
     case 4: self = .unspecified
-    case 5: self = .ubloxInitFailed
+    case 5: self = .ubloxUnitFailed
     case 6: self = .noAxp192
     case 7: self = .invalidRadioSetting
     case 8: self = .transmitFailed
@@ -387,7 +394,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
     case .sleepEnterWait: return 2
     case .noRadio: return 3
     case .unspecified: return 4
-    case .ubloxInitFailed: return 5
+    case .ubloxUnitFailed: return 5
     case .noAxp192: return 6
     case .invalidRadioSetting: return 7
     case .transmitFailed: return 8
@@ -410,7 +417,7 @@ extension CriticalErrorCode: CaseIterable {
     .sleepEnterWait,
     .noRadio,
     .unspecified,
-    .ubloxInitFailed,
+    .ubloxUnitFailed,
     .noAxp192,
     .invalidRadioSetting,
     .transmitFailed,
@@ -478,16 +485,16 @@ struct Position {
 
   ///
   /// Positional timestamp (actual timestamp of GPS solution) in integer epoch seconds
-  var posTimestamp: UInt32 {
-    get {return _storage._posTimestamp}
-    set {_uniqueStorage()._posTimestamp = newValue}
+  var timestamp: UInt32 {
+    get {return _storage._timestamp}
+    set {_uniqueStorage()._timestamp = newValue}
   }
 
   ///
   /// Pos. timestamp milliseconds adjustment (rarely available or required)
-  var posTimeMillis: Int32 {
-    get {return _storage._posTimeMillis}
-    set {_uniqueStorage()._posTimeMillis = newValue}
+  var timestampMillisAdjust: Int32 {
+    get {return _storage._timestampMillisAdjust}
+    set {_uniqueStorage()._timestampMillisAdjust = newValue}
   }
 
   ///
@@ -499,9 +506,9 @@ struct Position {
 
   ///
   /// Geoidal separation in meters
-  var altGeoidSep: Int32 {
-    get {return _storage._altGeoidSep}
-    set {_uniqueStorage()._altGeoidSep = newValue}
+  var altitudeGeoidalSeperation: Int32 {
+    get {return _storage._altitudeGeoidalSeperation}
+    set {_uniqueStorage()._altitudeGeoidalSeperation = newValue}
   }
 
   ///
@@ -590,17 +597,17 @@ struct Position {
   /// - if we update at fixed intervals of X seconds, use X
   /// - if we update at dynamic intervals (based on relative movement etc),
   ///   but "AT LEAST every Y seconds", use Y
-  var posNextUpdate: UInt32 {
-    get {return _storage._posNextUpdate}
-    set {_uniqueStorage()._posNextUpdate = newValue}
+  var nextUpdate: UInt32 {
+    get {return _storage._nextUpdate}
+    set {_uniqueStorage()._nextUpdate = newValue}
   }
 
   ///
   /// A sequence number, incremented with each Position message to help
   ///   detect lost updates if needed
-  var posSeqNumber: UInt32 {
-    get {return _storage._posSeqNumber}
-    set {_uniqueStorage()._posSeqNumber = newValue}
+  var seqNumber: UInt32 {
+    get {return _storage._seqNumber}
+    set {_uniqueStorage()._seqNumber = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -612,41 +619,41 @@ struct Position {
 
     ///
     /// TODO: REPLACE
-    case locsrcUnspecified // = 0
+    case locUnset // = 0
 
     ///
     /// TODO: REPLACE
-    case locsrcManualEntry // = 1
+    case locManual // = 1
 
     ///
     /// TODO: REPLACE
-    case locsrcGpsInternal // = 2
+    case locInternal // = 2
 
     ///
     /// TODO: REPLACE
-    case locsrcGpsExternal // = 3
+    case locExternal // = 3
     case UNRECOGNIZED(Int)
 
     init() {
-      self = .locsrcUnspecified
+      self = .locUnset
     }
 
     init?(rawValue: Int) {
       switch rawValue {
-      case 0: self = .locsrcUnspecified
-      case 1: self = .locsrcManualEntry
-      case 2: self = .locsrcGpsInternal
-      case 3: self = .locsrcGpsExternal
+      case 0: self = .locUnset
+      case 1: self = .locManual
+      case 2: self = .locInternal
+      case 3: self = .locExternal
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
 
     var rawValue: Int {
       switch self {
-      case .locsrcUnspecified: return 0
-      case .locsrcManualEntry: return 1
-      case .locsrcGpsInternal: return 2
-      case .locsrcGpsExternal: return 3
+      case .locUnset: return 0
+      case .locManual: return 1
+      case .locInternal: return 2
+      case .locExternal: return 3
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -661,47 +668,47 @@ struct Position {
 
     ///
     /// TODO: REPLACE
-    case altsrcUnspecified // = 0
+    case altUnset // = 0
 
     ///
     /// TODO: REPLACE
-    case altsrcManualEntry // = 1
+    case altManual // = 1
 
     ///
     /// TODO: REPLACE
-    case altsrcGpsInternal // = 2
+    case altInternal // = 2
 
     ///
     /// TODO: REPLACE
-    case altsrcGpsExternal // = 3
+    case altExternal // = 3
 
     ///
     /// TODO: REPLACE
-    case altsrcBarometric // = 4
+    case altBarometric // = 4
     case UNRECOGNIZED(Int)
 
     init() {
-      self = .altsrcUnspecified
+      self = .altUnset
     }
 
     init?(rawValue: Int) {
       switch rawValue {
-      case 0: self = .altsrcUnspecified
-      case 1: self = .altsrcManualEntry
-      case 2: self = .altsrcGpsInternal
-      case 3: self = .altsrcGpsExternal
-      case 4: self = .altsrcBarometric
+      case 0: self = .altUnset
+      case 1: self = .altManual
+      case 2: self = .altInternal
+      case 3: self = .altExternal
+      case 4: self = .altBarometric
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
 
     var rawValue: Int {
       switch self {
-      case .altsrcUnspecified: return 0
-      case .altsrcManualEntry: return 1
-      case .altsrcGpsInternal: return 2
-      case .altsrcGpsExternal: return 3
-      case .altsrcBarometric: return 4
+      case .altUnset: return 0
+      case .altManual: return 1
+      case .altInternal: return 2
+      case .altExternal: return 3
+      case .altBarometric: return 4
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -718,21 +725,21 @@ struct Position {
 extension Position.LocSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Position.LocSource] = [
-    .locsrcUnspecified,
-    .locsrcManualEntry,
-    .locsrcGpsInternal,
-    .locsrcGpsExternal,
+    .locUnset,
+    .locManual,
+    .locInternal,
+    .locExternal,
   ]
 }
 
 extension Position.AltSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Position.AltSource] = [
-    .altsrcUnspecified,
-    .altsrcManualEntry,
-    .altsrcGpsInternal,
-    .altsrcGpsExternal,
-    .altsrcBarometric,
+    .altUnset,
+    .altManual,
+    .altInternal,
+    .altExternal,
+    .altBarometric,
   ]
 }
 
@@ -1112,7 +1119,7 @@ struct Waypoint {
 
 ///
 /// A packet envelope sent/received over the mesh
-/// only payloadVariant is sent in the payload portion of the LORA packet.
+/// only payload_variant is sent in the payload portion of the LORA packet.
 /// The other fields are either not sent at all, or sent in the special 16 byte LORA header.
 struct MeshPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -1144,7 +1151,7 @@ struct MeshPacket {
   /// Therefore channel_index is inherently a local concept and meaningless to send between nodes.
   /// Very briefly, while sending and receiving deep inside the device Router code, this field instead
   /// contains the 'channel hash' instead of the index.
-  /// This 'trick' is only used while the payloadVariant is an 'encrypted'.
+  /// This 'trick' is only used while the payload_variant is an 'encrypted'.
   var channel: UInt32 {
     get {return _storage._channel}
     set {_uniqueStorage()._channel = newValue}
@@ -2132,15 +2139,19 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "UNSET"),
     1: .same(proto: "TLORA_V2"),
     2: .same(proto: "TLORA_V1"),
-    3: .same(proto: "TLORA_V2_1_1p6"),
+    3: .same(proto: "TLORA_V2_1_1P6"),
     4: .same(proto: "TBEAM"),
     5: .same(proto: "HELTEC_V2_0"),
-    6: .same(proto: "TBEAM0p7"),
+    6: .same(proto: "TBEAM_V0P7"),
     7: .same(proto: "T_ECHO"),
-    8: .same(proto: "TLORA_V1_1p3"),
+    8: .same(proto: "TLORA_V1_1P3"),
     9: .same(proto: "RAK4631"),
     10: .same(proto: "HELTEC_V2_1"),
     11: .same(proto: "HELTEC_V1"),
+    12: .same(proto: "LILYGO_TBEAM_S3_CORE"),
+    13: .same(proto: "RAK11200"),
+    14: .same(proto: "NANO_G1"),
+    25: .same(proto: "STATION_G1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
@@ -2149,37 +2160,34 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     37: .same(proto: "PORTDUINO"),
     38: .same(proto: "ANDROID_SIM"),
     39: .same(proto: "DIY_V1"),
-    40: .same(proto: "RAK11200"),
-    41: .same(proto: "NANO_G1"),
-    42: .same(proto: "NRF52840_PCA10059"),
-    43: .same(proto: "DR_DEV"),
-    44: .same(proto: "M5STACK"),
-    45: .same(proto: "STATION_G1"),
+    40: .same(proto: "NRF52840_PCA10059"),
+    41: .same(proto: "DR_DEV"),
+    42: .same(proto: "M5STACK"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "Unused"),
+    0: .same(proto: "ZERO"),
     237: .same(proto: "DATA_PAYLOAD_LEN"),
   ]
 }
 
 extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "None"),
-    1: .same(proto: "TxWatchdog"),
-    2: .same(proto: "SleepEnterWait"),
-    3: .same(proto: "NoRadio"),
-    4: .same(proto: "Unspecified"),
-    5: .same(proto: "UBloxInitFailed"),
-    6: .same(proto: "NoAXP192"),
-    7: .same(proto: "InvalidRadioSetting"),
-    8: .same(proto: "TransmitFailed"),
-    9: .same(proto: "Brownout"),
-    10: .same(proto: "SX1262Failure"),
-    11: .same(proto: "RadioSpiBug"),
+    0: .same(proto: "NONE"),
+    1: .same(proto: "TX_WATCHDOG"),
+    2: .same(proto: "SLEEP_ENTER_WAIT"),
+    3: .same(proto: "NO_RADIO"),
+    4: .same(proto: "UNSPECIFIED"),
+    5: .same(proto: "UBLOX_UNIT_FAILED"),
+    6: .same(proto: "NO_AXP192"),
+    7: .same(proto: "INVALID_RADIO_SETTING"),
+    8: .same(proto: "TRANSMIT_FAILED"),
+    9: .same(proto: "BROWNOUT"),
+    10: .same(proto: "SX1262_FAILURE"),
+    11: .same(proto: "RADIO_SPI_BUG"),
   ]
 }
 
@@ -2189,25 +2197,25 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     1: .standard(proto: "latitude_i"),
     2: .standard(proto: "longitude_i"),
     3: .same(proto: "altitude"),
-    9: .same(proto: "time"),
-    10: .standard(proto: "location_source"),
-    11: .standard(proto: "altitude_source"),
-    12: .standard(proto: "pos_timestamp"),
-    13: .standard(proto: "pos_time_millis"),
-    14: .standard(proto: "altitude_hae"),
-    15: .standard(proto: "alt_geoid_sep"),
-    16: .same(proto: "PDOP"),
-    17: .same(proto: "HDOP"),
-    18: .same(proto: "VDOP"),
-    19: .standard(proto: "gps_accuracy"),
-    20: .standard(proto: "ground_speed"),
-    21: .standard(proto: "ground_track"),
-    22: .standard(proto: "fix_quality"),
-    23: .standard(proto: "fix_type"),
-    24: .standard(proto: "sats_in_view"),
-    25: .standard(proto: "sensor_id"),
-    40: .standard(proto: "pos_next_update"),
-    41: .standard(proto: "pos_seq_number"),
+    4: .same(proto: "time"),
+    5: .standard(proto: "location_source"),
+    6: .standard(proto: "altitude_source"),
+    7: .same(proto: "timestamp"),
+    8: .standard(proto: "timestamp_millis_adjust"),
+    9: .standard(proto: "altitude_hae"),
+    10: .standard(proto: "altitude_geoidal_seperation"),
+    11: .same(proto: "PDOP"),
+    12: .same(proto: "HDOP"),
+    13: .same(proto: "VDOP"),
+    14: .standard(proto: "gps_accuracy"),
+    15: .standard(proto: "ground_speed"),
+    16: .standard(proto: "ground_track"),
+    17: .standard(proto: "fix_quality"),
+    18: .standard(proto: "fix_type"),
+    19: .standard(proto: "sats_in_view"),
+    20: .standard(proto: "sensor_id"),
+    21: .standard(proto: "next_update"),
+    22: .standard(proto: "seq_number"),
   ]
 
   fileprivate class _StorageClass {
@@ -2215,12 +2223,12 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _longitudeI: Int32 = 0
     var _altitude: Int32 = 0
     var _time: UInt32 = 0
-    var _locationSource: Position.LocSource = .locsrcUnspecified
-    var _altitudeSource: Position.AltSource = .altsrcUnspecified
-    var _posTimestamp: UInt32 = 0
-    var _posTimeMillis: Int32 = 0
+    var _locationSource: Position.LocSource = .locUnset
+    var _altitudeSource: Position.AltSource = .altUnset
+    var _timestamp: UInt32 = 0
+    var _timestampMillisAdjust: Int32 = 0
     var _altitudeHae: Int32 = 0
-    var _altGeoidSep: Int32 = 0
+    var _altitudeGeoidalSeperation: Int32 = 0
     var _pdop: UInt32 = 0
     var _hdop: UInt32 = 0
     var _vdop: UInt32 = 0
@@ -2231,8 +2239,8 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _fixType: UInt32 = 0
     var _satsInView: UInt32 = 0
     var _sensorID: UInt32 = 0
-    var _posNextUpdate: UInt32 = 0
-    var _posSeqNumber: UInt32 = 0
+    var _nextUpdate: UInt32 = 0
+    var _seqNumber: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -2245,10 +2253,10 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _time = source._time
       _locationSource = source._locationSource
       _altitudeSource = source._altitudeSource
-      _posTimestamp = source._posTimestamp
-      _posTimeMillis = source._posTimeMillis
+      _timestamp = source._timestamp
+      _timestampMillisAdjust = source._timestampMillisAdjust
       _altitudeHae = source._altitudeHae
-      _altGeoidSep = source._altGeoidSep
+      _altitudeGeoidalSeperation = source._altitudeGeoidalSeperation
       _pdop = source._pdop
       _hdop = source._hdop
       _vdop = source._vdop
@@ -2259,8 +2267,8 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _fixType = source._fixType
       _satsInView = source._satsInView
       _sensorID = source._sensorID
-      _posNextUpdate = source._posNextUpdate
-      _posSeqNumber = source._posSeqNumber
+      _nextUpdate = source._nextUpdate
+      _seqNumber = source._seqNumber
     }
   }
 
@@ -2282,25 +2290,25 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 1: try { try decoder.decodeSingularSFixed32Field(value: &_storage._latitudeI) }()
         case 2: try { try decoder.decodeSingularSFixed32Field(value: &_storage._longitudeI) }()
         case 3: try { try decoder.decodeSingularInt32Field(value: &_storage._altitude) }()
-        case 9: try { try decoder.decodeSingularFixed32Field(value: &_storage._time) }()
-        case 10: try { try decoder.decodeSingularEnumField(value: &_storage._locationSource) }()
-        case 11: try { try decoder.decodeSingularEnumField(value: &_storage._altitudeSource) }()
-        case 12: try { try decoder.decodeSingularFixed32Field(value: &_storage._posTimestamp) }()
-        case 13: try { try decoder.decodeSingularInt32Field(value: &_storage._posTimeMillis) }()
-        case 14: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeHae) }()
-        case 15: try { try decoder.decodeSingularSInt32Field(value: &_storage._altGeoidSep) }()
-        case 16: try { try decoder.decodeSingularUInt32Field(value: &_storage._pdop) }()
-        case 17: try { try decoder.decodeSingularUInt32Field(value: &_storage._hdop) }()
-        case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._vdop) }()
-        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsAccuracy) }()
-        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundSpeed) }()
-        case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundTrack) }()
-        case 22: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixQuality) }()
-        case 23: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixType) }()
-        case 24: try { try decoder.decodeSingularUInt32Field(value: &_storage._satsInView) }()
-        case 25: try { try decoder.decodeSingularUInt32Field(value: &_storage._sensorID) }()
-        case 40: try { try decoder.decodeSingularUInt32Field(value: &_storage._posNextUpdate) }()
-        case 41: try { try decoder.decodeSingularUInt32Field(value: &_storage._posSeqNumber) }()
+        case 4: try { try decoder.decodeSingularFixed32Field(value: &_storage._time) }()
+        case 5: try { try decoder.decodeSingularEnumField(value: &_storage._locationSource) }()
+        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._altitudeSource) }()
+        case 7: try { try decoder.decodeSingularFixed32Field(value: &_storage._timestamp) }()
+        case 8: try { try decoder.decodeSingularInt32Field(value: &_storage._timestampMillisAdjust) }()
+        case 9: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeHae) }()
+        case 10: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeGeoidalSeperation) }()
+        case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._pdop) }()
+        case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._hdop) }()
+        case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._vdop) }()
+        case 14: try { try decoder.decodeSingularUInt32Field(value: &_storage._gpsAccuracy) }()
+        case 15: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundSpeed) }()
+        case 16: try { try decoder.decodeSingularUInt32Field(value: &_storage._groundTrack) }()
+        case 17: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixQuality) }()
+        case 18: try { try decoder.decodeSingularUInt32Field(value: &_storage._fixType) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._satsInView) }()
+        case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._sensorID) }()
+        case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextUpdate) }()
+        case 22: try { try decoder.decodeSingularUInt32Field(value: &_storage._seqNumber) }()
         default: break
         }
       }
@@ -2319,61 +2327,61 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         try visitor.visitSingularInt32Field(value: _storage._altitude, fieldNumber: 3)
       }
       if _storage._time != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._time, fieldNumber: 9)
+        try visitor.visitSingularFixed32Field(value: _storage._time, fieldNumber: 4)
       }
-      if _storage._locationSource != .locsrcUnspecified {
-        try visitor.visitSingularEnumField(value: _storage._locationSource, fieldNumber: 10)
+      if _storage._locationSource != .locUnset {
+        try visitor.visitSingularEnumField(value: _storage._locationSource, fieldNumber: 5)
       }
-      if _storage._altitudeSource != .altsrcUnspecified {
-        try visitor.visitSingularEnumField(value: _storage._altitudeSource, fieldNumber: 11)
+      if _storage._altitudeSource != .altUnset {
+        try visitor.visitSingularEnumField(value: _storage._altitudeSource, fieldNumber: 6)
       }
-      if _storage._posTimestamp != 0 {
-        try visitor.visitSingularFixed32Field(value: _storage._posTimestamp, fieldNumber: 12)
+      if _storage._timestamp != 0 {
+        try visitor.visitSingularFixed32Field(value: _storage._timestamp, fieldNumber: 7)
       }
-      if _storage._posTimeMillis != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._posTimeMillis, fieldNumber: 13)
+      if _storage._timestampMillisAdjust != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._timestampMillisAdjust, fieldNumber: 8)
       }
       if _storage._altitudeHae != 0 {
-        try visitor.visitSingularSInt32Field(value: _storage._altitudeHae, fieldNumber: 14)
+        try visitor.visitSingularSInt32Field(value: _storage._altitudeHae, fieldNumber: 9)
       }
-      if _storage._altGeoidSep != 0 {
-        try visitor.visitSingularSInt32Field(value: _storage._altGeoidSep, fieldNumber: 15)
+      if _storage._altitudeGeoidalSeperation != 0 {
+        try visitor.visitSingularSInt32Field(value: _storage._altitudeGeoidalSeperation, fieldNumber: 10)
       }
       if _storage._pdop != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._pdop, fieldNumber: 16)
+        try visitor.visitSingularUInt32Field(value: _storage._pdop, fieldNumber: 11)
       }
       if _storage._hdop != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._hdop, fieldNumber: 17)
+        try visitor.visitSingularUInt32Field(value: _storage._hdop, fieldNumber: 12)
       }
       if _storage._vdop != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._vdop, fieldNumber: 18)
+        try visitor.visitSingularUInt32Field(value: _storage._vdop, fieldNumber: 13)
       }
       if _storage._gpsAccuracy != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._gpsAccuracy, fieldNumber: 19)
+        try visitor.visitSingularUInt32Field(value: _storage._gpsAccuracy, fieldNumber: 14)
       }
       if _storage._groundSpeed != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._groundSpeed, fieldNumber: 20)
+        try visitor.visitSingularUInt32Field(value: _storage._groundSpeed, fieldNumber: 15)
       }
       if _storage._groundTrack != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._groundTrack, fieldNumber: 21)
+        try visitor.visitSingularUInt32Field(value: _storage._groundTrack, fieldNumber: 16)
       }
       if _storage._fixQuality != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._fixQuality, fieldNumber: 22)
+        try visitor.visitSingularUInt32Field(value: _storage._fixQuality, fieldNumber: 17)
       }
       if _storage._fixType != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._fixType, fieldNumber: 23)
+        try visitor.visitSingularUInt32Field(value: _storage._fixType, fieldNumber: 18)
       }
       if _storage._satsInView != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._satsInView, fieldNumber: 24)
+        try visitor.visitSingularUInt32Field(value: _storage._satsInView, fieldNumber: 19)
       }
       if _storage._sensorID != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._sensorID, fieldNumber: 25)
+        try visitor.visitSingularUInt32Field(value: _storage._sensorID, fieldNumber: 20)
       }
-      if _storage._posNextUpdate != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._posNextUpdate, fieldNumber: 40)
+      if _storage._nextUpdate != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._nextUpdate, fieldNumber: 21)
       }
-      if _storage._posSeqNumber != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._posSeqNumber, fieldNumber: 41)
+      if _storage._seqNumber != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._seqNumber, fieldNumber: 22)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -2390,10 +2398,10 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._time != rhs_storage._time {return false}
         if _storage._locationSource != rhs_storage._locationSource {return false}
         if _storage._altitudeSource != rhs_storage._altitudeSource {return false}
-        if _storage._posTimestamp != rhs_storage._posTimestamp {return false}
-        if _storage._posTimeMillis != rhs_storage._posTimeMillis {return false}
+        if _storage._timestamp != rhs_storage._timestamp {return false}
+        if _storage._timestampMillisAdjust != rhs_storage._timestampMillisAdjust {return false}
         if _storage._altitudeHae != rhs_storage._altitudeHae {return false}
-        if _storage._altGeoidSep != rhs_storage._altGeoidSep {return false}
+        if _storage._altitudeGeoidalSeperation != rhs_storage._altitudeGeoidalSeperation {return false}
         if _storage._pdop != rhs_storage._pdop {return false}
         if _storage._hdop != rhs_storage._hdop {return false}
         if _storage._vdop != rhs_storage._vdop {return false}
@@ -2404,8 +2412,8 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._fixType != rhs_storage._fixType {return false}
         if _storage._satsInView != rhs_storage._satsInView {return false}
         if _storage._sensorID != rhs_storage._sensorID {return false}
-        if _storage._posNextUpdate != rhs_storage._posNextUpdate {return false}
-        if _storage._posSeqNumber != rhs_storage._posSeqNumber {return false}
+        if _storage._nextUpdate != rhs_storage._nextUpdate {return false}
+        if _storage._seqNumber != rhs_storage._seqNumber {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2417,20 +2425,20 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "LOCSRC_UNSPECIFIED"),
-    1: .same(proto: "LOCSRC_MANUAL_ENTRY"),
-    2: .same(proto: "LOCSRC_GPS_INTERNAL"),
-    3: .same(proto: "LOCSRC_GPS_EXTERNAL"),
+    0: .same(proto: "LOC_UNSET"),
+    1: .same(proto: "LOC_MANUAL"),
+    2: .same(proto: "LOC_INTERNAL"),
+    3: .same(proto: "LOC_EXTERNAL"),
   ]
 }
 
 extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "ALTSRC_UNSPECIFIED"),
-    1: .same(proto: "ALTSRC_MANUAL_ENTRY"),
-    2: .same(proto: "ALTSRC_GPS_INTERNAL"),
-    3: .same(proto: "ALTSRC_GPS_EXTERNAL"),
-    4: .same(proto: "ALTSRC_BAROMETRIC"),
+    0: .same(proto: "ALT_UNSET"),
+    1: .same(proto: "ALT_MANUAL"),
+    2: .same(proto: "ALT_INTERNAL"),
+    3: .same(proto: "ALT_EXTERNAL"),
+    4: .same(proto: "ALT_BAROMETRIC"),
   ]
 }
 
@@ -2441,8 +2449,8 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     2: .standard(proto: "long_name"),
     3: .standard(proto: "short_name"),
     4: .same(proto: "macaddr"),
-    6: .standard(proto: "hw_model"),
-    7: .standard(proto: "is_licensed"),
+    5: .standard(proto: "hw_model"),
+    6: .standard(proto: "is_licensed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2455,8 +2463,8 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 2: try { try decoder.decodeSingularStringField(value: &self.longName) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
       case 4: try { try decoder.decodeSingularBytesField(value: &self.macaddr) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.isLicensed) }()
       default: break
       }
     }
@@ -2476,10 +2484,10 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       try visitor.visitSingularBytesField(value: self.macaddr, fieldNumber: 4)
     }
     if self.hwModel != .unset {
-      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 6)
+      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 5)
     }
     if self.isLicensed != false {
-      try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 7)
+      try visitor.visitSingularBoolField(value: self.isLicensed, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2499,7 +2507,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
 extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "RouteDiscovery"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "route"),
+    1: .same(proto: "route"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2508,7 +2516,7 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 2: try { try decoder.decodeRepeatedFixed32Field(value: &self.route) }()
+      case 1: try { try decoder.decodeRepeatedFixed32Field(value: &self.route) }()
       default: break
       }
     }
@@ -2516,7 +2524,7 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.route.isEmpty {
-      try visitor.visitPackedFixed32Field(value: self.route, fieldNumber: 2)
+      try visitor.visitPackedFixed32Field(value: self.route, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2780,11 +2788,11 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     6: .same(proto: "id"),
     7: .standard(proto: "rx_time"),
     8: .standard(proto: "rx_snr"),
-    10: .standard(proto: "hop_limit"),
-    11: .standard(proto: "want_ack"),
-    12: .same(proto: "priority"),
-    13: .standard(proto: "rx_rssi"),
-    15: .same(proto: "delayed"),
+    9: .standard(proto: "hop_limit"),
+    10: .standard(proto: "want_ack"),
+    11: .same(proto: "priority"),
+    12: .standard(proto: "rx_rssi"),
+    13: .same(proto: "delayed"),
   ]
 
   fileprivate class _StorageClass {
@@ -2863,11 +2871,11 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 6: try { try decoder.decodeSingularFixed32Field(value: &_storage._id) }()
         case 7: try { try decoder.decodeSingularFixed32Field(value: &_storage._rxTime) }()
         case 8: try { try decoder.decodeSingularFloatField(value: &_storage._rxSnr) }()
-        case 10: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopLimit) }()
-        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._wantAck) }()
-        case 12: try { try decoder.decodeSingularEnumField(value: &_storage._priority) }()
-        case 13: try { try decoder.decodeSingularInt32Field(value: &_storage._rxRssi) }()
-        case 15: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopLimit) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._wantAck) }()
+        case 11: try { try decoder.decodeSingularEnumField(value: &_storage._priority) }()
+        case 12: try { try decoder.decodeSingularInt32Field(value: &_storage._rxRssi) }()
+        case 13: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
         default: break
         }
       }
@@ -2910,19 +2918,19 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         try visitor.visitSingularFloatField(value: _storage._rxSnr, fieldNumber: 8)
       }
       if _storage._hopLimit != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._hopLimit, fieldNumber: 10)
+        try visitor.visitSingularUInt32Field(value: _storage._hopLimit, fieldNumber: 9)
       }
       if _storage._wantAck != false {
-        try visitor.visitSingularBoolField(value: _storage._wantAck, fieldNumber: 11)
+        try visitor.visitSingularBoolField(value: _storage._wantAck, fieldNumber: 10)
       }
       if _storage._priority != .unset {
-        try visitor.visitSingularEnumField(value: _storage._priority, fieldNumber: 12)
+        try visitor.visitSingularEnumField(value: _storage._priority, fieldNumber: 11)
       }
       if _storage._rxRssi != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._rxRssi, fieldNumber: 13)
+        try visitor.visitSingularInt32Field(value: _storage._rxRssi, fieldNumber: 12)
       }
       if _storage._delayed != .noDelay {
-        try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 15)
+        try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 13)
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -3045,20 +3053,20 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "my_node_num"),
     2: .standard(proto: "has_gps"),
-    15: .standard(proto: "max_channels"),
-    6: .standard(proto: "firmware_version"),
-    7: .standard(proto: "error_code"),
-    8: .standard(proto: "error_address"),
-    9: .standard(proto: "error_count"),
-    10: .standard(proto: "reboot_count"),
-    11: .same(proto: "bitrate"),
-    13: .standard(proto: "message_timeout_msec"),
-    14: .standard(proto: "min_app_version"),
-    16: .standard(proto: "air_period_tx"),
-    17: .standard(proto: "air_period_rx"),
-    18: .standard(proto: "has_wifi"),
-    19: .standard(proto: "channel_utilization"),
-    20: .standard(proto: "air_util_tx"),
+    3: .standard(proto: "max_channels"),
+    4: .standard(proto: "firmware_version"),
+    5: .standard(proto: "error_code"),
+    6: .standard(proto: "error_address"),
+    7: .standard(proto: "error_count"),
+    8: .standard(proto: "reboot_count"),
+    9: .same(proto: "bitrate"),
+    10: .standard(proto: "message_timeout_msec"),
+    11: .standard(proto: "min_app_version"),
+    12: .standard(proto: "air_period_tx"),
+    13: .standard(proto: "air_period_rx"),
+    14: .standard(proto: "has_wifi"),
+    15: .standard(proto: "channel_utilization"),
+    16: .standard(proto: "air_util_tx"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3069,20 +3077,20 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.myNodeNum) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.hasGps_p) }()
-      case 6: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
-      case 7: try { try decoder.decodeSingularEnumField(value: &self.errorCode) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.errorAddress) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.errorCount) }()
-      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.rebootCount) }()
-      case 11: try { try decoder.decodeSingularFloatField(value: &self.bitrate) }()
-      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.messageTimeoutMsec) }()
-      case 14: try { try decoder.decodeSingularUInt32Field(value: &self.minAppVersion) }()
-      case 15: try { try decoder.decodeSingularUInt32Field(value: &self.maxChannels) }()
-      case 16: try { try decoder.decodeRepeatedUInt32Field(value: &self.airPeriodTx) }()
-      case 17: try { try decoder.decodeRepeatedUInt32Field(value: &self.airPeriodRx) }()
-      case 18: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
-      case 19: try { try decoder.decodeSingularFloatField(value: &self.channelUtilization) }()
-      case 20: try { try decoder.decodeSingularFloatField(value: &self.airUtilTx) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.maxChannels) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.errorCode) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.errorAddress) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.errorCount) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rebootCount) }()
+      case 9: try { try decoder.decodeSingularFloatField(value: &self.bitrate) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.messageTimeoutMsec) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.minAppVersion) }()
+      case 12: try { try decoder.decodeRepeatedUInt32Field(value: &self.airPeriodTx) }()
+      case 13: try { try decoder.decodeRepeatedUInt32Field(value: &self.airPeriodRx) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
+      case 15: try { try decoder.decodeSingularFloatField(value: &self.channelUtilization) }()
+      case 16: try { try decoder.decodeSingularFloatField(value: &self.airUtilTx) }()
       default: break
       }
     }
@@ -3095,47 +3103,47 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.hasGps_p != false {
       try visitor.visitSingularBoolField(value: self.hasGps_p, fieldNumber: 2)
     }
+    if self.maxChannels != 0 {
+      try visitor.visitSingularUInt32Field(value: self.maxChannels, fieldNumber: 3)
+    }
     if !self.firmwareVersion.isEmpty {
-      try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 6)
+      try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 4)
     }
     if self.errorCode != .none {
-      try visitor.visitSingularEnumField(value: self.errorCode, fieldNumber: 7)
+      try visitor.visitSingularEnumField(value: self.errorCode, fieldNumber: 5)
     }
     if self.errorAddress != 0 {
-      try visitor.visitSingularUInt32Field(value: self.errorAddress, fieldNumber: 8)
+      try visitor.visitSingularUInt32Field(value: self.errorAddress, fieldNumber: 6)
     }
     if self.errorCount != 0 {
-      try visitor.visitSingularUInt32Field(value: self.errorCount, fieldNumber: 9)
+      try visitor.visitSingularUInt32Field(value: self.errorCount, fieldNumber: 7)
     }
     if self.rebootCount != 0 {
-      try visitor.visitSingularUInt32Field(value: self.rebootCount, fieldNumber: 10)
+      try visitor.visitSingularUInt32Field(value: self.rebootCount, fieldNumber: 8)
     }
     if self.bitrate != 0 {
-      try visitor.visitSingularFloatField(value: self.bitrate, fieldNumber: 11)
+      try visitor.visitSingularFloatField(value: self.bitrate, fieldNumber: 9)
     }
     if self.messageTimeoutMsec != 0 {
-      try visitor.visitSingularUInt32Field(value: self.messageTimeoutMsec, fieldNumber: 13)
+      try visitor.visitSingularUInt32Field(value: self.messageTimeoutMsec, fieldNumber: 10)
     }
     if self.minAppVersion != 0 {
-      try visitor.visitSingularUInt32Field(value: self.minAppVersion, fieldNumber: 14)
-    }
-    if self.maxChannels != 0 {
-      try visitor.visitSingularUInt32Field(value: self.maxChannels, fieldNumber: 15)
+      try visitor.visitSingularUInt32Field(value: self.minAppVersion, fieldNumber: 11)
     }
     if !self.airPeriodTx.isEmpty {
-      try visitor.visitPackedUInt32Field(value: self.airPeriodTx, fieldNumber: 16)
+      try visitor.visitPackedUInt32Field(value: self.airPeriodTx, fieldNumber: 12)
     }
     if !self.airPeriodRx.isEmpty {
-      try visitor.visitPackedUInt32Field(value: self.airPeriodRx, fieldNumber: 17)
+      try visitor.visitPackedUInt32Field(value: self.airPeriodRx, fieldNumber: 13)
     }
     if self.hasWifi_p != false {
-      try visitor.visitSingularBoolField(value: self.hasWifi_p, fieldNumber: 18)
+      try visitor.visitSingularBoolField(value: self.hasWifi_p, fieldNumber: 14)
     }
     if self.channelUtilization != 0 {
-      try visitor.visitSingularFloatField(value: self.channelUtilization, fieldNumber: 19)
+      try visitor.visitSingularFloatField(value: self.channelUtilization, fieldNumber: 15)
     }
     if self.airUtilTx != 0 {
-      try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 20)
+      try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 16)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3228,14 +3236,14 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   static let protoMessageName: String = "FromRadio"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
-    11: .same(proto: "packet"),
+    2: .same(proto: "packet"),
     3: .standard(proto: "my_info"),
     4: .standard(proto: "node_info"),
-    6: .same(proto: "config"),
-    7: .standard(proto: "log_record"),
-    8: .standard(proto: "config_complete_id"),
-    9: .same(proto: "rebooted"),
-    10: .same(proto: "moduleConfig"),
+    5: .same(proto: "config"),
+    6: .standard(proto: "log_record"),
+    7: .standard(proto: "config_complete_id"),
+    8: .same(proto: "rebooted"),
+    9: .same(proto: "moduleConfig"),
   ]
 
   fileprivate class _StorageClass {
@@ -3268,6 +3276,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         // enabled. https://github.com/apple/swift-protobuf/issues/1034
         switch fieldNumber {
         case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._id) }()
+        case 2: try {
+          var v: MeshPacket?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .packet(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .packet(v)
+          }
+        }()
         case 3: try {
           var v: MyNodeInfo?
           var hadOneofValue = false
@@ -3294,7 +3315,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .nodeInfo(v)
           }
         }()
-        case 6: try {
+        case 5: try {
           var v: Config?
           var hadOneofValue = false
           if let current = _storage._payloadVariant {
@@ -3307,7 +3328,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .config(v)
           }
         }()
-        case 7: try {
+        case 6: try {
           var v: LogRecord?
           var hadOneofValue = false
           if let current = _storage._payloadVariant {
@@ -3320,7 +3341,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .logRecord(v)
           }
         }()
-        case 8: try {
+        case 7: try {
           var v: UInt32?
           try decoder.decodeSingularUInt32Field(value: &v)
           if let v = v {
@@ -3328,7 +3349,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .configCompleteID(v)
           }
         }()
-        case 9: try {
+        case 8: try {
           var v: Bool?
           try decoder.decodeSingularBoolField(value: &v)
           if let v = v {
@@ -3336,7 +3357,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .rebooted(v)
           }
         }()
-        case 10: try {
+        case 9: try {
           var v: ModuleConfig?
           var hadOneofValue = false
           if let current = _storage._payloadVariant {
@@ -3347,19 +3368,6 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           if let v = v {
             if hadOneofValue {try decoder.handleConflictingOneOf()}
             _storage._payloadVariant = .moduleConfig(v)
-          }
-        }()
-        case 11: try {
-          var v: MeshPacket?
-          var hadOneofValue = false
-          if let current = _storage._payloadVariant {
-            hadOneofValue = true
-            if case .packet(let m) = current {v = m}
-          }
-          try decoder.decodeSingularMessageField(value: &v)
-          if let v = v {
-            if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._payloadVariant = .packet(v)
           }
         }()
         default: break
@@ -3378,6 +3386,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         try visitor.visitSingularUInt32Field(value: _storage._id, fieldNumber: 1)
       }
       switch _storage._payloadVariant {
+      case .packet?: try {
+        guard case .packet(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      }()
       case .myInfo?: try {
         guard case .myInfo(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
@@ -3388,27 +3400,23 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       }()
       case .config?: try {
         guard case .config(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
       }()
       case .logRecord?: try {
         guard case .logRecord(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
       }()
       case .configCompleteID?: try {
         guard case .configCompleteID(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 8)
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 7)
       }()
       case .rebooted?: try {
         guard case .rebooted(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
       }()
       case .moduleConfig?: try {
         guard case .moduleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
-      }()
-      case .packet?: try {
-        guard case .packet(let v)? = _storage._payloadVariant else { preconditionFailure() }
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
       }()
       case nil: break
       }
@@ -3435,10 +3443,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
 extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ToRadio"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "packet"),
-    3: .standard(proto: "peer_info"),
-    100: .standard(proto: "want_config_id"),
-    104: .same(proto: "disconnect"),
+    1: .same(proto: "packet"),
+    2: .standard(proto: "peer_info"),
+    3: .standard(proto: "want_config_id"),
+    4: .same(proto: "disconnect"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3447,7 +3455,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 2: try {
+      case 1: try {
         var v: MeshPacket?
         var hadOneofValue = false
         if let current = self.payloadVariant {
@@ -3460,7 +3468,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .packet(v)
         }
       }()
-      case 3: try {
+      case 2: try {
         var v: ToRadio.PeerInfo?
         var hadOneofValue = false
         if let current = self.payloadVariant {
@@ -3473,7 +3481,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .peerInfo(v)
         }
       }()
-      case 100: try {
+      case 3: try {
         var v: UInt32?
         try decoder.decodeSingularUInt32Field(value: &v)
         if let v = v {
@@ -3481,7 +3489,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .wantConfigID(v)
         }
       }()
-      case 104: try {
+      case 4: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
@@ -3502,19 +3510,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     switch self.payloadVariant {
     case .packet?: try {
       guard case .packet(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }()
     case .peerInfo?: try {
       guard case .peerInfo(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }()
     case .wantConfigID?: try {
       guard case .wantConfigID(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 100)
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
     }()
     case .disconnect?: try {
       guard case .disconnect(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 104)
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
     }()
     case nil: break
     }

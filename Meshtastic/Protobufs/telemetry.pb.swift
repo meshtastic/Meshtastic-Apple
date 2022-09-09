@@ -27,7 +27,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
   ///
   /// No external telemetry sensor explicitly set
-  case unset // = 0
+  case sensorUnset // = 0
 
   ///
   /// High accuracy temperature, pressure, humidity
@@ -55,12 +55,12 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .unset
+    self = .sensorUnset
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .unset
+    case 0: self = .sensorUnset
     case 1: self = .bme280
     case 2: self = .bme680
     case 3: self = .mcp9808
@@ -73,7 +73,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
   var rawValue: Int {
     switch self {
-    case .unset: return 0
+    case .sensorUnset: return 0
     case .bme280: return 1
     case .bme680: return 2
     case .mcp9808: return 3
@@ -91,7 +91,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [TelemetrySensorType] = [
-    .unset,
+    .sensorUnset,
     .bme280,
     .bme680,
     .mcp9808,
@@ -249,7 +249,7 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSET"),
+    0: .same(proto: "SENSOR_UNSET"),
     1: .same(proto: "BME280"),
     2: .same(proto: "BME680"),
     3: .same(proto: "MCP9808"),
