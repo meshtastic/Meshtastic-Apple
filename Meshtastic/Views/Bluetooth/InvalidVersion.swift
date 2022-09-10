@@ -22,7 +22,7 @@ struct InvalidVersion: View {
 				.font(.title2)
 				.padding()
 			
-			Text("Version 1.3 includes breaking changes to devices and the client apps. The version 1.3 app does not support 1.2 nodes, there are two builds for 1.2 under Versions & Build Groups in TestFlight that will be available until early September 2022.")
+			Text("Version 1.3 includes breaking changes to devices and the client apps. The version 1.3 app does not support 1.2 nodes, there is one build for 1.2 under Versions & Build Groups in TestFlight that will be available until the end of November 2022.")
 				.font(.callout)
 				.padding()
 			
