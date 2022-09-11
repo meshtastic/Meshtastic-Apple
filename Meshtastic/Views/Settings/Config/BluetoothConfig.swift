@@ -19,17 +19,16 @@ struct BluetoothConfig: View {
 	@State var hasChanges = false
 	
 	@State var enabled = true
-	/// Determines the pairing strategy for the device
 	@State var mode = 0
-	
-	/// Specified pin for PairingMode.FixedPin
 	@State var fixedPin = "123456"
 	
 	let numberFormatter: NumberFormatter = {
-			let formatter = NumberFormatter()
-		formatter.numberStyle = .none
+		
+		let formatter = NumberFormatter()
+			formatter.numberStyle = .none
+		
 			return formatter
-		}()
+	}()
 	
 	var body: some View {
 		
@@ -135,7 +134,7 @@ struct BluetoothConfig: View {
 
 				self.enabled = node!.bluetoothConfig?.enabled ?? true
 				self.mode = Int(node!.bluetoothConfig?.mode ?? 0)
-				//self.fixedPin = (String(node!.bluetoothConfig?.fixedPin) ?? "123456")
+				self.fixedPin = String(node!.bluetoothConfig?.fixedPin ?? 123456)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
