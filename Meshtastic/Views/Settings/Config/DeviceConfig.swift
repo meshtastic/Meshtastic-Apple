@@ -81,7 +81,7 @@ struct DeviceConfig: View {
 						
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-						dc.serialDisabled = !serialEnabled
+						dc.serialEnabled = serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
 						
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)

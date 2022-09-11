@@ -178,7 +178,6 @@ struct ModuleConfig {
     ///
     /// If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
     /// is_uplink_enabled or is_downlink_enabled.
-    /// But if this flag is set, all MQTT features will be disabled and no servers will be contacted.
     var enabled: Bool = false
 
     ///

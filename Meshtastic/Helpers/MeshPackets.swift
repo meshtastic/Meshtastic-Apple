@@ -87,7 +87,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let newDeviceConfig = DeviceConfigEntity(context: context)
 					
 					newDeviceConfig.role = Int32(config.device.role.rawValue)
-					newDeviceConfig.serialEnabled = !config.device.serialDisabled
+					newDeviceConfig.serialEnabled = config.device.serialEnabled
 					newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
 					
 					fetchedNode[0].deviceConfig = newDeviceConfig
@@ -95,7 +95,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				} else {
 					
 					fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
-					fetchedNode[0].deviceConfig?.serialEnabled = !config.device.serialDisabled
+					fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
 					fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
 				}
 				
@@ -307,8 +307,8 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					
 					let newPositionConfig = PositionConfigEntity(context: context)
 					
-					newPositionConfig.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
-					newPositionConfig.deviceGpsEnabled = !config.position.gpsDisabled
+					newPositionConfig.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
+					newPositionConfig.deviceGpsEnabled = config.position.gpsEnabled
 					newPositionConfig.fixedPosition = config.position.fixedPosition
 					newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
 					newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
@@ -319,8 +319,8 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					
 				} else {
 					
-					fetchedNode[0].positionConfig?.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
-					fetchedNode[0].positionConfig?.deviceGpsEnabled = !config.position.gpsDisabled
+					fetchedNode[0].positionConfig?.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
+					fetchedNode[0].positionConfig?.deviceGpsEnabled = config.position.gpsEnabled
 					fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
 					fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
 					fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
@@ -340,6 +340,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
 				}
+				
 			} else {
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")

@@ -150,8 +150,8 @@ struct Config {
     var role: Config.DeviceConfig.Role = .client
 
     ///
-    /// If set, this will disable the SerialConsole by not initilizing the StreamAPI
-    var serialDisabled: Bool = false
+    /// Disabling this will disable the SerialConsole by not initilizing the StreamAPI
+    var serialEnabled: Bool = false
 
     ///
     /// By default we turn off logging as soon as an API client connects (to keep shared serial link quiet).
@@ -228,8 +228,8 @@ struct Config {
     var positionBroadcastSecs: UInt32 = 0
 
     ///
-    /// Disable adaptive position braoadcast, which is now the default.
-    var positionBroadcastSmartDisabled: Bool = false
+    /// Adaptive position braoadcast, which is now the default.
+    var positionBroadcastSmartEnabled: Bool = false
 
     ///
     /// If set, this node is at a fixed position.
@@ -238,8 +238,8 @@ struct Config {
     var fixedPosition: Bool = false
 
     ///
-    /// Should the GPS be disabled for this node?
-    var gpsDisabled: Bool = false
+    /// Is GPS enabled for this node?
+    var gpsEnabled: Bool = false
 
     ///
     /// How often should we try to get GPS position (in seconds)
@@ -606,11 +606,9 @@ struct Config {
     // methods supported on all messages.
 
     ///
-    /// If zero then, use default max legal continuous power (ie. something that won't
-    /// burn out the radio hardware)
-    /// In most cases you should use zero here.
-    /// Units are in dBm.
-    var txPower: Int32 = 0
+    /// When enabled, the `modem_preset` fields will be adheared to, else the `bandwidth`/`spread_factor`/`coding_rate`
+    /// will be taked from their respective manually defined fields
+    var usePreset: Bool = false
 
     ///
     /// Either modem_config or bandwidth/spreading/coding will be specified - NOT BOTH.
@@ -654,7 +652,14 @@ struct Config {
     ///
     /// Disable TX from the LoRa radio. Useful for hot-swapping antennas and other tests.
     /// Defaults to false
-    var txDisabled: Bool = false
+    var txEnabled: Bool = false
+
+    ///
+    /// If zero then, use default max legal continuous power (ie. something that won't
+    /// burn out the radio hardware)
+    /// In most cases you should use zero here.
+    /// Units are in dBm.
+    var txPower: Int32 = 0
 
     ///
     /// For testing it is useful sometimes to force a node to never listen to
@@ -1177,7 +1182,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   static let protoMessageName: String = Config.protoMessageName + ".DeviceConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "role"),
-    2: .standard(proto: "serial_disabled"),
+    2: .standard(proto: "serial_enabled"),
     3: .standard(proto: "debug_log_enabled"),
   ]
 
@@ -1188,7 +1193,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.role) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.serialDisabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
       default: break
       }
@@ -1199,8 +1204,8 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.role != .client {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 1)
     }
-    if self.serialDisabled != false {
-      try visitor.visitSingularBoolField(value: self.serialDisabled, fieldNumber: 2)
+    if self.serialEnabled != false {
+      try visitor.visitSingularBoolField(value: self.serialEnabled, fieldNumber: 2)
     }
     if self.debugLogEnabled != false {
       try visitor.visitSingularBoolField(value: self.debugLogEnabled, fieldNumber: 3)
@@ -1210,7 +1215,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
   static func ==(lhs: Config.DeviceConfig, rhs: Config.DeviceConfig) -> Bool {
     if lhs.role != rhs.role {return false}
-    if lhs.serialDisabled != rhs.serialDisabled {return false}
+    if lhs.serialEnabled != rhs.serialEnabled {return false}
     if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1230,9 +1235,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   static let protoMessageName: String = Config.protoMessageName + ".PositionConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_broadcast_secs"),
-    2: .standard(proto: "position_broadcast_smart_disabled"),
+    2: .standard(proto: "position_broadcast_smart_enabled"),
     3: .standard(proto: "fixed_position"),
-    4: .standard(proto: "gps_disabled"),
+    4: .standard(proto: "gps_enabled"),
     5: .standard(proto: "gps_update_interval"),
     6: .standard(proto: "gps_attempt_time"),
     7: .standard(proto: "position_flags"),
@@ -1245,9 +1250,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.positionBroadcastSecs) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.positionBroadcastSmartDisabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.positionBroadcastSmartEnabled) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.fixedPosition) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.gpsDisabled) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.gpsEnabled) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.gpsUpdateInterval) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.gpsAttemptTime) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
@@ -1260,14 +1265,14 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.positionBroadcastSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionBroadcastSecs, fieldNumber: 1)
     }
-    if self.positionBroadcastSmartDisabled != false {
-      try visitor.visitSingularBoolField(value: self.positionBroadcastSmartDisabled, fieldNumber: 2)
+    if self.positionBroadcastSmartEnabled != false {
+      try visitor.visitSingularBoolField(value: self.positionBroadcastSmartEnabled, fieldNumber: 2)
     }
     if self.fixedPosition != false {
       try visitor.visitSingularBoolField(value: self.fixedPosition, fieldNumber: 3)
     }
-    if self.gpsDisabled != false {
-      try visitor.visitSingularBoolField(value: self.gpsDisabled, fieldNumber: 4)
+    if self.gpsEnabled != false {
+      try visitor.visitSingularBoolField(value: self.gpsEnabled, fieldNumber: 4)
     }
     if self.gpsUpdateInterval != 0 {
       try visitor.visitSingularUInt32Field(value: self.gpsUpdateInterval, fieldNumber: 5)
@@ -1283,9 +1288,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
   static func ==(lhs: Config.PositionConfig, rhs: Config.PositionConfig) -> Bool {
     if lhs.positionBroadcastSecs != rhs.positionBroadcastSecs {return false}
-    if lhs.positionBroadcastSmartDisabled != rhs.positionBroadcastSmartDisabled {return false}
+    if lhs.positionBroadcastSmartEnabled != rhs.positionBroadcastSmartEnabled {return false}
     if lhs.fixedPosition != rhs.fixedPosition {return false}
-    if lhs.gpsDisabled != rhs.gpsDisabled {return false}
+    if lhs.gpsEnabled != rhs.gpsEnabled {return false}
     if lhs.gpsUpdateInterval != rhs.gpsUpdateInterval {return false}
     if lhs.gpsAttemptTime != rhs.gpsAttemptTime {return false}
     if lhs.positionFlags != rhs.positionFlags {return false}
@@ -1512,7 +1517,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProv
 extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "tx_power"),
+    1: .standard(proto: "use_preset"),
     2: .standard(proto: "modem_preset"),
     3: .same(proto: "bandwidth"),
     4: .standard(proto: "spread_factor"),
@@ -1520,7 +1525,8 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     6: .standard(proto: "frequency_offset"),
     7: .same(proto: "region"),
     8: .standard(proto: "hop_limit"),
-    9: .standard(proto: "tx_disabled"),
+    9: .standard(proto: "tx_enabled"),
+    10: .standard(proto: "tx_power"),
     103: .standard(proto: "ignore_incoming"),
   ]
 
@@ -1530,7 +1536,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.usePreset) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.modemPreset) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.bandwidth) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.spreadFactor) }()
@@ -1538,7 +1544,8 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 6: try { try decoder.decodeSingularFloatField(value: &self.frequencyOffset) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.region) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.hopLimit) }()
-      case 9: try { try decoder.decodeSingularBoolField(value: &self.txDisabled) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.txEnabled) }()
+      case 10: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
       default: break
       }
@@ -1546,8 +1553,8 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.txPower != 0 {
-      try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 1)
+    if self.usePreset != false {
+      try visitor.visitSingularBoolField(value: self.usePreset, fieldNumber: 1)
     }
     if self.modemPreset != .longFast {
       try visitor.visitSingularEnumField(value: self.modemPreset, fieldNumber: 2)
@@ -1570,8 +1577,11 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.hopLimit != 0 {
       try visitor.visitSingularUInt32Field(value: self.hopLimit, fieldNumber: 8)
     }
-    if self.txDisabled != false {
-      try visitor.visitSingularBoolField(value: self.txDisabled, fieldNumber: 9)
+    if self.txEnabled != false {
+      try visitor.visitSingularBoolField(value: self.txEnabled, fieldNumber: 9)
+    }
+    if self.txPower != 0 {
+      try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 10)
     }
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
@@ -1580,7 +1590,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 
   static func ==(lhs: Config.LoRaConfig, rhs: Config.LoRaConfig) -> Bool {
-    if lhs.txPower != rhs.txPower {return false}
+    if lhs.usePreset != rhs.usePreset {return false}
     if lhs.modemPreset != rhs.modemPreset {return false}
     if lhs.bandwidth != rhs.bandwidth {return false}
     if lhs.spreadFactor != rhs.spreadFactor {return false}
@@ -1588,7 +1598,8 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.frequencyOffset != rhs.frequencyOffset {return false}
     if lhs.region != rhs.region {return false}
     if lhs.hopLimit != rhs.hopLimit {return false}
-    if lhs.txDisabled != rhs.txDisabled {return false}
+    if lhs.txEnabled != rhs.txEnabled {return false}
+    if lhs.txPower != rhs.txPower {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
