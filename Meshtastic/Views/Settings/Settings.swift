@@ -100,6 +100,17 @@ struct Settings: View {
 						Text("Display (Device Screen)")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink {
+						NetworkConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "network")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("Network (ESP32 Only)")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
 				
 					NavigationLink {
 						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -112,20 +123,6 @@ struct Settings: View {
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
-					NavigationLink {
-						WiFiConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
-					} label: {
-					
-						Image(systemName: "wifi")
-							.symbolRenderingMode(.hierarchical)
-
-						Text("WiFi (ESP32 Only)")
-					}
-					.disabled(bleManager.connectedPeripheral == nil)
-					
-					Text("Default settings values are prefered as they consume no bandwidth when sent over the mesh.")
-						.font(.caption2)
-						.fixedSize(horizontal: false, vertical: true)
 				}
 				Section("Module Configuration") {
 					

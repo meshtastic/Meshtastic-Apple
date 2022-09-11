@@ -459,18 +459,9 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	}
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-		
-		var isDefault = false
-		
-		if (try! config.network.jsonString()) == "{}" {
-			
-			isDefault = true
-			if meshlogging { MeshLogger.log("📶 Default WiFi config received \(String(nodeNum))") }
-			
-		} else {
-			
-			if meshlogging { MeshLogger.log("📶 Custom WiFi config received \(String(nodeNum))") }
-		}
+	
+		if meshlogging { MeshLogger.log("📶 WiFi config received \(String(nodeNum))") }
+		print(try! config.network.jsonString())
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -478,41 +469,25 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save WiFi Config
 			if !fetchedNode.isEmpty {
 				
-				if fetchedNode[0].wiFiConfig == nil {
+				if fetchedNode[0].networkConfig == nil {
 					
-					let newWiFiConfig = WiFiConfigEntity(context: context)
+					let newNetworkConfig = NetworkConfigEntity(context: context)
 					
-					if isDefault {
-						
-						newWiFiConfig.ssid = ""
-						newWiFiConfig.password = ""
-						newWiFiConfig.mode = 0
+					newNetworkConfig.wifiSsid = config.network.wifiSsid
+					newNetworkConfig.wifiPsk = config.network.wifiPsk
+					newNetworkConfig.wifiMode = Int32(config.network.wifiMode.rawValue)
 
-					} else {
-						
-						newWiFiConfig.ssid = config.network.wifiSsid
-						newWiFiConfig.password = config.network.wifiPsk
-						newWiFiConfig.mode = Int32(config.network.wifiMode.rawValue)
-					}
-					fetchedNode[0].wiFiConfig = newWiFiConfig
+					fetchedNode[0].networkConfig = newNetworkConfig
 					
 				} else {
 					
-					if isDefault {
-						
-						fetchedNode[0].wiFiConfig?.ssid = ""
-						fetchedNode[0].wiFiConfig?.password = ""
-						fetchedNode[0].wiFiConfig?.mode = 0
-						
-					} else {
-						
-						fetchedNode[0].wiFiConfig?.ssid = config.network.wifiSsid
-						fetchedNode[0].wiFiConfig?.password = config.network.wifiPsk
-						fetchedNode[0].wiFiConfig?.mode = Int32(config.network.wifiMode.rawValue)
-					}
+					fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
+					fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
+					fetchedNode[0].networkConfig?.wifiMode = Int32(config.network.wifiMode.rawValue)
 				}
 				
 				do {

@@ -209,21 +209,21 @@ struct MQTTConfig: View {
 		}
 		.onChange(of: enabled) { newEnabled in
 			
-			if node != nil && node!.wiFiConfig != nil {
+			if node != nil && node!.mqttConfig != nil {
 				
-				if newEnabled != node!.wiFiConfig!.enabled { hasChanges = true }
+				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
 			
-			if node != nil && node!.wiFiConfig != nil {
+			if node != nil && node!.mqttConfig != nil {
 				
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
 			
-			if node != nil && node!.wiFiConfig != nil {
+			if node != nil && node!.mqttConfig != nil {
 				
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}

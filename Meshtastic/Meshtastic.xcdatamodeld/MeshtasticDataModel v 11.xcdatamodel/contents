@@ -4,7 +4,6 @@
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
         <attribute name="mode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="bluetoothConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="bluetoothConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="CannedMessageConfigEntity" representedClassName="CannedMessageConfigEntity" syncable="YES" codeGenerationType="class">
@@ -101,11 +100,12 @@
         </uniquenessConstraints>
     </entity>
     <entity name="NetworkConfigEntity" representedClassName="NetworkConfigEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="enabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="mode" optional="YES" attributeType="Integer 32" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="password" optional="YES" attributeType="String" minValueString="0" maxValueString="60"/>
-        <attribute name="ssid" optional="YES" attributeType="String" minValueString="0" maxValueString="30"/>
-        <relationship name="wiFiConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="wiFiConfig" inverseEntity="NodeInfoEntity"/>
+        <attribute name="ntpServer" optional="YES" attributeType="String"/>
+        <attribute name="wifiEnabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="wifiMode" optional="YES" attributeType="Integer 32" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="wifiPsk" optional="YES" attributeType="String" minValueString="0" maxValueString="60"/>
+        <attribute name="wifiSsid" optional="YES" attributeType="String" minValueString="0" maxValueString="30"/>
+        <relationship name="networkConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="networkConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
         <attribute name="bleName" optional="YES" attributeType="String"/>
@@ -121,6 +121,7 @@
         <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
         <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
+        <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
         <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
@@ -128,7 +129,6 @@
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
         <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
-        <relationship name="wiFiConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="wiFiConfigNode" inverseEntity="NetworkConfigEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="num"/>
@@ -211,7 +211,7 @@
         </fetchedProperty>
     </entity>
     <elements>
-        <element name="BluetoothConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
+        <element name="BluetoothConfigEntity" positionX="54" positionY="153" width="128" height="89"/>
         <element name="CannedMessageConfigEntity" positionX="45" positionY="144" width="128" height="194"/>
         <element name="DeviceConfigEntity" positionX="45" positionY="144" width="128" height="89"/>
         <element name="DisplayConfigEntity" positionX="54" positionY="153" width="128" height="104"/>
@@ -228,6 +228,6 @@
         <element name="TelemetryConfigEntity" positionX="72" positionY="171" width="128" height="119"/>
         <element name="TelemetryEntity" positionX="160" positionY="192" width="128" height="209"/>
         <element name="UserEntity" positionX="0" positionY="144" width="128" height="230"/>
-        <element name="NetworkConfigEntity" positionX="45" positionY="144" width="128" height="104"/>
+        <element name="NetworkConfigEntity" positionX="45" positionY="144" width="128" height="119"/>
     </elements>
 </model>

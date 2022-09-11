@@ -52,6 +52,14 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// High accuracy temperature and pressure
   case bmp280 // = 6
+
+  ///
+  /// High accuracy temperature and humidity
+  case shtc3 // = 7
+
+  ///
+  /// High accuracy pressure
+  case lps22 // = 8
   case UNRECOGNIZED(Int)
 
   init() {
@@ -67,6 +75,8 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 4: self = .ina260
     case 5: self = .ina219
     case 6: self = .bmp280
+    case 7: self = .shtc3
+    case 8: self = .lps22
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -80,6 +90,8 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .ina260: return 4
     case .ina219: return 5
     case .bmp280: return 6
+    case .shtc3: return 7
+    case .lps22: return 8
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -98,6 +110,8 @@ extension TelemetrySensorType: CaseIterable {
     .ina260,
     .ina219,
     .bmp280,
+    .shtc3,
+    .lps22,
   ]
 }
 
@@ -256,6 +270,8 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "INA260"),
     5: .same(proto: "INA219"),
     6: .same(proto: "BMP280"),
+    7: .same(proto: "SHTC3"),
+    8: .same(proto: "LPS22"),
   ]
 }
 
