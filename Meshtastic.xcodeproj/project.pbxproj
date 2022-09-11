@@ -15,6 +15,8 @@
 		C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A88B56278B559900BD810A /* apponly.pb.swift */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */; };
+		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
+		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
@@ -122,6 +124,8 @@
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD1925B528CD591B00720036 /* MeshtasticDataModel v 11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 11.xcdatamodel"; sourceTree = "<group>"; };
+		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
+		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
 		DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 10.xcdatamodel"; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
@@ -354,6 +358,8 @@
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
 				DDB6ABE328B13FFF00384BA1 /* ScreenIntervals.swift */,
 				DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */,
+				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
+				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -753,6 +759,7 @@
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
+				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
@@ -774,6 +781,7 @@
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DDAF8C6726ED0C8C0058C060 /* remote_hardware.pb.swift in Sources */,
+				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDAF8C6526ED0A490058C060 /* channel.pb.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 			);

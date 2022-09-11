@@ -6,46 +6,6 @@
 //
 import SwiftUI
 
-// Default of 0 is off
-enum ErrorRecoveryIntervals: Int, CaseIterable, Identifiable {
-
-	case off = 0
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			case .off:
-				return "Unset"
-			case .fifteenSeconds:
-				return "Fifteen Seconds"
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			case .thirtyMinutes:
-				return "Thirty Minutes"
-			case .oneHour:
-				return "One Hour"
-			}
-		}
-	}
-}
-
 enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
 	case fifteenSeconds = 15
