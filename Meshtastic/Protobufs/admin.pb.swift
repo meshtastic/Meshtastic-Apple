@@ -302,6 +302,16 @@ struct AdminMessage {
     set {payloadVariant = .factoryReset(newValue)}
   }
 
+  ///
+  /// Tell the node to reset the nodedb.
+  var nodedbReset: Int32 {
+    get {
+      if case .nodedbReset(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .nodedbReset(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -394,6 +404,9 @@ struct AdminMessage {
     ///
     /// Tell the node to factory reset, all device settings will be returned to factory defaults.
     case factoryReset(Int32)
+    ///
+    /// Tell the node to reset the nodedb.
+    case nodedbReset(Int32)
 
   #if !swift(>=4.1)
     static func ==(lhs: AdminMessage.OneOf_PayloadVariant, rhs: AdminMessage.OneOf_PayloadVariant) -> Bool {
@@ -503,6 +516,10 @@ struct AdminMessage {
       }()
       case (.factoryReset, .factoryReset): return {
         guard case .factoryReset(let l) = lhs, case .factoryReset(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.nodedbReset, .nodedbReset): return {
+        guard case .nodedbReset(let l) = lhs, case .nodedbReset(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -714,6 +731,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     97: .standard(proto: "reboot_seconds"),
     98: .standard(proto: "shutdown_seconds"),
     99: .standard(proto: "factory_reset"),
+    100: .standard(proto: "nodedb_reset"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -975,6 +993,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .factoryReset(v)
         }
       }()
+      case 100: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .nodedbReset(v)
+        }
+      }()
       default: break
       }
     }
@@ -1089,6 +1115,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .factoryReset?: try {
       guard case .factoryReset(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 99)
+    }()
+    case .nodedbReset?: try {
+      guard case .nodedbReset(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 100)
     }()
     case nil: break
     }

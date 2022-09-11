@@ -526,6 +526,14 @@ struct Config {
     /// (top of display is heading direction) is used.
     var compassNorthTop: Bool = false
 
+    ///
+    /// Flip screen vertically, for cases that mount the screen upside down
+    var flipScreen: Bool = false
+
+    ///
+    /// Perferred display units
+    var units: Config.DisplayConfig.DisplayUnits = .metric
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -589,6 +597,42 @@ struct Config {
         case .mgrs: return 3
         case .olc: return 4
         case .osgr: return 5
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    ///
+    /// Unit display preference
+    enum DisplayUnits: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// Metric (Default)
+      case metric // = 0
+
+      ///
+      /// Imperial
+      case imperial // = 1
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .metric
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .metric
+        case 1: self = .imperial
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .metric: return 0
+        case .imperial: return 1
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -954,6 +998,14 @@ extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   ]
 }
 
+extension Config.DisplayConfig.DisplayUnits: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.DisplayConfig.DisplayUnits] = [
+    .metric,
+    .imperial,
+  ]
+}
+
 extension Config.LoRaConfig.RegionCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.LoRaConfig.RegionCode] = [
@@ -1009,6 +1061,7 @@ extension Config.NetworkConfig: @unchecked Sendable {}
 extension Config.NetworkConfig.WiFiMode: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
+extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
 extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
@@ -1460,6 +1513,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     2: .standard(proto: "gps_format"),
     3: .standard(proto: "auto_screen_carousel_secs"),
     4: .standard(proto: "compass_north_top"),
+    5: .standard(proto: "flip_screen"),
+    6: .same(proto: "units"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1472,6 +1527,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 2: try { try decoder.decodeSingularEnumField(value: &self.gpsFormat) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.autoScreenCarouselSecs) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.compassNorthTop) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.flipScreen) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.units) }()
       default: break
       }
     }
@@ -1490,6 +1547,12 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.compassNorthTop != false {
       try visitor.visitSingularBoolField(value: self.compassNorthTop, fieldNumber: 4)
     }
+    if self.flipScreen != false {
+      try visitor.visitSingularBoolField(value: self.flipScreen, fieldNumber: 5)
+    }
+    if self.units != .metric {
+      try visitor.visitSingularEnumField(value: self.units, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1498,6 +1561,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.gpsFormat != rhs.gpsFormat {return false}
     if lhs.autoScreenCarouselSecs != rhs.autoScreenCarouselSecs {return false}
     if lhs.compassNorthTop != rhs.compassNorthTop {return false}
+    if lhs.flipScreen != rhs.flipScreen {return false}
+    if lhs.units != rhs.units {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1511,6 +1576,13 @@ extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProv
     3: .same(proto: "MGRS"),
     4: .same(proto: "OLC"),
     5: .same(proto: "OSGR"),
+  ]
+}
+
+extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "METRIC"),
+    1: .same(proto: "IMPERIAL"),
   ]
 }
 
