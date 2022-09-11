@@ -11,8 +11,7 @@ import SwiftUI
 
 func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
-	// We don't care about any of the Power settings
-
+	// We don't care about any of the Power settings, config is available for everyting else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		
 		if meshlogging { MeshLogger.log("🖥️ Bluetooth config received: \(String(nodeNum))") }
@@ -178,17 +177,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
-		var isDefault = false
-		
-		if (try! config.lora.jsonString()) == "{}" {
-			
-			isDefault = true
-			if meshlogging { MeshLogger.log("📻 Default LoRa config \(String(nodeNum))") }
-			
-		} else {
-			
-			if meshlogging { MeshLogger.log("📻 Custom LoRa config \(String(nodeNum))") }
-		}
+		if meshlogging { MeshLogger.log("📻 LoRa config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -196,55 +185,27 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save LoRa Config
 			if !fetchedNode.isEmpty {
 				
 				if fetchedNode[0].loRaConfig == nil {
 					
 					let newLoRaConfig = LoRaConfigEntity(context: context)
-					
-					if isDefault {
 						
-						// UNSET default protobuf value of 0
-						newLoRaConfig.regionCode = 0
-						// LongFast default protobuf value of 0
-						newLoRaConfig.modemPreset = 0
-						// 3 Hops default protobuf value of 0
-						newLoRaConfig.hopLimit = 0
-						// Default value of 0 is 22dbm
-						newLoRaConfig.txPower = 0
-						
-					} else {
-						
-						newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-						newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-						newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
-						newLoRaConfig.txPower = Int32(config.lora.txPower)
-						
-					}
+					newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
+					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
+					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
+					newLoRaConfig.txPower = Int32(config.lora.txPower)
 					
 					fetchedNode[0].loRaConfig = newLoRaConfig
 					
 				} else {
 					
-					if isDefault {
-						
-						// UNSET default protobuf value of 0
-						fetchedNode[0].loRaConfig?.regionCode = 0
-						// LongFast default protobuf value of 0
-						fetchedNode[0].loRaConfig?.modemPreset = 0
-						// 3 Hops default protobuf value of 0
-						fetchedNode[0].loRaConfig?.hopLimit = 0
-						// Default value of 0 is 22dbm
-						fetchedNode[0].loRaConfig?.txPower = 0
-						
-					} else {
-
-						fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-						fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-						fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
-						fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
-					}
+					fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
+					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
+					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
+					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
 				}
 				
 				do {
@@ -330,17 +291,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 		
-		var isDefault = false
-		
-		if (try! config.position.jsonString()) == "{}" {
-			
-			isDefault = true
-			if meshlogging { MeshLogger.log("🗺️ Default Position config received \(String(nodeNum))") }
-			
-		} else {
-			
-			if meshlogging { MeshLogger.log("🗺️ Custom Position config received \(String(nodeNum))") }
-		}
+		if meshlogging { MeshLogger.log("🗺️ Position config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -348,6 +299,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save LoRa Config
 			if !fetchedNode.isEmpty {
 				
@@ -355,52 +307,25 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					
 					let newPositionConfig = PositionConfigEntity(context: context)
 					
-					if isDefault {
-						
-						newPositionConfig.smartPositionEnabled = true
-						newPositionConfig.deviceGpsEnabled = true
-						newPositionConfig.fixedPosition = false
-						newPositionConfig.gpsUpdateInterval = 0
-						newPositionConfig.gpsAttemptTime = 0
-						newPositionConfig.positionBroadcastSeconds = 0
-						newPositionConfig.positionFlags = 3
-
-					} else {
-						
-						newPositionConfig.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
-						newPositionConfig.deviceGpsEnabled = !config.position.gpsDisabled
-						newPositionConfig.fixedPosition = config.position.fixedPosition
-						newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-						newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-						newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-						newPositionConfig.positionFlags = Int32(config.position.positionFlags)
-					}
+					newPositionConfig.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+					newPositionConfig.deviceGpsEnabled = !config.position.gpsDisabled
+					newPositionConfig.fixedPosition = config.position.fixedPosition
+					newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+					newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+					newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+					newPositionConfig.positionFlags = Int32(config.position.positionFlags)
 					
 					fetchedNode[0].positionConfig = newPositionConfig
 					
 				} else {
 					
-					if isDefault {
-						
-						fetchedNode[0].positionConfig?.smartPositionEnabled = true
-						fetchedNode[0].positionConfig?.deviceGpsEnabled = true
-						fetchedNode[0].positionConfig?.fixedPosition = false
-						fetchedNode[0].positionConfig?.gpsUpdateInterval = 0
-						fetchedNode[0].positionConfig?.gpsAttemptTime = 0
-						fetchedNode[0].positionConfig?.positionBroadcastSeconds = 0
-						fetchedNode[0].positionConfig?.positionFlags = 3
-						
-					} else {
-						
-						fetchedNode[0].positionConfig?.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
-						fetchedNode[0].positionConfig?.deviceGpsEnabled = !config.position.gpsDisabled
-						fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
-						fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-						fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-						fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-						fetchedNode[0].positionConfig?.positionFlags = Int32(config.position.positionFlags)
-				
-					}
+					fetchedNode[0].positionConfig?.smartPositionEnabled = !config.position.positionBroadcastSmartDisabled
+					fetchedNode[0].positionConfig?.deviceGpsEnabled = !config.position.gpsDisabled
+					fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
+					fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
+					fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
+					fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
+					fetchedNode[0].positionConfig?.positionFlags = Int32(config.position.positionFlags)
 				}
 				
 				do {
@@ -430,19 +355,9 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 
 func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
-	// We don't care about any of the WiFi related MQTT settings
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		
-		var isDefault = false
-		
-		if (try! config.cannedMessage.jsonString()) == "{}" {
-			
-			isDefault = true
-			print("🥫 Default Canned Message Module config")
-		} else {
-			
-			print("🥫 Custom Canned Message Module config")
-		}
+		if meshlogging { MeshLogger.log("🥫 Canned Message module config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -450,6 +365,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save Canned Message Config
 			if !fetchedNode.isEmpty {
 				
@@ -457,62 +373,31 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					
 					let newCannedMessageConfig = CannedMessageConfigEntity(context: context)
 
-					if isDefault {
+					newCannedMessageConfig.enabled = config.cannedMessage.enabled
+					newCannedMessageConfig.sendBell = config.cannedMessage.sendBell
+					newCannedMessageConfig.rotary1Enabled = config.cannedMessage.rotary1Enabled
+					newCannedMessageConfig.updown1Enabled = config.cannedMessage.updown1Enabled
+					newCannedMessageConfig.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
+					newCannedMessageConfig.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
+					newCannedMessageConfig.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
+					newCannedMessageConfig.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
+					newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
+					newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 
-						newCannedMessageConfig.enabled = false
-						newCannedMessageConfig.sendBell = false
-						newCannedMessageConfig.rotary1Enabled = false
-						newCannedMessageConfig.updown1Enabled = false
-						newCannedMessageConfig.inputbrokerPinA = 0
-						newCannedMessageConfig.inputbrokerPinB = 0
-						newCannedMessageConfig.inputbrokerPinPress = 0
-						newCannedMessageConfig.inputbrokerEventCw = 0
-						newCannedMessageConfig.inputbrokerEventCcw = 0
-						newCannedMessageConfig.inputbrokerEventPress = 0
-
-					} else {
-
-						newCannedMessageConfig.enabled = config.cannedMessage.enabled
-						newCannedMessageConfig.sendBell = config.cannedMessage.sendBell
-						newCannedMessageConfig.rotary1Enabled = config.cannedMessage.rotary1Enabled
-						newCannedMessageConfig.updown1Enabled = config.cannedMessage.updown1Enabled
-						newCannedMessageConfig.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
-						newCannedMessageConfig.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
-						newCannedMessageConfig.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
-						newCannedMessageConfig.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
-						newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
-						newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
-					}
 					fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
 					
 				} else {
 					
-					if isDefault {
-												
-						fetchedNode[0].cannedMessageConfig?.enabled = false
-						fetchedNode[0].cannedMessageConfig?.sendBell = false
-						fetchedNode[0].cannedMessageConfig?.rotary1Enabled = false
-						fetchedNode[0].cannedMessageConfig?.updown1Enabled = false
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = 0
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = 0
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = 0
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = 0
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = 0
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = 0
-						
-					} else {
-
-						fetchedNode[0].cannedMessageConfig?.enabled = config.cannedMessage.enabled
-						fetchedNode[0].cannedMessageConfig?.sendBell = config.cannedMessage.sendBell
-						fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.cannedMessage.rotary1Enabled
-						fetchedNode[0].cannedMessageConfig?.updown1Enabled = config.cannedMessage.updown1Enabled
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
-						fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
-						fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
-					}
+					fetchedNode[0].cannedMessageConfig?.enabled = config.cannedMessage.enabled
+					fetchedNode[0].cannedMessageConfig?.sendBell = config.cannedMessage.sendBell
+					fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.cannedMessage.rotary1Enabled
+					fetchedNode[0].cannedMessageConfig?.updown1Enabled = config.cannedMessage.updown1Enabled
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
+					fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
 				}
 				
 				do {
@@ -542,17 +427,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
 		
-		var isDefault = false
-		
-		if (try! config.externalNotification.jsonString()) == "{}" {
-			
-			isDefault = true
-			print("🚨 Default External Notifiation Module config")
-			
-		} else {
-			
-			print("🚨 Custom External Notifiation Module config")
-		}
+		if meshlogging { MeshLogger.log("🚨 External Notifiation module config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -560,6 +435,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save External Notificaitone Config
 			if !fetchedNode.isEmpty {
 				
@@ -567,48 +443,23 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					
 					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
 
-					if isDefault {
-
-
-						newExternalNotificationConfig.enabled = false
-						newExternalNotificationConfig.alertBell = false
-						newExternalNotificationConfig.alertMessage = false
-						newExternalNotificationConfig.active = false
-						newExternalNotificationConfig.output = 0
-						newExternalNotificationConfig.outputMilliseconds = 0
-
-
-					} else {
-
-						newExternalNotificationConfig.enabled = config.externalNotification.enabled
-						newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
-						newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
-						newExternalNotificationConfig.active = config.externalNotification.active
-						newExternalNotificationConfig.output = Int32(config.externalNotification.output)
-						newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
-					}
+					newExternalNotificationConfig.enabled = config.externalNotification.enabled
+					newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
+					newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
+					newExternalNotificationConfig.active = config.externalNotification.active
+					newExternalNotificationConfig.output = Int32(config.externalNotification.output)
+					newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
-					
-					if isDefault {
-						
-						fetchedNode[0].externalNotificationConfig?.enabled = false
-						fetchedNode[0].externalNotificationConfig?.alertBell = false
-						fetchedNode[0].externalNotificationConfig?.alertMessage = false
-						fetchedNode[0].externalNotificationConfig?.active = false
-						fetchedNode[0].externalNotificationConfig?.output = 0
-						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = 0
-						
-					} else {
 
-						fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
-						fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
-						fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
-						fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
-						fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
-						fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
-					}
+					fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
+					fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
+					fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
+					fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
+					fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
+					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
 				}
 				
 				do {
@@ -623,6 +474,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 				}
+				
 			} else {
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
@@ -635,15 +487,71 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		}
 	}
 	
+	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
+		
+		if meshlogging { MeshLogger.log("🌐 MQTT module config received: \(String(nodeNum))") }
+		
+		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+		
+		do {
+
+			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
+			// Found a node, save MQTT Config
+			if !fetchedNode.isEmpty {
+				
+				if fetchedNode[0].mqttConfig == nil {
+					
+					let newMQTTConfig = MQTTConfigEntity(context: context)
+					
+					newMQTTConfig.enabled = config.mqtt.enabled
+					newMQTTConfig.address = config.mqtt.address
+					newMQTTConfig.address = config.mqtt.username
+					newMQTTConfig.password = config.mqtt.password
+					newMQTTConfig.encryptionEnabled = config.mqtt.encryptionEnabled
+					newMQTTConfig.jsonEnabled = config.mqtt.jsonEnabled
+					
+					fetchedNode[0].mqttConfig = newMQTTConfig
+					
+				} else {
+
+					fetchedNode[0].mqttConfig?.enabled = config.mqtt.enabled
+					fetchedNode[0].mqttConfig?.address = config.mqtt.address
+					fetchedNode[0].mqttConfig?.address = config.mqtt.username
+					fetchedNode[0].mqttConfig?.password = config.mqtt.password
+					fetchedNode[0].mqttConfig?.encryptionEnabled = config.mqtt.encryptionEnabled
+					fetchedNode[0].mqttConfig?.jsonEnabled = config.mqtt.jsonEnabled
+				}
+				
+				do {
+
+					try context.save()
+					if meshlogging { MeshLogger.log("💾 Updated MQTT Config for node number: \(String(nodeNum))") }
+
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					if meshlogging { MeshLogger.log("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)") }
+				}
+				
+			} else {
+				
+				if meshlogging { MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config") }
+			}
+			
+		} catch {
+			
+			let nsError = error as NSError
+			if meshlogging { MeshLogger.log("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)") }
+		}
+	}
+	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
 		
-		var isDefault = false
-		
-		if (try! config.rangeTest.jsonString()) == "{}" {
-			
-			isDefault = true
-			print("⛰️ Default Range Test Module config")
-		}
+		if meshlogging { MeshLogger.log("⛰️ Range Test module config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -658,34 +566,17 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					
 					let newRangeTestConfig = RangeTestConfigEntity(context: context)
 					
-					if isDefault {
-
-						newRangeTestConfig.sender = 0
-						newRangeTestConfig.enabled = false
-						newRangeTestConfig.save = false
-						
-					} else {
-
-						newRangeTestConfig.sender = Int32(config.rangeTest.sender)
-						newRangeTestConfig.enabled = config.rangeTest.enabled
-						newRangeTestConfig.save = config.rangeTest.save
-					}
+					newRangeTestConfig.sender = Int32(config.rangeTest.sender)
+					newRangeTestConfig.enabled = config.rangeTest.enabled
+					newRangeTestConfig.save = config.rangeTest.save
+					
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
 					
 				} else {
-					
-					if isDefault {
-						
-						fetchedNode[0].rangeTestConfig?.sender = 0
-						fetchedNode[0].rangeTestConfig?.enabled = false
-						fetchedNode[0].rangeTestConfig?.save = false
-						
-					} else {
 
-						fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
-						fetchedNode[0].rangeTestConfig?.enabled = config.rangeTest.enabled
-						fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
-					}
+					fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
+					fetchedNode[0].rangeTestConfig?.enabled = config.rangeTest.enabled
+					fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
 				}
 				
 				do {
@@ -698,34 +589,25 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					context.rollback()
 
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
+					
+					if meshlogging { MeshLogger.log("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)") }
 				}
+				
 			} else {
 				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
+				if meshlogging { MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config") }
 			}
 			
 		} catch {
 			
 			let nsError = error as NSError
-			print("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
+			if meshlogging { MeshLogger.log("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)") }
 		}
 	}
 
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
 		
-		var isDefault = false
-		
-		if (try! config.serial.jsonString()) == "{}" {
-			
-			isDefault = true
-			
-			if meshlogging { MeshLogger.log("🤖 Default Serial Module config \(String(nodeNum))") }
-			
-		} else {
-			
-			if meshlogging { MeshLogger.log("🤖 Custom Serial Module config \(String(nodeNum))") }
-		}
+		if meshlogging { MeshLogger.log("🤖 Serial module config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -733,6 +615,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
 			// Found a node, save Device Config
 			if !fetchedNode.isEmpty {
 				
@@ -740,51 +623,26 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					
 					let newSerialConfig = SerialConfigEntity(context: context)
 					
-					if isDefault {
-
-						newSerialConfig.enabled = false
-						newSerialConfig.echo = false
-						newSerialConfig.rxd = 0
-						newSerialConfig.txd = 0
-						newSerialConfig.baudRate = 0
-						newSerialConfig.timeout = 0
-						newSerialConfig.mode = 0
-						
-					} else {
-				
-						newSerialConfig.enabled = config.serial.enabled
-						newSerialConfig.echo = config.serial.echo
-						newSerialConfig.rxd = Int32(config.serial.rxd)
-						newSerialConfig.txd = Int32(config.serial.txd)
-						newSerialConfig.baudRate = Int32(config.serial.baud.rawValue)
-						newSerialConfig.timeout = Int32(config.serial.timeout)
-						newSerialConfig.mode = Int32(config.serial.mode.rawValue)
-					}
+					newSerialConfig.enabled = config.serial.enabled
+					newSerialConfig.echo = config.serial.echo
+					newSerialConfig.rxd = Int32(config.serial.rxd)
+					newSerialConfig.txd = Int32(config.serial.txd)
+					newSerialConfig.baudRate = Int32(config.serial.baud.rawValue)
+					newSerialConfig.timeout = Int32(config.serial.timeout)
+					newSerialConfig.mode = Int32(config.serial.mode.rawValue)
 					
 					fetchedNode[0].serialConfig = newSerialConfig
 					
 				} else {
 					
-					if isDefault {
-												
-						fetchedNode[0].serialConfig?.enabled = false
-						fetchedNode[0].serialConfig?.echo = false
-						fetchedNode[0].serialConfig?.rxd = 0
-						fetchedNode[0].serialConfig?.txd = 0
-						fetchedNode[0].serialConfig?.baudRate = 0
-						fetchedNode[0].serialConfig?.timeout = 0
-						fetchedNode[0].serialConfig?.mode = 0
-						
-					} else {
-
-						fetchedNode[0].serialConfig?.enabled = config.serial.enabled
-						fetchedNode[0].serialConfig?.echo = config.serial.echo
-						fetchedNode[0].serialConfig?.rxd = Int32(config.serial.rxd)
-						fetchedNode[0].serialConfig?.txd = Int32(config.serial.txd)
-						fetchedNode[0].serialConfig?.baudRate = Int32(config.serial.baud.rawValue)
-						fetchedNode[0].serialConfig?.timeout = Int32(config.serial.timeout)
-						fetchedNode[0].serialConfig?.mode = Int32(config.serial.mode.rawValue)
-					}
+					fetchedNode[0].serialConfig?.enabled = config.serial.enabled
+					fetchedNode[0].serialConfig?.echo = config.serial.echo
+					fetchedNode[0].serialConfig?.rxd = Int32(config.serial.rxd)
+					fetchedNode[0].serialConfig?.txd = Int32(config.serial.txd)
+					fetchedNode[0].serialConfig?.baudRate = Int32(config.serial.baud.rawValue)
+					fetchedNode[0].serialConfig?.timeout = Int32(config.serial.timeout)
+					fetchedNode[0].serialConfig?.mode = Int32(config.serial.mode.rawValue)
+					
 				}
 				
 				do {
@@ -799,6 +657,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data SerialConfigEntity: \(nsError)")
 				}
+				
 			} else {
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
@@ -813,13 +672,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
 		
-		var isDefault = false
-		
-		if (try! config.telemetry.jsonString()) == "{}" {
-			
-			isDefault = true
-			print("📈 Default Telemetry Module config")
-		}
+		if meshlogging { MeshLogger.log("📈 Telemetry module config received: \(String(nodeNum))") }
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -834,42 +687,21 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					
 					let newTelemetryConfig = TelemetryConfigEntity(context: context)
 					
-					if isDefault {
-						
-						newTelemetryConfig.deviceUpdateInterval = 0
-						newTelemetryConfig.environmentUpdateInterval = 0
-						newTelemetryConfig.environmentMeasurementEnabled = false
-						newTelemetryConfig.environmentScreenEnabled = false
-						newTelemetryConfig.environmentDisplayFahrenheit = false
-						
-					} else {
-						
-						newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
-						newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
-						newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
-						newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-					}
+					newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
+					newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
+					newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
+					newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
+					newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
+					
 					fetchedNode[0].telemetryConfig = newTelemetryConfig
 					
 				} else {
 					
-					if isDefault {
-						
-						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = 0
-						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = 0
-						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = false
-						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = false
-						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = false
-						
-					} else {
-						
-						fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
-						fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
-						fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-						fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
-						fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-					}
+					fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
+					fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
+					fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
+					fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
+					fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
 				}
 				
 				do {
@@ -884,6 +716,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
 				}
+				
 			} else {
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
