@@ -150,7 +150,7 @@ enum HopValues : Int, CaseIterable, Identifiable {
 	
 	case oneHop = 1
 	case twoHops = 2
-	case threeHops = 0
+	case threeHops = 3
 	case fourHops = 4
 	case fiveHops = 5
 	case sixHops = 6
