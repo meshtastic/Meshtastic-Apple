@@ -53,7 +53,7 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
-	case fifteenMinutes = 0
+	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600
 	case twoHours = 7200
