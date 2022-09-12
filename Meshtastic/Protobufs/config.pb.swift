@@ -284,7 +284,7 @@ struct Config {
 
       ///
       /// Include geoidal separation
-      case geoidalSeperation // = 4
+      case geoidalSeparation // = 4
 
       ///
       /// Include the DOP value ; PDOP used by default, see below
@@ -328,7 +328,7 @@ struct Config {
         case 0: self = .unset
         case 1: self = .altitude
         case 2: self = .altitudeMsl
-        case 4: self = .geoidalSeperation
+        case 4: self = .geoidalSeparation
         case 8: self = .dop
         case 16: self = .hvdop
         case 32: self = .satinview
@@ -345,7 +345,7 @@ struct Config {
         case .unset: return 0
         case .altitude: return 1
         case .altitudeMsl: return 2
-        case .geoidalSeperation: return 4
+        case .geoidalSeparation: return 4
         case .dop: return 8
         case .hvdop: return 16
         case .satinview: return 32
@@ -966,7 +966,7 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
     .unset,
     .altitude,
     .altitudeMsl,
-    .geoidalSeperation,
+    .geoidalSeparation,
     .dop,
     .hvdop,
     .satinview,
@@ -1357,7 +1357,7 @@ extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding
     0: .same(proto: "UNSET"),
     1: .same(proto: "ALTITUDE"),
     2: .same(proto: "ALTITUDE_MSL"),
-    4: .same(proto: "GEOIDAL_SEPERATION"),
+    4: .same(proto: "GEOIDAL_SEPARATION"),
     8: .same(proto: "DOP"),
     16: .same(proto: "HVDOP"),
     32: .same(proto: "SATINVIEW"),

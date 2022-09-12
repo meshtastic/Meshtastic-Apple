@@ -506,9 +506,9 @@ struct Position {
 
   ///
   /// Geoidal separation in meters
-  var altitudeGeoidalSeperation: Int32 {
-    get {return _storage._altitudeGeoidalSeperation}
-    set {_uniqueStorage()._altitudeGeoidalSeperation = newValue}
+  var altitudeGeoidalSeparation: Int32 {
+    get {return _storage._altitudeGeoidalSeparation}
+    set {_uniqueStorage()._altitudeGeoidalSeparation = newValue}
   }
 
   ///
@@ -2203,7 +2203,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     7: .same(proto: "timestamp"),
     8: .standard(proto: "timestamp_millis_adjust"),
     9: .standard(proto: "altitude_hae"),
-    10: .standard(proto: "altitude_geoidal_seperation"),
+    10: .standard(proto: "altitude_geoidal_separation"),
     11: .same(proto: "PDOP"),
     12: .same(proto: "HDOP"),
     13: .same(proto: "VDOP"),
@@ -2228,7 +2228,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _timestamp: UInt32 = 0
     var _timestampMillisAdjust: Int32 = 0
     var _altitudeHae: Int32 = 0
-    var _altitudeGeoidalSeperation: Int32 = 0
+    var _altitudeGeoidalSeparation: Int32 = 0
     var _pdop: UInt32 = 0
     var _hdop: UInt32 = 0
     var _vdop: UInt32 = 0
@@ -2256,7 +2256,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _timestamp = source._timestamp
       _timestampMillisAdjust = source._timestampMillisAdjust
       _altitudeHae = source._altitudeHae
-      _altitudeGeoidalSeperation = source._altitudeGeoidalSeperation
+      _altitudeGeoidalSeparation = source._altitudeGeoidalSeparation
       _pdop = source._pdop
       _hdop = source._hdop
       _vdop = source._vdop
@@ -2296,7 +2296,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 7: try { try decoder.decodeSingularFixed32Field(value: &_storage._timestamp) }()
         case 8: try { try decoder.decodeSingularInt32Field(value: &_storage._timestampMillisAdjust) }()
         case 9: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeHae) }()
-        case 10: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeGeoidalSeperation) }()
+        case 10: try { try decoder.decodeSingularSInt32Field(value: &_storage._altitudeGeoidalSeparation) }()
         case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._pdop) }()
         case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._hdop) }()
         case 13: try { try decoder.decodeSingularUInt32Field(value: &_storage._vdop) }()
@@ -2344,8 +2344,8 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._altitudeHae != 0 {
         try visitor.visitSingularSInt32Field(value: _storage._altitudeHae, fieldNumber: 9)
       }
-      if _storage._altitudeGeoidalSeperation != 0 {
-        try visitor.visitSingularSInt32Field(value: _storage._altitudeGeoidalSeperation, fieldNumber: 10)
+      if _storage._altitudeGeoidalSeparation != 0 {
+        try visitor.visitSingularSInt32Field(value: _storage._altitudeGeoidalSeparation, fieldNumber: 10)
       }
       if _storage._pdop != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._pdop, fieldNumber: 11)
@@ -2401,7 +2401,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._timestamp != rhs_storage._timestamp {return false}
         if _storage._timestampMillisAdjust != rhs_storage._timestampMillisAdjust {return false}
         if _storage._altitudeHae != rhs_storage._altitudeHae {return false}
-        if _storage._altitudeGeoidalSeperation != rhs_storage._altitudeGeoidalSeperation {return false}
+        if _storage._altitudeGeoidalSeparation != rhs_storage._altitudeGeoidalSeparation {return false}
         if _storage._pdop != rhs_storage._pdop {return false}
         if _storage._hdop != rhs_storage._hdop {return false}
         if _storage._vdop != rhs_storage._vdop {return false}

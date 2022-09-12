@@ -177,7 +177,7 @@ struct Settings: View {
 						Image(systemName: "terminal")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Serial (ESP32 Only)")
+						Text("Serial")
 					}
 					.disabled(bleManager.connectedPeripheral == nil)
 					
