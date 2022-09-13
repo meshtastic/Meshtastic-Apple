@@ -262,7 +262,7 @@ struct Connect: View {
         .navigationViewStyle(StackNavigationViewStyle())
 		.sheet(isPresented: $invalidVersion) {
 			
-			InvalidVersion(errorText: "1.3 ALPHA PREVIEW this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
+			InvalidVersion(errorText: "1.3 Beta this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
 		}
 	
 		.onChange(of: (self.bleManager.connectedVersion)) { ic in

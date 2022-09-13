@@ -240,9 +240,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			self.timeoutTimer!.invalidate()
 		}
 
-		// Map the peripheral to the connectedNode and connectedPeripheral ObservedObjects
+		// Map the peripheral to the connectedPeripheral ObservedObjects
         connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
-		connectedPeripheral.peripheral.delegate = self
+		
+		if connectedPeripheral != nil {
+			
+			connectedPeripheral.peripheral.delegate = self
+		}
+		else {
+			
+			// we are null just disconnect and start over
+			self.lastConnectionError = "Bluetooth connection error, please try again."
+			self.disconnectPeripheral()
+			return
+		}
 
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID, DFUSERVICE_UUID])
