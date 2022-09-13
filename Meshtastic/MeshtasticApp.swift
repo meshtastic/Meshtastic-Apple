@@ -31,7 +31,7 @@ struct MeshtasticAppleApp: App {
 					saveQR = true
 				}
 				
-				print("User wants to open URL: \(channelUrl?.relativeString)")
+				print("User wants to open URL: \(String(describing: channelUrl?.relativeString))")
 
 			}
 			.sheet(isPresented: $saveQR) {

@@ -23,7 +23,7 @@ struct NodeDetail: View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
-		ZStack {
+		NavigationStack {
 
 			GeometryReader { bounds in
 
@@ -64,7 +64,7 @@ struct NodeDetail: View {
 									)
 								 }
 							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.6)
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
 							}
 						}
 						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
@@ -399,45 +399,47 @@ struct NodeDetail: View {
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
+							.padding([.bottom], 0)
 						}
 						
-						List {
+						VStack {
 							
 							if (node.positions?.count ?? 0) > 0 {
 								
+								Divider()
 								NavigationLink {
 									LocationHistory(node: node)
 								} label: {
-
+									
 									Image(systemName: "building.columns")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Position History \(node.positions?.count ?? 0) Points")
+									
+									Text("Position History (\(node.positions?.count ?? 0) Points)")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
 							}
+							
 							if (node.telemetries?.count ?? 0) > 0 {
+								
+								Divider()
 								NavigationLink {
 									TelemetryLog(node: node)
 								} label: {
-
+									
 									Image(systemName: "chart.xyaxis.line")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+									
+									Text("Telemetry Log (\(node.telemetries?.count ?? 0) Readings)")
 										.font(.title3)
 								}
-								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
 						}
-						.listStyle(GroupedListStyle())
-						.frame(minHeight: 170)
-						.padding(0)
 					}
-					.offset( y: (node.myInfo?.hasGps ?? false ? 0 : -40))
+					.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 			}
@@ -462,7 +464,6 @@ struct NodeDetail: View {
 				self.initialLoad = false
 			}
 		}
-
 	}
 }
 
