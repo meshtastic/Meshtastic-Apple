@@ -114,7 +114,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if centralManager.isScanning {
 
             self.centralManager.stopScan()
-		//	self.isScanning = self.centralManager.isScanning
+			isScanning = self.centralManager.isScanning
             print("🛑 Stopped Scanning")
         }
     }
@@ -170,7 +170,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             self.disconnectPeripheral()
         }
 		
-		//self.connectedVersion = "0.0.0"
+		self.connectedVersion = "0.0.0"
 		self.centralManager?.connect(peripheral)
 
 		// Invalidate any existing timer
@@ -223,7 +223,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -4, to: today)!
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -2, to: today)!
 		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
     }
 

@@ -18,8 +18,8 @@ struct LocationHistory: View {
 
 	var body: some View {
 		
-		VStack {
-		
+		NavigationStack {
+			
 			List {
 				
 				ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
