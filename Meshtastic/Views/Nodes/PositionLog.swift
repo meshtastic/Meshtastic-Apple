@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-struct LocationHistory: View {
+struct PositionLog: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -39,7 +39,7 @@ struct LocationHistory: View {
 						Text("Alt.")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Date / Time")
+						Text("Timestamp")
 							.font(.caption)
 							.fontWeight(.bold)
 					}
@@ -92,7 +92,7 @@ struct LocationHistory: View {
 				}
 			}
 		)
-		.navigationTitle("Location History \(node.positions?.count ?? 0) Points")
+		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
 		.navigationBarItems(trailing:
 
 			ZStack {

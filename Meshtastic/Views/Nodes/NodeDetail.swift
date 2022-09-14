@@ -408,14 +408,14 @@ struct NodeDetail: View {
 								
 								Divider()
 								NavigationLink {
-									LocationHistory(node: node)
+									PositionLog(node: node)
 								} label: {
 									
 									Image(systemName: "building.columns")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
 									
-									Text("Position History (\(node.positions?.count ?? 0) Points)")
+									Text("Position Log (\(node.positions?.count ?? 0) Points)")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
@@ -425,14 +425,26 @@ struct NodeDetail: View {
 								
 								Divider()
 								NavigationLink {
-									TelemetryLog(node: node)
+									DeviceMetricsLog(node: node)
+								} label: {
+									
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+									
+									Text("Device Metrics Log")
+										.font(.title3)
+								}
+								Divider()
+								NavigationLink {
+									EnvironmentMetricsLog(node: node)
 								} label: {
 									
 									Image(systemName: "chart.xyaxis.line")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
 									
-									Text("Telemetry Log (\(node.telemetries?.count ?? 0) Readings)")
+									Text("Environment Metrics Log")
 										.font(.title3)
 								}
 								Divider()

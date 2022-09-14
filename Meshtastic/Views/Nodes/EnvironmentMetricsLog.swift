@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-struct TelemetryLog: View {
+struct EnvironmentMetricsLog: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -17,6 +17,17 @@ struct TelemetryLog: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
+		
+		NavigationStack {
+			
+			ScrollView {
+				
+				Grid(alignment: .topLeading, horizontalSpacing: 2) {
+					
+				}
+			}
+			
+		}
 		
 		List {
 			
