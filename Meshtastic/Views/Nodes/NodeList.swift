@@ -46,7 +46,7 @@ struct NodeList: View {
 				} else {
 					//ForEach( nodes ) { node in
 
-						let index = nodes.firstIndex(where: { $0.id == node.id })
+					//	let index = nodes.firstIndex(where: { $0.id == node.id })
 
 						NavigationLink(value: node) {
 

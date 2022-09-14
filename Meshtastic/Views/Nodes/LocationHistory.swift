@@ -20,81 +20,45 @@ struct LocationHistory: View {
 		
 		NavigationStack {
 			
-			List {
+			ScrollView {
 				
-				ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+				Grid(alignment: .topLeading, horizontalSpacing: 2) {
+					
+					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+						//Add a table for mac and ipad
+					}
+					
+					GridRow {
 						
-					VStack {
-						
-						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-
-							HStack {
-							
-								Image(systemName: "mappin.and.ellipse")
-									.foregroundColor(.accentColor)
-									.font(.callout)
-								
-								Text("Lat/Long:").font(.callout)
-								Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-									.foregroundColor(.gray)
-									.font(.callout)
-
-								Image(systemName: "arrow.up.arrow.down.circle")
-									.font(.callout)
-									.foregroundColor(.accentColor)
-									.symbolRenderingMode(.hierarchical)
-								Text("Alt:")
-									.font(.callout)
-
-								Text("\(String(mappin.altitude))m")
-									.foregroundColor(.gray)
-									.font(.callout)
-								Image(systemName: "clock.badge.checkmark.fill")
-									.font(.subheadline)
-									.foregroundColor(.accentColor)
-									.symbolRenderingMode(.hierarchical)
-								Text("Time:")
-									.font(.callout)
-								DateTimeText(dateTime: mappin.time)
-									.foregroundColor(.gray)
-									.font(.callout)
-								
-							}
-							
-						} else {
-						
-							HStack {
-							
-								Image(systemName: "mappin.and.ellipse").foregroundColor(.accentColor) // .font(.subheadline)
-								Text("Lat/Long:").font(.caption)
-								Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-									.foregroundColor(.gray)
-									.font(.caption)
-
-							}
-						
-							HStack {
-							
-								Image(systemName: "arrow.up.arrow.down.circle")
-									.font(.subheadline)
-									.foregroundColor(.accentColor)
-									.symbolRenderingMode(.hierarchical)
-								Text("Alt:")
-									.font(.caption)
-								Text("\(String(mappin.altitude))m")
-									.foregroundColor(.gray)
-									.font(.caption)
-								Image(systemName: "clock.badge.checkmark.fill")
-									.font(.subheadline)
-									.foregroundColor(.accentColor)
-									.symbolRenderingMode(.hierarchical)
-								DateTimeText(dateTime: mappin.time)
-									.foregroundColor(.gray)
-									.font(.caption)
-							}
+						Text("Latitude")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Longitude")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Alt.")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Date / Time")
+							.font(.caption)
+							.fontWeight(.bold)
+					}
+					Divider()
+					ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+						GridRow {
+							Text(String(mappin.latitude ?? 0))
+								.font(.caption)
+							Text(String(mappin.longitude ?? 0))
+								.font(.caption)
+							Text(String(mappin.altitude))
+								.font(.caption)
+							Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+								.font(.caption)
 						}
 					}
 				}
+				.padding(.leading, 15)
+				.padding(.trailing, 5)
 			}
 			Button {
 							
@@ -129,7 +93,6 @@ struct LocationHistory: View {
 			}
 		)
 		.navigationTitle("Location History \(node.positions?.count ?? 0) Points")
-		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
 			ZStack {
