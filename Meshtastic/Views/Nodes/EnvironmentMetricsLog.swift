@@ -1,5 +1,5 @@
 //
-//  TelemetryLog.swift
+//  DeviceMetricsLog.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 7/7/22.
@@ -24,344 +24,67 @@ struct EnvironmentMetricsLog: View {
 				
 				Grid(alignment: .topLeading, horizontalSpacing: 2) {
 					
-				}
-			}
-			
-		}
-		
-		List {
-			
-			ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (tel: TelemetryEntity) in
-				
-				VStack (alignment: .leading)  {
-					
-					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-
+					GridRow {
 						
-						if tel.metricsType == 0 {
-							
-							// Device Metrics
-							HStack {
-							
-								Text("Device Metrics")
-									.font(.title)
-								
-								BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
-								if tel.batteryLevel == 0 {
-									
-									Text("Plugged In")
-										.font(.callout)
-										.foregroundColor(.gray)
-									
-								} else {
-									
-									Text("Battery Level: \(String(tel.batteryLevel))%")
-										.font(.callout)
-										.foregroundColor(.gray)
-								}
-								if tel.batteryLevel > 0 {
-									
-									Image(systemName: "bolt")
-										.font(.callout)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
-									Text("Voltage: \(String(tel.voltage))")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-								Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
-									.foregroundColor(.gray)
-									.font(.callout)
-								
-								Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
-									.foregroundColor(.gray)
-									.font(.callout)
-								
-								Image(systemName: "clock.badge.checkmark.fill")
-										.font(.callout)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
-								Text("Time:")
-									.foregroundColor(.gray)
-									.font(.callout)
-								DateTimeText(dateTime: tel.time)
-									.foregroundColor(.gray)
-									.font(.callout)
-							}
-							
-						} else if tel.metricsType == 1 {
-							
-							// Environment Metrics
-							HStack {
-							
-								Text("Environment Metrics")
-									.font(.title)
-								
-								
-								let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
-								
-								if  tel.temperature > 0 {
-									
-									Image(systemName: "thermometer")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-																	
-								if tel.relativeHumidity > 0 {
-									
-									Image(systemName: "humidity")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-								
-								if tel.barometricPressure > 0 {
-									
-									Image(systemName: "barometer")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-								
-								if tel.gasResistance > 0 {
-									
-									Image(systemName: "aqi.medium")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-								
-								if  tel.current > 0 {
-									
-									Image(systemName: "directcurrent")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Current: \(String(format: "%.2f", tel.current))")
-										.foregroundColor(.gray)
-										.font(.callout)
-									
-									Image(systemName: "bolt")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Voltage: \(String(format: "%.2f", tel.voltage))")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-								
-								Image(systemName: "clock.badge.checkmark.fill")
-										.font(.callout)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
-								Text("Time:")
-									.foregroundColor(.gray)
-									.font(.callout)
-								DateTimeText(dateTime: tel.time)
-									.foregroundColor(.gray)
-									.font(.callout)
-								
-							}
-						}
+						Text("Temp")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Hum")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Bar")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Gas")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Gas")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("DC")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Volt")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Timestamp")
+							.font(.caption)
+							.fontWeight(.bold)
+					}
+					Divider()
+					ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (em: TelemetryEntity) in
 						
-					} else {
-					
-						if tel.metricsType == 0 {
+						if em.metricsType == 1 {
 							
-							// Device Metrics iPhone Template
-							VStack {
-								
-								HStack {
-									
-									Spacer()
-									Text("Device Metrics")
-										.font(.title3)
-									Spacer()
-								}
-								
-									
-								HStack {
-									BatteryIcon(batteryLevel: tel.batteryLevel, font: .callout, color: .accentColor)
-									
-									if tel.batteryLevel == 0 {
-										
-										Text("Plugged In")
-											.font(.callout)
-											.foregroundColor(.gray)
-										
-									} else {
-										
-										Text("Battery Level: \(String(tel.batteryLevel))%")
-											.font(.callout)
-											.foregroundColor(.gray)
-									}
-								}
-								HStack {
-									if tel.batteryLevel > 0 {
-										
-										Image(systemName: "bolt")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-										Text("Voltage: \(String(tel.voltage))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								Text("Channel Utilization: \(String(format: "%.2f", tel.channelUtilization))%")
-									.foregroundColor(.gray)
-									.font(.callout)
-								
-								Text("Airtime Utilization: \(String(format: "%.2f", tel.airUtilTx))%")
-									.foregroundColor(.gray)
-									.font(.callout)
-								HStack {
-									Image(systemName: "clock.badge.checkmark.fill")
-										.font(.callout)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
-									Text("Time:")
-										.foregroundColor(.gray)
-										.font(.callout)
-									DateTimeText(dateTime: tel.time)
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-							}
-						} else if tel.metricsType == 1 {
+							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
 							
-							// Environment Metrics
-							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? true)) ? "°C" : "°F"
-							
-							
-							// Environment Metrics iPhone Template
-							VStack {
-							
-								HStack {
-									
-									Spacer()
-									Text("Environment Metrics")
-										.font(.title3)
-									Spacer()
-								}
+							GridRow {
 								
-								HStack {
-								
-									if  tel.temperature > 0 {
-										
-										Image(systemName: "thermometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Temperature: \(String(format: "%.2f", tel.temperature))\(tempReadingType)")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								HStack {
-									
-									if  tel.relativeHumidity > 0 {
-										
-										Image(systemName: "humidity")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Relative Humidity: \(String(format: "%.2f", tel.relativeHumidity))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								if  tel.current > 0 {
-									
-									HStack {
-										
-										Image(systemName: "directcurrent")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Current: \(String(format: "%.2f", tel.current))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-									
-									HStack {
-										
-										Image(systemName: "bolt")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Voltage: \(String(format: "%.2f", tel.voltage))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								if  tel.barometricPressure > 0 {
-									
-									HStack {
-										
-										Image(systemName: "barometer")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Barometric Pressure: \(String(format: "%.2f", tel.barometricPressure))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								if tel.gasResistance > 0 {
-									
-									HStack {
-									
-										Image(systemName: "aqi.medium")
-												.font(.callout)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
-										Text("Gas Resistance: \(String(format: "%.2f", tel.gasResistance))")
-											.foregroundColor(.gray)
-											.font(.callout)
-									}
-								}
-								
-								HStack {
-									
-									Image(systemName: "clock.badge.checkmark.fill")
-											.font(.callout)
-											.foregroundColor(.accentColor)
-											.symbolRenderingMode(.hierarchical)
-									Text("Time:")
-										.foregroundColor(.gray)
-										.font(.callout)
-									DateTimeText(dateTime: tel.time)
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
+								Text("\(String(format: "%.2f", em.temperature))\(tempReadingType)")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.relativeHumidity))")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.barometricPressure))")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.gasResistance))")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.current))")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.voltage))")
+									.font(.caption)
+								Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+									.font(.caption)
 							}
 						}
 					}
 				}
+				.padding(.leading, 15)
+				.padding(.trailing, 5)
 			}
 		}
 		Button {
 						
-			exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
+			exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
 			isExporting = true
 			
 		} label: {
@@ -372,7 +95,7 @@ struct EnvironmentMetricsLog: View {
 		.buttonBorderShape(.capsule)
 		.controlSize(.large)
 		.padding()
-		.navigationTitle("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 
@@ -388,18 +111,18 @@ struct EnvironmentMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user!.longName ?? "Node") Telemetry Log"),
+			defaultFilename: String("\(node.user!.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
 
 				if case .success = result {
 					
-					print("Telemetry log download succeeded.")
+					print("Environment metrics log download succeeded.")
 					
 					self.isExporting = false
 					
 				} else {
 					
-					print("Telemetry log download failed: \(result).")
+					print("Environment metrics log download failed: \(result).")
 				}
 			}
 		)

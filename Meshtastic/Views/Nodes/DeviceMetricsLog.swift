@@ -26,7 +26,7 @@ struct DeviceMetricsLog: View {
 					
 					GridRow {
 						
-						Text("Bat%")
+						Text("Batt")
 							.font(.callout)
 							.fontWeight(.bold)
 						Text("Voltage")
@@ -48,13 +48,23 @@ struct DeviceMetricsLog: View {
 						if dm.metricsType == 0 {
 							
 							GridRow {
-								Text(String(dm.batteryLevel))
-									.font(.callout)
+								
+								if dm.batteryLevel == 0 {
+									
+									Text("USB")
+										.font(.callout)
+									
+								} else {
+									
+									Text("\(String(dm.batteryLevel))%")
+										.font(.callout)
+								}
+								
 								Text(String(dm.voltage))
 									.font(.callout)
-								Text(String(dm.channelUtilization))
+								Text("\(String(format: "%.2f", dm.channelUtilization))%")
 									.font(.callout)
-								Text(String(dm.airUtilTx))
+								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.callout)
 								Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
 									.font(.callout)
