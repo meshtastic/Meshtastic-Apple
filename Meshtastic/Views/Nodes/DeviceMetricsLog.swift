@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/7/22.
 //
 import SwiftUI
+import Charts
 
 struct DeviceMetricsLog: View {
 	
@@ -15,11 +16,39 @@ struct DeviceMetricsLog: View {
 	@State var exportString = ""
 	
 	var node: NodeInfoEntity
+	
+	struct MountPrice: Identifiable {
+		var id = UUID()
+		var mount: String
+		var value: Double
+	}
 
 	var body: some View {
 		
 		NavigationStack {
 			
+			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+			
+			let data = node.telemetries!.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg))
+			
+			if data.count > 0 {
+				
+				GroupBox(label:	Label("Battery Level Trend", systemImage: "battery.100")) {
+					
+					Chart(data.array as! [TelemetryEntity], id: \.self) {
+						LineMark(
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							y: .value("Value", $0.batteryLevel)
+						)
+						PointMark(
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							y: .value("Value", $0.batteryLevel)
+						)
+					}
+					.frame(height: 150)
+				}
+			}
+
 			ScrollView {
 				
 				Grid(alignment: .topLeading, horizontalSpacing: 2) {

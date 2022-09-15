@@ -69,6 +69,17 @@ struct ShareChannel: View {
 								alignment: .center
 							)
 						
+						VStack {
+							ShareLink(
+								item: text,
+								preview: SharePreview(
+									"Meshtastic Channel Settings Link",
+									image: Image(systemName: "qrcode")
+								)
+							)
+							.font(.title3)
+						}
+						
 						if node!.loRaConfig != nil {
 							
 							HStack {

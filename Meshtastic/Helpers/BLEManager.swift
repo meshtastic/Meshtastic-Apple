@@ -416,6 +416,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		if (![FROMNUM_characteristic, FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
+			
 			sendWantConfig()
 		}
     }
@@ -640,6 +641,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				self.connectedPeripheral.subscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
+				
+				self.getChannel(channelIndex: 0, wantResponse: true)
+				
+				
+				
 				return
 			}
 

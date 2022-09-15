@@ -19,6 +19,25 @@
         <attribute name="updown1Enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="cannedMessagesConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="cannedMessageConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="ChannelEntity" representedClassName="ChannelEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="channelNum" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES">
+            <userInfo>
+                <entry key="key" value="value"/>
+            </userInfo>
+        </attribute>
+        <attribute name="downlinkEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String" maxValueString="11"/>
+        <attribute name="psk" optional="YES" attributeType="Binary"/>
+        <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="uplinkEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="nodeChannel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="channels" inverseEntity="NodeInfoEntity"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="channelNum"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
     <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -115,6 +134,7 @@
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
+        <relationship name="channels" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ChannelEntity" inverseName="nodeChannel" inverseEntity="ChannelEntity"/>
         <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
         <relationship name="externalNotificationConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExternalNotificationConfigEntity" inverseName="externalNotificationConfigNode" inverseEntity="ExternalNotificationConfigEntity"/>
