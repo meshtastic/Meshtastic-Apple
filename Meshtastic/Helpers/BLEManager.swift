@@ -642,7 +642,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				
-				self.getChannel(channelIndex: 0, wantResponse: true)
+				// Get all the channels
+				var i: UInt32 = 0;
+				while i < 8 {
+					// this should actually loop over MyNodeInfo.maxChannels to get all channels
+					//let timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { (timer) in
+						print("requesting channel",i)
+						let resp = self.getChannel(channelIndex: i, wantResponse: true)
+						i+=1;
+					DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(3)) {}
+					//}
+					
+				}
 				
 				
 				

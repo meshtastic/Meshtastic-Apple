@@ -103,6 +103,7 @@ struct NetworkConfig: View {
 					.keyboardType(.default)
 				}
 			}
+			.scrollDismissesKeyboard(.interactively)
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 			
 			Button {

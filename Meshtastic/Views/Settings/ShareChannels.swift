@@ -31,7 +31,7 @@ struct QrCodeImage {
 	}
 }
 
-struct ShareChannel: View {
+struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -73,10 +73,11 @@ struct ShareChannel: View {
 							ShareLink(
 								item: text,
 								preview: SharePreview(
-									"Meshtastic Channel Settings Link",
+									"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
 									image: Image(systemName: "qrcode")
 								)
 							)
+							.presentationDetents([.large, .large])
 							.font(.title3)
 						}
 						
@@ -107,13 +108,6 @@ struct ShareChannel: View {
 			.onAppear {
 
 				self.bleManager.context = context
-				let i: UInt32 = 1;
-//				while i < 9 { // this should actually loop over MyNodeInfo.maxChannels to get all channels
-					print("requesting channel",i)
-					let resp = self.bleManager.getChannel(channelIndex: i, wantResponse: true)
-					print("resp from getChannel", resp)
-//					i+=1;
-//				}
 			}
 			
 		}
