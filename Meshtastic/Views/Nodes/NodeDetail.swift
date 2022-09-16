@@ -147,6 +147,11 @@ struct NodeDetail: View {
 								
 								Divider()
 							}
+							Image(hwModelString)
+								.resizable()
+								.aspectRatio(contentMode: .fill)
+								.frame(width: 200, height: 200)
+								.cornerRadius(5)
 							
 							HStack {
 								
@@ -154,7 +159,7 @@ struct NodeDetail: View {
 									
 									Text("AKA").font(.largeTitle)
 										.foregroundColor(.gray).fixedSize()
-										.offset(y:15)
+										.offset(y:5)
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
 								.padding()
