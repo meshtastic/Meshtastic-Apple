@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct WiFiConfig: View {
+struct NetworkConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -18,10 +18,10 @@ struct WiFiConfig: View {
 	@State var initialLoad: Bool = true
 	@State var hasChanges: Bool = false
 	
-	@State var enabled = false
-	@State var ssid = ""
-	@State var password = ""
-	@State var mode = 0
+	@State var wifiEnabled = false
+	@State var wifiSsid = ""
+	@State var wifiPsk = ""
+	@State var wifiMode = 0
 	
 	var body: some View {
 		
@@ -29,47 +29,44 @@ struct WiFiConfig: View {
 			
 			Form {
 				
-				Text("Enabling WiFi will disable the bluetooth connection to the app.")
-					.font(.title3)
-				
-				Section(header: Text("Options")) {
+				Section(header: Text("WiFi Options")) {
+					
+					Text("Enabling WiFi will disable the bluetooth connection to the app.")
+						.font(.title3)
 						
-					Toggle(isOn: $enabled) {
+					Toggle(isOn: $wifiEnabled) {
 
 						Label("Enabled", systemImage: "wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 
-					Picker("Mode", selection: $mode ) {
+					Picker("Mode", selection: $wifiMode ) {
 						ForEach(WiFiModes.allCases) { lu in
 							Text(lu.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-				}
-				Section(header: Text("SSID & Password")) {
-					
 					HStack {
 						Label("SSID", systemImage: "network")
-						TextField("SSID", text: $ssid)
+						TextField("SSID", text: $wifiSsid)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: ssid, perform: { value in
+							.onChange(of: wifiSsid, perform: { value in
 
-								let totalBytes = ssid.utf8.count
+								let totalBytes = wifiSsid.utf8.count
 								
 								// Only mess with the value if it is too big
 								if totalBytes > 32 {
 
-									let firstNBytes = Data(ssid.utf8.prefix(32))
+									let firstNBytes = Data(wifiSsid.utf8.prefix(32))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
 										// Set the shortName back to the last place where it was the right size
-										ssid = maxBytesString
+										wifiSsid = maxBytesString
 									}
 								}
 								hasChanges = true 
@@ -78,26 +75,25 @@ struct WiFiConfig: View {
 					}
 					.keyboardType(.default)
 					
-					
 					HStack {
 						Label("Password", systemImage: "wallet.pass")
-						TextField("Password", text: $password)
+						TextField("Password", text: $wifiPsk)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: password, perform: { value in
+							.onChange(of: wifiPsk, perform: { value in
 
-								let totalBytes = password.utf8.count
+								let totalBytes = wifiPsk.utf8.count
 								
 								// Only mess with the value if it is too big
 								if totalBytes > 63 {
 
-									let firstNBytes = Data(password.utf8.prefix(63))
+									let firstNBytes = Data(wifiPsk.utf8.prefix(63))
 							
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										
 										// Set the shortName back to the last place where it was the right size
-										password = maxBytesString
+										wifiPsk = maxBytesString
 									}
 								}
 								hasChanges = true
@@ -127,15 +123,15 @@ struct WiFiConfig: View {
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
-				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Network Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
-					var wifi = Config.WiFiConfig()
-					wifi.enabled = self.enabled
-					wifi.ssid = self.ssid
-					wifi.psk = self.password
-					wifi.mode = WiFiModes(rawValue: self.mode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
+					var network = Config.NetworkConfig()
+					network.wifiEnabled = self.wifiEnabled
+					network.wifiSsid = self.wifiSsid
+					network.wifiPsk = self.wifiPsk
+					network.wifiMode = WiFiModes(rawValue: self.wifiMode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveWiFiConfig(config: wifi, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						
@@ -149,7 +145,7 @@ struct WiFiConfig: View {
 				}
 			}
 		}
-		.navigationTitle("WiFi Config")
+		.navigationTitle("Network Config")
 		.navigationBarItems(trailing:
 
 			ZStack {
@@ -162,27 +158,41 @@ struct WiFiConfig: View {
 				
 				self.bleManager.context = context
 
-				self.enabled = (node!.wiFiConfig?.enabled ?? false)
-				self.ssid = node!.wiFiConfig?.ssid ?? ""
-				self.password = node!.wiFiConfig?.password ?? ""
-				self.mode = Int(node!.wiFiConfig?.mode ?? 0)
+				self.wifiEnabled = (node!.networkConfig?.wifiEnabled ?? false)
+				self.wifiSsid = node!.networkConfig?.wifiSsid ?? ""
+				self.wifiPsk = node!.networkConfig?.wifiPsk ?? ""
+				self.wifiMode = Int(node!.networkConfig?.wifiMode ?? 0)
 
 				self.hasChanges = false
 				self.initialLoad = false
 			}
 		}
-		.onChange(of: enabled) { newEnabled in
+		.onChange(of: wifiEnabled) { newEnabled in
 			
-			if node != nil && node!.wiFiConfig != nil {
+			if node != nil && node!.networkConfig != nil {
 				
-				if newEnabled != node!.wiFiConfig!.enabled { hasChanges = true }
+				if newEnabled != node!.networkConfig!.wifiEnabled { hasChanges = true }
 			}
 		}
-		.onChange(of: mode) { newMode in
+		.onChange(of: wifiSsid) { newSSID in
 			
-			if node != nil && node!.wiFiConfig != nil {
+			if node != nil && node!.networkConfig != nil {
 				
-				if newMode != node!.wiFiConfig!.mode { hasChanges = true }
+				if newSSID != node!.networkConfig!.wifiSsid { hasChanges = true }
+			}
+		}
+		.onChange(of: wifiPsk) { newPsk in
+			
+			if node != nil && node!.networkConfig != nil {
+				
+				if newPsk != node!.networkConfig!.wifiPsk { hasChanges = true }
+			}
+		}
+		.onChange(of: wifiMode) { newMode in
+			
+			if node != nil && node!.networkConfig != nil {
+				
+				if newMode != node!.networkConfig!.wifiMode { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

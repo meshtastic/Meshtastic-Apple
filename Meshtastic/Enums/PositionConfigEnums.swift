@@ -14,7 +14,7 @@ enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
-	case fifteenMinutes = 0
+	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600
 	case sixHours = 21600
@@ -86,17 +86,17 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		switch self {
 			
 		case .gpsFormatDec:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDec
+			return Config.DisplayConfig.GpsCoordinateFormat.dec
 		case .gpsFormatDms:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatDms
+			return Config.DisplayConfig.GpsCoordinateFormat.dms
 		case .gpsFormatUtm:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatUtm
+			return Config.DisplayConfig.GpsCoordinateFormat.utm
 		case .gpsFormatMgrs:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatMgrs
+			return Config.DisplayConfig.GpsCoordinateFormat.mgrs
 		case .gpsFormatOlc:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOlc
+			return Config.DisplayConfig.GpsCoordinateFormat.olc
 		case .gpsFormatOsgr:
-			return Config.DisplayConfig.GpsCoordinateFormat.gpsFormatOsgr
+			return Config.DisplayConfig.GpsCoordinateFormat.osgr
 		}
 	}
 }
@@ -107,7 +107,7 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
-	case thirtySeconds = 0
+	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
@@ -162,7 +162,7 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
-	case thirtySeconds = 0
+	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600

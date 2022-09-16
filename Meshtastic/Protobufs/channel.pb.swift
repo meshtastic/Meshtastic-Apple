@@ -227,12 +227,12 @@ extension Channel.Role: @unchecked Sendable {}
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ChannelSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    9: .standard(proto: "channel_num"),
-    4: .same(proto: "psk"),
-    5: .same(proto: "name"),
-    10: .same(proto: "id"),
-    16: .standard(proto: "uplink_enabled"),
-    17: .standard(proto: "downlink_enabled"),
+    1: .standard(proto: "channel_num"),
+    2: .same(proto: "psk"),
+    3: .same(proto: "name"),
+    4: .same(proto: "id"),
+    5: .standard(proto: "uplink_enabled"),
+    6: .standard(proto: "downlink_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -241,35 +241,35 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 4: try { try decoder.decodeSingularBytesField(value: &self.psk) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
-      case 10: try { try decoder.decodeSingularFixed32Field(value: &self.id) }()
-      case 16: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
-      case 17: try { try decoder.decodeSingularBoolField(value: &self.downlinkEnabled) }()
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.psk) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 4: try { try decoder.decodeSingularFixed32Field(value: &self.id) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.downlinkEnabled) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.channelNum != 0 {
+      try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 1)
+    }
     if !self.psk.isEmpty {
-      try visitor.visitSingularBytesField(value: self.psk, fieldNumber: 4)
+      try visitor.visitSingularBytesField(value: self.psk, fieldNumber: 2)
     }
     if !self.name.isEmpty {
-      try visitor.visitSingularStringField(value: self.name, fieldNumber: 5)
-    }
-    if self.channelNum != 0 {
-      try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 9)
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 3)
     }
     if self.id != 0 {
-      try visitor.visitSingularFixed32Field(value: self.id, fieldNumber: 10)
+      try visitor.visitSingularFixed32Field(value: self.id, fieldNumber: 4)
     }
     if self.uplinkEnabled != false {
-      try visitor.visitSingularBoolField(value: self.uplinkEnabled, fieldNumber: 16)
+      try visitor.visitSingularBoolField(value: self.uplinkEnabled, fieldNumber: 5)
     }
     if self.downlinkEnabled != false {
-      try visitor.visitSingularBoolField(value: self.downlinkEnabled, fieldNumber: 17)
+      try visitor.visitSingularBoolField(value: self.downlinkEnabled, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
   }

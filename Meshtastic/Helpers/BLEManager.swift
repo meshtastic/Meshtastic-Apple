@@ -994,11 +994,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	
 	public func sendFactoryReset(destNum: Int64) -> Bool {
 		
-		var deviceConfig = Config.DeviceConfig()
-		deviceConfig.factoryReset = true
-		
 		var adminPacket = AdminMessage()
-		adminPacket.setConfig.device = deviceConfig
+		adminPacket.factoryReset = 1
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
@@ -1217,10 +1214,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func saveWiFiConfig(config: Config.WiFiConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveWiFiConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.setConfig.wifi = config
+		adminPacket.setConfig.network = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)

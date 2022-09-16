@@ -231,8 +231,8 @@ struct PositionConfig: View {
 				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var pc = Config.PositionConfig()
-					pc.positionBroadcastSmartDisabled = !smartPositionEnabled
-					pc.gpsDisabled = !deviceGpsEnabled
+					pc.positionBroadcastSmartEnabled = smartPositionEnabled
+					pc.gpsEnabled = deviceGpsEnabled
 					pc.fixedPosition = fixedPosition
 					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)

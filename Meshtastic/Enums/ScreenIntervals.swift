@@ -12,7 +12,7 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
 	case oneMinute = 60
 	case fiveMinutes = 300
-	case tenMinutes = 0
+	case tenMinutes = 600
 	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600

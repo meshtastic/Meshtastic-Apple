@@ -27,16 +27,16 @@ enum WiFiModes: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
-	func protoEnumValue() -> Config.WiFiConfig.WiFiMode {
+	func protoEnumValue() -> Config.NetworkConfig.WiFiMode {
 		
 		switch self {
 			
 		case .client:
-			return Config.WiFiConfig.WiFiMode.client
+			return Config.NetworkConfig.WiFiMode.client
 		case .accessPoint:
-			return Config.WiFiConfig.WiFiMode.accessPoint
+			return Config.NetworkConfig.WiFiMode.accessPoint
 		case .accessPointHidden:
-			return Config.WiFiConfig.WiFiMode.accessPointHidden
+			return Config.NetworkConfig.WiFiMode.accessPointHidden
 		}
 	}
 }

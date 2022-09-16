@@ -8,7 +8,7 @@ import SwiftUI
 
 enum OutputIntervals: Int, CaseIterable, Identifiable {
 
-	case oneSecond = 0
+	case oneSecond = 1000
 	case twoSeconds = 2000
 	case threeSeconds = 3000
 	case fourSeconds = 4000

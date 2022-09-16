@@ -27,7 +27,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
   ///
   /// No external telemetry sensor explicitly set
-  case notSet // = 0
+  case sensorUnset // = 0
 
   ///
   /// High accuracy temperature, pressure, humidity
@@ -52,34 +52,46 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// High accuracy temperature and pressure
   case bmp280 // = 6
+
+  ///
+  /// High accuracy temperature and humidity
+  case shtc3 // = 7
+
+  ///
+  /// High accuracy pressure
+  case lps22 // = 8
   case UNRECOGNIZED(Int)
 
   init() {
-    self = .notSet
+    self = .sensorUnset
   }
 
   init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .notSet
+    case 0: self = .sensorUnset
     case 1: self = .bme280
     case 2: self = .bme680
     case 3: self = .mcp9808
     case 4: self = .ina260
     case 5: self = .ina219
     case 6: self = .bmp280
+    case 7: self = .shtc3
+    case 8: self = .lps22
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
 
   var rawValue: Int {
     switch self {
-    case .notSet: return 0
+    case .sensorUnset: return 0
     case .bme280: return 1
     case .bme680: return 2
     case .mcp9808: return 3
     case .ina260: return 4
     case .ina219: return 5
     case .bmp280: return 6
+    case .shtc3: return 7
+    case .lps22: return 8
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -91,13 +103,15 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [TelemetrySensorType] = [
-    .notSet,
+    .sensorUnset,
     .bme280,
     .bme680,
     .mcp9808,
     .ina260,
     .ina219,
     .bmp280,
+    .shtc3,
+    .lps22,
   ]
 }
 
@@ -249,13 +263,15 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "NotSet"),
+    0: .same(proto: "SENSOR_UNSET"),
     1: .same(proto: "BME280"),
     2: .same(proto: "BME680"),
     3: .same(proto: "MCP9808"),
     4: .same(proto: "INA260"),
     5: .same(proto: "INA219"),
     6: .same(proto: "BMP280"),
+    7: .same(proto: "SHTC3"),
+    8: .same(proto: "LPS22"),
   ]
 }
 

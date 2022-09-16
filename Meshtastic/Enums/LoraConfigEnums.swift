@@ -132,11 +132,11 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 			case .LongSlow:
 				return Config.LoRaConfig.ModemPreset.longSlow
 			case .VLongSlow:
-				return Config.LoRaConfig.ModemPreset.vlongSlow
+			return Config.LoRaConfig.ModemPreset.veryLongSlow
 			case .MedSlow:
-				return Config.LoRaConfig.ModemPreset.medSlow
+			return Config.LoRaConfig.ModemPreset.mediumSlow
 			case .MedFast:
-				return Config.LoRaConfig.ModemPreset.medFast
+				return Config.LoRaConfig.ModemPreset.mediumFast
 			case .ShortSlow:
 				return Config.LoRaConfig.ModemPreset.shortSlow
 			case .ShortFast:
@@ -150,7 +150,7 @@ enum HopValues : Int, CaseIterable, Identifiable {
 	
 	case oneHop = 1
 	case twoHops = 2
-	case threeHops = 0
+	case threeHops = 3
 	case fourHops = 4
 	case fiveHops = 5
 	case sixHops = 6

@@ -178,7 +178,6 @@ struct ModuleConfig {
     ///
     /// If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
     /// is_uplink_enabled or is_downlink_enabled.
-    /// But if this flag is set, all MQTT features will be disabled and no servers will be contacted.
     var enabled: Bool = false
 
     ///
@@ -248,7 +247,7 @@ struct ModuleConfig {
 
     ///
     /// TODO: REPLACE
-    var mode: ModuleConfig.SerialConfig.Serial_Mode = .modeDefault
+    var mode: ModuleConfig.SerialConfig.Serial_Mode = .default
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -328,29 +327,29 @@ struct ModuleConfig {
     /// TODO: REPLACE
     enum Serial_Mode: SwiftProtobuf.Enum {
       typealias RawValue = Int
-      case modeDefault // = 0
-      case modeSimple // = 1
-      case modeProto // = 2
+      case `default` // = 0
+      case simple // = 1
+      case proto // = 2
       case UNRECOGNIZED(Int)
 
       init() {
-        self = .modeDefault
+        self = .default
       }
 
       init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .modeDefault
-        case 1: self = .modeSimple
-        case 2: self = .modeProto
+        case 0: self = .default
+        case 1: self = .simple
+        case 2: self = .proto
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
 
       var rawValue: Int {
         switch self {
-        case .modeDefault: return 0
-        case .modeSimple: return 1
-        case .modeProto: return 2
+        case .default: return 0
+        case .simple: return 1
+        case .proto: return 2
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -512,15 +511,15 @@ struct ModuleConfig {
 
     ///
     /// Generate input event on CW of this kind.
-    var inputbrokerEventCw: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+    var inputbrokerEventCw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Generate input event on CCW of this kind.
-    var inputbrokerEventCcw: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+    var inputbrokerEventCcw: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Generate input event on Press of this kind.
-    var inputbrokerEventPress: ModuleConfig.CannedMessageConfig.InputEventChar = .keyNone
+    var inputbrokerEventPress: ModuleConfig.CannedMessageConfig.InputEventChar = .none
 
     ///
     /// Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
@@ -549,65 +548,65 @@ struct ModuleConfig {
 
       ///
       /// TODO: REPLACE
-      case keyNone // = 0
+      case none // = 0
 
       ///
       /// TODO: REPLACE
-      case keyUp // = 17
+      case up // = 17
 
       ///
       /// TODO: REPLACE
-      case keyDown // = 18
+      case down // = 18
 
       ///
       /// TODO: REPLACE
-      case keyLeft // = 19
+      case left // = 19
 
       ///
       /// TODO: REPLACE
-      case keyRight // = 20
+      case right // = 20
 
       ///
       /// '\n'
-      case keySelect // = 10
+      case select // = 10
 
       ///
       /// TODO: REPLACE
-      case keyBack // = 27
+      case back // = 27
 
       ///
       /// TODO: REPLACE
-      case keyCancel // = 24
+      case cancel // = 24
       case UNRECOGNIZED(Int)
 
       init() {
-        self = .keyNone
+        self = .none
       }
 
       init?(rawValue: Int) {
         switch rawValue {
-        case 0: self = .keyNone
-        case 10: self = .keySelect
-        case 17: self = .keyUp
-        case 18: self = .keyDown
-        case 19: self = .keyLeft
-        case 20: self = .keyRight
-        case 24: self = .keyCancel
-        case 27: self = .keyBack
+        case 0: self = .none
+        case 10: self = .select
+        case 17: self = .up
+        case 18: self = .down
+        case 19: self = .left
+        case 20: self = .right
+        case 24: self = .cancel
+        case 27: self = .back
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
 
       var rawValue: Int {
         switch self {
-        case .keyNone: return 0
-        case .keySelect: return 10
-        case .keyUp: return 17
-        case .keyDown: return 18
-        case .keyLeft: return 19
-        case .keyRight: return 20
-        case .keyCancel: return 24
-        case .keyBack: return 27
+        case .none: return 0
+        case .select: return 10
+        case .up: return 17
+        case .down: return 18
+        case .left: return 19
+        case .right: return 20
+        case .cancel: return 24
+        case .back: return 27
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -647,23 +646,23 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
 extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
-    .modeDefault,
-    .modeSimple,
-    .modeProto,
+    .default,
+    .simple,
+    .proto,
   ]
 }
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
-    .keyNone,
-    .keyUp,
-    .keyDown,
-    .keyLeft,
-    .keyRight,
-    .keySelect,
-    .keyBack,
-    .keyCancel,
+    .none,
+    .up,
+    .down,
+    .left,
+    .right,
+    .select,
+    .back,
+    .cancel,
   ]
 }
 
@@ -957,7 +956,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     if self.timeout != 0 {
       try visitor.visitSingularUInt32Field(value: self.timeout, fieldNumber: 6)
     }
-    if self.mode != .modeDefault {
+    if self.mode != .default {
       try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 7)
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -978,7 +977,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
 extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "BAUD_Default"),
+    0: .same(proto: "BAUD_DEFAULT"),
     1: .same(proto: "BAUD_110"),
     2: .same(proto: "BAUD_300"),
     3: .same(proto: "BAUD_600"),
@@ -999,9 +998,9 @@ extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProvidi
 
 extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "MODE_Default"),
-    1: .same(proto: "MODE_SIMPLE"),
-    2: .same(proto: "MODE_PROTO"),
+    0: .same(proto: "DEFAULT"),
+    1: .same(proto: "SIMPLE"),
+    2: .same(proto: "PROTO"),
   ]
 }
 
@@ -1174,7 +1173,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     2: .standard(proto: "environment_update_interval"),
     3: .standard(proto: "environment_measurement_enabled"),
     4: .standard(proto: "environment_screen_enabled"),
-    7: .standard(proto: "environment_display_fahrenheit"),
+    5: .standard(proto: "environment_display_fahrenheit"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1187,7 +1186,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.environmentUpdateInterval) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.environmentMeasurementEnabled) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.environmentScreenEnabled) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.environmentDisplayFahrenheit) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.environmentDisplayFahrenheit) }()
       default: break
       }
     }
@@ -1207,7 +1206,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       try visitor.visitSingularBoolField(value: self.environmentScreenEnabled, fieldNumber: 4)
     }
     if self.environmentDisplayFahrenheit != false {
-      try visitor.visitSingularBoolField(value: self.environmentDisplayFahrenheit, fieldNumber: 7)
+      try visitor.visitSingularBoolField(value: self.environmentDisplayFahrenheit, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1274,13 +1273,13 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
     if self.inputbrokerPinPress != 0 {
       try visitor.visitSingularUInt32Field(value: self.inputbrokerPinPress, fieldNumber: 4)
     }
-    if self.inputbrokerEventCw != .keyNone {
+    if self.inputbrokerEventCw != .none {
       try visitor.visitSingularEnumField(value: self.inputbrokerEventCw, fieldNumber: 5)
     }
-    if self.inputbrokerEventCcw != .keyNone {
+    if self.inputbrokerEventCcw != .none {
       try visitor.visitSingularEnumField(value: self.inputbrokerEventCcw, fieldNumber: 6)
     }
-    if self.inputbrokerEventPress != .keyNone {
+    if self.inputbrokerEventPress != .none {
       try visitor.visitSingularEnumField(value: self.inputbrokerEventPress, fieldNumber: 7)
     }
     if self.updown1Enabled != false {
@@ -1317,13 +1316,13 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "KEY_NONE"),
-    10: .same(proto: "KEY_SELECT"),
-    17: .same(proto: "KEY_UP"),
-    18: .same(proto: "KEY_DOWN"),
-    19: .same(proto: "KEY_LEFT"),
-    20: .same(proto: "KEY_RIGHT"),
-    24: .same(proto: "KEY_CANCEL"),
-    27: .same(proto: "KEY_BACK"),
+    0: .same(proto: "NONE"),
+    10: .same(proto: "SELECT"),
+    17: .same(proto: "UP"),
+    18: .same(proto: "DOWN"),
+    19: .same(proto: "LEFT"),
+    20: .same(proto: "RIGHT"),
+    24: .same(proto: "CANCEL"),
+    27: .same(proto: "BACK"),
   ]
 }
