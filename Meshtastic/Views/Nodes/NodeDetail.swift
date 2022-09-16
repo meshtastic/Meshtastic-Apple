@@ -71,14 +71,9 @@ struct NodeDetail: View {
 					} else {
 						
 						HStack {
-							Image(node.user?.hwModel ?? "UNSET")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.cornerRadius(10)
-								.frame(width: bounds.size.width, height: bounds.size.height / 2.3)
-								.padding([.top], 40)
+
 						}
-						.offset( y:-40)
+						.padding([.top], 40)
 					}
 					
 					ScrollView {
@@ -159,7 +154,7 @@ struct NodeDetail: View {
 									
 									Text("AKA").font(.largeTitle)
 										.foregroundColor(.gray).fixedSize()
-										.offset(y:20)
+										.offset(y:15)
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
 								.padding()
@@ -172,8 +167,8 @@ struct NodeDetail: View {
 										
 										Image(hwModelString)
 											.resizable()
-											.aspectRatio(contentMode: .fit)
-											.frame(width: 90, height: 90)
+											.aspectRatio(contentMode: .fill)
+											.frame(width: 200, height: 200)
 											.cornerRadius(5)
 
 										Text(String(hwModelString))

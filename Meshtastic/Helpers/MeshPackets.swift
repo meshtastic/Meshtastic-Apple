@@ -1075,13 +1075,18 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 		print(try! powerConfig.jsonUTF8Data())
 		
 	} else if let channel = try? Channel(serializedData: packet.decoded.payload) {
+	
 		print(try! channel.jsonUTF8Data())
 		print("channel settings:", channel.settings)
+		
 	} else if let channel = try? ChannelSettings(serializedData: packet.decoded.payload) {
 		print(try! channel.jsonUTF8Data())
 		print("channel settings:", channel)
 	}
+	print(try! packet.decoded.jsonUTF8Data())
 
+	
+	
 	if meshLogging { MeshLogger.log("ℹ️ MESH PACKET received for Admin App UNHANDLED \(try! packet.jsonString())") }
 
 }

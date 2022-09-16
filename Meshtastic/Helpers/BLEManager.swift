@@ -643,20 +643,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// Config conplete returns so we don't read the characteristic again
 				
 				// Get all the channels
-				var i: UInt32 = 0;
-				while i < 8 {
-					// this should actually loop over MyNodeInfo.maxChannels to get all channels
-					//let timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { (timer) in
-						print("requesting channel",i)
+				var i: UInt32 = 1;
+				
+				let timer = Timer.scheduledTimer(withTimeInterval: 2.0,
+														 repeats: true) { timer in
+					if i == 9 {
+						timer.invalidate() // invalidate the timer
+					} else {
+		
+						print("requesting channel", i)
 						let resp = self.getChannel(channelIndex: i, wantResponse: true)
+						
 						i+=1;
-					DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(3)) {}
-					//}
-					
+					}
 				}
-				
-				
-				
 				return
 			}
 
@@ -1345,22 +1345,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
-			do {
-
-				try context!.save()
 				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
+				if meshLoggingEnabled { MeshLogger.log("🛎️ Send Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
 				
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				return true
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
 		}
 		
 		return false
