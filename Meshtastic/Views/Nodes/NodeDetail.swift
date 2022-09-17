@@ -12,10 +12,12 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State private var showingDetailsPopover = false
+	
 	@State var initialLoad: Bool = true
 	@State var satsInView = 0
-	@State private var isPresentingShutdownConfirm: Bool = false
-	@State private var isPresentingRebootConfirm: Bool = false
+	@State private var showingShutdownConfirm: Bool = false
+	@State private var showingRebootConfirm: Bool = false
 
 	var node: NodeInfoEntity
 
@@ -79,15 +81,14 @@ struct NodeDetail: View {
 					ScrollView {
 																	
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-							
-							Divider()
+
 							HStack {
 								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
 								
 									Button(action: {
 										
-										isPresentingShutdownConfirm = true
+										showingShutdownConfirm = true
 									}) {
 											
 										Label("Power Off", systemImage: "power")
@@ -98,7 +99,7 @@ struct NodeDetail: View {
 									.padding()
 									.confirmationDialog(
 										"Are you sure?",
-										isPresented: $isPresentingShutdownConfirm
+										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
 											
@@ -112,7 +113,7 @@ struct NodeDetail: View {
 							
 								Button(action: {
 									
-									isPresentingRebootConfirm = true
+									showingRebootConfirm = true
 									
 								}) {
 				
@@ -125,7 +126,7 @@ struct NodeDetail: View {
 								.confirmationDialog(
 									
 									"Are you sure?",
-									isPresented: $isPresentingRebootConfirm
+									isPresented: $showingRebootConfirm
 									) {
 										
 									Button("Reboot Node?", role: .destructive) {
@@ -140,18 +141,10 @@ struct NodeDetail: View {
 							.padding(5)
 						}
 						
+						Divider()
+						
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-							
-							// Add a divider if there is no map
-							if (node.positions?.count ?? 0) == 0 {
-								
-								Divider()
-							}
-							Image(hwModelString)
-								.resizable()
-								.aspectRatio(contentMode: .fill)
-								.frame(width: 200, height: 200)
-								.cornerRadius(5)
+
 							
 							HStack {
 								
@@ -229,10 +222,15 @@ struct NodeDetail: View {
 									}
 									.padding()
 								}
-								Divider()
+								
 							}
 							.padding()
+							.onLongPressGesture(minimumDuration: 2) {
+								
+								print("Long pressed!")
+							}
 							
+							Divider()
 							HStack(alignment: .center) {
 								
 								VStack {
@@ -364,8 +362,6 @@ struct NodeDetail: View {
 							}
 							.padding(4)
 							
-							Divider()
-							
 							HStack(alignment: .center) {
 								VStack {
 									HStack {
@@ -406,7 +402,6 @@ struct NodeDetail: View {
 							
 							if (node.positions?.count ?? 0) > 0 {
 								
-								Divider()
 								NavigationLink {
 									PositionLog(node: node)
 								} label: {
@@ -419,11 +414,11 @@ struct NodeDetail: View {
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
 							
 							if (node.telemetries?.count ?? 0) > 0 {
 								
-								Divider()
 								NavigationLink {
 									DeviceMetricsLog(node: node)
 								} label: {

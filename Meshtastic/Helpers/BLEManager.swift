@@ -29,7 +29,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
     @Published var connectedPeripheral: Peripheral!
     @Published var lastConnectionError: String
-	@Published var connectedVersion: String
+	@State var connectedVersion: String
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false

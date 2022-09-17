@@ -1230,7 +1230,6 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 			let nsError = error as NSError
 			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
-		
 	}
 }
 	
