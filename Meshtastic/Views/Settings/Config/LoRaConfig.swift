@@ -87,7 +87,7 @@ struct LoRaConfig: View {
 					lc.hopLimit = UInt32(hopLimit)
 					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
 					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-					lc.txEnabled = true
+					//lc.txEnabled = true
 					
 					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!)
 					
