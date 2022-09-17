@@ -163,7 +163,7 @@ struct MQTTConfig: View {
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm
 			) {
-				Button("Save WiFI Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save MQTT Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					var mqtt = ModuleConfig.MQTTConfig()
 					mqtt.enabled = self.enabled

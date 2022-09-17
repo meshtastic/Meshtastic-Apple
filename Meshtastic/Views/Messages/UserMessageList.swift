@@ -359,7 +359,7 @@ struct UserMessageList: View {
 						.listRowSeparator(.hidden)
 					}
 				}
-				.scrollDismissesKeyboard(.interactively)
+				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
 					
 					self.bleManager.context = context
