@@ -22,6 +22,8 @@ struct LoRaConfig: View {
 	@State var modemPreset  = 0
 	@State var hopLimit  = 0
 	@State var txPower  = 0
+	@State var txEnabled = true
+	@State var usePreset = true
 	
 	var body: some View {
 		
@@ -120,8 +122,11 @@ struct LoRaConfig: View {
 			
 				self.hopLimit = Int(node!.loRaConfig?.hopLimit ?? 0)
 				self.region = Int(node!.loRaConfig?.regionCode ?? 0)
+				self.usePreset = node!.loRaConfig?.usePreset ?? true
 				self.modemPreset = Int(node!.loRaConfig?.modemPreset ?? 0)
+				self.txEnabled = node!.loRaConfig?.txEnabled ?? true
 				self.txPower = Int(node!.loRaConfig?.txPower ?? 0)
+				
 				self.hasChanges = false
 				self.initialLoad = false
 			}
