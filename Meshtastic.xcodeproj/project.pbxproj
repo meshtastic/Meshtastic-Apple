@@ -1168,7 +1168,6 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				DD769E0428D24E32001A3F05 /* MeshtasticDataModel v 12.xcdatamodel */,
 				DD1925B528CD591B00720036 /* MeshtasticDataModel v 11.xcdatamodel */,
 				DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */,
 				DD5929A528C0F292003DB21D /* MeshtasticDataModel v 9.xcdatamodel */,
@@ -1181,7 +1180,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DD769E0428D24E32001A3F05 /* MeshtasticDataModel v 12.xcdatamodel */;
+			currentVersion = DD1925B528CD591B00720036 /* MeshtasticDataModel v 11.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
