@@ -646,9 +646,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// Get all the channels
 				var i: UInt32 = 1;
 				
-				let timer = Timer.scheduledTimer(withTimeInterval: 2.0,
+				Timer.scheduledTimer(withTimeInterval: 0.25,
 														 repeats: true) { timer in
-					if i == 9 {
+					if i == self.connectedPeripheral.maxChannels {
 						timer.invalidate() // invalidate the timer
 					} else {
 		
@@ -1345,7 +1345,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
 				
 				if meshLoggingEnabled { MeshLogger.log("🛎️ Send Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
 				
