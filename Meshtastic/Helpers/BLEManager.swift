@@ -646,15 +646,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// Get all the channels
 				var i: UInt32 = 1;
 				
-				Timer.scheduledTimer(withTimeInterval: 0.25,
+				Timer.scheduledTimer(withTimeInterval: 0.4,
 														 repeats: true) { timer in
-					if i == self.connectedPeripheral.maxChannels {
+					if i == (self.connectedPeripheral.maxChannels + 1) {
 						timer.invalidate() // invalidate the timer
 					} else {
 		
-						print("requesting channel", i)
-						let resp = self.getChannel(channelIndex: i, wantResponse: true)
-						
+						_ = self.getChannel(channelIndex: i, wantResponse: true)
 						i+=1;
 					}
 				}
@@ -1323,7 +1321,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = channelIndex
 		
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
@@ -1346,7 +1343,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 				
-				if meshLoggingEnabled { MeshLogger.log("🛎️ Send Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
+				if meshLoggingEnabled { MeshLogger.log("🛎️ Send Get Channel \(channelIndex) Request Admin Message for node: \(String(connectedPeripheral.num))") }
 				
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				return true
