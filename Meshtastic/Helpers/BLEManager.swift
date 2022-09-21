@@ -204,7 +204,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             peripheralName = name
         }
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, maxChannels: 0, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -514,6 +514,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 						self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
 						self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
+						self.connectedPeripheral.maxChannels =  myInfo!.maxChannels
 
 					}
 				}
@@ -640,6 +641,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				self.connectedPeripheral.subscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
+				
+				// Get all the channels
+				var i: UInt32 = 1;
+				
+				Timer.scheduledTimer(withTimeInterval: 0.4,
+														 repeats: true) { timer in
+					if i == (self.connectedPeripheral.maxChannels + 1) {
+						timer.invalidate() // invalidate the timer
+					} else {
+		
+						_ = self.getChannel(channelIndex: i, wantResponse: true)
+						i+=1;
+					}
+				}
 				return
 			}
 

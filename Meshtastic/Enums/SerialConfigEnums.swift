@@ -107,20 +107,23 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 
 enum SerialModeTypes: Int, CaseIterable, Identifiable {
 
-	case modeDefault = 0
-	case modeSimple = 1
-	case modeProto = 2
-
+	case `default` = 0
+	case simple = 1
+	case proto = 2
+	case txtmsg = 3
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-			case .modeDefault:
+			case .default:
 				return "Default"
-			case .modeSimple:
+			case .simple:
 				return "Simple"
-			case .modeProto:
+			case .proto:
 				return "Protobufs"
+			case .txtmsg:
+				return "Text Message"
 			}
 		}
 	}
@@ -128,12 +131,14 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		
 		switch self {
 			
-		case .modeDefault:
+		case .default:
 			return ModuleConfig.SerialConfig.Serial_Mode.default
-		case .modeSimple:
+		case .simple:
 			return ModuleConfig.SerialConfig.Serial_Mode.simple
-		case .modeProto:
+		case .proto:
 			return ModuleConfig.SerialConfig.Serial_Mode.proto
+		case .txtmsg:
+			return ModuleConfig.SerialConfig.Serial_Mode.textmsg
 		}
 	}
 }
@@ -141,6 +146,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 
 	case unset = 0
+	case oneSecond = 1
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
@@ -154,6 +160,8 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 			switch self {
 			case .unset:
 				return "Unset"
+			case .oneSecond:
+				return "One Second"
 			case .fiveSeconds:
 				return "Five Seconds"
 			case .tenSeconds:
