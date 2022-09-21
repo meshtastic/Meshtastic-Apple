@@ -309,11 +309,11 @@ struct CannedMessagesConfig: View {
 				if newPreset == 1 {
 					
 					// RAK Rotary Encoder
-					updown1Enabled = true
+					updown1Enabled = false
 					rotary1Enabled = false
-					inputbrokerPinA = 4
-					inputbrokerPinB = 10
-					inputbrokerPinPress = 3
+					inputbrokerPinA = 32
+					inputbrokerPinB = 38
+					inputbrokerPinPress = 37
 					inputbrokerEventCw = InputEventChars.keyUp.rawValue
 					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
 					inputbrokerEventPress = InputEventChars.keySelect.rawValue

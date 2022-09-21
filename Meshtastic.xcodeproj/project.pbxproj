@@ -269,13 +269,6 @@
 			path = Custom;
 			sourceTree = "<group>";
 		};
-		DD2160AC28C5019400C17253 /* Messages */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Messages;
-			sourceTree = "<group>";
-		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -507,7 +500,6 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DD2160AC28C5019400C17253 /* Messages */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
 				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
