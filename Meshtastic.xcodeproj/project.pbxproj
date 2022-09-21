@@ -61,6 +61,7 @@
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD9D8F2F2764403B00080993 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */; };
+		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
@@ -178,6 +179,8 @@
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataSample.xcdatamodel; sourceTree = "<group>"; };
 		DDA1C48528D77310009933EC /* MeshtasticDataModel v 12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 12.xcdatamodel"; sourceTree = "<group>"; };
+		DDA1C48C28DB4839009933EC /* MeshtasticDataModel v 13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 13.xcdatamodel"; sourceTree = "<group>"; };
+		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAnnotation.swift; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
@@ -354,6 +357,7 @@
 				DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */,
 				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
 				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
+				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -745,6 +749,7 @@
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
+				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
@@ -1156,6 +1161,7 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDA1C48C28DB4839009933EC /* MeshtasticDataModel v 13.xcdatamodel */,
 				DDA1C48528D77310009933EC /* MeshtasticDataModel v 12.xcdatamodel */,
 				DD1925B528CD591B00720036 /* MeshtasticDataModel v 11.xcdatamodel */,
 				DD2160AD28C5536B00C17253 /* MeshtasticDataModel v 10.xcdatamodel */,
@@ -1169,7 +1175,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DDA1C48528D77310009933EC /* MeshtasticDataModel v 12.xcdatamodel */;
+			currentVersion = DDA1C48C28DB4839009933EC /* MeshtasticDataModel v 13.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
