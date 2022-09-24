@@ -331,6 +331,13 @@ struct PositionConfig: View {
 				if newGpsUpdateInterval != node!.positionConfig!.gpsUpdateInterval { hasChanges = true }
 			}
 		}
+		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
+
+			if node != nil && node!.positionConfig != nil {
+
+				if newSmartPositionEnabled != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
+			}
+		}
 		.onChange(of: fixedPosition) { newFixed in
 
 			if node != nil && node!.positionConfig != nil {
