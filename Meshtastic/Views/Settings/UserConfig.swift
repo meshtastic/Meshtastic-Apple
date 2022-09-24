@@ -104,8 +104,9 @@ struct UserConfig: View {
 				.padding()
 				.confirmationDialog(
 					
-					"Are you sure?",
-					isPresented: $isPresentingSaveConfirm
+					"Are you sure you want to save?",
+					isPresented: $isPresentingSaveConfirm,
+					titleVisibility: .visible
 				) {
 					Button("Save User Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
@@ -120,7 +121,11 @@ struct UserConfig: View {
 							hasChanges = false
 						}
 					}
+				} message: {
+					
+					Text("After user config saves the node will reboot.")
 				}
+				
 			}
 			Spacer()
 		}

@@ -22,12 +22,17 @@
     <entity name="ChannelEntity" representedClassName="ChannelEntity" syncable="YES" codeGenerationType="class">
         <attribute name="downlinkEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="index" attributeType="Integer 32" maxValueString="13" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="index" attributeType="Integer 32" minValueString="0" maxValueString="13" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="psk" optional="YES" attributeType="String"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="uplinkEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="myInfoChannel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="channels" inverseEntity="MyInfoEntity"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="index"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
     </entity>
     <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>

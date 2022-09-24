@@ -69,7 +69,7 @@ struct ShareChannel: View {
 								alignment: .center
 							)
 						
-						if node!.loRaConfig != nil {
+						if node != nil && node!.loRaConfig != nil {
 							
 							HStack {
 								
@@ -77,9 +77,18 @@ struct ShareChannel: View {
 								Text("Modem Preset \(preset!.description)").font(.title3)
 							}
 						}
-						HStack {
+						VStack {
 							
 							Text("Number of Channels: \(node!.myInfo!.maxChannels)").font(.title2)
+							
+							ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+								
+								VStack {
+									
+									
+									Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
+								}
+							}
 						}
 					}
 					.frame(width: bounds.size.width, height: bounds.size.height)
@@ -96,15 +105,7 @@ struct ShareChannel: View {
 			.onAppear {
 
 				self.bleManager.context = context
-				let i: UInt32 = 1;
-//				while i < 9 { // this should actually loop over MyNodeInfo.maxChannels to get all channels
-					print("requesting channel",i)
-					let resp = self.bleManager.getChannel(channelIndex: i, wantResponse: true)
-					print("resp from getChannel", resp)
-//					i+=1;
-//				}
 			}
-			
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

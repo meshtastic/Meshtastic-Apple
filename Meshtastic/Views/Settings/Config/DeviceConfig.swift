@@ -74,8 +74,9 @@ struct DeviceConfig: View {
 				.padding()
 				.confirmationDialog(
 					
-					"Are you sure?",
-					isPresented: $isPresentingSaveConfirm
+					"Are you sure you want to save?",
+					isPresented: $isPresentingSaveConfirm,
+					titleVisibility: .visible
 				) {
 					Button("Save Device Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
@@ -95,7 +96,11 @@ struct DeviceConfig: View {
 						} else {
 							
 						}
-					}
+					} 
+				}
+				message: {
+					
+					Text("After device config saves the node will reboot.")
 				}
 			
 				Button("Factory Reset", role: .destructive) {

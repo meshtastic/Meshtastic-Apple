@@ -11,16 +11,16 @@ struct PositionFlags: OptionSet
 {
 	let rawValue: Int
 	
-	static let posAltitude = PositionFlags(rawValue: 1)
-	static let posAltMsl = PositionFlags(rawValue: 2)
-	static let posGeoSep = PositionFlags(rawValue: 4)
-	static let posDop = PositionFlags(rawValue: 8)
-	static let posHvdop = PositionFlags(rawValue: 16)
-	static let posSatsinview = PositionFlags(rawValue: 32)
-	static let posSeqNos = PositionFlags(rawValue: 64)
-	static let posTimestamp = PositionFlags(rawValue: 128)
-	static let posSpeed = PositionFlags(rawValue: 256)
-	static let posHeading = PositionFlags(rawValue: 512)
+	static let Altitude = PositionFlags(rawValue: 1)
+	static let AltitudeMsl = PositionFlags(rawValue: 2)
+	static let GeoSep = PositionFlags(rawValue: 4)
+	static let Dop = PositionFlags(rawValue: 8)
+	static let Hvdop = PositionFlags(rawValue: 16)
+	static let Satsinview = PositionFlags(rawValue: 32)
+	static let SeqNos = PositionFlags(rawValue: 64)
+	static let Timestamp = PositionFlags(rawValue: 128)
+	static let Speed = PositionFlags(rawValue: 256)
+	static let Heading = PositionFlags(rawValue: 512)
 }
 
 struct PositionConfig: View {
@@ -44,29 +44,29 @@ struct PositionConfig: View {
 	
 	/// Position Flags
 	/// Altitude value - 1
-	@State var includePosAltitude = false
+	@State var includeAltitude = false
 	/// Altitude value is MSL - 2
-	@State var includePosAltMsl = false
+	@State var includeAltitudeMsl = false
 	/// Include geoidal separation - 4
-	@State var includePosGeoSep = false
+	@State var includeGeoSep = false
 	/// Include the DOP value ; PDOP used by default, see below - 8
-	@State var includePosDop = false
+	@State var includeDop = false
 	/// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP - 16
-	@State var includePosHvdop = false
+	@State var includeHvdop = false
 	/// Include number of "satellites in view" - 32
-	@State var includePosSatsinview = false
+	@State var includeSatsinview = false
 	/// Include a sequence number incremented per packet - 64
-	@State var includePosSeqNos = false
+	@State var includeSeqNos = false
 	/// Include positional timestamp (from GPS solution) - 128
-	@State var includePosTimestamp = false
+	@State var includeTimestamp = false
 	/// Include positional heading - 256
 	/// Intended for use with vehicle not walking speeds
 	/// walking speeds are likely to be error prone like the compass
-	@State var includePosSpeed = false
+	@State var includeSpeed = false
 	/// Include positional speed - 512
 	/// Intended for use with vehicle not walking speeds
 	/// walking speeds are likely to be error prone like the compass
-	@State var includePosHeading = false
+	@State var includeHeading = false
 	
 	var body: some View {
 		
@@ -144,43 +144,43 @@ struct PositionConfig: View {
 						.font(.caption)
 						.listRowSeparator(.visible)
 					
-					Toggle(isOn: $includePosAltitude) {
+					Toggle(isOn: $includeAltitude) {
 
 						Label("Altitude", systemImage: "arrow.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosAltMsl) {
+					Toggle(isOn: $includeAltitudeMsl) {
 
 						Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosSatsinview) {
+					Toggle(isOn: $includeSatsinview) {
 
 						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosSeqNos) { //64
+					Toggle(isOn: $includeSeqNos) { //64
 
 						Label("Sequence number", systemImage: "number")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosTimestamp) { //128
+					Toggle(isOn: $includeTimestamp) { //128
 
 						Label("Timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosHeading) { //128
+					Toggle(isOn: $includeHeading) { //128
 
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosSpeed) { //128
+					Toggle(isOn: $includeSpeed) { //128
 
 						Label("Vehicle speed", systemImage: "speedometer")
 					}
@@ -188,19 +188,19 @@ struct PositionConfig: View {
 				}
 				Section(header: Text("Advanced Position Flags")) {
 					
-					Toggle(isOn: $includePosGeoSep) {
+					Toggle(isOn: $includeGeoSep) {
 
 						Text("Geoidal Seperation")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosDop) {
+					Toggle(isOn: $includeDop) {
 
 						Text("Dilution of precision (DOP) PDOP used by default")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includePosHvdop) {
+					Toggle(isOn: $includeHvdop) {
 
 						Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
 					}
@@ -240,16 +240,16 @@ struct PositionConfig: View {
 					
 					var pf : PositionFlags = []
 					
-					if includePosAltitude { pf.insert(.posAltitude) }
-					if includePosAltMsl { pf.insert(.posAltMsl) }
-					if includePosGeoSep { pf.insert(.posGeoSep) }
-					if includePosDop { pf.insert(.posDop) }
-					if includePosHvdop { pf.insert(.posHvdop) }
-					if includePosSatsinview { pf.insert(.posSatsinview) }
-					if includePosSeqNos { pf.insert(.posSeqNos) }
-					if includePosTimestamp { pf.insert(.posTimestamp) }
-					if includePosSpeed { pf.insert(.posSpeed) }
-					if includePosHeading { pf.insert(.posHeading) }
+					if includeAltitude { pf.insert(.Altitude) }
+					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
+					if includeGeoSep { pf.insert(.GeoSep) }
+					if includeDop { pf.insert(.Dop) }
+					if includeHvdop { pf.insert(.Hvdop) }
+					if includeSatsinview { pf.insert(.Satsinview) }
+					if includeSeqNos { pf.insert(.SeqNos) }
+					if includeTimestamp { pf.insert(.Timestamp) }
+					if includeSpeed { pf.insert(.Speed) }
+					if includeHeading { pf.insert(.Heading) }
 					
 					pc.positionFlags = UInt32(pf.rawValue)
 					
@@ -287,60 +287,66 @@ struct PositionConfig: View {
 				self.smartPositionEnabled = node!.positionConfig?.smartPositionEnabled ?? true
 				self.deviceGpsEnabled = node!.positionConfig?.deviceGpsEnabled ?? true
 				self.fixedPosition = node!.positionConfig?.fixedPosition ?? false
-				self.gpsUpdateInterval = Int(node!.positionConfig?.gpsUpdateInterval ?? 0)
-				self.gpsAttemptTime = Int(node!.positionConfig?.gpsAttemptTime ?? 0)
-				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 0)
+				self.gpsUpdateInterval = Int(node!.positionConfig?.gpsUpdateInterval ?? 30)
+				self.gpsAttemptTime = Int(node!.positionConfig?.gpsAttemptTime ?? 30)
+				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 900)
 				self.positionFlags = Int(node!.positionConfig?.positionFlags ?? 3)
 				
 				let pf = PositionFlags(rawValue: self.positionFlags)
 				
-				if pf.contains(.posAltitude) { self.includePosAltitude = true } else { self.includePosAltitude = false }
-				if pf.contains(.posAltMsl) { self.includePosAltMsl = true } else { self.includePosAltMsl = false }
-				if pf.contains(.posGeoSep) { self.includePosGeoSep = true } else { self.includePosGeoSep = false }
-				if pf.contains(.posDop) { self.includePosDop = true  } else { self.includePosDop = false }
-				if pf.contains(.posHvdop) { self.includePosHvdop = true } else { self.includePosHvdop = false }
-				if pf.contains(.posSatsinview) { self.includePosSatsinview = true } else { self.includePosSatsinview = false }
-				if pf.contains(.posSeqNos) { self.includePosSeqNos = true } else { self.includePosSeqNos = false }
-				if pf.contains(.posTimestamp) { self.includePosTimestamp = true } else { self.includePosTimestamp = false }
-				if pf.contains(.posSpeed) { self.includePosSpeed = true } else { self.includePosSpeed = false }
-				if pf.contains(.posHeading) { self.includePosHeading = true } else { self.includePosHeading = false }
+				if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
+				if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
+				if pf.contains(.GeoSep) { self.includeGeoSep = true } else { self.includeGeoSep = false }
+				if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
+				if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
+				if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
+				if pf.contains(.SeqNos) { self.includeSeqNos = true } else { self.includeSeqNos = false }
+				if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
+				if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
+				if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
 				
 				self.hasChanges = false
 				self.initialLoad = false
 			
 			}
 		}
-		.onChange(of: smartPositionEnabled) { newSmartPosition in
-			
-			if node != nil && node!.positionConfig != nil {
-				
-				if newSmartPosition != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
-			}
-		}
-		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
-			
-			if node != nil && node!.positionConfig != nil {
-				
-				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
-			}
-		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
-			
+
 			if node != nil && node!.positionConfig != nil {
-				
+
 				if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
 			}
 		}
-		.onChange(of: fixedPosition) { newFixed in
-			
+		.onChange(of: gpsAttemptTime) { newGpsAttemptTime in
+
 			if node != nil && node!.positionConfig != nil {
-			
+
+				if newGpsAttemptTime != node!.positionConfig!.gpsAttemptTime { hasChanges = true }
+			}
+		}
+		.onChange(of: gpsUpdateInterval) { newGpsUpdateInterval in
+
+			if node != nil && node!.positionConfig != nil {
+
+				if newGpsUpdateInterval != node!.positionConfig!.gpsUpdateInterval { hasChanges = true }
+			}
+		}
+		.onChange(of: fixedPosition) { newFixed in
+
+			if node != nil && node!.positionConfig != nil {
+
 				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
 			}
 		}
-		.onChange(of: includePosAltitude || includePosAltMsl || includePosGeoSep || includePosDop || includePosHvdop || includePosSatsinview || includePosSeqNos || includePosTimestamp || includePosSpeed || includePosHeading) { newFlags in
-			
-			hasChanges = true
+		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
+
+			if node != nil && node!.positionConfig != nil {
+
+				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
+			}
+		}
+		.onChange(of: includeAltitude || includeAltitudeMsl || includeGeoSep || includeDop || includeHvdop || includeSatsinview || includeSeqNos || includeTimestamp || includeSpeed || includeHeading) { newFlags in
+			// hasChanges = true
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

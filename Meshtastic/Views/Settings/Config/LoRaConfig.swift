@@ -80,10 +80,11 @@ struct LoRaConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				"Are you sure you want to save?",
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
-				Button("Save LoRa Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
 					
 					var lc = Config.LoRaConfig()
 					lc.hopLimit = UInt32(hopLimit)
@@ -102,8 +103,11 @@ struct LoRaConfig: View {
 						
 					}
 				}
+				
+			} message: {
+				
+				Text("After LoRa config saves the node will reboot.")
 			}
-
 		}
 		.navigationTitle("LoRa Config")
 		.navigationBarItems(trailing:
