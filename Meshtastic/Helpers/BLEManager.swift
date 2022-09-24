@@ -463,7 +463,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if errorCode == 15 { // CBATTErrorDomain Code=15 "Encryption is insufficient."
 
 				// BLE Pin connection error
-				lastConnectionError = "🚫 BLE \(e.localizedDescription) This may be a Meshtastic Firmware bug affecting BLE 4.0 devices."
+				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
 				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again. You may need to forget the device under Settings > General > Bluetooth.") }
 				self.centralManager?.cancelPeripheralConnection(peripheral)
 

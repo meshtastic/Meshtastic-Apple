@@ -1039,8 +1039,16 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 					newTelemetries.append(telemetry)
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
+				if nodeInfoMessage.hasUser {
+					
+					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
+					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
+					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
+					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
+					fetchedNode[0].user!.macaddr = nodeInfoMessage.user.macaddr
+					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+				}
 			}
-			
 		}
 		
 		do {
@@ -1066,6 +1074,72 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 	
 	if let channelMessage = try? Channel(serializedData: packet.decoded.payload) {
+		
+		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
+		
+		do {
+			
+			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
+
+			if fetchedMyInfo.count == 1 {
+				
+				// Update
+				if fetchedMyInfo[0].channels?.count ?? 0 >= 1 {
+					
+					let newChannel = ChannelEntity(context: context)
+					newChannel.index = Int32(channelMessage.settings.channelNum)
+					newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
+					newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
+					newChannel.name = channelMessage.settings.name
+					newChannel.role = Int32(channelMessage.role.rawValue)
+					
+					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+					
+					let currentChannel = fetchedMyInfo[0].channels!.first(where: { ($0 as! ChannelEntity).index == channelMessage.index })
+					
+					if currentChannel != nil {
+						
+						//mutableChannels.remove(currentChannel!)
+					}
+					mutableChannels.add(newChannel)
+					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+
+					
+				} else {
+					
+					if channelMessage.index == 0 {
+						
+						let newChannel = ChannelEntity(context: context)
+						newChannel.index = channelMessage.index
+						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
+						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
+						newChannel.name = "Primary"
+						
+						var newChannels = [ChannelEntity]()
+						newChannels.append(newChannel)
+						fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
+					}
+				}
+				
+			} else {
+				print("💥 Trying to save a channel to a MyInfo that does not exist: \(packet.from)")
+			}
+
+		try context.save()
+
+			if meshLogging {
+				
+				MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+			}
+
+		} catch {
+
+			context.rollback()
+
+			let nsError = error as NSError
+			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+		}
 			
 		if meshLogging { MeshLogger.log("ℹ️ Channel Message received for Admin App \(try! channelMessage.jsonString())") }
 	}

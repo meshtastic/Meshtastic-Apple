@@ -7,7 +7,34 @@
 
 import Foundation
 
-// Default of 0 is One Minute
+enum ScreenUnits: Int, CaseIterable, Identifiable {
+	
+	case metric = 0
+	case imperial = 1
+   
+    var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .metric:
+			   return "Metric"
+			case .imperial:
+			   return "Imperial"
+			}
+		}
+	}
+	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
+		
+		switch self {
+			
+		case .metric:
+			return Config.DisplayConfig.DisplayUnits.metric
+		case .imperial:
+			return Config.DisplayConfig.DisplayUnits.imperial
+		}
+	}
+}
+
 enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
 	case oneMinute = 60
