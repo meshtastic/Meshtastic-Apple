@@ -29,7 +29,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
     @Published var connectedPeripheral: Peripheral!
     @Published var lastConnectionError: String
-	@Published var connectedVersion: String
+	@State var connectedVersion: String
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
@@ -114,7 +114,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         if centralManager.isScanning {
 
             self.centralManager.stopScan()
-			self.isScanning = self.centralManager.isScanning
+			isScanning = self.centralManager.isScanning
             print("🛑 Stopped Scanning")
         }
     }
@@ -416,6 +416,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		if (![FROMNUM_characteristic, FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
+			
 			sendWantConfig()
 		}
     }
@@ -1320,7 +1321,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = channelIndex
 		
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
@@ -1342,23 +1342,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
-			do {
-
-				try context!.save()
 				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Get Channel Request Admin Message for node: \(String(connectedPeripheral.num))") }
+				if meshLoggingEnabled { MeshLogger.log("🛎️ Send Get Channel \(channelIndex) Request Admin Message for node: \(String(connectedPeripheral.num))") }
 				
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				return true
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
 		}
 		
 		return false

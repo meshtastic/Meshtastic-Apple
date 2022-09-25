@@ -80,8 +80,9 @@ struct MQTTConfig: View {
 								hasChanges = true
 							})
 							.foregroundColor(.gray)
+							.keyboardType(.default)
 					}
-					.keyboardType(.default)
+					.autocorrectionDisabled()
 					
 					HStack {
 						Label("Username", systemImage: "person.text.rectangle")
@@ -109,6 +110,7 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
+					.scrollDismissesKeyboard(.interactively)
 					
 					
 					HStack {
@@ -137,8 +139,10 @@ struct MQTTConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
+					.scrollDismissesKeyboard(.interactively)
 				}
 			}
+			.scrollDismissesKeyboard(.interactively)
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 			
 			Button {

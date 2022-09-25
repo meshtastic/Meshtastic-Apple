@@ -1072,9 +1072,9 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 }
 
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
-	
+
 	if let channelMessage = try? Channel(serializedData: packet.decoded.payload) {
-		
+
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
 		
@@ -1140,10 +1140,9 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			let nsError = error as NSError
 			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
-			
-		if meshLogging { MeshLogger.log("ℹ️ Channel Message received for Admin App \(try! channelMessage.jsonString())") }
 	}
 }
+
 
 func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 	
@@ -1284,7 +1283,6 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 			let nsError = error as NSError
 			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
-		
 	}
 }
 	

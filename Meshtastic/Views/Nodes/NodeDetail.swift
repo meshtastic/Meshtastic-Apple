@@ -12,10 +12,12 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State private var showingDetailsPopover = false
+	
 	@State var initialLoad: Bool = true
 	@State var satsInView = 0
-	@State private var isPresentingShutdownConfirm: Bool = false
-	@State private var isPresentingRebootConfirm: Bool = false
+	@State private var showingShutdownConfirm: Bool = false
+	@State private var showingRebootConfirm: Bool = false
 
 	var node: NodeInfoEntity
 
@@ -23,7 +25,7 @@ struct NodeDetail: View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
-		ZStack {
+		NavigationStack {
 
 			GeometryReader { bounds in
 
@@ -63,36 +65,30 @@ struct NodeDetail: View {
 									   }
 									)
 								 }
-							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.6)
+								.ignoresSafeArea(.all, edges: [.leading, .trailing])
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.70)
 							}
 						}
 						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
 					} else {
 						
 						HStack {
-							Image(node.user?.hwModel ?? "UNSET")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.cornerRadius(10)
-								.frame(width: bounds.size.width, height: bounds.size.height / 2.3)
-								.padding([.top], 40)
+
 						}
-						.offset( y:-40)
+						.padding([.top], 40)
 					}
 					
 					ScrollView {
 																	
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-							
-							Divider()
+
 							HStack {
 								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
 								
 									Button(action: {
 										
-										isPresentingShutdownConfirm = true
+										showingShutdownConfirm = true
 									}) {
 											
 										Label("Power Off", systemImage: "power")
@@ -103,7 +99,7 @@ struct NodeDetail: View {
 									.padding()
 									.confirmationDialog(
 										"Are you sure?",
-										isPresented: $isPresentingShutdownConfirm
+										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
 											
@@ -117,7 +113,7 @@ struct NodeDetail: View {
 							
 								Button(action: {
 									
-									isPresentingRebootConfirm = true
+									showingRebootConfirm = true
 									
 								}) {
 				
@@ -130,7 +126,7 @@ struct NodeDetail: View {
 								.confirmationDialog(
 									
 									"Are you sure?",
-									isPresented: $isPresentingRebootConfirm
+									isPresented: $showingRebootConfirm
 									) {
 										
 									Button("Reboot Node?", role: .destructive) {
@@ -145,13 +141,10 @@ struct NodeDetail: View {
 							.padding(5)
 						}
 						
+						Divider()
+						
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-							
-							// Add a divider if there is no map
-							if (node.positions?.count ?? 0) == 0 {
-								
-								Divider()
-							}
+
 							
 							HStack {
 								
@@ -159,7 +152,7 @@ struct NodeDetail: View {
 									
 									Text("AKA").font(.largeTitle)
 										.foregroundColor(.gray).fixedSize()
-										.offset(y:20)
+										.offset(y:5)
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
 								.padding()
@@ -172,8 +165,8 @@ struct NodeDetail: View {
 										
 										Image(hwModelString)
 											.resizable()
-											.aspectRatio(contentMode: .fit)
-											.frame(width: 90, height: 90)
+											.aspectRatio(contentMode: .fill)
+											.frame(width: 200, height: 200)
 											.cornerRadius(5)
 
 										Text(String(hwModelString))
@@ -229,10 +222,15 @@ struct NodeDetail: View {
 									}
 									.padding()
 								}
-								Divider()
+								
 							}
 							.padding()
+							.onLongPressGesture(minimumDuration: 2) {
+								
+								print("Long pressed!")
+							}
 							
+							Divider()
 							HStack(alignment: .center) {
 								
 								VStack {
@@ -364,8 +362,6 @@ struct NodeDetail: View {
 							}
 							.padding(4)
 							
-							Divider()
-							
 							HStack(alignment: .center) {
 								VStack {
 									HStack {
@@ -399,70 +395,84 @@ struct NodeDetail: View {
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
+							.padding([.bottom], 0)
 						}
 						
-						List {
+						VStack {
 							
 							if (node.positions?.count ?? 0) > 0 {
 								
 								NavigationLink {
-									LocationHistory(node: node)
+									PositionLog(node: node)
 								} label: {
-
+									
 									Image(systemName: "building.columns")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Position History \(node.positions?.count ?? 0) Points")
+									
+									Text("Position Log (\(node.positions?.count ?? 0) Points)")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
+							
 							if (node.telemetries?.count ?? 0) > 0 {
+								
 								NavigationLink {
-									TelemetryLog(node: node)
+									DeviceMetricsLog(node: node)
 								} label: {
-
+									
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+									
+									Text("Device Metrics Log")
+										.font(.title3)
+								}
+								Divider()
+								NavigationLink {
+									EnvironmentMetricsLog(node: node)
+								} label: {
+									
 									Image(systemName: "chart.xyaxis.line")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+									
+									Text("Environment Metrics Log")
 										.font(.title3)
 								}
-								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
 						}
-						.listStyle(GroupedListStyle())
-						.frame(minHeight: 170)
-						.padding(0)
 					}
-					.offset( y: (node.myInfo?.hasGps ?? false ? 0 : -40))
+					.offset( y:-40)
+					.padding(.bottom, -40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
+				.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
+				.navigationBarTitleDisplayMode(.inline)
+				.padding(.bottom, 10)
+				.navigationBarItems(trailing:
+
+					ZStack {
+
+						ConnectedDevice(
+							bluetoothOn: bleManager.isSwitchedOn,
+							deviceConnected: bleManager.connectedPeripheral != nil,
+							name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+					}
+				)
+				.onAppear {
+
+					if self.initialLoad{
+						
+						self.bleManager.context = context
+						self.initialLoad = false
+					}
+				}
 			}
 		}
-		.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
-		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-
-			ZStack {
-
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-			}
-		)
-		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-				self.initialLoad = false
-			}
-		}
-
 	}
 }
 

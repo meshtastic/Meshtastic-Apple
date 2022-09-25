@@ -20,35 +20,35 @@ struct NodeList: View {
 	@State var initialLoad: Bool = true
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "user.shortName", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
 
-	@State private var selection: String? = ""
+	@State private var selection: NodeInfoEntity? = nil // Nothing selected by default.
 
     var body: some View {
-
-        NavigationView {
-
-            List {
+		
+		NavigationSplitView {
+			
+			List (nodes, id: \.self, selection: $selection) { node in
 
 				if nodes.count == 0 {
 
-                    Text("Scan for Radios").font(.largeTitle)
-                    Text("No Meshtastic Nodes Found").font(.title2)
-                    Text("Go to the bluetooth section in the bottom right menu and click the Start Scanning button to scan for nearby radios and find your Meshtastic device. Make sure your device is powered on and near your iPhone, iPad or Mac.")
-                        .font(.body)
-                    Text("Once the device shows under Available Devices touch the device you want to connect to and it will pull node information over BLE and populate the node list and mesh map in the Meshtastic app.")
-                    Text("Views with bluetooth functionality will show an indicator in the upper right hand corner show if bluetooth is on, and if a device is connected.")
+					Text("Scan for Radios").font(.largeTitle)
+					Text("No Meshtastic Nodes Found").font(.title2)
+					Text("Go to the bluetooth section in the bottom right menu and click the Start Scanning button to scan for nearby radios and find your Meshtastic device. Make sure your device is powered on and near your iPhone, iPad or Mac.")
+						.font(.body)
+					Text("Once the device shows under Available Devices touch the device you want to connect to and it will pull node information over BLE and populate the node list and mesh map in the Meshtastic app.")
+					Text("Views with bluetooth functionality will show an indicator in the upper right hand corner showing if bluetooth is on, and if a device is connected.")
 						.listRowSeparator(.visible)
 
-                } else {
-					ForEach( nodes ) { node in
+				} else {
+					//ForEach( nodes ) { node in
 
-						let index = nodes.firstIndex(where: { $0.id == node.id })
+					//	let index = nodes.firstIndex(where: { $0.id == node.id })
 
-						NavigationLink(destination: NodeDetail(node: node), tag: String(index!), selection: $selection) {
+						NavigationLink(value: node) {
 
 							let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 
@@ -123,11 +123,10 @@ struct NodeList: View {
 							}
 							.padding([.leading, .top, .bottom])
 						}
-						.isDetailLink(false)
-					}
-                }
-             }
-            .navigationTitle("All Nodes")
+					//}
+				}
+			 }
+			.navigationTitle("All Nodes")
 			.onAppear {
 
 				if initialLoad {
@@ -137,8 +136,16 @@ struct NodeList: View {
 					self.initialLoad = false
 				}
 			}
-        }
-        .ignoresSafeArea(.all, edges: [.leading, .trailing])
-		.navigationViewStyle(DoubleColumnNavigationViewStyle())
+		   } detail: {
+			   
+			   if let node = selection {
+				   
+				   NodeDetail(node:node)
+				   
+			   } else {
+				   
+				   Text("Select a node")
+			   }
+		   }
     }
 }

@@ -205,6 +205,7 @@ struct CannedMessagesConfig: View {
 				}
 				.disabled(configPreset > 0)
 			}
+			.scrollDismissesKeyboard(.immediately)
 			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {

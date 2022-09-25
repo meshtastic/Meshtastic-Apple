@@ -31,7 +31,7 @@ struct QrCodeImage {
 	}
 }
 
-struct ShareChannel: View {
+struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -89,7 +89,6 @@ struct ShareChannel: View {
 									Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
 								}
 							}
-						}
 					}
 					.frame(width: bounds.size.width, height: bounds.size.height)
 				}
