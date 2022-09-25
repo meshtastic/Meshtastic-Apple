@@ -69,19 +69,7 @@ struct ShareChannels: View {
 								alignment: .center
 							)
 						
-						VStack {
-							ShareLink(
-								item: text,
-								preview: SharePreview(
-									"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
-									image: Image(systemName: "qrcode")
-								)
-							)
-							.presentationDetents([.large, .large])
-							.font(.title3)
-						}
-						
-						if node!.loRaConfig != nil {
+						if node != nil && node!.loRaConfig != nil {
 							
 							HStack {
 								
@@ -89,10 +77,18 @@ struct ShareChannels: View {
 								Text("Modem Preset \(preset!.description)").font(.title3)
 							}
 						}
-						HStack {
+						VStack {
 							
 							Text("Number of Channels: \(node!.myInfo!.maxChannels)").font(.title2)
-						}
+							
+							ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+								
+								VStack {
+									
+									
+									Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
+								}
+							}
 					}
 					.frame(width: bounds.size.width, height: bounds.size.height)
 				}
@@ -109,7 +105,6 @@ struct ShareChannels: View {
 
 				self.bleManager.context = context
 			}
-			
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

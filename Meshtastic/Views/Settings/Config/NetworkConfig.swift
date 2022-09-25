@@ -121,10 +121,11 @@ struct NetworkConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				"Are you sure you want to save?",
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
-				Button("Save Network Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
 					
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
@@ -144,6 +145,9 @@ struct NetworkConfig: View {
 						
 					}
 				}
+			} message: {
+				
+				Text("After network config saves the node will reboot.")
 			}
 		}
 		.navigationTitle("Network Config")

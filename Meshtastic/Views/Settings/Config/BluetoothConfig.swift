@@ -95,10 +95,11 @@ struct BluetoothConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				"Are you sure you want to save?",
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
-				Button("Save Bluetooth Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
 					
 					var bc = Config.BluetoothConfig()
 					bc.enabled = enabled
@@ -117,6 +118,10 @@ struct BluetoothConfig: View {
 						
 					}
 				}
+				
+			} message: {
+				
+				Text("After bluetooth config saves the node will reboot.")
 			}
 		}
 		.navigationTitle("Bluetooth (BLE) Config")
