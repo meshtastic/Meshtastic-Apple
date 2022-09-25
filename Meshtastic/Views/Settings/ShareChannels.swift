@@ -69,6 +69,18 @@ struct ShareChannels: View {
 								alignment: .center
 							)
 						
+						VStack {
+							ShareLink(
+								item: text,
+								preview: SharePreview(
+									"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
+									image: Image(systemName: "qrcode")
+								)
+							)
+							.presentationDetents([.large, .large])
+							.font(.title3)
+						}
+						
 						if node != nil && node!.loRaConfig != nil {
 							
 							HStack {
