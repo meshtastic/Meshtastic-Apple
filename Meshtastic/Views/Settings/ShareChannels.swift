@@ -51,7 +51,7 @@ struct ShareChannels: View {
 				let smallest = min(bounds.size.width, bounds.size.height)
 				
 				ScrollView {
-
+					
 					VStack {
 						Text("Scan the QR code below with the Apple or Android device you would like to share your channel settings with.")
 							.fixedSize(horizontal: false, vertical: true)
@@ -89,23 +89,24 @@ struct ShareChannels: View {
 									Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
 								}
 							}
+						}
+						.frame(width: bounds.size.width, height: bounds.size.height)
 					}
-					.frame(width: bounds.size.width, height: bounds.size.height)
+				}
+				.navigationTitle("Share Channel")
+				.navigationBarTitleDisplayMode(.automatic)
+				.navigationBarItems(trailing:
+										
+										ZStack {
+					
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				})
+				.onAppear {
+					
+					self.bleManager.context = context
 				}
 			}
-			.navigationTitle("Share Channel")
-			.navigationBarTitleDisplayMode(.automatic)
-			.navigationBarItems(trailing:
-
-				ZStack {
-
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-			})
-			.onAppear {
-
-				self.bleManager.context = context
-			}
+			.navigationViewStyle(StackNavigationViewStyle())
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
