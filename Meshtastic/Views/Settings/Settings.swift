@@ -44,7 +44,6 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Share Channels QR Code")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -55,7 +54,6 @@ struct Settings: View {
 
 						Text("User")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink() {
 						
@@ -67,7 +65,6 @@ struct Settings: View {
 
 						Text("LoRa")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink() {
 						
@@ -79,7 +76,6 @@ struct Settings: View {
 
 						Text("Bluetooth (BLE)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -89,7 +85,6 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Device")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -99,7 +94,6 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Display (Device Screen)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						NetworkConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -110,7 +104,6 @@ struct Settings: View {
 
 						Text("Network (ESP32 Only)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 				
 					NavigationLink {
 						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -121,7 +114,6 @@ struct Settings: View {
 
 						Text("Position")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 				}
 				Section("Module Configuration") {
@@ -135,7 +127,6 @@ struct Settings: View {
 
 						Text("Canned Messages")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -146,7 +137,6 @@ struct Settings: View {
 
 						Text("External Notification")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -157,7 +147,6 @@ struct Settings: View {
 
 						Text("MQTT (ESP32 Only)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -168,7 +157,6 @@ struct Settings: View {
 
 						Text("Range Test (ESP32 Only)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -179,8 +167,6 @@ struct Settings: View {
 
 						Text("Serial")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
-					
 
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -191,7 +177,6 @@ struct Settings: View {
 
 						Text("Telemetry (Sensors)")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 				}
 				Section(header: Text("Logging")) {
 					
@@ -219,14 +204,13 @@ struct Settings: View {
 
 						Text("Admin Message Log")
 					}
-					.disabled(bleManager.connectedPeripheral == nil)
 				}
 				
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only
-				// MQTT Config - Can do from WebUI once WiFi is enabled
+
 			}
-			.disabled(bleManager.connectedPeripheral == nil  || !bleManager.connectedPeripheral.subscribed)
+			.disabled(!(bleManager.connectedPeripheral?.subscribed ?? true))
 			.onAppear {
 
 				self.bleManager.context = context
