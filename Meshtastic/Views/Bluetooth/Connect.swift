@@ -19,9 +19,7 @@ struct Connect: View {
 	@State var initialLoad: Bool = true
 	@State var isPreferredRadio: Bool = false
 	
-	@State var firmwareVersion = "0.0.0"
-	@State var minimumVersion = "1.3.41"
-	@State var invalidVersion = false
+	@State var invalidFirmwareVersion = false
 
     var body: some View {
 	
@@ -100,13 +98,15 @@ struct Connect: View {
 												}
 
 												userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-
+												bleManager.preferredPeripheral = true
+												
 											} else {
 
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
 
 												userSettings.preferredPeripheralId = ""
 												userSettings.preferredPeripheralName = ""
+												bleManager.preferredPeripheral = false
 											}
 										}
 									}
@@ -260,22 +260,15 @@ struct Connect: View {
             )
         }
         .navigationViewStyle(StackNavigationViewStyle())
-		.sheet(isPresented: $invalidVersion) {
+		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			
-			InvalidVersion(errorText: "1.3 Beta this version of the app supports only version \(minimumVersion) and above. Your device has been disconnected.")
+			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 		}
 	
-		.onChange(of: (self.bleManager.connectedVersion)) { ic in
+		.onChange(of: (self.bleManager.invalidVersion)) { cv in
 			
-			firmwareVersion = self.bleManager.connectedVersion
-			let supportedVersion = firmwareVersion == "0.0.0" ||  minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(firmwareVersion, options: .numeric) == .orderedSame
+			invalidFirmwareVersion = self.bleManager.invalidVersion
 			
-			invalidVersion = !supportedVersion
-			
-			if invalidVersion {
-				
-				bleManager.disconnectPeripheral()
-			}
 		}
         .onAppear(perform: {
 						
@@ -303,6 +296,10 @@ struct Connect: View {
 			}
 		})
     }
+	func didDismissSheet() {
+		  
+		bleManager.disconnectPeripheral()
+	}
 }
 
 struct Connect_Previews: PreviewProvider {
