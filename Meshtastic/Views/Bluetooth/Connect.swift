@@ -43,6 +43,7 @@ struct Connect: View {
 					Section(header: Text("Connected Radio").font(.title)) {
 
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+							
 							HStack {
 
 								Image(systemName: "antenna.radiowaves.left.and.right")
@@ -73,6 +74,10 @@ struct Connect: View {
 									}
 									if bleManager.connectedPeripheral.subscribed {
 										Text("Properly Subscribed").font(.caption)
+									} else {
+										Text("Attempting to connect. . . ").font(.caption)
+											.foregroundColor(.orange)
+											
 									}
 								}
 								Spacer()

@@ -226,6 +226,7 @@ struct Settings: View {
 				// Store Forward Config - Not Working, TBEAM Only
 				// MQTT Config - Can do from WebUI once WiFi is enabled
 			}
+			.disabled(bleManager.connectedPeripheral == nil  || !bleManager.connectedPeripheral.subscribed)
 			.onAppear {
 
 				self.bleManager.context = context
