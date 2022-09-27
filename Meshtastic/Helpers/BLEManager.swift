@@ -439,7 +439,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			sendWantConfig()
 			
-			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(7), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
+			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(15), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
 			RunLoop.current.add(self.configTimeoutTimer!, forMode: .common)
 		}
     }
@@ -717,6 +717,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				
+				invalidVersion = false
+				lastConnectionError = ""
 				if configTimeoutTimer != nil {
 					
 					configTimeoutTimer?.invalidate()
@@ -729,10 +731,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				// Get all the channels
 				var i: UInt32 = 1;
+				var max: Int32 = self.connectedPeripheral.maxChannels
 				
-				Timer.scheduledTimer(withTimeInterval: 0.4,
-														 repeats: true) { timer in
-					if i == (self.connectedPeripheral.maxChannels + 1) {
+				Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
+					
+					if i == (max + 1) {
 						timer.invalidate() // invalidate the timer
 					} else {
 		
