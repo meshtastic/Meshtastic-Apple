@@ -137,6 +137,7 @@
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
+		DD3CC6B928E365F700FA9159 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		DD4033C128B286B70096A444 /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
 		DD4033C328B405A60096A444 /* MeshtasticDataModel v 8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModel v 8.xcdatamodel"; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
@@ -1162,6 +1163,7 @@
 		DD9D8F2D2764403B00080993 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD3CC6B928E365F700FA9159 /* MeshtasticDataModel.xcdatamodel */,
 				DDA1C48F28DC3658009933EC /* MeshtasticDataModel v 14.xcdatamodel */,
 				DDA1C48C28DB4839009933EC /* MeshtasticDataModel v 13.xcdatamodel */,
 				DDA1C48528D77310009933EC /* MeshtasticDataModel v 12.xcdatamodel */,
@@ -1177,7 +1179,7 @@
 				DD45C77427BD4EF80011784F /* MeshtasticDataModel v2.xcdatamodel */,
 				DD9D8F2E2764403B00080993 /* CoreDataSample.xcdatamodel */,
 			);
-			currentVersion = DDA1C48F28DC3658009933EC /* MeshtasticDataModel v 14.xcdatamodel */;
+			currentVersion = DD3CC6B928E365F700FA9159 /* MeshtasticDataModel.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
