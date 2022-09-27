@@ -224,7 +224,6 @@ struct Settings: View {
 				
 				// Not Implemented:
 				// Store Forward Config - Not Working, TBEAM Only
-				// MQTT Config - Can do from WebUI once WiFi is enabled
 			}
 			.onAppear {
 
