@@ -38,6 +38,15 @@ struct Settings: View {
 				Section("Radio Configuration") {
 					
 					NavigationLink {
+						ShareChannels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+						Image(systemName: "qrcode")
+							.symbolRenderingMode(.hierarchical)
+						Text("Share Channels QR Code")
+					}
+					.disabled(bleManager.connectedPeripheral == nil)
+					
+					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
