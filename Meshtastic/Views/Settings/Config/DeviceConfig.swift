@@ -141,9 +141,9 @@ struct DeviceConfig: View {
 				
 				self.bleManager.context = context
 
-				self.deviceRole = Int(node!.deviceConfig?.role ?? 0)
-				self.serialEnabled = (node!.deviceConfig?.serialEnabled ?? true)
-				self.debugLogEnabled = node!.deviceConfig?.debugLogEnabled ?? false
+				self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
+				self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
+				self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
 				self.hasChanges = false
 				self.initialLoad = false
 			}

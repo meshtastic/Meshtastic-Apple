@@ -196,12 +196,12 @@ struct MQTTConfig: View {
 				
 				self.bleManager.context = context
 
-				self.enabled = (node!.mqttConfig?.enabled ?? false)
-				self.address = node!.mqttConfig?.address ?? ""
-				self.username = node!.mqttConfig?.username ?? ""
-				self.password = node!.mqttConfig?.password ?? ""
-				self.encryptionEnabled = (node!.mqttConfig?.encryptionEnabled ?? false)
-				self.jsonEnabled = (node!.mqttConfig?.jsonEnabled ?? false)
+				self.enabled = (node?.mqttConfig?.enabled ?? false)
+				self.address = node?.mqttConfig?.address ?? ""
+				self.username = node?.mqttConfig?.username ?? ""
+				self.password = node?.mqttConfig?.password ?? ""
+				self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
+				self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
 
 				self.hasChanges = false
 				self.initialLoad = false

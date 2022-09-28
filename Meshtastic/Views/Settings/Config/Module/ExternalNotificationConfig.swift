@@ -186,12 +186,12 @@ struct ExternalNotificationConfig: View {
 					
 					self.bleManager.context = context
 					
-					self.enabled = node!.externalNotificationConfig?.enabled ?? false
-					self.alertBell = node!.externalNotificationConfig?.alertBell ?? false
-					self.alertMessage = node!.externalNotificationConfig?.alertMessage ?? false
-					self.active = node!.externalNotificationConfig?.active ?? false
-					self.output = Int(node!.externalNotificationConfig?.output ?? 0)
-					self.outputMilliseconds = Int(node!.externalNotificationConfig?.outputMilliseconds ?? 0)
+					self.enabled = node?.externalNotificationConfig?.enabled ?? false
+					self.alertBell = node?.externalNotificationConfig?.alertBell ?? false
+					self.alertMessage = node?.externalNotificationConfig?.alertMessage ?? false
+					self.active = node?.externalNotificationConfig?.active ?? false
+					self.output = Int(node?.externalNotificationConfig?.output ?? 0)
+					self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
 					
 					self.hasChanges = false
 					self.initialLoad = false

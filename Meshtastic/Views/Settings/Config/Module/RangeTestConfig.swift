@@ -146,9 +146,9 @@ struct RangeTestConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node!.rangeTestConfig?.enabled ?? false
-					self.save = node!.rangeTestConfig?.save ?? false
-					self.sender = Int(node!.rangeTestConfig?.sender ?? 0)
+					self.enabled = node?.rangeTestConfig?.enabled ?? false
+					self.save = node?.rangeTestConfig?.save ?? false
+					self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}

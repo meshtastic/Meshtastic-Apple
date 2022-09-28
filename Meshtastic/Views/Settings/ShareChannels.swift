@@ -77,14 +77,17 @@ struct ShareChannels: View {
 						}
 						VStack {
 							
-							Text("Number of Channels: \(node!.myInfo!.maxChannels)").font(.title2)
+							Text("Number of Channels: \(node?.myInfo?.maxChannels ?? 0)").font(.title2)
 							
-							ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+							if node != nil {
 								
-								VStack {
+								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 									
-									
-									Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
+									VStack {
+										
+										
+										Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
+									}
 								}
 							}
 						}
