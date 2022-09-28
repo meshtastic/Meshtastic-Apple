@@ -210,7 +210,6 @@ struct Settings: View {
 				// Store Forward Config - Not Working, TBEAM Only
 
 			}
-			.disabled(!(bleManager.connectedPeripheral?.subscribed ?? true))
 			.onAppear {
 
 				self.bleManager.context = context
