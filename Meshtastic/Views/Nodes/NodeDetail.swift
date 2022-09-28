@@ -338,7 +338,6 @@ struct NodeDetail: View {
 												.font(.callout)
 												.foregroundColor(.gray)
 												.fixedSize()
-												.offset(y: -25)
 										}
 										
 									}
