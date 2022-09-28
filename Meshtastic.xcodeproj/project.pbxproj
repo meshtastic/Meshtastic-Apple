@@ -290,11 +290,11 @@
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
+				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DD61937A2863876A00E59241 /* Config */,
-				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
