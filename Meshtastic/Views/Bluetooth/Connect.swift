@@ -184,7 +184,7 @@ struct Connect: View {
 					}
 				}
 
-                    HStack(alignment: .center) {
+				HStack(alignment: .center) {
 						
 					Spacer()
 						

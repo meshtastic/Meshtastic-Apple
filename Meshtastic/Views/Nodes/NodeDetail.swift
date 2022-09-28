@@ -191,7 +191,11 @@ struct NodeDetail: View {
 											.font(.largeTitle)
 											.foregroundColor(.gray)
 											.fixedSize()
+										
+								
 									}
+									
+								
 								}
 
 								if node.telemetries?.count ?? 0 >= 1 {
@@ -199,23 +203,15 @@ struct NodeDetail: View {
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 
 									Divider()
-
+								
 									VStack(alignment: .center) {
-
-										BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .largeTitle, color: .accentColor)
-											.padding(.bottom, 10)
 										
-										if mostRecent.batteryLevel > 0 {
-											Text(String(mostRecent.batteryLevel) + "%")
-												.font(.largeTitle)
-												.frame(width: 100)
-												.foregroundColor(.gray)
-												.fixedSize()
-										}
+										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
+							
 										if mostRecent.voltage > 0 {
-											
+
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
-												.font(.largeTitle)
+												.font(.title)
 												.foregroundColor(.gray)
 												.fixedSize()
 										}
@@ -225,10 +221,6 @@ struct NodeDetail: View {
 								
 							}
 							.padding()
-							.onLongPressGesture(minimumDuration: 2) {
-								
-								print("Long pressed!")
-							}
 							
 							Divider()
 							HStack(alignment: .center) {
@@ -291,11 +283,9 @@ struct NodeDetail: View {
 							HStack {
 
 								VStack(alignment: .center) {
-									Text("AKA").font(.title2).fixedSize()
+									
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
-										.offset(y: 10)
 								}
-								.padding(5)
 
 								Divider()
 
@@ -340,29 +330,24 @@ struct NodeDetail: View {
 
 									VStack(alignment: .center) {
 
-										BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
-											.padding(.bottom)
+										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										
-										if mostRecent.batteryLevel > 0 {
-											Text(String(mostRecent.batteryLevel) + "%")
-												.font(.title3)
-												.foregroundColor(.gray)
-												.fixedSize()
-										}
 										if mostRecent.voltage > 0 {
 											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
-												.font(.title3)
+												.font(.callout)
 												.foregroundColor(.gray)
 												.fixedSize()
+												.offset(y: -25)
 										}
+										
 									}
-									.padding(5)
 								}
 							}
-							.padding(4)
-							
+							Divider()
 							HStack(alignment: .center) {
+								
+								
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -396,11 +381,14 @@ struct NodeDetail: View {
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
 							.padding([.bottom], 0)
+							Divider()
 						}
 						
 						VStack {
 							
 							if (node.positions?.count ?? 0) > 0 {
+								
+								
 								
 								NavigationLink {
 									PositionLog(node: node)
