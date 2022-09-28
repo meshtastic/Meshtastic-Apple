@@ -34,9 +34,11 @@ struct BatteryGauge: View {
 					} else if batteryLevel > 26.0 && batteryLevel <= 50.00 {
 						Label("Battery Level %", systemImage: "battery.50")
 					} else if batteryLevel > 51.0 && batteryLevel <= 75.00 {
-						Label("Battery Level %", systemImage: "battery.50")
-					} else {
+						Label("Battery Level %", systemImage: "battery.75")
+					} else if batteryLevel > 76.0 && batteryLevel <= 99.00 {
 						Label("Battery Level %", systemImage: "battery.100")
+					} else {
+						Label("Battery Level %", systemImage: "battery.100.bolt")
 					}
 				} currentValueLabel: {
 					Text(Int(batteryLevel), format: .percent)
