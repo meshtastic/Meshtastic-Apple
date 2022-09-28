@@ -189,11 +189,11 @@ struct TelemetryConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.deviceUpdateInterval = Int(node!.telemetryConfig?.deviceUpdateInterval ?? 0)
-					self.environmentUpdateInterval = Int(node!.telemetryConfig?.environmentUpdateInterval ?? 0)
-					self.environmentMeasurementEnabled = node!.telemetryConfig?.environmentMeasurementEnabled ?? false
-					self.environmentScreenEnabled = node!.telemetryConfig?.environmentScreenEnabled ?? false
-					self.environmentDisplayFahrenheit = node!.telemetryConfig?.environmentDisplayFahrenheit ?? false
+					self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 0)
+					self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 0)
+					self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
+					self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
+					self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 					self.hasChanges = false
 					self.initialLoad = false
 				}

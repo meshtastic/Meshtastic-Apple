@@ -127,10 +127,10 @@ struct DisplayConfig: View {
 				
 				self.bleManager.context = context
 
-				self.gpsFormat = Int(node!.displayConfig?.gpsFormat ?? 0)
-				self.screenOnSeconds = Int(node!.displayConfig?.screenOnSeconds ?? 0)
-				self.screenCarouselInterval = Int(node!.displayConfig?.screenCarouselInterval ?? 0)
-				self.compassNorthTop = node!.displayConfig?.compassNorthTop ?? false
+				self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
+				self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
+				self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
+				self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
 				self.hasChanges = false
 				self.initialLoad = false
 			}

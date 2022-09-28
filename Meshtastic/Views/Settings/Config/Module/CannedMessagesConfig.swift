@@ -291,16 +291,16 @@ struct CannedMessagesConfig: View {
 				if self.initialLoad{
 					
 					self.bleManager.context = context
-					self.enabled = node!.cannedMessageConfig?.enabled ?? false
-					self.sendBell = node!.cannedMessageConfig?.sendBell ?? false
-					self.rotary1Enabled = node!.cannedMessageConfig?.rotary1Enabled ?? false
-					self.updown1Enabled = node!.cannedMessageConfig?.updown1Enabled ?? false
-					self.inputbrokerPinA = Int(node!.cannedMessageConfig?.inputbrokerPinA ?? 0)
-					self.inputbrokerPinB = Int(node!.cannedMessageConfig?.inputbrokerPinB ?? 0)
-					self.inputbrokerPinPress = Int(node!.cannedMessageConfig?.inputbrokerPinPress ?? 0)
-					self.inputbrokerEventCw = Int(node!.cannedMessageConfig?.inputbrokerEventCw ?? 0)
-					self.inputbrokerEventCcw = Int(node!.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
-					self.inputbrokerEventPress = Int(node!.cannedMessageConfig?.inputbrokerEventPress ?? 0)
+					self.enabled = node?.cannedMessageConfig?.enabled ?? false
+					self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
+					self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
+					self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false
+					self.inputbrokerPinA = Int(node?.cannedMessageConfig?.inputbrokerPinA ?? 0)
+					self.inputbrokerPinB = Int(node?.cannedMessageConfig?.inputbrokerPinB ?? 0)
+					self.inputbrokerPinPress = Int(node?.cannedMessageConfig?.inputbrokerPinPress ?? 0)
+					self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
+					self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
+					self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
 					self.hasChanges = false
 					self.initialLoad = false
 				}

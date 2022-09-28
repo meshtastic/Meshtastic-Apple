@@ -284,13 +284,13 @@ struct PositionConfig: View {
 			if self.initialLoad{
 				
 				self.bleManager.context = context
-				self.smartPositionEnabled = node!.positionConfig?.smartPositionEnabled ?? true
-				self.deviceGpsEnabled = node!.positionConfig?.deviceGpsEnabled ?? true
-				self.fixedPosition = node!.positionConfig?.fixedPosition ?? false
-				self.gpsUpdateInterval = Int(node!.positionConfig?.gpsUpdateInterval ?? 30)
-				self.gpsAttemptTime = Int(node!.positionConfig?.gpsAttemptTime ?? 30)
-				self.positionBroadcastSeconds = Int(node!.positionConfig?.positionBroadcastSeconds ?? 900)
-				self.positionFlags = Int(node!.positionConfig?.positionFlags ?? 3)
+				self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
+				self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
+				self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
+				self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
+				self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
+				self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
+				self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
 				
 				let pf = PositionFlags(rawValue: self.positionFlags)
 				

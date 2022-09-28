@@ -22,6 +22,7 @@ struct NetworkConfig: View {
 	@State var wifiSsid = ""
 	@State var wifiPsk = ""
 	@State var wifiMode = 0
+	@State var ntpServer = ""
 	
 	var body: some View {
 		
@@ -163,10 +164,10 @@ struct NetworkConfig: View {
 				
 				self.bleManager.context = context
 
-				self.wifiEnabled = (node!.networkConfig?.wifiEnabled ?? false)
-				self.wifiSsid = node!.networkConfig?.wifiSsid ?? ""
-				self.wifiPsk = node!.networkConfig?.wifiPsk ?? ""
-				self.wifiMode = Int(node!.networkConfig?.wifiMode ?? 0)
+				self.wifiEnabled = (node?.networkConfig?.wifiEnabled ?? false)
+				self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
+				self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
+				self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
 
 				self.hasChanges = false
 				self.initialLoad = false

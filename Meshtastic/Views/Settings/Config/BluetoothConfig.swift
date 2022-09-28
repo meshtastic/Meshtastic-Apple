@@ -137,9 +137,9 @@ struct BluetoothConfig: View {
 				
 				self.bleManager.context = context
 
-				self.enabled = node!.bluetoothConfig?.enabled ?? true
-				self.mode = Int(node!.bluetoothConfig?.mode ?? 0)
-				self.fixedPin = String(node!.bluetoothConfig?.fixedPin ?? 123456)
+				self.enabled = node?.bluetoothConfig?.enabled ?? true
+				self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
+				self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
 				self.hasChanges = false
 				self.initialLoad = false
 			}
