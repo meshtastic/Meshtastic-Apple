@@ -23,9 +23,18 @@ struct InvalidVersion: View {
 			
 			VStack {
 				
-				Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above. You are running version \(version)")
-					.font(.title2)
-					.padding(.bottom)
+				if version != "1.2.65" {
+					
+					Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above. You are running version \(version)")
+						.font(.title2)
+						.padding(.bottom)
+					
+				} else {
+					
+					Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
+						.font(.title2)
+						.padding(.bottom)
+				}
 				
 				Link("Firmware update docs", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!)
 					.font(.title)
@@ -46,12 +55,12 @@ struct InvalidVersion: View {
 				
 				VStack{
 					
-					Text("🦕 Your device is Version 1.2 🦖 ☄️")
+					Text("🦕 End of life Version 🦖 ☄️")
 						.font(.title3)
 						.foregroundColor(.orange)
 						.padding(.bottom)
 					
-					Text("Version 1.3 includes breaking changes to devices and the client apps. The version 1.3 app does not support 1.2 or 1.0 nodes.")
+					Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
 						.font(.caption)
 						.padding([.leading, .trailing])
 					

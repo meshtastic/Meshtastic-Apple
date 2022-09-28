@@ -312,7 +312,7 @@ struct UserMessageList: View {
 												} else if currentUser && message.ackError == 0 {
 													
 													// Empty Error
-													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.yellow)
+													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 													
 												} else if currentUser && message.ackError > 0 {
 													
