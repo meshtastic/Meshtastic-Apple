@@ -27,8 +27,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	@Published var peripherals = [Peripheral]()
 
-    @Published var connectedPeripheral: Peripheral!
-    @Published var lastConnectionError: String
+	@Published var connectedPeripheral: Peripheral!
+	@Published var lastConnectionError: String
 	@Published var minimumVersion = "1.3.41"
 	@Published var connectedVersion: String
 	@Published var invalidVersion = false
@@ -48,17 +48,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	var positionTimer: Timer?
 
-    let broadcastNodeNum: UInt32 = 4294967295
+	let broadcastNodeNum: UInt32 = 4294967295
 
-    /* Meshtastic Service Details */
-    var TORADIO_characteristic: CBCharacteristic!
-    var FROMRADIO_characteristic: CBCharacteristic!
-    var FROMNUM_characteristic: CBCharacteristic!
+	/* Meshtastic Service Details */
+	var TORADIO_characteristic: CBCharacteristic!
+	var FROMRADIO_characteristic: CBCharacteristic!
+	var FROMNUM_characteristic: CBCharacteristic!
 
-    let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
-    let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
-    let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
-    let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
+	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
+	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
+	let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
+	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	
 	// Meshtastic DFU details
 	let DFUSERVICE_UUID = CBUUID(string : "cb0b9a0b-a84c-4c0d-bdbb-442e3144ee30")
@@ -77,52 +77,52 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
-    // MARK: init BLEManager
-    override init() {
+	// MARK: init BLEManager
+	override init() {
 
 		//self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
-        self.lastConnectionError = ""
+		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
-        super.init()
+		super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
-        centralManager = CBCentralManager(delegate: self, queue: nil)
-    }
+		centralManager = CBCentralManager(delegate: self, queue: nil)
+	}
 
 	// MARK: Bluetooth enabled/disabled for the app
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-         if central.state == .poweredOn {
+	func centralManagerDidUpdateState(_ central: CBCentralManager) {
+		 if central.state == .poweredOn {
 
-             isSwitchedOn = true
+			 isSwitchedOn = true
 			 startScanning()
-         } else {
+		 } else {
 
-             isSwitchedOn = false
-         }
-    }
+			 isSwitchedOn = false
+		 }
+	}
 
 	// MARK: Scanning for BLE Devices
-    // Scan for nearby BLE devices using the Meshtastic BLE service ID
-    func startScanning() {
+	// Scan for nearby BLE devices using the Meshtastic BLE service ID
+	func startScanning() {
 
-        if isSwitchedOn {
+		if isSwitchedOn {
 
-            centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
 			isScanning = centralManager.isScanning
 
-            print("✅ Scanning Started")
-        }
-    }
+			print("✅ Scanning Started")
+		}
+	}
 
 	// Stop Scanning For BLE Devices
-    func stopScanning() {
+	func stopScanning() {
 
-        if centralManager.isScanning {
+		if centralManager.isScanning {
 
-            self.centralManager.stopScan()
+			centralManager.stopScan()
 			isScanning = centralManager.isScanning
-            print("🛑 Stopped Scanning")
-        }
-    }
+			print("🛑 Stopped Scanning")
+		}
+	}
 
 	// MARK: BLE Connect functions
 	/// The action after the timeout-timer has fired
@@ -175,19 +175,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		self.timeoutTimer!.invalidate()
 	}
 
-    // Connect to a specific peripheral
-    func connectTo(peripheral: CBPeripheral) {
+	// Connect to a specific peripheral
+	func connectTo(peripheral: CBPeripheral) {
 
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connecting: \(peripheral.name ?? "Unknown")") }
 
-        stopScanning()
+		stopScanning()
 		
 
 		if self.connectedPeripheral != nil {
 			
 			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")") }
-            self.disconnectPeripheral()
-        }
+			self.disconnectPeripheral()
+		}
 		
 		self.centralManager?.connect(peripheral)
 
@@ -202,27 +202,27 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
 		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(self.timeoutTimer!, forMode: .common)
-    }
+	}
 
-    // Disconnect Connected Peripheral
-    func disconnectPeripheral() {
+	// Disconnect Connected Peripheral
+	func disconnectPeripheral() {
 
 		guard let connectedPeripheral = connectedPeripheral else { return }
-		self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
-		self.isConnected = false
-		self.invalidVersion = false
-		self.connectedVersion = "0.0.0"
-    }
+		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+		isConnected = false
+		invalidVersion = false
+		connectedVersion = "0.0.0"
+	}
 
-    // Called each time a peripheral is discovered
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+	// Called each time a peripheral is discovered
+	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 
-        var peripheralName: String = peripheral.name ?? "Unknown"
+		var peripheralName: String = peripheral.name ?? "Unknown"
 		let last4Code: String = (peripheral.name != nil ? String(peripheral.name!.suffix(4)) : "Unknown")
 
-        if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-            peripheralName = name
-        }
+		if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
+			peripheralName = name
+		}
 
 		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, maxChannels: 0, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
@@ -243,12 +243,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		
 		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -2, to: today)!
-		peripherals.removeAll(where: { $0.lastUpdate <= visibleDuration})
-    }
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -3, to: today)!
+		peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
+	}
 
-    // Called when a peripheral is connected
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+	// Called when a peripheral is connected
+	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
 		self.isConnected = true
 
@@ -261,7 +261,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 
 		// Map the peripheral to the connectedPeripheral ObservedObjects
-        connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
+		connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		
 		if connectedPeripheral != nil {
 			
@@ -279,7 +279,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		peripheral.discoverServices([meshtasticServiceCBUUID, DFUSERVICE_UUID])
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")") }
 		
-    }
+	}
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -288,19 +288,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		disconnectPeripheral()
 	}
 
-    // Disconnect Peripheral Event
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        // Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
-        self.startScanning()
+	// Disconnect Peripheral Event
+	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
+		self.startScanning()
 		self.connectedPeripheral = nil
 
-        if let e = error {
+		if let e = error {
 
 			// https://developer.apple.com/documentation/corebluetooth/cberror/code
-            let errorCode = (e as NSError).code
-            // unknown = 0,
+			let errorCode = (e as NSError).code
+			// unknown = 0,
 
-            if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
+			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 
 				// Happens when device is manually reset / powered off
 				// We will try and re-connect to this device
@@ -310,78 +310,78 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					self.connectTo(peripheral: peripheral)
 				}
 				
-            } else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
+			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 
-                // Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
+				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
 
 				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 				
-            } else if errorCode == 14 { // Peer removed pairing information
+			} else if errorCode == 14 { // Peer removed pairing information
 
-                // Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
+				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 \(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
 
 				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)") }
 				
-            } else {
+			} else {
 
 				lastConnectionError = e.localizedDescription
 
 				if meshLoggingEnabled { MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)") }
 			}
-        } else {
+		} else {
 
-            // Disconnected without error which indicates user intent to disconnect
+			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
 			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect") }
-        }
-    }
+		}
+	}
 
-    // MARK: Peripheral Services functions
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+	// MARK: Peripheral Services functions
+	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 
-        if let e = error {
+		if let e = error {
 
-            print("🚫 Discover Services error \(e)")
-        }
+			print("🚫 Discover Services error \(e)")
+		}
 
-        guard let services = peripheral.services else { return }
+		guard let services = peripheral.services else { return }
 
-        for service in services {
+		for service in services {
 
-            if service.uuid == meshtasticServiceCBUUID {
+			if service.uuid == meshtasticServiceCBUUID {
 			
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")") }
-                //peripheral.discoverCharacteristics(nil, for: service)
-                peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
+				//peripheral.discoverCharacteristics(nil, for: service)
+				peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
 
-            }  else if (service.uuid == DFUSERVICE_UUID) {
+			}  else if (service.uuid == DFUSERVICE_UUID) {
 				
 				print("✅ Meshtastic DFU service discovered OK")
 			   if meshLoggingEnabled { MeshLogger.log("✅ BLE Service for Meshtastic DFU discovered by \(peripheral.name ?? "Unknown")") }
 			   peripheral.discoverCharacteristics([DFUDATA_UUID, DFUSIZE_UUID, DFUREGION_UUID, DFURESULT_UUID, DFUCRC32_UUID], for: service)
 				
 		   }
-        }
-    }
+		}
+	}
 	
 	func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
 		
 		print(invalidatedServices)
 	}
 
-    // MARK: Discover Characteristics Event
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+	// MARK: Discover Characteristics Event
+	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		
-        if let e = error {
+		if let e = error {
 
 			if meshLoggingEnabled { MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)") }
-        }
+		}
 
-        guard let characteristics = service.characteristics else { return }
+		guard let characteristics = service.characteristics else { return }
 
-        for characteristic in characteristics {
+		for characteristic in characteristics {
 
 			switch characteristic.uuid {
 			case TORADIO_UUID:
@@ -442,7 +442,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(15), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
 			RunLoop.current.add(self.configTimeoutTimer!, forMode: .common)
 		}
-    }
+	}
 	
 	func requestDeviceMetadata() {
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
@@ -498,9 +498,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
 
-    // MARK: Data Read / Update Characteristic Event
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-       
+	// MARK: Data Read / Update Characteristic Event
+	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+	   
 		if let e = error {
 			
 			print("🚫 didUpdateValueFor Characteristic error \(e)")
@@ -523,9 +523,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				self.centralManager?.cancelPeripheralConnection(peripheral)
 
 			}
-        }
+		}
 
-        switch characteristic.uuid {
+		switch characteristic.uuid {
 
 		case FROMRADIO_UUID:
 			
@@ -632,7 +632,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .positionApp:
 					positionPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
-			    case .waypointApp:
+				case .waypointApp:
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .nodeinfoApp:
 				
@@ -739,8 +739,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						timer.invalidate() // invalidate the timer
 					} else {
 		
-						_ = self.getChannel(channelIndex: i, wantResponse: true)
-						i+=1;
+						if self.connectedPeripheral != nil {
+							
+							_ = self.getChannel(channelIndex: i, nodeNum: self.connectedPeripheral.num, wantResponse: true)
+							i+=1;
+						}
 					}
 				}
 				return
@@ -754,7 +757,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		default:
 			
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
-        }
+		}
 		
 		// Either Read the config complete value or from num notify value
 		peripheral.readValue(for: FROMRADIO_characteristic)
@@ -1404,14 +1407,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return 0
 	}
 	
-	public func getChannel(channelIndex: UInt32, wantResponse: Bool) -> Bool {
+	public func getChannel(channelIndex: UInt32, nodeNum: Int64, wantResponse: Bool) -> Bool {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = channelIndex
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(nodeNum)
+		meshPacket.from	= 0 //UInt32(cnodeNum)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
