@@ -105,18 +105,18 @@ struct AppSettings: View {
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 					
-					HStack {
-						Label("Radio", systemImage: "flipphone")
-						Text(userSettings.preferredPeripheralName)
-							.foregroundColor(.gray)
-						
-					}
-					Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
-						.font(.caption)
-						.listRowSeparator(.hidden)
-					Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
-						.font(.caption2)
-						.foregroundColor(.gray)
+//					HStack {
+//						Label("Radio", systemImage: "flipphone")
+//						Text(userSettings.preferredPeripheralName)
+//							.foregroundColor(.gray)
+//						
+//					}
+//					Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
+//						.font(.caption)
+//						.listRowSeparator(.hidden)
+//					Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
+//						.font(.caption2)
+//						.foregroundColor(.gray)
 
 				}
 				Section(header: Text("Options")) {

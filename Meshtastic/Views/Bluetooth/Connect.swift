@@ -94,23 +94,18 @@ struct Connect: View {
 
 												if bleManager.connectedPeripheral != nil {
 
-													let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
-													userSettings.preferredPeripheralName = deviceName
-
-												} else {
-
-													userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
+												
+													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+												 bleManager.preferredPeripheral = true
+													
 												}
 
-												userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-												bleManager.preferredPeripheral = true
 												
 											} else {
 
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
 
 												userSettings.preferredPeripheralId = ""
-												userSettings.preferredPeripheralName = ""
 												bleManager.preferredPeripheral = false
 											}
 										}
