@@ -439,7 +439,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			sendWantConfig()
 			
-			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(15), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
+			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(30), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
 			RunLoop.current.add(self.configTimeoutTimer!, forMode: .common)
 		}
 	}
