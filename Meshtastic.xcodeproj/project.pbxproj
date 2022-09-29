@@ -60,7 +60,6 @@
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
-		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
@@ -171,7 +170,6 @@
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingError.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
-		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
@@ -499,7 +497,6 @@
 			children = (
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
-				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
@@ -712,7 +709,6 @@
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
-				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
