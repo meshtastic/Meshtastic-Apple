@@ -35,6 +35,8 @@ struct ShareChannels: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
+	@State var channel1Enabled = true
+	
 	var node: NodeInfoEntity?
 	
 	@State private var text =  "https://meshtastic.org/E/#test"
@@ -50,10 +52,63 @@ struct ShareChannels: View {
 				
 				ScrollView {
 					
+					Text("The current LoRa configuration will also be shared.")
+						.fixedSize(horizontal: false, vertical: true)
+						.font(.callout)
+						.padding(.bottom)
+					
 					VStack {
-						Text("Scan the QR code below with the Apple or Android device you would like to share your channel settings with.")
-							.fixedSize(horizontal: false, vertical: true)
-							.font(.callout)
+						if node != nil {
+							
+							Grid(alignment: .top, horizontalSpacing: 2) {
+								
+								GridRow {
+									Spacer()
+									Text("Include")
+										.font(.caption)
+										.fontWeight(.bold)
+									Text("Name")
+										.font(.caption)
+										.fontWeight(.bold)
+									Text("Role")
+										.font(.caption)
+										.fontWeight(.bold)
+									Spacer()
+								}
+								Divider()
+								
+								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+
+									GridRow {
+										Spacer()
+										Toggle("Channel 1 Enabled", isOn: $channel1Enabled)
+											.toggleStyle(.switch)
+											.labelsHidden()
+										
+										Text("Channel - \(channel.index)")
+										Spacer()
+									}
+								}
+							}
+						}
+					}
+					
+					VStack {
+						
+						Divider()
+						ShareLink(
+							item: text,
+							preview: SharePreview(
+								"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
+								image: Image(systemName: "qrcode")
+							)
+						)
+						.presentationDetents([.large, .large])
+						.font(.title3)
+						Divider()
+					}
+					
+					VStack {
 						
 						let image = qrCodeImage.generateQRCode(from: text)
 						Image(uiImage: image)
@@ -67,46 +122,43 @@ struct ShareChannels: View {
 								alignment: .center
 							)
 						
-						VStack {
-							ShareLink(
-								item: text,
-								preview: SharePreview(
-									"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
-									image: Image(systemName: "qrcode")
-								)
-							)
-							.presentationDetents([.large, .large])
-							.font(.title3)
-						}
+						Divider()
 						
-						if node != nil && node!.loRaConfig != nil {
-							
-							HStack {
-								
-								let preset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))
-								Text("Modem Preset \(preset!.description)").font(.title3)
-							}
-						}
+						
 						VStack {
 							
-							Text("Number of Channels: \(node?.myInfo?.maxChannels ?? 0)").font(.title2)
-							
-							if node != nil {
-								
-								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-									
-									VStack {
-										
-										
-										Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
-									}
-								}
-							}
+//							if node != nil {
+//
+//								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+//
+//									VStack{
+//
+//										Grid{
+//
+//											GridRow {
+//												Text("Include")
+//												Image(systemName: "globe")
+//											}
+//											GridRow {
+//												Toggle("Channel 1 Enabled", isOn: $channel1Enabled)
+//													.toggleStyle(.switch)
+//													.labelsHidden()
+//												Text("World")
+//											}
+//										}
+//									}
+//									HStack {
+//
+//
+//										Text("Channel: \(channel.index) Name: \(channel.name ?? "EMPTY") Role: \(channel.role)")
+//									}
+//								}
+//							}
 						}
 						.frame(width: bounds.size.width, height: bounds.size.height)
 					}
 				}
-				.navigationTitle("Share Channel")
+				.navigationTitle("Share Channels")
 				.navigationBarTitleDisplayMode(.automatic)
 				.navigationBarItems(trailing:
 										
