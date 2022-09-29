@@ -1072,9 +1072,9 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 }
 
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
-	
+
 	if let channelMessage = try? Channel(serializedData: packet.decoded.payload) {
-		
+
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
 		
@@ -1095,31 +1095,22 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 					newChannel.role = Int32(channelMessage.role.rawValue)
 					
 					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-					
-					let currentChannel = fetchedMyInfo[0].channels!.first(where: { ($0 as! ChannelEntity).index == channelMessage.index })
-					
-					if currentChannel != nil {
-						
-						//mutableChannels.remove(currentChannel!)
-					}
+
 					mutableChannels.add(newChannel)
 					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-
 					
 				} else {
 					
-					if channelMessage.index == 0 {
-						
-						let newChannel = ChannelEntity(context: context)
-						newChannel.index = channelMessage.index
-						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
-						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
-						newChannel.name = "Primary"
-						
-						var newChannels = [ChannelEntity]()
-						newChannels.append(newChannel)
-						fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
-					}
+					let newChannel = ChannelEntity(context: context)
+					newChannel.index = Int32(channelMessage.settings.channelNum)
+					newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
+					newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
+					newChannel.name = channelMessage.settings.name
+					newChannel.role = Int32(channelMessage.role.rawValue)
+					
+					var newChannels = [ChannelEntity]()
+					newChannels.append(newChannel)
+					fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
 				}
 				
 			} else {
@@ -1130,7 +1121,7 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 
 			if meshLogging {
 				
-				MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			}
 
 		} catch {
@@ -1140,10 +1131,9 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			let nsError = error as NSError
 			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
-			
-		if meshLogging { MeshLogger.log("ℹ️ Channel Message received for Admin App \(try! channelMessage.jsonString())") }
 	}
 }
+
 
 func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 	
@@ -1284,7 +1274,6 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 			let nsError = error as NSError
 			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
-		
 	}
 }
 	
@@ -1445,3 +1434,4 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 		}
 	}
 }
+
