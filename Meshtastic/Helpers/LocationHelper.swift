@@ -10,6 +10,7 @@ class LocationHelper: NSObject, ObservableObject {
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
 	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
+	static let DefaultTime = Date.init(timeIntervalSince1970: 0)
 
     static var currentLocation: CLLocationCoordinate2D {
 
@@ -46,7 +47,7 @@ class LocationHelper: NSObject, ObservableObject {
 	static var currentTimestamp: Date {
 
 		guard let timestamp = shared.locationManager.location?.timestamp else {
-			return Date.now
+			return DefaultTime
 		}
 		return timestamp
 	}

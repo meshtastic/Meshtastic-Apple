@@ -35,7 +35,14 @@ struct ShareChannels: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	@State var channel1Enabled = true
+	@State var includeChannel0 = true
+	@State var includeChannel1 = true
+	@State var includeChannel2 = true
+	@State var includeChannel3 = false
+	@State var includeChannel4 = false
+	@State var includeChannel5 = false
+	@State var includeChannel6 = false
+	@State var includeChannel7 = true
 	
 	var node: NodeInfoEntity?
 	
@@ -52,11 +59,6 @@ struct ShareChannels: View {
 				
 				ScrollView {
 					
-					Text("The current LoRa configuration will also be shared.")
-						.fixedSize(horizontal: false, vertical: true)
-						.font(.callout)
-						.padding(.bottom)
-					
 					VStack {
 						if node != nil {
 							
@@ -70,9 +72,6 @@ struct ShareChannels: View {
 									Text("Name")
 										.font(.caption)
 										.fontWeight(.bold)
-									Text("Role")
-										.font(.caption)
-										.fontWeight(.bold)
 									Spacer()
 								}
 								Divider()
@@ -81,81 +80,93 @@ struct ShareChannels: View {
 
 									GridRow {
 										Spacer()
-										Toggle("Channel 1 Enabled", isOn: $channel1Enabled)
-											.toggleStyle(.switch)
-											.labelsHidden()
-										
-										Text("Channel - \(channel.index)")
+										if channel.index == 0 {
+											Toggle("Channel 0 Included", isOn: $includeChannel0)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+											Text("Primary Channel")
+											
+										} else if channel.index == 1 {
+											Toggle("Channel 1 Included", isOn: $includeChannel1)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												Text("Public Channel")
+										} else if channel.index == 2 {
+											Toggle("Channel 2 Included", isOn: $includeChannel2)
+												.toggleStyle(.switch)
+												.labelsHidden()
+										} else if channel.index == 3 {
+											Toggle("Channel 3 Included", isOn: $includeChannel3)
+												.toggleStyle(.switch)
+												.labelsHidden()
+										} else if channel.index == 4 {
+											Toggle("Channel 4 Included", isOn: $includeChannel4)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 5 {
+											Toggle("Channel 5 Included", isOn: $includeChannel5)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 6 {
+											Toggle("Channel 6 Included", isOn: $includeChannel6)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 7 {
+											Toggle("Channel 7 Included", isOn: $includeChannel7)
+												.toggleStyle(.switch)
+												.labelsHidden()
+											Text("Admin Channel")
+										}
+										if channel.index > 1 && channel.index < 4{
+											Text("Private Chat - \(channel.index)")
+										}
+										if channel.index > 3 && channel.index < 7{
+											Text("Channel - \(channel.index)")
+										}
 										Spacer()
 									}
 								}
 							}
 						}
 					}
+					let image = qrCodeImage.generateQRCode(from: text)
 					
 					VStack {
 						
 						Divider()
-						ShareLink(
-							item: text,
-							preview: SharePreview(
-								"Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
-								image: Image(systemName: "qrcode")
-							)
+					
+						ShareLink("Share QR Code & Link",
+							item: Image(uiImage: image),
+							subject: Text("Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")"),
+							message: Text("Open the link or scan the QR code on Android, iOS, iPadOS or macOS with the Meshtastic app and you will be prompted to save these channel settings to your device: \(text)"),
+							preview: SharePreview("Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
+												  image: Image(uiImage: image))
 						)
 						.presentationDetents([.large, .large])
 						.font(.title3)
-						Divider()
-					}
-					
-					VStack {
 						
-						let image = qrCodeImage.generateQRCode(from: text)
+						Divider()
+
 						Image(uiImage: image)
 							.resizable()
 							.scaledToFit()
 							.frame(
-								minWidth: smallest * 0.8,
-								maxWidth: smallest * 0.8,
-								minHeight: smallest * 0.8,
-								maxHeight: smallest * 0.8,
+								minWidth: smallest * 0.75,
+								maxWidth: smallest * 0.75,
+								minHeight: smallest * 0.75,
+								maxHeight: smallest * 0.75,
 								alignment: .center
 							)
 						
 						Divider()
 						
-						
 						VStack {
 							
-//							if node != nil {
-//
-//								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-//
-//									VStack{
-//
-//										Grid{
-//
-//											GridRow {
-//												Text("Include")
-//												Image(systemName: "globe")
-//											}
-//											GridRow {
-//												Toggle("Channel 1 Enabled", isOn: $channel1Enabled)
-//													.toggleStyle(.switch)
-//													.labelsHidden()
-//												Text("World")
-//											}
-//										}
-//									}
-//									HStack {
-//
-//
-//										Text("Channel: \(channel.index) Name: \(channel.name ?? "EMPTY") Role: \(channel.role)")
-//									}
-//								}
-//							}
 						}
-						.frame(width: bounds.size.width, height: bounds.size.height)
 					}
 				}
 				.navigationTitle("Share Channels")
