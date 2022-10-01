@@ -26,8 +26,8 @@ struct MeshLog: View {
 						lineCount += 1
 					}
 					
-					var startingLog = 0
 					// Set the record to start with if we have more lines than the limit
+					var startingLog = 0
 					if lineCount > lineLimit {
 						startingLog = lineCount - lineLimit
 					}

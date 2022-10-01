@@ -121,10 +121,15 @@ struct Connect: View {
 							}
 							.contextMenu{
 
-								Text("My Node Info")
-								Label("Bitrate \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))", systemImage: "pencil.circle")
-								Text("Ch. Utilization \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
-								Text("Air Time \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+								Text("Num: \(String(bleManager.connectedPeripheral.num))")
+								Text("Short Name: \(bleManager.connectedPeripheral.shortName)")
+								Text("Long Name: \(bleManager.connectedPeripheral.longName)")
+								Text("Unique Code: \(bleManager.connectedPeripheral.lastFourCode)")
+								Text("Max Channels: \(String(bleManager.connectedPeripheral.maxChannels))")
+								Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
+								Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
+								Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+								Text("RSSI: \(bleManager.connectedPeripheral.rssi)")
 							}
 							
 						} else {
