@@ -34,14 +34,14 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			}
 		}
 		
-	} else {
+	} else if metricsType == 1 {
 		
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, Voltage, Current"
 		
 		for dm in telemetry{
 			
-			if dm.metricsType == 0 {
+			if dm.metricsType == 1 {
 			
 				csvString += "\n"
 				csvString += String("\(dm.temperature)°")

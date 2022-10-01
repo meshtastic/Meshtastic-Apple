@@ -13,7 +13,7 @@ struct PositionFlags: OptionSet
 	
 	static let Altitude = PositionFlags(rawValue: 1)
 	static let AltitudeMsl = PositionFlags(rawValue: 2)
-	static let GeoSep = PositionFlags(rawValue: 4)
+	static let GeoidalSeparation = PositionFlags(rawValue: 4)
 	static let Dop = PositionFlags(rawValue: 8)
 	static let Hvdop = PositionFlags(rawValue: 16)
 	static let Satsinview = PositionFlags(rawValue: 32)
@@ -48,7 +48,7 @@ struct PositionConfig: View {
 	/// Altitude value is MSL - 2
 	@State var includeAltitudeMsl = false
 	/// Include geoidal separation - 4
-	@State var includeGeoSep = false
+	@State var includeGeoidalSeparation = false
 	/// Include the DOP value ; PDOP used by default, see below - 8
 	@State var includeDop = false
 	/// If POS_DOP set, send separate HDOP / VDOP values instead of PDOP - 16
@@ -56,7 +56,7 @@ struct PositionConfig: View {
 	/// Include number of "satellites in view" - 32
 	@State var includeSatsinview = false
 	/// Include a sequence number incremented per packet - 64
-	@State var includeSeqNos = false
+	@State var includeSeqNo = false
 	/// Include positional timestamp (from GPS solution) - 128
 	@State var includeTimestamp = false
 	/// Include positional heading - 256
@@ -162,7 +162,7 @@ struct PositionConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includeSeqNos) { //64
+					Toggle(isOn: $includeSeqNo) { //64
 
 						Label("Sequence number", systemImage: "number")
 					}
@@ -188,7 +188,7 @@ struct PositionConfig: View {
 				}
 				Section(header: Text("Advanced Position Flags")) {
 					
-					Toggle(isOn: $includeGeoSep) {
+					Toggle(isOn: $includeGeoidalSeparation) {
 
 						Text("Geoidal Seperation")
 					}
@@ -242,11 +242,11 @@ struct PositionConfig: View {
 					
 					if includeAltitude { pf.insert(.Altitude) }
 					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
-					if includeGeoSep { pf.insert(.GeoSep) }
+					if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
 					if includeDop { pf.insert(.Dop) }
 					if includeHvdop { pf.insert(.Hvdop) }
 					if includeSatsinview { pf.insert(.Satsinview) }
-					if includeSeqNos { pf.insert(.SeqNos) }
+					if includeSeqNo { pf.insert(.SeqNos) }
 					if includeTimestamp { pf.insert(.Timestamp) }
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
@@ -296,11 +296,11 @@ struct PositionConfig: View {
 				
 				if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
 				if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
-				if pf.contains(.GeoSep) { self.includeGeoSep = true } else { self.includeGeoSep = false }
+				if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
 				if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
 				if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
 				if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
-				if pf.contains(.SeqNos) { self.includeSeqNos = true } else { self.includeSeqNos = false }
+				if pf.contains(.SeqNos) { self.includeSeqNo = true } else { self.includeSeqNo = false }
 				if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
 				if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
 				if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
@@ -352,7 +352,7 @@ struct PositionConfig: View {
 				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
 			}
 		}
-		.onChange(of: includeAltitude || includeAltitudeMsl || includeGeoSep || includeDop || includeHvdop || includeSatsinview || includeSeqNos || includeTimestamp || includeSpeed || includeHeading) { newFlags in
+		.onChange(of: includeAltitude || includeAltitudeMsl || includeGeoidalSeparation || includeDop || includeHvdop || includeSatsinview || includeSeqNo || includeTimestamp || includeSpeed || includeHeading) { newFlags in
 			// hasChanges = true
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

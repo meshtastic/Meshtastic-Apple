@@ -63,17 +63,10 @@ struct Connect: View {
 									if bleManager.connectedPeripheral != nil {
 										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
 											.font(.caption).foregroundColor(Color.gray)
-										Text("Bitrate: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
-										
-										
-										Text("Channel Utilization: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
-										Text("Air Time: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
 									}
 									if bleManager.connectedPeripheral.subscribed {
 										Text("Properly Subscribed").font(.caption)
+											.foregroundColor(.green)
 									} else {
 										Text("Attempting to connect. . . ").font(.caption)
 											.foregroundColor(.orange)
@@ -113,6 +106,8 @@ struct Connect: View {
 								}
 								
 							}
+							.font(.caption).foregroundColor(Color.gray)
+							.padding([.top, .bottom])
 							.swipeActions {
 
 								Button(role: .destructive) {
@@ -124,8 +119,13 @@ struct Connect: View {
 									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 								}
 							}
-							.padding([.top, .bottom])
-							
+							.contextMenu{
+
+								Text("My Node Info")
+								Label("Bitrate \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))", systemImage: "pencil.circle")
+								Text("Ch. Utilization \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
+								Text("Air Time \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+							}
 							
 						} else {
 							HStack {

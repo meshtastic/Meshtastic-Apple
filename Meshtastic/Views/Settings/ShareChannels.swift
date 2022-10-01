@@ -46,7 +46,7 @@ struct ShareChannels: View {
 	
 	var node: NodeInfoEntity?
 	
-	@State private var text =  "https://meshtastic.org/E/#test"
+	@State private var channelsUrl =  "https://meshtastic.org/e/#test"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -133,47 +133,41 @@ struct ShareChannels: View {
 							}
 						}
 					}
-					let image = qrCodeImage.generateQRCode(from: text)
+					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 					
 					VStack {
 						
 						Divider()
-					
+									
 						ShareLink("Share QR Code & Link",
-							item: Image(uiImage: image),
-							subject: Text("Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")"),
-							message: Text("Open the link or scan the QR code on Android, iOS, iPadOS or macOS with the Meshtastic app and you will be prompted to save these channel settings to your device: \(text)"),
-							preview: SharePreview("Meshtastic Channel Settings From Node \(node?.user?.shortName ?? "????")",
-												  image: Image(uiImage: image))
+							item: Image(uiImage: qrImage),
+							subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+							message: Text(channelsUrl),
+							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+												  image: Image(uiImage: qrImage))
 						)
 						.presentationDetents([.large, .large])
-						.font(.title3)
-						
-						Divider()
 
-						Image(uiImage: image)
+						Divider()
+						
+						Image(uiImage: qrImage)
 							.resizable()
 							.scaledToFit()
 							.frame(
-								minWidth: smallest * 0.75,
-								maxWidth: smallest * 0.75,
-								minHeight: smallest * 0.75,
-								maxHeight: smallest * 0.75,
-								alignment: .center
+								minWidth: smallest * 0.7,
+								maxWidth: smallest * 0.7,
+								minHeight: smallest * 0.7,
+								maxHeight: smallest * 0.7,
+								alignment: .top
 							)
 						
-						Divider()
-						
-						VStack {
-							
-						}
 					}
 				}
-				.navigationTitle("Share Channels")
-				.navigationBarTitleDisplayMode(.automatic)
+				.navigationTitle("Generate QR Code")
+				.navigationBarTitleDisplayMode(.inline)
 				.navigationBarItems(trailing:
 										
-										ZStack {
+				ZStack {
 					
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 				})
