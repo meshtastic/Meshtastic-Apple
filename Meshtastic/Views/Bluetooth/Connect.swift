@@ -79,17 +79,18 @@ struct Connect: View {
 
 									Text("Preferred").font(.caption2)
 									Text("Radio").font(.caption2)
-									Toggle("Preferred Radio", isOn: $isPreferredRadio)
+									Toggle("Preferred Radio", isOn: $bleManager.preferredPeripheral)
 										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 										.labelsHidden()
-										.onChange(of: isPreferredRadio) { value in
+										.onChange(of: bleManager.preferredPeripheral) { value in
 											if value {
 
 												if bleManager.connectedPeripheral != nil {
 
 												
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-												 bleManager.preferredPeripheral = true
+													bleManager.preferredPeripheral = true
+													isPreferredRadio = true
 													
 												}
 
@@ -100,6 +101,7 @@ struct Connect: View {
 
 												userSettings.preferredPeripheralId = ""
 												bleManager.preferredPeripheral = false
+												isPreferredRadio = false
 											}
 										}
 									}

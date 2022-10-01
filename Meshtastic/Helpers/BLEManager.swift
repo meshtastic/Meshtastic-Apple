@@ -252,6 +252,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		self.isConnected = true
 
+		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
+			self.userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
+			self.preferredPeripheral = true
+		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
+			self.preferredPeripheral = true
+		} else {
+			print("Trying to connect a non prefered peripheral")
+		}
+
 		// Invalidate and reset connection timer count, remove any connection errors
 		self.lastConnectionError = ""
 		self.timeoutTimerCount = 0
@@ -259,7 +268,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			self.timeoutTimer!.invalidate()
 		}
-
+		
 		// Map the peripheral to the connectedPeripheral ObservedObjects
 		connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		
@@ -731,7 +740,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				// Get all the channels
 				var i: UInt32 = 1;
-				var max: Int32 = self.connectedPeripheral.maxChannels
+				let max: Int32 = self.connectedPeripheral.maxChannels
 				
 				Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
 					
