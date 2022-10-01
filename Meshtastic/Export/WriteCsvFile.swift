@@ -69,7 +69,7 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 
 	// Create Position Header
-	csvString = "Latitude, Longitude, Altitude, Timestamp"
+	csvString = "Latitude, Longitude, Alt, Sats, Speed, Heading, SeqNo, Timestamp"
 
 	for pos in positions {
 		
@@ -80,6 +80,15 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.altitude)
 		csvString += ", "
+		csvString += String(pos.satsInView)
+		csvString += ", "
+		csvString += String(pos.speed)
+		csvString += ", "
+		csvString += String(pos.heading)
+		csvString += ", "
+		csvString += String(pos.seqNo)
+		csvString += ", "
+		
 		csvString += pos.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? "Unknown Age"
 	}
 	

@@ -30,30 +30,40 @@ struct PositionLog: View {
 					
 					GridRow {
 						
-						Text("Latitude")
-							.font(.caption)
+						Text("Lat / Long")
+							.font(.caption2)
 							.fontWeight(.bold)
-						Text("Longitude")
-							.font(.caption)
+						Text("Sat")
+							.font(.caption2)
 							.fontWeight(.bold)
-						Text("Alt.")
-							.font(.caption)
+						Text("Alt")
+							.font(.caption2)
+							.fontWeight(.bold)
+						Text("Spd")
+							.font(.caption2)
+							.fontWeight(.bold)
+						Text("Hd")
+							.font(.caption2)
 							.fontWeight(.bold)
 						Text("Timestamp")
-							.font(.caption)
+							.font(.caption2)
 							.fontWeight(.bold)
 					}
 					Divider()
 					ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 						GridRow {
-							Text(String(mappin.latitude ?? 0))
-								.font(.caption)
-							Text(String(mappin.longitude ?? 0))
-								.font(.caption)
+							Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
+								.font(.caption2)
+							Text(String(mappin.satsInView))
+								.font(.caption2)
 							Text(String(mappin.altitude))
-								.font(.caption)
+								.font(.caption2)
+							Text(String(mappin.speed))
+								.font(.caption2)
+							Text(String(mappin.heading))
+								.font(.caption2)
 							Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-								.font(.caption)
+								.font(.caption2)
 						}
 					}
 				}
