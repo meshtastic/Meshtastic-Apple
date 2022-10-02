@@ -1155,6 +1155,56 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
+	public func sendNodeDBReset(destNum: Int64) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.nodedbReset = 1
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = 0//UInt32(connectedPeripheral.num)
+		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			
+			do {
+
+				try context!.save()
+				
+				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset Admin Message for node: \(String(destNum))") }
+				
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				
+				PersistenceController.shared.clearDatabase()
+				
+				return true
+
+			} catch {
+
+				context!.rollback()
+
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+			}
+		}
+		
+		return false
+	}
+	
 	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()

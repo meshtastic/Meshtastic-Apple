@@ -79,67 +79,6 @@ struct NodeDetail: View {
 					}
 					
 					ScrollView {
-																	
-						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-
-							HStack {
-								
-								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
-								
-									Button(action: {
-										
-										showingShutdownConfirm = true
-									}) {
-											
-										Label("Power Off", systemImage: "power")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding()
-									.confirmationDialog(
-										"Are you sure?",
-										isPresented: $showingShutdownConfirm
-									) {
-										Button("Shutdown Node?", role: .destructive) {
-											
-											if !bleManager.sendShutdown(destNum: node.num) {
-												
-												print("Shutdown Failed")
-											}
-										}
-									}
-								}
-							
-								Button(action: {
-									
-									showingRebootConfirm = true
-									
-								}) {
-				
-									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding()
-								.confirmationDialog(
-									
-									"Are you sure?",
-									isPresented: $showingRebootConfirm
-									) {
-										
-									Button("Reboot Node?", role: .destructive) {
-										
-										if !bleManager.sendReboot(destNum: node.num) {
-											
-											print("Reboot Failed")
-										}
-									}
-								}
-							}
-							.padding(5)
-						}
 						
 						Divider()
 						
@@ -431,6 +370,67 @@ struct NodeDetail: View {
 								}
 								Divider()
 							}
+						}
+						
+						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
+
+							HStack {
+								
+								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
+								
+									Button(action: {
+										
+										showingShutdownConfirm = true
+									}) {
+											
+										Label("Power Off", systemImage: "power")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding()
+									.confirmationDialog(
+										"Are you sure?",
+										isPresented: $showingShutdownConfirm
+									) {
+										Button("Shutdown Node?", role: .destructive) {
+											
+											if !bleManager.sendShutdown(destNum: node.num) {
+												
+												print("Shutdown Failed")
+											}
+										}
+									}
+								}
+							
+								Button(action: {
+									
+									showingRebootConfirm = true
+									
+								}) {
+				
+									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding()
+								.confirmationDialog(
+									
+									"Are you sure?",
+									isPresented: $showingRebootConfirm
+									) {
+										
+									Button("Reboot Node?", role: .destructive) {
+										
+										if !bleManager.sendReboot(destNum: node.num) {
+											
+											print("Reboot Failed")
+										}
+									}
+								}
+							}
+							.padding(5)
 						}
 					}
 					.offset( y:-40)
