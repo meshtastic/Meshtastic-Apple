@@ -13,11 +13,6 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
 		}
 	}
-	@Published var preferredPeripheralName: String {
-		didSet {
-			UserDefaults.standard.set(preferredPeripheralName, forKey: "preferredPeripheralName")
-		}
-	}
 	@Published var preferredPeripheralId: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
@@ -52,7 +47,6 @@ class UserSettings: ObservableObject {
 	init() {
 
 		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
-		self.preferredPeripheralName = UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900

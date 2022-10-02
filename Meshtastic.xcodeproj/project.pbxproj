@@ -27,6 +27,8 @@
 		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
 		DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */; };
+		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
+		DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */; };
 		DD4033C228B286B70096A444 /* Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4033C128B286B70096A444 /* Onboarding.swift */; };
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
@@ -38,14 +40,15 @@
 		DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158B2824A91E0032668E /* module_config.pb.swift */; };
 		DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158D2824AA7E0032668E /* config.pb.swift */; };
 		DD4DED9027AD2975004BA27E /* cannedmessages.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */; };
-		DD4F23CD28779A3C001D37CB /* TelemetryLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */; };
+		DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
-		DD73FD1128750779000852D6 /* LocationHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* LocationHistory.swift */; };
+		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
+		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
 		DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FE272476C700F4AB02 /* LogDocument.swift */; };
@@ -58,7 +61,6 @@
 		DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EBF42285058FA00426DCA /* DisplayConfig.swift */; };
 		DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */; };
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
-		DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860B26F684AF00DC5189 /* BatteryIcon.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
@@ -136,6 +138,8 @@
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
 		DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
+		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
+		DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingEnums.swift; sourceTree = "<group>"; };
 		DD4033C128B286B70096A444 /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
@@ -147,13 +151,14 @@
 		DD4C158B2824A91E0032668E /* module_config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = module_config.pb.swift; sourceTree = "<group>"; };
 		DD4C158D2824AA7E0032668E /* config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = config.pb.swift; sourceTree = "<group>"; };
 		DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cannedmessages.pb.swift; sourceTree = "<group>"; };
-		DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryLog.swift; sourceTree = "<group>"; };
+		DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
-		DD73FD1028750779000852D6 /* LocationHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHistory.swift; sourceTree = "<group>"; };
+		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
+		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
 		DD8169FE272476C700F4AB02 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
@@ -167,7 +172,6 @@
 		DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConfig.swift; sourceTree = "<group>"; };
 		DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingError.swift; sourceTree = "<group>"; };
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
-		DD90860B26F684AF00DC5189 /* BatteryIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryIcon.swift; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
@@ -266,8 +270,9 @@
 				DD47E3CD26F103C600029299 /* NodeList.swift */,
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
 				DD2E65252767A01F00E45FC5 /* NodeDetail.swift */,
-				DD73FD1028750779000852D6 /* LocationHistory.swift */,
-				DD4F23CC28779A3C001D37CB /* TelemetryLog.swift */,
+				DD73FD1028750779000852D6 /* PositionLog.swift */,
+				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
 			);
 			path = Nodes;
 			sourceTree = "<group>";
@@ -287,11 +292,11 @@
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
+				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DD61937A2863876A00E59241 /* Config */,
-				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -346,6 +351,7 @@
 				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
 				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
 				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
+				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -494,12 +500,12 @@
 			children = (
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DD47E3D826F3093800029299 /* MessageBubble.swift */,
-				DD90860B26F684AF00DC5189 /* BatteryIcon.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
+				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -697,21 +703,22 @@
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
 				DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */,
-				DD4F23CD28779A3C001D37CB /* TelemetryLog.swift in Sources */,
+				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
+				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
-				DD90860C26F684AF00DC5189 /* BatteryIcon.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDAF8C6226ED0A230058C060 /* mqtt.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DDAF8C5D26ED09490058C060 /* portnums.pb.swift in Sources */,
+				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
 				DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */,
@@ -759,7 +766,8 @@
 				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
-				DD73FD1128750779000852D6 /* LocationHistory.swift in Sources */,
+				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
+				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
@@ -939,7 +947,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -971,7 +979,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

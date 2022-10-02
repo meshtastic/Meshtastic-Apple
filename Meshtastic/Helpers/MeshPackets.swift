@@ -867,10 +867,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 			if nodeInfo.position.latitudeI > 0 || nodeInfo.position.longitudeI > 0 {
 				
 				let position = PositionEntity(context: context)
+				position.seqNo = Int32(nodeInfo.position.seqNumber)
 				position.latitudeI = nodeInfo.position.latitudeI
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
 				position.satsInView = Int32(nodeInfo.position.satsInView)
+				position.speed = Int32(nodeInfo.position.groundSpeed)
+				position.heading = Int32(nodeInfo.position.groundTrack)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				
 				var newPostions = [PositionEntity]()
@@ -1152,11 +1155,20 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 				if fetchedNode.count == 1 {
 			
 					let position = PositionEntity(context: context)
+					
+					position.seqNo = Int32(positionMessage.seqNumber)
 					position.latitudeI = positionMessage.latitudeI
 					position.longitudeI = positionMessage.longitudeI
 					position.altitude = positionMessage.altitude
 					position.satsInView = Int32(positionMessage.satsInView)
-					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					position.speed = Int32(positionMessage.groundSpeed)
+					position.heading = Int32(positionMessage.groundTrack)
+					
+					if positionMessage.timestamp != 0 {
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
+					} else {
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					}
 
 					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 					mutablePositions.add(position)

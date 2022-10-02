@@ -54,8 +54,57 @@ struct DeviceConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+				
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
+			
+			HStack {
+				
+				Button("Reset NodeDB", role: .destructive) {
+					
+					isPresentingFactoryResetConfirm = true
+				}
+				.disabled(bleManager.connectedPeripheral == nil)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingFactoryResetConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Erase the NodeDB from node and app?", role: .destructive) {
+						
+						if !bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
+							
+							print("NodeDB Reset Failed")
+						}
+					}
+				}
+				Button("Factory Reset", role: .destructive) {
+					
+					isPresentingFactoryResetConfirm = true
+				}
+				.disabled(bleManager.connectedPeripheral == nil)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingFactoryResetConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Erase all device settings?", role: .destructive) {
+						
+						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
+							
+							print("Factory Reset Failed")
+						}
+					}
+				}
+			}
 			
 			HStack {
 				
@@ -101,28 +150,6 @@ struct DeviceConfig: View {
 				message: {
 					
 					Text("After device config saves the node will reboot.")
-				}
-			
-				Button("Factory Reset", role: .destructive) {
-					
-					isPresentingFactoryResetConfirm = true
-				}
-				.disabled(bleManager.connectedPeripheral == nil)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"Are you sure?",
-					isPresented: $isPresentingFactoryResetConfirm
-				) {
-					Button("Erase all device settings?", role: .destructive) {
-						
-						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
-							
-							print("Factory Reset Failed")
-						}
-					}
 				}
 			}
 			Spacer()

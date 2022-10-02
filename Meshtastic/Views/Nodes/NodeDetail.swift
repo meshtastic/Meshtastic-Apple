@@ -12,10 +12,12 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State private var showingDetailsPopover = false
+	
 	@State var initialLoad: Bool = true
 	@State var satsInView = 0
-	@State private var isPresentingShutdownConfirm: Bool = false
-	@State private var isPresentingRebootConfirm: Bool = false
+	@State private var showingShutdownConfirm: Bool = false
+	@State private var showingRebootConfirm: Bool = false
 
 	var node: NodeInfoEntity
 
@@ -23,7 +25,7 @@ struct NodeDetail: View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
-		ZStack {
+		NavigationStack {
 
 			GeometryReader { bounds in
 
@@ -63,95 +65,25 @@ struct NodeDetail: View {
 									   }
 									)
 								 }
-							    .ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.6)
+								.ignoresSafeArea(.all, edges: [.leading, .trailing])
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.70)
 							}
 						}
 						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
 					} else {
 						
 						HStack {
-							Image(node.user?.hwModel ?? "UNSET")
-								.resizable()
-								.aspectRatio(contentMode: .fit)
-								.cornerRadius(10)
-								.frame(width: bounds.size.width, height: bounds.size.height / 2.3)
-								.padding([.top], 40)
+
 						}
-						.offset( y:-40)
+						.padding([.top], 40)
 					}
 					
 					ScrollView {
-																	
-						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-							
-							Divider()
-							HStack {
-								
-								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
-								
-									Button(action: {
-										
-										isPresentingShutdownConfirm = true
-									}) {
-											
-										Label("Power Off", systemImage: "power")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding()
-									.confirmationDialog(
-										"Are you sure?",
-										isPresented: $isPresentingShutdownConfirm
-									) {
-										Button("Shutdown Node?", role: .destructive) {
-											
-											if !bleManager.sendShutdown(destNum: node.num) {
-												
-												print("Shutdown Failed")
-											}
-										}
-									}
-								}
-							
-								Button(action: {
-									
-									isPresentingRebootConfirm = true
-									
-								}) {
-				
-									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding()
-								.confirmationDialog(
-									
-									"Are you sure?",
-									isPresented: $isPresentingRebootConfirm
-									) {
-										
-									Button("Reboot Node?", role: .destructive) {
-										
-										if !bleManager.sendReboot(destNum: node.num) {
-											
-											print("Reboot Failed")
-										}
-									}
-								}
-							}
-							.padding(5)
-						}
+						
+						Divider()
 						
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-							
-							// Add a divider if there is no map
-							if (node.positions?.count ?? 0) == 0 {
-								
-								Divider()
-							}
+
 							
 							HStack {
 								
@@ -159,7 +91,7 @@ struct NodeDetail: View {
 									
 									Text("AKA").font(.largeTitle)
 										.foregroundColor(.gray).fixedSize()
-										.offset(y:20)
+										.offset(y:5)
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
 								.padding()
@@ -172,8 +104,8 @@ struct NodeDetail: View {
 										
 										Image(hwModelString)
 											.resizable()
-											.aspectRatio(contentMode: .fit)
-											.frame(width: 90, height: 90)
+											.aspectRatio(contentMode: .fill)
+											.frame(width: 200, height: 200)
 											.cornerRadius(5)
 
 										Text(String(hwModelString))
@@ -198,7 +130,11 @@ struct NodeDetail: View {
 											.font(.largeTitle)
 											.foregroundColor(.gray)
 											.fixedSize()
+										
+								
 									}
+									
+								
 								}
 
 								if node.telemetries?.count ?? 0 >= 1 {
@@ -206,33 +142,26 @@ struct NodeDetail: View {
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 
 									Divider()
-
+								
 									VStack(alignment: .center) {
-
-										BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .largeTitle, color: .accentColor)
-											.padding(.bottom, 10)
 										
-										if mostRecent.batteryLevel > 0 {
-											Text(String(mostRecent.batteryLevel) + "%")
-												.font(.largeTitle)
-												.frame(width: 100)
-												.foregroundColor(.gray)
-												.fixedSize()
-										}
+										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
+							
 										if mostRecent.voltage > 0 {
-											
+
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
-												.font(.largeTitle)
+												.font(.title)
 												.foregroundColor(.gray)
 												.fixedSize()
 										}
 									}
 									.padding()
 								}
-								Divider()
+								
 							}
 							.padding()
 							
+							Divider()
 							HStack(alignment: .center) {
 								
 								VStack {
@@ -293,11 +222,9 @@ struct NodeDetail: View {
 							HStack {
 
 								VStack(alignment: .center) {
-									Text("AKA").font(.title2).fixedSize()
+									
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
-										.offset(y: 10)
 								}
-								.padding(5)
 
 								Divider()
 
@@ -342,31 +269,23 @@ struct NodeDetail: View {
 
 									VStack(alignment: .center) {
 
-										BatteryIcon(batteryLevel: mostRecent.batteryLevel, font: .title, color: .accentColor)
-											.padding(.bottom)
+										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										
-										if mostRecent.batteryLevel > 0 {
-											Text(String(mostRecent.batteryLevel) + "%")
-												.font(.title3)
-												.foregroundColor(.gray)
-												.fixedSize()
-										}
 										if mostRecent.voltage > 0 {
 											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
-												.font(.title3)
+												.font(.callout)
 												.foregroundColor(.gray)
 												.fixedSize()
 										}
+										
 									}
-									.padding(5)
 								}
 							}
-							.padding(4)
-							
 							Divider()
-							
 							HStack(alignment: .center) {
+								
+								
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -399,70 +318,148 @@ struct NodeDetail: View {
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
+							.padding([.bottom], 0)
+							Divider()
 						}
 						
-						List {
+						VStack {
 							
 							if (node.positions?.count ?? 0) > 0 {
 								
+								
+								
 								NavigationLink {
-									LocationHistory(node: node)
+									PositionLog(node: node)
 								} label: {
-
+									
 									Image(systemName: "building.columns")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Position History \(node.positions?.count ?? 0) Points")
+									
+									Text("Position Log (\(node.positions?.count ?? 0) Points)")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
+							
 							if (node.telemetries?.count ?? 0) > 0 {
+								
 								NavigationLink {
-									TelemetryLog(node: node)
+									DeviceMetricsLog(node: node)
 								} label: {
-
+									
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+									
+									Text("Device Metrics Log")
+										.font(.title3)
+								}
+								Divider()
+								NavigationLink {
+									EnvironmentMetricsLog(node: node)
+								} label: {
+									
 									Image(systemName: "chart.xyaxis.line")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-
-									Text("Telemetry Log \(node.telemetries?.count ?? 0) Readings")
+									
+									Text("Environment Metrics Log")
 										.font(.title3)
 								}
-								.fixedSize(horizontal: false, vertical: true)
+								Divider()
 							}
 						}
-						.listStyle(GroupedListStyle())
-						.frame(minHeight: 170)
-						.padding(0)
+						
+						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
+
+							HStack {
+								
+								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
+								
+									Button(action: {
+										
+										showingShutdownConfirm = true
+									}) {
+											
+										Label("Power Off", systemImage: "power")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding()
+									.confirmationDialog(
+										"Are you sure?",
+										isPresented: $showingShutdownConfirm
+									) {
+										Button("Shutdown Node?", role: .destructive) {
+											
+											if !bleManager.sendShutdown(destNum: node.num) {
+												
+												print("Shutdown Failed")
+											}
+										}
+									}
+								}
+							
+								Button(action: {
+									
+									showingRebootConfirm = true
+									
+								}) {
+				
+									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding()
+								.confirmationDialog(
+									
+									"Are you sure?",
+									isPresented: $showingRebootConfirm
+									) {
+										
+									Button("Reboot Node?", role: .destructive) {
+										
+										if !bleManager.sendReboot(destNum: node.num) {
+											
+											print("Reboot Failed")
+										}
+									}
+								}
+							}
+							.padding(5)
+						}
 					}
-					.offset( y: (node.myInfo?.hasGps ?? false ? 0 : -40))
+					.offset( y:-40)
+					.padding(.bottom, -40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
+				.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
+				.navigationBarTitleDisplayMode(.inline)
+				.padding(.bottom, 10)
+				.navigationBarItems(trailing:
+
+					ZStack {
+
+						ConnectedDevice(
+							bluetoothOn: bleManager.isSwitchedOn,
+							deviceConnected: bleManager.connectedPeripheral != nil,
+							name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+					}
+				)
+				.onAppear {
+
+					if self.initialLoad{
+						
+						self.bleManager.context = context
+						self.initialLoad = false
+					}
+				}
 			}
 		}
-		.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
-		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(trailing:
-
-			ZStack {
-
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-			}
-		)
-		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-				self.initialLoad = false
-			}
-		}
-
 	}
 }
 

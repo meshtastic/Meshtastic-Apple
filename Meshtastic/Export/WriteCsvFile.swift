@@ -34,14 +34,14 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			}
 		}
 		
-	} else {
+	} else if metricsType == 1 {
 		
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, Voltage, Current"
 		
 		for dm in telemetry{
 			
-			if dm.metricsType == 0 {
+			if dm.metricsType == 1 {
 			
 				csvString += "\n"
 				csvString += String("\(dm.temperature)°")
@@ -69,17 +69,26 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 
 	// Create Position Header
-	csvString = "Latitude, Longitude, Altitude, Timestamp"
+	csvString = "SeqNo, Latitude, Longitude, Alt, Sats, Speed, Heading, Timestamp"
 
 	for pos in positions {
 		
 		csvString += "\n"
+		csvString += String(pos.seqNo)
+		csvString += ", "
 		csvString += String(pos.latitude ?? 0)
 		csvString += ", "
 		csvString += String(pos.longitude ?? 0)
 		csvString += ", "
 		csvString += String(pos.altitude)
 		csvString += ", "
+		csvString += String(pos.satsInView)
+		csvString += ", "
+		csvString += String(pos.speed)
+		csvString += ", "
+		csvString += String(pos.heading)
+		csvString += ", "
+		
 		csvString += pos.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? "Unknown Age"
 	}
 	

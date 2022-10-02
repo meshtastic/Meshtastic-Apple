@@ -35,9 +35,18 @@ struct ShareChannels: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
+	@State var includeChannel0 = true
+	@State var includeChannel1 = true
+	@State var includeChannel2 = true
+	@State var includeChannel3 = false
+	@State var includeChannel4 = false
+	@State var includeChannel5 = false
+	@State var includeChannel6 = false
+	@State var includeChannel7 = true
+	
 	var node: NodeInfoEntity?
 	
-	@State private var text =  "https://meshtastic.org/E/#test"
+	@State private var channelsUrl =  "https://meshtastic.org/e/#test"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -51,54 +60,114 @@ struct ShareChannels: View {
 				ScrollView {
 					
 					VStack {
-						Text("Scan the QR code below with the Apple or Android device you would like to share your channel settings with.")
-							.fixedSize(horizontal: false, vertical: true)
-							.font(.callout)
-						
-						let image = qrCodeImage.generateQRCode(from: text)
-						Image(uiImage: image)
-							.resizable()
-							.scaledToFit()
-							.frame(
-								minWidth: smallest * 0.8,
-								maxWidth: smallest * 0.8,
-								minHeight: smallest * 0.8,
-								maxHeight: smallest * 0.8,
-								alignment: .center
-							)
-						
-						if node != nil && node!.loRaConfig != nil {
+						if node != nil {
 							
-							HStack {
+							Grid(alignment: .top, horizontalSpacing: 2) {
 								
-								let preset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))
-								Text("Modem Preset \(preset!.description)").font(.title3)
-							}
-						}
-						VStack {
-							
-							Text("Number of Channels: \(node?.myInfo?.maxChannels ?? 0)").font(.title2)
-							
-							if node != nil {
+								GridRow {
+									Spacer()
+									Text("Include")
+										.font(.caption)
+										.fontWeight(.bold)
+									Text("Name")
+										.font(.caption)
+										.fontWeight(.bold)
+									Spacer()
+								}
+								Divider()
 								
 								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-									
-									VStack {
-										
-										
-										Text("Channel: \(channel.index) Name: \(channel.name ?? "")")
+
+									GridRow {
+										Spacer()
+										if channel.index == 0 {
+											Toggle("Channel 0 Included", isOn: $includeChannel0)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+											Text("Primary Channel")
+											
+										} else if channel.index == 1 {
+											Toggle("Channel 1 Included", isOn: $includeChannel1)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												Text("Public Channel")
+										} else if channel.index == 2 {
+											Toggle("Channel 2 Included", isOn: $includeChannel2)
+												.toggleStyle(.switch)
+												.labelsHidden()
+										} else if channel.index == 3 {
+											Toggle("Channel 3 Included", isOn: $includeChannel3)
+												.toggleStyle(.switch)
+												.labelsHidden()
+										} else if channel.index == 4 {
+											Toggle("Channel 4 Included", isOn: $includeChannel4)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 5 {
+											Toggle("Channel 5 Included", isOn: $includeChannel5)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 6 {
+											Toggle("Channel 6 Included", isOn: $includeChannel6)
+												.toggleStyle(.switch)
+												.labelsHidden()
+												.disabled(true)
+										} else if channel.index == 7 {
+											Toggle("Channel 7 Included", isOn: $includeChannel7)
+												.toggleStyle(.switch)
+												.labelsHidden()
+											Text("Admin Channel")
+										}
+										if channel.index > 1 && channel.index < 4{
+											Text("Private Chat - \(channel.index)")
+										}
+										if channel.index > 3 && channel.index < 7{
+											Text("Channel - \(channel.index)")
+										}
+										Spacer()
 									}
 								}
 							}
 						}
-						.frame(width: bounds.size.width, height: bounds.size.height)
+					}
+					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
+					
+					VStack {
+						
+						Divider()
+									
+						ShareLink("Share QR Code & Link",
+							item: Image(uiImage: qrImage),
+							subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+							message: Text(channelsUrl),
+							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+												  image: Image(uiImage: qrImage))
+						)
+						.presentationDetents([.large, .large])
+
+						Divider()
+						
+						Image(uiImage: qrImage)
+							.resizable()
+							.scaledToFit()
+							.frame(
+								minWidth: smallest * 0.7,
+								maxWidth: smallest * 0.7,
+								minHeight: smallest * 0.7,
+								maxHeight: smallest * 0.7,
+								alignment: .top
+							)
+						
 					}
 				}
-				.navigationTitle("Share Channel")
-				.navigationBarTitleDisplayMode(.automatic)
+				.navigationTitle("Generate QR Code")
+				.navigationBarTitleDisplayMode(.inline)
 				.navigationBarItems(trailing:
 										
-										ZStack {
+				ZStack {
 					
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 				})

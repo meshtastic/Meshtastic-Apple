@@ -63,17 +63,10 @@ struct Connect: View {
 									if bleManager.connectedPeripheral != nil {
 										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
 											.font(.caption).foregroundColor(Color.gray)
-										Text("Bitrate: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
-										
-										
-										Text("Channel Utilization: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
-										Text("Air Time: ").font(.caption)+Text(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))
-											.font(.caption).foregroundColor(Color.gray)
 									}
 									if bleManager.connectedPeripheral.subscribed {
 										Text("Properly Subscribed").font(.caption)
+											.foregroundColor(.green)
 									} else {
 										Text("Attempting to connect. . . ").font(.caption)
 											.foregroundColor(.orange)
@@ -86,38 +79,37 @@ struct Connect: View {
 
 									Text("Preferred").font(.caption2)
 									Text("Radio").font(.caption2)
-									Toggle("Preferred Radio", isOn: $isPreferredRadio)
+									Toggle("Preferred Radio", isOn: $bleManager.preferredPeripheral)
 										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 										.labelsHidden()
-										.onChange(of: isPreferredRadio) { value in
+										.onChange(of: bleManager.preferredPeripheral) { value in
 											if value {
 
 												if bleManager.connectedPeripheral != nil {
 
-													let deviceName = (bleManager.connectedPeripheral.peripheral.name ?? "")
-													userSettings.preferredPeripheralName = deviceName
-
-												} else {
-
-													userSettings.preferredPeripheralName = bleManager.connectedPeripheral.longName
+												
+													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+													bleManager.preferredPeripheral = true
+													isPreferredRadio = true
+													
 												}
 
-												userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-												bleManager.preferredPeripheral = true
 												
 											} else {
 
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
 
 												userSettings.preferredPeripheralId = ""
-												userSettings.preferredPeripheralName = ""
 												bleManager.preferredPeripheral = false
+												isPreferredRadio = false
 											}
 										}
 									}
 								}
 								
 							}
+							.font(.caption).foregroundColor(Color.gray)
+							.padding([.top, .bottom])
 							.swipeActions {
 
 								Button(role: .destructive) {
@@ -129,8 +121,18 @@ struct Connect: View {
 									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 								}
 							}
-							.padding([.top, .bottom])
-							
+							.contextMenu{
+
+								Text("Num: \(String(bleManager.connectedPeripheral.num))")
+								Text("Short Name: \(bleManager.connectedPeripheral.shortName)")
+								Text("Long Name: \(bleManager.connectedPeripheral.longName)")
+								Text("Unique Code: \(bleManager.connectedPeripheral.lastFourCode)")
+								Text("Max Channels: \(String(bleManager.connectedPeripheral.maxChannels))")
+								Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
+								Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
+								Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+								Text("RSSI: \(bleManager.connectedPeripheral.rssi)")
+							}
 							
 						} else {
 							HStack {
@@ -184,7 +186,7 @@ struct Connect: View {
 					}
 				}
 
-                    HStack(alignment: .center) {
+				HStack(alignment: .center) {
 						
 					Spacer()
 						
