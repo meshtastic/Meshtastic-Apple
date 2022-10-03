@@ -131,7 +131,7 @@ struct Connect: View {
 								Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
 								Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
 								Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
-								Text("RSSI: \(bleManager.connectedPeripheral.rssi)")
+								Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 							}
 							
 						} else {

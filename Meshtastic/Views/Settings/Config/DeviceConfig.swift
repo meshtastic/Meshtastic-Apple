@@ -101,6 +101,10 @@ struct DeviceConfig: View {
 						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
 							
 							print("Factory Reset Failed")
+						} else {
+							
+							// Disconnect from device as we are going to wipe the app database too
+							bleManager.disconnectPeripheral()
 						}
 					}
 				}

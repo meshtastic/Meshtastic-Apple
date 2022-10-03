@@ -1077,63 +1077,69 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 
 	if let channelMessage = try? Channel(serializedData: packet.decoded.payload) {
-
-		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
 		
-		do {
+		if channelMessage.hasSettings {
 			
-			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
-
-			if fetchedMyInfo.count == 1 {
+			let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+			fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
+			
+			do {
 				
-				// Update
-				if fetchedMyInfo[0].channels?.count ?? 0 >= 1 {
+				let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
+				
+				if fetchedMyInfo.count == 1 {
 					
-					let newChannel = ChannelEntity(context: context)
-					newChannel.index = Int32(channelMessage.settings.channelNum)
-					newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
-					newChannel.name = channelMessage.settings.name
-					newChannel.role = Int32(channelMessage.role.rawValue)
-					
-					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-
-					mutableChannels.add(newChannel)
-					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+					// Update
+					if fetchedMyInfo[0].channels?.count ?? 0 >= 1 {
+						
+						let newChannel = ChannelEntity(context: context)
+						newChannel.index = Int32(channelMessage.settings.channelNum)
+						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
+						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
+						newChannel.name = channelMessage.settings.name
+						newChannel.role = Int32(channelMessage.role.rawValue)
+						
+						let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+						
+						mutableChannels.add(newChannel)
+						fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+						
+					} else {
+						
+						let newChannel = ChannelEntity(context: context)
+						newChannel.index = Int32(channelMessage.settings.channelNum)
+						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
+						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
+						newChannel.name = channelMessage.settings.name
+						newChannel.role = Int32(channelMessage.role.rawValue)
+						
+						var newChannels = [ChannelEntity]()
+						newChannels.append(newChannel)
+						fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
+					}
 					
 				} else {
-					
-					let newChannel = ChannelEntity(context: context)
-					newChannel.index = Int32(channelMessage.settings.channelNum)
-					newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
-					newChannel.name = channelMessage.settings.name
-					newChannel.role = Int32(channelMessage.role.rawValue)
-					
-					var newChannels = [ChannelEntity]()
-					newChannels.append(newChannel)
-					fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
+					print("💥 Trying to save a channel to a MyInfo that does not exist: \(packet.from)")
 				}
 				
-			} else {
-				print("💥 Trying to save a channel to a MyInfo that does not exist: \(packet.from)")
-			}
-
-		try context.save()
-
-			if meshLogging {
+				try context.save()
 				
-				MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				if meshLogging {
+					
+					MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				}
+				
+			} catch {
+				
+				context.rollback()
+				
+				let nsError = error as NSError
+				print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 			}
-
-		} catch {
-
-			context.rollback()
-
-			let nsError = error as NSError
-			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
+	} else {
+
+		print(try! packet.decoded.jsonString())
 	}
 }
 

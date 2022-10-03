@@ -34,7 +34,6 @@ class PersistenceController {
 	init(inMemory: Bool = false) {
 		
 		container = NSPersistentContainer(name: "Meshtastic")
-		//self.clearDatabase()
 		
 		if inMemory {
 			container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
@@ -63,10 +62,10 @@ class PersistenceController {
 			 
 			 try persistentStoreCoordinator.destroyPersistentStore(at:url, ofType: NSSQLiteStoreType, options: nil)
 			 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
-			 print("💥 Something went terribly wrong, CoreData database truncated.  All app data is lost.")
+			 print("💥 CoreData database truncated.  All app data has been erased.")
 			 
 		} catch let error {
-			print("💣 Failed to destroy broken CoreData database, delete the app. Attempted to clear persistent store: " + error.localizedDescription)
+			print("💣 Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: " + error.localizedDescription)
 		}
 	}
 }

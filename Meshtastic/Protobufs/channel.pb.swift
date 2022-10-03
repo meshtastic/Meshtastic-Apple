@@ -46,24 +46,7 @@ struct ChannelSettings {
   // methods supported on all messages.
 
   ///
-  /// NOTE: this field is _independent_ and unrelated to the concepts in channel.proto.
-  /// this is controlling the actual hardware frequency the radio is transmitting on.
-  /// In a perfect world we would have called it something else (band?) but I forgot to make this change during the big 1.2 renaming.
-  /// Most users should never need to be exposed to this field/concept.
-  /// A channel number between 1 and 13 (or whatever the max is in the current
-  /// region). If ZERO then the rule is "use the old channel name hash based
-  /// algorithm to derive the channel number")
-  /// If using the hash algorithm the channel number will be: hash(channel_name) %
-  /// NUM_CHANNELS (Where num channels depends on the regulatory region).
-  /// NUM_CHANNELS_US is 13, for other values see MeshRadio.h in the device code.
-  /// hash a string into an integer - djb2 by Dan Bernstein. -
-  /// http://www.cse.yorku.ca/~oz/hash.html
-  /// unsigned long hash(char *str) {
-  ///   unsigned long hash = 5381; int c;
-  ///   while ((c = *str++) != 0)
-  ///     hash = ((hash << 5) + hash) + (unsigned char) c;
-  ///   return hash;
-  /// }
+  /// Deprecated in favor of LoraConfig.channel_num
   var channelNum: UInt32 = 0
 
   ///
