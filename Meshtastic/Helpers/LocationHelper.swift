@@ -52,7 +52,24 @@ class LocationHelper: NSObject, ObservableObject {
 		return timestamp
 	}
 	
-	
+	static var satsInView: Int {
+		
+		var sats = 0
+		
+		if shared.locationManager.location?.verticalAccuracy ?? 0 > 0 {
+			sats = 4
+			
+			if 0...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+				sats = 6
+			}
+			
+		} else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0 && 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
+			sats = 3
+		} else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0 && shared.locationManager.location?.horizontalAccuracy ?? 0 > 300 {
+			sats = 2
+		}
+		return sats
+	}
 
     private let locationManager = CLLocationManager()
 
