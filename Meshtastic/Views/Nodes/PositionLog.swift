@@ -15,6 +15,8 @@ struct PositionLog: View {
 	@State var exportString = ""
 	
 	var node: NodeInfoEntity
+	
+	@State private var isPresentingClearLogConfirm = false
 
 	var body: some View {
 		
@@ -70,38 +72,71 @@ struct PositionLog: View {
 				.padding(.leading, 15)
 				.padding(.trailing, 5)
 			}
-			Button {
-							
-				exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
-				isExporting = true
-				
-			} label: {
-				
-				Label("Save", systemImage: "square.and.arrow.down")
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-		}
-		.fileExporter(
-			isPresented: $isExporting,
-			document: CsvDocument(emptyCsv: exportString),
-			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
-			onCompletion: { result in
+			HStack {
 
-				if case .success = result {
+				Button(role: .destructive) {
+								
+					isPresentingClearLogConfirm = true
 					
-					print("Position log download succeeded.")
-					self.isExporting = false
+				} label: {
 					
-				} else {
-					
-					print("Position log download failed: \(result).")
+					Label("Clear Log", systemImage: "trash.fill")
 				}
-			}
-		)
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingClearLogConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Delete all positions?", role: .destructive) {
+						
+						if clearPositions(destNum: node.num, context: context) {
+							
+							print("Clear Position Log Failed")
+							
+						} else {
+							
+							
+						}
+					}
+				}
+				
+				Button {
+								
+					exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
+					isExporting = true
+					
+					} label: {
+						
+						Label("Save", systemImage: "square.and.arrow.down")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
+				}
+				.fileExporter(
+				isPresented: $isExporting,
+				document: CsvDocument(emptyCsv: exportString),
+				contentType: .commaSeparatedText,
+				defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
+				onCompletion: { result in
+
+					if case .success = result {
+						
+						print("Position log download succeeded.")
+						self.isExporting = false
+						
+					} else {
+						
+						print("Position log download failed: \(result).")
+					}
+				}
+			)
+		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
 		.navigationBarItems(trailing:
 

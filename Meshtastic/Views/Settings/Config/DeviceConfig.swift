@@ -13,6 +13,7 @@ struct DeviceConfig: View {
 	
 	var node: NodeInfoEntity?
 	
+	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
 	@State private var isPresentingSaveConfirm = false
 	@State var initialLoad: Bool = true
@@ -61,8 +62,7 @@ struct DeviceConfig: View {
 			HStack {
 				
 				Button("Reset NodeDB", role: .destructive) {
-					
-					isPresentingFactoryResetConfirm = true
+					isPresentingNodeDBResetConfirm = true
 				}
 				.disabled(bleManager.connectedPeripheral == nil)
 				.buttonStyle(.bordered)
@@ -71,19 +71,20 @@ struct DeviceConfig: View {
 				.padding()
 				.confirmationDialog(
 					"Are you sure?",
-					isPresented: $isPresentingFactoryResetConfirm,
+					isPresented: $isPresentingNodeDBResetConfirm,
 					titleVisibility: .visible
 				) {
-					Button("Erase the NodeDB from node and app?", role: .destructive) {
-						
+					Button("Erase all device and app data?", role: .destructive) {
 						if !bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
-							
 							print("NodeDB Reset Failed")
+						} else {
+							// Disconnect from device as we are going to wipe the app database now
+						    bleManager.disconnectPeripheral()
+							clearCoreDataDatabase(context: context)
 						}
 					}
 				}
 				Button("Factory Reset", role: .destructive) {
-					
 					isPresentingFactoryResetConfirm = true
 				}
 				.disabled(bleManager.connectedPeripheral == nil)
@@ -96,11 +97,15 @@ struct DeviceConfig: View {
 					isPresented: $isPresentingFactoryResetConfirm,
 					titleVisibility: .visible
 				) {
-					Button("Erase all device settings?", role: .destructive) {
+					Button("Erase all device and app settings and data?", role: .destructive) {
 						
 						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
 							
 							print("Factory Reset Failed")
+						} else {
+							// Disconnect from device
+							bleManager.disconnectPeripheral()
+							clearCoreDataDatabase(context: context)
 						}
 					}
 				}

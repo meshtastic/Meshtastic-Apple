@@ -706,6 +706,16 @@ struct Config {
     var txPower: Int32 = 0
 
     ///
+    /// This is controlling the actual hardware frequency the radio is transmitting on.
+    /// Most users should never need to be exposed to this field/concept.
+    /// A channel number between 1 and NUM_CHANNELS (whatever the max is in the current region).
+    /// If ZERO then the rule is "use the old channel name hash based
+    /// algorithm to derive the channel number")
+    /// If using the hash algorithm the channel number will be: hash(channel_name) %
+    /// NUM_CHANNELS (Where num channels depends on the regulatory region).
+    var channelNum: UInt32 = 0
+
+    ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
     /// in ignore_incoming will have packets they send droped on receive (by router.cpp)
@@ -1599,6 +1609,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     8: .standard(proto: "hop_limit"),
     9: .standard(proto: "tx_enabled"),
     10: .standard(proto: "tx_power"),
+    11: .standard(proto: "channel_num"),
     103: .standard(proto: "ignore_incoming"),
   ]
 
@@ -1618,6 +1629,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.hopLimit) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.txEnabled) }()
       case 10: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
       default: break
       }
@@ -1655,6 +1667,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.txPower != 0 {
       try visitor.visitSingularInt32Field(value: self.txPower, fieldNumber: 10)
     }
+    if self.channelNum != 0 {
+      try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 11)
+    }
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
     }
@@ -1672,6 +1687,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.hopLimit != rhs.hopLimit {return false}
     if lhs.txEnabled != rhs.txEnabled {return false}
     if lhs.txPower != rhs.txPower {return false}
+    if lhs.channelNum != rhs.channelNum {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

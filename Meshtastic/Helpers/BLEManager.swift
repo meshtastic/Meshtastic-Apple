@@ -621,13 +621,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					
 					nowKnown = true
 					localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-				
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion {
 					
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+
+					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
+						self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+					}
 				}
 				// Log any other unknownApp calls
 				if !nowKnown {
@@ -656,7 +659,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						routingPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 					}
 				case .adminApp:
-					adminAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+				adminAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
 				case .replyApp:
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .ipTunnelApp:
@@ -681,10 +684,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .atakForwarder:
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+				case .simulatorApp:
+					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .UNRECOGNIZED(_):
 					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				case .max:
 					print("MAX PORT NUM OF 511")
+
 			}
 			
 			// MARK: Check for an All / Broadcast User
@@ -1134,22 +1140,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Factory Reset Admin Message for node: \(String(destNum))") }
-				
+			if meshLoggingEnabled { MeshLogger.log("💾 Sent a Factory Reset for node: \(String(destNum))") }
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				return true
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
 		}
 		
 		return false
@@ -1182,23 +1175,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset Admin Message for node: \(String(destNum))") }
-				
+				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))") }
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				
-				PersistenceController.shared.clearDatabase()
-				
 				return true
-
 			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				print("💥 Error Sending NodeDB Reset")
 			}
 		}
 		

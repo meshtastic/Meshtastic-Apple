@@ -76,7 +76,7 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += "\n"
 		csvString += String(pos.seqNo)
 		csvString += ", "
-		csvString += String(pos.latitude ?? 0)
+		csvString += String((pos.latitude ?? 0))
 		csvString += ", "
 		csvString += String(pos.longitude ?? 0)
 		csvString += ", "

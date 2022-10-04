@@ -326,8 +326,6 @@ struct NodeDetail: View {
 							
 							if (node.positions?.count ?? 0) > 0 {
 								
-								
-								
 								NavigationLink {
 									PositionLog(node: node)
 								} label: {
@@ -336,7 +334,7 @@ struct NodeDetail: View {
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
 									
-									Text("Position Log (\(node.positions?.count ?? 0) Points)")
+									Text("Position Log")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
