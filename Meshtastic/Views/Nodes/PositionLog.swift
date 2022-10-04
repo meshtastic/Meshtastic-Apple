@@ -21,57 +21,88 @@ struct PositionLog: View {
 	var body: some View {
 		
 		NavigationStack {
-			
-			ScrollView {
-				
-				Grid(alignment: .topLeading, horizontalSpacing: 2) {
-					
-					if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-						//Add a table for mac and ipad
-					}
-					
-					GridRow {
 						
-						Text("Lat / Long")
-							.font(.caption2)
-							.fontWeight(.bold)
-						Text("Sat")
-							.font(.caption2)
-							.fontWeight(.bold)
-						Text("Alt")
-							.font(.caption2)
-							.fontWeight(.bold)
-						Text("Spd")
-							.font(.caption2)
-							.fontWeight(.bold)
-						Text("Hd")
-							.font(.caption2)
-							.fontWeight(.bold)
-						Text("Timestamp")
-							.font(.caption2)
-							.fontWeight(.bold)
-					}
-					Divider()
-					ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-						GridRow {
-							Text("\(String(mappin.latitude ?? 0)) \(String(mappin.longitude ?? 0))")
-								.font(.caption2)
-							Text(String(mappin.satsInView))
-								.font(.caption2)
-							Text(String(mappin.altitude))
-								.font(.caption2)
-							Text(String(mappin.speed))
-								.font(.caption2)
-							Text(String(mappin.heading))
-								.font(.caption2)
-							Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-								.font(.caption2)
+			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+				//Add a table for mac and ipad
+				VStack {
+					// Speed, Heading, Timestamp"
+					Table(node.positions!.reversed() as! [PositionEntity]) {
+						TableColumn("SeqNo") { position in
+							Text(String(position.seqNo))
+						}
+						.width(75)
+						TableColumn("Latitude") { position in
+							Text(String(format: "%.6f", position.latitude ?? 0))
+						}
+						TableColumn("Longitude") { position in
+							Text(String(format: "%.6f", position.longitude ?? 0))
+						}
+						TableColumn("Altitude") { position in
+							Text(String(position.altitude))
+						}
+						.width(75)
+						TableColumn("Sats") { position in
+							Text(String(position.satsInView))
+						}
+						.width(75)
+						TableColumn("Speed") { position in
+							Text(String(position.speed))
+						}
+						.width(75)
+						TableColumn("Heading") { position in
+							Text(String(position.heading))
+						}
+						TableColumn("Time Stamp") { position in
+							Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
 						}
 					}
 				}
-				.padding(.leading, 15)
-				.padding(.trailing, 5)
+				
+			} else {
+				
+				ScrollView {
+					// Use a grid on iOS as a table only shows a single column
+					Grid(alignment: .topLeading, horizontalSpacing: 2) {
+						
+						GridRow {
+							
+							Text("Latitude")
+								.font(.caption2)
+								.fontWeight(.bold)
+							Text("Longitude")
+								.font(.caption2)
+								.fontWeight(.bold)
+							Text("Sats")
+								.font(.caption2)
+								.fontWeight(.bold)
+							Text("Alt")
+								.font(.caption2)
+								.fontWeight(.bold)
+							Text("Timestamp")
+								.font(.caption2)
+								.fontWeight(.bold)
+						}
+						Divider()
+						ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+							GridRow {
+								Text(String(mappin.latitude ?? 0))
+									.font(.caption2)
+								Text(String(mappin.longitude ?? 0))
+									.font(.caption2)
+								Text(String(mappin.satsInView))
+									.font(.caption2)
+								Text(String(mappin.altitude))
+									.font(.caption2)
+								Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+									.font(.caption2)
+							}
+						}
+					}
+					.padding(.leading, 15)
+					.padding(.trailing, 5)
+				}
 			}
+
 			HStack {
 
 				Button(role: .destructive) {

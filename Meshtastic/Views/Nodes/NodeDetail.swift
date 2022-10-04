@@ -89,12 +89,8 @@ struct NodeDetail: View {
 								
 								VStack(alignment: .center) {
 									
-									Text("AKA").font(.largeTitle)
-										.foregroundColor(.gray).fixedSize()
-										.offset(y:5)
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
-								.padding()
 
 								Divider()
 
@@ -105,15 +101,14 @@ struct NodeDetail: View {
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
-											.frame(width: 200, height: 200)
+											.frame(width: 75, height: 75)
 											.cornerRadius(5)
 
 										Text(String(hwModelString))
 											.foregroundColor(.gray)
-											.font(.largeTitle).fixedSize()
+											.font(.title).fixedSize()
 									}
 								}
-								.padding()
 								
 								
 								if node.snr > 0 {
