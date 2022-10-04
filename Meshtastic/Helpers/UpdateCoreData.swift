@@ -59,3 +59,23 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 		return false
 	}
 }
+
+public func clearCoreDataDatabase(context: NSManagedObjectContext) {
+	
+	let persistenceController = PersistenceController.shared.container
+
+	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+		let entity = persistenceController.managedObjectModel.entities[i]
+
+		do {
+			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+			let deleterequest = NSBatchDeleteRequest(fetchRequest: query)
+			try context.execute(deleterequest)
+			try context.save()
+
+		} catch let error as NSError {
+			print("Error: \(error.localizedDescription)")
+			abort()
+		}
+	}
+}

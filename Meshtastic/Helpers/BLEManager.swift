@@ -1140,22 +1140,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
-			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Factory Reset Admin Message for node: \(String(destNum))") }
-				
+			if meshLoggingEnabled { MeshLogger.log("💾 Sent a Factory Reset for node: \(String(destNum))") }
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				return true
-
-			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
 		}
 		
 		return false
@@ -1188,23 +1175,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			do {
-
-				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset Admin Message for node: \(String(destNum))") }
-				
+				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))") }
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				
-				PersistenceController.shared.clearDatabase()
-				
 				return true
-
 			} catch {
-
-				context!.rollback()
-
-				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				print("💥 Error Sending NodeDB Reset")
 			}
 		}
 		
