@@ -12,6 +12,8 @@ struct DeviceMetricsLog: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
+	@State private var isPresentingClearLogConfirm: Bool = false
+	
 	@State var isExporting = false
 	@State var exportString = ""
 	
@@ -105,19 +107,53 @@ struct DeviceMetricsLog: View {
 				.padding(.trailing, 5)
 			}
 		}
-		Button {
+		HStack {
+			
+			Button(role: .destructive) {
+							
+				isPresentingClearLogConfirm = true
+				
+			} label: {
+				
+				Label("Clear Log", systemImage: "trash.fill")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			.confirmationDialog(
+				"Are you sure?",
+				isPresented: $isPresentingClearLogConfirm,
+				titleVisibility: .visible
+			) {
+				Button("Delete all device metrics?", role: .destructive) {
+					
+					if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
 						
-			exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
-			isExporting = true
+						print("Clear Device Metrics Log Failed")
+						
+					} else {
+						
+						
+					}
+				}
+			}
 			
-		} label: {
-			
-			Label("Save", systemImage: "square.and.arrow.down")
+			Button {
+				
+				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
+				isExporting = true
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
 		}
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
+			
 		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:

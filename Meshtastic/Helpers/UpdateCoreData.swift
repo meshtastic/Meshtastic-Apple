@@ -3,10 +3,10 @@
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/3/22.
+
 import CoreData
 
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
-	
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
@@ -26,12 +26,36 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			context.rollback()
 			return false
 		}
-				
 
 	} catch {
-
 		print("💥 Fetch NodeInfoEntity Error")
 		return false
 	}
+}
 
+public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManagedObjectContext) -> Bool {
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+
+	do {
+
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+			
+		let emptyTelemetry = [TelemetryEntity]()
+		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
+		
+		do {
+			try context.save()
+			return true
+			
+		} catch {
+			context.rollback()
+			return false
+		}
+
+	} catch {
+		print("💥 Fetch NodeInfoEntity Error")
+		return false
+	}
 }

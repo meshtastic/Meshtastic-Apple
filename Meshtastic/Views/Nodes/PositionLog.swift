@@ -73,7 +73,6 @@ struct PositionLog: View {
 				.padding(.trailing, 5)
 			}
 			HStack {
-				
 
 				Button(role: .destructive) {
 								
@@ -83,7 +82,6 @@ struct PositionLog: View {
 					
 					Label("Clear Log", systemImage: "trash.fill")
 				}
-				.disabled(bleManager.connectedPeripheral == nil)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -95,7 +93,7 @@ struct PositionLog: View {
 				) {
 					Button("Delete all positions?", role: .destructive) {
 						
-						if clearPositions(destNum: bleManager.connectedPeripheral.num, context: context) {
+						if clearPositions(destNum: node.num, context: context) {
 							
 							print("Clear Position Log Failed")
 							
@@ -105,21 +103,22 @@ struct PositionLog: View {
 						}
 					}
 				}
-			Button {
-							
-				exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
-				isExporting = true
 				
-				} label: {
+				Button {
+								
+					exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
+					isExporting = true
 					
-					Label("Save", systemImage: "square.and.arrow.down")
+					} label: {
+						
+						Label("Save", systemImage: "square.and.arrow.down")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
 				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-			}
-			.fileExporter(
+				.fileExporter(
 				isPresented: $isExporting,
 				document: CsvDocument(emptyCsv: exportString),
 				contentType: .commaSeparatedText,
