@@ -145,9 +145,9 @@ struct ExternalNotificationConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save External Notification Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
