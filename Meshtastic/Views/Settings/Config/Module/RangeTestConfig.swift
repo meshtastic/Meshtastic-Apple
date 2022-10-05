@@ -109,9 +109,9 @@ struct RangeTestConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						

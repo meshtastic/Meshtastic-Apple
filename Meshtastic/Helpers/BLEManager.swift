@@ -962,7 +962,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
 		
 		// Get Errors without some speed
 		if LocationHelper.currentSpeed >= 5 {

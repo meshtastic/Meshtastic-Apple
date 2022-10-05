@@ -224,7 +224,8 @@ struct CannedMessagesConfig: View {
 			.confirmationDialog(
 				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save Canned Messages Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						

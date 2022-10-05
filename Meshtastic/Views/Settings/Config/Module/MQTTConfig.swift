@@ -161,7 +161,8 @@ struct MQTTConfig: View {
 			.confirmationDialog(
 				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save MQTT Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					

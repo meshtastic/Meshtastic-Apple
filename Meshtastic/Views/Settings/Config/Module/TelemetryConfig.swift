@@ -152,7 +152,8 @@ struct TelemetryConfig: View {
 			.confirmationDialog(
 				
 				"Are you sure?",
-				isPresented: $isPresentingSaveConfirm
+				isPresented: $isPresentingSaveConfirm,
+				titleVisibility: .visible
 			) {
 				Button("Save Telemetry Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
