@@ -36,9 +36,9 @@ struct NodeDetail: View {
 						let mostRecent = node.positions?.lastObject as! PositionEntity
 
 						if mostRecent.coordinate != nil {
-
+							
 							let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
-
+							
 							let regionBinding = Binding<MKCoordinateRegion>(
 								get: {
 									MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
@@ -54,32 +54,30 @@ struct NodeDetail: View {
 									interactionModes: [.all],
 									showsUserLocation: true,
 									userTrackingMode: .constant(.follow),
-									annotationItems: annotations)
-								{ location in
+									annotationItems: annotations) { location in
 									
 									return MapAnnotation(
-									   coordinate: location.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
-									   content: {
-										   
-										   NodeAnnotation(time: location.time!)
-									   }
+										coordinate: location.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
+										content: {
+											
+											NodeAnnotation(time: location.time!)
+										}
 									)
-								 }
+								}
 								.ignoresSafeArea(.all, edges: [.leading, .trailing])
 								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.70)
+								
 							}
+							Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
+								.offset( y:-40)
 						}
-						if mostRecent.satsInView > 0 {
-							Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
-						} else {
-							Text("").offset( y:-40)
-						}
+						
 					} else {
 						
 						HStack {
 
 						}
-						.padding([.top], 40)
+						.padding([.top], 60)
 					}
 					
 					ScrollView {
@@ -431,7 +429,6 @@ struct NodeDetail: View {
 						}
 					}
 					.offset( y:-40)
-					.padding(.bottom, -40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.navigationTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown")
