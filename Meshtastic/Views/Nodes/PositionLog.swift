@@ -125,11 +125,10 @@ struct PositionLog: View {
 						
 						if clearPositions(destNum: node.num, context: context) {
 							
-							print("Clear Position Log Failed")
+							print("Successfully Cleared Position Log")
 							
 						} else {
-							
-							
+							print("Clear Position Log Failed")
 						}
 					}
 				}

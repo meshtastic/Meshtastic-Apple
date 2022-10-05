@@ -54,12 +54,19 @@ class LocationHelper: NSObject, ObservableObject {
 	
 	static var satsInView: Int {
 		
-		var sats = 0
+		// If we have a position we have a sat
+		var sats = 1
 		
 		if shared.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 			sats = 4
 			
-			if 0...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			if 0...15 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+				sats = 12
+			} else if 16...30 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+				sats = 10
+			} else if 31...45 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+				sats = 8
+			} else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
 				sats = 6
 			}
 			
