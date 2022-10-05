@@ -17,7 +17,7 @@ struct PositionFlags: OptionSet
 	static let Dop = PositionFlags(rawValue: 8)
 	static let Hvdop = PositionFlags(rawValue: 16)
 	static let Satsinview = PositionFlags(rawValue: 32)
-	static let SeqNos = PositionFlags(rawValue: 64)
+	static let SeqNo = PositionFlags(rawValue: 64)
 	static let Timestamp = PositionFlags(rawValue: 128)
 	static let Speed = PositionFlags(rawValue: 256)
 	static let Heading = PositionFlags(rawValue: 512)
@@ -33,6 +33,7 @@ struct PositionConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var initialLoad: Bool = true
 	@State var hasChanges = false
+	@State var hasFlagChanges = false
 	
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
@@ -246,7 +247,7 @@ struct PositionConfig: View {
 					if includeDop { pf.insert(.Dop) }
 					if includeHvdop { pf.insert(.Hvdop) }
 					if includeSatsinview { pf.insert(.Satsinview) }
-					if includeSeqNo { pf.insert(.SeqNos) }
+					if includeSeqNo { pf.insert(.SeqNo) }
 					if includeTimestamp { pf.insert(.Timestamp) }
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
@@ -300,14 +301,13 @@ struct PositionConfig: View {
 				if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
 				if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
 				if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
-				if pf.contains(.SeqNos) { self.includeSeqNo = true } else { self.includeSeqNo = false }
+				if pf.contains(.SeqNo) { self.includeSeqNo = true } else { self.includeSeqNo = false }
 				if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
 				if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
 				if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
 				
 				self.hasChanges = false
 				self.initialLoad = false
-			
 			}
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
@@ -352,8 +352,60 @@ struct PositionConfig: View {
 				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
 			}
 		}
-		.onChange(of: includeAltitude || includeAltitudeMsl || includeGeoidalSeparation || includeDop || includeHvdop || includeSatsinview || includeSeqNo || includeTimestamp || includeSpeed || includeHeading) { newFlags in
-			// hasChanges = true
+		.onChange(of: includeAltitude) { altFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Altitude)
+			if existingValue != altFlag { hasChanges = true }
+		}
+		.onChange(of: includeAltitudeMsl) { altMslFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.AltitudeMsl)
+			if existingValue != altMslFlag { hasChanges = true }
+		}
+		.onChange(of: includeSatsinview) { satsFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Satsinview)
+			if existingValue != satsFlag { hasChanges = true }
+		}
+		.onChange(of: includeSeqNo) { seqFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.SeqNo)
+			if existingValue != seqFlag { hasChanges = true }
+		}
+		.onChange(of: includeTimestamp) { timestampFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Timestamp)
+			if existingValue != timestampFlag { hasChanges = true }
+		}
+		.onChange(of: includeTimestamp) { timestampFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Timestamp)
+			if existingValue != timestampFlag { hasChanges = true }
+		}
+		.onChange(of: includeSpeed) { speedFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Speed)
+			if existingValue != speedFlag { hasChanges = true }
+		}
+		.onChange(of: includeHeading) { headingFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Heading)
+			if existingValue != headingFlag { hasChanges = true }
+		}
+		.onChange(of: includeGeoidalSeparation) { geoSepFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.GeoidalSeparation)
+			if existingValue != geoSepFlag { hasChanges = true }
+		}
+		.onChange(of: includeDop) { dopFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Dop)
+			if existingValue != dopFlag { hasChanges = true }
+		}
+		.onChange(of: includeHvdop) { hvdopFlag in
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			let existingValue = pf.contains(.Hvdop)
+			if existingValue != hvdopFlag { hasChanges = true }
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 	}

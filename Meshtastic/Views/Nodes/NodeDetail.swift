@@ -69,7 +69,11 @@ struct NodeDetail: View {
 								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.70)
 							}
 						}
-						Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
+						if mostRecent.satsInView > 0 {
+							Text("Sats: \(mostRecent.satsInView)").offset( y:-40)
+						} else {
+							Text("").offset( y:-40)
+						}
 					} else {
 						
 						HStack {

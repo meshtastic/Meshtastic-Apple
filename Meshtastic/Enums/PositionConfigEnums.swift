@@ -109,6 +109,7 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
+	case twoMinutes = 120
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
@@ -134,6 +135,8 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 				return "Thirty Seconds"
 			case .oneMinute:
 				return "One Minute"
+			case .twoMinutes:
+				return "Two Minutes"
 			case .fiveMinutes:
 				return "Five Minutes"
 			case .tenMinutes:
