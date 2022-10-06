@@ -84,9 +84,9 @@ struct PositionLog: View {
 						Divider()
 						ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 							GridRow {
-								Text(String(mappin.latitude ?? 0))
+								Text(String(format: "%.6f", mappin.latitude ?? 0))
 									.font(.caption2)
-								Text(String(mappin.longitude ?? 0))
+								Text(String(format: "%.6f", mappin.longitude ?? 0))
 									.font(.caption2)
 								Text(String(mappin.satsInView))
 									.font(.caption2)

@@ -67,15 +67,21 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
 		let entity = persistenceController.managedObjectModel.entities[i]
 
-		do {
-			let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-			let deleterequest = NSBatchDeleteRequest(fetchRequest: query)
-			try context.execute(deleterequest)
-			try context.save()
+		//do {
+		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+		let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+			//try context.execute(deleterequest)
+			//try context.save()
+			
+			do {
+				try context.executeAndMergeChanges(using: deleteRequest)
+			 } catch let error as NSError {
+				 print(error)
+			 }
 
-		} catch let error as NSError {
-			print("Error: \(error.localizedDescription)")
-			abort()
-		}
+		//} catch let error as NSError {
+		//	print("Error: \(error.localizedDescription)")
+		//	abort()
+		//}
 	}
 }

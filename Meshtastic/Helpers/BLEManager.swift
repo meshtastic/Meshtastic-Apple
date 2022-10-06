@@ -909,7 +909,15 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			return false
 		}
-				
+		var positionPacket = Position()
+		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
+		positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
+		//positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+		
 		var waypointPacket = Waypoint()
 		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -925,8 +933,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.wantAck = true//wantAck
 		
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! waypointPacket.serializedData()
-		dataMessage.portnum = PortNum.waypointApp
+		dataMessage.payload = try! positionPacket.serializedData()
+		dataMessage.portnum = PortNum.positionApp
 		
 		meshPacket.decoded = dataMessage
 
@@ -1156,7 +1164,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		adminPacket.nodedbReset = 1
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = 0//UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable

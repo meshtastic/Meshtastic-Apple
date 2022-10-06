@@ -146,37 +146,37 @@ struct PositionConfig: View {
 						.listRowSeparator(.visible)
 					
 					Toggle(isOn: $includeAltitude) {
-
 						Label("Altitude", systemImage: "arrow.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includeAltitudeMsl) {
-
-						Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
+					if includeAltitude {
+						Toggle(isOn: $includeAltitudeMsl) {
+							Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $includeGeoidalSeparation) {
+							Label("Altitude Geoidal Seperation", systemImage: "globe.americas")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeSatsinview) {
-
 						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeSeqNo) { //64
-
 						Label("Sequence number", systemImage: "number")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeTimestamp) { //128
-
 						Label("Timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeHeading) { //128
-
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -189,23 +189,17 @@ struct PositionConfig: View {
 				}
 				Section(header: Text("Advanced Position Flags")) {
 					
-					Toggle(isOn: $includeGeoidalSeparation) {
-
-						Text("Geoidal Seperation")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $includeDop) {
-
 						Text("Dilution of precision (DOP) PDOP used by default")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $includeHvdop) {
-
-						Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
+					if includeDop {
+						Toggle(isOn: $includeHvdop) {
+							Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
