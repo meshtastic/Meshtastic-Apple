@@ -78,7 +78,6 @@ struct DeviceConfig: View {
 						if !bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
 							print("NodeDB Reset Failed")
 						} else {
-							// Disconnect from device as we are going to wipe the app database now
 						    bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
 						}
@@ -100,13 +99,10 @@ struct DeviceConfig: View {
 					Button("Factory reset your device and app? ", role: .destructive) {
 						
 						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
-							
 							print("Factory Reset Failed")
 						} else {
-							clearCoreDataDatabase(context: context)
-							// Disconnect from device
 							bleManager.disconnectPeripheral()
-							
+							clearCoreDataDatabase(context: context)
 						}
 					}
 				}
