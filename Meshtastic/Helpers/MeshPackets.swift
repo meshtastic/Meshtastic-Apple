@@ -1126,7 +1126,7 @@ func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 				
 				if meshLogging {
 					
-					MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+					MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum + 1) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 				}
 				
 			} catch {
@@ -1169,7 +1169,6 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 					position.satsInView = Int32(positionMessage.satsInView)
 					position.speed = Int32(positionMessage.groundSpeed)
 					position.heading = Int32(positionMessage.groundTrack)
-					
 					if positionMessage.timestamp != 0 {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
 					} else {

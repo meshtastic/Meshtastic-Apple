@@ -93,19 +93,20 @@ struct DeviceConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					"Are you sure?",
+					"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
 					isPresented: $isPresentingFactoryResetConfirm,
 					titleVisibility: .visible
 				) {
-					Button("Erase all device and app settings and data?", role: .destructive) {
+					Button("Factory reset your device and app? ", role: .destructive) {
 						
 						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
 							
 							print("Factory Reset Failed")
 						} else {
+							clearCoreDataDatabase(context: context)
 							// Disconnect from device
 							bleManager.disconnectPeripheral()
-							clearCoreDataDatabase(context: context)
+							
 						}
 					}
 				}

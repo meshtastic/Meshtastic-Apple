@@ -370,11 +370,11 @@ struct UserMessageList: View {
 					
 				})
 				.onChange(of: messageCount, perform: { value in
-					//scrollView.scrollTo(user.messageList.firstIndex(of: user.messageList.last! ), anchor: .bottom)
-					scrollView.scrollTo(user.messageList.last!.messageId)
+					if messageCount > 0 {
+						scrollView.scrollTo(user.messageList.last!.messageId)
+					}
 				})
 				.onChange(of: user.messageList, perform: { messages in
-					
 					refreshId = UUID()
 					messageCount = messages.count
 				})
