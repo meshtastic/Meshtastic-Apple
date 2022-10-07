@@ -253,7 +253,7 @@ struct Connect: View {
 
          
             }
-            .navigationTitle("Bluetooth Radios")
+            .navigationTitle("Bluetooth")
 			
 			.navigationBarItems(leading:
 		     MeshtasticLogo(),
