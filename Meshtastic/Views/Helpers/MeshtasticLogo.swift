@@ -11,12 +11,12 @@ struct MeshtasticLogo: View {
 	@Environment(\.colorScheme) var colorScheme
 	
 	var body: some View {
-		ZStack {
+		VStack {
 			Image(colorScheme == .dark ? "logo-white" : "logo-black")
 				.resizable()
-				.foregroundColor(.red)
 				.scaledToFit()
 		}
-		.padding(.bottom)
+		.padding(.bottom, 5)
+		.offset(x: -15)
 	}
 }
