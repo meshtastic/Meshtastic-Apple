@@ -50,7 +50,6 @@ struct MeshtasticAppleApp: App {
 				} else {
 					print("User wants to import a MBTILES offline map file: \(channelUrl?.absoluteString ?? "No Tiles link")")
 				}
-					
 
 				//we are expecting a .mbtiles map file that contains raster data
 				//save it to the documents directory, and name it offline_map.mbtiles

@@ -146,7 +146,7 @@ struct ShareChannels: View {
 							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 												  image: Image(uiImage: qrImage))
 						)
-						.presentationDetents([.large, .large])
+						.presentationDetents([.medium, .large])
 
 						Divider()
 						

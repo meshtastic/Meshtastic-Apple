@@ -75,11 +75,11 @@ struct DeviceConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Erase all device and app data?", role: .destructive) {
-						if !bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
-							print("NodeDB Reset Failed")
-						} else {
-						    bleManager.disconnectPeripheral()
+						if bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
+							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
+						} else {
+							print("NodeDB Reset Failed")
 						}
 					}
 				}
@@ -98,11 +98,12 @@ struct DeviceConfig: View {
 				) {
 					Button("Factory reset your device and app? ", role: .destructive) {
 						
-						if !bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
-							print("Factory Reset Failed")
-						} else {
+						if bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
+						} else {
+							print("Factory Reset Failed")
+							
 						}
 					}
 				}
