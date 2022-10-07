@@ -218,6 +218,9 @@ struct Settings: View {
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
 		}
 	}
 }

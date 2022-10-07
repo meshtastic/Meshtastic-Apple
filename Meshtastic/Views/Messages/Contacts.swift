@@ -133,6 +133,9 @@ struct Contacts: View {
 			}
 			.navigationTitle("Contacts")
 			.navigationBarTitleDisplayMode(.inline)
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
 		}
 		.listStyle(PlainListStyle())
     }

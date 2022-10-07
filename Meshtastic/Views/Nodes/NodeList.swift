@@ -127,6 +127,9 @@ struct NodeList: View {
 				}
 			 }
 			.navigationTitle("All Nodes")
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
 			.onAppear {
 
 				if initialLoad {
