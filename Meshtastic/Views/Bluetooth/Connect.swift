@@ -268,7 +268,10 @@ struct Connect: View {
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
 		}
+
 	
 		.onChange(of: (self.bleManager.invalidVersion)) { cv in
 			
