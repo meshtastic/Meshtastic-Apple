@@ -37,15 +37,20 @@ struct MeshtasticAppleApp: App {
 			.sheet(isPresented: $saveQR) {
 				
 				SaveChannelQRCode(channelHash: channelUrl?.absoluteString ?? "Empty Channel URL")
+					.presentationDetents([.medium, .large])
+					.presentationDragIndicator(.visible)
 			}
 			.onOpenURL(perform: { (url) in
 				
-				print("QR Code URL received from the Camera \(url)")
+				print("Some sort of URL was received \(url)")
 				channelUrl = url
-				print("User wants to open URL: \(channelUrl?.absoluteString ?? "No QR Code Link")")
+				
 				
 				if url.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
 					saveQR = true
+					print("User wants to open a Channel Settings URL: \(channelUrl?.absoluteString ?? "No QR Code Link")")
+				} else {
+					print("User wants to import a MBTILES offline map file: \(channelUrl?.absoluteString ?? "No Tiles link")")
 				}
 
 				//we are expecting a .mbtiles map file that contains raster data
@@ -60,7 +65,11 @@ struct MeshtasticAppleApp: App {
 					try? fileManager.removeItem(atPath: destination.path)
 				}
 				
-				try? fileManager.copyItem(at: url, to: destination)
+				do {
+					try fileManager.copyItem(at: url, to: destination)
+				} catch {
+					print("Copy MB Tile file failed. Error: \(error)")
+				}
 				
 				if (fileManager.fileExists(atPath: destination.path)) {
 					print("ℹ️ Saved the map file")

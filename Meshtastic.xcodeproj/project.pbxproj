@@ -64,6 +64,8 @@
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
+		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
+		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */; };
@@ -176,6 +178,8 @@
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
+		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
+		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAnnotation.swift; sourceTree = "<group>"; };
@@ -291,6 +295,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
@@ -508,6 +513,7 @@
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
+				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -745,6 +751,7 @@
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
 				DDB3107228A6224100F1DE3D /* device_metadata.pb.swift in Sources */,
 				DDAF8C6326ED0A230058C060 /* admin.pb.swift in Sources */,
+				DD97E96828EFE9A00056DDA4 /* About.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
@@ -772,6 +779,7 @@
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
+				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,

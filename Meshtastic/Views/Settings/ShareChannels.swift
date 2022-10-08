@@ -136,8 +136,6 @@ struct ShareChannels: View {
 					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 					
 					VStack {
-						
-						Divider()
 									
 						ShareLink("Share QR Code & Link",
 							item: Image(uiImage: qrImage),
@@ -146,7 +144,7 @@ struct ShareChannels: View {
 							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 												  image: Image(uiImage: qrImage))
 						)
-						.presentationDetents([.large, .large])
+				
 
 						Divider()
 						

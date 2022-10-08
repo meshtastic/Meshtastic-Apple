@@ -206,8 +206,20 @@ struct Settings: View {
 					}
 				}
 				
-				// Not Implemented:
-				// Store Forward Config - Not Working, TBEAM Only
+				Section(header: Text("About")) {
+					
+					NavigationLink {
+						
+						AboutMeshtastic()
+						
+					} label: {
+						
+						Image(systemName: "questionmark.app")
+							.symbolRenderingMode(.hierarchical)
+						
+						Text("About Meshtastic")
+					}
+				}
 
 			}
 			.onAppear {
@@ -218,6 +230,9 @@ struct Settings: View {
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("Settings")
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
 		}
 	}
 }

@@ -253,24 +253,25 @@ struct Connect: View {
 
          
             }
-            .navigationTitle("Bluetooth Radios")
-            .navigationBarItems(trailing:
+            .navigationTitle("Bluetooth")
+			
+			.navigationBarItems(leading:
+		     MeshtasticLogo(),
+			 trailing:
 
-               ZStack {
-
-                    ConnectedDevice(
-						bluetoothOn: self.bleManager.isSwitchedOn,
-						deviceConnected: self.bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? self.bleManager.connectedPeripheral.shortName :
-							"????")
-                }
-            )
+			 ZStack {
+				
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			 })
         }
         .navigationViewStyle(StackNavigationViewStyle())
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
+				.presentationDetents([.large])
+				.presentationDragIndicator(.automatic)
 		}
+
 	
 		.onChange(of: (self.bleManager.invalidVersion)) { cv in
 			

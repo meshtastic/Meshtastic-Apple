@@ -118,7 +118,8 @@ struct NodeMap: View {
             .navigationTitle("Mesh Map")
             .navigationBarTitleDisplayMode(.inline)
 			
-			.navigationBarItems(trailing:
+			.navigationBarItems(leading:
+				MeshtasticLogo(), trailing:
 
 			ZStack {
 
