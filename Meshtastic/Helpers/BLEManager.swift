@@ -1130,7 +1130,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		adminPacket.factoryReset = 1
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
@@ -1150,9 +1150,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			if meshLoggingEnabled { MeshLogger.log("💾 Sent a Factory Reset for node: \(String(destNum))") }
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				return true
+			return true
 		}
 		
 		return false
@@ -1185,8 +1185,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			do {
-				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))") }
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))") }
 				return true
 			} catch {
 				print("💥 Error Sending NodeDB Reset")
