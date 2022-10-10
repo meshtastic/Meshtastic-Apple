@@ -261,7 +261,6 @@ struct ShareChannels: View {
 		channelSet.loraConfig = loRaConfig
 		
 		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
-			print(ch)
 			if ch.role > 0 {
 				var channelSettings = ChannelSettings()
 				channelSettings.name = ch.name!
@@ -273,7 +272,7 @@ struct ShareChannels: View {
 			}
 		}
 		
-		let settingsString = try! channelSet.serializedData().base64EncodedString(options: [.endLineWithLineFeed])
+		let settingsString = try! channelSet.serializedData().base64EncodedString()
 		channelsUrl =  "https://www.meshtastic.org/e/#" + settingsString.dropLast(2)
 	}
 }
