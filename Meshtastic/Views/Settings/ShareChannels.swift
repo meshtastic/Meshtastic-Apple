@@ -36,7 +36,7 @@ struct ShareChannels: View {
 	@EnvironmentObject var userSettings: UserSettings
 	@State var initialLoad: Bool = true
 	
-	@State var channels: [ChannelEntity] = [ChannelEntity]()
+	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
 	@State var includeChannel1 = false
 	@State var includeChannel2 = false
@@ -45,6 +45,8 @@ struct ShareChannels: View {
 	@State var includeChannel5 = false
 	@State var includeChannel6 = false
 	@State var includeChannel7 = false
+	
+	@State var isPresentingHelp = false
 	
 	var node: NodeInfoEntity?
 	
@@ -71,12 +73,16 @@ struct ShareChannels: View {
 									Text("Include")
 										.font(.caption)
 										.fontWeight(.bold)
-									Text("Name")
+										.padding(.trailing)
+									Text("Channel Name")
+										.font(.caption)
+										.fontWeight(.bold)
+										.padding(.trailing)
+									Text("Encrypted")
 										.font(.caption)
 										.fontWeight(.bold)
 									Spacer()
 								}
-								Divider()
 								
 								ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 
@@ -88,7 +94,7 @@ struct ShareChannels: View {
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(true)
-											Text((channel.name!.isEmpty ? "Primary Channel" : channel.name) ?? "Primary Channel")
+											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
 											
 										} else if channel.index == 1 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
@@ -131,7 +137,15 @@ struct ShareChannels: View {
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "Admin Channel" : channel.name) ?? "Admin Channel")
+											Text((channel.name!.isEmpty ? "Admin" : channel.name) ?? "Admin")
+										}
+										if channel.role > 0 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else {
+											Image(systemName: "lock.slash")
+											.foregroundColor(.gray)
+											
 										}
 										Spacer()
 									}
@@ -150,22 +164,64 @@ struct ShareChannels: View {
 							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 												  image: Image(uiImage: qrImage))
 						)
-				
-
-						Divider()
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						.padding(.bottom)
 						
 						Image(uiImage: qrImage)
 							.resizable()
 							.scaledToFit()
 							.frame(
-								minWidth: smallest * 0.7,
-								maxWidth: smallest * 0.7,
-								minHeight: smallest * 0.7,
-								maxHeight: smallest * 0.7,
+								minWidth: smallest * 0.65,
+								maxWidth: smallest * 0.65,
+								minHeight: smallest * 0.65,
+								maxHeight: smallest * 0.65,
 								alignment: .top
 							)
 						
+						Button {
+										
+							isPresentingHelp = true
+							
+						} label: {
+							
+							Label("Help Me!", systemImage: "lifepreserver")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
+						.padding(.top)
+						
 					}
+				}
+				.sheet(isPresented: $isPresentingHelp) {
+					
+					VStack {
+						Text("Meshtastic Channels").font(.title)
+						Text("A Meshtastic LoRa Mesh network can have up to 8 distinct channels.")
+							.font(.headline)
+							.padding(.bottom)
+						Text("Primary Channel").font(.title2)
+						Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("Admin Channel").font(.title2)
+						Text("The last channel is the Admin channel and can be used to remotely administer nodes on your mesh, text messages can not be sent over the admin channel.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("Private Channels").font(.title2)
+						Text("The other six channels can be used for private group converations. Each of these groups has its own encryption key.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("From this view your primary channel and mesh settings are always shared in the generated QR code and you can toggle to include your admin channel and any private groups you want the person you are sharing with to have access to.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Divider()
+					}
+					.padding()
+					.presentationDetents([.large])
+					.presentationDragIndicator(.automatic)
 				}
 				.navigationTitle("Generate QR Code")
 				.navigationBarTitleDisplayMode(.inline)
@@ -182,6 +238,7 @@ struct ShareChannels: View {
 						self.bleManager.context = context
 						
 						self.initialLoad = false
+						channelSet = ChannelSet()
 					}
 				}
 			}

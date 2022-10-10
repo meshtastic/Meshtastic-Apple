@@ -822,9 +822,7 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 
 func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
-	print(try! channel.jsonString())
-		
-	if channel.isInitialized {
+	if channel.isInitialized && channel.hasSettings {
 		
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
@@ -834,35 +832,18 @@ func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context
 			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
 			
 			if fetchedMyInfo.count == 1 {
+					
+				let newChannel = ChannelEntity(context: context)
+				newChannel.index = Int32(channel.index)
+				newChannel.uplinkEnabled = channel.settings.uplinkEnabled
+				newChannel.downlinkEnabled = channel.settings.downlinkEnabled
+				newChannel.name = channel.settings.name
+				newChannel.role = Int32(channel.role.rawValue)
 				
-				// Update
-				if fetchedMyInfo[0].channels?.count ?? 0 >= 1 {
-					
-					let newChannel = ChannelEntity(context: context)
-					newChannel.index = Int32(channel.index)
-					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-					newChannel.name = channel.settings.name
-					newChannel.role = Int32(channel.role.rawValue)
-					
-					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-					
-					mutableChannels.add(newChannel)
-					fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-					
-				} else {
-					
-					let newChannel = ChannelEntity(context: context)
-					newChannel.index = Int32(channel.index)
-					newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-					newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-					newChannel.name = channel.settings.name
-					newChannel.role = Int32(channel.role.rawValue)
-					
-					var newChannels = [ChannelEntity]()
-					newChannels.append(newChannel)
-					fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
-				}
+				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+				
+				mutableChannels.add(newChannel)
+				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
 				
 			} else {
 				print("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
@@ -872,7 +853,8 @@ func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context
 			
 			if meshLogging {
 				
-				MeshLogger.log("💾 Updated MyInfo channel \(channel.settings.channelNum + 1) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				
 			}
 			
 		} catch {
