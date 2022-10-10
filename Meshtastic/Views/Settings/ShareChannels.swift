@@ -29,6 +29,8 @@ struct QrCodeImage {
 		return qrImage
 	}
 }
+
+
 struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -50,7 +52,7 @@ struct ShareChannels: View {
 	
 	var node: NodeInfoEntity?
 	
-	@State private var channelsUrl =  "https://meshtastic.org/e/#test"
+	@State private var channelsUrl =  "https://meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -93,7 +95,7 @@ struct ShareChannels: View {
 											Toggle("Channel 0 Included", isOn: $includeChannel0)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
 											
 										} else if channel.index == 1 {
@@ -142,10 +144,9 @@ struct ShareChannels: View {
 										if channel.role > 0 {
 											Image(systemName: "lock.fill")
 												.foregroundColor(.green)
-										} else {
+										} else  {
 											Image(systemName: "lock.slash")
 											.foregroundColor(.gray)
-											
 										}
 										Spacer()
 									}
@@ -166,8 +167,7 @@ struct ShareChannels: View {
 						)
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
-						.controlSize(.small)
-						.padding(.bottom)
+						.controlSize(.large)
 						
 						Image(uiImage: qrImage)
 							.resizable()
@@ -192,7 +192,6 @@ struct ShareChannels: View {
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
 						.padding(.top)
-						
 					}
 				}
 				.sheet(isPresented: $isPresentingHelp) {
@@ -238,11 +237,43 @@ struct ShareChannels: View {
 						self.bleManager.context = context
 						
 						self.initialLoad = false
-						channelSet = ChannelSet()
+						GenerateChannelSet()
 					}
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
+	}
+	func GenerateChannelSet() {
+	
+		var loRaConfig = Config.LoRaConfig()
+		loRaConfig.region =  RegionCodes(rawValue: Int(node!.loRaConfig!.regionCode))!.protoEnumValue()
+		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))!.protoEnumValue()
+		loRaConfig.bandwidth = UInt32(node!.loRaConfig!.bandwidth)
+		loRaConfig.spreadFactor = UInt32(node!.loRaConfig!.spreadFactor)
+		loRaConfig.codingRate = UInt32(node!.loRaConfig!.codingRate)
+		loRaConfig.frequencyOffset = node!.loRaConfig!.frequencyOffset
+		loRaConfig.hopLimit = UInt32(node!.loRaConfig!.hopLimit)
+		loRaConfig.txEnabled = node!.loRaConfig!.txEnabled
+		loRaConfig.txPower = node!.loRaConfig!.txPower
+		loRaConfig.channelNum = UInt32(node!.loRaConfig!.channelNum)
+		
+		channelSet.loraConfig = loRaConfig
+		
+		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
+			print(ch)
+			if ch.role > 0 {
+				var channelSettings = ChannelSettings()
+				channelSettings.name = ch.name!
+				channelSettings.psk = ch.psk ?? Data()
+				channelSettings.id = UInt32(ch.id)
+				channelSettings.uplinkEnabled = ch.uplinkEnabled
+				channelSettings.downlinkEnabled = ch.downlinkEnabled
+				channelSet.settings.append(channelSettings)
+			}
+		}
+		
+		let settingsString = try! channelSet.serializedData().base64EncodedString(options: [.endLineWithLineFeed])
+		channelsUrl =  "https://www.meshtastic.org/e/#" + settingsString.dropLast(2)
 	}
 }

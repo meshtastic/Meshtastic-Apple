@@ -194,32 +194,31 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let newLoRaConfig = LoRaConfigEntity(context: context)
 						
 					newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
-					newLoRaConfig.txPower = Int32(config.lora.txPower)
-					newLoRaConfig.txEnabled = config.lora.txEnabled
 					newLoRaConfig.usePreset = config.lora.usePreset
+					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
 					newLoRaConfig.bandwidth = Int32(config.lora.bandwidth)
 					newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
 					newLoRaConfig.codingRate = Int32(config.lora.codingRate)
-					newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
-					newLoRaConfig.frequencyOffset = Int32(config.lora.frequencyOffset)
-					
+					newLoRaConfig.frequencyOffset = config.lora.frequencyOffset
+					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
+					newLoRaConfig.txPower = Int32(config.lora.txPower)
+					newLoRaConfig.txEnabled = config.lora.txEnabled
+					newLoRaConfig.channelNum = Int32(config.lora.channelNum)
 					fetchedNode[0].loRaConfig = newLoRaConfig
 					
 				} else {
 					
 					fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
-					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
-					fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
 					fetchedNode[0].loRaConfig?.usePreset = config.lora.usePreset
+					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
 					fetchedNode[0].loRaConfig?.bandwidth = Int32(config.lora.bandwidth)
 					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
 					fetchedNode[0].loRaConfig?.codingRate = Int32(config.lora.codingRate)
-					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
-					fetchedNode[0].loRaConfig?.frequencyOffset = Int32(config.lora.frequencyOffset)
+					fetchedNode[0].loRaConfig?.frequencyOffset = config.lora.frequencyOffset
+					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
+					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
+					fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
+					fetchedNode[0].loRaConfig?.channelNum = Int32(config.lora.channelNum)
 				}
 				
 				do {
@@ -238,7 +237,6 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
 			}
-			
 			
 		} catch {
 			

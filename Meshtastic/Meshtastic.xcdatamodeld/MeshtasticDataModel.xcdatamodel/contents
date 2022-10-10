@@ -24,7 +24,7 @@
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="index" attributeType="Integer 32" minValueString="0" maxValueString="13" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="psk" optional="YES" attributeType="String"/>
+        <attribute name="psk" optional="YES" attributeType="Binary"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="uplinkEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="myInfoChannel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="channels" inverseEntity="MyInfoEntity"/>
@@ -60,7 +60,7 @@
         <attribute name="bandwidth" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="channelNum" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="codingRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="frequencyOffset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="frequencyOffset" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="hopLimit" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="modemPreset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="regionCode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
