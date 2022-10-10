@@ -115,16 +115,6 @@ struct AdminMessage {
   }
 
   ///
-  /// Send all channels in the response to this message
-  var getAllChannelRequest: Bool {
-    get {
-      if case .getAllChannelRequest(let v)? = payloadVariant {return v}
-      return false
-    }
-    set {payloadVariant = .getAllChannelRequest(newValue)}
-  }
-
-  ///
   /// Get the Canned Message Module messages in the response to this message.
   var getCannedMessageModuleMessagesRequest: Bool {
     get {
@@ -146,10 +136,10 @@ struct AdminMessage {
 
   ///
   /// Request the node to send device metadata (firmware, protobuf version, etc)
-  var getDeviceMetadataRequest: UInt32 {
+  var getDeviceMetadataRequest: Bool {
     get {
       if case .getDeviceMetadataRequest(let v)? = payloadVariant {return v}
-      return 0
+      return false
     }
     set {payloadVariant = .getDeviceMetadataRequest(newValue)}
   }
@@ -262,6 +252,17 @@ struct AdminMessage {
   }
 
   ///
+  /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
+  /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+  var rebootOtaSeconds: Int32 {
+    get {
+      if case .rebootOtaSeconds(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .rebootOtaSeconds(newValue)}
+  }
+
+  ///
   /// This message is only supported for the simulator porduino build.
   /// If received the simulator will exit successfully.
   var exitSimulator: Bool {
@@ -343,9 +344,6 @@ struct AdminMessage {
     /// Send the current Config in the response to this message.
     case getModuleConfigResponse(ModuleConfig)
     ///
-    /// Send all channels in the response to this message
-    case getAllChannelRequest(Bool)
-    ///
     /// Get the Canned Message Module messages in the response to this message.
     case getCannedMessageModuleMessagesRequest(Bool)
     ///
@@ -353,7 +351,7 @@ struct AdminMessage {
     case getCannedMessageModuleMessagesResponse(String)
     ///
     /// Request the node to send device metadata (firmware, protobuf version, etc)
-    case getDeviceMetadataRequest(UInt32)
+    case getDeviceMetadataRequest(Bool)
     ///
     /// Device metadata response
     case getDeviceMetadataResponse(DeviceMetadata)
@@ -391,6 +389,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case confirmSetRadio(Bool)
+    ///
+    /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
+    /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
+    case rebootOtaSeconds(Int32)
     ///
     /// This message is only supported for the simulator porduino build.
     /// If received the simulator will exit successfully.
@@ -446,10 +448,6 @@ struct AdminMessage {
         guard case .getModuleConfigResponse(let l) = lhs, case .getModuleConfigResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.getAllChannelRequest, .getAllChannelRequest): return {
-        guard case .getAllChannelRequest(let l) = lhs, case .getAllChannelRequest(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.getCannedMessageModuleMessagesRequest, .getCannedMessageModuleMessagesRequest): return {
         guard case .getCannedMessageModuleMessagesRequest(let l) = lhs, case .getCannedMessageModuleMessagesRequest(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -500,6 +498,10 @@ struct AdminMessage {
       }()
       case (.confirmSetRadio, .confirmSetRadio): return {
         guard case .confirmSetRadio(let l) = lhs, case .confirmSetRadio(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.rebootOtaSeconds, .rebootOtaSeconds): return {
+        guard case .rebootOtaSeconds(let l) = lhs, case .rebootOtaSeconds(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.exitSimulator, .exitSimulator): return {
@@ -713,7 +715,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     6: .standard(proto: "get_config_response"),
     7: .standard(proto: "get_module_config_request"),
     8: .standard(proto: "get_module_config_response"),
-    9: .standard(proto: "get_all_channel_request"),
     10: .standard(proto: "get_canned_message_module_messages_request"),
     11: .standard(proto: "get_canned_message_module_messages_response"),
     12: .standard(proto: "get_device_metadata_request"),
@@ -727,6 +728,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     65: .standard(proto: "confirm_set_module_config"),
     66: .standard(proto: "confirm_set_channel"),
     67: .standard(proto: "confirm_set_radio"),
+    95: .standard(proto: "reboot_ota_seconds"),
     96: .standard(proto: "exit_simulator"),
     97: .standard(proto: "reboot_seconds"),
     98: .standard(proto: "shutdown_seconds"),
@@ -824,14 +826,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .getModuleConfigResponse(v)
         }
       }()
-      case 9: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .getAllChannelRequest(v)
-        }
-      }()
       case 10: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -849,8 +843,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         }
       }()
       case 12: try {
-        var v: UInt32?
-        try decoder.decodeSingularUInt32Field(value: &v)
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .getDeviceMetadataRequest(v)
@@ -961,6 +955,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .confirmSetRadio(v)
         }
       }()
+      case 95: try {
+        var v: Int32?
+        try decoder.decodeSingularInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .rebootOtaSeconds(v)
+        }
+      }()
       case 96: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1044,10 +1046,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .getModuleConfigResponse(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     }()
-    case .getAllChannelRequest?: try {
-      guard case .getAllChannelRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 9)
-    }()
     case .getCannedMessageModuleMessagesRequest?: try {
       guard case .getCannedMessageModuleMessagesRequest(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
@@ -1058,7 +1056,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     }()
     case .getDeviceMetadataRequest?: try {
       guard case .getDeviceMetadataRequest(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 12)
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 12)
     }()
     case .getDeviceMetadataResponse?: try {
       guard case .getDeviceMetadataResponse(let v)? = self.payloadVariant else { preconditionFailure() }
@@ -1099,6 +1097,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .confirmSetRadio?: try {
       guard case .confirmSetRadio(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 67)
+    }()
+    case .rebootOtaSeconds?: try {
+      guard case .rebootOtaSeconds(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 95)
     }()
     case .exitSimulator?: try {
       guard case .exitSimulator(let v)? = self.payloadVariant else { preconditionFailure() }

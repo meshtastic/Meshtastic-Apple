@@ -675,7 +675,7 @@ struct Config {
 
     ///
     /// The denominator of the coding rate.
-    /// ie for 4/8, the value is 8. 5/8 the value is 5.
+    /// ie for 4/5, the value is 5. 4/8 the value is 8.
     var codingRate: UInt32 = 0
 
     ///

@@ -11,8 +11,8 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
-	@State var saveQR = false
-	@State var channelUrl: URL?
+	@State var saveChannels = false
+	@State var incomingUrl: URL?
 	
 	@Environment(\.scenePhase) var scenePhase
 
@@ -25,32 +25,30 @@ struct MeshtasticAppleApp: App {
 
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
-				print("QR Code URL received from the Camera \(userActivity)")
-				channelUrl = userActivity.webpageURL
-				if channelUrl!.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
-					saveQR = true
+				print("URL received \(userActivity)")
+				incomingUrl = userActivity.webpageURL
+				if incomingUrl!.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
+					saveChannels = true
 				}
-				
-				print("User wants to open URL: \(String(describing: channelUrl?.relativeString))")
-
+				if saveChannels {
+					print("User wants to open Channel Settings URL: \(String(describing: incomingUrl!.relativeString))")
+				}
 			}
-			.sheet(isPresented: $saveQR) {
-				
-				SaveChannelQRCode(channelHash: channelUrl?.absoluteString ?? "Empty Channel URL")
+			.sheet(isPresented: $saveChannels) {
+				SaveChannelQRCode(channelHash: incomingUrl?.absoluteString ?? "Empty Channel URL")
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
 			}
 			.onOpenURL(perform: { (url) in
 				
 				print("Some sort of URL was received \(url)")
-				channelUrl = url
-				
+				incomingUrl = url
 				
 				if url.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
-					saveQR = true
-					print("User wants to open a Channel Settings URL: \(channelUrl?.absoluteString ?? "No QR Code Link")")
+					saveChannels = true
+					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else {
-					print("User wants to import a MBTILES offline map file: \(channelUrl?.absoluteString ?? "No Tiles link")")
+					print("User wants to import a MBTILES offline map file: \(incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
 
 				//we are expecting a .mbtiles map file that contains raster data

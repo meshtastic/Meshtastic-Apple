@@ -34,15 +34,17 @@ struct ShareChannels: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	@State var initialLoad: Bool = true
 	
+	@State var channels: [ChannelEntity] = [ChannelEntity]()
 	@State var includeChannel0 = true
-	@State var includeChannel1 = true
-	@State var includeChannel2 = true
+	@State var includeChannel1 = false
+	@State var includeChannel2 = false
 	@State var includeChannel3 = false
 	@State var includeChannel4 = false
 	@State var includeChannel5 = false
 	@State var includeChannel6 = false
-	@State var includeChannel7 = true
+	@State var includeChannel7 = false
 	
 	var node: NodeInfoEntity?
 	
@@ -76,56 +78,60 @@ struct ShareChannels: View {
 								}
 								Divider()
 								
-								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+								ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 
 									GridRow {
 										Spacer()
 										if channel.index == 0 {
+											
 											Toggle("Channel 0 Included", isOn: $includeChannel0)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(true)
-											Text("Primary Channel")
+											Text((channel.name!.isEmpty ? "Primary Channel" : channel.name) ?? "Primary Channel")
 											
 										} else if channel.index == 1 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												Text("Public Channel")
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 2 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 3 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 4 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 5 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 6 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 7 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
-											Text("Admin Channel")
-										}
-										if channel.index > 1 && channel.index < 4{
-											Text("Private Chat - \(channel.index)")
-										}
-										if channel.index > 3 && channel.index < 7{
-											Text("Channel - \(channel.index)")
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "Admin Channel" : channel.name) ?? "Admin Channel")
 										}
 										Spacer()
 									}
@@ -171,7 +177,12 @@ struct ShareChannels: View {
 				})
 				.onAppear {
 					
-					self.bleManager.context = context
+					if self.initialLoad{
+						
+						self.bleManager.context = context
+						
+						self.initialLoad = false
+					}
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())

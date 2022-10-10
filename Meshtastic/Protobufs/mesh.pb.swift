@@ -1850,6 +1850,16 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .moduleConfig(newValue)}
   }
 
+  ///
+  /// One packet is sent for each channel
+  var channel: Channel {
+    get {
+      if case .channel(let v)? = _storage._payloadVariant {return v}
+      return Channel()
+    }
+    set {_uniqueStorage()._payloadVariant = .channel(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -1887,6 +1897,9 @@ struct FromRadio {
     ///
     /// Include module config
     case moduleConfig(ModuleConfig)
+    ///
+    /// One packet is sent for each channel
+    case channel(Channel)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -1924,6 +1937,10 @@ struct FromRadio {
       }()
       case (.moduleConfig, .moduleConfig): return {
         guard case .moduleConfig(let l) = lhs, case .moduleConfig(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.channel, .channel): return {
+        guard case .channel(let l) = lhs, case .channel(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -3244,6 +3261,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     7: .standard(proto: "config_complete_id"),
     8: .same(proto: "rebooted"),
     9: .same(proto: "moduleConfig"),
+    10: .same(proto: "channel"),
   ]
 
   fileprivate class _StorageClass {
@@ -3370,6 +3388,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .moduleConfig(v)
           }
         }()
+        case 10: try {
+          var v: Channel?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .channel(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .channel(v)
+          }
+        }()
         default: break
         }
       }
@@ -3417,6 +3448,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .moduleConfig?: try {
         guard case .moduleConfig(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      }()
+      case .channel?: try {
+        guard case .channel(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
       }()
       case nil: break
       }
