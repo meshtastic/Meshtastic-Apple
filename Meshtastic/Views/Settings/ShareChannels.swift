@@ -52,7 +52,7 @@ struct ShareChannels: View {
 	
 	var node: NodeInfoEntity?
 	
-	@State private var channelsUrl =  "https://meshtastic.org/e/#"
+	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
