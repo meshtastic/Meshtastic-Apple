@@ -13,6 +13,7 @@ struct MeshtasticAppleApp: App {
 
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
+	@State var channelSettings: String?
 	
 	@Environment(\.scenePhase) var scenePhase
 
@@ -27,15 +28,23 @@ struct MeshtasticAppleApp: App {
 
 				print("URL received \(userActivity)")
 				incomingUrl = userActivity.webpageURL
-				if incomingUrl!.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
+				
+				if incomingUrl!.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+					
+					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
+					   channelSettings = components.last!
+					}
 					saveChannels = true
+					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
 				if saveChannels {
 					print("User wants to open Channel Settings URL: \(String(describing: incomingUrl!.relativeString))")
 				}
 			}
 			.sheet(isPresented: $saveChannels) {
-				SaveChannelQRCode(channelHash: incomingUrl?.absoluteString ?? "Empty Channel URL")
+				
+				let channelSettingsString = incomingUrl?.absoluteString
+				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL")
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
 			}
@@ -44,7 +53,10 @@ struct MeshtasticAppleApp: App {
 				print("Some sort of URL was received \(url)")
 				incomingUrl = url
 				
-				if url.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
+				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
+					   channelSettings = components.last!
+					}
 					saveChannels = true
 					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else {

@@ -23,7 +23,7 @@ struct SaveChannelQRCode: View {
 				.padding()
 
 			Text(channelHash)
-				.font(.title2)
+				.font(.callout)
 				.padding()
 			
 			Text("This does not work yet.")
