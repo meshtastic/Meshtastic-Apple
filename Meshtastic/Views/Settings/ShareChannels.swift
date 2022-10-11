@@ -266,9 +266,7 @@ struct ShareChannels: View {
 		}
 	}
 	func GenerateChannelSet() {
-		
 		channelSet = ChannelSet()
-	
 		var loRaConfig = Config.LoRaConfig()
 		loRaConfig.region =  RegionCodes(rawValue: Int(node!.loRaConfig!.regionCode))!.protoEnumValue()
 		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))!.protoEnumValue()
@@ -280,9 +278,7 @@ struct ShareChannels: View {
 		loRaConfig.txEnabled = node!.loRaConfig!.txEnabled
 		loRaConfig.txPower = node!.loRaConfig!.txPower
 		loRaConfig.channelNum = UInt32(node!.loRaConfig!.channelNum)
-		
 		channelSet.loraConfig = loRaConfig
-		
 		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
 			if ch.role > 0 {
 				
@@ -299,7 +295,6 @@ struct ShareChannels: View {
 				}
 			}
 		}
-		
 		let settingsString = try! channelSet.serializedData().base64EncodedString()
 		channelsUrl = ("https://www.meshtastic.org/e/#" + settingsString.base64ToBase64url())
 	}
