@@ -29,7 +29,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
-	@Published var minimumVersion = "1.3.42"
+	@Published var minimumVersion = "1.3.43"
 	@Published var connectedVersion: String
 	@Published var invalidVersion = false
 	@Published var preferredPeripheral = false

@@ -53,6 +53,7 @@ struct ShareChannels: View {
 	var node: NodeInfoEntity?
 	
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
+	
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -240,11 +241,34 @@ struct ShareChannels: View {
 						GenerateChannelSet()
 					}
 				}
+				.onChange(of: includeChannel1) { includeCh1 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel2) { includeCh2 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel3) { includeCh3 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel4) { includeCh4 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel5) { includeCh5 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel6) { includeCh6 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel7) { includeCh7 in
+					GenerateChannelSet()
+				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 	func GenerateChannelSet() {
+		
+		channelSet = ChannelSet()
 	
 		var loRaConfig = Config.LoRaConfig()
 		loRaConfig.region =  RegionCodes(rawValue: Int(node!.loRaConfig!.regionCode))!.protoEnumValue()
@@ -262,17 +286,22 @@ struct ShareChannels: View {
 		
 		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
 			if ch.role > 0 {
-				var channelSettings = ChannelSettings()
-				channelSettings.name = ch.name!
-				channelSettings.psk = ch.psk ?? Data()
-				channelSettings.id = UInt32(ch.id)
-				channelSettings.uplinkEnabled = ch.uplinkEnabled
-				channelSettings.downlinkEnabled = ch.downlinkEnabled
-				channelSet.settings.append(channelSettings)
+				
+				if ch.index == 0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
+					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
+					
+					var channelSettings = ChannelSettings()
+						channelSettings.name = ch.name!
+						channelSettings.psk = ch.psk ?? Data()
+						channelSettings.id = UInt32(ch.id)
+						channelSettings.uplinkEnabled = ch.uplinkEnabled
+						channelSettings.downlinkEnabled = ch.downlinkEnabled
+						channelSet.settings.append(channelSettings)
+				}
 			}
 		}
 		
 		let settingsString = try! channelSet.serializedData().base64EncodedString()
-		channelsUrl =  "https://www.meshtastic.org/e/#" + settingsString.dropLast(2)
+		channelsUrl = ("https://www.meshtastic.org/e/#" + settingsString.dropLast(2))
 	}
 }
