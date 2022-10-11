@@ -37,10 +37,7 @@ struct SaveChannelQRCode: View {
 		}
 		.onChange(of: channelHash) { newSettings in
 			
-			var decodedString = newSettings
-			if !decodedString.hasSuffix("==") {
-				decodedString = decodedString + "=="
-			}
+			var decodedString = newSettings.base64urlToBase64()
 			
 			if let decodedData = Data(base64Encoded: decodedString) {
 				decodedString = String(data: decodedData, encoding: .utf8)!
