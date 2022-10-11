@@ -7,33 +7,32 @@
 import SwiftUI
 
 struct SaveChannelQRCode: View {
-	
 	var channelHash: String
+	var validUrl: Bool
 	
 	var body: some View {
-		
 		VStack {
-			
-			Text("Save Channel Settings?")
-				.font(.title)
-			
-			Text("These settings will replace the current settings on your radio.")
-				.foregroundColor(.gray)
-				.font(.callout)
-				.padding()
-
-			Text(channelHash)
-				.font(.caption2)
-				.padding()
-			
-			Text("Error Message")
-				.font(.callout)
-				.foregroundColor(.red)
-				.padding()
-			
-			
-			Text("Swipe down to dismiss.")
-				.padding()
+			if validUrl {
+				Text("Save Channel Settings?")
+					.font(.title)
+				Text("These settings will replace the current settings on your radio.")
+					.foregroundColor(.gray)
+					.font(.callout)
+					.padding()
+				
+				Text(channelHash)
+					.font(.caption2)
+					.padding()
+				
+			} else {
+				Text("Invalid Channel Settings Url")
+					.font(.title)
+				
+				Text("Error Message")
+					.font(.callout)
+					.foregroundColor(.red)
+					.padding()
+			}
 		}
 		.onChange(of: channelHash) { newSettings in
 			

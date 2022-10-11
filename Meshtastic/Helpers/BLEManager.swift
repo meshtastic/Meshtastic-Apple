@@ -43,9 +43,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
-	
-	var configTimeoutTimer: Timer?
-
 	var positionTimer: Timer?
 
 	let broadcastNodeNum: UInt32 = 4294967295
@@ -57,7 +54,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
-	let FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
+	let FROMRADIO_UUID = CBUUID(string: "2c55e69e-4993-11ed-b878-0242ac120002")
+	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	
 	// Meshtastic DFU details
@@ -160,20 +158,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
 		}
 	}
-	
-	// MARK: BLE Connect functions
-	/// The action after the timeout-timer has fired
-	///
-	/// - Parameters:
-	///     - timer: The time that fired the event
-	///
-	@objc func configTimeoutTimerFired(timer: Timer) {
-		
-		self.lastConnectionError = "🚨 Update your firmware"
-		self.connectedVersion = "1.2.65"
-		self.invalidVersion = true
-		self.timeoutTimer!.invalidate()
-	}
 
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
@@ -209,6 +193,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		guard let connectedPeripheral = connectedPeripheral else { return }
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
+		FROMRADIO_characteristic = nil
 		isConnected = false
 		invalidVersion = false
 		connectedVersion = "0.0.0"
@@ -393,6 +378,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		for characteristic in characteristics {
 
 			switch characteristic.uuid {
+			case EOL_FROMRADIO_UUID:
+				if meshLoggingEnabled { MeshLogger.log("🚨 BLE did discover EOL_TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				invalidVersion = true
+				
 			case TORADIO_UUID:
 				
 				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
@@ -444,12 +433,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				break
 			}
 		}
-		if (![FROMNUM_characteristic, FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
+		if (![FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
 			
 			sendWantConfig()
-			
-			self.configTimeoutTimer = Timer.scheduledTimer(timeInterval: TimeInterval(30), target: self, selector: #selector(configTimeoutTimerFired), userInfo: context, repeats: false)
-			RunLoop.current.add(self.configTimeoutTimer!, forMode: .common)
 		}
 	}
 	
@@ -487,6 +473,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func sendWantConfig() {
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
+		if FROMRADIO_characteristic == nil {
+			invalidVersion = true
+			return
+			
+		} else {
 		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
 		//BLE Characteristics discovered, issue wantConfig
 		var toRadio: ToRadio = ToRadio()
@@ -495,8 +486,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 		
-		// Either Read the config complete value or from num notify value
-		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+			// Either Read the config complete value or from num notify value
+			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+		}
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
@@ -740,10 +732,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				invalidVersion = false
 				lastConnectionError = ""
-				if configTimeoutTimer != nil {
-					
-					configTimeoutTimer?.invalidate()
-				}
 				
 				if meshLoggingEnabled { MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
 				self.connectedPeripheral.subscribed = true

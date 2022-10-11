@@ -22,19 +22,11 @@ struct InvalidVersion: View {
 			Divider()
 			
 			VStack {
-				
-				if version != "1.2.65" {
+			
 					
-					Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above. You are running version \(version)")
+				Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
 						.font(.title2)
 						.padding(.bottom)
-					
-				} else {
-					
-					Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
-						.font(.title2)
-						.padding(.bottom)
-				}
 				
 				Link("Firmware update docs", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!)
 					.font(.title)
@@ -47,32 +39,29 @@ struct InvalidVersion: View {
 			
 			}
 			.padding()
+				
+			Divider()
+				.padding(.top)
 			
-			if version == "1.2.65" {
+			VStack{
 				
-				Divider()
-					.padding(.top)
+				Text("🦕 End of life Version 🦖 ☄️")
+					.font(.title3)
+					.foregroundColor(.orange)
+					.padding(.bottom)
 				
-				VStack{
-					
-					Text("🦕 End of life Version 🦖 ☄️")
-						.font(.title3)
-						.foregroundColor(.orange)
-						.padding(.bottom)
-					
-					Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
-						.font(.caption)
-						.padding([.leading, .trailing])
-					
-					Text("There is a build for 1.2 EOL under Other Versions in TestFlight that will be available until the end of November 2022.")
-						.font(.caption)
-						.padding()
-					
-					Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
-						.font(.callout)
-					
-				}.padding()
-			}
+				Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
+					.font(.caption)
+					.padding([.leading, .trailing])
+				
+				Text("There is a build for 1.2 EOL under Other Versions in TestFlight that will be available until the end of November 2022.")
+					.font(.caption)
+					.padding()
+				
+				Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
+					.font(.callout)
+				
+			}.padding()
 		}
 	}
 }
