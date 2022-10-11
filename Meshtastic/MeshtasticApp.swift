@@ -11,8 +11,9 @@ struct MeshtasticAppleApp: App {
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
-	@State var saveQR = false
-	@State var channelUrl: URL?
+	@State var saveChannels = false
+	@State var incomingUrl: URL?
+	@State var channelSettings: String?
 	
 	@Environment(\.scenePhase) var scenePhase
 
@@ -25,32 +26,41 @@ struct MeshtasticAppleApp: App {
 
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
-				print("QR Code URL received from the Camera \(userActivity)")
-				channelUrl = userActivity.webpageURL
-				if channelUrl!.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
-					saveQR = true
+				print("URL received \(userActivity)")
+				incomingUrl = userActivity.webpageURL
+				
+				if incomingUrl!.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+					
+					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
+					   channelSettings = components.last!
+					}
+					saveChannels = true
+					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
-				
-				print("User wants to open URL: \(String(describing: channelUrl?.relativeString))")
-
+				if saveChannels {
+					print("User wants to open Channel Settings URL: \(String(describing: incomingUrl!.relativeString))")
+				}
 			}
-			.sheet(isPresented: $saveQR) {
-				
-				SaveChannelQRCode(channelHash: channelUrl?.absoluteString ?? "Empty Channel URL")
+			.sheet(isPresented: $saveChannels) {
+								
+				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL")
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
 			}
 			.onOpenURL(perform: { (url) in
 				
 				print("Some sort of URL was received \(url)")
-				channelUrl = url
+				incomingUrl = url
 				
-				
-				if url.absoluteString.lowercased().contains("https://meshtastic.org/e/#") {
-					saveQR = true
-					print("User wants to open a Channel Settings URL: \(channelUrl?.absoluteString ?? "No QR Code Link")")
+				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
+					   channelSettings = components.last!
+					}
+					saveChannels = true
+					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else {
-					print("User wants to import a MBTILES offline map file: \(channelUrl?.absoluteString ?? "No Tiles link")")
+					saveChannels = false
+					print("User wants to import a MBTILES offline map file: \(incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
 
 				//we are expecting a .mbtiles map file that contains raster data
@@ -59,26 +69,28 @@ struct MeshtasticAppleApp: App {
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
 				
-				//do we need to delete an old one?
-				if (fileManager.fileExists(atPath: destination.path)) {
-					print("ℹ️ Found an old map file.  Deleting it")
-					try? fileManager.removeItem(atPath: destination.path)
-				}
-				
-				do {
-					try fileManager.copyItem(at: url, to: destination)
-				} catch {
-					print("Copy MB Tile file failed. Error: \(error)")
-				}
-				
-				if (fileManager.fileExists(atPath: destination.path)) {
-					print("ℹ️ Saved the map file")
+				if !saveChannels {
+					//do we need to delete an old one?
+					if (fileManager.fileExists(atPath: destination.path)) {
+						print("ℹ️ Found an old map file.  Deleting it")
+						try? fileManager.removeItem(atPath: destination.path)
+					}
 					
-					//need to tell the map view that it needs to update and try loading the new overlay
-					UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
+					do {
+						try fileManager.copyItem(at: url, to: destination)
+					} catch {
+						print("Copy MB Tile file failed. Error: \(error)")
+					}
 					
-				} else {
-					print("💥 Didn't save the map file")
+					if (fileManager.fileExists(atPath: destination.path)) {
+						print("ℹ️ Saved the map file")
+						
+						//need to tell the map view that it needs to update and try loading the new overlay
+						UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
+						
+					} else {
+						print("💥 Didn't save the map file")
+					}
 				}
 			})
 		}

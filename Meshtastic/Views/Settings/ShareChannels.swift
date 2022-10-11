@@ -29,24 +29,31 @@ struct QrCodeImage {
 		return qrImage
 	}
 }
+
+
 struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	@State var initialLoad: Bool = true
 	
+	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
-	@State var includeChannel1 = true
-	@State var includeChannel2 = true
+	@State var includeChannel1 = false
+	@State var includeChannel2 = false
 	@State var includeChannel3 = false
 	@State var includeChannel4 = false
 	@State var includeChannel5 = false
 	@State var includeChannel6 = false
-	@State var includeChannel7 = true
+	@State var includeChannel7 = false
+	
+	@State var isPresentingHelp = false
 	
 	var node: NodeInfoEntity?
 	
-	@State private var channelsUrl =  "https://meshtastic.org/e/#test"
+	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
+	
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
@@ -69,14 +76,18 @@ struct ShareChannels: View {
 									Text("Include")
 										.font(.caption)
 										.fontWeight(.bold)
-									Text("Name")
+										.padding(.trailing)
+									Text("Channel Name")
+										.font(.caption)
+										.fontWeight(.bold)
+										.padding(.trailing)
+									Text("Encrypted")
 										.font(.caption)
 										.fontWeight(.bold)
 									Spacer()
 								}
-								Divider()
 								
-								ForEach(node!.myInfo!.channels?.array.sorted(by: { ($0 as! ChannelEntity).index < ($1 as! ChannelEntity).index }) as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+								ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 
 									GridRow {
 										Spacer()
@@ -84,48 +95,57 @@ struct ShareChannels: View {
 											Toggle("Channel 0 Included", isOn: $includeChannel0)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
-											Text("Primary Channel")
-											
+												.disabled(channel.role == 1)
+											Text((channel.name!.isEmpty ? "primary" : channel.name) ?? "primary")
 										} else if channel.index == 1 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												Text("Public Channel")
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 2 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 3 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 4 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 5 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 6 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(true)
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										} else if channel.index == 7 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
-											Text("Admin Channel")
+												.disabled(channel.role == 0)
+											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
 										}
-										if channel.index > 1 && channel.index < 4{
-											Text("Private Chat - \(channel.index)")
-										}
-										if channel.index > 3 && channel.index < 7{
-											Text("Channel - \(channel.index)")
+										if channel.role > 0 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else  {
+											Image(systemName: "lock.slash")
+											.foregroundColor(.gray)
 										}
 										Spacer()
 									}
@@ -144,22 +164,61 @@ struct ShareChannels: View {
 							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 												  image: Image(uiImage: qrImage))
 						)
-				
-
-						Divider()
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
 						
 						Image(uiImage: qrImage)
 							.resizable()
 							.scaledToFit()
 							.frame(
-								minWidth: smallest * 0.7,
-								maxWidth: smallest * 0.7,
-								minHeight: smallest * 0.7,
-								maxHeight: smallest * 0.7,
+								minWidth: smallest * 0.65,
+								maxWidth: smallest * 0.65,
+								minHeight: smallest * 0.65,
+								maxHeight: smallest * 0.65,
 								alignment: .top
 							)
 						
+						Button {
+										
+							isPresentingHelp = true
+							
+						} label: {
+							
+							Label("Help Me!", systemImage: "lifepreserver")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.small)
 					}
+				}
+				.sheet(isPresented: $isPresentingHelp) {
+					
+					VStack {
+						Text("Meshtastic Channels").font(.title)
+						Text("A Meshtastic LoRa Mesh network can have up to 8 distinct channels.")
+							.font(.headline)
+							.padding(.bottom)
+						Text("Primary Channel").font(.title2)
+						Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("Admin Channel").font(.title2)
+						Text("A channel with the name 'admin' is the Admin channel and can be used to remotely administer nodes on your mesh, text messages can not be sent over the admin channel.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("Private Channels").font(.title2)
+						Text("The other six channels can be used for private group converations. Each of these groups has its own encryption key.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Text("From this view your primary channel and mesh settings are always shared in the generated QR code and you can toggle to include your admin channel and any private groups you want the person you are sharing with to have access to.")
+							.font(.callout)
+							.padding([.leading,.trailing,.bottom])
+						Divider()
+					}
+					.padding()
+					.presentationDetents([.large])
+					.presentationDragIndicator(.automatic)
 				}
 				.navigationTitle("Generate QR Code")
 				.navigationBarTitleDisplayMode(.inline)
@@ -171,10 +230,70 @@ struct ShareChannels: View {
 				})
 				.onAppear {
 					
-					self.bleManager.context = context
+					if self.initialLoad{
+						
+						self.bleManager.context = context
+						
+						self.initialLoad = false
+						GenerateChannelSet()
+					}
+				}
+				.onChange(of: includeChannel1) { includeCh1 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel2) { includeCh2 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel3) { includeCh3 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel4) { includeCh4 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel5) { includeCh5 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel6) { includeCh6 in
+					GenerateChannelSet()
+				}
+				.onChange(of: includeChannel7) { includeCh7 in
+					GenerateChannelSet()
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
+	}
+	func GenerateChannelSet() {
+		channelSet = ChannelSet()
+		var loRaConfig = Config.LoRaConfig()
+		loRaConfig.region =  RegionCodes(rawValue: Int(node!.loRaConfig!.regionCode))!.protoEnumValue()
+		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))!.protoEnumValue()
+		loRaConfig.bandwidth = UInt32(node!.loRaConfig!.bandwidth)
+		loRaConfig.spreadFactor = UInt32(node!.loRaConfig!.spreadFactor)
+		loRaConfig.codingRate = UInt32(node!.loRaConfig!.codingRate)
+		loRaConfig.frequencyOffset = node!.loRaConfig!.frequencyOffset
+		loRaConfig.hopLimit = UInt32(node!.loRaConfig!.hopLimit)
+		loRaConfig.txEnabled = node!.loRaConfig!.txEnabled
+		loRaConfig.txPower = node!.loRaConfig!.txPower
+		loRaConfig.channelNum = UInt32(node!.loRaConfig!.channelNum)
+		channelSet.loraConfig = loRaConfig
+		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
+			if ch.role > 0 {
+				
+				if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
+					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
+					
+					var channelSettings = ChannelSettings()
+						channelSettings.name = ch.name!
+						channelSettings.psk = ch.psk ?? Data()
+						channelSettings.id = UInt32(ch.id)
+						channelSettings.uplinkEnabled = ch.uplinkEnabled
+						channelSettings.downlinkEnabled = ch.downlinkEnabled
+						channelSet.settings.append(channelSettings)
+				}
+			}
+		}
+		let settingsString = try! channelSet.serializedData().base64EncodedString()
+		channelsUrl = ("https://www.meshtastic.org/e/#" + settingsString.base64ToBase64url())
 	}
 }

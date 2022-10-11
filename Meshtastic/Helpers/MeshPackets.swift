@@ -194,32 +194,31 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 					let newLoRaConfig = LoRaConfigEntity(context: context)
 						
 					newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
-					newLoRaConfig.txPower = Int32(config.lora.txPower)
-					newLoRaConfig.txEnabled = config.lora.txEnabled
 					newLoRaConfig.usePreset = config.lora.usePreset
+					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
 					newLoRaConfig.bandwidth = Int32(config.lora.bandwidth)
 					newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
 					newLoRaConfig.codingRate = Int32(config.lora.codingRate)
-					newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
-					newLoRaConfig.frequencyOffset = Int32(config.lora.frequencyOffset)
-					
+					newLoRaConfig.frequencyOffset = config.lora.frequencyOffset
+					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
+					newLoRaConfig.txPower = Int32(config.lora.txPower)
+					newLoRaConfig.txEnabled = config.lora.txEnabled
+					newLoRaConfig.channelNum = Int32(config.lora.channelNum)
 					fetchedNode[0].loRaConfig = newLoRaConfig
 					
 				} else {
 					
 					fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
-					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
-					fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
 					fetchedNode[0].loRaConfig?.usePreset = config.lora.usePreset
+					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
 					fetchedNode[0].loRaConfig?.bandwidth = Int32(config.lora.bandwidth)
 					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
 					fetchedNode[0].loRaConfig?.codingRate = Int32(config.lora.codingRate)
-					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
-					fetchedNode[0].loRaConfig?.frequencyOffset = Int32(config.lora.frequencyOffset)
+					fetchedNode[0].loRaConfig?.frequencyOffset = config.lora.frequencyOffset
+					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
+					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
+					fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
+					fetchedNode[0].loRaConfig?.channelNum = Int32(config.lora.channelNum)
 				}
 				
 				do {
@@ -238,7 +237,6 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
 			}
-			
 			
 		} catch {
 			
@@ -820,6 +818,61 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 	return nil
 }
 
+func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
+	
+	if channel.isInitialized && channel.hasSettings {
+		
+		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
+		
+		do {
+			
+			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
+			
+			if fetchedMyInfo.count == 1 {
+					
+				let newChannel = ChannelEntity(context: context)
+				newChannel.index = Int32(channel.index)
+				newChannel.uplinkEnabled = channel.settings.uplinkEnabled
+				newChannel.downlinkEnabled = channel.settings.downlinkEnabled
+				newChannel.name = channel.settings.name
+				newChannel.role = Int32(channel.role.rawValue)
+				newChannel.psk = channel.settings.psk
+				
+				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+				
+				mutableChannels.add(newChannel)
+				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+				
+			} else {
+				print("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
+			}
+			
+			try context.save()
+			
+			if meshLogging {
+				
+				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
+				
+			}
+			
+		} catch {
+			
+			context.rollback()
+			
+			let nsError = error as NSError
+			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+		}
+	}
+	//}
+	
+	
+	
+	
+	return nil
+	
+}
+
 func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -1012,6 +1065,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 	return nil
 }
 
+
 func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -1076,71 +1130,7 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 
 func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
 
-	if let channelMessage = try? Channel(serializedData: packet.decoded.payload) {
-		
-		if channelMessage.hasSettings {
-			
-			let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-			fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(packet.from))
-			
-			do {
-				
-				let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
-				
-				if fetchedMyInfo.count == 1 {
-					
-					// Update
-					if fetchedMyInfo[0].channels?.count ?? 0 >= 1 {
-						
-						let newChannel = ChannelEntity(context: context)
-						newChannel.index = Int32(channelMessage.settings.channelNum)
-						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
-						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
-						newChannel.name = channelMessage.settings.name
-						newChannel.role = Int32(channelMessage.role.rawValue)
-						
-						let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-						
-						mutableChannels.add(newChannel)
-						fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-						
-					} else {
-						
-						let newChannel = ChannelEntity(context: context)
-						newChannel.index = Int32(channelMessage.settings.channelNum)
-						newChannel.uplinkEnabled = channelMessage.settings.uplinkEnabled
-						newChannel.downlinkEnabled = channelMessage.settings.downlinkEnabled
-						newChannel.name = channelMessage.settings.name
-						newChannel.role = Int32(channelMessage.role.rawValue)
-						
-						var newChannels = [ChannelEntity]()
-						newChannels.append(newChannel)
-						fetchedMyInfo[0].channels! = NSOrderedSet(array: newChannels)
-					}
-					
-				} else {
-					print("💥 Trying to save a channel to a MyInfo that does not exist: \(packet.from)")
-				}
-				
-				try context.save()
-				
-				if meshLogging {
-					
-					MeshLogger.log("💾 Updated MyInfo channel \(channelMessage.settings.channelNum + 1) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
-				}
-				
-			} catch {
-				
-				context.rollback()
-				
-				let nsError = error as NSError
-				print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
-			}
-		}
-	} else {
-
 		print(try! packet.decoded.jsonString())
-	}
 }
 
 
