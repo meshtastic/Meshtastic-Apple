@@ -92,13 +92,11 @@ struct ShareChannels: View {
 									GridRow {
 										Spacer()
 										if channel.index == 0 {
-											
 											Toggle("Channel 0 Included", isOn: $includeChannel0)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "primary" : channel.name) ?? "primary")
-											
 										} else if channel.index == 1 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
