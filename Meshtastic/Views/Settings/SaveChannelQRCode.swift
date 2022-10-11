@@ -9,7 +9,7 @@ import SwiftUI
 struct SaveChannelQRCode: View {
 	
 	var channelHash: String
-
+	
 	var body: some View {
 		
 		VStack {
@@ -17,22 +17,40 @@ struct SaveChannelQRCode: View {
 			Text("Save Channel Settings?")
 				.font(.title)
 			
-			Text("The settings embedded in this QR code will replace the current settings on your radio.")
+			Text("These settings will replace the current settings on your radio.")
 				.foregroundColor(.gray)
 				.font(.callout)
 				.padding()
 
 			Text(channelHash)
-				.font(.callout)
+				.font(.caption2)
 				.padding()
 			
-			Text("This does not work yet.")
+			Text("Error Message")
 				.font(.callout)
+				.foregroundColor(.red)
 				.padding()
 			
 			
 			Text("Swipe down to dismiss.")
 				.padding()
+		}
+		.onChange(of: channelHash) { newSettings in
+			
+			var decodedString = newSettings
+			if !decodedString.hasSuffix("==") {
+				decodedString = decodedString + "=="
+			}
+			
+			if let decodedData = Data(base64Encoded: decodedString) {
+				decodedString = String(data: decodedData, encoding: .utf8)!
+				do {
+					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					print(channelSet)
+				} catch {
+					print("Invalid Meshtastic QR Code Link")
+				}
+			}
 		}
 	}
 }

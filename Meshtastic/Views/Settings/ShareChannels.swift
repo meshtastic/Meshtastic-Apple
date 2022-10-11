@@ -286,7 +286,7 @@ struct ShareChannels: View {
 		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
 			if ch.role > 0 {
 				
-				if ch.index == 0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
+				if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
 					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
 					
 					var channelSettings = ChannelSettings()
