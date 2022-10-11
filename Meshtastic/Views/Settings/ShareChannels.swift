@@ -192,7 +192,6 @@ struct ShareChannels: View {
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.small)
-						.padding(.top)
 					}
 				}
 				.sheet(isPresented: $isPresentingHelp) {
