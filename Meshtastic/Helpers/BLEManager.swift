@@ -165,33 +165,24 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
-
-		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connecting: \(peripheral.name ?? "Unknown")") }
-
 		stopScanning()
-		self.isConnecting = true
-		self.lastConnectionError = ""
-		
-
-		if self.connectedPeripheral != nil {
-			
-			if meshLoggingEnabled { MeshLogger.log("ℹ️ BLE Disconnecting from: \(self.connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")") }
-			self.disconnectPeripheral()
+		isConnecting = true
+		lastConnectionError = ""
+		if connectedPeripheral != nil {
+			MeshLogger.log("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
+			disconnectPeripheral()
 		}
-		
-		self.centralManager?.connect(peripheral)
-
+		centralManager?.connect(peripheral)
 		// Invalidate any existing timer
-		if self.timeoutTimer != nil {
-			
-			self.timeoutTimer!.invalidate()
+		if timeoutTimer != nil {
+			timeoutTimer!.invalidate()
 		}
-
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
 		let context = ["name": "\(peripheral.name ?? "Unknown")"]
-		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
-		RunLoop.current.add(self.timeoutTimer!, forMode: .common)
+		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
+		RunLoop.current.add(timeoutTimer!, forMode: .common)
+		MeshLogger.log("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Disconnect Connected Peripheral
@@ -203,6 +194,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		isConnected = false
 		invalidVersion = false
 		connectedVersion = "0.0.0"
+		startScanning()
 	}
 
 	// Called each time a peripheral is discovered
