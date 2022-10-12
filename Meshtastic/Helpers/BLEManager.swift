@@ -150,14 +150,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			self.isConnected = false
 			self.isConnecting = false
 			
-			self.lastConnectionError = "🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name). If you continue to get this message you may need to forget your device under settings > bluetooth."
+			self.lastConnectionError = "🚨 Connection failed after \(timeoutTimerCount) attempts to connect to \(name). You may need to forget your device under Settings > Bluetooth."
 
-			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name). If you continue to get this message you may need to forget your device under settings > bluetooth.") }
+			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connection failed after making \(timeoutTimerCount) attempts to connect to \(name). You may need to forget your device under Settings > Bluetooth.") }
 			
 			self.timeoutTimerCount = 0
 			self.startScanning()
 			
-
 		} else {
 
 			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
@@ -190,7 +189,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
-		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
+		let context = ["name": "\(peripheral.name ?? "Unknown")"]
 		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(self.timeoutTimer!, forMode: .common)
 	}
