@@ -28,8 +28,8 @@ struct Contacts: View {
 			// Display Contacts for DM's on the Primary Channel
 			// Display Contacts for the rest of the non admin channels
 			
-
-			List(users) { (user: UserEntity) in
+			List {
+				ForEach(users) { (user: UserEntity) in
 				
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
@@ -131,6 +131,7 @@ struct Contacts: View {
 				}
 				}
 			}
+			}
 			.navigationTitle("Contacts")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(leading:
@@ -138,11 +139,5 @@ struct Contacts: View {
 			)
 		}
 		.listStyle(PlainListStyle())
-    }
-}
-
-struct Contacts_Previews: PreviewProvider {
-    static var previews: some View {
-        Contacts()
     }
 }

@@ -23,6 +23,12 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.environmentObject(userSettings)
+			.sheet(isPresented: $saveChannels) {
+								
+				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL", validUrl: true)
+					.presentationDetents([.medium, .large])
+					.presentationDragIndicator(.visible)
+			}
 
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
@@ -41,12 +47,7 @@ struct MeshtasticAppleApp: App {
 					print("User wants to open Channel Settings URL: \(String(describing: incomingUrl!.relativeString))")
 				}
 			}
-			.sheet(isPresented: $saveChannels) {
-								
-				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL", validUrl: true)
-					.presentationDetents([.medium, .large])
-					.presentationDragIndicator(.visible)
-			}
+
 			.onOpenURL(perform: { (url) in
 				
 				print("Some sort of URL was received \(url)")

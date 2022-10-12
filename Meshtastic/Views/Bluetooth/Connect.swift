@@ -35,13 +35,13 @@ struct Connect: View {
 
 						Section(header: Text("Connection Error").font(.title)) {
 
-							Text(bleManager.lastConnectionError).font(.title3).foregroundColor(.red)
+							Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
 						}
 						.textCase(nil)
 					}
-
+						
 					Section(header: Text("Connected Radio").font(.title)) {
-
+						
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 							
 							HStack {
@@ -65,10 +65,10 @@ struct Connect: View {
 											.font(.caption).foregroundColor(Color.gray)
 									}
 									if bleManager.connectedPeripheral.subscribed {
-										Text("Properly Subscribed").font(.caption)
+										Text("Subscribed to mesh").font(.caption)
 											.foregroundColor(.green)
 									} else {
-										Text("Attempting to connect. . . ").font(.caption)
+										Text("Communicating with device. . . ").font(.caption)
 											.foregroundColor(.orange)
 											
 									}
@@ -135,20 +135,44 @@ struct Connect: View {
 							}
 							
 						} else {
-							HStack {
-								Image(systemName: "antenna.radiowaves.left.and.right.slash")
-									.symbolRenderingMode(.hierarchical)
-									.imageScale(.large).foregroundColor(.red)
-									.padding(.trailing)
-								Text("No device connected").font(.title3)
-							}
-							.padding()
-						}
+							
+							if bleManager.isConnecting {
+								HStack {
+									Image(systemName: "antenna.radiowaves.left.and.right")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.orange)
+										.padding(.trailing)
+									if bleManager.timeoutTimerCount == 0 {
+										Text("Connecting . . .")
+											.font(.title3)
+											.foregroundColor(.orange)
+									} else {
+										VStack {
 
+											Text("Connection Attempt \(bleManager.timeoutTimerCount) of 10")
+												.font(.callout)
+											.foregroundColor(.orange)
+										}
+									}
+								}
+								.padding()
+								
+							} else {
+								
+								HStack {
+									Image(systemName: "antenna.radiowaves.left.and.right.slash")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.red)
+										.padding(.trailing)
+									Text("No device connected").font(.title3)
+								}
+								.padding()
+							}
+						}
 					}
 					.textCase(nil)
 
-					if bleManager.peripherals.count > 0 {
+					if self.bleManager.isScanning {
 						Section(header: Text("Available Radios").font(.title)) {
 							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in
 								HStack {
