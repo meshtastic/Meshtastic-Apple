@@ -36,6 +36,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
+	@Published var isConnecting: Bool = false
 	@Published var isConnected: Bool = false
 	
 	/// Used to make sure we never get foold by old BLE packets
@@ -44,7 +45,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-
 	let broadcastNodeNum: UInt32 = 4294967295
 
 	/* Meshtastic Service Details */
@@ -133,6 +133,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let name: String = timerContext["name", default: "Unknown"]
 
 		self.timeoutTimerCount += 1
+		self.isConnecting = true
+		self.lastConnectionError = ""
 
 		if timeoutTimerCount == 10 {
 
@@ -141,17 +143,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
 			connectedPeripheral = nil
-			self.isConnected = false
-
-			self.lastConnectionError = "🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name)."
-
-			if meshLoggingEnabled { MeshLogger.log(self.lastConnectionError + " This can occur when a device has been taken out of BLE range, or if a device is already connected to another phone, tablet or computer.") }
-
-			self.timeoutTimerCount = 0
 			if self.timeoutTimer != nil {
 				
 				self.timeoutTimer!.invalidate()
 			}
+			self.isConnected = false
+			self.isConnecting = false
+			
+			self.lastConnectionError = "🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name). If you continue to get this message you may need to forget your device under settings > bluetooth."
+
+			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connection Timeout after making \(timeoutTimerCount) attempts to connect to \(name). If you continue to get this message you may need to forget your device under settings > bluetooth.") }
+			
+			self.timeoutTimerCount = 0
+			self.startScanning()
+			
 
 		} else {
 
@@ -165,6 +170,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if meshLoggingEnabled { MeshLogger.log("✅ BLE Connecting: \(peripheral.name ?? "Unknown")") }
 
 		stopScanning()
+		self.isConnecting = true
+		self.lastConnectionError = ""
 		
 
 		if self.connectedPeripheral != nil {
@@ -184,7 +191,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		// Use a timer to keep track of connecting peripherals, context to pass the radio name with the timer and the RunLoop to prevent
 		// the timer from running on the main UI thread
 		let context = ["name": "@\(peripheral.name ?? "Unknown")"]
-		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
+		self.timeoutTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(self.timeoutTimer!, forMode: .common)
 	}
 
@@ -235,6 +242,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// Called when a peripheral is connected
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 
+		self.isConnecting = false
 		self.isConnected = true
 
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
@@ -287,6 +295,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
 		self.connectedPeripheral = nil
+		self.isConnecting = false
 
 		if let e = error {
 
@@ -378,9 +387,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		for characteristic in characteristics {
 
 			switch characteristic.uuid {
-			case EOL_FROMRADIO_UUID:
-				if meshLoggingEnabled { MeshLogger.log("🚨 BLE did discover EOL_TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
-				invalidVersion = true
 				
 			case TORADIO_UUID:
 				
@@ -474,6 +480,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
 		if FROMRADIO_characteristic == nil {
+			
+			if meshLoggingEnabled { MeshLogger.log("🚨 Unsupported Firmware Version Detected, unable to connect to device.") }
 			invalidVersion = true
 			return
 			

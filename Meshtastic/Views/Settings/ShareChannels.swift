@@ -77,7 +77,7 @@ struct ShareChannels: View {
 										.font(.caption)
 										.fontWeight(.bold)
 										.padding(.trailing)
-									Text("Channel Name")
+									Text("Channel")
 										.font(.caption)
 										.fontWeight(.bold)
 										.padding(.trailing)
@@ -96,56 +96,58 @@ struct ShareChannels: View {
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 1)
-											Text((channel.name!.isEmpty ? "primary" : channel.name) ?? "primary")
+											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
 										} else if channel.index == 1 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 2 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 3 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 4 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 5 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 6 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										} else if channel.index == 7 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
-											Text((channel.name!.isEmpty ? "channel \(channel.index)" : channel.name) ?? "Channel \(channel.index)")
+											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 										}
-										if channel.role > 0 {
-											Image(systemName: "lock.fill")
-												.foregroundColor(.green)
-										} else  {
+										
+										if channel.role == 0 {
 											Image(systemName: "lock.slash")
 											.foregroundColor(.gray)
+										}
+										else if channel.role > 0 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
 										}
 										Spacer()
 									}
@@ -285,7 +287,7 @@ struct ShareChannels: View {
 					
 					var channelSettings = ChannelSettings()
 						channelSettings.name = ch.name!
-						channelSettings.psk = ch.psk ?? Data()
+						channelSettings.psk = ch.psk!
 						channelSettings.id = UInt32(ch.id)
 						channelSettings.uplinkEnabled = ch.uplinkEnabled
 						channelSettings.downlinkEnabled = ch.downlinkEnabled
