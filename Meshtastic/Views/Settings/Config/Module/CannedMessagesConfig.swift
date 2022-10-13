@@ -244,7 +244,7 @@ struct CannedMessagesConfig: View {
 							
 						} else if updown1Enabled {
 							
-							cmc.allowInputSource = "upDownEnc1"
+							cmc.allowInputSource = "_any"
 							
 						} else {
 							
@@ -313,12 +313,12 @@ struct CannedMessagesConfig: View {
 					// RAK Rotary Encoder
 					updown1Enabled = false
 					rotary1Enabled = false
-					inputbrokerPinA = 32
-					inputbrokerPinB = 38
-					inputbrokerPinPress = 37
-					inputbrokerEventCw = InputEventChars.keyUp.rawValue
-					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
-					inputbrokerEventPress = InputEventChars.keySelect.rawValue
+					inputbrokerPinA = 4
+					inputbrokerPinB = 10
+					inputbrokerPinPress = 9
+					inputbrokerEventCw = InputEventChars.down.rawValue
+					inputbrokerEventCcw = InputEventChars.up.rawValue
+					inputbrokerEventPress = InputEventChars.select.rawValue
 					
 				} else if newPreset == 2 {
 					
@@ -328,9 +328,9 @@ struct CannedMessagesConfig: View {
 					inputbrokerPinA = 25
 					inputbrokerPinB = 39
 					inputbrokerPinPress	= 36
-					inputbrokerEventCw = InputEventChars.keyUp.rawValue
-					inputbrokerEventCcw = InputEventChars.keyDown.rawValue
-					inputbrokerEventPress = InputEventChars.keySelect.rawValue
+					inputbrokerEventCw = InputEventChars.up.rawValue
+					inputbrokerEventCcw = InputEventChars.down.rawValue
+					inputbrokerEventPress = InputEventChars.select.rawValue
 				}
 				
 				hasChanges = true

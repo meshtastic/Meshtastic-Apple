@@ -13,10 +13,25 @@ struct SaveChannelQRCode: View {
 		VStack {
 			Text("Save Channel Settings?")
 				.font(.title)
-			Text("These settings will replace the current LoRa Config and Channel Settings on your radio.")
+			Text("These settings will replace the current LoRa Config and Channel Settings on your radio. After everything saves your device will reboot.")
 				.foregroundColor(.gray)
 				.font(.callout)
 				.padding()
+			Text(channelHash)
+				.font(.caption2)
+				.foregroundColor(.gray)
+				.padding()
+			
+			Button {
+				
+			} label: {
+				
+				Label("Save", systemImage: "square.and.arrow.down")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
 		}
 		.onChange(of: channelHash) { newSettings in
 			var decodedString = newSettings.base64urlToBase64()
