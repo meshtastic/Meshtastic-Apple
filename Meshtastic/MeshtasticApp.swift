@@ -25,7 +25,7 @@ struct MeshtasticAppleApp: App {
 			.environmentObject(userSettings)
 			.sheet(isPresented: $saveChannels) {
 								
-				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL", validUrl: true)
+				SaveChannelQRCode(channelHash: channelSettings ?? "Empty Channel URL")
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
 			}

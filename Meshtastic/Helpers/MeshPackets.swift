@@ -818,7 +818,7 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 	return nil
 }
 
-func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
+func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context: NSManagedObjectContext) {
 	
 	if channel.isInitialized && channel.hasSettings {
 		
@@ -864,13 +864,6 @@ func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context
 			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
 		}
 	}
-	//}
-	
-	
-	
-	
-	return nil
-	
 }
 
 func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {

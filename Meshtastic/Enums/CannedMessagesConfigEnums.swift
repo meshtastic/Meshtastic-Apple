@@ -10,9 +10,8 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 
 	case unset = 0
 	case rakRotaryEncoder = 1
-	case tbeamThreeButtonScreen = 2
-	case cardKB = 3
-	case facesKB = 4
+	case cardKB = 2
+	case facesKB = 3
 	
 	var id: Int { self.rawValue }
 	var description: String {
@@ -23,8 +22,6 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 				return "Manual Configuration"
 			case .rakRotaryEncoder:
 				return "RAK Rotary Encoder Module"
-			case .tbeamThreeButtonScreen:
-				return "TBEAM 3 Button OLED Screen"
 			case .cardKB:
 				return "M5 Stack Card KeyBoard"
 			case .facesKB:
@@ -37,35 +34,35 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 // Default of 0 is off
 enum InputEventChars: Int, CaseIterable, Identifiable {
 
-	case keyNone = 0
-	case keyUp = 17
-	case keyDown = 18
-	case keyLeft = 19
-	case keyRight = 20
-	case keySelect = 10
-	case keyBack = 27
-	case keyCancel = 24
+	case none = 0
+	case up = 17
+	case down = 18
+	case left = 19
+	case right = 20
+	case select = 10
+	case back = 27
+	case cancel = 24
 
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
 			
-			case .keyNone:
+			case .none:
 				return "None"
-			case .keyUp:
+			case .up:
 				return "Up"
-			case .keyDown:
+			case .down:
 				return "Down"
-			case .keyLeft:
+			case .left:
 				return "Left"
-			case .keyRight:
+			case .right:
 				return "Right"
-			case .keySelect:
+			case .select:
 				return "Select"
-			case .keyBack:
+			case .back:
 				return "Back"
-			case .keyCancel:
+			case .cancel:
 				return "Cancel"
 			}
 		}
@@ -74,21 +71,21 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		
 		switch self {
 
-		case .keyNone:
+		case .none:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.none
-		case .keyUp:
+		case .up:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.up
-		case .keyDown:
+		case .down:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.down
-		case .keyLeft:
+		case .left:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.left
-		case .keyRight:
+		case .right:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.right
-		case .keySelect:
+		case .select:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.select
-		case .keyBack:
+		case .back:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.back
-		case .keyCancel:
+		case .cancel:
 			return ModuleConfig.CannedMessageConfig.InputEventChar.cancel
 		}
 	}
