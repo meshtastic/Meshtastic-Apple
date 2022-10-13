@@ -296,6 +296,6 @@ struct ShareChannels: View {
 			}
 		}
 		let settingsString = try! channelSet.serializedData().base64EncodedString()
-		channelsUrl = ("https://www.meshtastic.org/e/#" + settingsString.base64ToBase64url())
+		channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url())
 	}
 }
