@@ -8,7 +8,6 @@ import SwiftUI
 
 struct SaveChannelQRCode: View {
 	var channelHash: String
-	var validUrl: Bool
 	
 	var body: some View {
 		VStack {
