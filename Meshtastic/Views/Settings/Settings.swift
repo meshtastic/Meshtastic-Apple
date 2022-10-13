@@ -44,6 +44,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("Share Channels QR Code")
 					}
+					.disabled(bleManager.connectedPeripheral == nil)
 					
 					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
