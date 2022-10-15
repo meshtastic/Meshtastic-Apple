@@ -23,15 +23,14 @@ struct Contacts: View {
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
+	
+	@State private var selection: UserEntity? = nil // Nothing selected by default.
 
     var body: some View {
 
-		NavigationView {
-			
+		NavigationSplitView {
 			List {
-				
 				Section(header: Text("Primary Channel")) {
-					
 					ForEach(users) { (user: UserEntity) in
 						
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
@@ -40,26 +39,21 @@ struct Contacts: View {
 								
 								if user.messageList.count > 0 {
 									
-									let mostRecent = user.messageList.last
-									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent!.messageTimestamp ))))
+									let mostRecent = user.num == bleManager.broadcastNodeNum ? user.messageList.last : user.messageList.last(where: { $0.toUser?.num ?? 0 !=  bleManager.broadcastNodeNum })
+									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 									
 									HStack {
-										
 										VStack {
 											CircleText(text: user.shortName ?? "???", color: Color.blue)
 										}
 										.padding([.leading, .trailing])
-										
 										VStack {
-											
 											HStack {
-												
 												VStack {
 													Text(user.longName ?? "Unknown").font(.headline).fixedSize()
 												}
-												
 												VStack {
 													
 													if lastMessageDay == currentDay {
@@ -73,11 +67,8 @@ struct Contacts: View {
 															.foregroundColor(.gray)
 														
 													} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-														
 														Text(lastMessageTime, style: .date)
-														
-													} else {
-														
+													} else if lastMessageDay < (currentDay - 1800) {
 														Text(lastMessageTime, style: .date)
 													}
 												}
@@ -86,8 +77,7 @@ struct Contacts: View {
 											.listRowSeparator(.hidden).frame(height: 5)
 											
 											HStack(alignment: .top) {
-												
-												Text(mostRecent!.messagePayload ?? "Empty Message")
+												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 													.frame(height: 60)
 													.truncationMode(.tail)
 													.foregroundColor(Color.gray)
@@ -132,6 +122,16 @@ struct Contacts: View {
 				MeshtasticLogo()
 			)
 		}
-		.listStyle(PlainListStyle())
+		detail: {
+		
+			if let user = selection {
+				
+				MessageList(user:user)
+				
+			} else {
+				
+				Text("Select a user")
+			}
+		}
     }
 }

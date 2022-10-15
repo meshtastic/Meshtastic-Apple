@@ -10,13 +10,9 @@ struct MQTTConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
 	var node: NodeInfoEntity?
-	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges: Bool = false
-	
 	@State var enabled = false
 	@State var address = ""
 	@State var username = ""
@@ -196,21 +192,14 @@ struct MQTTConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-
-				self.enabled = (node?.mqttConfig?.enabled ?? false)
-				self.address = node?.mqttConfig?.address ?? ""
-				self.username = node?.mqttConfig?.username ?? ""
-				self.password = node?.mqttConfig?.password ?? ""
-				self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
-				self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
-
-				self.hasChanges = false
-				self.initialLoad = false
-			}
+			self.bleManager.context = context
+			self.enabled = (node?.mqttConfig?.enabled ?? false)
+			self.address = node?.mqttConfig?.address ?? ""
+			self.username = node?.mqttConfig?.username ?? ""
+			self.password = node?.mqttConfig?.password ?? ""
+			self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
+			self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
+			self.hasChanges = false
 		}
 		.onChange(of: enabled) { newEnabled in
 			

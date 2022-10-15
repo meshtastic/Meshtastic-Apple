@@ -36,7 +36,7 @@ struct MessageList: View {
 
     var body: some View {
 		
-		VStack {
+		NavigationStack {
 
 			ScrollViewReader { scrollView in
 
@@ -46,31 +46,25 @@ struct MessageList: View {
 									
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != userSettings.preferredNodeNum {
-								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
+								let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
 							
-								if (message.toUser!.num == Int64(bleManager.broadcastNodeNum) || userSettings.preferredNodeNum == message.fromUser?.num) {
-								
-								if message.replyID > 0 {
-									
-									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
-									
-									HStack {
-										
-										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
-											.padding(10)
-											.overlay(
-												RoundedRectangle(cornerRadius: 18)
-													.stroke(Color.blue, lineWidth: 0.5)
-											)
-										Image(systemName: "arrowshape.turn.up.left.fill")
-											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.blue)
-											.padding(.trailing)
+								if (user.num == bleManager.broadcastNodeNum || user.num != bleManager.broadcastNodeNum && message.toUser!.num != bleManager.broadcastNodeNum) {
+									if message.replyID > 0 {
+										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
+										HStack {
+											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+												.padding(10)
+												.overlay(
+													RoundedRectangle(cornerRadius: 18)
+														.stroke(Color.blue, lineWidth: 0.5)
+												)
+											Image(systemName: "arrowshape.turn.up.left.fill")
+												.symbolRenderingMode(.hierarchical)
+												.imageScale(.large).foregroundColor(.blue)
+												.padding(.trailing)
+										}
 									}
-								}
-								
-								
-								HStack (alignment: .top) {
+									HStack (alignment: .top) {
 									
 									if currentUser { Spacer(minLength:50) }
 									
@@ -329,37 +323,37 @@ struct MessageList: View {
 										Spacer(minLength:50)
 									}
 								}
-								.padding([.leading, .trailing])
-								.frame(maxWidth: .infinity)
-								.id(message.messageId)
-								.alert(isPresented: $showDeleteMessageAlert) {
-									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
-										  primaryButton: .destructive(Text("Delete")) {
-										print("OK button tapped")
-										if deleteMessageId > 0 {
-											
-											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
-											
-											context.delete(message!)
-											do {
-												try context.save()
+									.padding([.leading, .trailing])
+									.frame(maxWidth: .infinity)
+									.id(message.messageId)
+									.alert(isPresented: $showDeleteMessageAlert) {
+										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."), primaryButton: .destructive(Text("Delete")) {
+											print("OK button tapped")
+											if deleteMessageId > 0 {
 												
-												deleteMessageId = 0
+												let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
 												
-											} catch {
-												print("Failed to delete message \(deleteMessageId)")
+												context.delete(message!)
+												do {
+													try context.save()
+													
+													deleteMessageId = 0
+													
+												} catch {
+													print("Failed to delete message \(deleteMessageId)")
+												}
 											}
-										}
-									},
-										  secondaryButton: .cancel()
-									)
+										},
+											  secondaryButton: .cancel()
+										)
+									}
 								}
-							}
 							}
 						}
 						.listRowSeparator(.hidden)
 					}
 				}
+				.padding([.top, .bottom])
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
 					
