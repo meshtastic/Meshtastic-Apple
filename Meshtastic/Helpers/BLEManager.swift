@@ -45,7 +45,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	let broadcastNodeNum: UInt32 = 0
+	let broadcastNodeNum: UInt32 = 4294967295
 
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
