@@ -371,27 +371,20 @@ struct MessageList: View {
 			HStack(alignment: .top) {
 
 				ZStack {
-
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("Message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
-
 							totalBytes = value.utf8.count
-
 							// Only mess with the value if it is too big
 							if totalBytes > maxbytes {
-
 								let firstNBytes = Data(typingMessage.utf8.prefix(maxbytes))
-
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-
 									// Set the message back to the last place where it was the right size
 									typingMessage = maxBytesString
 								} else {
 									print("not a valid UTF-8 sequence")
 								}
 							}
-
 						})
 						.keyboardType(kbType!)
 						.toolbar {

@@ -9,12 +9,12 @@ import Foundation
 import CoreData
 import SwiftUI
 
-func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
+func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	// We don't care about any of the Power settings, config is available for everyting else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		
-		if meshlogging { MeshLogger.log("🖥️ Bluetooth config received: \(String(nodeNum))") }
+		MeshLogger.log("🖥️ Bluetooth config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -44,83 +44,66 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Bluetooth Config for node number: \(String(nodeNum))") }
-
+					MeshLogger.log("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+					MeshLogger.log("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
 				}
-				
 			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
 			}
-			
 		} catch {
-			
 			let nsError = error as NSError
-			print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
+			MeshLogger.log("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
 		}
 	}
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 		
-		if meshlogging { MeshLogger.log("📟 Device config received: \(String(nodeNum))") }
-		
+		MeshLogger.log("📟 Device config received: \(String(nodeNum))")
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
 			// Found a node, save Device Config
 			if !fetchedNode.isEmpty {
 				
 				if fetchedNode[0].deviceConfig == nil {
 					
 					let newDeviceConfig = DeviceConfigEntity(context: context)
-					
 					newDeviceConfig.role = Int32(config.device.role.rawValue)
 					newDeviceConfig.serialEnabled = config.device.serialEnabled
 					newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
-					
 					fetchedNode[0].deviceConfig = newDeviceConfig
-					
 				} else {
-					
 					fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
 					fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
 					fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Device Config for node number: \(String(nodeNum))") }
-
+					MeshLogger.log("💾 Updated Device Config for node number: \(String(nodeNum))")
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
+					MeshLogger.log("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
 				}
 			}
 			
 		} catch {
-			
+			let nsError = error as NSError
+			MeshLogger.log("💥 Fetching node for core data DeviceConfigEntity failed: \(nsError)")
 		}
 	}
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 		
-		if meshlogging { MeshLogger.log("🖥️ Display config received: \(String(nodeNum))") }
+		MeshLogger.log("🖥️ Display config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -135,12 +118,10 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				if fetchedNode[0].displayConfig == nil {
 					
 					let newDisplayConfig = DisplayConfigEntity(context: context)
-
 					newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
 					newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
 					newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.display.compassNorthTop
-
 					fetchedNode[0].displayConfig = newDisplayConfig
 					
 				} else {
@@ -154,7 +135,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Display Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated Display Config for node number: \(String(nodeNum))")
 
 				} catch {
 
@@ -177,7 +158,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 		
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
-		if meshlogging { MeshLogger.log("📻 LoRa config received: \(String(nodeNum))") }
+		MeshLogger.log("📻 LoRa config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -222,24 +203,17 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated LoRa Config for node number: \(String(nodeNum))") }
-
+					MeshLogger.log("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
 				}
 			} else {
-				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
 			}
-			
 		} catch {
-			
 			let nsError = error as NSError
 			print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
 		}
@@ -247,7 +221,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 	
-		if meshlogging { MeshLogger.log("📶 Network config received \(String(nodeNum))") }
+		MeshLogger.log("📶 Network config received \(String(nodeNum))")
 		print(try! config.network.jsonString())
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -280,7 +254,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated WiFi Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated WiFi Config for node number: \(String(nodeNum))")
 
 				} catch {
 
@@ -303,7 +277,7 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 		
-		if meshlogging { MeshLogger.log("🗺️ Position config received: \(String(nodeNum))") }
+		MeshLogger.log("🗺️ Position config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -341,36 +315,32 @@ func localConfig (config: Config, meshlogging: Bool, context:NSManagedObjectCont
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Position Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated Position Config for node number: \(String(nodeNum))")
 
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
+					MeshLogger.log("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
 				}
 				
 			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
 			}
 			
 		} catch {
 			
 			let nsError = error as NSError
-			print("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
+			MeshLogger.log("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
 		}
 	}
 }
 
-func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
+func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		
-		if meshlogging { MeshLogger.log("🥫 Canned Message module config received: \(String(nodeNum))") }
+		MeshLogger.log("🥫 Canned Message module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -414,33 +384,27 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))") }
-					
+					MeshLogger.log("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
 
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+					MeshLogger.log("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
 				}
 			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
 			}
 			
 		} catch {
-			
 			let nsError = error as NSError
-			print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
+			MeshLogger.log("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
 		}
 	}
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
 		
-		if meshlogging { MeshLogger.log("🚨 External Notifiation module config received: \(String(nodeNum))") }
+		MeshLogger.log("🚨 External Notifiation module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -448,25 +412,20 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
 			// Found a node, save External Notificaitone Config
 			if !fetchedNode.isEmpty {
 				
 				if fetchedNode[0].externalNotificationConfig == nil {
-					
 					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
-
 					newExternalNotificationConfig.enabled = config.externalNotification.enabled
 					newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
 					newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
 					newExternalNotificationConfig.active = config.externalNotification.active
 					newExternalNotificationConfig.output = Int32(config.externalNotification.output)
 					newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
-					
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
-
 					fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
 					fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
 					fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
@@ -476,21 +435,17 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated External Notification Module Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
 
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+					MeshLogger.log("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 				}
 				
 			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
 			}
 			
 		} catch {
@@ -502,7 +457,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
 		
-		if meshlogging { MeshLogger.log("🌐 MQTT module config received: \(String(nodeNum))") }
+		MeshLogger.log("🌐 MQTT module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -540,31 +495,30 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 				do {
 
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated MQTT Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated MQTT Config for node number: \(String(nodeNum))")
 
 				} catch {
 
 					context.rollback()
 
 					let nsError = error as NSError
-					if meshlogging { MeshLogger.log("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)") }
+					MeshLogger.log("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)")
 				}
 				
 			} else {
-				
-				if meshlogging { MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config") }
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
 			}
 			
 		} catch {
 			
 			let nsError = error as NSError
-			if meshlogging { MeshLogger.log("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)") }
+			MeshLogger.log("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)")
 		}
 	}
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
 		
-		if meshlogging { MeshLogger.log("⛰️ Range Test module config received: \(String(nodeNum))") }
+		MeshLogger.log("⛰️ Range Test module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -574,53 +528,40 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
 			// Found a node, save Device Config
 			if !fetchedNode.isEmpty {
-				
 				if fetchedNode[0].rangeTestConfig == nil {
-					
 					let newRangeTestConfig = RangeTestConfigEntity(context: context)
-					
 					newRangeTestConfig.sender = Int32(config.rangeTest.sender)
 					newRangeTestConfig.enabled = config.rangeTest.enabled
 					newRangeTestConfig.save = config.rangeTest.save
-					
 					fetchedNode[0].rangeTestConfig = newRangeTestConfig
-					
 				} else {
-
 					fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
 					fetchedNode[0].rangeTestConfig?.enabled = config.rangeTest.enabled
 					fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Range Test Config for node number: \(String(nodeNum))") }
-
+					MeshLogger.log("💾 Updated Range Test Config for node number: \(String(nodeNum))")
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					
-					if meshlogging { MeshLogger.log("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)") }
+					MeshLogger.log("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
 				}
 				
 			} else {
-				
-				if meshlogging { MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config") }
+				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
 			}
 			
 		} catch {
-			
 			let nsError = error as NSError
-			if meshlogging { MeshLogger.log("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)") }
+			MeshLogger.log("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
 		}
 	}
 
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
 		
-		if meshlogging { MeshLogger.log("🤖 Serial module config received: \(String(nodeNum))") }
+		MeshLogger.log("🤖 Serial module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -635,7 +576,6 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 				if fetchedNode[0].serialConfig == nil {
 					
 					let newSerialConfig = SerialConfigEntity(context: context)
-					
 					newSerialConfig.enabled = config.serial.enabled
 					newSerialConfig.echo = config.serial.echo
 					newSerialConfig.rxd = Int32(config.serial.rxd)
@@ -643,11 +583,9 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					newSerialConfig.baudRate = Int32(config.serial.baud.rawValue)
 					newSerialConfig.timeout = Int32(config.serial.timeout)
 					newSerialConfig.mode = Int32(config.serial.mode.rawValue)
-					
 					fetchedNode[0].serialConfig = newSerialConfig
 					
 				} else {
-					
 					fetchedNode[0].serialConfig?.enabled = config.serial.enabled
 					fetchedNode[0].serialConfig?.echo = config.serial.echo
 					fetchedNode[0].serialConfig?.rxd = Int32(config.serial.rxd)
@@ -655,13 +593,11 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 					fetchedNode[0].serialConfig?.baudRate = Int32(config.serial.baud.rawValue)
 					fetchedNode[0].serialConfig?.timeout = Int32(config.serial.timeout)
 					fetchedNode[0].serialConfig?.mode = Int32(config.serial.mode.rawValue)
-					
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Serial Module Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
 
 				} catch {
 
@@ -685,7 +621,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
 		
-		if meshlogging { MeshLogger.log("📈 Telemetry module config received: \(String(nodeNum))") }
+		MeshLogger.log("📈 Telemetry module config received: \(String(nodeNum))")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -718,32 +654,27 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 				}
 				
 				do {
-
 					try context.save()
-					if meshlogging { MeshLogger.log("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))") }
+					MeshLogger.log("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
 
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
 				}
 				
 			} else {
-				
 				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
 			}
 			
 		} catch {
-			
 			let nsError = error as NSError
 			print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
 		}
 	}
 }
 
-func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
+func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 	
 	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
@@ -772,7 +703,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, meshLogging: Bool, 
 			do {
 
 				try context.save()
-				if meshLogging { MeshLogger.log("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))") }
+				MeshLogger.log("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
 				return myInfoEntity
 
 			} catch {
@@ -801,7 +732,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, meshLogging: Bool, 
 			do {
 
 				try context.save()
-				if meshLogging { MeshLogger.log("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))") }
+				MeshLogger.log("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
 				return fetchedMyInfo[0]
 
 			} catch {
@@ -820,7 +751,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, meshLogging: Bool, 
 	return nil
 }
 
-func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context: NSManagedObjectContext) {
+func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
 	
 	if channel.isInitialized && channel.hasSettings {
 		
@@ -851,12 +782,7 @@ func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context
 			}
 			
 			try context.save()
-			
-			if meshLogging {
-				
-				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
-				
-			}
+			MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			
 		} catch {
 			
@@ -868,7 +794,7 @@ func channelPacket (channel: Channel, fromNum: Int64, meshLogging: Bool, context
 	}
 }
 
-func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> NodeInfoEntity? {
+func nodeInfoPacket (nodeInfo: NodeInfo, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
@@ -945,12 +871,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 					try context.save()
 					
 					if nodeInfo.hasUser {
-
-						if meshLogging { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.user.longName)") }
-
+						MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.user.longName)")
 					} else {
-
-						if meshLogging { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.num)") }
+						MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.num)")
 					}
 					return newNode
 
@@ -1029,12 +952,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 					try context.save()
 					
 					if nodeInfo.hasUser {
-
-						if meshLogging { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.user.longName)") }
+						MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.user.longName)")
 
 					} else {
-
-						if meshLogging { MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.num)") }
+						MeshLogger.log("💾 BLE FROMRADIO received and nodeInfo inserted for \(nodeInfo.num)")
 					}
 					
 					return fetchedNode[0]
@@ -1061,7 +982,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, meshLogging: Bool, context: NSManagedOb
 }
 
 
-func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -1104,32 +1025,24 @@ func nodeInfoAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManage
 		}
 		
 		do {
-
 			try context.save()
-
-			if meshLogging { MeshLogger.log("💾 Updated NodeInfo SNR \(packet.rxSnr) and Time from Node Info App Packet For: \(fetchedNode[0].num)")}
-
+			MeshLogger.log("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
 		} catch {
-
 			context.rollback()
-
 			let nsError = error as NSError
-			print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
-
+			MeshLogger.log("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
 		}
 	} catch {
-
-		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+		MeshLogger.log("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
 }
 
-func adminAppPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
-
-		print(try! packet.decoded.jsonString())
+func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	print(try! packet.decoded.jsonString())
 }
 
 
-func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
 	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -1170,13 +1083,8 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 					
 					do {
-
 						try context.save()
-
-						if meshLogging {
-							MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
-						}
-
+						MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 					} catch {
 
 						context.rollback()
@@ -1203,7 +1111,7 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 	}
 }
 
-func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+func routingPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
@@ -1239,18 +1147,13 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 			default: ()
 		}
 		
-		if meshLogging { MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)") }
-						
-			
+		MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)")
 		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
 		do {
-
 			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
-			
 			if fetchedMessage?.count ?? 0 > 0 {
-				
 				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
 				
 				if routingMessage.errorReason == Routing.Error.none {
@@ -1264,27 +1167,19 @@ func routingPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedObj
 				fetchedMessage![0].toUser?.objectWillChange.send()
 				
 			} else {
-				
 				return
 			}
-			
 			try context.save()
-
-			  if meshLogging {
-				  MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
-			  }
-			
+			MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
 		} catch {
-			
 			context.rollback()
-
 			let nsError = error as NSError
-			print("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
+			MeshLogger.log("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
 		}
 	}
 }
 	
-func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedObjectContext) {
+func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 	
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
@@ -1330,32 +1225,26 @@ func telemetryPacket(packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			}
 			
 			try context.save()
-
-			  if meshLogging {
-				  MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
-			  }
+			MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
 			
 		} catch {
-			
 			context.rollback()
-
 			let nsError = error as NSError
-			print("💥 Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
+			MeshLogger.log("💥 Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
 		}
 		
 	} else {
-		
+		MeshLogger.log("💥 Error Fetching NodeInfoEntity for Node \(packet.from)")
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging: Bool, context: NSManagedObjectContext) {
+func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 	
 	let broadcastNodeNum: UInt32 = 4294967295
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		if meshLogging { MeshLogger.log("💬 Message received for text message app") }
-
+		MeshLogger.log("💬 Message received for text message app")
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 
@@ -1370,12 +1259,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			
 			if packet.decoded.replyID > 0 {
-				
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-
 			if packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
-
 				// Save the broadcast user if it does not exist
 				let bcu: UserEntity = UserEntity(context: context)
 				bcu.shortName = "ALL"
@@ -1386,10 +1272,8 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 				newMessage.toUser = bcu
 
 			} else {
-
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 			}
-
 			newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			newMessage.messagePayload = messageText
 			newMessage.fromUser?.objectWillChange.send()
@@ -1400,19 +1284,13 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 				do {
 
 					try context.save()
-
-					if meshLogging { MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)") }
-					
+					MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)")
 					messageSaved = true
 					
-					if messageSaved { //&& (newMessage.toUser != nil && newMessage.toUser!.num == broadcastNodeNum || connectedNode == newMessage.toUser!.num) {
-					
-						
+					if messageSaved {
 						if newMessage.fromUser != nil {
-							
 							// Create an iOS Notification for the received message and schedule it immediately
 							let manager = LocalNotificationManager()
-
 							manager.notifications = [
 								Notification(
 									id: ("notification.id.\(newMessage.messageId)"),
@@ -1420,24 +1298,17 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, meshLogging:
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 									content: messageText)
 							]
-						
 							manager.schedule()
-							
-							if meshLogging { MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")") }
+							MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
 						}
 					}
-					
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
-					print("💥 Failed to save new MessageEntity \(nsError)")
+					MeshLogger.log("💥 Failed to save new MessageEntity \(nsError)")
 				}
-			
-			} catch {
-
-			print("💥 Fetch Message To and From Users Error")
+		} catch {
+			MeshLogger.log("💥 Fetch Message To and From Users Error")
 		}
 	}
 }

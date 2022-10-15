@@ -72,7 +72,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var DFURESULT_characteristic: CBCharacteristic?
 	var DFUREGION_characteristic: CBCharacteristic?
 
-	private var meshLoggingEnabled: Bool = true
+	//private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
 	// MARK: init BLEManager
@@ -133,13 +133,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let name: String = timerContext["name", default: "Unknown"]
 
 		self.timeoutTimerCount += 1
-		self.isConnecting = true
 		self.lastConnectionError = ""
 
 		if timeoutTimerCount == 10 {
-
 			if connectedPeripheral != nil {
-
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
 			connectedPeripheral = nil
@@ -149,17 +146,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 			self.isConnected = false
 			self.isConnecting = false
-			
 			self.lastConnectionError = "🚨 Connection failed after \(timeoutTimerCount) attempts to connect to \(name). You may need to forget your device under Settings > Bluetooth."
-
-			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connection failed after making \(timeoutTimerCount) attempts to connect to \(name). You may need to forget your device under Settings > Bluetooth.") }
-			
+			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
 			self.startScanning()
-			
 		} else {
-
-			if meshLoggingEnabled { MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)") }
+			MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
 		}
 	}
 
@@ -241,6 +233,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
 			self.preferredPeripheral = true
 		} else {
+			self.preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
 		}
 		// Invalidate and reset connection timer count, remove any connection errors
@@ -330,7 +323,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		if let e = error {
 
-			if meshLoggingEnabled { MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)") }
+			MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)")
 		}
 
 		guard let characteristics = service.characteristics else { return }
@@ -340,50 +333,40 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			switch characteristic.uuid {
 				
 			case TORADIO_UUID:
-				
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
 				
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
 				
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 				
 			case DFUSIZE_UUID:
-				
-				print("✅ DFU Size characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Size characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover DFU Size characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUSIZE_characteristic = characteristic
 
 			case DFUDATA_UUID:
-				
-				print("✅ DFU Data characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Data characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover DFU Data characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUDATA_characteristic = characteristic
 
 			case DFUCRC32_UUID:
-				
-				print("✅ DFU CRC32 characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU CRC32 characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover DFU CRC32 characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUCRC32_characteristic = characteristic
-
+				
 			case DFURESULT_UUID:
-				
-				print("✅ DFU Result characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Result characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+				MeshLogger.log("✅ BLE did discover DFU Result characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFURESULT_characteristic = characteristic
-
-			case DFUREGION_UUID:
 				
-				print("✅ DFU Region characteristic OK")
-				if meshLoggingEnabled { MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")") }
+			case DFUREGION_UUID:
+
+				MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUREGION_characteristic = characteristic
 
 			default:
@@ -432,7 +415,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		if FROMRADIO_characteristic == nil {
 			
-			if meshLoggingEnabled { MeshLogger.log("🚨 Unsupported Firmware Version Detected, unable to connect to device.") }
+			MeshLogger.log("🚨 Unsupported Firmware Version Detected, unable to connect to device.")
 			invalidVersion = true
 			return
 			
@@ -453,8 +436,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let errorText = error?.localizedDescription {
-
-			if meshLoggingEnabled { MeshLogger.log("🚫 didUpdateNotificationStateFor error: \(errorText)") }
+			MeshLogger.log("🚫 didUpdateNotificationStateFor error: \(errorText)")
 		}
 	}
 
@@ -468,20 +450,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			let errorCode = (e as NSError).code
 			
 			if errorCode == 5 { // CBATTErrorDomain Code=5 "Authentication is insufficient."
-
 				// BLE Pin connection error
 				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
-				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully.") }
+				MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.centralManager?.cancelPeripheralConnection(peripheral)
-
 			}
 			if errorCode == 15 { // CBATTErrorDomain Code=15 "Encryption is insufficient."
-
 				// BLE Pin connection error
 				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
-				if meshLoggingEnabled { MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again. You may need to forget the device under Settings > General > Bluetooth.") }
+				MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again. You may need to forget the device under Settings > General > Bluetooth.")
 				self.centralManager?.cancelPeripheralConnection(peripheral)
-
 			}
 		}
 
@@ -531,7 +509,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 					} else {
 						
-						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, meshLogging: meshLoggingEnabled, context: context!)
+						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 						
 						self.userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
@@ -552,7 +530,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if decodedInfo.nodeInfo.num != 0 && !invalidVersion {
 
 					nowKnown = true
-					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, meshLogging: meshLoggingEnabled, context: context!)
+					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, context: context!)
 					
 					if nodeInfo != nil {
 						
@@ -572,53 +550,42 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				// Channels
 				if decodedInfo.channel.isInitialized {
 					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: connectedPeripheral.num, meshLogging: meshLoggingEnabled, context: context!)
+					channelPacket(channel: decodedInfo.channel, fromNum: connectedPeripheral.num, context: context!)
 				}
 				
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion {
 					
 					nowKnown = true
-					localConfig(config: decodedInfo.config, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion {
 					
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, meshlogging: meshLoggingEnabled, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 					}
 				}
 				// Log any other unknownApp calls
-				if !nowKnown {
-					
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
-				}
+				if !nowKnown { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				
 				case .textMessageApp:
-					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), meshLogging: meshLoggingEnabled, context: context!)
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				case .remoteHardwareApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .positionApp:
-					positionPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+					positionPacket(packet: decodedInfo.packet, context: context!)
 				case .waypointApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .nodeinfoApp:
-				
-					if !invalidVersion {
-						
-						nodeInfoAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
-					}
+					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
 				case .routingApp:
-				
-					if !invalidVersion {
-						
-						routingPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
-					}
+					if !invalidVersion { routingPacket(packet: decodedInfo.packet, context: context!) }
 				case .adminApp:
-				adminAppPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
+					adminAppPacket(packet: decodedInfo.packet, context: context!)
 				case .replyApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .ipTunnelApp:
@@ -628,25 +595,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				case .storeForwardApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .rangeTestApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .telemetryApp:
-				
-					if !invalidVersion {
-				
-						telemetryPacket(packet: decodedInfo.packet, meshLogging: meshLoggingEnabled, context: context!)
-					}
+					if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, context: context!) }
 				case .textMessageCompressedApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .zpsApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .privateApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .atakForwarder:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .simulatorApp:
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .UNRECOGNIZED(_):
-					if meshLoggingEnabled { MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+					MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .max:
 					print("MAX PORT NUM OF 511")
 			}
@@ -669,7 +632,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 				
 			} catch {
-				print("💥 Error Saving the All - Broadcast User")
+				MeshLogger.log("💥 Error Saving the All - Broadcast User")
 			}
 
 			// MARK: Share Location Position Update Timer
@@ -687,7 +650,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
-				if meshLoggingEnabled { MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)") }
+				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				self.connectedPeripheral.subscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
@@ -719,8 +682,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-			if meshLoggingEnabled { MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")") }
-
+			MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")")
 			success = false
 			
 		} else if message.count < 1 {
@@ -796,16 +758,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 
 					let binaryData: Data = try! toRadio.serializedData()
-
-					if meshLoggingEnabled { MeshLogger.log("📲 New messageId \(newMessage.messageId) sent to \(newMessage.toUser?.longName! ?? "Unknown")") }
-
+					
+					MeshLogger.log("📲 New messageId \(newMessage.messageId) sent to \(newMessage.toUser?.longName! ?? "Unknown")")
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						do {
 
 							try context!.save()
-							if meshLoggingEnabled { MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)") }
+							MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)")
 							success = true
 
 						} catch {
@@ -813,7 +773,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							context!.rollback()
 
 							let nsError = error as NSError
-							if meshLoggingEnabled { MeshLogger.log("💥 Unresolved Core Data error in Send Message Function it is likely that your database is corrupted deleting and re-installing the app should clear the corrupted data. Error: \(nsError)") }
+							MeshLogger.log("💥 Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
 						}
 					}
 				}
@@ -869,15 +829,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		if meshLoggingEnabled { MeshLogger.log("📍 Sent a Location Packet from the Apple device GPS to node: \(fromNodeNum)") }
+		MeshLogger.log("📍 Sent a Location Packet from the Apple device GPS to node: \(fromNodeNum)")
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
-
 		}
-		
 		return success
 	}
 	
@@ -980,24 +937,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			do {
-
 				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Shutdown Admin Message for node: \(String(destNum))") }
-				
+				MeshLogger.log("💾 Saved a Shutdown Admin Message for node: \(String(destNum))")
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				
 				return true
 
 			} catch {
-
 				context!.rollback()
-
 				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				print()
 			}
 		}
-		
 		return false
 	}
 	
@@ -1017,7 +968,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -1029,24 +979,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			do {
-
 				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 Saved a Reboot Admin Message for node: \(String(destNum))") }
-				
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				
+				MeshLogger.log("💾 Saved a Reboot Admin Message for node: \(String(destNum))")
 				return true
-
 			} catch {
-
 				context!.rollback()
-
 				let nsError = error as NSError
-				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
 			}
 		}
-		
 		return false
 	}
 	
@@ -1075,12 +1017,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			if meshLoggingEnabled { MeshLogger.log("💾 Sent a Factory Reset for node: \(String(destNum))") }
+			MeshLogger.log("💾 Sent a Factory Reset for node: \(String(destNum))")
 			return true
 		}
-		
 		return false
 	}
 	
@@ -1109,16 +1049,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
-			do {
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				if meshLoggingEnabled { MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))") }
-				return true
-			} catch {
-				print("💥 Error Sending NodeDB Reset")
-			}
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))")
+			return true
 		}
-		
 		return false
 	}
 	
@@ -1439,11 +1373,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
-			if meshLoggingEnabled { MeshLogger.log("✈️ Sent a Canned Messages Module Get Messages Request Admin Message for node: \(String(destNum))") }
-				
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				return true
+			MeshLogger.log("✈️ Sent a Canned Messages Module Get Messages Request Admin Message for node: \(String(destNum))")
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			return true
 		}
 		
 		return false
@@ -1614,10 +1546,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			do {
 
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				
 				try context!.save()
-				
-				if meshLoggingEnabled { MeshLogger.log("💾 \(adminDescription)") }
+				MeshLogger.log("💾 \(adminDescription)")
 				
 				return true
 
@@ -1626,9 +1556,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				context!.rollback()
 
 				let nsError = error as NSError
-				print("💥 Error inserting new core data MessageEntity: \(nsError)")
+				MeshLogger.log("💥 Error inserting new core data MessageEntity: \(nsError)")
 			}
-			
 		}
 		return false
 	}
