@@ -743,7 +743,7 @@ func moduleConfig (config: ModuleConfig, meshlogging: Bool, context:NSManagedObj
 	}
 }
 
-func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
+func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, meshLogging: Bool, context: NSManagedObjectContext) -> MyInfoEntity? {
 	
 	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
@@ -754,6 +754,7 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 		if fetchedMyInfo.isEmpty {
 			
 			let myInfoEntity = MyInfoEntity(context: context)
+			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.hasGps = myInfo.hasGps_p
 			myInfoEntity.hasWifi = myInfo.hasWifi_p
@@ -784,6 +785,7 @@ func myInfoPacket (myInfo: MyNodeInfo, meshLogging: Bool, context: NSManagedObje
 			
 		} else {
 
+			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].hasGps = myInfo.hasGps_p
 			fetchedMyInfo[0].bitrate = myInfo.bitrate
@@ -1187,6 +1189,11 @@ func positionPacket (packet: MeshPacket, meshLogging: Bool, context: NSManagedOb
 			} else {
 				
 				print("💥 Empty POSITION_APP Packet")
+				
+				if let dataMessage = try? DataMessage(serializedData: packet.decoded.payload) {
+					print(dataMessage)
+					
+				}
 			}
 		}
 

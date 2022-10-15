@@ -113,6 +113,7 @@
         <attribute name="messageTimeoutMsec" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="minAppVersion" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="myNodeNum" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="rebootCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="channels" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="ChannelEntity" inverseName="myInfoChannel" inverseEntity="ChannelEntity"/>
         <relationship name="myInfoNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="myInfo" inverseEntity="NodeInfoEntity"/>
@@ -224,7 +225,6 @@
         <attribute name="macaddr" optional="YES" attributeType="Binary"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shortName" attributeType="String"/>
-        <attribute name="team" optional="YES" attributeType="String"/>
         <attribute name="userId" attributeType="String"/>
         <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>

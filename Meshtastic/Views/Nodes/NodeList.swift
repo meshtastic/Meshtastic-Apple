@@ -139,16 +139,16 @@ struct NodeList: View {
 					self.initialLoad = false
 				}
 			}
-		   } detail: {
+	   } detail: {
+		   
+		   if let node = selection {
 			   
-			   if let node = selection {
-				   
-				   NodeDetail(node:node)
-				   
-			   } else {
-				   
-				   Text("Select a node")
-			   }
+			   NodeDetail(node:node)
+			   
+		   } else {
+			   
+			   Text("Select a node")
 		   }
+	   }
     }
 }
