@@ -47,7 +47,6 @@ struct MessageList: View {
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != userSettings.preferredNodeNum {
 								let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
-							
 								if (user.num == bleManager.broadcastNodeNum || user.num != bleManager.broadcastNodeNum && message.toUser!.num != bleManager.broadcastNodeNum) {
 									if message.replyID > 0 {
 										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
@@ -65,11 +64,8 @@ struct MessageList: View {
 										}
 									}
 									HStack (alignment: .top) {
-									
 									if currentUser { Spacer(minLength:50) }
-									
 									if !currentUser {
-										
 										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
 											.padding(.all, 5)
 											.offset(y: -5)
@@ -88,12 +84,9 @@ struct MessageList: View {
 												Menu("Tapback response") {
 													
 													Button(action: {
-														
 														if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-															
 															print("Sent ❤️ Tapback")
 															self.context.refresh(user, mergeChanges: true)
-															
 														} else { print("❤️ Tapback Failed") }
 														
 													}) {
@@ -353,12 +346,11 @@ struct MessageList: View {
 						.listRowSeparator(.hidden)
 					}
 				}
-				.padding([.top, .bottom])
+				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
 					
 					self.bleManager.context = context
-					self.bleManager.userSettings = userSettings
 					
 					messageCount = user.messageList.count
 					refreshId = UUID()
@@ -381,25 +373,25 @@ struct MessageList: View {
 				ZStack {
 
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
-					TextEditor(text: $typingMessage)
+					TextField("Message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 
-							totalBytes = typingMessage.utf8.count
-							
+							totalBytes = value.utf8.count
+
 							// Only mess with the value if it is too big
 							if totalBytes > maxbytes {
 
 								let firstNBytes = Data(typingMessage.utf8.prefix(maxbytes))
-						
+
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									
+
 									// Set the message back to the last place where it was the right size
 									typingMessage = maxBytesString
 								} else {
 									print("not a valid UTF-8 sequence")
 								}
 							}
-							
+
 						})
 						.keyboardType(kbType!)
 						.toolbar {
@@ -452,14 +444,13 @@ struct MessageList: View {
 						.padding(.horizontal, 8)
 						.focused($focusedField, equals: .messageText)
 						.multilineTextAlignment(.leading)
-						.frame(minHeight: 100, maxHeight: 160)
+						.frame(minHeight: 50)
 
 					Text(typingMessage).opacity(0).padding(.all, 0)
 
 				}
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
-
 				Button(action: {
 					if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, isEmoji: false, replyID: replyMessageId) {
 						typingMessage = ""
@@ -471,11 +462,9 @@ struct MessageList: View {
 							}
 						}
 					}
-
 				}) {
 					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
 				}
-
 			}
 			.padding(.all, 15)
 		}
