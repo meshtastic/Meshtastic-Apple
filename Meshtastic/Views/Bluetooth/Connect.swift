@@ -89,6 +89,7 @@ struct Connect: View {
 
 												
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+													userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
 													bleManager.preferredPeripheral = true
 													isPreferredRadio = true
 													
@@ -100,6 +101,7 @@ struct Connect: View {
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
 
 												userSettings.preferredPeripheralId = ""
+												userSettings.preferredNodeNum = 0
 												bleManager.preferredPeripheral = false
 												isPreferredRadio = false
 											}

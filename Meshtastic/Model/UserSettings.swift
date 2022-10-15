@@ -18,6 +18,11 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
 		}
 	}
+	@Published var preferredNodeNum: Int64 {
+		didSet {
+			UserDefaults.standard.set(preferredNodeNum, forKey: "preferredNodeNum")
+		}
+	}
 	@Published var provideLocation: Bool {
 		didSet {
 			UserDefaults.standard.set(provideLocation, forKey: "provideLocation")
@@ -48,6 +53,7 @@ class UserSettings: ObservableObject {
 
 		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
+		self.preferredNodeNum = UserDefaults.standard.object(forKey: "preferredNodeNum") as? Int64 ?? 0
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0

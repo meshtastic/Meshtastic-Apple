@@ -45,7 +45,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	let broadcastNodeNum: UInt32 = 4294967295
+	let broadcastNodeNum: UInt32 = 0
 
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -531,7 +531,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 					} else {
 						
-						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, meshLogging: meshLoggingEnabled, context: context!)
+						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, meshLogging: meshLoggingEnabled, context: context!)
+						
+						self.userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
 							
@@ -675,11 +677,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// Use a RunLoop to prevent the timer from running on the main UI thread
 			if userSettings?.provideLocation ?? false {
 				if self.positionTimer != nil {
-					
+
 					self.positionTimer!.invalidate()
 				}
-				let context = ["name": "@\(peripheral.name ?? "Unknown")"]
-				self.positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+				positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 				RunLoop.current.add(self.positionTimer!, forMode: .common)
 			}
 
@@ -922,12 +923,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		if meshLoggingEnabled { MeshLogger.log("📍 Sent a Position Packet from the Apple device GPS to node: \(fromNodeNum)") }
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
+			MeshLogger.log("📍 Sent a Share Location Position Packet from the Apple device GPS to node: \(fromNodeNum)")
 
 		}
 		

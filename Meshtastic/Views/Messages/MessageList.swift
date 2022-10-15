@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreData
 
-struct UserMessageList: View {
+struct MessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -43,49 +43,49 @@ struct UserMessageList: View {
 				ScrollView {
 					
 					if user.messageList.count > 0 {
-												
-						ForEach( user.messageList ) { (message: MessageEntity) in
-							
-								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
-								
-								if message.toUser!.num == Int64(bleManager.broadcastNodeNum) || ((bleManager.connectedPeripheral) != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : true {
 									
-									if message.replyID > 0 {
+						ForEach( user.messageList ) { (message: MessageEntity) in
+							if user.num != userSettings.preferredNodeNum {
+								let currentUser: Bool = (bleManager.connectedPeripheral == nil) ? false : ((bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == message.fromUser?.num) ? true : false )
+							
+								if (message.toUser!.num == Int64(bleManager.broadcastNodeNum) || userSettings.preferredNodeNum == message.fromUser?.num) {
+								
+								if message.replyID > 0 {
+									
+									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
+									
+									HStack {
 										
-										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
-										
-										HStack {
-
-											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
-												.padding(10)
-												.overlay(
-													RoundedRectangle(cornerRadius: 18)
-														.stroke(Color.blue, lineWidth: 0.5)
+										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+											.padding(10)
+											.overlay(
+												RoundedRectangle(cornerRadius: 18)
+													.stroke(Color.blue, lineWidth: 0.5)
 											)
-											Image(systemName: "arrowshape.turn.up.left.fill")
-												.symbolRenderingMode(.hierarchical)
-												.imageScale(.large).foregroundColor(.blue)
-												.padding(.trailing)
-										}
+										Image(systemName: "arrowshape.turn.up.left.fill")
+											.symbolRenderingMode(.hierarchical)
+											.imageScale(.large).foregroundColor(.blue)
+											.padding(.trailing)
+									}
+								}
+								
+								
+								HStack (alignment: .top) {
+									
+									if currentUser { Spacer(minLength:50) }
+									
+									if !currentUser {
+										
+										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
+											.padding(.all, 5)
+											.offset(y: -5)
 									}
 									
-									
-									HStack (alignment: .top) {
-									
-										if currentUser { Spacer(minLength:50) }
+									VStack(alignment: currentUser ? .trailing : .leading) {
 										
-										if !currentUser {
-											
-											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
-												.padding(.all, 5)
-												.offset(y: -5)
-										}
-										
-										VStack(alignment: currentUser ? .trailing : .leading) {
-											
-											Text(message.messagePayload ?? "EMPTY MESSAGE")
+										Text(message.messagePayload ?? "EMPTY MESSAGE")
 											.padding(10)
-											
+										
 											.foregroundColor(.white)
 											.background(currentUser ? Color.blue : Color(.darkGray))
 											.cornerRadius(15)
@@ -150,7 +150,7 @@ struct UserMessageList: View {
 														Image(uiImage: image!)
 													}
 													Button(action: {
-								
+														
 														if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 															
 															print("Sent ‼️ Tapback")
@@ -178,7 +178,7 @@ struct UserMessageList: View {
 														Image(uiImage: image!)
 													}
 													Button(action: {
-													
+														
 														if bleManager.sendMessage(message: "💩", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
 															
 															print("Sent 💩 Tapback")
@@ -195,7 +195,7 @@ struct UserMessageList: View {
 												Button(action: {
 													self.replyMessageId = message.messageId
 													self.focusedField = .messageText
-		
+													
 													print("I want to reply to \(message.messageId)")
 												}) {
 													Text("Reply")
@@ -212,14 +212,14 @@ struct UserMessageList: View {
 													VStack {
 														
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-
+														
 														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 													}
 													
 													if currentUser && message.receivedACK {
 														
 														VStack {
-																	
+															
 															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
 														}
 														
@@ -271,89 +271,90 @@ struct UserMessageList: View {
 													Image(systemName: "trash")
 												}
 											}
+										
+										let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+										
+										if tapbacks.count > 0 {
 											
-											let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
-											
-											if tapbacks.count > 0 {
+											VStack (alignment: .trailing) {
 												
-												VStack (alignment: .trailing) {
-
-													HStack  {
+												HStack  {
+													
+													ForEach( tapbacks ) { (tapback: MessageEntity) in
 														
-														ForEach( tapbacks ) { (tapback: MessageEntity) in
-														
-															VStack {
-																
-																let image = tapback.messagePayload!.image(fontSize: 20)
-																Image(uiImage: image!).font(.caption)
-																Text("\(tapback.fromUser?.shortName ?? "????")")
-																	.font(.caption2)
-																	.foregroundColor(.gray)
-																	.fixedSize()
-																	.padding(.bottom, 1)
-															}
+														VStack {
+															
+															let image = tapback.messagePayload!.image(fontSize: 20)
+															Image(uiImage: image!).font(.caption)
+															Text("\(tapback.fromUser?.shortName ?? "????")")
+																.font(.caption2)
+																.foregroundColor(.gray)
+																.fixedSize()
+																.padding(.bottom, 1)
 														}
 													}
-													.padding(10)
-													.overlay(
-														RoundedRectangle(cornerRadius: 18)
-															.stroke(Color.gray, lineWidth: 1)
-													)
 												}
-											}
-											
-											HStack {
-
-												if currentUser && message.receivedACK {
-														
-													// Ack Received
-													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
-													
-												} else if currentUser && message.ackError == 0 {
-													
-													// Empty Error
-													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-													
-												} else if currentUser && message.ackError > 0 {
-													
-													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
-														.font(.caption2).foregroundColor(.red)
-												}
+												.padding(10)
+												.overlay(
+													RoundedRectangle(cornerRadius: 18)
+														.stroke(Color.gray, lineWidth: 1)
+												)
 											}
 										}
-										.padding(.bottom)
-										.id(user.messageList.firstIndex(of: message))
-										if !currentUser {
+										
+										HStack {
 											
-											Spacer(minLength:50)
+											if currentUser && message.receivedACK {
+												
+												// Ack Received
+												Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+												
+											} else if currentUser && message.ackError == 0 {
+												
+												// Empty Error
+												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
+												
+											} else if currentUser && message.ackError > 0 {
+												
+												let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+												Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													.font(.caption2).foregroundColor(.red)
+											}
 										}
 									}
-									.padding([.leading, .trailing])
-									.frame(maxWidth: .infinity)
-									.id(message.messageId)
-									.alert(isPresented: $showDeleteMessageAlert) {
-										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
-										primaryButton: .destructive(Text("Delete")) {
+									.padding(.bottom)
+									.id(user.messageList.firstIndex(of: message))
+									if !currentUser {
+										
+										Spacer(minLength:50)
+									}
+								}
+								.padding([.leading, .trailing])
+								.frame(maxWidth: .infinity)
+								.id(message.messageId)
+								.alert(isPresented: $showDeleteMessageAlert) {
+									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."),
+										  primaryButton: .destructive(Text("Delete")) {
 										print("OK button tapped")
 										if deleteMessageId > 0 {
-
+											
 											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
-
+											
 											context.delete(message!)
 											do {
 												try context.save()
-
+												
 												deleteMessageId = 0
-
+												
 											} catch {
-													print("Failed to delete message \(deleteMessageId)")
+												print("Failed to delete message \(deleteMessageId)")
 											}
 										}
 									},
-									secondaryButton: .cancel()
+										  secondaryButton: .cancel()
 									)
 								}
+							}
 							}
 						}
 						.listRowSeparator(.hidden)

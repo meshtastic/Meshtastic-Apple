@@ -5,7 +5,9 @@
 //  Copyright(c) Garth Vander Houwen 7/7/22.
 //
 import SwiftUI
+#if canImport(Charts)
 import Charts
+#endif
 
 struct DeviceMetricsLog: View {
 	
@@ -35,6 +37,8 @@ struct DeviceMetricsLog: View {
 			
 			if data.count > 0 {
 				
+				#if canImport(Charts)
+				
 				GroupBox(label:	Label("Battery Level Trend", systemImage: "battery.100")) {
 					
 					Chart(data.array as! [TelemetryEntity], id: \.self) {
@@ -49,6 +53,8 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(height: 150)
 				}
+				
+				#endif
 			}
 
 			ScrollView {

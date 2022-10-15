@@ -2,12 +2,11 @@
 //  ShareChannel.swift
 //  MeshtasticApple
 //
-//  Created by Garth Vander Houwen on 4/8/22.
+//  Copyright(c) Garth Vander Houwen 4/8/22.
 //
 import SwiftUI
 import CoreData
 import CoreImage.CIFilterBuiltins
-
 
 struct QrCodeImage {
 	let context = CIContext()
@@ -30,14 +29,10 @@ struct QrCodeImage {
 	}
 }
 
-
 struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
-	@State var initialLoad: Bool = true
-	
 	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
 	@State var includeChannel1 = false
@@ -47,30 +42,20 @@ struct ShareChannels: View {
 	@State var includeChannel5 = false
 	@State var includeChannel6 = false
 	@State var includeChannel7 = false
-	
 	@State var isPresentingHelp = false
-	
 	var node: NodeInfoEntity?
-	
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
-	
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
 		
 		VStack {
-			
 			GeometryReader { bounds in
-				
 				let smallest = min(bounds.size.width, bounds.size.height)
-				
 				ScrollView {
-					
 					VStack {
-						if node != nil {
-							
+						if node != nil && node?.myInfo != nil {
 							Grid(alignment: .top, horizontalSpacing: 2) {
-								
 								GridRow {
 									Spacer()
 									Text("Include")
@@ -86,9 +71,7 @@ struct ShareChannels: View {
 										.fontWeight(.bold)
 									Spacer()
 								}
-								
 								ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-
 									GridRow {
 										Spacer()
 										if channel.index == 0 {
@@ -155,47 +138,42 @@ struct ShareChannels: View {
 							}
 						}
 					}
-					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 					
+					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 					VStack {
-									
-						ShareLink("Share QR Code & Link",
-							item: Image(uiImage: qrImage),
-							subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-							message: Text(channelsUrl),
-							preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
-												  image: Image(uiImage: qrImage))
-						)
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						
-						Image(uiImage: qrImage)
-							.resizable()
-							.scaledToFit()
-							.frame(
-								minWidth: smallest * 0.65,
-								maxWidth: smallest * 0.65,
-								minHeight: smallest * 0.65,
-								maxHeight: smallest * 0.65,
-								alignment: .top
+						if node != nil {
+							ShareLink("Share QR Code & Link",
+									  item: Image(uiImage: qrImage),
+									  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+									  message: Text(channelsUrl),
+									  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+															image: Image(uiImage: qrImage))
 							)
-						
-						Button {
-										
-							isPresentingHelp = true
-							
-						} label: {
-							
-							Label("Help Me!", systemImage: "lifepreserver")
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							Image(uiImage: qrImage)
+								.resizable()
+								.scaledToFit()
+								.frame(
+									minWidth: smallest * 0.65,
+									maxWidth: smallest * 0.65,
+									minHeight: smallest * 0.65,
+									maxHeight: smallest * 0.65,
+									alignment: .top
+								)
+							Button {
+								isPresentingHelp = true
+							} label: {
+								Label("Help Me!", systemImage: "lifepreserver")
+							}
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.small)
 						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.small)
 					}
 				}
 				.sheet(isPresented: $isPresentingHelp) {
-					
 					VStack {
 						Text("Meshtastic Channels").font(.title)
 						Text("A Meshtastic LoRa Mesh network can have up to 8 distinct channels.")
@@ -225,42 +203,20 @@ struct ShareChannels: View {
 				.navigationTitle("Generate QR Code")
 				.navigationBarTitleDisplayMode(.inline)
 				.navigationBarItems(trailing:
-										
 				ZStack {
-					
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 				})
 				.onAppear {
-					
-					if self.initialLoad{
-						
-						self.bleManager.context = context
-						
-						self.initialLoad = false
-						GenerateChannelSet()
-					}
-				}
-				.onChange(of: includeChannel1) { includeCh1 in
+					self.bleManager.context = context
 					GenerateChannelSet()
 				}
-				.onChange(of: includeChannel2) { includeCh2 in
-					GenerateChannelSet()
-				}
-				.onChange(of: includeChannel3) { includeCh3 in
-					GenerateChannelSet()
-				}
-				.onChange(of: includeChannel4) { includeCh4 in
-					GenerateChannelSet()
-				}
-				.onChange(of: includeChannel5) { includeCh5 in
-					GenerateChannelSet()
-				}
-				.onChange(of: includeChannel6) { includeCh6 in
-					GenerateChannelSet()
-				}
-				.onChange(of: includeChannel7) { includeCh7 in
-					GenerateChannelSet()
-				}
+				.onChange(of: includeChannel1) { includeCh1 in GenerateChannelSet()	}
+				.onChange(of: includeChannel2) { includeCh2 in GenerateChannelSet()	}
+				.onChange(of: includeChannel3) { includeCh3 in GenerateChannelSet()	}
+				.onChange(of: includeChannel4) { includeCh4 in GenerateChannelSet()	}
+				.onChange(of: includeChannel5) { includeCh5 in GenerateChannelSet()	}
+				.onChange(of: includeChannel6) { includeCh6 in GenerateChannelSet() }
+				.onChange(of: includeChannel7) { includeCh7 in GenerateChannelSet() }
 			}
 			.navigationViewStyle(StackNavigationViewStyle())
 		}
@@ -268,34 +224,36 @@ struct ShareChannels: View {
 	func GenerateChannelSet() {
 		channelSet = ChannelSet()
 		var loRaConfig = Config.LoRaConfig()
-		loRaConfig.region =  RegionCodes(rawValue: Int(node!.loRaConfig!.regionCode))!.protoEnumValue()
-		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node!.loRaConfig!.modemPreset))!.protoEnumValue()
-		loRaConfig.bandwidth = UInt32(node!.loRaConfig!.bandwidth)
-		loRaConfig.spreadFactor = UInt32(node!.loRaConfig!.spreadFactor)
-		loRaConfig.codingRate = UInt32(node!.loRaConfig!.codingRate)
-		loRaConfig.frequencyOffset = node!.loRaConfig!.frequencyOffset
-		loRaConfig.hopLimit = UInt32(node!.loRaConfig!.hopLimit)
-		loRaConfig.txEnabled = node!.loRaConfig!.txEnabled
-		loRaConfig.txPower = node!.loRaConfig!.txPower
-		loRaConfig.channelNum = UInt32(node!.loRaConfig!.channelNum)
+		loRaConfig.region =  RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))!.protoEnumValue()
+		loRaConfig.modemPreset = ModemPresets(rawValue: Int(node?.loRaConfig?.modemPreset ?? 0))!.protoEnumValue()
+		loRaConfig.bandwidth = UInt32(node?.loRaConfig?.bandwidth ?? 0)
+		loRaConfig.spreadFactor = UInt32(node?.loRaConfig?.spreadFactor ?? 0)
+		loRaConfig.codingRate = UInt32(node?.loRaConfig?.codingRate ?? 0)
+		loRaConfig.frequencyOffset = node?.loRaConfig?.frequencyOffset ?? 0
+		loRaConfig.hopLimit = UInt32(node?.loRaConfig?.hopLimit ?? 3)
+		loRaConfig.txEnabled = node?.loRaConfig?.txEnabled ?? false
+		loRaConfig.txPower = node?.loRaConfig?.txPower ?? 0
+		loRaConfig.channelNum = UInt32(node?.loRaConfig?.channelNum ?? 0)
 		channelSet.loraConfig = loRaConfig
-		for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
-			if ch.role > 0 {
-				
-				if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
-					ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
+		if node != nil {
+			for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
+				if ch.role > 0 {
 					
-					var channelSettings = ChannelSettings()
-						channelSettings.name = ch.name!
-						channelSettings.psk = ch.psk!
-						channelSettings.id = UInt32(ch.id)
-						channelSettings.uplinkEnabled = ch.uplinkEnabled
-						channelSettings.downlinkEnabled = ch.downlinkEnabled
-						channelSet.settings.append(channelSettings)
+					if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
+						ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
+						
+						var channelSettings = ChannelSettings()
+							channelSettings.name = ch.name!
+							channelSettings.psk = ch.psk!
+							channelSettings.id = UInt32(ch.id)
+							channelSettings.uplinkEnabled = ch.uplinkEnabled
+							channelSettings.downlinkEnabled = ch.downlinkEnabled
+							channelSet.settings.append(channelSettings)
+					}
 				}
 			}
+			let settingsString = try! channelSet.serializedData().base64EncodedString()
+			channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url())
 		}
-		let settingsString = try! channelSet.serializedData().base64EncodedString()
-		channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url())
 	}
 }
