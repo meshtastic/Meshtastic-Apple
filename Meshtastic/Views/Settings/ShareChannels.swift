@@ -69,7 +69,6 @@ struct ShareChannels: View {
 									Text("Encrypted")
 										.font(.caption)
 										.fontWeight(.bold)
-									Spacer()
 								}
 								ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 									GridRow {
@@ -80,97 +79,108 @@ struct ShareChannels: View {
 												.labelsHidden()
 												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
-										} else if channel.index == 1 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 1 && channel.role > 0 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 2 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 2 && channel.role > 0 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 3 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 3 && channel.role > 0 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 4 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 4  && channel.role > 0 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 5 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 5 && channel.role > 0 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 6 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 6  && channel.role > 0 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										} else if channel.index == 7 {
+											Image(systemName: "lock.fill")
+												.foregroundColor(.green)
+										} else if channel.index == 7 && channel.role > 0 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-										}
-										
-										if channel.role == 0 {
-											Image(systemName: "lock.slash")
-											.foregroundColor(.gray)
-										}
-										else if channel.role > 0 {
 											Image(systemName: "lock.fill")
 												.foregroundColor(.green)
 										}
 										Spacer()
 									}
+									.padding(0)
+								}
+							}
+							
+							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
+							VStack {
+								if node != nil {
+									ShareLink("Share QR Code & Link",
+											  item: Image(uiImage: qrImage),
+											  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+											  message: Text(channelsUrl),
+											  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+																	image: Image(uiImage: qrImage))
+									)
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+									
+									Image(uiImage: qrImage)
+										.resizable()
+										.scaledToFit()
+										.frame(
+											minWidth: smallest * 0.95,
+											maxWidth: smallest * 0.95,
+											minHeight: smallest * 0.95,
+											maxHeight: smallest * 0.95,
+											alignment: .top
+										)
+									Button {
+										isPresentingHelp = true
+									} label: {
+										Label("Help Me!", systemImage: "lifepreserver")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.small)
 								}
 							}
 						}
-					}
-					
-					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
-					VStack {
-						if node != nil {
-							ShareLink("Share QR Code & Link",
-									  item: Image(uiImage: qrImage),
-									  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-									  message: Text(channelsUrl),
-									  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
-															image: Image(uiImage: qrImage))
-							)
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							Image(uiImage: qrImage)
-								.resizable()
-								.scaledToFit()
-								.frame(
-									minWidth: smallest * 0.65,
-									maxWidth: smallest * 0.65,
-									minHeight: smallest * 0.65,
-									maxHeight: smallest * 0.65,
-									alignment: .top
-								)
-							Button {
-								isPresentingHelp = true
-							} label: {
-								Label("Help Me!", systemImage: "lifepreserver")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.small)
-						}
+						
 					}
 				}
 				.sheet(isPresented: $isPresentingHelp) {
@@ -207,7 +217,7 @@ struct ShareChannels: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 				})
 				.onAppear {
-					self.bleManager.context = context
+					bleManager.context = context
 					GenerateChannelSet()
 				}
 				.onChange(of: includeChannel1) { includeCh1 in GenerateChannelSet()	}
