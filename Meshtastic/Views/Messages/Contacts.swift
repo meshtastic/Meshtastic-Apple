@@ -11,18 +11,24 @@ struct Contacts: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
+	@ObservedObject private var userSettings: UserSettings = UserSettings()
+	
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
-
-	private var users: FetchedResults<UserEntity>
 	
+	private var users: FetchedResults<UserEntity>
+
+	
+	
+	private var prefferedNode: NodeInfoEntity?
+
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "num", ascending: true)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
+	
 	
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
 
@@ -45,10 +51,10 @@ struct Contacts: View {
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 									
 									HStack {
-										VStack {
+										VStack(alignment: .leading) {
 											CircleText(text: user.shortName ?? "???", color: Color.blue)
+												.padding(.trailing, 5)
 										}
-										.padding([.leading, .trailing])
 										VStack {
 											HStack {
 												VStack {
@@ -74,8 +80,6 @@ struct Contacts: View {
 												}
 												.frame(maxWidth: .infinity, alignment: .trailing)
 											}
-											.listRowSeparator(.hidden).frame(height: 5)
-											
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 													.frame(height: 60)
@@ -88,10 +92,10 @@ struct Contacts: View {
 									}
 								} else {
 									HStack {
-										VStack {
-											CircleText(text: user.shortName ?? "????", color: Color.blue)
+										VStack(alignment: .leading) {
+											CircleText(text: user.shortName ?? "???", color: Color.blue)
+												.padding(.trailing, 5)
 										}
-										.padding(.trailing)
 										VStack {
 											HStack {
 												VStack {
@@ -102,9 +106,16 @@ struct Contacts: View {
 												}
 												.frame(maxWidth: .infinity, alignment: .trailing)
 											}
-											.listRowSeparator(.hidden).frame(height: 5)
+											HStack(alignment: .top) {
+												Text(" ")
+													.frame(height: 60)
+													.truncationMode(.tail)
+													.foregroundColor(Color.gray)
+													.frame(maxWidth: .infinity, alignment: .leading)
+											}
 										}
-									}.padding()
+										.padding(.top)
+									}
 								}
 							}
 						}
@@ -116,6 +127,8 @@ struct Contacts: View {
 				}
 				.hidden()
 			}
+			.tint(Color(UIColor.systemGray))
+			.navigationSplitViewStyle(.automatic)
 			.navigationTitle("Contacts")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(leading:
@@ -133,5 +146,6 @@ struct Contacts: View {
 				Text("Select a user")
 			}
 		}
+
     }
 }

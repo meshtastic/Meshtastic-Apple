@@ -21,6 +21,15 @@ struct Onboarding: View {
 				.font(.callout)
 				.padding()
 			
+			NavigationLink() {
+				
+			LoRaConfig(node: nil)
+				
+				} label: {
+				Image(systemName: "dot.radiowaves.left.and.right")
+					.symbolRenderingMode(.hierarchical)
+				Text("LoRa")
+			}
 		}
 	}
 }

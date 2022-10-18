@@ -228,7 +228,6 @@ struct ShareChannels: View {
 				.onChange(of: includeChannel6) { includeCh6 in GenerateChannelSet() }
 				.onChange(of: includeChannel7) { includeCh7 in GenerateChannelSet() }
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 	func GenerateChannelSet() {

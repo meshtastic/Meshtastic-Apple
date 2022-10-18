@@ -86,8 +86,7 @@ struct NodeMap: View {
 
 		//self.$userLocation = LocationHelper.currentLocation
 
-        NavigationView {
-
+        NavigationStack {
             ZStack {
 
 				//MapView(nodes: self.locationNodes)//.environmentObject(bleManager)
@@ -115,28 +114,26 @@ struct NodeMap: View {
                .frame(maxHeight: .infinity)
                .ignoresSafeArea(.all, edges: [.leading, .trailing])
             }
-            .navigationTitle("Mesh Map")
-            .navigationBarTitleDisplayMode(.inline)
-			
-			.navigationBarItems(leading:
-				MeshtasticLogo(), trailing:
-
-			ZStack {
-
-				ConnectedDevice(
-					bluetoothOn: bleManager.isSwitchedOn,
-					deviceConnected: bleManager.connectedPeripheral != nil,
-					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-						"????")
-			})
-			.onAppear(perform: {
-
-				self.bleManager.context = context
-				self.bleManager.userSettings = userSettings
-
-			})
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+		.navigationTitle("Mesh Map")
+		.navigationBarTitleDisplayMode(.inline)
+		
+		.navigationBarItems(leading:
+			MeshtasticLogo(), trailing:
+		ZStack {
+
+			ConnectedDevice(
+				bluetoothOn: bleManager.isSwitchedOn,
+				deviceConnected: bleManager.connectedPeripheral != nil,
+				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
+					"????")
+		})
+		.onAppear(perform: {
+
+			self.bleManager.context = context
+			self.bleManager.userSettings = userSettings
+
+		})
     }
 }
 
