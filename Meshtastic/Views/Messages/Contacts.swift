@@ -11,18 +11,24 @@ struct Contacts: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
+	@ObservedObject private var userSettings: UserSettings = UserSettings()
+	
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
-
-	private var users: FetchedResults<UserEntity>
 	
+	private var users: FetchedResults<UserEntity>
+
+	
+	
+	private var prefferedNode: NodeInfoEntity?
+
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "num", ascending: true)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
+	
 	
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
 

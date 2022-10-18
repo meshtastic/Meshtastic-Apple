@@ -16,7 +16,6 @@ struct Connect: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	@State var initialLoad: Bool = true
 	@State var isPreferredRadio: Bool = false
 	
 	@State var invalidFirmwareVersion = false
@@ -30,15 +29,6 @@ struct Connect: View {
 				List {
 					
 					if bleManager.isSwitchedOn {
-					
-					if bleManager.lastConnectionError.count > 0 {
-
-						Section(header: Text("Connection Error").font(.title)) {
-
-							Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
-						}
-						.textCase(nil)
-					}
 						
 					Section(header: Text("Connected Radio").font(.title)) {
 						
@@ -161,6 +151,9 @@ struct Connect: View {
 								
 							} else {
 								
+								if bleManager.lastConnectionError.count > 0 {
+									Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
+								}
 								HStack {
 									Image(systemName: "antenna.radiowaves.left.and.right.slash")
 										.symbolRenderingMode(.hierarchical)
@@ -269,78 +262,60 @@ struct Connect: View {
 						.buttonBorderShape(.capsule)
 						.controlSize(.large)
 						.padding()
-						
 					}
 					#endif
-						
 						Spacer()
                     }
 					.padding(.bottom, 10)
-
-         
             }
             .navigationTitle("Bluetooth")
 			
-			.navigationBarItems(leading:
-		     MeshtasticLogo(),
-			 trailing:
-
-			 ZStack {
-				
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			.navigationBarItems(leading: MeshtasticLogo(), trailing:
+				 ZStack {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			 })
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+       // .navigationViewStyle(StackNavigationViewStyle())
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-
-	
 		.onChange(of: (self.bleManager.invalidVersion)) { cv in
-			
 			invalidFirmwareVersion = self.bleManager.invalidVersion
-			
 		}
         .onAppear(perform: {
-						
-			if initialLoad {
+
+			self.bleManager.context = context
+			self.bleManager.userSettings = userSettings
 				
-				self.bleManager.context = context
-				self.bleManager.userSettings = userSettings
-				
-				// Ask for notification permission
-				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-					if success {
-						print("Notifications are all set!")
-					} else if let error = error {
-						print(error.localizedDescription)
-					}
+			// Ask for notification permission
+			UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+				if success {
+					print("Notifications are all set!")
+				} else if let error = error {
+					print(error.localizedDescription)
 				}
-		
-				initialLoad = false
 			}
 			
-			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.peripheral.identifier.uuidString {
+			if self.bleManager.connectedPeripheral != nil {
+				print(self.bleManager.connectedPeripheral.id)
+				print(userSettings.preferredPeripheralId)
+			}
+			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.id {
 				isPreferredRadio = true
+				if userSettings.preferredNodeNum > 0 {
+					
+					print("I wanna set my prefered node")
+				}
+				
 			} else {
 				isPreferredRadio = false
 			}
 		})
     }
 	func didDismissSheet() {
-		  
 		bleManager.disconnectPeripheral()
 	}
-}
-
-struct Connect_Previews: PreviewProvider {
-
-    static var previews: some View {
-        Connect()
-
-            .environmentObject(BLEManager())
-    }
 }

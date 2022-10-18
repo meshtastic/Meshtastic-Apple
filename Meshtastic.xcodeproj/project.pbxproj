@@ -470,7 +470,6 @@
 				DDC2E18B26CE25A70042C5E4 /* Messages */,
 				DD4A911C2708C57100501B7E /* Settings */,
 				DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */,
-				DD4033C128B286B70096A444 /* Onboarding.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -498,6 +497,7 @@
 			children = (
 				DD882F5C2772E4640005BF05 /* Contacts.swift */,
 				DD1BF2F82776FE2E008C8D2F /* MessageList.swift */,
+				DD4033C128B286B70096A444 /* Onboarding.swift */,
 			);
 			path = Messages;
 			sourceTree = "<group>";
