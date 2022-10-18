@@ -128,6 +128,12 @@ struct Contacts: View {
 				.hidden()
 			}
 			.tint(Color(UIColor.systemGray))
+			.navigationSplitViewStyle(.automatic)
+			.navigationTitle("Contacts")
+			.navigationBarTitleDisplayMode(.inline)
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
 		}
 		detail: {
 		
@@ -140,11 +146,6 @@ struct Contacts: View {
 				Text("Select a user")
 			}
 		}
-		.navigationSplitViewStyle(.automatic)
-		.navigationTitle("Contacts")
-		.navigationBarTitleDisplayMode(.inline)
-		.navigationBarItems(leading:
-			MeshtasticLogo()
-		)
+
     }
 }

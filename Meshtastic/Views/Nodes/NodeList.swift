@@ -123,6 +123,19 @@ struct NodeList: View {
 				}
 			 }
 			.tint(Color(UIColor.systemGray))
+			.navigationTitle("All Nodes")
+			.navigationBarItems(leading:
+				MeshtasticLogo()
+			)
+			.onAppear {
+
+				if initialLoad {
+					
+					self.bleManager.userSettings = userSettings
+					self.bleManager.context = context
+					self.initialLoad = false
+				}
+			}
 	   } detail: {
 		   
 		   if let node = selection {
@@ -134,18 +147,6 @@ struct NodeList: View {
 			   Text("Select a node")
 		   }
 	   }
-	   .navigationTitle("All Nodes")
-	   .navigationBarItems(leading:
-		   MeshtasticLogo()
-	   )
-	   .onAppear {
 
-		   if initialLoad {
-			   
-			   self.bleManager.userSettings = userSettings
-			   self.bleManager.context = context
-			   self.initialLoad = false
-		   }
-	   }
     }
 }
