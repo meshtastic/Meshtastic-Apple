@@ -31,7 +31,6 @@ struct PositionConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
 	
@@ -72,52 +71,35 @@ struct PositionConfig: View {
 	var body: some View {
 		
 		VStack {
-
 			Form {
-
 				Section(header: Text("Device GPS")) {
-					
 					Toggle(isOn: $deviceGpsEnabled) {
-
 						Label("Device GPS Enabled", systemImage: "location")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if deviceGpsEnabled {
-											
 						Picker("Update Interval", selection: $gpsUpdateInterval) {
 							ForEach(GpsUpdateIntervals.allCases) { ui in
 								Text(ui.description)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
-						
 						Text("How often should we try to get a GPS position.")
 							.font(.caption)
-							.listRowSeparator(.visible)
-						
 						Picker("Attempt Time", selection: $gpsAttemptTime) {
 							ForEach(GpsAttemptTimes.allCases) { at in
 								Text(at.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						
 						Text("How long should we try to get our position during each GPS Update Interval attempt?")
 							.font(.caption)
-							.listRowSeparator(.visible)
-
-						
 					} else {
-						
 						Toggle(isOn: $fixedPosition) {
-
 							Label("Fixed Position", systemImage: "location.square.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Text("If enabled your current location will be set as a fixed position.")
 							.font(.caption)
-							.listRowSeparator(.visible)
-						
 					}
 				}
 				
@@ -218,7 +200,6 @@ struct PositionConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
@@ -232,9 +213,7 @@ struct PositionConfig: View {
 					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-					
 					var pf : PositionFlags = []
-					
 					if includeAltitude { pf.insert(.Altitude) }
 					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
 					if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
@@ -245,24 +224,15 @@ struct PositionConfig: View {
 					if includeTimestamp { pf.insert(.Timestamp) }
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
-					
 					pc.positionFlags = UInt32(pf.rawValue)
-					
 					if fixedPosition {
-						
 						let sendPosition = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
 					}
-
 					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
-					
-					if adminMessageId > 0{
-						
+					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-						
-					} else {
-						
 					}
 				}
 			}
@@ -275,74 +245,59 @@ struct PositionConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
-			if self.initialLoad{
 				
-				self.bleManager.context = context
-				self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
-				self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
-				self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
-				self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
-				self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
-				self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
-				self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
-				
-				let pf = PositionFlags(rawValue: self.positionFlags)
-				
-				if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
-				if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
-				if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
-				if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
-				if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
-				if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
-				if pf.contains(.SeqNo) { self.includeSeqNo = true } else { self.includeSeqNo = false }
-				if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
-				if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
-				if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
-				
-				self.hasChanges = false
-				self.initialLoad = false
-			}
+			self.bleManager.context = context
+			self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
+			self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
+			self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
+			self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
+			self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
+			self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
+			self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
+			
+			let pf = PositionFlags(rawValue: self.positionFlags)
+			
+			if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
+			if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
+			if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
+			if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
+			if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
+			if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
+			if pf.contains(.SeqNo) { self.includeSeqNo = true } else { self.includeSeqNo = false }
+			if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
+			if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
+			if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
+			
+			self.hasChanges = false
+			
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: gpsAttemptTime) { newGpsAttemptTime in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newGpsAttemptTime != node!.positionConfig!.gpsAttemptTime { hasChanges = true }
 			}
 		}
 		.onChange(of: gpsUpdateInterval) { newGpsUpdateInterval in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newGpsUpdateInterval != node!.positionConfig!.gpsUpdateInterval { hasChanges = true }
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newSmartPositionEnabled != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: fixedPosition) { newFixed in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
 			}
 		}
 		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
-
 			if node != nil && node!.positionConfig != nil {
-
 				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
 			}
 		}
@@ -401,6 +356,5 @@ struct PositionConfig: View {
 			let existingValue = pf.contains(.Hvdop)
 			if existingValue != hvdopFlag { hasChanges = true }
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
