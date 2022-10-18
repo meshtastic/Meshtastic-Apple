@@ -82,7 +82,7 @@ struct Contacts: View {
 											}
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-													.frame(height: 60)
+													.frame(height: 50)
 													.truncationMode(.tail)
 													.foregroundColor(Color.gray)
 													.frame(maxWidth: .infinity, alignment: .leading)
@@ -108,7 +108,7 @@ struct Contacts: View {
 											}
 											HStack(alignment: .top) {
 												Text(" ")
-													.frame(height: 60)
+													.frame(height: 50	)
 													.truncationMode(.tail)
 													.foregroundColor(Color.gray)
 													.frame(maxWidth: .infinity, alignment: .leading)

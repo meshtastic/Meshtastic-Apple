@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import CoreData
 import CoreLocation
 import CoreBluetooth
 
@@ -15,58 +16,47 @@ struct Connect: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
+	@State var node: NodeInfoEntity? = nil
 	
 	@State var isPreferredRadio: Bool = false
-	
+	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 
     var body: some View {
 	
 		NavigationStack {
-
             VStack {
-
 				List {
-					
 					if bleManager.isSwitchedOn {
-						
 					Section(header: Text("Connected Radio").font(.title)) {
 						
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
-							
+													
 							HStack {
-
 								Image(systemName: "antenna.radiowaves.left.and.right")
 									.symbolRenderingMode(.hierarchical)
 									.imageScale(.large).foregroundColor(.green)
 									.padding(.trailing)
-
 								VStack(alignment: .leading) {
-
-									if bleManager.connectedPeripheral != nil {
-
+									if node != nil {
 										Text(bleManager.connectedPeripheral.longName).font(.title2)
-
 									}
 									Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
 										.font(.caption).foregroundColor(Color.gray)
-									if bleManager.connectedPeripheral != nil {
-										Text("FW Version: ").font(.caption)+Text(bleManager.connectedPeripheral.firmwareVersion)
+									if node != nil {
+										Text("FW Version: ").font(.caption)+Text(node?.myInfo?.firmwareVersion ?? "Unknown")
 											.font(.caption).foregroundColor(Color.gray)
 									}
-									if bleManager.connectedPeripheral.subscribed {
+									if bleManager.isSubscribed {
 										Text("Subscribed to mesh").font(.caption)
 											.foregroundColor(.green)
 									} else {
 										Text("Communicating with device. . . ").font(.caption)
 											.foregroundColor(.orange)
-											
 									}
 								}
 								Spacer()
-
 								VStack(alignment: .center) {
-
 									Text("Preferred").font(.caption2)
 									Text("Radio").font(.caption2)
 									Toggle("Preferred Radio", isOn: $bleManager.preferredPeripheral)
@@ -74,18 +64,12 @@ struct Connect: View {
 										.labelsHidden()
 										.onChange(of: bleManager.preferredPeripheral) { value in
 											if value {
-
 												if bleManager.connectedPeripheral != nil {
-
-												
 													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
 													userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
 													bleManager.preferredPeripheral = true
 													isPreferredRadio = true
-													
 												}
-
-												
 											} else {
 
 											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
@@ -98,7 +82,6 @@ struct Connect: View {
 										}
 									}
 								}
-								
 							}
 							.font(.caption).foregroundColor(Color.gray)
 							.padding([.top, .bottom])
@@ -114,18 +97,32 @@ struct Connect: View {
 								}
 							}
 							.contextMenu{
-
-								Text("Num: \(String(bleManager.connectedPeripheral.num))")
-								Text("Short Name: \(bleManager.connectedPeripheral.shortName)")
-								Text("Long Name: \(bleManager.connectedPeripheral.longName)")
-								Text("Unique Code: \(bleManager.connectedPeripheral.lastFourCode)")
-								Text("Max Channels: \(String(bleManager.connectedPeripheral.maxChannels))")
-								Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
-								Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
-								Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
-								Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
+								
+								if node != nil {
+									
+									Text("Num: \(String(node!.num))")
+									Text("Short Name: \(bleManager.connectedPeripheral.shortName)")
+									Text("Long Name: \(bleManager.connectedPeripheral.longName)")
+									Text("Unique Code: \(bleManager.connectedPeripheral.lastFourCode)")
+									Text("Max Channels: \(String(node!.myInfo!.maxChannels))")
+									Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
+									Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
+									Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+									Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
+									
+								}
 							}
-							
+							if isUnsetRegion {
+								HStack {
+									NavigationLink {
+										LoRaConfig(node: node)
+									} label: {
+										Label("Set LoRa Region", systemImage: "globe.americas.fill")
+											.foregroundColor(.red)
+											.font(.title)
+									}
+								}
+							}
 						} else {
 							
 							if bleManager.isConnecting {
@@ -269,14 +266,12 @@ struct Connect: View {
 					.padding(.bottom, 10)
             }
             .navigationTitle("Bluetooth")
-			
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 				 ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			 })
         }
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
-			
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
@@ -284,8 +279,31 @@ struct Connect: View {
 		.onChange(of: (self.bleManager.invalidVersion)) { cv in
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
+		.onChange(of: (self.bleManager.isSubscribed)) { sub in
+			
+			if userSettings.preferredNodeNum > 0 && sub {
+				
+				let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(userSettings.preferredNodeNum))
+				
+				do {
+					
+					let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+					// Found a node, check it for a region
+					if !fetchedNode.isEmpty {
+						node = fetchedNode[0]
+						if node!.loRaConfig != nil && node!.loRaConfig?.regionCode ?? 0 == RegionCodes.unset.rawValue {
+							isUnsetRegion = true
+						} else {
+							isUnsetRegion = false
+						}
+					}
+				} catch {
+					
+				}
+			}
+		}
         .onAppear(perform: {
-
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 				
@@ -297,18 +315,8 @@ struct Connect: View {
 					print(error.localizedDescription)
 				}
 			}
-			
-			if self.bleManager.connectedPeripheral != nil {
-				print(self.bleManager.connectedPeripheral.id)
-				print(userSettings.preferredPeripheralId)
-			}
 			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.id {
 				isPreferredRadio = true
-				if userSettings.preferredNodeNum > 0 {
-					
-					print("I wanna set my prefered node")
-				}
-				
 			} else {
 				isPreferredRadio = false
 			}

@@ -331,6 +331,7 @@ struct ModuleConfig {
       case simple // = 1
       case proto // = 2
       case textmsg // = 3
+      case nmea // = 4
       case UNRECOGNIZED(Int)
 
       init() {
@@ -343,6 +344,7 @@ struct ModuleConfig {
         case 1: self = .simple
         case 2: self = .proto
         case 3: self = .textmsg
+        case 4: self = .nmea
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -353,6 +355,7 @@ struct ModuleConfig {
         case .simple: return 1
         case .proto: return 2
         case .textmsg: return 3
+        case .nmea: return 4
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -653,6 +656,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
     .simple,
     .proto,
     .textmsg,
+    .nmea,
   ]
 }
 
@@ -1006,6 +1010,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
     1: .same(proto: "SIMPLE"),
     2: .same(proto: "PROTO"),
     3: .same(proto: "TEXTMSG"),
+    4: .same(proto: "NMEA"),
   ]
 }
 

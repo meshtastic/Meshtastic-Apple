@@ -38,6 +38,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var isScanning: Bool = false
 	@Published var isConnecting: Bool = false
 	@Published var isConnected: Bool = false
+	@Published var isSubscribed: Bool = false
 	
 	/// Used to make sure we never get foold by old BLE packets
 	private var configNonce: UInt32 = 1
@@ -184,6 +185,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 		FROMRADIO_characteristic = nil
 		isConnected = false
+		isSubscribed = false
 		invalidVersion = false
 		connectedVersion = "0.0.0"
 		startScanning()
@@ -199,7 +201,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			peripheralName = name
 		}
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, maxChannels: 0, lastUpdate: Date(), subscribed: false, peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -270,6 +272,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		self.startScanning()
 		self.connectedPeripheral = nil
 		self.isConnecting = false
+		self.isSubscribed = false
 		if let e = error {
 			// https://developer.apple.com/documentation/corebluetooth/cberror/code
 			let errorCode = (e as NSError).code
@@ -521,8 +524,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
 							self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
-							self.connectedPeripheral.maxChannels =  myInfo!.maxChannels
-
 						}
 					}
 				}
@@ -651,7 +652,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				invalidVersion = false
 				lastConnectionError = ""
 				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
-				self.connectedPeripheral.subscribed = true
+				self.isSubscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				return
