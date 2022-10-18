@@ -111,6 +111,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	case simple = 1
 	case proto = 2
 	case txtmsg = 3
+	case nmea = 4
 	
 	var id: Int { self.rawValue }
 	var description: String {
@@ -124,6 +125,8 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 				return "Protobufs"
 			case .txtmsg:
 				return "Text Message"
+			case .nmea:
+				return "NMEA Positions"
 			}
 		}
 	}
@@ -139,6 +142,8 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 			return ModuleConfig.SerialConfig.Serial_Mode.proto
 		case .txtmsg:
 			return ModuleConfig.SerialConfig.Serial_Mode.textmsg
+		case .nmea:
+			return ModuleConfig.SerialConfig.Serial_Mode.nmea
 		}
 	}
 }

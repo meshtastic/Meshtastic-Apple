@@ -22,6 +22,7 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	case `in` = 10
 	case nz865 = 11
 	case th = 12
+	case lora24 = 13
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -53,6 +54,8 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return "New Zealand 865mhz"
 			case .th:
 				return "Thailand"
+			case .lora24:
+				return "2.4 GHZ"
 			}
 		}
 	}
@@ -87,6 +90,8 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return Config.LoRaConfig.RegionCode.nz865
 			case .th:
 				return Config.LoRaConfig.RegionCode.th
+			case .lora24:
+				return Config.LoRaConfig.RegionCode.lora24
 		}
 	}
 }
