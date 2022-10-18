@@ -44,101 +44,85 @@ struct NodeList: View {
 						.listRowSeparator(.visible)
 
 				} else {
-					//ForEach( nodes ) { node in
 
-					//	let index = nodes.firstIndex(where: { $0.id == node.id })
+					NavigationLink(value: node) {
 
-						NavigationLink(value: node) {
+						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 
-							let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
+						VStack(alignment: .leading) {
 
-							VStack(alignment: .leading) {
+							HStack {
 
-								HStack {
+								CircleText(text: node.user?.shortName ?? "???", color: .blue).offset(y: 1).padding(.trailing, 5)
+									.offset(x: -15)
 
-									CircleText(text: node.user?.shortName ?? "???", color: Color.accentColor).offset(y: 1).padding(.trailing, 5)
+								if UIDevice.current.userInterfaceIdiom == .pad { Text(node.user?.longName ?? "Unknown").font(.headline)
 										.offset(x: -15)
-
-									if UIDevice.current.userInterfaceIdiom == .pad { Text(node.user?.longName ?? "Unknown").font(.headline)
-											.offset(x: -15)
-									} else {
-										Text(node.user?.longName ?? "Unknown").font(.title2).offset(x: -15)
-									}
-								}
-								.padding(.bottom, 5)
-
-								if connected {
-									
-									HStack(alignment: .bottom) {
-
-										Image(systemName: "repeat.circle.fill").font(.title2)
-											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-											
-											Text("Currently Connected").font(.callout).foregroundColor(Color.accentColor)
-										} else {
-											
-											Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
-										}
-									}
-									.padding(.bottom, 2)
-								}
-								if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
-								
-									HStack(alignment: .bottom) {
-									
-										let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-										
-										let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-										
-										if lastPostion.coordinate != nil {
-									
-											let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
-											
-											let metersAway = nodeCoord.distance(from: myCoord)
-											
-											Image(systemName: "lines.measurement.horizontal").font(.title3)
-												.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-											
-											if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-												
-												DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
-												
-											} else {
-												
-												DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
-											}
-										}
-									}
-									.padding(.bottom, 2)
-									
-								}
-								HStack(alignment: .bottom) {
-
-									Image(systemName: "clock.badge.checkmark.fill").font(.headline)
-										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-				
-									LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
+								} else {
+									Text(node.user?.longName ?? "Unknown").font(.title2).offset(x: -15)
 								}
 							}
-							.padding([.leading, .top, .bottom])
+							.padding(.bottom, 5)
+
+							if connected {
+								
+								HStack(alignment: .bottom) {
+
+									Image(systemName: "repeat.circle.fill").font(.title2)
+										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+										
+										Text("Currently Connected").font(.callout).foregroundColor(Color.accentColor)
+									} else {
+										
+										Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
+									}
+								}
+								.padding(.bottom, 2)
+							}
+							if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
+							
+								HStack(alignment: .bottom) {
+								
+									let lastPostion = node.positions!.reversed()[0] as! PositionEntity
+									
+									let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+									
+									if lastPostion.coordinate != nil {
+								
+										let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
+										
+										let metersAway = nodeCoord.distance(from: myCoord)
+										
+										Image(systemName: "lines.measurement.horizontal").font(.title3)
+											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+										
+										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+											
+											DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
+											
+										} else {
+											
+											DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
+										}
+									}
+								}
+								.padding(.bottom, 2)
+								
+							}
+							HStack(alignment: .bottom) {
+
+								Image(systemName: "clock.badge.checkmark.fill").font(.headline)
+									.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+			
+								LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
+							}
 						}
-					//}
+						.padding([.leading, .top, .bottom])
+					}
 				}
 			 }
-			.navigationTitle("All Nodes")
-			.navigationBarItems(leading:
-				MeshtasticLogo()
-			)
-			.onAppear {
-
-				if initialLoad {
-					
-					self.bleManager.userSettings = userSettings
-					self.bleManager.context = context
-					self.initialLoad = false
-				}
-			}
+			.tint(Color(UIColor.systemGray))
 	   } detail: {
 		   
 		   if let node = selection {
@@ -148,6 +132,19 @@ struct NodeList: View {
 		   } else {
 			   
 			   Text("Select a node")
+		   }
+	   }
+	   .navigationTitle("All Nodes")
+	   .navigationBarItems(leading:
+		   MeshtasticLogo()
+	   )
+	   .onAppear {
+
+		   if initialLoad {
+			   
+			   self.bleManager.userSettings = userSettings
+			   self.bleManager.context = context
+			   self.initialLoad = false
 		   }
 	   }
     }

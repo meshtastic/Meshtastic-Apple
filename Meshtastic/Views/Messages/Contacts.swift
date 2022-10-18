@@ -51,10 +51,10 @@ struct Contacts: View {
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 									
 									HStack {
-										VStack {
+										VStack(alignment: .leading) {
 											CircleText(text: user.shortName ?? "???", color: Color.blue)
+												.padding(.trailing, 5)
 										}
-										.padding([.leading, .trailing])
 										VStack {
 											HStack {
 												VStack {
@@ -80,8 +80,6 @@ struct Contacts: View {
 												}
 												.frame(maxWidth: .infinity, alignment: .trailing)
 											}
-											.listRowSeparator(.hidden).frame(height: 5)
-											
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 													.frame(height: 60)
@@ -94,10 +92,10 @@ struct Contacts: View {
 									}
 								} else {
 									HStack {
-										VStack {
-											CircleText(text: user.shortName ?? "????", color: Color.blue)
+										VStack(alignment: .leading) {
+											CircleText(text: user.shortName ?? "???", color: Color.blue)
+												.padding(.trailing, 5)
 										}
-										.padding(.trailing)
 										VStack {
 											HStack {
 												VStack {
@@ -108,9 +106,16 @@ struct Contacts: View {
 												}
 												.frame(maxWidth: .infinity, alignment: .trailing)
 											}
-											.listRowSeparator(.hidden).frame(height: 5)
+											HStack(alignment: .top) {
+												Text(" ")
+													.frame(height: 60)
+													.truncationMode(.tail)
+													.foregroundColor(Color.gray)
+													.frame(maxWidth: .infinity, alignment: .leading)
+											}
 										}
-									}.padding()
+										.padding(.top)
+									}
 								}
 							}
 						}
@@ -122,11 +127,7 @@ struct Contacts: View {
 				}
 				.hidden()
 			}
-			.navigationTitle("Contacts")
-			.navigationBarTitleDisplayMode(.inline)
-			.navigationBarItems(leading:
-				MeshtasticLogo()
-			)
+			.tint(Color(UIColor.systemGray))
 		}
 		detail: {
 		
@@ -139,5 +140,11 @@ struct Contacts: View {
 				Text("Select a user")
 			}
 		}
+		.navigationSplitViewStyle(.automatic)
+		.navigationTitle("Contacts")
+		.navigationBarTitleDisplayMode(.inline)
+		.navigationBarItems(leading:
+			MeshtasticLogo()
+		)
     }
 }
