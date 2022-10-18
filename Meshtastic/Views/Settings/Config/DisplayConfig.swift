@@ -15,7 +15,6 @@ struct DisplayConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 
 	@State var screenOnSeconds = 0
@@ -116,50 +115,34 @@ struct DisplayConfig: View {
 		}
 		.navigationTitle("Display Config")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-
-				self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
-				self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
-				self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
-				self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
-				self.hasChanges = false
-				self.initialLoad = false
-			}
+			self.bleManager.context = context
+			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
+			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
+			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
+			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+			self.hasChanges = false
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
-			
 			if node != nil && node!.displayConfig != nil {
-				
 				if newScreenSecs != node!.displayConfig!.screenOnSeconds { hasChanges = true }
 			}
 		}
 		.onChange(of: screenCarouselInterval) { newCarouselSecs in
-			
 			if node != nil && node!.displayConfig != nil {
-				
 				if newCarouselSecs != node!.displayConfig!.screenCarouselInterval { hasChanges = true }
 			}
 		}
 		.onChange(of: compassNorthTop) { newCompassNorthTop in
-			
 			if node != nil && node!.displayConfig != nil {
-				
 				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
 			}
 		}
 		.onChange(of: gpsFormat) { newGpsFormat in
-			
 			if node != nil && node!.displayConfig != nil {
-			
 				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
 			}
 		}
