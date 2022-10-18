@@ -22,7 +22,7 @@ struct Connect: View {
 
     var body: some View {
 	
-		NavigationView {
+		NavigationStack {
 
             VStack {
 
