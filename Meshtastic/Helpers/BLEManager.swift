@@ -1057,6 +1057,43 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return false
 	}
 	
+	public func connectToPreferredPeripheral() -> Bool {
+		
+		var success = false
+		// Return false if we are not properly connected to a device, handle retry logic in the view for now
+		if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected {
+			
+			self.disconnectPeripheral()
+			self.startScanning()
+			
+			// Try and connect to the preferredPeripherial first
+			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
+			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
+				connectTo(peripheral: preferredPeripheral!.peripheral)
+				success = true
+			}
+		} else if connectedPeripheral != nil && isSubscribed {
+			success = true
+		}
+		return success
+	}
+	
+	public func saveChannelSet(base64String: String) -> Bool {
+				
+		if isConnected {
+			var decodedString = base64String.base64urlToBase64()
+			if let decodedData = Data(base64Encoded: decodedString) {
+				do {
+					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					print(channelSet)
+				} catch {
+					print("Invalid Meshtastic QR Code Link")
+				}
+			}
+		}
+		return false
+	}
+	
 	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
