@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct SaveChannelQRCode: View {
-	var channelHash: String
+	var channelSetLink: String
 	var bleManager: BLEManager
 	@State var connectedToDevice = false
 
@@ -22,7 +22,7 @@ struct SaveChannelQRCode: View {
 			
 
 				Button {
-					let success = bleManager.saveChannelSet(base64String: channelHash)
+					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink)
 					
 				} label: {
 					Label("Save", systemImage: "square.and.arrow.down")

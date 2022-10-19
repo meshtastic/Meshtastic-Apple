@@ -195,13 +195,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 
 		var peripheralName: String = peripheral.name ?? "Unknown"
-		let last4Code: String = (peripheral.name != nil ? String(peripheral.name!.suffix(4)) : "Unknown")
 
 		if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
 			peripheralName = name
 		}
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "????", longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -517,10 +516,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
-							
-							self.connectedPeripheral.bitrate = myInfo!.bitrate
 							self.connectedPeripheral.num = myInfo!.myNodeNum
-							
 							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
 							self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
@@ -534,14 +530,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, context: context!)
 					
 					if nodeInfo != nil {
-						
-						self.connectedPeripheral.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
-						self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
-
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
-
 							if nodeInfo!.user != nil {
-								
 								connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "????"
 								connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
 							}
@@ -1078,10 +1068,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return success
 	}
 	
-	public func saveChannelSet(base64String: String) -> Bool {
+	public func saveChannelSet(base64UrlString: String) -> Bool {
 				
 		if isConnected {
-			var decodedString = base64String.base64urlToBase64()
+			var decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
