@@ -324,14 +324,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		
 		if let e = error {
-
 			MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)")
 		}
-
+		
 		guard let characteristics = service.characteristics else { return }
 
 		for characteristic in characteristics {
-
 			switch characteristic.uuid {
 				
 			case TORADIO_UUID:
@@ -339,13 +337,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
-				
 				MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				
 				MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
@@ -367,7 +363,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				DFURESULT_characteristic = characteristic
 				
 			case DFUREGION_UUID:
-
 				MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUREGION_characteristic = characteristic
 
@@ -376,7 +371,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		if (![FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
-			
 			sendWantConfig()
 		}
 	}
@@ -393,7 +387,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -937,7 +930,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				context!.rollback()
 				let nsError = error as NSError
 				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-				print()
 			}
 		}
 		return false

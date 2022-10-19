@@ -216,6 +216,10 @@ struct OEMStore {
   /// Use this font for the OEM text.
   var oemText: String = String()
 
+  ///
+  /// The default device encryption key, 16 or 32 byte
+  var oemAesKey: Data = Data()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -408,6 +412,7 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     3: .standard(proto: "oem_icon_bits"),
     4: .standard(proto: "oem_font"),
     5: .standard(proto: "oem_text"),
+    6: .standard(proto: "oem_aes_key"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -421,6 +426,7 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 3: try { try decoder.decodeSingularBytesField(value: &self.oemIconBits) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self.oemFont) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.oemText) }()
+      case 6: try { try decoder.decodeSingularBytesField(value: &self.oemAesKey) }()
       default: break
       }
     }
@@ -442,6 +448,9 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.oemText.isEmpty {
       try visitor.visitSingularStringField(value: self.oemText, fieldNumber: 5)
     }
+    if !self.oemAesKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.oemAesKey, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -451,6 +460,7 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.oemIconBits != rhs.oemIconBits {return false}
     if lhs.oemFont != rhs.oemFont {return false}
     if lhs.oemText != rhs.oemText {return false}
+    if lhs.oemAesKey != rhs.oemAesKey {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
