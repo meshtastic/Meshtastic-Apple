@@ -101,13 +101,10 @@ struct Connect: View {
 								if node != nil {
 									
 									Text("Num: \(String(node!.num))")
-									Text("Short Name: \(bleManager.connectedPeripheral.shortName)")
-									Text("Long Name: \(bleManager.connectedPeripheral.longName)")
-									Text("Unique Code: \(bleManager.connectedPeripheral.lastFourCode)")
+									Text("Short Name: \(node?.user?.shortName ?? "????")")
+									Text("Long Name: \(node?.user?.longName ?? "Unknown")")
 									Text("Max Channels: \(String(node!.myInfo!.maxChannels))")
-									Text("Bitrate: \(String(format: "%.2f", bleManager.connectedPeripheral.bitrate ?? 0.00))")
-									Text("Ch. Utilization: \(String(format: "%.2f", bleManager.connectedPeripheral.channelUtilization ?? 0.00))")
-									Text("Air Time: \(String(format: "%.2f", bleManager.connectedPeripheral.airTime ?? 0.00))")
+									Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
 									Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 									
 								}

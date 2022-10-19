@@ -16,7 +16,6 @@ struct DeviceConfig: View {
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
 	@State private var isPresentingSaveConfirm = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 	
 	@State var deviceRole = 0
@@ -166,17 +165,11 @@ struct DeviceConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-
-				self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
-				self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
-				self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
-				self.hasChanges = false
-				self.initialLoad = false
-			}
+			self.bleManager.context = context
+			self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
+			self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
+			self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
+			self.hasChanges = false
 		}
 		.onChange(of: deviceRole) { newRole in
 			

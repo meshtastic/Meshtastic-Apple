@@ -195,13 +195,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 
 		var peripheralName: String = peripheral.name ?? "Unknown"
-		let last4Code: String = (peripheral.name != nil ? String(peripheral.name!.suffix(4)) : "Unknown")
 
 		if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
 			peripheralName = name
 		}
 
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: last4Code, longName: peripheralName, lastFourCode: last4Code, firmwareVersion: "Unknown", rssi: RSSI.intValue, bitrate: nil, channelUtilization: nil, airTime: nil, lastUpdate: Date(), peripheral: peripheral)
+		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "????", longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
 
 		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
@@ -325,14 +324,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		
 		if let e = error {
-
 			MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)")
 		}
-
+		
 		guard let characteristics = service.characteristics else { return }
 
 		for characteristic in characteristics {
-
 			switch characteristic.uuid {
 				
 			case TORADIO_UUID:
@@ -340,13 +337,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
-				
 				MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				
 				MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
@@ -368,7 +363,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				DFURESULT_characteristic = characteristic
 				
 			case DFUREGION_UUID:
-
 				MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
 				DFUREGION_characteristic = characteristic
 
@@ -377,7 +371,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		if (![FROMNUM_characteristic, TORADIO_characteristic].contains(nil)) {
-			
 			sendWantConfig()
 		}
 	}
@@ -394,7 +387,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -517,10 +509,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
-							
-							self.connectedPeripheral.bitrate = myInfo!.bitrate
 							self.connectedPeripheral.num = myInfo!.myNodeNum
-							
 							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
 							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
 							self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
@@ -534,14 +523,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, context: context!)
 					
 					if nodeInfo != nil {
-						
-						self.connectedPeripheral.channelUtilization = decodedInfo.nodeInfo.deviceMetrics.channelUtilization
-						self.connectedPeripheral.airTime = decodedInfo.nodeInfo.deviceMetrics.airUtilTx
-
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
-
 							if nodeInfo!.user != nil {
-								
 								connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "????"
 								connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
 							}
@@ -947,7 +930,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				context!.rollback()
 				let nsError = error as NSError
 				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-				print()
 			}
 		}
 		return false
@@ -1053,6 +1035,46 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			MeshLogger.log("💾 Sent a NodeDB Reset for node: \(String(destNum))")
 			return true
+		}
+		return false
+	}
+	
+	public func connectToPreferredPeripheral() -> Bool {
+		
+		var success = false
+		// Return false if we are not properly connected to a device, handle retry logic in the view for now
+		if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected {
+			
+			self.disconnectPeripheral()
+			self.startScanning()
+			
+			// Try and connect to the preferredPeripherial first
+			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
+			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
+				connectTo(peripheral: preferredPeripheral!.peripheral)
+				success = true
+			}
+		} else if connectedPeripheral != nil && isSubscribed {
+			success = true
+		}
+		return success
+	}
+	
+	public func saveChannelSet(base64UrlString: String) -> Bool {
+				
+		if isConnected {
+			var decodedString = base64UrlString.base64urlToBase64()
+			if let decodedData = Data(base64Encoded: decodedString) {
+				do {
+					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					
+					
+					
+					print(channelSet)
+				} catch {
+					print("Invalid Meshtastic QR Code Link")
+				}
+			}
 		}
 		return false
 	}

@@ -14,7 +14,6 @@ struct SerialConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 	
 	@State var enabled = false
@@ -115,7 +114,7 @@ struct SerialConfig: View {
 				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node!.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -140,7 +139,6 @@ struct SerialConfig: View {
 					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
-						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
@@ -155,26 +153,20 @@ struct SerialConfig: View {
 			.navigationBarItems(trailing:
 
 				ZStack {
-
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
+					
+				self.bleManager.context = context
+				self.enabled = node?.serialConfig?.enabled ?? false
+				self.echo = node?.serialConfig?.echo ?? false
+				self.rxd = Int(node?.serialConfig?.rxd ?? 0)
+				self.txd = Int(node?.serialConfig?.txd ?? 0)
+				self.baudRate = Int(node?.serialConfig?.baudRate ?? 0)
+				self.timeout = Int(node?.serialConfig?.timeout ?? 0)
+				self.mode = Int(node?.serialConfig?.mode ?? 0)
+				self.hasChanges = false
 
-				if self.initialLoad{
-					
-					self.bleManager.context = context
-					
-					self.enabled = node?.serialConfig?.enabled ?? false
-					self.echo = node?.serialConfig?.echo ?? false
-					self.rxd = Int(node?.serialConfig?.rxd ?? 0)
-					self.txd = Int(node?.serialConfig?.txd ?? 0)
-					self.baudRate = Int(node?.serialConfig?.baudRate ?? 0)
-					self.timeout = Int(node?.serialConfig?.timeout ?? 0)
-					self.mode = Int(node?.serialConfig?.mode ?? 0)
-					
-					self.hasChanges = false
-					self.initialLoad = false
-				}
 			}
 			.onChange(of: enabled) { newEnabled in
 				
