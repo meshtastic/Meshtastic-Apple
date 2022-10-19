@@ -1067,6 +1067,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					
+					
+					
 					print(channelSet)
 				} catch {
 					print("Invalid Meshtastic QR Code Link")
