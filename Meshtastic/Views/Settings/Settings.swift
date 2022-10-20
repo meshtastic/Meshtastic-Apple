@@ -13,10 +13,7 @@ struct Settings: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
-		animation: .default)
-
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
 	var body: some View {
@@ -70,17 +67,14 @@ struct Settings: View {
 						
 						BluetoothConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Bluetooth (BLE)")
 					}
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "flipphone")
 							.symbolRenderingMode(.hierarchical)
 						Text("Device")
@@ -89,7 +83,6 @@ struct Settings: View {
 					NavigationLink {
 						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "display")
 							.symbolRenderingMode(.hierarchical)
 						Text("Display (Device Screen)")
@@ -101,7 +94,6 @@ struct Settings: View {
 					
 						Image(systemName: "network")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Network (ESP32 Only)")
 					}
 				
@@ -111,7 +103,6 @@ struct Settings: View {
 					
 						Image(systemName: "location")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Position")
 					}
 					
@@ -131,77 +122,53 @@ struct Settings: View {
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "megaphone")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("External Notification")
 					}
-					
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "dot.radiowaves.right")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("MQTT (ESP32 Only)")
 					}
-					
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Range Test (ESP32 Only)")
 					}
-					
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "terminal")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Serial")
 					}
-
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "chart.xyaxis.line")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Telemetry (Sensors)")
 					}
 				}
 				Section(header: Text("Logging")) {
-					
 					NavigationLink {
-						
 						MeshLog()
-						
 					} label: {
-
 						Image(systemName: "list.bullet.rectangle")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Mesh Log")
 					}
-					
 					NavigationLink {
-						
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-						
 						AdminMessageList(user: connectedNode?.user)
 					} label: {
-
 						Image(systemName: "building.columns")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("Admin Message Log")
 					}
 				}

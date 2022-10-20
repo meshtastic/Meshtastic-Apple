@@ -1067,12 +1067,72 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					var i:Int32 = 0
+					for cs in channelSet.settings {
+						
+						i += 1
+						var chan = Channel()
+						chan.settings = cs
+						chan.index = i
+						if i == 1 {
+							chan.role = Channel.Role.primary
+						} else {
+							chan.role = Channel.Role.secondary
+						}
+						var adminPacket = AdminMessage()
+						adminPacket.setChannel = chan
+						var meshPacket: MeshPacket = MeshPacket()
+						meshPacket.to = UInt32(connectedPeripheral.num)
+						meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+						meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+						meshPacket.priority =  MeshPacket.Priority.reliable
+						meshPacket.wantAck = true
+						meshPacket.hopLimit = 0
+						var dataMessage = DataMessage()
+						dataMessage.payload = try! adminPacket.serializedData()
+						dataMessage.portnum = PortNum.adminApp
+						meshPacket.decoded = dataMessage
+						var toRadio: ToRadio!
+						toRadio = ToRadio()
+						toRadio.packet = meshPacket
+						let binaryData: Data = try! toRadio.serializedData()
+						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+							connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+							MeshLogger.log("💾 Saved a Channel for: \(String(connectedPeripheral.num))")
+						}
+						print(chan)
+					}
+					// Save the LoRa Config and the device will reboot
+					var adminPacket = AdminMessage()
+					adminPacket.setConfig.lora = channelSet.loraConfig
 					
+					var meshPacket: MeshPacket = MeshPacket()
+					meshPacket.to = UInt32(connectedPeripheral.num)
+					meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 					
+					meshPacket.priority =  MeshPacket.Priority.reliable
+					meshPacket.wantAck = true
+					meshPacket.hopLimit = 0
 					
-					print(channelSet)
+					var dataMessage = DataMessage()
+					dataMessage.payload = try! adminPacket.serializedData()
+					dataMessage.portnum = PortNum.adminApp
+					
+					meshPacket.decoded = dataMessage
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+					let binaryData: Data = try! toRadio.serializedData()
+					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+						MeshLogger.log("💾 Saved a LoRaConfig for: \(String(connectedPeripheral.num))")
+					}
+					
+					return true
+					
 				} catch {
-					print("Invalid Meshtastic QR Code Link")
+					return false
 				}
 			}
 		}
