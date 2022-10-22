@@ -21,6 +21,7 @@ struct DisplayConfig: View {
 	@State var screenCarouselInterval = 0
 	@State var gpsFormat = 0
 	@State var compassNorthTop = false
+	@State var flipScreen = false
 	
 	var body: some View {
 		
@@ -45,7 +46,6 @@ struct DisplayConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.font(.caption)
 					
@@ -55,6 +55,14 @@ struct DisplayConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("The compass heading on the screen outside of the circle will always point north.")
+						.font(.caption)
+					
+					Toggle(isOn: $flipScreen) {
+
+						Label("Flip Screen", systemImage: "pip.swap")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Flip screen vertically")
 						.font(.caption)
 					
 				}
@@ -98,6 +106,7 @@ struct DisplayConfig: View {
 					dc.screenOnSecs = UInt32(screenOnSeconds)
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					dc.compassNorthTop = compassNorthTop
+					dc.flipScreen = flipScreen
 					
 					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 					
@@ -124,6 +133,7 @@ struct DisplayConfig: View {
 			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
 			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
 			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+			self.flipScreen = node?.displayConfig?.flipScreen ?? false
 			self.hasChanges = false
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
@@ -144,6 +154,11 @@ struct DisplayConfig: View {
 		.onChange(of: gpsFormat) { newGpsFormat in
 			if node != nil && node!.displayConfig != nil {
 				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
+			}
+		}
+		.onChange(of: flipScreen) { newFlipScreen in
+			if node != nil && node!.displayConfig != nil {
+				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

@@ -1091,13 +1091,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						toRadio.packet = meshPacket
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-							
-							
 							//let timer1 = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { timer in
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
 							//}
-					
 						}
 						print(chan)
 					}
@@ -1124,7 +1121,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
 					//	let timer1 = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { timer in
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")
