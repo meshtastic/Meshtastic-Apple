@@ -282,6 +282,7 @@ struct ShareChannels: View {
 		loRaConfig.hopLimit = UInt32(node?.loRaConfig?.hopLimit ?? 3)
 		loRaConfig.txEnabled = node?.loRaConfig?.txEnabled ?? false
 		loRaConfig.txPower = node?.loRaConfig?.txPower ?? 0
+		loRaConfig.usePreset = node?.loRaConfig?.usePreset ?? true
 		loRaConfig.channelNum = UInt32(node?.loRaConfig?.channelNum ?? 0)
 		channelSet.loraConfig = loRaConfig
 		if node != nil {

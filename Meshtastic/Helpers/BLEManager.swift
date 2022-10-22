@@ -410,11 +410,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
 		if FROMRADIO_characteristic == nil {
-			
 			MeshLogger.log("🚨 Unsupported Firmware Version Detected, unable to connect to device.")
 			invalidVersion = true
 			return
-			
 		} else {
 		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
 		//BLE Characteristics discovered, issue wantConfig
@@ -423,7 +421,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		toRadio.wantConfigID = configNonce
 		let binaryData: Data = try! toRadio.serializedData()
 		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		
 			// Either Read the config complete value or from num notify value
 			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
