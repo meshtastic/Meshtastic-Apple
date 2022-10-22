@@ -6,6 +6,9 @@ extension Data {
 		let mac: String = reduce("") {$0 + String(format: "%02x:", $1)}
 		return String(mac.dropLast())
 	}
+	var hexDescription: String {
+		return reduce("") {$0 + String(format: "%02x", $1)}
+	}	
 }
 
 extension Date {

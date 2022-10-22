@@ -25,8 +25,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	private var centralManager: CBCentralManager!
 
-	@Published var peripherals = [Peripheral]()
-
+	@Published var peripherals: [Peripheral]
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
 	@Published var minimumVersion = "1.3.43"
@@ -79,9 +78,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// MARK: init BLEManager
 	override init() {
 
-		//self.meshLoggingEnabled = UserDefaults.standard.object(forKey: "meshActivityLog") as? Bool ?? false
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
+		self.peripherals = [Peripheral]()
 		super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
 		centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -102,23 +101,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
-
 		if isSwitchedOn {
-
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
-			isScanning = centralManager.isScanning
-
+			DispatchQueue.main.async {
+				self.isScanning = self.centralManager.isScanning
+			}
 			print("✅ Scanning Started")
 		}
 	}
 
 	// Stop Scanning For BLE Devices
 	func stopScanning() {
-
 		if centralManager.isScanning {
-
 			centralManager.stopScan()
-			isScanning = centralManager.isScanning
+			DispatchQueue.main.async{
+				self.isScanning = self.centralManager.isScanning
+			 }
 			print("🛑 Stopped Scanning")
 		}
 	}
@@ -159,8 +157,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
 		stopScanning()
-		isConnecting = true
-		lastConnectionError = ""
+		DispatchQueue.main.async {
+			self.isConnecting = true
+			self.lastConnectionError = ""
+		}
 		if connectedPeripheral != nil {
 			MeshLogger.log("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
@@ -225,24 +225,31 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	// Called when a peripheral is connected
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-
-		self.isConnecting = false
-		self.isConnected = true
+		DispatchQueue.main.async {
+			self.isConnecting = false
+			self.isConnected = true
+		}
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
-			self.userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
-			self.preferredPeripheral = true
+			DispatchQueue.main.async {
+				self.userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
+				self.preferredPeripheral = true
+			}
 		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
-			self.preferredPeripheral = true
+			DispatchQueue.main.async {
+				self.preferredPeripheral = true
+			}
 		} else {
 			self.preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
 		}
-		// Invalidate and reset connection timer count, remove any connection errors
-		self.lastConnectionError = ""
+		// Invalidate and reset connection timer count
+		
 		self.timeoutTimerCount = 0
 		if self.timeoutTimer != nil {
 			self.timeoutTimer!.invalidate()
 		}
+		// remove any connection errors
+		self.lastConnectionError = ""
 		// Map the peripheral to the connectedPeripheral ObservedObjects
 		connectedPeripheral = peripherals.filter({ $0.peripheral.identifier == peripheral.identifier }).first
 		if connectedPeripheral != nil {
@@ -485,12 +492,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				// MyInfo
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
-					
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
 					let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
-						
 					nowKnown = true
-					connectedVersion = String(version)
+					DispatchQueue.main.async {
+						self.connectedVersion = String(version)
+					}
+					
 					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					
@@ -498,7 +506,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if !supportedVersion {
 						
 						invalidVersion = true
-						self.lastConnectionError = "🚨 Update your firmware"
+						lastConnectionError = "🚨 Update your firmware"
 						
 						return
 						
@@ -506,7 +514,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 						
-						self.userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
+						userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
 							self.connectedPeripheral.num = myInfo!.myNodeNum
@@ -632,10 +640,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
-				invalidVersion = false
-				lastConnectionError = ""
+				DispatchQueue.main.async {
+					self.invalidVersion = false
+					self.lastConnectionError = ""
+					self.isSubscribed = true
+				}
 				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
-				self.isSubscribed = true
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				return
@@ -1067,9 +1077,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					print(channelSet)
 					var i:Int32 = 0
 					for cs in channelSet.settings {
-						
 						i += 1
 						var chan = Channel()
 						chan.settings = cs
@@ -1086,7 +1096,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 						meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 						meshPacket.priority =  MeshPacket.Priority.reliable
-						meshPacket.wantAck = true
+						meshPacket.wantAck = false
 						meshPacket.hopLimit = 0
 						var dataMessage = DataMessage()
 						dataMessage.payload = try! adminPacket.serializedData()
@@ -1097,8 +1107,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						toRadio.packet = meshPacket
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-							connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-							MeshLogger.log("💾 Saved a Channel for: \(String(connectedPeripheral.num))")
+							
+							
+							//let timer1 = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { timer in
+							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
+							//}
+					
 						}
 						print(chan)
 					}
@@ -1125,8 +1140,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-						MeshLogger.log("💾 Saved a LoRaConfig for: \(String(connectedPeripheral.num))")
+						
+					//	let timer1 = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { timer in
+							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")
+					//	}
 					}
 					
 					return true
