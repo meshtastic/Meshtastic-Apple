@@ -626,20 +626,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			// Use context to pass the radio name with the timer
 			// Use a RunLoop to prevent the timer from running on the main UI thread
 			if userSettings?.provideLocation ?? false {
-				if self.positionTimer != nil {
+				if positionTimer != nil {
 
-					self.positionTimer!.invalidate()
+					positionTimer!.invalidate()
 				}
 				positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-				RunLoop.current.add(self.positionTimer!, forMode: .common)
+				RunLoop.current.add(positionTimer!, forMode: .common)
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
-				DispatchQueue.main.async {
-					self.invalidVersion = false
-					self.lastConnectionError = ""
-					self.isSubscribed = true
-				}
+				invalidVersion = false
+				lastConnectionError = ""
+				isSubscribed = true
 				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
