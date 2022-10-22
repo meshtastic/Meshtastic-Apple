@@ -225,19 +225,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	// Called when a peripheral is connected
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-		DispatchQueue.main.async {
-			self.isConnecting = false
-			self.isConnected = true
-		}
+		isConnecting = false
+		isConnected = true
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
-			DispatchQueue.main.async {
-				self.userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
-				self.preferredPeripheral = true
-			}
+			userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
+			preferredPeripheral = true
 		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
-			DispatchQueue.main.async {
-				self.preferredPeripheral = true
-			}
+			preferredPeripheral = true
 		} else {
 			self.preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
@@ -248,6 +242,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		if self.timeoutTimer != nil {
 			self.timeoutTimer!.invalidate()
 		}
+		
 		// remove any connection errors
 		self.lastConnectionError = ""
 		// Map the peripheral to the connectedPeripheral ObservedObjects
@@ -257,8 +252,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 		else {
 			// we are null just disconnect and start over
-			self.lastConnectionError = "Bluetooth connection error, please try again."
-			self.disconnectPeripheral()
+			lastConnectionError = "Bluetooth connection error, please try again."
+			disconnectPeripheral()
 			return
 		}
 		// Discover Services
