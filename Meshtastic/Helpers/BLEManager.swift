@@ -233,14 +233,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
 			preferredPeripheral = true
 		} else {
-			self.preferredPeripheral = false
+			preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
 		}
 		// Invalidate and reset connection timer count
-		
-		self.timeoutTimerCount = 0
-		if self.timeoutTimer != nil {
-			self.timeoutTimer!.invalidate()
+		timeoutTimerCount = 0
+		if timeoutTimer != nil {
+			timeoutTimer!.invalidate()
 		}
 		
 		// remove any connection errors
@@ -490,19 +489,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
 					let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 					nowKnown = true
-					DispatchQueue.main.async {
-						self.connectedVersion = String(version)
-					}
-					
-					
+					connectedVersion = String(version)
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
-					
-					
 					if !supportedVersion {
-						
 						invalidVersion = true
 						lastConnectionError = "🚨 Update your firmware"
-						
 						return
 						
 					} else {
@@ -512,10 +503,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
-							self.connectedPeripheral.num = myInfo!.myNodeNum
-							self.connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
-							self.connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
-							self.connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
+							connectedPeripheral.num = myInfo!.myNodeNum
+							connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
+							connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
+							connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
 						}
 					}
 				}
