@@ -762,7 +762,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 			
 			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
 			
-			if fetchedMyInfo.count == 1 {
+			if fetchedMyInfo.count == 1 && channel.role.rawValue > 0 {
 					
 				let newChannel = ChannelEntity(context: context)
 				newChannel.index = Int32(channel.index)
@@ -776,13 +776,12 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				
 				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+				try context.save()
+				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 				
-			} else {
+			} else if channel.role.rawValue > 0 {
 				print("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
 			}
-			
-			try context.save()
-			MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			
 		} catch {
 			

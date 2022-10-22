@@ -79,64 +79,104 @@ struct ShareChannels: View {
 												.labelsHidden()
 												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 1 && channel.role > 0 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 2 && channel.role > 0 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 3 && channel.role > 0 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 4  && channel.role > 0 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 5 && channel.role > 0 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 6  && channel.role > 0 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										} else if channel.index == 7 && channel.role > 0 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 0)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
-											Image(systemName: "lock.fill")
+											if channel.psk?.hexDescription.count ??  0 <  3 {
+												Image(systemName: "lock.slash")
+												.foregroundColor(.red)
+											} else {
+												Image(systemName: "lock.fill")
 												.foregroundColor(.green)
+											}
 										}
 										Spacer()
 									}

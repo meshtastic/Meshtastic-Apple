@@ -82,7 +82,8 @@ struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-
+	
+	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var preferredDeviceConnected = false
 
 	var perferredPeripheral: String {
@@ -104,20 +105,6 @@ struct AppSettings: View {
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
-					
-//					HStack {
-//						Label("Radio", systemImage: "flipphone")
-//						Text(userSettings.preferredPeripheralName)
-//							.foregroundColor(.gray)
-//						
-//					}
-//					Text("This option is set via the preferred radio toggle for the connected device on the bluetooth tab.")
-//						.font(.caption)
-//						.listRowSeparator(.hidden)
-//					Text("The preferred radio will automatically reconnect if it becomes disconnected and is still within range.")
-//						.font(.caption2)
-//						.foregroundColor(.gray)
-
 				}
 				Section(header: Text("Options")) {
 					
@@ -156,6 +143,26 @@ struct AppSettings: View {
 						Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
 							.font(.caption)
 							.listRowSeparator(.visible)
+					}
+				}
+			}
+			HStack {
+				
+				Button("Clear App Data", role: .destructive) {
+					isPresentingCoreDataResetConfirm = true
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding()
+				.confirmationDialog(
+					"Are you sure?",
+					isPresented: $isPresentingCoreDataResetConfirm,
+					titleVisibility: .visible
+				) {
+					Button("Erase all app data?", role: .destructive) {
+						bleManager.disconnectPeripheral()
+						clearCoreDataDatabase(context: context)
 					}
 				}
 			}

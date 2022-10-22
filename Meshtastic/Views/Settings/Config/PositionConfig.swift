@@ -206,6 +206,10 @@ struct PositionConfig: View {
 			) {
 				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
+					if fixedPosition {
+						let sendPosition = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
+					}
+					
 					var pc = Config.PositionConfig()
 					pc.positionBroadcastSmartEnabled = smartPositionEnabled
 					pc.gpsEnabled = deviceGpsEnabled
@@ -225,9 +229,6 @@ struct PositionConfig: View {
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
 					pc.positionFlags = UInt32(pf.rawValue)
-					if fixedPosition {
-						let sendPosition = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
-					}
 					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
