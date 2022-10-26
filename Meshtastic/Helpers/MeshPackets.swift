@@ -773,9 +773,9 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 				
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-				if channel.role.rawValue == 1 {
-					mutableChannels.removeAllObjects()
-				}
+//				if channel.role.rawValue == 1 {
+//					mutableChannels.removeAllObjects()
+//				}
 				
 				
 				mutableChannels.add(newChannel)
