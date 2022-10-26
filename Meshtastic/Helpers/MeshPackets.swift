@@ -242,15 +242,12 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					
 					newNetworkConfig.wifiSsid = config.network.wifiSsid
 					newNetworkConfig.wifiPsk = config.network.wifiPsk
-					newNetworkConfig.wifiMode = Int32(config.network.wifiMode.rawValue)
-
 					fetchedNode[0].networkConfig = newNetworkConfig
 					
 				} else {
 					
 					fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
-					fetchedNode[0].networkConfig?.wifiMode = Int32(config.network.wifiMode.rawValue)
 				}
 				
 				do {
