@@ -437,7 +437,7 @@ struct Position {
   // methods supported on all messages.
 
   ///
-  /// The new preferred location encoding, divide by 1e-7 to get degrees
+  /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
   var latitudeI: Int32 {
     get {return _storage._latitudeI}
