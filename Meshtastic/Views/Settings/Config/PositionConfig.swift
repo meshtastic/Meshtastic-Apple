@@ -138,7 +138,7 @@ struct PositionConfig: View {
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Toggle(isOn: $includeGeoidalSeparation) {
-							Label("Altitude Geoidal Seperation", systemImage: "globe.americas")
+							Label("Altitude Geoidal Separation", systemImage: "globe.americas")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}

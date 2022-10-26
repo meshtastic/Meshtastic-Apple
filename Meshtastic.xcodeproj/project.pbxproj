@@ -86,7 +86,6 @@
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
-		DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -199,7 +198,6 @@
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
-		DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiModes.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -352,7 +350,6 @@
 				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
 				DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */,
-				DDB6ABE728B141AF00384BA1 /* WiFiModes.swift */,
 				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
 				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
 				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
@@ -708,7 +705,6 @@
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
-				DDB6ABE828B141AF00384BA1 /* WiFiModes.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,

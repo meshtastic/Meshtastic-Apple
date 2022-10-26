@@ -34,20 +34,12 @@ struct NetworkConfig: View {
 					
 					Text("Enabling WiFi will disable the bluetooth connection to the app.")
 						.font(.title3)
-						
+				
 					Toggle(isOn: $wifiEnabled) {
 
 						Label("Enabled", systemImage: "wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-
-					Picker("Mode", selection: $wifiMode ) {
-						ForEach(WiFiModes.allCases) { lu in
-							Text(lu.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
 					
 					HStack {
 						Label("SSID", systemImage: "network")
@@ -132,7 +124,6 @@ struct NetworkConfig: View {
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
 					network.wifiPsk = self.wifiPsk
-					network.wifiMode = WiFiModes(rawValue: self.wifiMode)?.protoEnumValue() ?? WiFiModes.client.protoEnumValue()
 					
 					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					

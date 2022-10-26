@@ -440,11 +440,6 @@ struct Config {
     ///
     /// If set, this node will try to join the specified wifi network and
     /// acquire an address via DHCP
-    var wifiMode: Config.NetworkConfig.WiFiMode = .client
-
-    ///
-    /// If set, this node will try to join the specified wifi network and
-    /// acquire an address via DHCP
     var wifiSsid: String = String()
 
     ///
@@ -454,6 +449,25 @@ struct Config {
     ///
     /// NTP server to use if WiFi is conneced, defaults to `0.pool.ntp.org`
     var ntpServer: String = String()
+
+    ///
+    /// Enable Ethernet
+    var ethEnabled: Bool = false
+
+    ///
+    /// acquire an address via DHCP or assign static
+    var ethMode: Config.NetworkConfig.EthMode = .dhcp
+
+    ///
+    /// struct to keep static address
+    var ethConfig: Config.NetworkConfig.NetworkConfig {
+      get {return _ethConfig ?? Config.NetworkConfig.NetworkConfig()}
+      set {_ethConfig = newValue}
+    }
+    /// Returns true if `ethConfig` has been explicitly set.
+    var hasEthConfig: Bool {return self._ethConfig != nil}
+    /// Clears the value of `ethConfig`. Subsequent reads from it will return its default value.
+    mutating func clearEthConfig() {self._ethConfig = nil}
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -497,7 +511,69 @@ struct Config {
 
     }
 
+    enum EthMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// obtain ip address via DHCP
+      case dhcp // = 0
+
+      ///
+      /// use static ip address
+      case `static` // = 1
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .dhcp
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .dhcp
+        case 1: self = .static
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .dhcp: return 0
+        case .static: return 1
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    struct NetworkConfig {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      ///
+      /// Static IP address
+      var ip: UInt32 = 0
+
+      ///
+      /// Static gateway address
+      var gateway: UInt32 = 0
+
+      ///
+      /// Static subnet mask
+      var subnet: UInt32 = 0
+
+      ///
+      /// Static DNS server address
+      var dns: UInt32 = 0
+
+      var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      init() {}
+    }
+
     init() {}
+
+    fileprivate var _ethConfig: Config.NetworkConfig.NetworkConfig? = nil
   }
 
   ///
@@ -1002,6 +1078,14 @@ extension Config.NetworkConfig.WiFiMode: CaseIterable {
   ]
 }
 
+extension Config.NetworkConfig.EthMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.NetworkConfig.EthMode] = [
+    .dhcp,
+    .static,
+  ]
+}
+
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
@@ -1076,6 +1160,8 @@ extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.NetworkConfig: @unchecked Sendable {}
 extension Config.NetworkConfig.WiFiMode: @unchecked Sendable {}
+extension Config.NetworkConfig.EthMode: @unchecked Sendable {}
+extension Config.NetworkConfig.NetworkConfig: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
@@ -1463,10 +1549,12 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let protoMessageName: String = Config.protoMessageName + ".NetworkConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "wifi_enabled"),
-    2: .standard(proto: "wifi_mode"),
     3: .standard(proto: "wifi_ssid"),
     4: .standard(proto: "wifi_psk"),
     5: .standard(proto: "ntp_server"),
+    6: .standard(proto: "eth_enabled"),
+    7: .standard(proto: "eth_mode"),
+    8: .standard(proto: "eth_config"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1476,21 +1564,24 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.wifiEnabled) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.wifiMode) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.wifiSsid) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.wifiPsk) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.ntpServer) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.ethEnabled) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.ethMode) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._ethConfig) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.wifiEnabled != false {
       try visitor.visitSingularBoolField(value: self.wifiEnabled, fieldNumber: 1)
-    }
-    if self.wifiMode != .client {
-      try visitor.visitSingularEnumField(value: self.wifiMode, fieldNumber: 2)
     }
     if !self.wifiSsid.isEmpty {
       try visitor.visitSingularStringField(value: self.wifiSsid, fieldNumber: 3)
@@ -1501,15 +1592,26 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if !self.ntpServer.isEmpty {
       try visitor.visitSingularStringField(value: self.ntpServer, fieldNumber: 5)
     }
+    if self.ethEnabled != false {
+      try visitor.visitSingularBoolField(value: self.ethEnabled, fieldNumber: 6)
+    }
+    if self.ethMode != .dhcp {
+      try visitor.visitSingularEnumField(value: self.ethMode, fieldNumber: 7)
+    }
+    try { if let v = self._ethConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Config.NetworkConfig, rhs: Config.NetworkConfig) -> Bool {
     if lhs.wifiEnabled != rhs.wifiEnabled {return false}
-    if lhs.wifiMode != rhs.wifiMode {return false}
     if lhs.wifiSsid != rhs.wifiSsid {return false}
     if lhs.wifiPsk != rhs.wifiPsk {return false}
     if lhs.ntpServer != rhs.ntpServer {return false}
+    if lhs.ethEnabled != rhs.ethEnabled {return false}
+    if lhs.ethMode != rhs.ethMode {return false}
+    if lhs._ethConfig != rhs._ethConfig {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1521,6 +1623,63 @@ extension Config.NetworkConfig.WiFiMode: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "ACCESS_POINT"),
     2: .same(proto: "ACCESS_POINT_HIDDEN"),
   ]
+}
+
+extension Config.NetworkConfig.EthMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DHCP"),
+    1: .same(proto: "STATIC"),
+  ]
+}
+
+extension Config.NetworkConfig.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".NetworkConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "ip"),
+    2: .same(proto: "gateway"),
+    3: .same(proto: "subnet"),
+    4: .same(proto: "dns"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFixed32Field(value: &self.ip) }()
+      case 2: try { try decoder.decodeSingularFixed32Field(value: &self.gateway) }()
+      case 3: try { try decoder.decodeSingularFixed32Field(value: &self.subnet) }()
+      case 4: try { try decoder.decodeSingularFixed32Field(value: &self.dns) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.ip != 0 {
+      try visitor.visitSingularFixed32Field(value: self.ip, fieldNumber: 1)
+    }
+    if self.gateway != 0 {
+      try visitor.visitSingularFixed32Field(value: self.gateway, fieldNumber: 2)
+    }
+    if self.subnet != 0 {
+      try visitor.visitSingularFixed32Field(value: self.subnet, fieldNumber: 3)
+    }
+    if self.dns != 0 {
+      try visitor.visitSingularFixed32Field(value: self.dns, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Config.NetworkConfig.NetworkConfig, rhs: Config.NetworkConfig.NetworkConfig) -> Bool {
+    if lhs.ip != rhs.ip {return false}
+    if lhs.gateway != rhs.gateway {return false}
+    if lhs.subnet != rhs.subnet {return false}
+    if lhs.dns != rhs.dns {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

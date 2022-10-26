@@ -122,6 +122,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
 					newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.display.compassNorthTop
+					newDisplayConfig.flipScreen = config.display.flipScreen
 					fetchedNode[0].displayConfig = newDisplayConfig
 					
 				} else {
@@ -130,6 +131,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
 					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
 					fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
+					fetchedNode[0].displayConfig?.flipScreen = config.display.flipScreen
 				}
 				
 				do {
@@ -240,15 +242,12 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					
 					newNetworkConfig.wifiSsid = config.network.wifiSsid
 					newNetworkConfig.wifiPsk = config.network.wifiPsk
-					newNetworkConfig.wifiMode = Int32(config.network.wifiMode.rawValue)
-
 					fetchedNode[0].networkConfig = newNetworkConfig
 					
 				} else {
 					
 					fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
-					fetchedNode[0].networkConfig?.wifiMode = Int32(config.network.wifiMode.rawValue)
 				}
 				
 				do {
@@ -771,8 +770,13 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
+
 				
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+//				if channel.role.rawValue == 1 {
+//					mutableChannels.removeAllObjects()
+//				}
+				
 				
 				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet

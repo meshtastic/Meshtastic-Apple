@@ -28,7 +28,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	@Published var peripherals: [Peripheral]
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
-	@Published var minimumVersion = "1.3.43"
+	@Published var minimumVersion = "1.3.48"
 	@Published var connectedVersion: String
 	@Published var invalidVersion = false
 	@Published var preferredPeripheral = false
@@ -410,11 +410,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
 		if FROMRADIO_characteristic == nil {
-			
 			MeshLogger.log("🚨 Unsupported Firmware Version Detected, unable to connect to device.")
 			invalidVersion = true
 			return
-			
 		} else {
 		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
 		//BLE Characteristics discovered, issue wantConfig
@@ -423,7 +421,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		toRadio.wantConfigID = configNonce
 		let binaryData: Data = try! toRadio.serializedData()
 		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		
 			// Either Read the config complete value or from num notify value
 			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
@@ -1091,13 +1088,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						toRadio.packet = meshPacket
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-							
-							
 							//let timer1 = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { timer in
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
 							//}
-					
 						}
 						print(chan)
 					}
@@ -1124,7 +1118,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
 					//	let timer1 = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { timer in
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")

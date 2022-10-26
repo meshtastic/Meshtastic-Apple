@@ -437,7 +437,7 @@ struct Position {
   // methods supported on all messages.
 
   ///
-  /// The new preferred location encoding, divide by 1e-7 to get degrees
+  /// The new preferred location encoding, multiply by 1e-7 to get degrees
   /// in floating point
   var latitudeI: Int32 {
     get {return _storage._latitudeI}
@@ -1977,17 +1977,6 @@ struct ToRadio {
   }
 
   ///
-  /// Information about the peer, sent after the phone sneds want_config_id.
-  /// Old clients do not send this, which is fine.
-  var peerInfo: ToRadio.PeerInfo {
-    get {
-      if case .peerInfo(let v)? = payloadVariant {return v}
-      return ToRadio.PeerInfo()
-    }
-    set {payloadVariant = .peerInfo(newValue)}
-  }
-
-  ///
   /// Phone wants radio to send full node db to the phone, This is
   /// typically the first packet sent to the radio when the phone gets a
   /// bluetooth connection. The radio will respond by sending back a
@@ -2025,10 +2014,6 @@ struct ToRadio {
     /// Send this packet on the mesh
     case packet(MeshPacket)
     ///
-    /// Information about the peer, sent after the phone sneds want_config_id.
-    /// Old clients do not send this, which is fine.
-    case peerInfo(ToRadio.PeerInfo)
-    ///
     /// Phone wants radio to send full node db to the phone, This is
     /// typically the first packet sent to the radio when the phone gets a
     /// bluetooth connection. The radio will respond by sending back a
@@ -2054,10 +2039,6 @@ struct ToRadio {
         guard case .packet(let l) = lhs, case .packet(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.peerInfo, .peerInfo): return {
-        guard case .peerInfo(let l) = lhs, case .peerInfo(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
       case (.wantConfigID, .wantConfigID): return {
         guard case .wantConfigID(let l) = lhs, case .wantConfigID(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -2070,30 +2051,6 @@ struct ToRadio {
       }
     }
   #endif
-  }
-
-  ///
-  /// Instead of sending want_config_id as a uint32, newer clients send this structure with information about the client.
-  struct PeerInfo {
-    // SwiftProtobuf.Message conformance is added in an extension below. See the
-    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-    // methods supported on all messages.
-
-    ///
-    /// The numeric version code for the client application, which in some cases are used to control device behavior (so the device can
-    /// make assumptions about who is using the API.
-    var appVersion: UInt32 = 0
-
-    ///
-    /// True if the peer device can gateway MQTT packets.
-    /// If true, the device will not try to send packets to the internet directly,
-    /// instead it will pass the packets to the peer for dispatching.
-    /// This feature is optional, if set to false the device will assume the client can not gateway to MQTT.
-    var mqttGateway: Bool = false
-
-    var unknownFields = SwiftProtobuf.UnknownStorage()
-
-    init() {}
   }
 
   init() {}
@@ -2145,7 +2102,6 @@ extension FromRadio: @unchecked Sendable {}
 extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
 extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
-extension ToRadio.PeerInfo: @unchecked Sendable {}
 extension Compressed: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -3479,7 +3435,6 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let protoMessageName: String = "ToRadio"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "packet"),
-    2: .standard(proto: "peer_info"),
     3: .standard(proto: "want_config_id"),
     4: .same(proto: "disconnect"),
   ]
@@ -3501,19 +3456,6 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .packet(v)
-        }
-      }()
-      case 2: try {
-        var v: ToRadio.PeerInfo?
-        var hadOneofValue = false
-        if let current = self.payloadVariant {
-          hadOneofValue = true
-          if case .peerInfo(let m) = current {v = m}
-        }
-        try decoder.decodeSingularMessageField(value: &v)
-        if let v = v {
-          if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .peerInfo(v)
         }
       }()
       case 3: try {
@@ -3547,10 +3489,6 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       guard case .packet(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }()
-    case .peerInfo?: try {
-      guard case .peerInfo(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }()
     case .wantConfigID?: try {
       guard case .wantConfigID(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
@@ -3566,44 +3504,6 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
 
   static func ==(lhs: ToRadio, rhs: ToRadio) -> Bool {
     if lhs.payloadVariant != rhs.payloadVariant {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension ToRadio.PeerInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = ToRadio.protoMessageName + ".PeerInfo"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "app_version"),
-    2: .standard(proto: "mqtt_gateway"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.appVersion) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.mqttGateway) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.appVersion != 0 {
-      try visitor.visitSingularUInt32Field(value: self.appVersion, fieldNumber: 1)
-    }
-    if self.mqttGateway != false {
-      try visitor.visitSingularBoolField(value: self.mqttGateway, fieldNumber: 2)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: ToRadio.PeerInfo, rhs: ToRadio.PeerInfo) -> Bool {
-    if lhs.appVersion != rhs.appVersion {return false}
-    if lhs.mqttGateway != rhs.mqttGateway {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
