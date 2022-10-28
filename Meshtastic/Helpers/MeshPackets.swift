@@ -752,7 +752,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 
 func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
 	
-	if channel.isInitialized && channel.hasSettings {
+	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled  {
 		
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
@@ -770,13 +770,11 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
-
 				
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-//				if channel.role.rawValue == 1 {
-//					mutableChannels.removeAllObjects()
-//				}
-				
+				if channel.index == 1 {
+					//mutableChannels.removeAllObjects()
+				}
 				
 				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet

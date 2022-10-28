@@ -90,7 +90,7 @@ struct ShareChannels: View {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -103,7 +103,7 @@ struct ShareChannels: View {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -116,7 +116,7 @@ struct ShareChannels: View {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -129,7 +129,7 @@ struct ShareChannels: View {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -142,7 +142,7 @@ struct ShareChannels: View {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -155,7 +155,7 @@ struct ShareChannels: View {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
@@ -168,7 +168,7 @@ struct ShareChannels: View {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
 												.toggleStyle(.switch)
 												.labelsHidden()
-												.disabled(channel.role == 0)
+												.disabled(channel.role == 1)
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
