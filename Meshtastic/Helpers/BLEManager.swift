@@ -1054,22 +1054,44 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func saveChannelSet(base64UrlString: String) -> Bool {
 				
 		if isConnected {
-			var decodedString = base64UrlString.base64urlToBase64()
+			
+			//Before we get started delete the existing channels from the myNodeInfo
+			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+
+			do {
+				let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+				if fetchedMyInfo.count == 1 {
+					
+					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+					mutableChannels.removeAllObjects()
+					fetchedMyInfo[0].channels = mutableChannels
+					fetchedMyInfo[0].objectWillChange.send()
+					do {
+						try context!.save()
+						
+					} catch {
+						print("Failed to clear existing channels from local app database")
+					}
+				}
+					
+			} catch {
+				
+			}
+			
+			
+			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
 					print(channelSet)
 					var i:Int32 = 0
 					for cs in channelSet.settings {
-						i += 1
 						var chan = Channel()
+						i += 1
 						chan.settings = cs
 						chan.index = i
-						if i == 1 {
-							chan.role = Channel.Role.primary
-						} else {
-							chan.role = Channel.Role.secondary
-						}
+
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()
@@ -1088,12 +1110,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						toRadio.packet = meshPacket
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-							//let timer1 = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { timer in
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
-							//}
 						}
-						print(chan)
 					}
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
@@ -1105,7 +1124,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 					
 					meshPacket.priority =  MeshPacket.Priority.reliable
-					meshPacket.wantAck = true
+					meshPacket.wantAck = false
 					meshPacket.hopLimit = 0
 					
 					var dataMessage = DataMessage()
@@ -1118,10 +1137,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-					//	let timer1 = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { timer in
-							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
+						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")
-					//	}
 					}
 					
 					return true

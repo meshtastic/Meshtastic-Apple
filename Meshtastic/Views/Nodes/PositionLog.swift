@@ -26,10 +26,10 @@ struct PositionLog: View {
 				//Add a table for mac and ipad
 				VStack {
 					Table(node.positions!.reversed() as! [PositionEntity]) {
-						TableColumn("SeqNo") { position in
+						TableColumn("Seq No") { position in
 							Text(String(position.seqNo))
 						}
-						.width(75)
+						//.width(75)
 						TableColumn("Latitude") { position in
 							Text(String(format: "%.6f", position.latitude ?? 0))
 						}
@@ -39,15 +39,15 @@ struct PositionLog: View {
 						TableColumn("Altitude") { position in
 							Text(String(position.altitude))
 						}
-						.width(75)
+						//.width(75)
 						TableColumn("Sats") { position in
 							Text(String(position.satsInView))
 						}
-						.width(75)
+						//.width(75)
 						TableColumn("Speed") { position in
 							Text(String(position.speed))
 						}
-						.width(75)
+						//.width(75)
 						TableColumn("Heading") { position in
 							Text(String(position.heading))
 						}
