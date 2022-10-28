@@ -1254,6 +1254,12 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		do {
 
 			let fetchedUsers = try context.fetch(messageUsers) as! [UserEntity]
+			
+			if fetchedUsers.count <= 1 && fetchedUsers.first(where: { $0.num == packet.from }) == nil {
+				
+				print("Message from another mesh, unable to manage for now")
+				return
+			}
 
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)

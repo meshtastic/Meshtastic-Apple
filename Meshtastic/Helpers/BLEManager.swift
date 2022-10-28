@@ -1105,7 +1105,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 					
 					meshPacket.priority =  MeshPacket.Priority.reliable
-					meshPacket.wantAck = true
+					meshPacket.wantAck = false
 					meshPacket.hopLimit = 0
 					
 					var dataMessage = DataMessage()
