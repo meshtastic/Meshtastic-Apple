@@ -1066,7 +1066,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
 					mutableChannels.removeAllObjects()
 					fetchedMyInfo[0].channels = mutableChannels
-					fetchedMyInfo[0].objectWillChange.send()
 					do {
 						try context!.save()
 						
@@ -1076,22 +1075,26 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 					
 			} catch {
-				
+				print("Failed to find a node MyInfo to save these channels to")
 			}
 			
 			
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
-					var channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
+					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
 					print(channelSet)
 					var i:Int32 = 0
 					for cs in channelSet.settings {
 						var chan = Channel()
-						i += 1
+						if i == 0 {
+							chan.role = Channel.Role.primary
+						} else  {
+							chan.role = Channel.Role.secondary
+						}
 						chan.settings = cs
 						chan.index = i
-
+						i += 1
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()
@@ -1099,8 +1102,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 						meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 						meshPacket.priority =  MeshPacket.Priority.reliable
-						meshPacket.wantAck = false
-						meshPacket.hopLimit = 0
+						meshPacket.wantAck = true
+						meshPacket.channel = 0
 						var dataMessage = DataMessage()
 						dataMessage.payload = try! adminPacket.serializedData()
 						dataMessage.portnum = PortNum.adminApp
@@ -1111,26 +1114,22 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
+							MeshLogger.log("✈️ Sent a Channel for: \(String(self.connectedPeripheral.num)) Channel Index \(chan.index)")
 						}
 					}
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
 					adminPacket.setConfig.lora = channelSet.loraConfig
-					
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(connectedPeripheral.num)
 					meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-					
 					meshPacket.priority =  MeshPacket.Priority.reliable
-					meshPacket.wantAck = false
-					meshPacket.hopLimit = 0
-					
+					meshPacket.wantAck = true
+					meshPacket.channel = 0
 					var dataMessage = DataMessage()
 					dataMessage.payload = try! adminPacket.serializedData()
 					dataMessage.portnum = PortNum.adminApp
-					
 					meshPacket.decoded = dataMessage
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
@@ -1138,11 +1137,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")
+							MeshLogger.log("✈️ Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
 					}
-					
 					return true
-					
 				} catch {
 					return false
 				}
