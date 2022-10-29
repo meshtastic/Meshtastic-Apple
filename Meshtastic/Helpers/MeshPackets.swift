@@ -761,7 +761,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 			
 			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
 			
-			if fetchedMyInfo.count == 1 && channel.role.rawValue > 0 {
+			if fetchedMyInfo.count == 1 {
 					
 				let newChannel = ChannelEntity(context: context)
 				newChannel.index = Int32(channel.index)
@@ -772,13 +772,18 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.psk = channel.settings.psk
 				
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-				if channel.index == 1 {
-					//mutableChannels.removeAllObjects()
-				}
-				
+			
 				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-				try context.save()
+				fetchedMyInfo[0].objectWillChange.send()
+				do {
+					try context.save()
+				} catch {
+					
+					print("Failed to save channel")
+					
+				}
+				
 				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 				
 			} else if channel.role.rawValue > 0 {

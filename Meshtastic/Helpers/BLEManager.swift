@@ -1091,7 +1091,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						i += 1
 						chan.settings = cs
 						chan.index = i
-
+						if i == 1 {
+							chan.role = Channel.Role.primary
+						} else {
+							chan.role = Channel.Role.secondary
+						}
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()
@@ -1111,7 +1115,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-								MeshLogger.log("💾 Saved a Channel for: \(String(self.connectedPeripheral.num))")
+							MeshLogger.log("✈️ Sent a Channel for: \(String(self.connectedPeripheral.num)) Channel Index \(chan.index)")
 						}
 					}
 					// Save the LoRa Config and the device will reboot
@@ -1124,7 +1128,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 					
 					meshPacket.priority =  MeshPacket.Priority.reliable
-					meshPacket.wantAck = false
+					meshPacket.wantAck = true
 					meshPacket.hopLimit = 0
 					
 					var dataMessage = DataMessage()
@@ -1138,7 +1142,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							MeshLogger.log("💾 Saved a LoRaConfig for: \(String(self.connectedPeripheral.num))")
+							MeshLogger.log("✈️ Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
 					}
 					
 					return true
