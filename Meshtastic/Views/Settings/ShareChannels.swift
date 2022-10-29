@@ -35,13 +35,13 @@ struct ShareChannels: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
-	@State var includeChannel1 = false
-	@State var includeChannel2 = false
-	@State var includeChannel3 = false
-	@State var includeChannel4 = false
-	@State var includeChannel5 = false
-	@State var includeChannel6 = false
-	@State var includeChannel7 = false
+	@State var includeChannel1 = true
+	@State var includeChannel2 = true
+	@State var includeChannel3 = true
+	@State var includeChannel4 = true
+	@State var includeChannel5 = true
+	@State var includeChannel6 = true
+	@State var includeChannel7 = true
 	@State var isPresentingHelp = false
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
@@ -238,10 +238,7 @@ struct ShareChannels: View {
 							.font(.callout)
 							.padding([.leading,.trailing,.bottom])
 						Text("Private Channels").font(.title2)
-						Text("The other six channels can be used for private group converations. Each of these groups has its own encryption key.")
-							.font(.callout)
-							.padding([.leading,.trailing,.bottom])
-						Text("From this view your primary channel and mesh settings are always shared in the generated QR code and you can toggle to include your admin channel and any private groups you want the person you are sharing with to have access to.")
+						Text("The other channels can be used for private group converations. Each of these groups has its own encryption key.")
 							.font(.callout)
 							.padding([.leading,.trailing,.bottom])
 						Divider()

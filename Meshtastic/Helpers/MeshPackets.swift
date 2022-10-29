@@ -770,22 +770,19 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
-				
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-			
+				if newChannel.index == 0 {
+					mutableChannels.removeAllObjects()
+				}
 				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-				fetchedMyInfo[0].objectWillChange.send()
+				//fetchedMyInfo[0].objectWillChange.send()
 				do {
 					try context.save()
 				} catch {
-					
 					print("Failed to save channel")
-					
 				}
-				
 				MeshLogger.log("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
-				
 			} else if channel.role.rawValue > 0 {
 				print("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
 			}
@@ -1103,7 +1100,7 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			} else {
 				
 				print("💥 Empty POSITION_APP Packet")
-				
+				print(try! packet.jsonString())
 				if let dataMessage = try? DataMessage(serializedData: packet.decoded.payload) {
 					print(dataMessage)
 					
@@ -1269,6 +1266,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 			newMessage.receivedACK = false
 			newMessage.isEmoji = packet.decoded.emoji == 1
+			newMessage.channel = Int32(packet.channel)
 			
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
