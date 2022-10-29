@@ -1075,7 +1075,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				}
 					
 			} catch {
-				
+				print("Failed to find a node MyInfo to save these channels to")
 			}
 			
 			
@@ -1120,20 +1120,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					// Save the LoRa Config and the device will reboot
 					var adminPacket = AdminMessage()
 					adminPacket.setConfig.lora = channelSet.loraConfig
-					
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(connectedPeripheral.num)
 					meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-					
 					meshPacket.priority =  MeshPacket.Priority.reliable
 					meshPacket.wantAck = true
-					meshPacket.hopLimit = 0
-					
+					meshPacket.channel = 0
 					var dataMessage = DataMessage()
 					dataMessage.payload = try! adminPacket.serializedData()
 					dataMessage.portnum = PortNum.adminApp
-					
 					meshPacket.decoded = dataMessage
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
@@ -1143,9 +1139,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							MeshLogger.log("✈️ Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
 					}
-					
 					return true
-					
 				} catch {
 					return false
 				}
