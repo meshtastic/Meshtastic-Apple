@@ -239,7 +239,7 @@ struct CannedMessagesConfig: View {
 						if rotary1Enabled {
 							
 							/// Input event origin accepted by the canned messages
-							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb", "faceskb" or keyword "_any"
+							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
 							cmc.allowInputSource = "rotEnc1"
 							
 						} else if updown1Enabled {
@@ -322,15 +322,15 @@ struct CannedMessagesConfig: View {
 					
 				} else if newPreset == 2 {
 					
-					// TBeam Three Button 1.3" OLED Screen
-					updown1Enabled = true
+					// CardKB / RAK Keypad
+					updown1Enabled = false
 					rotary1Enabled = false
-					inputbrokerPinA = 25
-					inputbrokerPinB = 39
-					inputbrokerPinPress	= 36
-					inputbrokerEventCw = InputEventChars.up.rawValue
-					inputbrokerEventCcw = InputEventChars.down.rawValue
-					inputbrokerEventPress = InputEventChars.select.rawValue
+					inputbrokerPinA = 0
+					inputbrokerPinB = 0
+					inputbrokerPinPress	= 0
+					inputbrokerEventCw = InputEventChars.none.rawValue
+					inputbrokerEventCcw = InputEventChars.none.rawValue
+					inputbrokerEventPress = InputEventChars.none.rawValue
 				}
 				
 				hasChanges = true
