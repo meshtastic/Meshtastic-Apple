@@ -511,7 +511,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				if decodedInfo.nodeInfo.num != 0 && !invalidVersion {
 
 					nowKnown = true
-					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, context: context!)
+					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
 					
 					if nodeInfo != nil {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {

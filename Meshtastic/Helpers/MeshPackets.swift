@@ -797,7 +797,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 	}
 }
 
-func nodeInfoPacket (nodeInfo: NodeInfo, context: NSManagedObjectContext) -> NodeInfoEntity? {
+func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
@@ -811,6 +811,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, context: NSManagedObjectContext) -> Nod
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
 			newNode.num = Int64(nodeInfo.num)
+			newNode.channel = Int32(channel)
 			
 			if nodeInfo.hasDeviceMetrics {
 				
@@ -898,6 +899,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, context: NSManagedObjectContext) -> Nod
 			fetchedNode[0].num = Int64(nodeInfo.num)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			fetchedNode[0].snr = nodeInfo.snr
+			fetchedNode[0].channel = Int32(channel)
 			
 
 			if nodeInfo.hasUser {
@@ -999,6 +1001,7 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			fetchedNode[0].num = Int64(packet.from)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			fetchedNode[0].snr = packet.rxSnr
+			fetchedNode[0].channel = Int32(packet.channel)
 			
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 		
@@ -1025,6 +1028,9 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				}
 			}
+		} else {
+			
+			// New node info not from device but potentially from another network
 		}
 		
 		do {
