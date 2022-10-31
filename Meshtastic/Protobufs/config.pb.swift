@@ -435,57 +435,39 @@ struct Config {
 
     ///
     /// Enable WiFi (disables Bluetooth)
-    var wifiEnabled: Bool {
-      get {return _storage._wifiEnabled}
-      set {_uniqueStorage()._wifiEnabled = newValue}
-    }
+    var wifiEnabled: Bool = false
 
     ///
     /// If set, this node will try to join the specified wifi network and
     /// acquire an address via DHCP
-    var wifiSsid: String {
-      get {return _storage._wifiSsid}
-      set {_uniqueStorage()._wifiSsid = newValue}
-    }
+    var wifiSsid: String = String()
 
     ///
     /// If set, will be use to authenticate to the named wifi
-    var wifiPsk: String {
-      get {return _storage._wifiPsk}
-      set {_uniqueStorage()._wifiPsk = newValue}
-    }
+    var wifiPsk: String = String()
 
     ///
     /// NTP server to use if WiFi is conneced, defaults to `0.pool.ntp.org`
-    var ntpServer: String {
-      get {return _storage._ntpServer}
-      set {_uniqueStorage()._ntpServer = newValue}
-    }
+    var ntpServer: String = String()
 
     ///
     /// Enable Ethernet
-    var ethEnabled: Bool {
-      get {return _storage._ethEnabled}
-      set {_uniqueStorage()._ethEnabled = newValue}
-    }
+    var ethEnabled: Bool = false
 
     ///
     /// acquire an address via DHCP or assign static
-    var ethMode: Config.NetworkConfig.EthMode {
-      get {return _storage._ethMode}
-      set {_uniqueStorage()._ethMode = newValue}
-    }
+    var ethMode: Config.NetworkConfig.EthMode = .dhcp
 
     ///
     /// struct to keep static address
-    var ethConfig: Config.NetworkConfig {
-      get {return _storage._ethConfig ?? Config.NetworkConfig()}
-      set {_uniqueStorage()._ethConfig = newValue}
+    var ipv4Config: Config.NetworkConfig.IpV4Config {
+      get {return _ipv4Config ?? Config.NetworkConfig.IpV4Config()}
+      set {_ipv4Config = newValue}
     }
-    /// Returns true if `ethConfig` has been explicitly set.
-    var hasEthConfig: Bool {return _storage._ethConfig != nil}
-    /// Clears the value of `ethConfig`. Subsequent reads from it will return its default value.
-    mutating func clearEthConfig() {_uniqueStorage()._ethConfig = nil}
+    /// Returns true if `ipv4Config` has been explicitly set.
+    var hasIpv4Config: Bool {return self._ipv4Config != nil}
+    /// Clears the value of `ipv4Config`. Subsequent reads from it will return its default value.
+    mutating func clearIpv4Config() {self._ipv4Config = nil}
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -563,7 +545,7 @@ struct Config {
 
     }
 
-    struct TcpConfig {
+    struct IpV4Config {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
@@ -591,7 +573,7 @@ struct Config {
 
     init() {}
 
-    fileprivate var _storage = _StorageClass.defaultInstance
+    fileprivate var _ipv4Config: Config.NetworkConfig.IpV4Config? = nil
   }
 
   ///
@@ -1179,7 +1161,7 @@ extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.NetworkConfig: @unchecked Sendable {}
 extension Config.NetworkConfig.WiFiMode: @unchecked Sendable {}
 extension Config.NetworkConfig.EthMode: @unchecked Sendable {}
-extension Config.NetworkConfig.TcpConfig: @unchecked Sendable {}
+extension Config.NetworkConfig.IpV4Config: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
@@ -1572,108 +1554,64 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     5: .standard(proto: "ntp_server"),
     6: .standard(proto: "eth_enabled"),
     7: .standard(proto: "eth_mode"),
-    8: .standard(proto: "eth_config"),
+    8: .standard(proto: "ipv4_config"),
   ]
 
-  fileprivate class _StorageClass {
-    var _wifiEnabled: Bool = false
-    var _wifiSsid: String = String()
-    var _wifiPsk: String = String()
-    var _ntpServer: String = String()
-    var _ethEnabled: Bool = false
-    var _ethMode: Config.NetworkConfig.EthMode = .dhcp
-    var _ethConfig: Config.NetworkConfig? = nil
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _wifiEnabled = source._wifiEnabled
-      _wifiSsid = source._wifiSsid
-      _wifiPsk = source._wifiPsk
-      _ntpServer = source._ntpServer
-      _ethEnabled = source._ethEnabled
-      _ethMode = source._ethMode
-      _ethConfig = source._ethConfig
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularBoolField(value: &_storage._wifiEnabled) }()
-        case 3: try { try decoder.decodeSingularStringField(value: &_storage._wifiSsid) }()
-        case 4: try { try decoder.decodeSingularStringField(value: &_storage._wifiPsk) }()
-        case 5: try { try decoder.decodeSingularStringField(value: &_storage._ntpServer) }()
-        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._ethEnabled) }()
-        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._ethMode) }()
-        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._ethConfig) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.wifiEnabled) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.wifiSsid) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.wifiPsk) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.ntpServer) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.ethEnabled) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.ethMode) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if _storage._wifiEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._wifiEnabled, fieldNumber: 1)
-      }
-      if !_storage._wifiSsid.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._wifiSsid, fieldNumber: 3)
-      }
-      if !_storage._wifiPsk.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._wifiPsk, fieldNumber: 4)
-      }
-      if !_storage._ntpServer.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._ntpServer, fieldNumber: 5)
-      }
-      if _storage._ethEnabled != false {
-        try visitor.visitSingularBoolField(value: _storage._ethEnabled, fieldNumber: 6)
-      }
-      if _storage._ethMode != .dhcp {
-        try visitor.visitSingularEnumField(value: _storage._ethMode, fieldNumber: 7)
-      }
-      try { if let v = _storage._ethConfig {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-      } }()
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.wifiEnabled != false {
+      try visitor.visitSingularBoolField(value: self.wifiEnabled, fieldNumber: 1)
     }
+    if !self.wifiSsid.isEmpty {
+      try visitor.visitSingularStringField(value: self.wifiSsid, fieldNumber: 3)
+    }
+    if !self.wifiPsk.isEmpty {
+      try visitor.visitSingularStringField(value: self.wifiPsk, fieldNumber: 4)
+    }
+    if !self.ntpServer.isEmpty {
+      try visitor.visitSingularStringField(value: self.ntpServer, fieldNumber: 5)
+    }
+    if self.ethEnabled != false {
+      try visitor.visitSingularBoolField(value: self.ethEnabled, fieldNumber: 6)
+    }
+    if self.ethMode != .dhcp {
+      try visitor.visitSingularEnumField(value: self.ethMode, fieldNumber: 7)
+    }
+    try { if let v = self._ipv4Config {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Config.NetworkConfig, rhs: Config.NetworkConfig) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._wifiEnabled != rhs_storage._wifiEnabled {return false}
-        if _storage._wifiSsid != rhs_storage._wifiSsid {return false}
-        if _storage._wifiPsk != rhs_storage._wifiPsk {return false}
-        if _storage._ntpServer != rhs_storage._ntpServer {return false}
-        if _storage._ethEnabled != rhs_storage._ethEnabled {return false}
-        if _storage._ethMode != rhs_storage._ethMode {return false}
-        if _storage._ethConfig != rhs_storage._ethConfig {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.wifiEnabled != rhs.wifiEnabled {return false}
+    if lhs.wifiSsid != rhs.wifiSsid {return false}
+    if lhs.wifiPsk != rhs.wifiPsk {return false}
+    if lhs.ntpServer != rhs.ntpServer {return false}
+    if lhs.ethEnabled != rhs.ethEnabled {return false}
+    if lhs.ethMode != rhs.ethMode {return false}
+    if lhs._ipv4Config != rhs._ipv4Config {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1694,8 +1632,8 @@ extension Config.NetworkConfig.EthMode: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension Config.NetworkConfig.TcpConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".TcpConfig"
+extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".IpV4Config"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "ip"),
     2: .same(proto: "gateway"),
@@ -1734,7 +1672,7 @@ extension Config.NetworkConfig.TcpConfig: SwiftProtobuf.Message, SwiftProtobuf._
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Config.NetworkConfig.TcpConfig, rhs: Config.NetworkConfig.TcpConfig) -> Bool {
+  static func ==(lhs: Config.NetworkConfig.IpV4Config, rhs: Config.NetworkConfig.IpV4Config) -> Bool {
     if lhs.ip != rhs.ip {return false}
     if lhs.gateway != rhs.gateway {return false}
     if lhs.subnet != rhs.subnet {return false}

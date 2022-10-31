@@ -11,7 +11,6 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 	case unset = 0
 	case rakRotaryEncoder = 1
 	case cardKB = 2
-	case facesKB = 3
 	
 	var id: Int { self.rawValue }
 	var description: String {
@@ -23,9 +22,7 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 			case .rakRotaryEncoder:
 				return "RAK Rotary Encoder Module"
 			case .cardKB:
-				return "M5 Stack Card KeyBoard"
-			case .facesKB:
-				return "M5 Stack Faces KeyBoard"
+				return "M5 Stack Card KB / RAK Keypad"
 			}
 		}
 	}

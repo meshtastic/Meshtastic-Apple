@@ -35,6 +35,22 @@ struct DeviceMetadata {
   /// Device state version
   var deviceStateVersion: UInt32 = 0
 
+  ///
+  /// Indicates whether the device can shutdown CPU natively or via power management chip
+  var canShutdown: Bool = false
+
+  ///
+  /// Indicates that the device has native wifi capability
+  var hasWifi_p: Bool = false
+
+  ///
+  /// Indicates that the device has native bluetooth capability
+  var hasBluetooth_p: Bool = false
+
+  ///
+  /// Indicates that the device has an ethernet peripheral
+  var hasEthernet_p: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -51,6 +67,10 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "firmware_version"),
     2: .standard(proto: "device_state_version"),
+    3: .same(proto: "canShutdown"),
+    4: .same(proto: "hasWifi"),
+    5: .same(proto: "hasBluetooth"),
+    6: .same(proto: "hasEthernet"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -61,6 +81,10 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.deviceStateVersion) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.canShutdown) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.hasBluetooth_p) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.hasEthernet_p) }()
       default: break
       }
     }
@@ -73,12 +97,28 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.deviceStateVersion != 0 {
       try visitor.visitSingularUInt32Field(value: self.deviceStateVersion, fieldNumber: 2)
     }
+    if self.canShutdown != false {
+      try visitor.visitSingularBoolField(value: self.canShutdown, fieldNumber: 3)
+    }
+    if self.hasWifi_p != false {
+      try visitor.visitSingularBoolField(value: self.hasWifi_p, fieldNumber: 4)
+    }
+    if self.hasBluetooth_p != false {
+      try visitor.visitSingularBoolField(value: self.hasBluetooth_p, fieldNumber: 5)
+    }
+    if self.hasEthernet_p != false {
+      try visitor.visitSingularBoolField(value: self.hasEthernet_p, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
     if lhs.firmwareVersion != rhs.firmwareVersion {return false}
     if lhs.deviceStateVersion != rhs.deviceStateVersion {return false}
+    if lhs.canShutdown != rhs.canShutdown {return false}
+    if lhs.hasWifi_p != rhs.hasWifi_p {return false}
+    if lhs.hasBluetooth_p != rhs.hasBluetooth_p {return false}
+    if lhs.hasEthernet_p != rhs.hasEthernet_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

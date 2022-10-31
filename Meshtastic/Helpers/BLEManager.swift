@@ -1073,11 +1073,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						print("Failed to clear existing channels from local app database")
 					}
 				}
-					
 			} catch {
 				print("Failed to find a node MyInfo to save these channels to")
 			}
-			
 			
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
@@ -1188,7 +1186,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1217,12 +1214,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
 		
 		let messageDescription = "Saved Device Config for \(toUser.longName ?? "Unknown")"
