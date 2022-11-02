@@ -55,6 +55,10 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 
 enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 
+	case fiveSeconds = 5
+	case tenSeconds = 10
+	case fifteenSeconds = 15
+	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
@@ -64,6 +68,14 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
+			case .fiveSeconds:
+				return "Five Seconds"
+			case .tenSeconds:
+				return "Ten Seconds"
+			case .fifteenSeconds:
+				return "Fifteen Seconds"
+			case .thirtySeconds:
+				return "Thirty Seconds"
 			case .oneMinute:
 				return "One Minute"
 			case .fiveMinutes:
