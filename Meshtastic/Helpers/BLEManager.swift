@@ -324,8 +324,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	// MARK: Discover Characteristics Event
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		
+		
 		if let e = error {
-			MeshLogger.log("🚫 BLE didDiscoverCharacteristicsFor error by \(peripheral.name ?? "Unknown") \(e)")
+			MeshLogger.log("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
+			// Try and stop crashes when this error occurs
+			disconnectPeripheral()
+			return
 		}
 		
 		guard let characteristics = service.characteristics else { return }
@@ -637,9 +641,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		default:
 			print("🚨 Unhandled Characteristic UUID: \(characteristic.uuid)")
 		}
-		
-		// Either Read the config complete value or from num notify value
-		peripheral.readValue(for: FROMRADIO_characteristic)
+		if FROMRADIO_characteristic != nil {
+			
+			// Either Read the config complete value or from num notify value
+			peripheral.readValue(for: FROMRADIO_characteristic)
+		}
 	}
 
 	public func sendMessage(message: String, toUserNum: Int64, isEmoji: Bool, replyID: Int64) -> Bool {
