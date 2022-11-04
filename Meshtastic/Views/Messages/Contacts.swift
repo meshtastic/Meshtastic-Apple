@@ -19,8 +19,6 @@ struct Contacts: View {
 	
 	private var users: FetchedResults<UserEntity>
 
-	
-	
 	private var prefferedNode: NodeInfoEntity?
 
 	@FetchRequest(
@@ -29,37 +27,32 @@ struct Contacts: View {
 
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
-	
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
 
     var body: some View {
 
 		NavigationSplitView {
+			
 			List {
 				Section(header: Text("Direct Messages")) {
 					ForEach(users) { (user: UserEntity) in
-						
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
-							
 							NavigationLink(destination: MessageList(user: user)) {
-								
-								if user.messageList.count > 0 {
-									
-									let mostRecent = user.num == bleManager.broadcastNodeNum ? user.messageList.last : user.messageList.last(where: { $0.toUser?.num ?? 0 !=  bleManager.broadcastNodeNum })
-									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-									
-									HStack {
-										VStack(alignment: .leading) {
-											HStack {
-												CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
+								let mostRecent = user.num == bleManager.broadcastNodeNum ? user.messageList.last : user.messageList.last(where: { $0.toUser?.num ?? 0 !=  bleManager.broadcastNodeNum })
+								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+								let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+								let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+								HStack {
+									VStack(alignment: .leading) {
+										HStack {
+											CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
 												.padding(.trailing, 5)
-												VStack {
-													Text(user.longName ?? "Unknown").font(.headline)
-												}
-												.frame(maxWidth: .infinity, alignment: .leading)
-												
+											VStack {
+												Text(user.longName ?? "Unknown").font(.headline)
+											}
+											.frame(maxWidth: .infinity, alignment: .leading)
+											
+											if user.messageList.count > 0 {
 												VStack (alignment: .trailing) {
 													if lastMessageDay == currentDay {
 														Text(lastMessageTime, style: .time )
@@ -80,6 +73,8 @@ struct Contacts: View {
 													}
 												}
 											}
+										}
+										if user.messageList.count > 0 {
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 													.truncationMode(.tail)
@@ -88,31 +83,6 @@ struct Contacts: View {
 											}
 										}
 									}
-								} else {
-									HStack {
-										VStack(alignment: .leading) {
-											CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
-												.padding(.trailing, 5)
-										}
-										VStack {
-											HStack {
-												VStack {
-													Text(user.longName ?? "Unknown").font(.headline).fixedSize()
-												}
-												VStack {
-													Text("               ")
-												}
-												.frame(maxWidth: .infinity, alignment: .trailing)
-											}
-											HStack(alignment: .top) {
-												Text(" ")
-													.truncationMode(.tail)
-													.foregroundColor(Color.gray)
-													.frame(maxWidth: .infinity, alignment: .leading)
-											}
-										}
-										.padding(.top)
-									}
 								}
 							}
 						}
@@ -120,7 +90,6 @@ struct Contacts: View {
 				}
 				Section(header: Text("Private Channels")) {
 					// Display Contacts for the rest of the non admin channels
-					
 				}
 			}
 			.tint(Color(UIColor.systemGray))
@@ -132,16 +101,12 @@ struct Contacts: View {
 			)
 		}
 		detail: {
-		
 			if let user = selection {
-				
 				MessageList(user:user)
 				
 			} else {
-				
 				Text("Select a user")
 			}
 		}
-
     }
 }
