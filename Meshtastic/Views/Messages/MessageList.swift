@@ -69,94 +69,22 @@ struct MessageList: View {
 												.background(currentUser ? Color.blue : Color(.darkGray))
 												.cornerRadius(15)
 												.contextMenu {
+													VStack{
+														Text("Channel: \(message.channel)")
+													}
 													Menu("Tapback response") {
-														
-														Button(action: {
-															if bleManager.sendMessage(message: "❤️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																print("Sent ❤️ Tapback")
-																self.context.refresh(user, mergeChanges: true)
-															} else { print("❤️ Tapback Failed") }
-															
-														}) {
-															Text("Heart")
-															let image = "❤️".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															
-															if bleManager.sendMessage(message: "👍", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
+														ForEach(Tapbacks.allCases) { tb in
+															Button(action: {
+																if bleManager.sendMessage(message: tb.description, toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
+																	print("Sent \(tb.description) Tapback")
+																	self.context.refresh(user, mergeChanges: true)
+																} else { print("\(tb.description) Tapback Failed") }
 																
-																print("Sent 👍 Tapback")
-																self.context.refresh(user, mergeChanges: true)
-																
-															} else { print("👍 Tapback Failed")}
-															
-														}) {
-															Text("Thumbs Up")
-															let image = "👍".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															
-															if bleManager.sendMessage(message: "👎", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																
-																print("Sent 👎 Tapback")
-																self.context.refresh(user, mergeChanges: true)
-																
-															} else { print("👎 Tapback Failed") }
-															
-														}) {
-															Text("Thumbs Down")
-															let image = "👎".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															
-															if bleManager.sendMessage(message: "🤣", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																
-																print("Sent 🤣 Tapback")
-																self.context.refresh(user, mergeChanges: true)
-																
-															} else { print("🤣 Tapback Failed") }
-															
-														}) {
-															Text("HaHa")
-															let image = "🤣".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															
-															if bleManager.sendMessage(message: "‼️", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																
-																print("Sent ‼️ Tapback")
-																self.context.refresh(user, mergeChanges: true)
-																
-															} else { print("‼️ Tapback Failed") }
-															
-														}) {
-															Text("Exclamation Mark")
-															let image = "‼️".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															if bleManager.sendMessage(message: "❓", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																self.context.refresh(user, mergeChanges: true)
-																print("Sent ❓ Tapback")
-															} else { print("❓ Tapback Failed") }
-														}) {
-															Text("Question Mark")
-															let image = "❓".image()
-															Image(uiImage: image!)
-														}
-														Button(action: {
-															if bleManager.sendMessage(message: "💩", toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																self.context.refresh(user, mergeChanges: true)
-																print("Sent 💩 Tapback")
-															} else { print("💩 Tapback Failed") }
-														}) {
-															Text("Poop")
-															let image = "💩".image()
-															Image(uiImage: image!)
+															}) {
+																Text(tb.description)
+																let image = tb.emojiString.image()
+																Image(uiImage: image!)
+															}
 														}
 													}
 													Button(action: {

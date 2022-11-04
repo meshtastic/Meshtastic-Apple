@@ -18,7 +18,6 @@ struct Contacts: View {
 		animation: .default)
 	
 	private var users: FetchedResults<UserEntity>
-
 	private var prefferedNode: NodeInfoEntity?
 
 	@FetchRequest(
