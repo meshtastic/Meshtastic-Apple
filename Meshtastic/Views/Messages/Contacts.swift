@@ -53,7 +53,7 @@ struct Contacts: View {
 									HStack {
 										VStack(alignment: .leading) {
 											HStack {
-											CircleText(text: user.shortName ?? "???", color: Color.blue)
+												CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
 												.padding(.trailing, 5)
 												VStack {
 													Text(user.longName ?? "Unknown").font(.headline)
@@ -91,7 +91,7 @@ struct Contacts: View {
 								} else {
 									HStack {
 										VStack(alignment: .leading) {
-											CircleText(text: user.shortName ?? "???", color: Color.blue)
+											CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
 												.padding(.trailing, 5)
 										}
 										VStack {
