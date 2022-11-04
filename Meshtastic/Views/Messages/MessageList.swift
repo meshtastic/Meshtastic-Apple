@@ -422,8 +422,8 @@ struct MessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 42, fontSize: 16).fixedSize()
-					Text(user.longName ?? "Unknown").font(.headline).fixedSize()
+					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 44, fontSize: 14).fixedSize()
+					Text(user.longName ?? "Unknown").font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

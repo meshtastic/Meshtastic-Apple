@@ -36,7 +36,7 @@ struct Contacts: View {
 
 		NavigationSplitView {
 			List {
-				Section(header: Text("Primary Channel")) {
+				Section(header: Text("Direct Messages")) {
 					ForEach(users) { (user: UserEntity) in
 						
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
@@ -52,43 +52,41 @@ struct Contacts: View {
 									
 									HStack {
 										VStack(alignment: .leading) {
+											HStack {
 											CircleText(text: user.shortName ?? "???", color: Color.blue)
 												.padding(.trailing, 5)
-										}
-										VStack {
-											HStack {
 												VStack {
-													Text(user.longName ?? "Unknown").font(.headline).fixedSize()
+													Text(user.longName ?? "Unknown").font(.headline)
 												}
-												VStack {
-													
+												.frame(maxWidth: .infinity, alignment: .leading)
+												
+												VStack (alignment: .trailing) {
 													if lastMessageDay == currentDay {
 														Text(lastMessageTime, style: .time )
-															.font(.caption)
+															.font(.callout)
 															.foregroundColor(.gray)
 													} else if  lastMessageDay == (currentDay - 1) {
-														
 														Text("Yesterday")
 															.font(.callout)
 															.foregroundColor(.gray)
-														
 													} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-														Text(lastMessageTime, style: .date)
+														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+															.font(.callout)
+															.foregroundColor(.gray)
 													} else if lastMessageDay < (currentDay - 1800) {
-														Text(lastMessageTime, style: .date)
+														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+															.font(.callout)
+															.foregroundColor(.gray)
 													}
 												}
-												.frame(maxWidth: .infinity, alignment: .trailing)
 											}
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-													.frame(height: 50)
 													.truncationMode(.tail)
 													.foregroundColor(Color.gray)
 													.frame(maxWidth: .infinity, alignment: .leading)
 											}
 										}
-										.padding(.top)
 									}
 								} else {
 									HStack {
@@ -108,7 +106,6 @@ struct Contacts: View {
 											}
 											HStack(alignment: .top) {
 												Text(" ")
-													.frame(height: 50	)
 													.truncationMode(.tail)
 													.foregroundColor(Color.gray)
 													.frame(maxWidth: .infinity, alignment: .leading)
@@ -125,7 +122,6 @@ struct Contacts: View {
 					// Display Contacts for the rest of the non admin channels
 					
 				}
-				.hidden()
 			}
 			.tint(Color(UIColor.systemGray))
 			.navigationSplitViewStyle(.automatic)
