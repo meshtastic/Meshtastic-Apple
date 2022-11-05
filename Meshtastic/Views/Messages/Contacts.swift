@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct Contacts: View {
 
@@ -18,13 +19,7 @@ struct Contacts: View {
 		animation: .default)
 	
 	private var users: FetchedResults<UserEntity>
-	private var prefferedNode: NodeInfoEntity?
-
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "num", ascending: true)],
-		animation: .default)
-
-	private var nodes: FetchedResults<NodeInfoEntity>
+	@State var node: NodeInfoEntity? = nil
 	
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
 
@@ -33,10 +28,33 @@ struct Contacts: View {
 		NavigationSplitView {
 			
 			List {
+				Section(header: Text("Channels")) {
+					// Display Contacts for the rest of the non admin channels
+					if node != nil {
+						ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" {
+								HStack {
+									VStack(alignment: .leading) {
+										HStack {
+											CircleText(text: String(channel.index), color: Color.blue, circleSize: 52, fontSize: 32)
+												.padding(.trailing, 5)
+											VStack {
+												Text(channel.name?.camelCaseToWords() ?? "Channel \(channel.index)").font(.headline)
+											}
+											.frame(maxWidth: .infinity, alignment: .leading)
+										}
+									}
+								}
+							}
+						}
+						.padding(.top, 10)
+						.padding(.bottom, 10)
+					}
+				}
 				Section(header: Text("Direct Messages")) {
 					ForEach(users) { (user: UserEntity) in
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
-							NavigationLink(destination: MessageList(user: user)) {
+							NavigationLink(destination: UserMessageList(user: user)) {
 								let mostRecent = user.num == bleManager.broadcastNodeNum ? user.messageList.last : user.messageList.last(where: { $0.toUser?.num ?? 0 !=  bleManager.broadcastNodeNum })
 								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 								let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -84,11 +102,10 @@ struct Contacts: View {
 									}
 								}
 							}
+							.padding(.top, 10)
+							.padding(.bottom, 10)
 						}
 					}
-				}
-				Section(header: Text("Private Channels")) {
-					// Display Contacts for the rest of the non admin channels
 				}
 			}
 			.tint(Color(UIColor.systemGray))
@@ -98,10 +115,33 @@ struct Contacts: View {
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
+			.onAppear {
+				self.bleManager.userSettings = userSettings
+				self.bleManager.context = context
+				
+				if userSettings.preferredNodeNum > 0 {
+					
+					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(userSettings.preferredNodeNum))
+					
+					do {
+						
+						let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+						// Found a node, check it for a region
+						if !fetchedNode.isEmpty {
+							node = fetchedNode[0]
+							
+						}
+					} catch {
+						
+					}
+				}
+				
+			}
 		}
 		detail: {
 			if let user = selection {
-				MessageList(user:user)
+				UserMessageList(user:user)
 				
 			} else {
 				Text("Select a user")

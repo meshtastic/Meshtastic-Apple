@@ -55,7 +55,7 @@ struct ShareChannels: View {
 				ScrollView {
 					VStack {
 						if node != nil && node?.myInfo != nil {
-							Grid(alignment: .top, horizontalSpacing: 2) {
+							Grid(alignment: .top) {
 								GridRow {
 									Spacer()
 									Text("Include")
@@ -78,13 +78,13 @@ struct ShareChannels: View {
 												.toggleStyle(.switch)
 												.labelsHidden()
 												.disabled(channel.role == 1)
-											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary")
+											Text((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").fixedSize()
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 1 && channel.role > 0 {
 											Toggle("Channel 1 Included", isOn: $includeChannel1)
@@ -94,10 +94,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 2 && channel.role > 0 {
 											Toggle("Channel 2 Included", isOn: $includeChannel2)
@@ -107,10 +107,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 3 && channel.role > 0 {
 											Toggle("Channel 3 Included", isOn: $includeChannel3)
@@ -120,10 +120,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 4  && channel.role > 0 {
 											Toggle("Channel 4 Included", isOn: $includeChannel4)
@@ -133,10 +133,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 5 && channel.role > 0 {
 											Toggle("Channel 5 Included", isOn: $includeChannel5)
@@ -146,10 +146,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 6  && channel.role > 0 {
 											Toggle("Channel 6 Included", isOn: $includeChannel6)
@@ -159,10 +159,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										} else if channel.index == 7 && channel.role > 0 {
 											Toggle("Channel 7 Included", isOn: $includeChannel7)
@@ -172,10 +172,10 @@ struct ShareChannels: View {
 											Text((channel.name!.isEmpty ? "Channel\(channel.index)" : channel.name) ?? "Channel\(channel.index)")
 											if channel.psk?.hexDescription.count ??  0 <  3 {
 												Image(systemName: "lock.slash")
-												.foregroundColor(.red)
+													.foregroundColor(.red)
 											} else {
 												Image(systemName: "lock.fill")
-												.foregroundColor(.green)
+													.foregroundColor(.green)
 											}
 										}
 										Spacer()
@@ -183,15 +183,15 @@ struct ShareChannels: View {
 									.padding(0)
 								}
 							}
-							
+
 							let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 							VStack {
 								if node != nil {
 									ShareLink("Share QR Code & Link",
-											  item: Image(uiImage: qrImage),
-											  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-											  message: Text(channelsUrl),
-											  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+												item: Image(uiImage: qrImage),
+												subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+												message: Text(channelsUrl),
+												preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 																	image: Image(uiImage: qrImage))
 									)
 									.buttonStyle(.bordered)

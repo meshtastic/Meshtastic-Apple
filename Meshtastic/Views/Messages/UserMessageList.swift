@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreData
 
-struct MessageList: View {
+struct UserMessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -75,10 +75,10 @@ struct MessageList: View {
 													Menu("Tapback response") {
 														ForEach(Tapbacks.allCases) { tb in
 															Button(action: {
-																if bleManager.sendMessage(message: tb.description, toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																	print("Sent \(tb.description) Tapback")
+																if bleManager.sendMessage(message: tb.emojiString, toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
+																	print("Sent \(tb.emojiString) Tapback")
 																	self.context.refresh(user, mergeChanges: true)
-																} else { print("\(tb.description) Tapback Failed") }
+																} else { print("\(tb.emojiString) Tapback Failed") }
 																
 															}) {
 																Text(tb.description)
@@ -90,7 +90,6 @@ struct MessageList: View {
 													Button(action: {
 														self.replyMessageId = message.messageId
 														self.focusedField = .messageText
-														
 														print("I want to reply to \(message.messageId)")
 													}) {
 														Text("Reply")
@@ -108,44 +107,29 @@ struct MessageList: View {
 															Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 														}
 														if currentUser && message.receivedACK {
-															
 															VStack {
-																
 																Text("Received Ack \(message.receivedACK ? "✔️" : "")")
 															}
-															
 														} else if currentUser && message.ackError == 0 {
-															
 															// Empty Error
 															Text("Waiting. . .")
-															
 														} else if currentUser && message.ackError > 0 {
-															
 															let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 															Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
 														}
-														
 														if currentUser {
-															
 															VStack {
-																
 																let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-																
 																let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 																if ackDate >= sixMonthsAgo! {
-																	
 																	Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
-																	
 																} else {
-																	
 																	Text("Unknown Age").font(.caption2).foregroundColor(.gray)
 																}
 															}
 														}
-														
 														if message.ackSNR != 0 {
 															VStack {
-																
 																Text("Ack SNR \(String(message.ackSNR))")
 																	.font(.caption2)
 																	.foregroundColor(.gray)
@@ -165,15 +149,10 @@ struct MessageList: View {
 											
 											let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
 											if tapbacks.count > 0 {
-												
 												VStack (alignment: .trailing) {
-													
 													HStack  {
-														
 														ForEach( tapbacks ) { (tapback: MessageEntity) in
-															
 															VStack {
-																
 																let image = tapback.messagePayload!.image(fontSize: 20)
 																Image(uiImage: image!).font(.caption)
 																Text("\(tapback.fromUser?.shortName ?? "????")")
@@ -227,9 +206,7 @@ struct MessageList: View {
 													print("Failed to delete message \(deleteMessageId)")
 												}
 											}
-										},
-											  secondaryButton: .cancel()
-										)
+										}, secondaryButton: .cancel())
 									}
 								}
 							}
@@ -273,14 +250,11 @@ struct MessageList: View {
 						.keyboardType(kbType!)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
-
 								Button("Dismiss Keyboard") {
 									focusedField = nil
 								}
 								.font(.subheadline)
-
 								Spacer()
-								
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
