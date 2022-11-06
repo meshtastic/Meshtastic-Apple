@@ -771,12 +771,12 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-				if newChannel.index == 0 {
-					mutableChannels.removeAllObjects()
+				if mutableChannels.contains(newChannel) {
+					mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+				} else {
+					mutableChannels.add(newChannel)
 				}
-				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-				//fetchedMyInfo[0].objectWillChange.send()
 				do {
 					try context.save()
 				} catch {
