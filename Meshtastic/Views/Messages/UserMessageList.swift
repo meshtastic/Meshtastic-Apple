@@ -35,180 +35,180 @@ struct UserMessageList: View {
 		NavigationStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
-				LazyVStack {
+					LazyVStack {
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != userSettings.preferredNodeNum {
 								let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
-								if (user.num == bleManager.broadcastNodeNum || user.num != bleManager.broadcastNodeNum && message.toUser!.num != bleManager.broadcastNodeNum) {
-									if message.replyID > 0 {
-										let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
-										HStack {
-											Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+
+								if message.replyID > 0 {
+									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
+									HStack {
+										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+											.padding(10)
+											.overlay(
+												RoundedRectangle(cornerRadius: 18)
+													.stroke(Color.blue, lineWidth: 0.5)
+											)
+										Image(systemName: "arrowshape.turn.up.left.fill")
+											.symbolRenderingMode(.hierarchical)
+											.imageScale(.large).foregroundColor(.blue)
+											.padding(.trailing)
+									}
+								}
+								HStack (alignment: .top) {
+									if currentUser { Spacer(minLength:50) }
+									if !currentUser {
+										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
+											.padding(.all, 5)
+											.offset(y: -5)
+									}
+									VStack(alignment: currentUser ? .trailing : .leading) {
+										Text(message.messagePayload ?? "EMPTY MESSAGE")
+											.padding(10)
+											.foregroundColor(.white)
+											.background(currentUser ? Color.blue : Color(.darkGray))
+											.cornerRadius(15)
+											.contextMenu {
+												VStack{
+													Text("Channel: \(message.channel)")
+												}
+												Menu("Tapback response") {
+													ForEach(Tapbacks.allCases) { tb in
+														Button(action: {
+															if bleManager.sendMessage(message: tb.emojiString, toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
+																print("Sent \(tb.emojiString) Tapback")
+																self.context.refresh(user, mergeChanges: true)
+															} else { print("\(tb.emojiString) Tapback Failed") }
+															
+														}) {
+															Text(tb.description)
+															let image = tb.emojiString.image()
+															Image(uiImage: image!)
+														}
+													}
+												}
+												Button(action: {
+													self.replyMessageId = message.messageId
+													self.focusedField = .messageText
+													print("I want to reply to \(message.messageId)")
+												}) {
+													Text("Reply")
+													Image(systemName: "arrowshape.turn.up.left.2.fill")
+												}
+												Button(action: {
+													UIPasteboard.general.string = message.messagePayload
+												}) {
+													Text("Copy")
+													Image(systemName: "doc.on.doc")
+												}
+												Menu("Message Details") {
+													VStack {
+														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
+														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
+													}
+													if currentUser && message.receivedACK {
+														VStack {
+															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
+														}
+													} else if currentUser && message.ackError == 0 {
+														// Empty Error
+														Text("Waiting. . .")
+													} else if currentUser && message.ackError > 0 {
+														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													}
+													if currentUser {
+														VStack {
+															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
+															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
+															if ackDate >= sixMonthsAgo! {
+																Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+															} else {
+																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+															}
+														}
+													}
+													if message.ackSNR != 0 {
+														VStack {
+															Text("Ack SNR \(String(message.ackSNR))")
+																.font(.caption2)
+																.foregroundColor(.gray)
+														}
+													}
+												}
+												Divider()
+												Button(role: .destructive, action: {
+													self.showDeleteMessageAlert = true
+													self.deleteMessageId = message.messageId
+													print(deleteMessageId)
+												}) {
+													Text("Delete")
+													Image(systemName: "trash")
+												}
+											}
+										
+										let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+										if tapbacks.count > 0 {
+											VStack (alignment: .trailing) {
+												HStack  {
+													ForEach( tapbacks ) { (tapback: MessageEntity) in
+														VStack {
+															let image = tapback.messagePayload!.image(fontSize: 20)
+															Image(uiImage: image!).font(.caption)
+															Text("\(tapback.fromUser?.shortName ?? "????")")
+																.font(.caption2)
+																.foregroundColor(.gray)
+																.fixedSize()
+																.padding(.bottom, 1)
+														}
+													}
+												}
 												.padding(10)
 												.overlay(
 													RoundedRectangle(cornerRadius: 18)
-														.stroke(Color.blue, lineWidth: 0.5)
+														.stroke(Color.gray, lineWidth: 1)
 												)
-											Image(systemName: "arrowshape.turn.up.left.fill")
-												.symbolRenderingMode(.hierarchical)
-												.imageScale(.large).foregroundColor(.blue)
-												.padding(.trailing)
+											}
+										}
+										HStack {
+											if currentUser && message.receivedACK {
+												// Ack Received
+												Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+											} else if currentUser && message.ackError == 0 {
+												// Empty Error
+												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
+											} else if currentUser && message.ackError > 0 {
+												let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
+												Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													.font(.caption2).foregroundColor(.red)
+											}
 										}
 									}
-									HStack (alignment: .top) {
-										if currentUser { Spacer(minLength:50) }
-										if !currentUser {
-											CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
-												.padding(.all, 5)
-												.offset(y: -5)
-										}
-										VStack(alignment: currentUser ? .trailing : .leading) {
-											Text(message.messagePayload ?? "EMPTY MESSAGE")
-												.padding(10)
-												.foregroundColor(.white)
-												.background(currentUser ? Color.blue : Color(.darkGray))
-												.cornerRadius(15)
-												.contextMenu {
-													VStack{
-														Text("Channel: \(message.channel)")
-													}
-													Menu("Tapback response") {
-														ForEach(Tapbacks.allCases) { tb in
-															Button(action: {
-																if bleManager.sendMessage(message: tb.emojiString, toUserNum: user.num, isEmoji: true, replyID: message.messageId) {
-																	print("Sent \(tb.emojiString) Tapback")
-																	self.context.refresh(user, mergeChanges: true)
-																} else { print("\(tb.emojiString) Tapback Failed") }
-																
-															}) {
-																Text(tb.description)
-																let image = tb.emojiString.image()
-																Image(uiImage: image!)
-															}
-														}
-													}
-													Button(action: {
-														self.replyMessageId = message.messageId
-														self.focusedField = .messageText
-														print("I want to reply to \(message.messageId)")
-													}) {
-														Text("Reply")
-														Image(systemName: "arrowshape.turn.up.left.2.fill")
-													}
-													Button(action: {
-														UIPasteboard.general.string = message.messagePayload
-													}) {
-														Text("Copy")
-														Image(systemName: "doc.on.doc")
-													}
-													Menu("Message Details") {
-														VStack {
-															let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-															Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
-														}
-														if currentUser && message.receivedACK {
-															VStack {
-																Text("Received Ack \(message.receivedACK ? "✔️" : "")")
-															}
-														} else if currentUser && message.ackError == 0 {
-															// Empty Error
-															Text("Waiting. . .")
-														} else if currentUser && message.ackError > 0 {
-															let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-															Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
-														}
-														if currentUser {
-															VStack {
-																let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
-																let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-																if ackDate >= sixMonthsAgo! {
-																	Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
-																} else {
-																	Text("Unknown Age").font(.caption2).foregroundColor(.gray)
-																}
-															}
-														}
-														if message.ackSNR != 0 {
-															VStack {
-																Text("Ack SNR \(String(message.ackSNR))")
-																	.font(.caption2)
-																	.foregroundColor(.gray)
-															}
-														}
-													}
-													Divider()
-													Button(role: .destructive, action: {
-														self.showDeleteMessageAlert = true
-														self.deleteMessageId = message.messageId
-														print(deleteMessageId)
-													}) {
-														Text("Delete")
-														Image(systemName: "trash")
-													}
-												}
-											
-											let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
-											if tapbacks.count > 0 {
-												VStack (alignment: .trailing) {
-													HStack  {
-														ForEach( tapbacks ) { (tapback: MessageEntity) in
-															VStack {
-																let image = tapback.messagePayload!.image(fontSize: 20)
-																Image(uiImage: image!).font(.caption)
-																Text("\(tapback.fromUser?.shortName ?? "????")")
-																	.font(.caption2)
-																	.foregroundColor(.gray)
-																	.fixedSize()
-																	.padding(.bottom, 1)
-															}
-														}
-													}
-													.padding(10)
-													.overlay(
-														RoundedRectangle(cornerRadius: 18)
-															.stroke(Color.gray, lineWidth: 1)
-													)
-												}
-											}
-											HStack {
-												if currentUser && message.receivedACK {
-													// Ack Received
-													Text("Acknowledged").font(.caption2).foregroundColor(.gray)
-												} else if currentUser && message.ackError == 0 {
-													// Empty Error
-													Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
-												} else if currentUser && message.ackError > 0 {
-													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
-														.font(.caption2).foregroundColor(.red)
-												}
-											}
-										}
-										.padding(.bottom)
-										.id(user.messageList.firstIndex(of: message))
-										if !currentUser {
-											Spacer(minLength:50)
-										}
-									}
-									.padding([.leading, .trailing])
-									.frame(maxWidth: .infinity)
-									.id(message.messageId)
-									.alert(isPresented: $showDeleteMessageAlert) {
-										Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."), primaryButton: .destructive(Text("Delete")) {
-											print("OK button tapped")
-											if deleteMessageId > 0 {
-												let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
-												context.delete(message!)
-												do {
-													try context.save()
-													deleteMessageId = 0
-												} catch {
-													print("Failed to delete message \(deleteMessageId)")
-												}
-											}
-										}, secondaryButton: .cancel())
+									.padding(.bottom)
+									.id(user.messageList.firstIndex(of: message))
+									if !currentUser {
+										Spacer(minLength:50)
 									}
 								}
+								.padding([.leading, .trailing])
+								.frame(maxWidth: .infinity)
+								.id(message.messageId)
+								.alert(isPresented: $showDeleteMessageAlert) {
+									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."), primaryButton: .destructive(Text("Delete")) {
+										print("OK button tapped")
+										if deleteMessageId > 0 {
+											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
+											context.delete(message!)
+											do {
+												try context.save()
+												deleteMessageId = 0
+											} catch {
+												print("Failed to delete message \(deleteMessageId)")
+											}
+										}
+									}, secondaryButton: .cancel())
+								}
+
 							}
 						}
 					}

@@ -39,7 +39,10 @@ struct Contacts: View {
 											CircleText(text: String(channel.index), color: Color.blue, circleSize: 52, fontSize: 32)
 												.padding(.trailing, 5)
 											VStack {
-												Text(channel.name?.camelCaseToWords() ?? "Channel \(channel.index)").font(.headline)
+												NavigationLink(destination: ChannelMessageList(channel: channel)) {
+													
+													Text(channel.name?.camelCaseToWords() ?? "Channel \(channel.index)").font(.headline)
+												}
 											}
 											.frame(maxWidth: .infinity, alignment: .leading)
 										}

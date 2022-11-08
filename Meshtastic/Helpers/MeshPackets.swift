@@ -1263,8 +1263,8 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			
 			if fetchedUsers.count <= 1 && fetchedUsers.first(where: { $0.num == packet.from }) == nil {
 				
-				print("Message from another mesh, unable to manage for now")
-				return
+				//print("Message from another mesh, unable to manage for now")
+				//return
 			}
 
 			let newMessage = MessageEntity(context: context)
@@ -1277,20 +1277,24 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-			if packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
+			//if packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
 				// Save the broadcast user if it does not exist
-				let bcu: UserEntity = UserEntity(context: context)
-				bcu.shortName = "ALL"
-				bcu.longName = "All - Broadcast"
-				bcu.hwModel = "UNSET"
-				bcu.num = Int64(broadcastNodeNum)
-				bcu.userId = "BROADCASTNODE"
-				newMessage.toUser = bcu
+//				let bcu: UserEntity = UserEntity(context: context)
+//				bcu.shortName = "ALL"
+//				bcu.longName = "All - Broadcast"
+//				bcu.hwModel = "UNSET"
+//				bcu.num = Int64(broadcastNodeNum)
+//				bcu.userId = "BROADCASTNODE"
+//				newMessage.toUser = bcu
 
-			} else {
+			if fetchedUsers.first(where: { $0.num == packet.to }) != nil {
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 			}
-			newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
+				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+			}
+			
+			
 			newMessage.messagePayload = messageText
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
