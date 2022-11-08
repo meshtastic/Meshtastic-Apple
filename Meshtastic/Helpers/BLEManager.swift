@@ -593,25 +593,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					print("MAX PORT NUM OF 511")
 			}
 			
-			// MARK: Check for an All / Broadcast User
+			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
 			let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(broadcastNodeNum))
-			
+
 			do {
 				let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
-				if fetchedUser.isEmpty {
-					// Save the broadcast user if it does not exist
-					let bcu: UserEntity = UserEntity(context: context!)
-					bcu.shortName = "ALL"
-					bcu.longName = "All - Broadcast"
-					bcu.hwModel = "UNSET"
-					bcu.num = Int64(broadcastNodeNum)
-					bcu.userId = "BROADCASTNODE"
-					print("💾 Saved the All - Broadcast User")
+				if fetchedUser.count > 0 {
+					
+					context?.delete(fetchedUser[0])
+					print("🗑️ Deleted the All - Broadcast User")
 				}
-				
+
 			} catch {
-				MeshLogger.log("💥 Error Saving the All - Broadcast User")
+				MeshLogger.log("💥 Error Deleting the All - Broadcast User")
 			}
 
 			// MARK: Share Location Position Update Timer
@@ -648,7 +643,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
 
-	public func sendMessage(message: String, toUserNum: Int64, isEmoji: Bool, replyID: Int64) -> Bool {
+	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) -> Bool {
 		
 		var success = false
 
@@ -694,26 +689,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
-					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					if toUserNum > 0 {
+						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					}
+					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji
 					newMessage.admin = false
-					
+					newMessage.channel = channel
 					if replyID > 0 {
-						
 						newMessage.replyID = replyID
 					}
-					if newMessage.toUser == nil {
-
-						let bcu: UserEntity = UserEntity(context: context!)
-						bcu.shortName = "ALL"
-						bcu.longName = "All - Broadcast"
-						bcu.hwModel = "UNSET"
-						bcu.num = Int64(broadcastNodeNum)
-						bcu.userId = "BROADCASTNODE"
-						newMessage.toUser = bcu
-					}
-					
-					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 
 					let dataType = PortNum.textMessageApp
@@ -725,7 +710,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					var meshPacket = MeshPacket()
 					meshPacket.id = UInt32(newMessage.messageId)
-					meshPacket.to = UInt32(toUserNum)
+					if toUserNum > 0 {
+						meshPacket.to = UInt32(toUserNum)
+					} else {
+						meshPacket.to = 4294967295
+					}
+					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
 					meshPacket.decoded.emoji = isEmoji ? 1 : 0

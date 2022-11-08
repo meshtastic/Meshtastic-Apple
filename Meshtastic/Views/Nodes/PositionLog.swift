@@ -24,36 +24,30 @@ struct PositionLog: View {
 						
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
-				VStack {
-					Table(node.positions!.reversed() as! [PositionEntity]) {
-						TableColumn("Seq No") { position in
-							Text(String(position.seqNo))
-						}
-						//.width(75)
-						TableColumn("Latitude") { position in
-							Text(String(format: "%.6f", position.latitude ?? 0))
-						}
-						TableColumn("Longitude") { position in
-							Text(String(format: "%.6f", position.longitude ?? 0))
-						}
-						TableColumn("Altitude") { position in
-							Text(String(position.altitude))
-						}
-						//.width(75)
-						TableColumn("Sats") { position in
-							Text(String(position.satsInView))
-						}
-						//.width(75)
-						TableColumn("Speed") { position in
-							Text(String(position.speed))
-						}
-						//.width(75)
-						TableColumn("Heading") { position in
-							Text(String(position.heading))
-						}
-						TableColumn("Time Stamp") { position in
-							Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-						}
+				Table(node.positions!.reversed() as! [PositionEntity]) {
+					TableColumn("SeqNo") { position in
+						Text(String(position.seqNo))
+					}
+					TableColumn("Latitude") { position in
+						Text(String(format: "%.6f", position.latitude ?? 0))
+					}
+					TableColumn("Longitude") { position in
+						Text(String(format: "%.6f", position.longitude ?? 0))
+					}
+					TableColumn("Altitude") { position in
+						Text(String(position.altitude))
+					}
+					TableColumn("Sats") { position in
+						Text(String(position.satsInView))
+					}
+					TableColumn("Speed") { position in
+						Text(String(position.speed))
+					}
+					TableColumn("Heading") { position in
+						Text(String(position.heading))
+					}
+					TableColumn("Time Stamp") { position in
+						Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
 					}
 				}
 				

@@ -771,12 +771,12 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
 				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-				if newChannel.index == 0 {
-					mutableChannels.removeAllObjects()
+				if mutableChannels.contains(newChannel) {
+					mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+				} else {
+					mutableChannels.add(newChannel)
 				}
-				mutableChannels.add(newChannel)
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
-				//fetchedMyInfo[0].objectWillChange.send()
 				do {
 					try context.save()
 				} catch {
@@ -1260,13 +1260,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		do {
 
 			let fetchedUsers = try context.fetch(messageUsers) as! [UserEntity]
-			
-			if fetchedUsers.count <= 1 && fetchedUsers.first(where: { $0.num == packet.from }) == nil {
-				
-				print("Message from another mesh, unable to manage for now")
-				return
-			}
-
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
@@ -1277,52 +1270,46 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-			if packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
-				// Save the broadcast user if it does not exist
-				let bcu: UserEntity = UserEntity(context: context)
-				bcu.shortName = "ALL"
-				bcu.longName = "All - Broadcast"
-				bcu.hwModel = "UNSET"
-				bcu.num = Int64(broadcastNodeNum)
-				bcu.userId = "BROADCASTNODE"
-				newMessage.toUser = bcu
 
-			} else {
+			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != 4294967295 {
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 			}
-			newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
+				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
+			}
+
 			newMessage.messagePayload = messageText
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
 			
-				var messageSaved = false
+			var messageSaved = false
 
-				do {
+			do {
 
-					try context.save()
-					MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)")
-					messageSaved = true
-					
-					if messageSaved {
-						if newMessage.fromUser != nil {
-							// Create an iOS Notification for the received message and schedule it immediately
-							let manager = LocalNotificationManager()
-							manager.notifications = [
-								Notification(
-									id: ("notification.id.\(newMessage.messageId)"),
-									title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-									content: messageText)
-							]
-							manager.schedule()
-							MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
-						}
+				try context.save()
+				MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)")
+				messageSaved = true
+				
+				if messageSaved {
+					if newMessage.fromUser != nil {
+						// Create an iOS Notification for the received message and schedule it immediately
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+								content: messageText)
+						]
+						manager.schedule()
+						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
 					}
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					MeshLogger.log("💥 Failed to save new MessageEntity \(nsError)")
 				}
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				MeshLogger.log("💥 Failed to save new MessageEntity \(nsError)")
+			}
 		} catch {
 			MeshLogger.log("💥 Fetch Message To and From Users Error")
 		}
