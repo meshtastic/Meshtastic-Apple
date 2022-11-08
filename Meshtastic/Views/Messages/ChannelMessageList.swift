@@ -73,7 +73,7 @@ struct ChannelMessageList: View {
 											Menu("Tapback response") {
 												ForEach(Tapbacks.allCases) { tb in
 													Button(action: {
-														if bleManager.sendMessage(message: tb.emojiString, toUserNum: Int64(channel.index), isEmoji: true, replyID: message.messageId) {
+														if bleManager.sendMessage(message: tb.emojiString, toUserNum: 0, channel: channel.index, isEmoji: true, replyID: message.messageId) {
 															print("Sent \(tb.emojiString) Tapback")
 															self.context.refresh(channel, mergeChanges: true)
 														} else { print("\(tb.emojiString) Tapback Failed") }
@@ -287,7 +287,7 @@ struct ChannelMessageList: View {
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
 				Button(action: {
-					if bleManager.sendMessage(message: typingMessage, toUserNum: Int64(channel.index), isEmoji: false, replyID: replyMessageId) {
+					if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
 						typingMessage = ""
 						focusedField = nil
 						replyMessageId = 0

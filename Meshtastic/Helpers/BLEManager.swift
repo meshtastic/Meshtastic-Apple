@@ -651,7 +651,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		}
 	}
 
-	public func sendMessage(message: String, toUserNum: Int64, isEmoji: Bool, replyID: Int64) -> Bool {
+	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) -> Bool {
 		
 		var success = false
 
@@ -698,25 +698,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
 					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji
 					newMessage.admin = false
-					
+					newMessage.channel = channel
 					if replyID > 0 {
-						
 						newMessage.replyID = replyID
 					}
-					if newMessage.toUser == nil {
-
-						let bcu: UserEntity = UserEntity(context: context!)
-						bcu.shortName = "ALL"
-						bcu.longName = "All - Broadcast"
-						bcu.hwModel = "UNSET"
-						bcu.num = Int64(broadcastNodeNum)
-						bcu.userId = "BROADCASTNODE"
-						newMessage.toUser = bcu
-					}
-					
-					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.messagePayload = message
 
 					let dataType = PortNum.textMessageApp
