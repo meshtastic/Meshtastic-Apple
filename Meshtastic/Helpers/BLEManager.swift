@@ -673,7 +673,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
-					newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					if toUserNum > 0 {
+						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji
 					newMessage.admin = false
@@ -692,7 +694,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 					var meshPacket = MeshPacket()
 					meshPacket.id = UInt32(newMessage.messageId)
-					meshPacket.to = UInt32(toUserNum)
+					if toUserNum > 0 {
+						meshPacket.to = UInt32(toUserNum)
+					} else {
+						meshPacket.to = 4294967295
+					}
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
 					meshPacket.decoded.emoji = isEmoji ? 1 : 0

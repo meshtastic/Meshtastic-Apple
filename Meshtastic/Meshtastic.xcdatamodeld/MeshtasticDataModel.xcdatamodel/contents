@@ -29,7 +29,7 @@
         <attribute name="uplinkEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="myInfoChannel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="channels" inverseEntity="MyInfoEntity"/>
         <fetchedProperty name="allPrivateMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="channel == $FETCH_SOURCE.index &amp;&amp; (fromUser == nil OR toUser == nil)"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="channel == $FETCH_SOURCE.index &amp;&amp;  toUser == nil"/>
         </fetchedProperty>
         <uniquenessConstraints>
             <uniquenessConstraint>

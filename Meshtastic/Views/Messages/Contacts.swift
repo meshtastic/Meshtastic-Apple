@@ -27,7 +27,7 @@ struct Contacts: View {
 
 		NavigationSplitView {
 			List {
-				Section(header: Text("Channels")) {
+				Section(header: Text("Channels (groups)")) {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil {
 						ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
@@ -91,7 +91,7 @@ struct Contacts: View {
 						.padding(.bottom, 10)
 					}
 				}
-				Section(header: Text("Direct Messages")) {
+				Section(header: Text("Direct Messages (Primary Channel)")) {
 					ForEach(users) { (user: UserEntity) in
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
 							NavigationLink(destination: UserMessageList(user: user)) {
