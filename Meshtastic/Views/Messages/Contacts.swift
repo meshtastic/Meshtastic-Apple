@@ -26,28 +26,65 @@ struct Contacts: View {
     var body: some View {
 
 		NavigationSplitView {
-			
 			List {
 				Section(header: Text("Channels")) {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil {
 						ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" {
-								HStack {
-									VStack(alignment: .leading) {
+								VStack {
+									NavigationLink(destination: ChannelMessageList(channel: channel)) {
+							
+										let mostRecent = channel.allPrivateMessages.last
+										let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+										let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+										let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 										HStack {
-											CircleText(text: String(channel.index), color: Color.blue, circleSize: 52, fontSize: 32)
-												.padding(.trailing, 5)
-											VStack {
-												NavigationLink(destination: ChannelMessageList(channel: channel)) {
+											VStack(alignment: .leading) {
+												HStack {
+													CircleText(text: String(channel.index), color: Color.blue, circleSize: 52, fontSize: 40)
+														.padding(.trailing, 5)
+													VStack {
+														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+													}
+													.frame(maxWidth: .infinity, alignment: .leading)
 													
-													Text(channel.name?.camelCaseToWords() ?? "Channel \(channel.index)").font(.headline)
+													if channel.allPrivateMessages.count > 0 {
+														VStack (alignment: .trailing) {
+															if lastMessageDay == currentDay {
+																Text(lastMessageTime, style: .time )
+																	.font(.callout)
+																	.foregroundColor(.gray)
+															} else if  lastMessageDay == (currentDay - 1) {
+																Text("Yesterday")
+																	.font(.callout)
+																	.foregroundColor(.gray)
+															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.callout)
+																	.foregroundColor(.gray)
+															} else if lastMessageDay < (currentDay - 1800) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.callout)
+																	.foregroundColor(.gray)
+															}
+														}
+													}
+												}
+												if channel.allPrivateMessages.count > 0 {
+													HStack(alignment: .top) {
+														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+															.truncationMode(.tail)
+															.foregroundColor(Color.gray)
+															.frame(maxWidth: .infinity, alignment: .leading)
+													}
 												}
 											}
-											.frame(maxWidth: .infinity, alignment: .leading)
 										}
 									}
 								}
+								.frame(maxWidth: .infinity, alignment: .leading)
+
 							}
 						}
 						.padding(.top, 10)
