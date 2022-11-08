@@ -1277,15 +1277,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-			//if packet.to == broadcastNodeNum && fetchedUsers.count == 1 {
-				// Save the broadcast user if it does not exist
-//				let bcu: UserEntity = UserEntity(context: context)
-//				bcu.shortName = "ALL"
-//				bcu.longName = "All - Broadcast"
-//				bcu.hwModel = "UNSET"
-//				bcu.num = Int64(broadcastNodeNum)
-//				bcu.userId = "BROADCASTNODE"
-//				newMessage.toUser = bcu
 
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil {
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })

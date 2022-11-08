@@ -592,30 +592,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				case .max:
 					print("MAX PORT NUM OF 511")
 			}
-			
-			// MARK: Check for an All / Broadcast User
-			let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
-			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(broadcastNodeNum))
-			
-			do {
-				let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
-				if fetchedUser.isEmpty {
-					// Save the broadcast user if it does not exist
-//					let bcu: UserEntity = UserEntity(context: context!)
-//					bcu.shortName = "ALL"
-//					bcu.longName = "All - Broadcast"
-//					bcu.hwModel = "UNSET"
-//					bcu.num = Int64(broadcastNodeNum)
-//					bcu.userId = "BROADCASTNODE"
-//					print("💾 Saved the All - Broadcast User")
-				} else {
-				
-					context!.delete(fetchedUser[0])
-				}
-				
-			} catch {
-				MeshLogger.log("💥 Error Saving the All - Broadcast User")
-			}
 
 			// MARK: Share Location Position Update Timer
 			// Use context to pass the radio name with the timer
