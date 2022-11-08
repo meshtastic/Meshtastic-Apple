@@ -699,6 +699,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					} else {
 						meshPacket.to = 4294967295
 					}
+					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
 					meshPacket.decoded = dataMessage
 					meshPacket.decoded.emoji = isEmoji ? 1 : 0
