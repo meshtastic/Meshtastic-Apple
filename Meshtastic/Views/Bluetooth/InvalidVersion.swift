@@ -8,6 +8,8 @@ import SwiftUI
 
 struct InvalidVersion: View {
 	
+	@Environment(\.presentationMode) private var presentationMode
+		
 	@State var minimumVersion = ""
 	@State var version = ""
 
@@ -36,7 +38,6 @@ struct InvalidVersion: View {
 					.font(.title)
 					.padding()
 				
-			
 			}
 			.padding()
 				
@@ -51,15 +52,28 @@ struct InvalidVersion: View {
 					.padding(.bottom)
 				
 				Text("Version \(minimumVersion) includes breaking changes to devices and the client apps. Only nodes version \(minimumVersion) and above are supported.")
-					.font(.caption)
-					.padding([.leading, .trailing])
+					.font(.callout)
+					.padding([.leading, .trailing, .bottom])
 				
 				Text("There is a build for 1.2 EOL under Other Versions in TestFlight that will be available until the end of November 2022.")
-					.font(.caption)
-					.padding()
+					.font(.callout)
+					.padding([.leading, .trailing, .bottom])
 				
 				Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
 					.font(.callout)
+				
+				#if targetEnvironment(macCatalyst)
+					Button {
+						presentationMode.wrappedValue.dismiss()
+					} label: {
+						Label("Close", systemImage: "xmark")
+						
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
+				#endif
 				
 			}.padding()
 		}
