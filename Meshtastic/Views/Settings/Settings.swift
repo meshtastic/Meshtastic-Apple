@@ -12,15 +12,12 @@ struct Settings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
 	var body: some View {
-		NavigationView {
-			
+		NavigationSplitView {
 			List {
-				
 				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
 				
 				NavigationLink() {
@@ -31,7 +28,6 @@ struct Settings: View {
 						.symbolRenderingMode(.hierarchical)
 					Text("App Settings")
 				}
-				
 				Section("Radio Configuration") {
 					
 					NavigationLink {
@@ -200,6 +196,9 @@ struct Settings: View {
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
+		}
+		detail: {
+			Text("Select an item from the menu")
 		}
 	}
 }

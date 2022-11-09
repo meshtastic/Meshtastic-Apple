@@ -8,7 +8,7 @@ import SwiftUI
 
 struct InvalidVersion: View {
 	
-	@Environment(\.presentationMode) private var presentationMode
+	@Environment(\.dismiss) private var dismiss
 		
 	@State var minimumVersion = ""
 	@State var version = ""
@@ -64,7 +64,7 @@ struct InvalidVersion: View {
 				
 				#if targetEnvironment(macCatalyst)
 					Button {
-						presentationMode.wrappedValue.dismiss()
+						dismiss()
 					} label: {
 						Label("Close", systemImage: "xmark")
 						

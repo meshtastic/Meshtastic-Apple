@@ -159,9 +159,11 @@ struct AppSettings: View {
 				}
 			}
 			HStack {
-				
-				Button("Clear App Data", role: .destructive) {
+				Button {
 					isPresentingCoreDataResetConfirm = true
+				} label: {
+					Label("Clear App Data", systemImage: "clear")
+						.foregroundColor(.red)
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)

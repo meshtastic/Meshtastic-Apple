@@ -183,7 +183,7 @@ struct Contacts: View {
 				UserMessageList(user:user)
 				
 			} else {
-				Text("Select a user")
+				Text("Select a Contact")
 			}
 		}
     }

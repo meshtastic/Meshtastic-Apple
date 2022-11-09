@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SaveChannelQRCode: View {
 	
-	@Environment(\.presentationMode) private var presentationMode
+	@Environment(\.dismiss) private var dismiss
 	
 	var channelSetLink: String
 	var bleManager: BLEManager
@@ -28,7 +28,7 @@ struct SaveChannelQRCode: View {
 				Button {
 					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink)
 					if success {
-						presentationMode.wrappedValue.dismiss()
+						dismiss()
 					}
 					
 				} label: {
@@ -42,7 +42,7 @@ struct SaveChannelQRCode: View {
 				
 			#if targetEnvironment(macCatalyst)
 				Button {
-					presentationMode.wrappedValue.dismiss()
+					dismiss()
 				} label: {
 					Label("Cancel", systemImage: "xmark")
 					
