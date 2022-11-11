@@ -471,46 +471,6 @@ struct Config {
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum WiFiMode: SwiftProtobuf.Enum {
-      typealias RawValue = Int
-
-      ///
-      /// This mode is used to connect to an external WiFi network
-      case client // = 0
-
-      ///
-      /// In this mode the node will operate as an AP (and DHCP server)
-      case accessPoint // = 1
-
-      ///
-      /// If set, the node AP will broadcast as a hidden SSID
-      case accessPointHidden // = 2
-      case UNRECOGNIZED(Int)
-
-      init() {
-        self = .client
-      }
-
-      init?(rawValue: Int) {
-        switch rawValue {
-        case 0: self = .client
-        case 1: self = .accessPoint
-        case 2: self = .accessPointHidden
-        default: self = .UNRECOGNIZED(rawValue)
-        }
-      }
-
-      var rawValue: Int {
-        switch self {
-        case .client: return 0
-        case .accessPoint: return 1
-        case .accessPointHidden: return 2
-        case .UNRECOGNIZED(let i): return i
-        }
-      }
-
-    }
-
     enum EthMode: SwiftProtobuf.Enum {
       typealias RawValue = Int
 
@@ -609,6 +569,10 @@ struct Config {
     ///
     /// Perferred display units
     var units: Config.DisplayConfig.DisplayUnits = .metric
+
+    ///
+    /// Override auto-detect in screen
+    var oled: Config.DisplayConfig.OledType = .oledAuto
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -709,6 +673,48 @@ struct Config {
         switch self {
         case .metric: return 0
         case .imperial: return 1
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    ///
+    /// Override OLED outo detect with this if it fails.
+    enum OledType: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// Default / Auto
+      case oledAuto // = 0
+
+      ///
+      /// Default / Auto
+      case oledSsd1306 // = 1
+
+      ///
+      /// Default / Auto
+      case oledSh1106 // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .oledAuto
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .oledAuto
+        case 1: self = .oledSsd1306
+        case 2: self = .oledSh1106
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .oledAuto: return 0
+        case .oledSsd1306: return 1
+        case .oledSh1106: return 2
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1069,15 +1075,6 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
   ]
 }
 
-extension Config.NetworkConfig.WiFiMode: CaseIterable {
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.NetworkConfig.WiFiMode] = [
-    .client,
-    .accessPoint,
-    .accessPointHidden,
-  ]
-}
-
 extension Config.NetworkConfig.EthMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.NetworkConfig.EthMode] = [
@@ -1103,6 +1100,15 @@ extension Config.DisplayConfig.DisplayUnits: CaseIterable {
   static var allCases: [Config.DisplayConfig.DisplayUnits] = [
     .metric,
     .imperial,
+  ]
+}
+
+extension Config.DisplayConfig.OledType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.DisplayConfig.OledType] = [
+    .oledAuto,
+    .oledSsd1306,
+    .oledSh1106,
   ]
 }
 
@@ -1159,12 +1165,12 @@ extension Config.PositionConfig: @unchecked Sendable {}
 extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.NetworkConfig: @unchecked Sendable {}
-extension Config.NetworkConfig.WiFiMode: @unchecked Sendable {}
 extension Config.NetworkConfig.EthMode: @unchecked Sendable {}
 extension Config.NetworkConfig.IpV4Config: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
+extension Config.DisplayConfig.OledType: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
 extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
@@ -1617,14 +1623,6 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Config.NetworkConfig.WiFiMode: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "CLIENT"),
-    1: .same(proto: "ACCESS_POINT"),
-    2: .same(proto: "ACCESS_POINT_HIDDEN"),
-  ]
-}
-
 extension Config.NetworkConfig.EthMode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHCP"),
@@ -1691,6 +1689,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     4: .standard(proto: "compass_north_top"),
     5: .standard(proto: "flip_screen"),
     6: .same(proto: "units"),
+    7: .same(proto: "oled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1705,6 +1704,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 4: try { try decoder.decodeSingularBoolField(value: &self.compassNorthTop) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.flipScreen) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.units) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.oled) }()
       default: break
       }
     }
@@ -1729,6 +1729,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.units != .metric {
       try visitor.visitSingularEnumField(value: self.units, fieldNumber: 6)
     }
+    if self.oled != .oledAuto {
+      try visitor.visitSingularEnumField(value: self.oled, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1739,6 +1742,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.compassNorthTop != rhs.compassNorthTop {return false}
     if lhs.flipScreen != rhs.flipScreen {return false}
     if lhs.units != rhs.units {return false}
+    if lhs.oled != rhs.oled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1759,6 +1763,14 @@ extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "METRIC"),
     1: .same(proto: "IMPERIAL"),
+  ]
+}
+
+extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "OLED_AUTO"),
+    1: .same(proto: "OLED_SSD1306"),
+    2: .same(proto: "OLED_SH1106"),
   ]
 }
 

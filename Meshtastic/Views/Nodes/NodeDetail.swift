@@ -26,17 +26,11 @@ struct NodeDetail: View {
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
 		NavigationStack {
-
 			GeometryReader { bounds in
-
 				VStack {
-
 					if node.positions?.count ?? 0 > 0 {
-					
 						let mostRecent = node.positions?.lastObject as! PositionEntity
-
 						if mostRecent.coordinate != nil {
-							
 							let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
 							
 							let regionBinding = Binding<MKCoordinateRegion>(
@@ -45,9 +39,7 @@ struct NodeDetail: View {
 								},
 								set: { _ in }
 							)
-							
 							ZStack {
-								
 								let annotations = node.positions?.array as! [PositionEntity]
 								
 								Map(coordinateRegion: regionBinding,
@@ -73,7 +65,6 @@ struct NodeDetail: View {
 						}
 						
 					} else {
-						
 						HStack {
 
 						}
@@ -81,25 +72,16 @@ struct NodeDetail: View {
 					}
 					
 					ScrollView {
-						
 						Divider()
-						
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-
-							
 							HStack {
-								
 								VStack(alignment: .center) {
-									
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
 								}
-
 								Divider()
-
 								VStack {
-
 									if node.user != nil {
-										
+		
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
@@ -111,7 +93,6 @@ struct NodeDetail: View {
 											.font(.title).fixedSize()
 									}
 								}
-								
 								
 								if node.snr > 0 {
 									Divider()
@@ -127,23 +108,15 @@ struct NodeDetail: View {
 											.font(.largeTitle)
 											.foregroundColor(.gray)
 											.fixedSize()
-										
-								
 									}
-									
-								
 								}
 
 								if node.telemetries?.count ?? 0 >= 1 {
 
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
-
 									Divider()
-								
 									VStack(alignment: .center) {
-										
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-							
 										if mostRecent.voltage > 0 {
 
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
@@ -154,7 +127,6 @@ struct NodeDetail: View {
 									}
 									.padding()
 								}
-								
 							}
 							.padding()
 							

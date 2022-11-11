@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "meshtastic_mesh_device_station_edition_overview 2.jpg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "meshtastic_mesh_device_station_edition_overview 1.jpg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "meshtastic_mesh_device_station_edition_overview.jpg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

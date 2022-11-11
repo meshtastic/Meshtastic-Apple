@@ -628,6 +628,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case cannedmsgConfig // = 6
+
+    ///
+    /// TODO: REPLACE
+    case audioConfig // = 7
     case UNRECOGNIZED(Int)
 
     init() {
@@ -643,6 +647,7 @@ struct AdminMessage {
       case 4: self = .rangetestConfig
       case 5: self = .telemetryConfig
       case 6: self = .cannedmsgConfig
+      case 7: self = .audioConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -656,6 +661,7 @@ struct AdminMessage {
       case .rangetestConfig: return 4
       case .telemetryConfig: return 5
       case .cannedmsgConfig: return 6
+      case .audioConfig: return 7
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -690,6 +696,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .rangetestConfig,
     .telemetryConfig,
     .cannedmsgConfig,
+    .audioConfig,
   ]
 }
 
@@ -1155,5 +1162,6 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "RANGETEST_CONFIG"),
     5: .same(proto: "TELEMETRY_CONFIG"),
     6: .same(proto: "CANNEDMSG_CONFIG"),
+    7: .same(proto: "AUDIO_CONFIG"),
   ]
 }

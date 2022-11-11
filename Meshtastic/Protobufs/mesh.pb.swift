@@ -91,6 +91,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case nanoG1 // = 14
 
   ///
+  /// TODO: REPLACE
+  case tloraV211P8 // = 15
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -164,6 +168,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 12: self = .lilygoTbeamS3Core
     case 13: self = .rak11200
     case 14: self = .nanoG1
+    case 15: self = .tloraV211P8
     case 25: self = .stationG1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
@@ -198,6 +203,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .lilygoTbeamS3Core: return 12
     case .rak11200: return 13
     case .nanoG1: return 14
+    case .tloraV211P8: return 15
     case .stationG1: return 25
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
@@ -237,6 +243,7 @@ extension HardwareModel: CaseIterable {
     .lilygoTbeamS3Core,
     .rak11200,
     .nanoG1,
+    .tloraV211P8,
     .stationG1,
     .loraRelayV1,
     .nrf52840Dk,
@@ -1129,7 +1136,7 @@ struct MeshPacket {
   ///
   /// The sending node number.
   /// Note: Our crypto implementation uses this field as well.
-  /// See [crypto](/docs/developers/firmware/encryption) for details.
+  /// See [crypto](/docs/overview/encryption) for details.
   /// FIXME - really should be fixed32 instead, this encoding only hurts the ble link though.
   var from: UInt32 {
     get {return _storage._from}
@@ -1190,7 +1197,7 @@ struct MeshPacket {
   /// needs to be unique for a few minutes (long enough to last for the length of
   /// any ACK or the completion of a mesh broadcast flood).
   /// Note: Our crypto implementation uses this id as well.
-  /// See [crypto](/docs/developers/firmware/encryption) for details.
+  /// See [crypto](/docs/overview/encryption) for details.
   /// FIXME - really should be fixed32 instead, this encoding only
   /// hurts the ble link though.
   var id: UInt32 {
@@ -2124,6 +2131,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     12: .same(proto: "LILYGO_TBEAM_S3_CORE"),
     13: .same(proto: "RAK11200"),
     14: .same(proto: "NANO_G1"),
+    15: .same(proto: "TLORA_V2_1_1P8"),
     25: .same(proto: "STATION_G1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
