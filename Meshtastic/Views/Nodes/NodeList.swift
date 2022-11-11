@@ -1,8 +1,8 @@
 //
 //  NodeList.swift
-//  MeshtasticApple
+//  Meshtastic
 //
-//  Created by Garth Vander Houwen on 8/7/21.
+//  Copyright(c) Garth Vander Houwen 8/7/21.
 //
 
 // Abstract:
@@ -52,11 +52,7 @@ struct NodeList: View {
 								HStack(alignment: .bottom) {
 									Image(systemName: "repeat.circle.fill").font(.title2)
 										.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-									if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-										Text("Currently Connected").font(.callout).foregroundColor(Color.accentColor)
-									} else {
-										Text("Currently Connected").font(.title3).foregroundColor(Color.accentColor)
-									}
+									Text("Currently Connected").font(.callout).foregroundColor(Color.accentColor)
 								}
 								.padding(.bottom, 2)
 							}
@@ -69,11 +65,8 @@ struct NodeList: View {
 										let metersAway = nodeCoord.distance(from: myCoord)
 										Image(systemName: "lines.measurement.horizontal").font(.title3)
 											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
-										if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-											DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
-										} else {
-											DistanceText(meters: metersAway).font(.title3).foregroundColor(.gray)
-										}
+
+										DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
 									}
 								}
 								.padding(.bottom, 2)
