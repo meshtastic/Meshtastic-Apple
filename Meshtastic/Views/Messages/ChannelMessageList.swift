@@ -106,7 +106,7 @@ struct ChannelMessageList: View {
 												}
 												if !currentUser {
 													VStack {
-														Text("SNR \(message.snr)")
+														Text("SNR \(String(format: "%.2f", position.snr)) dB")
 													}
 												}
 												if currentUser && message.receivedACK {
