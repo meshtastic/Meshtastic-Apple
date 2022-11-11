@@ -562,7 +562,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				case .nodeinfoApp:
 					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
 				case .routingApp:
-					if !invalidVersion { routingPacket(packet: decodedInfo.packet, context: context!) }
+					if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context!) }
 				case .adminApp:
 					adminAppPacket(packet: decodedInfo.packet, context: context!)
 				case .replyApp:

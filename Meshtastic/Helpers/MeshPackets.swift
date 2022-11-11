@@ -1120,7 +1120,7 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	}
 }
 
-func routingPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
@@ -1171,9 +1171,27 @@ func routingPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-				fetchedMessage![0].objectWillChange.send()
-				fetchedMessage![0].fromUser?.objectWillChange.send()
-				fetchedMessage![0].toUser?.objectWillChange.send()
+				
+				if fetchedMessage![0].toUser != nil {
+					fetchedMessage![0].toUser?.objectWillChange.send()
+				} else {
+					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
+					do {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
+						if fetchedMyInfo?.count ?? 0 > 0 {
+							
+							for ch in fetchedMyInfo![0].channels!.array as! [ChannelEntity] {
+					
+								if ch.index == packet.channel {
+									ch.objectWillChange.send()
+								}
+							}
+						}
+					} catch {
+							
+					}
+				}
 				
 			} else {
 				return
@@ -1315,4 +1333,3 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		}
 	}
 }
-

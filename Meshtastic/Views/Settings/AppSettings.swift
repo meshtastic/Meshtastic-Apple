@@ -103,9 +103,7 @@ struct AppSettings: View {
 	}
 
     var body: some View {
-
 		VStack {
-
 			Form {
 				Section(header: Text("USER DETAILS")) {
 
@@ -162,7 +160,7 @@ struct AppSettings: View {
 				Button {
 					isPresentingCoreDataResetConfirm = true
 				} label: {
-					Label("Clear App Data", systemImage: "clear")
+					Label("Clear App Data", systemImage: "trash")
 						.foregroundColor(.red)
 				}
 				.buttonStyle(.bordered)
@@ -183,16 +181,12 @@ struct AppSettings: View {
 		}
 		.navigationTitle("App Settings")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
 

@@ -90,7 +90,7 @@ struct Contacts: View {
 						.padding(.bottom, 10)
 					}
 				}
-				Section(header: Text("Direct Messages (Primary Channel)")) {
+				Section(header: Text("Direct Messages")) {
 					ForEach(users) { (user: UserEntity) in
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
 							NavigationLink(destination: UserMessageList(user: user)) {
