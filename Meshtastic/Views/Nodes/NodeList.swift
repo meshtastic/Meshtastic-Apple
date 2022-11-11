@@ -42,13 +42,10 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: .blue).offset(y: 1).padding(.trailing, 5)
+								CircleText(text: node.user?.shortName ?? "???", color: .blue, circleSize: 52, fontSize: 16).offset(y: 1).padding(.trailing, 5)
 									.offset(x: -15)
-								if UIDevice.current.userInterfaceIdiom == .pad { Text(node.user?.longName ?? "Unknown").font(.headline)
-										.offset(x: -15)
-								} else {
-									Text(node.user?.longName ?? "Unknown").font(.title2).offset(x: -15)
-								}
+								
+								Text(node.user?.longName ?? "Unknown").font(.headline).offset(x: -15)
 							}
 							.padding(.bottom, 5)
 							if connected {
