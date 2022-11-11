@@ -1069,6 +1069,7 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			
 					let position = PositionEntity(context: context)
 					
+					position.snr = packet.rxSnr
 					position.seqNo = Int32(positionMessage.seqNumber)
 					position.latitudeI = positionMessage.latitudeI
 					position.longitudeI = positionMessage.longitudeI
@@ -1120,7 +1121,7 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	}
 }
 
-func routingPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
@@ -1171,9 +1172,27 @@ func routingPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-				fetchedMessage![0].objectWillChange.send()
-				fetchedMessage![0].fromUser?.objectWillChange.send()
-				fetchedMessage![0].toUser?.objectWillChange.send()
+				
+				if fetchedMessage![0].toUser != nil {
+					fetchedMessage![0].toUser?.objectWillChange.send()
+				} else {
+					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
+					do {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
+						if fetchedMyInfo?.count ?? 0 > 0 {
+							
+							for ch in fetchedMyInfo![0].channels!.array as! [ChannelEntity] {
+					
+								if ch.index == packet.channel {
+									ch.objectWillChange.send()
+								}
+							}
+						}
+					} catch {
+							
+					}
+				}
 				
 			} else {
 				return
@@ -1248,8 +1267,6 @@ func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
-	
-	let broadcastNodeNum: UInt32 = 4294967295
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
@@ -1264,6 +1281,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 			newMessage.receivedACK = false
+			newMessage.snr = packet.rxSnr
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			
@@ -1315,4 +1333,3 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		}
 	}
 }
-

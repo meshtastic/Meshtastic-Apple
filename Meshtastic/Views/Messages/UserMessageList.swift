@@ -106,6 +106,11 @@ struct UserMessageList: View {
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
 													}
+													if !currentUser {
+														VStack {
+															Text("SNR \(message.snr)")
+														}
+													}
 													if currentUser && message.receivedACK {
 														VStack {
 															Text("Received Ack \(message.receivedACK ? "✔️" : "")")

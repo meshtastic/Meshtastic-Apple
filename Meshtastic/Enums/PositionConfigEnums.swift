@@ -107,6 +107,8 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
+	case twentySeconds = 20
+	case twentyFiveSeconds = 25
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case twoMinutes = 120
@@ -131,6 +133,10 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 				return "Ten Seconds"
 			case .fifteenSeconds:
 				return "Fifteen Seconds"
+			case .twentySeconds:
+				return "Twenty Seconds"
+			case .twentyFiveSeconds:
+				return "Twenty Five Seconds"
 			case .thirtySeconds:
 				return "Thirty Seconds"
 			case .oneMinute:
@@ -162,36 +168,48 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 
 enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 
+	case oneSecond = 1
+	case twoSeconds = 2
+	case threeSeconds = 3
+	case fourSeconds = 4
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
+	case twentySeconds = 20
+	case twentyFiveSeconds = 25
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
 
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
 
+			case .oneSecond:
+				return "One Seconds"
+			case .twoSeconds:
+				return "Two Seconds"
+			case .threeSeconds:
+				return "Three Seconds"
+			case .fourSeconds:
+				return "Four Seconds"
 			case .fiveSeconds:
 				return "Five Seconds"
 			case .tenSeconds:
 				return "Ten Seconds"
 			case .fifteenSeconds:
 				return "Fifteen Seconds"
+			case .twentySeconds:
+				return "Twenty Seconds"
+			case .twentyFiveSeconds:
+				return "Twenty Five Seconds"
 			case .thirtySeconds:
 				return "Thirty Seconds"
 			case .oneMinute:
 				return "One Minute"
 			case .fiveMinutes:
 				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
 			}
 		}
 	}
