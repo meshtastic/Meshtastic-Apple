@@ -64,27 +64,32 @@ struct DeviceMetricsLog: View {
 						}
 					}
 					TableColumn("Voltage") { dm in
-						Text(String(format: "%.6f", dm.voltage ?? 0))
+						if dm.metricsType == 0 {
+							Text("\(String(format: "%.2f", dm.voltage))")
+						}
 					}
 					TableColumn("Channel Utilization") { dm in
-						Text(String(format: "%.2f", dm.channelUtilization))
+						if dm.metricsType == 0 {
+							Text(String(format: "%.2f", dm.channelUtilization))
+						}
 					}
 					TableColumn("Airtime") { dm in
-						Text("\(String(format: "%.2f", dm.airUtilTx))%")
+						if dm.metricsType == 0 {
+							Text("\(String(format: "%.2f", dm.airUtilTx))%")
+						}
 					}
 					TableColumn("Time Stamp") { dm in
-						Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+						if dm.metricsType == 0 {
+							Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+						}
 					}
 				}
 				
 			} else {
 				
 				ScrollView {
-					
 					Grid(alignment: .topLeading, horizontalSpacing: 2) {
-						
 						GridRow {
-							
 							Text("Batt")
 								.font(.callout)
 								.fontWeight(.bold)
@@ -103,22 +108,15 @@ struct DeviceMetricsLog: View {
 						}
 						Divider()
 						ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (dm: TelemetryEntity) in
-							
 							if dm.metricsType == 0 {
-								
 								GridRow {
-									
 									if dm.batteryLevel == 0 {
-										
 										Text("USB")
 											.font(.callout)
-										
 									} else {
-										
 										Text("\(String(dm.batteryLevel))%")
 											.font(.callout)
 									}
-									
 									Text(String(dm.voltage))
 										.font(.callout)
 									Text("\(String(format: "%.2f", dm.channelUtilization))%")
@@ -163,18 +161,15 @@ struct DeviceMetricsLog: View {
 						
 					} else {
 						
-						
 					}
 				}
 			}
 			
 			Button {
-				
 				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
 				isExporting = true
 				
 			} label: {
-				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
@@ -205,7 +200,6 @@ struct DeviceMetricsLog: View {
 				if case .success = result {
 					
 					print("Device Telemetry log download succeeded.")
-					
 					self.isExporting = false
 					
 				} else {

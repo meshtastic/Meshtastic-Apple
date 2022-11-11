@@ -22,7 +22,48 @@ struct EnvironmentMetricsLog: View {
 		
 		NavigationStack {
 			
-			ScrollView {
+			let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
+			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+				//Add a table for mac and ipad
+				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
+					TableColumn("Temperature") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.temperature))\(tempReadingType)")
+						}
+					}
+					TableColumn("Humidity") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.relativeHumidity))")
+						}
+					}
+					TableColumn("Barometric Pressure") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.barometricPressure))")
+						}
+					}
+					TableColumn("Gas Resistance") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.gasResistance))")
+						}
+					}
+					TableColumn("Current") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.current))")
+						}
+					}
+					TableColumn("Voltage") { em in
+						if em.metricsType == 1 {
+							Text("\(String(format: "%.2f", em.voltage))")
+						}
+					}
+					TableColumn("Time Stamp") { em in
+						if em.metricsType == 1 {
+							Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+						}
+					}
+				}
+			} else {
+				ScrollView {
 				
 				Grid(alignment: .topLeading, horizontalSpacing: 2) {
 					
@@ -55,8 +96,6 @@ struct EnvironmentMetricsLog: View {
 						
 						if em.metricsType == 1 {
 							
-							let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
-							
 							GridRow {
 								
 								Text("\(String(format: "%.2f", em.temperature))\(tempReadingType)")
@@ -80,8 +119,8 @@ struct EnvironmentMetricsLog: View {
 				.padding(.leading, 15)
 				.padding(.trailing, 5)
 			}
+			}
 		}
-		
 		HStack {
 			
 			Button(role: .destructive) {
