@@ -46,6 +46,9 @@ struct PositionLog: View {
 					TableColumn("Heading") { position in
 						Text(String(position.heading))
 					}
+					TableColumn("SNR") { position in
+						Text(String(position.snr))
+					}
 					TableColumn("Time Stamp") { position in
 						Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
 					}
