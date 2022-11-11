@@ -82,6 +82,10 @@ enum PortNum: SwiftProtobuf.Enum {
   /// Payload is a [Waypoint](/docs/developers/protobufs/api#waypoint) message
   case waypointApp // = 8
 
+  /// Audio Payloads.
+  /// Encapsulated codec2 packets. On 2.4 GHZ Bandwidths only for now
+  case audioApp // = 9
+
   ///
   /// Provides a 'ping' service that replies to any packet it receives.
   /// Also serves as a small example module.
@@ -129,7 +133,7 @@ enum PortNum: SwiftProtobuf.Enum {
   ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
-  /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/Meshtastic-device/blob/master/bin/regen-protos.sh))
+  /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
   case privateApp // = 256
 
   ///
@@ -156,6 +160,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 6: self = .adminApp
     case 7: self = .textMessageCompressedApp
     case 8: self = .waypointApp
+    case 9: self = .audioApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
     case 64: self = .serialApp
@@ -182,6 +187,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .adminApp: return 6
     case .textMessageCompressedApp: return 7
     case .waypointApp: return 8
+    case .audioApp: return 9
     case .replyApp: return 32
     case .ipTunnelApp: return 33
     case .serialApp: return 64
@@ -213,6 +219,7 @@ extension PortNum: CaseIterable {
     .adminApp,
     .textMessageCompressedApp,
     .waypointApp,
+    .audioApp,
     .replyApp,
     .ipTunnelApp,
     .serialApp,
@@ -246,6 +253,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "ADMIN_APP"),
     7: .same(proto: "TEXT_MESSAGE_COMPRESSED_APP"),
     8: .same(proto: "WAYPOINT_APP"),
+    9: .same(proto: "AUDIO_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
     64: .same(proto: "SERIAL_APP"),

@@ -201,6 +201,17 @@ struct LocalModuleConfig {
   mutating func clearCannedMessage() {_uniqueStorage()._cannedMessage = nil}
 
   ///
+  /// The part of the config that is specific to the Audio module
+  var audio: ModuleConfig.AudioConfig {
+    get {return _storage._audio ?? ModuleConfig.AudioConfig()}
+    set {_uniqueStorage()._audio = newValue}
+  }
+  /// Returns true if `audio` has been explicitly set.
+  var hasAudio: Bool {return _storage._audio != nil}
+  /// Clears the value of `audio`. Subsequent reads from it will return its default value.
+  mutating func clearAudio() {_uniqueStorage()._audio = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -357,6 +368,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     5: .standard(proto: "range_test"),
     6: .same(proto: "telemetry"),
     7: .standard(proto: "canned_message"),
+    9: .same(proto: "audio"),
     8: .same(proto: "version"),
   ]
 
@@ -368,6 +380,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _rangeTest: ModuleConfig.RangeTestConfig? = nil
     var _telemetry: ModuleConfig.TelemetryConfig? = nil
     var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
+    var _audio: ModuleConfig.AudioConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -382,6 +395,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _rangeTest = source._rangeTest
       _telemetry = source._telemetry
       _cannedMessage = source._cannedMessage
+      _audio = source._audio
       _version = source._version
     }
   }
@@ -409,6 +423,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._telemetry) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._cannedMessage) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
+        case 9: try { try decoder.decodeSingularMessageField(value: &_storage._audio) }()
         default: break
         }
       }
@@ -445,6 +460,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._version != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
       }
+      try { if let v = _storage._audio {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -461,6 +479,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._rangeTest != rhs_storage._rangeTest {return false}
         if _storage._telemetry != rhs_storage._telemetry {return false}
         if _storage._cannedMessage != rhs_storage._cannedMessage {return false}
+        if _storage._audio != rhs_storage._audio {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }
