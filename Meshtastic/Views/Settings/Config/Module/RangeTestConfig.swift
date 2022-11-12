@@ -52,27 +52,20 @@ struct RangeTestConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
-	
 	@State var enabled = false
 	@State var sender = 0
 	@State var save = false
 	
 	var body: some View {
-		
 		VStack {
-
 			Form {
-				
 				Section(header: Text("Options")) {
-				
 					Toggle(isOn: $enabled) {
 
 						Label("Enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Picker("Sender Interval", selection: $sender ) {
 						ForEach(SenderIntervals.allCases) { sci in
 							Text(sci.description)
@@ -81,26 +74,19 @@ struct RangeTestConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("This device will send out range test messages on the selected interval.")
 						.font(.caption)
-					
 					Toggle(isOn: $save) {
-
 						Label("Save", systemImage: "square.and.arrow.down.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
-					
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 						.font(.caption)
 				}
 			}
 			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
-			
 			Button {
-							
 				isPresentingSaveConfirm = true
-				
 			} label: {
-				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node!.myInfo?.hasWifi ?? false))
@@ -114,63 +100,44 @@ struct RangeTestConfig: View {
 				titleVisibility: .visible
 			) {
 				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-						
 				var rtc = ModuleConfig.RangeTestConfig()
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					
 					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: node!.user!, toUser: node!.user!)
-					
 					if adminMessageId > 0 {
-						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-						
 					} else {
 						
 					}
 				}
 			}
-			
 			.navigationTitle("Range Test Config")
 			.navigationBarItems(trailing:
-
 				ZStack {
-
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
-
-				if self.initialLoad{
-					
-					self.bleManager.context = context
-					self.enabled = node?.rangeTestConfig?.enabled ?? false
-					self.save = node?.rangeTestConfig?.save ?? false
-					self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
-					self.hasChanges = false
-					self.initialLoad = false
-				}
+				self.bleManager.context = context
+				self.enabled = node?.rangeTestConfig?.enabled ?? false
+				self.save = node?.rangeTestConfig?.save ?? false
+				self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
+				self.hasChanges = false
 			}
 			.onChange(of: enabled) { newEnabled in
-				
 				if node != nil && node!.rangeTestConfig != nil {
-					
 					if newEnabled != node!.rangeTestConfig!.enabled { hasChanges = true }
 				}
 			}
 			.onChange(of: save) { newSave in
-				
 				if node != nil && node!.rangeTestConfig != nil {
-					
 					if newSave != node!.rangeTestConfig!.save { hasChanges = true }
 				}
 			}
 			.onChange(of: sender) { newSender in
-				
 				if node != nil && node!.rangeTestConfig != nil {
-				
 					if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
 				}
 			}

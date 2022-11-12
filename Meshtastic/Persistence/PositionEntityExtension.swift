@@ -26,7 +26,6 @@ extension PositionEntity {
 	var coordinate: CLLocationCoordinate2D? {
 		if latitudeI != 0 && longitudeI != 0 {
 			let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
-
 			return coord
 		} else {
 		   return nil
@@ -36,10 +35,8 @@ extension PositionEntity {
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
 		if coordinate != nil {
-
 			pointAnn.coordinate = coordinate!
 		}
 		return pointAnn
 	}
-
 }

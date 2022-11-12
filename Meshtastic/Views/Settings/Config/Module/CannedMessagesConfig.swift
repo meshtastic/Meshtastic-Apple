@@ -14,7 +14,6 @@ struct CannedMessagesConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
 	@State var configPreset = 0
@@ -213,7 +212,6 @@ struct CannedMessagesConfig: View {
 				isPresentingSaveConfirm = true
 				
 			} label: {
-				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || (!hasChanges && !hasMessagesChanges))
@@ -222,7 +220,6 @@ struct CannedMessagesConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
@@ -230,24 +227,18 @@ struct CannedMessagesConfig: View {
 				Button("Save Canned Messages Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 						
 					if hasChanges {
-					
 						var cmc = ModuleConfig.CannedMessageConfig()
 						cmc.enabled = enabled
 						cmc.sendBell = sendBell
 						cmc.rotary1Enabled = rotary1Enabled
 						cmc.updown1Enabled = updown1Enabled
 						if rotary1Enabled {
-							
 							/// Input event origin accepted by the canned messages
 							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
 							cmc.allowInputSource = "rotEnc1"
-							
 						} else if updown1Enabled {
-							
 							cmc.allowInputSource = "_any"
-							
 						} else {
-							
 							cmc.allowInputSource = "_any"
 						}
 						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
@@ -256,55 +247,41 @@ struct CannedMessagesConfig: View {
 						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
 						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
 						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-						
 						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!)
-							
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							hasChanges = false
 						}
 					}
-					
 					if hasMessagesChanges {
-						
 						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
-							
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							hasMessagesChanges = false
 						}
-						
 					}
 				}
 			}
-			
 			.navigationTitle("Canned Messages Config")
 			.navigationBarItems(trailing:
-
 				ZStack {
-
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 			.onAppear {
-
-				if self.initialLoad{
-					
-					self.bleManager.context = context
-					self.enabled = node?.cannedMessageConfig?.enabled ?? false
-					self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
-					self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
-					self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false
-					self.inputbrokerPinA = Int(node?.cannedMessageConfig?.inputbrokerPinA ?? 0)
-					self.inputbrokerPinB = Int(node?.cannedMessageConfig?.inputbrokerPinB ?? 0)
-					self.inputbrokerPinPress = Int(node?.cannedMessageConfig?.inputbrokerPinPress ?? 0)
-					self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
-					self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
-					self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
-					self.hasChanges = false
-					self.initialLoad = false
-				}
+				self.bleManager.context = context
+				self.enabled = node?.cannedMessageConfig?.enabled ?? false
+				self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
+				self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
+				self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false
+				self.inputbrokerPinA = Int(node?.cannedMessageConfig?.inputbrokerPinA ?? 0)
+				self.inputbrokerPinB = Int(node?.cannedMessageConfig?.inputbrokerPinB ?? 0)
+				self.inputbrokerPinPress = Int(node?.cannedMessageConfig?.inputbrokerPinPress ?? 0)
+				self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
+				self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
+				self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
+				self.hasChanges = false
 			}
 			.onChange(of: configPreset) { newPreset in
 				

@@ -15,9 +15,7 @@ struct BluetoothConfig: View {
 	var node: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State var initialLoad: Bool = true
 	@State var hasChanges = false
-	
 	@State var enabled = true
 	@State var mode = 0
 	@State var fixedPin = "123456"
@@ -132,40 +130,27 @@ struct BluetoothConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
-			if self.initialLoad{
-				
-				self.bleManager.context = context
-
-				self.enabled = node?.bluetoothConfig?.enabled ?? true
-				self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
-				self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
-				self.hasChanges = false
-				self.initialLoad = false
-			}
+			self.bleManager.context = context
+			self.enabled = node?.bluetoothConfig?.enabled ?? true
+			self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
+			self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
+			self.hasChanges = false
 		}
 		.onChange(of: enabled) { newEnabled in
-			
 			if node != nil && node!.bluetoothConfig != nil {
-
 				if newEnabled != node!.bluetoothConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: mode) { newMode in
-
 			if node != nil && node!.bluetoothConfig != nil {
-
 				if newMode != node!.bluetoothConfig!.mode { hasChanges = true }
 			}
 		}
 		.onChange(of: fixedPin) { newFixedPin in
-			
 			if node != nil && node!.bluetoothConfig != nil {
-
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
-
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
