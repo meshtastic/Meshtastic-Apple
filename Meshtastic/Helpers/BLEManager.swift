@@ -776,17 +776,17 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
 		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
-		//positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+		if LocationHelper.currentHeading > 0 {
+			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+		}
 		
-		var waypointPacket = Waypoint()
-		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+		//var waypointPacket = Waypoint()
+		//waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+		//waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 		
-		let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-		waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
-		waypointPacket.name = "Test Waypoint"
-		
-		
+		//let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
+		//waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
+		//waypointPacket.name = "Test Waypoint"
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num

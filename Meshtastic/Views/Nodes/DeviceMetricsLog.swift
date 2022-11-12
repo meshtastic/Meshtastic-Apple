@@ -21,12 +21,6 @@ struct DeviceMetricsLog: View {
 	
 	var node: NodeInfoEntity
 	
-	struct MountPrice: Identifiable {
-		var id = UUID()
-		var mount: String
-		var value: Double
-	}
-
 	var body: some View {
 		NavigationStack {
 			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())

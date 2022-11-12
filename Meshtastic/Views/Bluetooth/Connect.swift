@@ -103,7 +103,7 @@ struct Connect: View {
 									Text("Num: \(String(node!.num))")
 									Text("Short Name: \(node?.user?.shortName ?? "????")")
 									Text("Long Name: \(node?.user?.longName ?? "Unknown")")
-									Text("Max Channels: \(String(node!.myInfo!.maxChannels))")
+									Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
 									Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
 									Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 									

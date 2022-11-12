@@ -29,8 +29,8 @@ struct Contacts: View {
 			List {
 				Section(header: Text("Channels (groups)")) {
 					// Display Contacts for the rest of the non admin channels
-					if node != nil {
-						ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
+						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" {
 								VStack {
 									NavigationLink(destination: ChannelMessageList(channel: channel)) {
