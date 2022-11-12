@@ -106,7 +106,7 @@ struct ChannelMessageList: View {
 												}
 												if !currentUser {
 													VStack {
-														Text("SNR \(message.snr)")
+														Text("SNR \(String(format: "%.2f", message.snr)) dB")
 													}
 												}
 												if currentUser && message.receivedACK {
@@ -133,7 +133,7 @@ struct ChannelMessageList: View {
 												}
 												if message.ackSNR != 0 {
 													VStack {
-														Text("Ack SNR \(String(message.ackSNR))")
+														Text("Ack SNR\(String(format: "%.2f", message.ackSNR)) dB")
 															.font(.caption2)
 															.foregroundColor(.gray)
 													}

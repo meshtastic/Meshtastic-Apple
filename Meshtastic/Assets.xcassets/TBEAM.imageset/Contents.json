@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "tbeam-2.jpg",
+      "filename" : "tbeam 2.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tbeam-1.jpg",
+      "filename" : "tbeam 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tbeam.jpg",
+      "filename" : "tbeam.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

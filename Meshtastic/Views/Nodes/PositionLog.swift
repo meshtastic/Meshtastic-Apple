@@ -47,7 +47,7 @@ struct PositionLog: View {
 						Text(String(position.heading))
 					}
 					TableColumn("SNR") { position in
-						Text(String(position.snr))
+						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
 						Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
