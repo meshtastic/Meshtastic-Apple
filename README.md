@@ -19,7 +19,7 @@ SwiftUI client applicaitons for iOS, iPadOS and macOS.
 
 ## Code Standards
 
-- Use SwiftUI (Maps are an exception)
+- Use SwiftUI (Maps are the exception)
 - Use Hierarchical icons
 - Use Core Data for persistence
 - Requires SwiftLint - see https://github.com/realm/SwiftLint
