@@ -520,8 +520,8 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if nodeInfo != nil {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 							if nodeInfo!.user != nil {
-								connectedPeripheral.shortName = nodeInfo!.user!.shortName ?? "????"
-								connectedPeripheral.longName = nodeInfo!.user!.longName ?? "Unknown"
+								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "????"
+								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "Unknown"
 							}
 						}
 					}

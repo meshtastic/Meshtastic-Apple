@@ -7,15 +7,13 @@ import CoreData
 struct MeshtasticAppleApp: App {
 	
 	let persistenceController = PersistenceController.shared
-
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
+	@Environment(\.scenePhase) var scenePhase
 
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
-	
-	@Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
         WindowGroup {
