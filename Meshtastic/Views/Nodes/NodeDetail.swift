@@ -14,7 +14,6 @@ struct NodeDetail: View {
 	
 	@State private var showingDetailsPopover = false
 	
-	@State var initialLoad: Bool = true
 	@State var satsInView = 0
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
@@ -416,12 +415,7 @@ struct NodeDetail: View {
 					}
 				)
 				.onAppear {
-
-					if self.initialLoad{
-						
-						self.bleManager.context = context
-						self.initialLoad = false
-					}
+					self.bleManager.context = context
 				}
 			}
 		}

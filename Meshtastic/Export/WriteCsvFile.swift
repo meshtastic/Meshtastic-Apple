@@ -7,22 +7,15 @@
 
 import SwiftUI
 
-
 func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> String {
-	
 	var csvString: String = ""
-
 	if metricsType == 0 {
-		
 		// Create Device Metrics Header
 		csvString = "Battery Level, Voltage, Channel Utilization, Airtime, Timestamp"
-
 		for dm in telemetry{
-			
 			if dm.metricsType == 0 {
-			
 				csvString += "\n"
-				csvString += String("\(dm.batteryLevel) %")
+				csvString += String(dm.batteryLevel)
 				csvString += ", "
 				csvString += String(dm.voltage)
 				csvString += ", "
@@ -33,18 +26,13 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? "Unknown Age"
 			}
 		}
-		
 	} else if metricsType == 1 {
-		
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, Voltage, Current"
-		
 		for dm in telemetry{
-			
 			if dm.metricsType == 1 {
-			
 				csvString += "\n"
-				csvString += String("\(dm.temperature)°")
+				csvString += String(dm.temperature)
 				csvString += ", "
 				csvString += String(dm.relativeHumidity)
 				csvString += ", "
@@ -60,19 +48,14 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 			}
 		}
 	}
-	
 	return csvString
 }
 
 func PositionToCsvFile(positions: [PositionEntity]) -> String {
-	
 	var csvString: String = ""
-
 	// Create Position Header
 	csvString = "SeqNo, Latitude, Longitude, Alt, Sats, Speed, Heading, SNR, Timestamp"
-
 	for pos in positions {
-		
 		csvString += "\n"
 		csvString += String(pos.seqNo)
 		csvString += ", "
@@ -90,9 +73,7 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		
 		csvString += pos.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? "Unknown Age"
 	}
-	
 	return csvString
 }
