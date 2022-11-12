@@ -17,13 +17,12 @@ struct UserMessageList: View {
 	enum Field: Hashable {
 		case messageText
 	}
-	
 	// Keyboard State
 	@State var typingMessage: String = ""
 	@State private var totalBytes = 0
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
-	
+	// View State Items
 	@ObservedObject var user: UserEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
@@ -135,7 +134,7 @@ struct UserMessageList: View {
 													}
 													if message.ackSNR != 0 {
 														VStack {
-															Text("Ack SNR \(String(message.ackSNR))")
+															Text("Ack SNR\(String(format: "%.2f", message.ackSNR)) dB")
 																.font(.caption2)
 																.foregroundColor(.gray)
 														}
@@ -213,7 +212,6 @@ struct UserMessageList: View {
 										}
 									}, secondaryButton: .cancel())
 								}
-
 							}
 						}
 					}
@@ -264,23 +262,15 @@ struct UserMessageList: View {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
 									if user.num == bleManager.broadcastNodeNum {
-										
 										if userSettings.meshtasticUsername.count > 0 {
-										
 											typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with the mesh from node " + userLongName
 										} else {
-											
 											typingMessage =  "📍 " + userLongName + " has shared their position with the mesh."
 										}
-										
 									} else {
-										
 										if userSettings.meshtasticUsername.count > 0 {
-											
 											typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
-											
 										} else {
-											
 											typingMessage =  "📍 " + userLongName + " has shared their position with you."
 										}
 									}
@@ -289,7 +279,6 @@ struct UserMessageList: View {
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-
 								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
@@ -301,9 +290,7 @@ struct UserMessageList: View {
 						.focused($focusedField, equals: .messageText)
 						.multilineTextAlignment(.leading)
 						.frame(minHeight: 50)
-
 					Text(typingMessage).opacity(0).padding(.all, 0)
-
 				}
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
