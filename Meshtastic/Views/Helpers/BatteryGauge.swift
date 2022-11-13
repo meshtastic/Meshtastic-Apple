@@ -6,9 +6,7 @@
 //
 
 import SwiftUI
-#if canImport(Charts)
 import Charts
-#endif
 
 struct BatteryGauge: View {
 	
@@ -19,8 +17,6 @@ struct BatteryGauge: View {
 
 	var body: some View {
 		VStack {
-			
-			#if !targetEnvironment(macCatalyst)
 			if batteryLevel == 0.0 {
 				// Plugged in
 				Image(systemName: "powerplug")
@@ -50,7 +46,6 @@ struct BatteryGauge: View {
 				.tint(gradient)
 				.gaugeStyle(.accessoryCircular)
 			}
-		#endif
 		}
 	}
 }
