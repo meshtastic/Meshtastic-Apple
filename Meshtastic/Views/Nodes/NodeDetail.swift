@@ -56,7 +56,7 @@ struct NodeDetail: View {
 									)
 								}
 								.ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.70)
+								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
 								
 							}
 							Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
@@ -84,12 +84,12 @@ struct NodeDetail: View {
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
-											.frame(width: 75, height: 75)
+											.frame(width: 100, height: 100)
 											.cornerRadius(5)
 
 										Text(String(hwModelString))
 											.foregroundColor(.gray)
-											.font(.title).fixedSize()
+											.font(.largeTitle).fixedSize()
 									}
 								}
 								
@@ -140,7 +140,9 @@ struct NodeDetail: View {
 											.symbolRenderingMode(.hierarchical)
 										Text("User Id:").font(.title)
 									}
-									Text(node.user?.userId ?? "??????").font(.title).foregroundColor(.gray)
+									//Text(node.user?.userId ?? "??????").font(.title).foregroundColor(.gray)
+									Text("!\(String(format:"%02x", node.num))")
+										.font(.title).foregroundColor(.gray)
 								}
 								Divider()
 								VStack {
@@ -178,7 +180,7 @@ struct NodeDetail: View {
 										
 									}
 									DateTimeText(dateTime: node.lastHeard)
-										.font(.title)
+										.font(.title3)
 										.foregroundColor(.gray)
 								}
 							}
@@ -202,7 +204,7 @@ struct NodeDetail: View {
 										
 										Image(node.user!.hwModel ?? "UNSET")
 											.resizable()
-											.frame(width: 50, height: 50)
+											.frame(width: 75, height: 75)
 											.cornerRadius(5)
 
 										Text(String(node.user!.hwModel ?? "UNSET"))

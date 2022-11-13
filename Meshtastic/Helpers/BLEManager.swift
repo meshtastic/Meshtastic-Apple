@@ -505,9 +505,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 						
 						if myInfo != nil {
 							connectedPeripheral.num = myInfo!.myNodeNum
-							connectedPeripheral.firmwareVersion = myInfo!.firmwareVersion ?? "Unknown"
-							connectedPeripheral.name = myInfo!.bleName ?? "Unknown"
-							connectedPeripheral.longName = myInfo!.bleName ?? "Unknown"
+							connectedPeripheral.firmwareVersion = myInfo?.firmwareVersion ?? "Unknown"
+							connectedPeripheral.name = myInfo?.bleName ?? "Unknown"
+							connectedPeripheral.longName = myInfo?.bleName ?? "Unknown"
 						}
 					}
 				}
@@ -759,51 +759,33 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		return success
 	}
 	
-	public func sendLocation(destNum: Int64,  wantAck: Bool) -> Bool {
+	public func sendWaypoint(destNum: Int64, name: String, wantAck: Bool) -> Bool {
 		
 		var success = false
-		
 		let fromNodeNum = connectedPeripheral.num
-		
 		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
-			
 			return false
 		}
-		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
-		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
-		if LocationHelper.currentHeading > 0 {
-			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
-		}
-		
-		//var waypointPacket = Waypoint()
-		//waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		//waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		
-		//let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-		//waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
-		//waypointPacket.name = "Test Waypoint"
+		var waypointPacket = Waypoint()
+		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+		let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
+		waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
+		waypointPacket.name = name
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
 		meshPacket.wantAck = true//wantAck
-		
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! positionPacket.serializedData()
-		dataMessage.portnum = PortNum.positionApp
-		
+		dataMessage.payload = try! waypointPacket.serializedData()
+		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage
-
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		MeshLogger.log("📍 Sent a Location Packet from the Apple device GPS to node: \(fromNodeNum)")
+		MeshLogger.log("📍 Sent a Waypoint Packet from the Apple device GPS to node: \(fromNodeNum)")
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -815,14 +797,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	public func sendPosition(destNum: Int64,  wantAck: Bool) -> Bool {
 		
 		var success = false
-		
 		let fromNodeNum = connectedPeripheral.num
-		
 		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
-			
 			return false
 		}
-				
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -830,23 +808,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		
 		// Get Errors without some speed
 		if LocationHelper.currentSpeed >= 5 {
 			
 			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
 			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
 		}
-		
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
 		meshPacket.wantAck = wantAck
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
-		
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -854,15 +828,11 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
-			MeshLogger.log("📍 Sent a Share Location Position Packet from the Apple device GPS to node: \(fromNodeNum)")
-
+			MeshLogger.log("📍 Sent a Position Packet from the Apple device GPS to node: \(fromNodeNum)")
 		}
-		
 		return success
 	}
 	

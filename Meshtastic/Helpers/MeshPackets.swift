@@ -224,51 +224,37 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 	
 		MeshLogger.log("📶 Network config received \(String(nodeNum))")
-		print(try! config.network.jsonString())
-		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		
 		do {
 
 			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
 			// Found a node, save WiFi Config
 			if !fetchedNode.isEmpty {
-				
 				if fetchedNode[0].networkConfig == nil {
-					
 					let newNetworkConfig = NetworkConfigEntity(context: context)
-					
 					newNetworkConfig.wifiSsid = config.network.wifiSsid
 					newNetworkConfig.wifiPsk = config.network.wifiPsk
 					fetchedNode[0].networkConfig = newNetworkConfig
-					
 				} else {
-					
 					fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
 					fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
 				}
 				
 				do {
-
 					try context.save()
-					MeshLogger.log("💾 Updated WiFi Config for node number: \(String(nodeNum))")
+					MeshLogger.log("💾 Updated Network Config for node number: \(String(nodeNum))")
 
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
 					print("💥 Error Updating Core Data WiFiConfigEntity: \(nsError)")
 				}
 			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save WiFi Config")
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Network Config")
 			}
-			
 		} catch {
-			
 			let nsError = error as NSError
 			print("💥 Fetching node for core data WiFiConfigEntity failed: \(nsError)")
 		}
@@ -1047,7 +1033,18 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	print(try! packet.decoded.jsonString())
+	
+	//print(packet.payloadVariant.debugDescription)
+	
+	if let messages = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
+		//let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
+		//if adminMessageId > 0 {
+
+		//}
+		//print(messages)
+	} else {
+		//print(try! packet.decoded.jsonString())
+	}
 }
 
 
@@ -1103,20 +1100,15 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 					}
 				}
-				
 			} else {
-				
 				print("💥 Empty POSITION_APP Packet")
 				print(try! packet.jsonString())
 				if let dataMessage = try? DataMessage(serializedData: packet.decoded.payload) {
-					print(dataMessage)
-					
+					//print(dataMessage)
 				}
 			}
 		}
-
 	} catch {
-
 		print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
 	}
 }
