@@ -818,9 +818,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
 		meshPacket.wantAck = wantAck
+	
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
+		if destNum != broadcastNodeNum {
+			dataMessage.wantResponse = true
+		}
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -1119,7 +1123,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
@@ -1127,17 +1130,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		meshPacket.hopLimit = 0
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
 		meshPacket.decoded = dataMessage
-		
 		let messageDescription = "Saved User Config for \(toUser.longName ?? "Unknown")"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
 		
@@ -1148,24 +1147,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.bluetooth = config
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
-		
 		let messageDescription = "Saved Bluetooth Config for \(toUser.longName ?? "Unknown")"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
 		
@@ -1202,7 +1196,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
@@ -1210,17 +1203,13 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		meshPacket.hopLimit = 0
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
-		
 		let messageDescription = "Saved Display Config for \(toUser.longName ?? "Unknown")"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
 		
@@ -1231,26 +1220,20 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
 		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		meshPacket.hopLimit = 0
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
-		
 		let messageDescription = "Saved LoRa Config for \(toUser.longName ?? "Unknown")"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
 		

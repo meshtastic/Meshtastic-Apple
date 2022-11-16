@@ -139,7 +139,7 @@ struct MQTTConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
+			.disabled(!(node != nil && node?.myInfo?.hasWifi ?? false))
 			
 			Button {
 							
@@ -186,10 +186,8 @@ struct MQTTConfig: View {
 		}
 		.navigationTitle("MQTT Config")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 			self.bleManager.context = context
@@ -202,23 +200,17 @@ struct MQTTConfig: View {
 			self.hasChanges = false
 		}
 		.onChange(of: enabled) { newEnabled in
-			
 			if node != nil && node!.mqttConfig != nil {
-				
 				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
-			
 			if node != nil && node!.mqttConfig != nil {
-				
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
-			
 			if node != nil && node!.mqttConfig != nil {
-				
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}
