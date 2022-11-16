@@ -230,6 +230,35 @@ struct ChannelMessageList: View {
 					}
 				})
 			}
+			#if targetEnvironment(macCatalyst)
+			HStack {
+				Spacer()
+				Button {
+					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
+					sendPositionWithMessage = true
+					if userSettings.meshtasticUsername.count > 0 {
+						
+						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+						
+					} else {
+						
+						typingMessage =  "📍 " + userLongName + " has shared their position with you."
+					}
+
+				} label: {
+					Text("Share Position")
+					Image(systemName: "mappin.and.ellipse")
+						.symbolRenderingMode(.hierarchical)
+						.imageScale(.large).foregroundColor(.accentColor)
+				}
+				ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+					.frame(width: 130)
+					.padding(5)
+					.font(.subheadline)
+					.accentColor(.accentColor)
+					.padding(.trailing)
+			}
+			#endif
 			HStack(alignment: .top) {
 
 				ZStack {
