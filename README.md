@@ -1,8 +1,5 @@
 # Meshtastic Apple Clients
 
-[![CLA assistant](https://cla-assistant.io/readme/badge/meshtastic/Meshtastic-Apple)](https://cla-assistant.io/meshtastic/Meshtastic-Apple)
-[![Fiscal Contributors](https://opencollective.com/meshtastic/tiers/badge.svg?label=Fiscal%20Contributors&color=deeppink)](https://opencollective.com/meshtastic/)
-
 ## Overview
 
 SwiftUI client applicaitons for iOS, iPadOS and macOS.
