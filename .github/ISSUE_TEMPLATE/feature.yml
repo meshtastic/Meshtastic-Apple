@@ -1,0 +1,29 @@
+name: Enhancement Request
+description: Request for a new feature
+title: "[Enhancement]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your request this will not gurantee that we will implement it, but it will be reviewed.
+
+  - type: dropdown
+    id: soc
+    attributes:
+      label: OS
+      description: What OS will support your feature?
+      multiple: true
+      options:
+        - iOS
+        - iPadOS
+        - macOS
+    validations:
+      required: true
+  - type: textarea
+    id: body
+    attributes:
+      label: Description
+      description: Please provide details about your enhancement.
+    validations:
+      required: true
