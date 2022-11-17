@@ -1,5 +1,5 @@
-name: Enhancement Request
-description: Request for a new feature
+name: Feature Request
+description: Request a new feature
 title: "[Enhancement]: "
 labels: ["enhancement"]
 body:
@@ -7,7 +7,6 @@ body:
     attributes:
       value: |
         Thanks for your request this will not gurantee that we will implement it, but it will be reviewed.
-
   - type: dropdown
     id: soc
     attributes:
