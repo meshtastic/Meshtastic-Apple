@@ -54,19 +54,15 @@ struct Contacts: View {
 															if lastMessageDay == currentDay {
 																Text(lastMessageTime, style: .time )
 																	.font(.callout)
-																	.foregroundColor(.gray)
 															} else if  lastMessageDay == (currentDay - 1) {
 																Text("Yesterday")
 																	.font(.callout)
-																	.foregroundColor(.gray)
 															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
 																	.font(.callout)
-																	.foregroundColor(.gray)
 															} else if lastMessageDay < (currentDay - 1800) {
 																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
 																	.font(.callout)
-																	.foregroundColor(.gray)
 															}
 														}
 													}
@@ -75,7 +71,6 @@ struct Contacts: View {
 													HStack(alignment: .top) {
 														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 															.truncationMode(.tail)
-															.foregroundColor(Color.gray)
 															.frame(maxWidth: .infinity, alignment: .leading)
 													}
 												}
@@ -113,19 +108,15 @@ struct Contacts: View {
 													if lastMessageDay == currentDay {
 														Text(lastMessageTime, style: .time )
 															.font(.callout)
-															.foregroundColor(.gray)
 													} else if  lastMessageDay == (currentDay - 1) {
 														Text("Yesterday")
 															.font(.callout)
-															.foregroundColor(.gray)
 													} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
 															.font(.callout)
-															.foregroundColor(.gray)
 													} else if lastMessageDay < (currentDay - 1800) {
 														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
 															.font(.callout)
-															.foregroundColor(.gray)
 													}
 												}
 											}
@@ -134,7 +125,6 @@ struct Contacts: View {
 											HStack(alignment: .top) {
 												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
 													.truncationMode(.tail)
-													.foregroundColor(Color.gray)
 													.frame(maxWidth: .infinity, alignment: .leading)
 											}
 										}
@@ -147,10 +137,7 @@ struct Contacts: View {
 					}
 				}
 			}
-			
-			.navigationSplitViewStyle(.automatic)
 			.navigationTitle("Contacts")
-			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
