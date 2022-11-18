@@ -42,7 +42,7 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: .blue, circleSize: 52, fontSize: 16).offset(y: 1).padding(.trailing, 5)
+								CircleText(text: node.user?.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16).offset(y: 1).padding(.trailing, 5)
 									.offset(x: -15)
 								
 								Text(node.user?.longName ?? "Unknown").font(.headline).offset(x: -15)
@@ -64,7 +64,7 @@ struct NodeList: View {
 										let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
 										let metersAway = nodeCoord.distance(from: myCoord)
 										Image(systemName: "lines.measurement.horizontal").font(.title3)
-											.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+											.foregroundColor(.gray).symbolRenderingMode(.hierarchical)
 
 										DistanceText(meters: metersAway).font(.subheadline).foregroundColor(.gray)
 									}
@@ -73,7 +73,7 @@ struct NodeList: View {
 							}
 							HStack(alignment: .bottom) {
 								Image(systemName: "clock.badge.checkmark.fill").font(.headline)
-									.foregroundColor(.accentColor).symbolRenderingMode(.hierarchical)
+									.foregroundColor(.gray).symbolRenderingMode(.hierarchical)
 								LastHeardText(lastHeard: node.lastHeard).font(.subheadline).foregroundColor(.gray)
 							}
 						}
@@ -81,7 +81,6 @@ struct NodeList: View {
 					}
 				}
 			 }
-			.tint(Color(UIColor.systemGray))
 			.navigationTitle("All Nodes")
 			.navigationBarItems(leading:
 				MeshtasticLogo()

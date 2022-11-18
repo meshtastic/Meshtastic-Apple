@@ -13,7 +13,7 @@ struct MessageBubble: View {
 
         HStack(alignment: .top) {
 
-            CircleText(text: shortName, color: isCurrentUser ? Color.blue : Color(.darkGray)).padding(.all, 5)
+			CircleText(text: shortName, color: isCurrentUser ? .accentColor : Color(.gray)).padding(.all, 5)
 				.gesture(LongPressGesture(minimumDuration: 2)
 							.onEnded {_ in
 					 print("I want to delete message: \(id)")
@@ -25,7 +25,7 @@ struct MessageBubble: View {
                 .textSelection(.enabled)
                 .padding(10)
                 .foregroundColor(.white)
-                .background(isCurrentUser ? Color.blue : Color(.darkGray))
+                .background(isCurrentUser ? .accentColor : Color(.gray))
                 .cornerRadius(10)
                 HStack(spacing: 4) {
 

@@ -42,7 +42,7 @@ struct Contacts: View {
 										HStack {
 											VStack(alignment: .leading) {
 												HStack {
-													CircleText(text: String(channel.index), color: Color.blue, circleSize: 52, fontSize: 40)
+													CircleText(text: String(channel.index), color: .gray, circleSize: 52, fontSize: 40)
 														.padding(.trailing, 5)
 													VStack {
 														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
@@ -101,7 +101,7 @@ struct Contacts: View {
 								HStack {
 									VStack(alignment: .leading) {
 										HStack {
-											CircleText(text: user.shortName ?? "???", color: Color.blue, circleSize: 52, fontSize: 16)
+											CircleText(text: user.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16)
 												.padding(.trailing, 5)
 											VStack {
 												Text(user.longName ?? "Unknown").font(.headline)
@@ -147,7 +147,7 @@ struct Contacts: View {
 					}
 				}
 			}
-			.tint(Color(UIColor.systemGray))
+			
 			.navigationSplitViewStyle(.automatic)
 			.navigationTitle("Contacts")
 			.navigationBarTitleDisplayMode(.inline)
