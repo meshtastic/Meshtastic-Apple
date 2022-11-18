@@ -68,6 +68,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// 6-Axis inertial measurement sensor
   case qmi8658 // = 10
+
+  ///
+  /// 3-Axis magnetic sensor
+  case qmc5883L // = 11
   case UNRECOGNIZED(Int)
 
   init() {
@@ -87,6 +91,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 8: self = .lps22
     case 9: self = .qmc6310
     case 10: self = .qmi8658
+    case 11: self = .qmc5883L
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -104,6 +109,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .lps22: return 8
     case .qmc6310: return 9
     case .qmi8658: return 10
+    case .qmc5883L: return 11
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -126,6 +132,7 @@ extension TelemetrySensorType: CaseIterable {
     .lps22,
     .qmc6310,
     .qmi8658,
+    .qmc5883L,
   ]
 }
 
@@ -288,6 +295,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "LPS22"),
     9: .same(proto: "QMC6310"),
     10: .same(proto: "QMI8658"),
+    11: .same(proto: "QMC5883L"),
   ]
 }
 

@@ -15,10 +15,8 @@ struct DeviceMetricsLog: View {
 	@EnvironmentObject var bleManager: BLEManager
 	
 	@State private var isPresentingClearLogConfirm: Bool = false
-	
 	@State var isExporting = false
 	@State var exportString = ""
-	
 	var node: NodeInfoEntity
 	
 	var body: some View {
@@ -43,14 +41,10 @@ struct DeviceMetricsLog: View {
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
-					
 					TableColumn("Battery Level") { dm in
-						
 						if dm.metricsType == 0 {
 							if dm.batteryLevel == 0 {
-								
 								Text("Powered")
-								
 							} else {
 								
 								Text("\(String(dm.batteryLevel))%")
@@ -80,7 +74,6 @@ struct DeviceMetricsLog: View {
 				}
 				
 			} else {
-				
 				ScrollView {
 					Grid(alignment: .topLeading, horizontalSpacing: 2) {
 						GridRow {
@@ -129,13 +122,9 @@ struct DeviceMetricsLog: View {
 			}
 		}
 		HStack {
-			
 			Button(role: .destructive) {
-							
 				isPresentingClearLogConfirm = true
-				
 			} label: {
-				
 				Label("Clear Log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
@@ -148,21 +137,16 @@ struct DeviceMetricsLog: View {
 				titleVisibility: .visible
 			) {
 				Button("Delete all device metrics?", role: .destructive) {
-					
 					if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
-						
-						print("Clear Device Metrics Log Failed")
-						
+						print("Cleared Device Metrics for \(node.num)")
 					} else {
-						
+						print("Clear Device Metrics Log Failed")
 					}
 				}
 			}
-			
 			Button {
 				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
 				isExporting = true
-				
 			} label: {
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
@@ -171,17 +155,13 @@ struct DeviceMetricsLog: View {
 			.controlSize(.large)
 			.padding()
 		}
-			
 		.navigationTitle("Device Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
-
 			ZStack {
-
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
 		.fileExporter(
@@ -190,14 +170,11 @@ struct DeviceMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user!.longName ?? "Node") Device Telemetry Log"),
 			onCompletion: { result in
-
 				if case .success = result {
-					
 					print("Device Telemetry log download succeeded.")
 					self.isExporting = false
 					
 				} else {
-					
 					print("Device Telemetry log download failed: \(result).")
 				}
 			}

@@ -29,9 +29,7 @@ struct Connect: View {
 				List {
 					if bleManager.isSwitchedOn {
 					Section(header: Text("Connected Radio").font(.title)) {
-						
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
-													
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right")
 									.symbolRenderingMode(.hierarchical)

@@ -29,35 +29,34 @@ struct MeshtasticAppleApp: App {
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
 				print("URL received \(userActivity)")
-				incomingUrl = userActivity.webpageURL
+				self.incomingUrl = userActivity.webpageURL
 				
-				if incomingUrl!.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+				if self.incomingUrl!.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					
-					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
-					   channelSettings = components.last!
+					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
+						self.channelSettings = components.last!
 					}
-					saveChannels = true
-					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
+					self.saveChannels = true
+					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				}
-				if saveChannels {
-					print("User wants to open Channel Settings URL: \(String(describing: incomingUrl!.relativeString))")
+				if self.saveChannels {
+					print("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
 				}
 			}
-
 			.onOpenURL(perform: { (url) in
 				
 				print("Some sort of URL was received \(url)")
-				incomingUrl = url
+				self.incomingUrl = url
 				
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
-					if let components = incomingUrl?.absoluteString.components(separatedBy: "#") {
-					   channelSettings = components.last!
+					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
+						self.channelSettings = components.last!
 					}
-					saveChannels = true
-					print("User wants to open a Channel Settings URL: \(incomingUrl?.absoluteString ?? "No QR Code Link")")
+					self.saveChannels = true
+					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
 				} else {
 					saveChannels = false
-					print("User wants to import a MBTILES offline map file: \(incomingUrl?.absoluteString ?? "No Tiles link")")
+					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
 
 				//we are expecting a .mbtiles map file that contains raster data
@@ -66,7 +65,7 @@ struct MeshtasticAppleApp: App {
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
 				
-				if !saveChannels {
+				if !self.saveChannels {
 					//do we need to delete an old one?
 					if (fileManager.fileExists(atPath: destination.path)) {
 						print("ℹ️ Found an old map file.  Deleting it")
@@ -91,7 +90,6 @@ struct MeshtasticAppleApp: App {
 				}
 			})
 		}
-
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
 			case .background:

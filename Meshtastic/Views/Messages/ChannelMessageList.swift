@@ -41,7 +41,7 @@ struct ChannelMessageList: View {
 							if message.replyID > 0 {
 								let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 								HStack {
-									Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+									Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 										.padding(10)
 										.overlay(
 											RoundedRectangle(cornerRadius: 18)
@@ -49,14 +49,14 @@ struct ChannelMessageList: View {
 										)
 									Image(systemName: "arrowshape.turn.up.left.fill")
 										.symbolRenderingMode(.hierarchical)
-										.imageScale(.large).foregroundColor(.blue)
+										.imageScale(.large).foregroundColor(.accentColor)
 										.padding(.trailing)
 								}
 							}
 							HStack (alignment: .top) {
 								if currentUser { Spacer(minLength:50) }
 								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
+									CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
 										.padding(.all, 5)
 										.offset(y: -5)
 								}
@@ -64,7 +64,7 @@ struct ChannelMessageList: View {
 									Text(message.messagePayload ?? "EMPTY MESSAGE")
 										.padding(10)
 										.foregroundColor(.white)
-										.background(currentUser ? Color.blue : Color(.darkGray))
+										.background(currentUser ? .accentColor : Color(.gray))
 										.cornerRadius(15)
 										.contextMenu {
 											VStack{
@@ -332,7 +332,7 @@ struct ChannelMessageList: View {
 						}
 					}
 				}) {
-					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
+					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.accentColor)
 				}
 			}
 			.padding(.all, 15)
@@ -342,7 +342,7 @@ struct ChannelMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: String(channel.index), color: .blue, circleSize: 44, fontSize: 30).fixedSize()
+					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44, fontSize: 30).fixedSize()
 					Text(String(channel.name ?? "Unknown").camelCaseToWords()).font(.headline)
 				}
 			}

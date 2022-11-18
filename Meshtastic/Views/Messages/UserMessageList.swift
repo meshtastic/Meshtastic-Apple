@@ -42,7 +42,7 @@ struct UserMessageList: View {
 								if message.replyID > 0 {
 									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
 									HStack {
-										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
+										Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.accentColor).font(.caption2)
 											.padding(10)
 											.overlay(
 												RoundedRectangle(cornerRadius: 18)
@@ -50,14 +50,14 @@ struct UserMessageList: View {
 											)
 										Image(systemName: "arrowshape.turn.up.left.fill")
 											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.blue)
+											.imageScale(.large).foregroundColor(.accentColor)
 											.padding(.trailing)
 									}
 								}
 								HStack (alignment: .top) {
 									if currentUser { Spacer(minLength:50) }
 									if !currentUser {
-										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.darkGray), circleSize: 44, fontSize: 14)
+										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
 											.padding(.all, 5)
 											.offset(y: -5)
 									}
@@ -65,7 +65,7 @@ struct UserMessageList: View {
 										Text(message.messagePayload ?? "EMPTY MESSAGE")
 											.padding(10)
 											.foregroundColor(.white)
-											.background(currentUser ? Color.blue : Color(.darkGray))
+											.background(currentUser ? .accentColor : Color(.gray))
 											.cornerRadius(15)
 											.contextMenu {
 												VStack{
@@ -327,7 +327,7 @@ struct UserMessageList: View {
 						}
 					}
 				}) {
-					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.blue)
+					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.accentColor)
 				}
 			}
 			.padding(.all, 15)
@@ -337,7 +337,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: .blue, circleSize: 44, fontSize: 14).fixedSize()
+					CircleText(text: user.shortName ?? "???", color: .accentColor, circleSize: 44, fontSize: 14).fixedSize()
 					Text(user.longName ?? "Unknown").font(.headline)
 				}
 			}

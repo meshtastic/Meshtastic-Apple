@@ -143,6 +143,14 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case m5Stack // = 42
 
   ///
+  /// New Heltec LoRA32 with ESP32-S3 CPU
+  case heltecV3 // = 43
+
+  ///
+  /// New Heltec Wireless Stick Lite with ESP32-S3 CPU
+  case heltecWslV3 // = 44
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -181,6 +189,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 40: self = .nrf52840Pca10059
     case 41: self = .drDev
     case 42: self = .m5Stack
+    case 43: self = .heltecV3
+    case 44: self = .heltecWslV3
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -216,6 +226,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nrf52840Pca10059: return 40
     case .drDev: return 41
     case .m5Stack: return 42
+    case .heltecV3: return 43
+    case .heltecWslV3: return 44
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -256,6 +268,8 @@ extension HardwareModel: CaseIterable {
     .nrf52840Pca10059,
     .drDev,
     .m5Stack,
+    .heltecV3,
+    .heltecWslV3,
     .privateHw,
   ]
 }
@@ -2144,6 +2158,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     40: .same(proto: "NRF52840_PCA10059"),
     41: .same(proto: "DR_DEV"),
     42: .same(proto: "M5STACK"),
+    43: .same(proto: "HELTEC_V3"),
+    44: .same(proto: "HELTEC_WSL_V3"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
