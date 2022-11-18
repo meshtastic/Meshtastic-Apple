@@ -45,40 +45,45 @@ struct Contacts: View {
 													CircleText(text: String(channel.index), color: .gray, circleSize: 52, fontSize: 40)
 														.padding(.trailing, 5)
 													VStack {
-														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-													}
-													.frame(maxWidth: .infinity, alignment: .leading)
-													
-													if channel.allPrivateMessages.count > 0 {
-														VStack (alignment: .trailing) {
-															if lastMessageDay == currentDay {
-																Text(lastMessageTime, style: .time )
-																	.font(.callout)
-															} else if  lastMessageDay == (currentDay - 1) {
-																Text("Yesterday")
-																	.font(.callout)
-															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																	.font(.callout)
-															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																	.font(.callout)
+														HStack {
+															Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+															Spacer()
+															if channel.allPrivateMessages.count > 0 {
+																VStack (alignment: .trailing) {
+																	if lastMessageDay == currentDay {
+																		Text(lastMessageTime, style: .time )
+																			.font(.subheadline)
+																	} else if  lastMessageDay == (currentDay - 1) {
+																		Text("Yesterday")
+																			.font(.subheadline)
+																	} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+																		Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																			.font(.subheadline)
+																	} else if lastMessageDay < (currentDay - 1800) {
+																		Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																			.font(.subheadline)
+																	}
+																}
+																.brightness(-0.20)
+															}
+														}
+														if channel.allPrivateMessages.count > 0 {
+															HStack(alignment: .top) {
+																Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+																	.truncationMode(.tail)
+																	.frame(maxWidth: .infinity, alignment: .leading)
+																	.brightness(-0.20)
+																	.font(.body)
 															}
 														}
 													}
-												}
-												if channel.allPrivateMessages.count > 0 {
-													HStack(alignment: .top) {
-														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-															.truncationMode(.tail)
-															.frame(maxWidth: .infinity, alignment: .leading)
-													}
+													.frame(maxWidth: .infinity, alignment: .leading)
 												}
 											}
 										}
 									}
 								}
-								.frame(maxWidth: .infinity, alignment: .leading)
+								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 							}
 						}
 						.padding(.top, 10)
@@ -94,39 +99,44 @@ struct Contacts: View {
 								let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 								let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 								HStack {
-									VStack(alignment: .leading) {
+									VStack {
 										HStack {
 											CircleText(text: user.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16)
 												.padding(.trailing, 5)
 											VStack {
-												Text(user.longName ?? "Unknown").font(.headline)
-											}
-											.frame(maxWidth: .infinity, alignment: .leading)
-											
-											if user.messageList.count > 0 {
-												VStack (alignment: .trailing) {
-													if lastMessageDay == currentDay {
-														Text(lastMessageTime, style: .time )
-															.font(.callout)
-													} else if  lastMessageDay == (currentDay - 1) {
-														Text("Yesterday")
-															.font(.callout)
-													} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-															.font(.callout)
-													} else if lastMessageDay < (currentDay - 1800) {
-														Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-															.font(.callout)
+												HStack {
+													Text(user.longName ?? "Unknown").font(.headline)
+													Spacer()
+													if user.messageList.count > 0 {
+														VStack (alignment: .trailing) {
+															if lastMessageDay == currentDay {
+																Text(lastMessageTime, style: .time )
+																	.font(.subheadline)
+															} else if  lastMessageDay == (currentDay - 1) {
+																Text("Yesterday")
+																	.font(.subheadline)
+															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.subheadline)
+															} else if lastMessageDay < (currentDay - 1800) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.subheadline)
+															}
+														}
+														.brightness(-0.2)
+													}
+												}
+												if user.messageList.count > 0 {
+													HStack(alignment: .top) {
+														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+															.truncationMode(.tail)
+															.font(.body)
+															.frame(maxWidth: .infinity, alignment: .leading)
+															.brightness(-0.2)
 													}
 												}
 											}
-										}
-										if user.messageList.count > 0 {
-											HStack(alignment: .top) {
-												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-													.truncationMode(.tail)
-													.frame(maxWidth: .infinity, alignment: .leading)
-											}
+											.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 										}
 									}
 								}
