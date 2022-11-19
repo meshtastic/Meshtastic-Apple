@@ -1,15 +1,13 @@
 # Meshtastic Apple Clients
 
-[![CLA assistant](https://cla-assistant.io/readme/badge/meshtastic/Meshtastic-Apple)](https://cla-assistant.io/meshtastic/Meshtastic-Apple)
-[![Fiscal Contributors](https://opencollective.com/meshtastic/tiers/badge.svg?label=Fiscal%20Contributors&color=deeppink)](https://opencollective.com/meshtastic/)
+<a href="https://apple.co/3Auysep">
+    <img alt="Meshtastic App Store Launch Image" src="meshtastic-1080x1080.png" />
+</a>
+
 
 ## Overview
 
 SwiftUI client applicaitons for iOS, iPadOS and macOS.
-
-## Stats
-
-<!--Repobeats image here (avaliable when public)-->
 
 ## OS Requirements
 
