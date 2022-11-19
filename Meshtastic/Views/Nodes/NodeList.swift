@@ -42,46 +42,47 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16).offset(y: 1).padding(.trailing, 5)
-									.offset(x: -15)
-								
-								Text(node.user?.longName ?? "Unknown").font(.headline).offset(x: -15)
-							}
-							.padding(.bottom, 5)
-							if connected {
-								HStack(alignment: .bottom) {
-									Image(systemName: "repeat.circle.fill")
-										.font(.title2)
-										.symbolRenderingMode(.hierarchical)
-									Text("Currently Connected").font(.callout)
-								}
-								.padding(.bottom, 2)
-							}
-							if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
-								HStack(alignment: .bottom) {
-									let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-									let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-									if lastPostion.coordinate != nil {
-										let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
-										let metersAway = nodeCoord.distance(from: myCoord)
-										Image(systemName: "lines.measurement.horizontal")
-											.font(.title3)
+								CircleText(text: node.user?.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16)
+									.padding(.trailing, 5)
+								VStack(alignment: .leading) {
+									Text(node.user?.longName ?? "Unknown").font(.headline)
+										.padding(.bottom, 2)
+									if connected {
+										HStack(alignment: .bottom) {
+											Image(systemName: "repeat.circle.fill")
+												.font(.title2)
+												.symbolRenderingMode(.hierarchical)
+											Text("Currently Connected").font(.callout)
+										}
+										.padding(.bottom, 2)
+									}
+									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
+										HStack(alignment: .bottom) {
+											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
+											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+											if lastPostion.coordinate != nil {
+												let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
+												let metersAway = nodeCoord.distance(from: myCoord)
+												Image(systemName: "lines.measurement.horizontal")
+													.font(.title3)
+													.symbolRenderingMode(.hierarchical)
+												
+												DistanceText(meters: metersAway).font(.subheadline)
+											}
+										}
+										.padding(.bottom, 2)
+									}
+									HStack(alignment: .bottom) {
+										Image(systemName: "clock.badge.checkmark.fill")
+											.font(.headline)
 											.symbolRenderingMode(.hierarchical)
-
-										DistanceText(meters: metersAway).font(.subheadline)
+										LastHeardText(lastHeard: node.lastHeard)
+											.font(.subheadline)
 									}
 								}
-								.padding(.bottom, 2)
-							}
-							HStack(alignment: .bottom) {
-								Image(systemName: "clock.badge.checkmark.fill")
-									.font(.headline)
-									.symbolRenderingMode(.hierarchical)
-								LastHeardText(lastHeard: node.lastHeard)
-									.font(.subheadline)
+								.frame(maxWidth: .infinity, alignment: .leading)
 							}
 						}
-						.padding([.leading, .top, .bottom])
 					}
 				}
 			 }

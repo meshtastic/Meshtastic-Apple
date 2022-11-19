@@ -45,7 +45,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	let broadcastNodeNum: UInt32 = 4294967295
+	let emptyNodeNum: UInt32 = 4294967295
 
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -606,7 +606,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			
 			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
 			let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
-			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(broadcastNodeNum))
+			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(emptyNodeNum))
 
 			do {
 				let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
@@ -724,7 +724,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
 					} else {
-						meshPacket.to = 4294967295
+						meshPacket.to = emptyNodeNum
 					}
 					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
@@ -830,7 +830,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
-		if destNum != broadcastNodeNum {
+		if destNum != emptyNodeNum {
 			dataMessage.wantResponse = true
 		}
 		meshPacket.decoded = dataMessage
