@@ -487,10 +487,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				
 				// MyInfo
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+					
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
-					let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
-					nowKnown = true
-					connectedVersion = String(version)
+					
+					if lastDotIndex == nil {
+						invalidVersion = true
+						connectedVersion = "0.0.0"
+					} else {
+						let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
+						nowKnown = true
+						connectedVersion = String(version)
+					}
+
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
 						invalidVersion = true
