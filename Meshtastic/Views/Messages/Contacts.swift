@@ -35,11 +35,11 @@ struct Contacts: View {
 								VStack {
 									NavigationLink(destination: ChannelMessageList(channel: channel)) {
 							
-										let mostRecent = channel.allPrivateMessages.last
+										let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 										let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 										let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 										let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-										HStack {
+										//HStack {
 											VStack(alignment: .leading) {
 												HStack {
 													CircleText(text: String(channel.index), color: .gray, circleSize: 52, fontSize: 40)
@@ -80,7 +80,7 @@ struct Contacts: View {
 													.frame(maxWidth: .infinity, alignment: .leading)
 												}
 											}
-										}
+									//	}
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
@@ -94,7 +94,7 @@ struct Contacts: View {
 					ForEach(users) { (user: UserEntity) in
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
 							NavigationLink(destination: UserMessageList(user: user)) {
-								let mostRecent = user.num == bleManager.broadcastNodeNum ? user.messageList.last : user.messageList.last(where: { $0.toUser?.num ?? 0 !=  bleManager.broadcastNodeNum })
+								let mostRecent = user.messageList.last
 								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 								let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 								let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0

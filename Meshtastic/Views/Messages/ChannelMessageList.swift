@@ -35,7 +35,7 @@ struct ChannelMessageList: View {
 		NavigationStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
-				LazyVStack {
+					LazyVStack {
 						ForEach( channel.allPrivateMessages ) { (message: MessageEntity) in
 							let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
 							if message.replyID > 0 {
