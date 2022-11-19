@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21512" systemVersion="22A380" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21512" systemVersion="22A400" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
@@ -29,7 +29,7 @@
         <attribute name="uplinkEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="myInfoChannel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="channels" inverseEntity="MyInfoEntity"/>
         <fetchedProperty name="allPrivateMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="channel == $FETCH_SOURCE.index &amp;&amp;  toUser == nil"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="channel == $FETCH_SOURCE.index &amp;&amp;  toUser == nil AND isEmoji == false"/>
         </fetchedProperty>
         <uniquenessConstraints>
             <uniquenessConstraint>
