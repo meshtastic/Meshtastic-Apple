@@ -1056,12 +1056,9 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	do {
 		
 		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
-			
 			// Don't save empty position packets
 			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 {
-				
 				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
-
 				if fetchedNode.count == 1 {
 			
 					let position = PositionEntity(context: context)
@@ -1103,13 +1100,10 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			} else {
 				print("💥 Empty POSITION_APP Packet")
 				print(try! packet.jsonString())
-				if let dataMessage = try? DataMessage(serializedData: packet.decoded.payload) {
-					//print(dataMessage)
-				}
 			}
 		}
 	} catch {
-		print("💥 Error Fetching NodeInfoEntity for POSITION_APP")
+		print("💥 Error Deserializing POSITION_APP packet.")
 	}
 }
 
