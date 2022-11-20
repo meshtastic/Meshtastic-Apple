@@ -46,7 +46,6 @@ struct NodeList: View {
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? "Unknown").font(.headline)
-										.padding(.bottom, 2)
 									if connected {
 										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")
@@ -54,7 +53,6 @@ struct NodeList: View {
 												.symbolRenderingMode(.hierarchical)
 											Text("Currently Connected").font(.callout)
 										}
-										.padding(.bottom, 2)
 									}
 									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
 										HStack(alignment: .bottom) {
@@ -70,7 +68,6 @@ struct NodeList: View {
 												DistanceText(meters: metersAway).font(.subheadline)
 											}
 										}
-										.padding(.bottom, 2)
 									}
 									HStack(alignment: .bottom) {
 										Image(systemName: "clock.badge.checkmark.fill")
@@ -84,6 +81,7 @@ struct NodeList: View {
 							}
 						}
 					}
+					.padding([.top, .bottom])
 				}
 			 }
 			.navigationTitle("All Nodes")

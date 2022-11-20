@@ -39,55 +39,52 @@ struct Contacts: View {
 										let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 										let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 										let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-										//HStack {
-											VStack(alignment: .leading) {
-												HStack {
-													CircleText(text: String(channel.index), color: .gray, circleSize: 52, fontSize: 40)
-														.padding(.trailing, 5)
-													VStack {
-														HStack {
-															Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-															Spacer()
-															if channel.allPrivateMessages.count > 0 {
-																VStack (alignment: .trailing) {
-																	if lastMessageDay == currentDay {
-																		Text(lastMessageTime, style: .time )
-																			.font(.subheadline)
-																	} else if  lastMessageDay == (currentDay - 1) {
-																		Text("Yesterday")
-																			.font(.subheadline)
-																	} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																		Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																			.font(.subheadline)
-																	} else if lastMessageDay < (currentDay - 1800) {
-																		Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																			.font(.subheadline)
-																	}
-																}
-																.brightness(-0.20)
-															}
-														}
+										VStack(alignment: .leading) {
+											HStack {
+												CircleText(text: String(channel.index), color: .gray, circleSize: 52, fontSize: 40)
+													.padding(.trailing, 5)
+												VStack {
+													HStack {
+														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+														Spacer()
 														if channel.allPrivateMessages.count > 0 {
-															HStack(alignment: .top) {
-																Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-																	.truncationMode(.tail)
-																	.frame(maxWidth: .infinity, alignment: .leading)
-																	.brightness(-0.20)
-																	.font(.body)
+															VStack (alignment: .trailing) {
+																if lastMessageDay == currentDay {
+																	Text(lastMessageTime, style: .time )
+																		.font(.subheadline)
+																} else if  lastMessageDay == (currentDay - 1) {
+																	Text("Yesterday")
+																		.font(.subheadline)
+																} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+																	Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																		.font(.subheadline)
+																} else if lastMessageDay < (currentDay - 1800) {
+																	Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																		.font(.subheadline)
+																}
 															}
+															.brightness(-0.20)
 														}
 													}
-													.frame(maxWidth: .infinity, alignment: .leading)
+													if channel.allPrivateMessages.count > 0 {
+														HStack(alignment: .top) {
+															Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+																.truncationMode(.tail)
+																.frame(maxWidth: .infinity, alignment: .leading)
+																.brightness(-0.20)
+																.font(.body)
+														}
+													}
 												}
+												.frame(maxWidth: .infinity, alignment: .leading)
 											}
-									//	}
+										}
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 							}
 						}
-						.padding(.top, 10)
-						.padding(.bottom, 10)
+						.padding([.top, .bottom])
 					}
 				}
 				Section(header: Text("Direct Messages")) {
