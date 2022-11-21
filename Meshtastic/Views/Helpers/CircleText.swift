@@ -10,6 +10,7 @@ struct CircleText: View {
     var color: Color
 	var circleSize: CGFloat? = 60
 	var fontSize: CGFloat? = 20
+	var brightness: Double? = 0
 
     var body: some View {
 		
@@ -18,6 +19,7 @@ struct CircleText: View {
         ZStack {
             Circle()
                 .fill(color)
+				.brightness(brightness ?? 0)
                 .frame(width: circleSize, height: circleSize)
 			Text(text).textCase(.uppercase).font(font).foregroundColor(.white).fixedSize()
                 .frame(width: circleSize, height: circleSize, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
