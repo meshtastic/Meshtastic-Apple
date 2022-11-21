@@ -42,16 +42,17 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: .gray, circleSize: 52, fontSize: 16)
+								CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? "Unknown").font(.headline)
 									if connected {
 										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")
-												.font(.title2)
+												.font(.title3)
 												.symbolRenderingMode(.hierarchical)
-											Text("Currently Connected").font(.callout)
+											Text("Currently Connected").font(.subheadline)
+												.foregroundColor(.green)
 										}
 									}
 									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
@@ -71,7 +72,7 @@ struct NodeList: View {
 									}
 									HStack(alignment: .bottom) {
 										Image(systemName: "clock.badge.checkmark.fill")
-											.font(.headline)
+											.font(.title3)
 											.symbolRenderingMode(.hierarchical)
 										LastHeardText(lastHeard: node.lastHeard)
 											.font(.subheadline)
