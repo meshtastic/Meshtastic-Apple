@@ -209,23 +209,24 @@ struct AdminMessage {
   }
 
   ///
-  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-  var confirmSetConfig: Bool {
+  /// Begins an edit transaction for config, module config, owner, and channel settings changes
+  /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
+  var beginEditSettings: Bool {
     get {
-      if case .confirmSetConfig(let v)? = payloadVariant {return v}
+      if case .beginEditSettings(let v)? = payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .confirmSetConfig(newValue)}
+    set {payloadVariant = .beginEditSettings(newValue)}
   }
 
   ///
-  /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-  var confirmSetModuleConfig: Bool {
+  /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
+  var commitEditSettings: Bool {
     get {
-      if case .confirmSetModuleConfig(let v)? = payloadVariant {return v}
+      if case .commitEditSettings(let v)? = payloadVariant {return v}
       return false
     }
-    set {payloadVariant = .confirmSetModuleConfig(newValue)}
+    set {payloadVariant = .commitEditSettings(newValue)}
   }
 
   ///
@@ -375,11 +376,12 @@ struct AdminMessage {
     /// Set the Canned Message Module messages text.
     case setCannedMessageModuleMessages(String)
     ///
-    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-    case confirmSetConfig(Bool)
+    /// Begins an edit transaction for config, module config, owner, and channel settings changes
+    /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
+    case beginEditSettings(Bool)
     ///
-    /// Sent immediatly after a config change has been sent to ensure comms, if this is not recieved, the config will be reverted after 10 mins
-    case confirmSetModuleConfig(Bool)
+    /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
+    case commitEditSettings(Bool)
     ///
     /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
     /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
@@ -484,12 +486,12 @@ struct AdminMessage {
         guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.confirmSetConfig, .confirmSetConfig): return {
-        guard case .confirmSetConfig(let l) = lhs, case .confirmSetConfig(let r) = rhs else { preconditionFailure() }
+      case (.beginEditSettings, .beginEditSettings): return {
+        guard case .beginEditSettings(let l) = lhs, case .beginEditSettings(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.confirmSetModuleConfig, .confirmSetModuleConfig): return {
-        guard case .confirmSetModuleConfig(let l) = lhs, case .confirmSetModuleConfig(let r) = rhs else { preconditionFailure() }
+      case (.commitEditSettings, .commitEditSettings): return {
+        guard case .commitEditSettings(let l) = lhs, case .commitEditSettings(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.confirmSetChannel, .confirmSetChannel): return {
@@ -731,8 +733,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     34: .standard(proto: "set_config"),
     35: .standard(proto: "set_module_config"),
     36: .standard(proto: "set_canned_message_module_messages"),
-    64: .standard(proto: "confirm_set_config"),
-    65: .standard(proto: "confirm_set_module_config"),
+    64: .standard(proto: "begin_edit_settings"),
+    65: .standard(proto: "commit_edit_settings"),
     66: .standard(proto: "confirm_set_channel"),
     67: .standard(proto: "confirm_set_radio"),
     95: .standard(proto: "reboot_ota_seconds"),
@@ -935,7 +937,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .confirmSetConfig(v)
+          self.payloadVariant = .beginEditSettings(v)
         }
       }()
       case 65: try {
@@ -943,7 +945,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         try decoder.decodeSingularBoolField(value: &v)
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .confirmSetModuleConfig(v)
+          self.payloadVariant = .commitEditSettings(v)
         }
       }()
       case 66: try {
@@ -1089,12 +1091,12 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .setCannedMessageModuleMessages(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 36)
     }()
-    case .confirmSetConfig?: try {
-      guard case .confirmSetConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .beginEditSettings?: try {
+      guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 64)
     }()
-    case .confirmSetModuleConfig?: try {
-      guard case .confirmSetModuleConfig(let v)? = self.payloadVariant else { preconditionFailure() }
+    case .commitEditSettings?: try {
+      guard case .commitEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
     }()
     case .confirmSetChannel?: try {

@@ -158,6 +158,16 @@ struct Config {
     /// Set this to true to leave the debug log outputting even when API is active.
     var debugLogEnabled: Bool = false
 
+    ///
+    /// For boards without a hard wired button, this is the pin number that will be used
+    /// Boards that have more than one button can swap the function with this one. defaults to BUTTON_PIN if defined.
+    var buttonGpio: UInt32 = 0
+
+    ///
+    /// For boards without a PWM buzzer, this is the pin number that will be used
+    /// Defaults to PIN_BUZZER if defined.
+    var buzzerGpio: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -258,6 +268,14 @@ struct Config {
     /// Bit field of boolean configuration options for POSITION messages
     /// (bitwise OR of PositionFlags)
     var positionFlags: UInt32 = 0
+
+    ///
+    /// (Re)define GPS_RX_PIN for your board.
+    var rxGpio: UInt32 = 0
+
+    ///
+    /// (Re)define GPS_TX_PIN for your board.
+    var txGpio: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1346,6 +1364,8 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     1: .same(proto: "role"),
     2: .standard(proto: "serial_enabled"),
     3: .standard(proto: "debug_log_enabled"),
+    4: .standard(proto: "button_gpio"),
+    5: .standard(proto: "buzzer_gpio"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1357,6 +1377,8 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 1: try { try decoder.decodeSingularEnumField(value: &self.role) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.serialEnabled) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.buttonGpio) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.buzzerGpio) }()
       default: break
       }
     }
@@ -1372,6 +1394,12 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.debugLogEnabled != false {
       try visitor.visitSingularBoolField(value: self.debugLogEnabled, fieldNumber: 3)
     }
+    if self.buttonGpio != 0 {
+      try visitor.visitSingularUInt32Field(value: self.buttonGpio, fieldNumber: 4)
+    }
+    if self.buzzerGpio != 0 {
+      try visitor.visitSingularUInt32Field(value: self.buzzerGpio, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1379,6 +1407,8 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.role != rhs.role {return false}
     if lhs.serialEnabled != rhs.serialEnabled {return false}
     if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
+    if lhs.buttonGpio != rhs.buttonGpio {return false}
+    if lhs.buzzerGpio != rhs.buzzerGpio {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1403,6 +1433,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     5: .standard(proto: "gps_update_interval"),
     6: .standard(proto: "gps_attempt_time"),
     7: .standard(proto: "position_flags"),
+    8: .standard(proto: "rx_gpio"),
+    9: .standard(proto: "tx_gpio"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1418,6 +1450,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.gpsUpdateInterval) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.gpsAttemptTime) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rxGpio) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.txGpio) }()
       default: break
       }
     }
@@ -1445,6 +1479,12 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.positionFlags != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionFlags, fieldNumber: 7)
     }
+    if self.rxGpio != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rxGpio, fieldNumber: 8)
+    }
+    if self.txGpio != 0 {
+      try visitor.visitSingularUInt32Field(value: self.txGpio, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1456,6 +1496,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.gpsUpdateInterval != rhs.gpsUpdateInterval {return false}
     if lhs.gpsAttemptTime != rhs.gpsAttemptTime {return false}
     if lhs.positionFlags != rhs.positionFlags {return false}
+    if lhs.rxGpio != rhs.rxGpio {return false}
+    if lhs.txGpio != rhs.txGpio {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

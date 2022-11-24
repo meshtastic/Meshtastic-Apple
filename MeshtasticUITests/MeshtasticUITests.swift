@@ -2,7 +2,7 @@
 //  MeshtasticUITests.swift
 //  MeshtasticUITests
 //
-//  Created by Garth Vander Houwen on 8/18/21.
+//  Copyright(c) Garth Vander Houwen 8/18/21.
 //
 
 import XCTest
@@ -32,7 +32,7 @@ class MeshtasticUITests: XCTestCase {
     }
 
     func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
+        if #available(macOS 13, iOS 16.0, watchOS 8.0, *) {
             // This measures how long it takes to launch your application.
             measure(metrics: [XCTApplicationLaunchMetric()]) {
                 XCUIApplication().launch()

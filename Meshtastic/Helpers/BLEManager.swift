@@ -212,14 +212,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 		} else {
 			
 			if newPeripheral.peripheral.state != CBPeripheralState.connected {
-
 				peripherals.append(newPeripheral)
-				print("ℹ️ Adding peripheral: \(peripheralName)")
 			}
 		}
 		
 		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -3, to: today)!
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 		peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 

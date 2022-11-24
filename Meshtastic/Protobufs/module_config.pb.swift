@@ -474,7 +474,6 @@ struct ModuleConfig {
 
     ///
     /// Preferences for the ExternalNotificationModule
-    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
     var enabled: Bool = false
 
     ///
@@ -496,6 +495,10 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     var alertBell: Bool = false
+
+    ///
+    /// TODO: REPLACE
+    var usePwm: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1228,6 +1231,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     4: .same(proto: "active"),
     5: .standard(proto: "alert_message"),
     6: .standard(proto: "alert_bell"),
+    7: .standard(proto: "use_pwm"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1242,6 +1246,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
       case 4: try { try decoder.decodeSingularBoolField(value: &self.active) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.alertMessage) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.alertBell) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.usePwm) }()
       default: break
       }
     }
@@ -1266,6 +1271,9 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if self.alertBell != false {
       try visitor.visitSingularBoolField(value: self.alertBell, fieldNumber: 6)
     }
+    if self.usePwm != false {
+      try visitor.visitSingularBoolField(value: self.usePwm, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1276,6 +1284,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if lhs.active != rhs.active {return false}
     if lhs.alertMessage != rhs.alertMessage {return false}
     if lhs.alertBell != rhs.alertBell {return false}
+    if lhs.usePwm != rhs.usePwm {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
