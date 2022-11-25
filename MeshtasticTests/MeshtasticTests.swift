@@ -7,9 +7,9 @@
 
 import XCTest
 
-@testable import MeshtasticApple
+@testable import Meshtastic
 
-class MeshtasticAppleTests: XCTestCase {
+class MeshtasticTests: XCTestCase {
 
     override func setUpWithError() throws {
 		super.setUp()

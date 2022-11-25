@@ -20,8 +20,9 @@ struct Contacts: View {
 	
 	private var users: FetchedResults<UserEntity>
 	@State var node: NodeInfoEntity? = nil
-	
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
+	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
+	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 
     var body: some View {
 
@@ -82,9 +83,31 @@ struct Contacts: View {
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
+								.contextMenu {
+									if channel.allPrivateMessages.count > 0 {
+										Button(role: .destructive) {
+											isPresentingDeleteChannelMessagesConfirm = true
+										} label: {
+											Label("Delete Messages", systemImage: "trash")
+										}
+									}
+								}
+								.confirmationDialog(
+									"This conversation will be deleted.",
+									isPresented: $isPresentingDeleteChannelMessagesConfirm,
+									titleVisibility: .visible
+								) {
+									
+									Button(role: .destructive) {
+										deleteChannelMessages(channelIndex: channel.index, context: context)
+									} label: {
+										Text("Delete")
+									}
+								}
 							}
 						}
 						.padding([.top, .bottom])
+						
 					}
 				}
 				Section(header: Text("Direct Messages")) {
@@ -134,6 +157,28 @@ struct Contacts: View {
 												}
 											}
 											.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
+											.contextMenu {
+												if user.messageList.count  > 0 {
+													Button(role: .destructive) {
+														print("I want to delete all the messages for \(user.longName)")
+														isPresentingDeleteUserMessagesConfirm = true
+													} label: {
+														Label("Delete Messages", systemImage: "trash")
+													}
+												}
+											}
+											.confirmationDialog(
+												"This conversation will be deleted.",
+												isPresented: $isPresentingDeleteUserMessagesConfirm,
+												titleVisibility: .visible
+											) {
+												
+												Button(role: .destructive) {
+													deleteUserMessages(user: user, context: context)
+												} label: {
+													Text("Delete")
+												}
+											}
 										}
 									}
 								}
