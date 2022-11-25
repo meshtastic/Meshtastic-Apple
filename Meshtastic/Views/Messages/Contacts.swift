@@ -82,9 +82,18 @@ struct Contacts: View {
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
+								.contextMenu {
+									Button(role: .destructive) {
+										print("I want to delete all the messages for \(channel.name ?? String(channel.index))")
+										deleteChannelMessages(channelIndex: channel.index, context: context)
+									} label: {
+										Label("Delete Messages", systemImage: "trash")
+									}
+								}
 							}
 						}
 						.padding([.top, .bottom])
+						
 					}
 				}
 				Section(header: Text("Direct Messages")) {

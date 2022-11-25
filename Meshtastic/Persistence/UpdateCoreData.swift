@@ -60,28 +60,33 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 	}
 }
 
+public func deleteChannelMessages(channelIndex: Int32, context: NSManagedObjectContext) {
+
+	let fetchChannelMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %lld", Int32(channelIndex))
+	do {
+		let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchChannelMessagesRequest)
+		try context.executeAndMergeChanges(using: deleteRequest)
+		try context.save()
+		
+	} catch let error as NSError {
+		print("Error: \(error.localizedDescription)")
+		abort()
+	}
+}
+
 public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 	
 	let persistenceController = PersistenceController.shared.container
-
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
 		let entity = persistenceController.managedObjectModel.entities[i]
-
-		//do {
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
 		let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			//try context.execute(deleterequest)
-			//try context.save()
 			
-			do {
-				try context.executeAndMergeChanges(using: deleteRequest)
-			 } catch let error as NSError {
-				 print(error)
-			 }
-
-		//} catch let error as NSError {
-		//	print("Error: \(error.localizedDescription)")
-		//	abort()
-		//}
+		do {
+			try context.executeAndMergeChanges(using: deleteRequest)
+		 } catch let error as NSError {
+			 print(error)
+		 }
 	}
 }

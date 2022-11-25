@@ -526,7 +526,6 @@
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
-				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -538,6 +537,7 @@
 				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
 				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
