@@ -100,8 +100,8 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 			
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
-		 } catch let error as NSError {
+		} catch let error as NSError {
 			 print(error)
-		 }
+		}
 	}
 }
