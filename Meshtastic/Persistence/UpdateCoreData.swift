@@ -75,6 +75,21 @@ public func deleteChannelMessages(channelIndex: Int32, context: NSManagedObjectC
 	}
 }
 
+public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
+
+	let fetchUserMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	fetchUserMessagesRequest.predicate = NSPredicate(format: "((toUser.num == %lld) OR (fromUser.num == %lld)) AND toUser != nil AND fromUser != nil AND admin == false", Int64(user.num), Int64(user.num))
+	do {
+		let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchUserMessagesRequest)
+		try context.executeAndMergeChanges(using: deleteRequest)
+		try context.save()
+		
+	} catch let error as NSError {
+		print("Error: \(error.localizedDescription)")
+		abort()
+	}
+}
+
 public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 	
 	let persistenceController = PersistenceController.shared.container
