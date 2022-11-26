@@ -98,7 +98,7 @@ struct Connect: View {
 								
 								if node != nil {
 									
-									Text(LocalizedStringKey("Num: \(String(node!.num))"))
+									Text("Num: \(String(node!.num))")
 									Text("Short Name: \(node?.user?.shortName ?? "????")")
 									Text("Long Name: \(node?.user?.longName ?? "Unknown")")
 									Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
