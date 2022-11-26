@@ -161,12 +161,10 @@ struct Contacts: View {
 												Button {
 													setUserMute(num: user.num, mute: !user.mute, context: context)
 												} label: {
-													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: "bell")
+													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 												}
-												
 												if user.messageList.count  > 0 {
 													Button(role: .destructive) {
-														print("I want to delete all the messages for \(user.longName)")
 														isPresentingDeleteUserMessagesConfirm = true
 													} label: {
 														Label("Delete Messages", systemImage: "trash")
