@@ -21,14 +21,16 @@ struct NetworkConfig: View {
 	@State var wifiPsk = ""
 	@State var wifiMode = 0
 	@State var ntpServer = ""
+	@State var ethEnabled = false
+	@State var ethMode = 0
+	
 	
 	var body: some View {
 		
 		VStack {
 			Form {
-				Section(header: Text("WiFi Options")) {
-					Text("Enabling WiFi will disable the bluetooth connection to the app.")
-						.font(.title3)
+				Section(header: Text("WiFi Options (ESP32 Only)")) {
+					
 					Toggle(isOn: $wifiEnabled) {
 						Label("Enabled", systemImage: "wifi")
 					}
@@ -75,10 +77,21 @@ struct NetworkConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
+					Text("Enabling WiFi will disable the bluetooth connection to the app.")
+						.font(.callout)
+				}
+				.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
+				Section(header: Text("Ethernet Options")) {
+					Toggle(isOn: $ethEnabled) {
+						Label("Enabled", systemImage: "network")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+						.font(.callout)
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
+			.disabled(!(node != nil))
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -99,6 +112,9 @@ struct NetworkConfig: View {
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
 					network.wifiPsk = self.wifiPsk
+					network.ethEnabled = self.ethEnabled
+					network.ethMode = Config.NetworkConfig.EthMode.dhcp
+					
 					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -120,10 +136,11 @@ struct NetworkConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.wifiEnabled = (node?.networkConfig?.wifiEnabled ?? false)
+			self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
 			self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
 			self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
 			self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
+			self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
 			self.hasChanges = false
 		}
 		.onChange(of: wifiEnabled) { newEnabled in
@@ -144,6 +161,11 @@ struct NetworkConfig: View {
 		.onChange(of: wifiMode) { newMode in
 			if node != nil && node!.networkConfig != nil {
 				if newMode != node!.networkConfig!.wifiMode { hasChanges = true }
+			}
+		}
+		.onChange(of: ethEnabled) { newEthEnabled in
+			if node != nil && node!.networkConfig != nil {
+				if newEthEnabled != node!.networkConfig!.ethEnabled { hasChanges = true }
 			}
 		}
 		.navigationViewStyle(StackNavigationViewStyle())

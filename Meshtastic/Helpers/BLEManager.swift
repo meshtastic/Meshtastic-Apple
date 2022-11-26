@@ -551,7 +551,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
-						self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+						
+						if decodedInfo.moduleConfig.cannedMessage.enabled {
+							self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+						}
 					}
 				}
 				// Log any other unknownApp calls

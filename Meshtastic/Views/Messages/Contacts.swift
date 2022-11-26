@@ -158,6 +158,12 @@ struct Contacts: View {
 											}
 											.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 											.contextMenu {
+												Button {
+													setUserMute(num: user.num, mute: !user.mute, context: context)
+												} label: {
+													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: "bell")
+												}
+												
 												if user.messageList.count  > 0 {
 													Button(role: .destructive) {
 														print("I want to delete all the messages for \(user.longName)")

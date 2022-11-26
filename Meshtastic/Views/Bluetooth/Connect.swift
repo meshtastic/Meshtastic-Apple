@@ -98,7 +98,7 @@ struct Connect: View {
 								
 								if node != nil {
 									
-									Text("Num: \(String(node!.num))")
+									Text(LocalizedStringKey("Num: \(String(node!.num))"))
 									Text("Short Name: \(node?.user?.shortName ?? "????")")
 									Text("Long Name: \(node?.user?.longName ?? "Unknown")")
 									Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
@@ -198,19 +198,12 @@ struct Connect: View {
 				}
 
 				HStack(alignment: .center) {
-						
 					Spacer()
-						
 					if !bleManager.isScanning {
-						
 						Button(action: {
-							
 							self.bleManager.startScanning()
-							
 						}) {
-							
 							Label("Start Scanning", systemImage: "play.fill")
-
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)

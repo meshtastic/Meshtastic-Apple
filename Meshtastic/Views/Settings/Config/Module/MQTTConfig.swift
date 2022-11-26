@@ -25,10 +25,6 @@ struct MQTTConfig: View {
 		VStack {
 			
 			Form {
-				
-				Text("WiFi must also be enabled for MQTT to work. You can set uplink and downlink for each channel.")
-					.font(.title3)
-				
 				Section(header: Text("Options")) {
 						
 					Toggle(isOn: $enabled) {
@@ -137,9 +133,11 @@ struct MQTTConfig: View {
 					.keyboardType(.default)
 					.scrollDismissesKeyboard(.interactively)
 				}
+				Text("WiFi or Ethernet must also be enabled for MQTT to work. You can set uplink and downlink for each channel.")
+					.font(.callout)
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(!(node != nil && node?.myInfo?.hasWifi ?? false))
+			.disabled(!(node != nil))
 			
 			Button {
 							

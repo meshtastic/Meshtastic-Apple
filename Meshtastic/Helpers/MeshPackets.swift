@@ -1295,7 +1295,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 				messageSaved = true
 				
 				if messageSaved {
-					if newMessage.fromUser != nil {
+					
+					// Send a DM Notification
+					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Create an iOS Notification for the received message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [
