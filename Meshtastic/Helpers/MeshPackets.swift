@@ -1295,8 +1295,21 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 				messageSaved = true
 				
 				if messageSaved {
-					if newMessage.fromUser != nil {
-						// Create an iOS Notification for the received message and schedule it immediately
+					
+					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
+						// Create an iOS Notification for the received DM message and schedule it immediately
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: ("notification.id.\(newMessage.messageId)"),
+								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+								content: messageText)
+						]
+						manager.schedule()
+						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+					} else if newMessage.fromUser != nil && newMessage.toUser == nil  {
+						// Create an iOS Notification for the received private channel message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(

@@ -90,7 +90,7 @@ struct Settings: View {
 					
 						Image(systemName: "network")
 							.symbolRenderingMode(.hierarchical)
-						Text("Network (ESP32 Only)")
+						Text("Network")
 					}
 				
 					NavigationLink {
@@ -127,7 +127,7 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "dot.radiowaves.right")
 							.symbolRenderingMode(.hierarchical)
-						Text("MQTT (ESP32 Only)")
+						Text("MQTT")
 					}
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))

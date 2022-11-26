@@ -198,19 +198,12 @@ struct Connect: View {
 				}
 
 				HStack(alignment: .center) {
-						
 					Spacer()
-						
 					if !bleManager.isScanning {
-						
 						Button(action: {
-							
 							self.bleManager.startScanning()
-							
 						}) {
-							
 							Label("Start Scanning", systemImage: "play.fill")
-
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)

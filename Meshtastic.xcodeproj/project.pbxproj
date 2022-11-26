@@ -45,6 +45,7 @@
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
 		DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD539501276DAA6A00AD86B1 /* MapLocation.swift */; };
 		DD58C5F22919AD3C00D5BEFB /* ChannelEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */; };
+		DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */; };
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
@@ -158,6 +159,8 @@
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD539501276DAA6A00AD86B1 /* MapLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLocation.swift; sourceTree = "<group>"; };
 		DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntityExtension.swift; sourceTree = "<group>"; };
+		DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV2.xcdatamodel; sourceTree = "<group>"; };
+		DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthernetModes.swift; sourceTree = "<group>"; };
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
@@ -349,15 +352,16 @@
 			isa = PBXGroup;
 			children = (
 				DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */,
+				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
+				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
 				DDB6ABDF28B13AC700384BA1 /* DeviceRoles.swift */,
+				DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */,
+				DD5D0A9B2931B9F200F7EA61 /* EthernetModes.swift */,
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
+				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
 				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
-				DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */,
-				DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */,
 				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
-				DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */,
-				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -707,6 +711,7 @@
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
+				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
@@ -1175,9 +1180,10 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */;
+			currentVersion = DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

@@ -208,7 +208,6 @@ struct CannedMessagesConfig: View {
 			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
-							
 				isPresentingSaveConfirm = true
 				
 			} label: {
