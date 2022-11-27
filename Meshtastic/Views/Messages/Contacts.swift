@@ -84,6 +84,17 @@ struct Contacts: View {
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 								.contextMenu {
+									Button {
+										channel.mute = !channel.mute
+										do {
+											try context.save()
+										} catch {
+											context.rollback()
+											print("💥 Save Channel Mute Error")
+										}
+									} label: {
+										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+									}
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
 											isPresentingDeleteChannelMessagesConfirm = true
@@ -159,7 +170,13 @@ struct Contacts: View {
 											.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 											.contextMenu {
 												Button {
-													setUserMute(num: user.num, mute: !user.mute, context: context)
+													user.mute = !user.mute
+													do {
+														try context.save()
+													} catch {
+														context.rollback()
+														print("💥 Save User Mute Error")
+													}
 												} label: {
 													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 												}
