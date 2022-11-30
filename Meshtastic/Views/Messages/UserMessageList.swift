@@ -28,7 +28,6 @@ struct UserMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-	@State private var refreshId = UUID()
 
     var body: some View {
 		NavigationStack {
@@ -220,13 +219,11 @@ struct UserMessageList: View {
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
 					self.bleManager.context = context
-					refreshId = UUID()
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
 				})
 				.onChange(of: user.messageList, perform: { messages in
-					refreshId = UUID()
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
