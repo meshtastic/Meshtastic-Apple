@@ -59,6 +59,7 @@ struct ExternalNotificationConfig: View {
 	@State var alertBell = false
 	@State var alertMessage = false
 	@State var active = false
+	@State var usePWM = true
 	@State var output = 0
 	@State var outputMilliseconds = 0
 	
@@ -79,36 +80,43 @@ struct ExternalNotificationConfig: View {
 						Label("Alert when receiving a message", systemImage: "message")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				}
-				Section(header: Text("GPIO")) {
-					Toggle(isOn: $active) {
-						Label("Active", systemImage: "togglepower")
+					Toggle(isOn: $usePWM) {
+						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Specifies whether the external circuit is triggered when the device's GPIO is low or high.")
-						.font(.caption)
-						.listRowSeparator(.visible)
-					Picker("GPIO to monitor", selection: $output) {
-						ForEach(0..<40) {
-							if $0 == 0 {
-								Text("Unset")
-							} else {
-								Text("Pin \($0)")
+				}
+				if !usePWM {
+					Section(header: Text("GPIO")) {
+						Toggle(isOn: $active) {
+							Label("Active", systemImage: "togglepower")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("Specifies whether the external circuit is triggered when the device's GPIO is low or high.")
+							.font(.caption)
+							.listRowSeparator(.visible)
+						Picker("GPIO to monitor", selection: $output) {
+							ForEach(0..<40) {
+								if $0 == 0 {
+									Text("Unset")
+								} else {
+									Text("Pin \($0)")
+								}
 							}
 						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Specifies the GPIO that your external circuit is attached to on the device.")
-						.font(.caption)
-					Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
-						ForEach(OutputIntervals.allCases) { oi in
-							Text(oi.description)
+						.pickerStyle(DefaultPickerStyle())
+						Text("Specifies the GPIO that your external circuit is attached to on the device.")
+							.font(.caption)
+						Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
+							ForEach(OutputIntervals.allCases) { oi in
+								Text(oi.description)
+							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("Specifies how long the monitored GPIO should output.")
+							.font(.caption)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Specifies how long the monitored GPIO should output.")
-						.font(.caption)
 				}
+				
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
 			Button {
@@ -157,6 +165,7 @@ struct ExternalNotificationConfig: View {
 				self.active = node?.externalNotificationConfig?.active ?? false
 				self.output = Int(node?.externalNotificationConfig?.output ?? 0)
 				self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
+				self.usePWM = node?.externalNotificationConfig?.usePWM ?? true
 				self.hasChanges = false
 			}
 			.onChange(of: enabled) { newEnabled in
@@ -187,6 +196,11 @@ struct ExternalNotificationConfig: View {
 			.onChange(of: outputMilliseconds) { newOutputMs in
 				if node != nil && node!.externalNotificationConfig != nil {
 					if newOutputMs != node!.externalNotificationConfig!.outputMilliseconds { hasChanges = true }
+				}
+			}
+			.onChange(of: usePWM) { newUsePWM in
+				if node != nil && node!.externalNotificationConfig != nil {
+					if newUsePWM != node!.externalNotificationConfig!.usePWM { hasChanges = true }
 				}
 			}
 			.navigationViewStyle(StackNavigationViewStyle())

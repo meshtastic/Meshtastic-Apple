@@ -86,8 +86,10 @@ struct Contacts: View {
 								.contextMenu {
 									Button {
 										channel.mute = !channel.mute
+										
 										do {
 											try context.save()
+											self.context.refresh(channel, mergeChanges: true)
 										} catch {
 											context.rollback()
 											print("💥 Save Channel Mute Error")
