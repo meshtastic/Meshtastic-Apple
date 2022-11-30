@@ -193,7 +193,6 @@ struct TelemetryConfig: View {
 					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
 				}
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 }

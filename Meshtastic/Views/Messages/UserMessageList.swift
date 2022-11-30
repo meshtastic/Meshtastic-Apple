@@ -329,7 +329,6 @@ struct UserMessageList: View {
 			}
 			.padding(.all, 15)
 		}
-		.navigationViewStyle(.stack)
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .principal) {

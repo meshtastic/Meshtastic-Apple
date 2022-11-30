@@ -192,6 +192,5 @@ struct DeviceConfig: View {
 				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

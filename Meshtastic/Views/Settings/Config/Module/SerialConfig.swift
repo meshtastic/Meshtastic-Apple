@@ -217,7 +217,6 @@ struct SerialConfig: View {
 					if newMode != node!.serialConfig!.mode { hasChanges = true	}
 				}
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 }

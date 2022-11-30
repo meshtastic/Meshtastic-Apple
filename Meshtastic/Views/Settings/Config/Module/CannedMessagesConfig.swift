@@ -361,7 +361,6 @@ struct CannedMessagesConfig: View {
 					if newKeyPress != node!.cannedMessageConfig!.inputbrokerEventPress { hasChanges = true }
 				}
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 }

@@ -212,6 +212,5 @@ struct MQTTConfig: View {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
