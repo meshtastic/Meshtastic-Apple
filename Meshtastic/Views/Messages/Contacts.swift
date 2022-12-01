@@ -89,7 +89,10 @@ struct Contacts: View {
 										
 										do {
 											try context.save()
-											self.context.refresh(channel, mergeChanges: true)
+											// Would rather not do this but the merge changes on
+											// A single object is only working on mac GVH
+											context.refreshAllObjects()
+											//context.refresh(channel, mergeChanges: true)
 										} catch {
 											context.rollback()
 											print("💥 Save Channel Mute Error")
