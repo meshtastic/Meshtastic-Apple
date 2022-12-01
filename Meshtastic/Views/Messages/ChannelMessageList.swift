@@ -29,7 +29,6 @@ struct ChannelMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-	//@State private var refreshId = UUID()
 
 	var body: some View {
 		NavigationStack {
@@ -218,13 +217,11 @@ struct ChannelMessageList: View {
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
 					self.bleManager.context = context
-				//	refreshId = UUID()
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
 				})
 				.onChange(of: channel.allPrivateMessages, perform: { messages in
-				//	refreshId = UUID()
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
@@ -337,7 +334,6 @@ struct ChannelMessageList: View {
 			}
 			.padding(.all, 15)
 		}
-		.navigationViewStyle(.stack)
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .principal) {

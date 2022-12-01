@@ -151,6 +151,5 @@ struct BluetoothConfig: View {
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

@@ -161,6 +161,5 @@ struct DisplayConfig: View {
 				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

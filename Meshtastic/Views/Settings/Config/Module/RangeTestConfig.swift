@@ -141,7 +141,6 @@ struct RangeTestConfig: View {
 					if newSender != node!.rangeTestConfig!.sender { hasChanges = true }
 				}
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 }

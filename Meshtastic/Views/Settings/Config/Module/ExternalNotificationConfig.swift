@@ -203,7 +203,6 @@ struct ExternalNotificationConfig: View {
 					if newUsePWM != node!.externalNotificationConfig!.usePWM { hasChanges = true }
 				}
 			}
-			.navigationViewStyle(StackNavigationViewStyle())
 		}
 	}
 }

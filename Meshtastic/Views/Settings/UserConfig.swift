@@ -119,6 +119,5 @@ struct UserConfig: View {
 				if newLong != node?.user!.longName { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

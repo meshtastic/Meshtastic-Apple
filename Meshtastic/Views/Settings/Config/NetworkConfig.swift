@@ -168,6 +168,5 @@ struct NetworkConfig: View {
 				if newEthEnabled != node!.networkConfig!.ethEnabled { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }

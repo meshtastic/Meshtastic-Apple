@@ -127,6 +127,5 @@ struct LoRaConfig: View {
 				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
 			}
 		}
-		.navigationViewStyle(StackNavigationViewStyle())
 	}
 }
