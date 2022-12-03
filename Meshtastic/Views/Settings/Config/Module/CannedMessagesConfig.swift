@@ -287,7 +287,7 @@ struct CannedMessagesConfig: View {
 				if newPreset == 1 {
 					
 					// RAK Rotary Encoder
-					updown1Enabled = false
+					updown1Enabled = true
 					rotary1Enabled = false
 					inputbrokerPinA = 4
 					inputbrokerPinB = 10
