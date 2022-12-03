@@ -1308,7 +1308,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						]
 						manager.schedule()
 						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
-					} else if newMessage.fromUser != nil && newMessage.toUser == nil  {
+					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
+						
+						
+						
 						// Create an iOS Notification for the received private channel message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [

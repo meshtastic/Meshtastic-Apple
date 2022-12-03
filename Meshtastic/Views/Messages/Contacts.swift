@@ -32,7 +32,7 @@ struct Contacts: View {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" {
+							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
 								VStack {
 									NavigationLink(destination: ChannelMessageList(channel: channel)) {
 							
@@ -84,21 +84,23 @@ struct Contacts: View {
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 								.contextMenu {
-									Button {
-										channel.mute = !channel.mute
-										
-										do {
-											try context.save()
-											// Would rather not do this but the merge changes on
-											// A single object is only working on mac GVH
-											context.refreshAllObjects()
-											//context.refresh(channel, mergeChanges: true)
-										} catch {
-											context.rollback()
-											print("💥 Save Channel Mute Error")
+									if false { // Hide mute channel menu item until I can check it in notifications
+										Button {
+											channel.mute = !channel.mute
+											
+											do {
+												try context.save()
+												// Would rather not do this but the merge changes on
+												// A single object is only working on mac GVH
+												context.refreshAllObjects()
+												//context.refresh(channel, mergeChanges: true)
+											} catch {
+												context.rollback()
+												print("💥 Save Channel Mute Error")
+											}
+										} label: {
+											Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
 										}
-									} label: {
-										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
 									}
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
@@ -116,6 +118,7 @@ struct Contacts: View {
 									
 									Button(role: .destructive) {
 										deleteChannelMessages(channelIndex: channel.index, context: context)
+										context.refreshAllObjects()
 									} label: {
 										Text("Delete")
 									}
@@ -201,6 +204,7 @@ struct Contacts: View {
 												
 												Button(role: .destructive) {
 													deleteUserMessages(user: user, context: context)
+													
 												} label: {
 													Text("Delete")
 												}
