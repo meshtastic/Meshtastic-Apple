@@ -61,32 +61,35 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 }
 
 public func deleteChannelMessages(channelIndex: Int32, context: NSManagedObjectContext) {
-
-	let fetchChannelMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %lld", Int32(channelIndex))
+	let fetchChannelMessagesRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
+	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %i AND toUser == nil AND admin == false", Int32(channelIndex))
+	fetchChannelMessagesRequest.includesPropertyValues = false
 	do {
-		let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchChannelMessagesRequest)
-		try context.executeAndMergeChanges(using: deleteRequest)
+		let objects = try context.fetch(fetchChannelMessagesRequest) as! [NSManagedObject]
+		   for object in objects {
+			   context.delete(object)
+		   }
 		try context.save()
-		
+		context.refreshAllObjects()
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
-		abort()
 	}
 }
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 
-	let fetchUserMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	let fetchUserMessagesRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
 	fetchUserMessagesRequest.predicate = NSPredicate(format: "((toUser.num == %lld) OR (fromUser.num == %lld)) AND toUser != nil AND fromUser != nil AND admin == false", Int64(user.num), Int64(user.num))
+	fetchUserMessagesRequest.includesPropertyValues = false
 	do {
-		let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchUserMessagesRequest)
-		try context.executeAndMergeChanges(using: deleteRequest)
+		let objects = try context.fetch(fetchUserMessagesRequest) as! [NSManagedObject]
+		   for object in objects {
+			   context.delete(object)
+		   }
 		try context.save()
-		
+		context.refresh(user, mergeChanges: true)
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
-		abort()
 	}
 }
 
