@@ -20,13 +20,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 
 	var context: NSManagedObjectContext?
-	
 	var userSettings: UserSettings?
-
 	private var centralManager: CBCentralManager!
 
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
+	@Published var isScanning: Bool = false
 	public var lastConnectionError: String
 	public var minimumVersion = "1.3.48"
 	public var connectedVersion: String
@@ -34,7 +33,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public var preferredPeripheral = false
 
 	public var isSwitchedOn: Bool = false
-	public var isScanning: Bool = false
+	
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
