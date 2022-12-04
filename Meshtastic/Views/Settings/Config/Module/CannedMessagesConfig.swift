@@ -236,7 +236,7 @@ struct CannedMessagesConfig: View {
 							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
 							cmc.allowInputSource = "rotEnc1"
 						} else if updown1Enabled {
-							cmc.allowInputSource = "_any"
+							cmc.allowInputSource = "upDown1"
 						} else {
 							cmc.allowInputSource = "_any"
 						}

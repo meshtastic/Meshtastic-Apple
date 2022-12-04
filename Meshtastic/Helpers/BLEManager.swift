@@ -7,9 +7,9 @@ import MapKit
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
-class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
-	static let shared = BLEManager()
+	//static let shared = BLEManager()
 
 	private static var documentsFolder: URL {
 		do {
@@ -25,19 +25,19 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 	private var centralManager: CBCentralManager!
 
-	@Published var peripherals: [Peripheral]
+	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
-	@Published var lastConnectionError: String
-	@Published var minimumVersion = "1.3.48"
-	@Published var connectedVersion: String
-	@Published var invalidVersion = false
-	@Published var preferredPeripheral = false
+	public var lastConnectionError: String
+	public var minimumVersion = "1.3.48"
+	public var connectedVersion: String
+	public var invalidVersion = false
+	public var preferredPeripheral = false
 
-	@Published var isSwitchedOn: Bool = false
-	@Published var isScanning: Bool = false
-	@Published var isConnecting: Bool = false
-	@Published var isConnected: Bool = false
-	@Published var isSubscribed: Bool = false
+	public var isSwitchedOn: Bool = false
+	public var isScanning: Bool = false
+	public var isConnecting: Bool = false
+	public var isConnected: Bool = false
+	public var isSubscribed: Bool = false
 	
 	/// Used to make sure we never get foold by old BLE packets
 	private var configNonce: UInt32 = 1
@@ -80,29 +80,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
-		self.peripherals = [Peripheral]()
 		super.init()
 		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
 		centralManager = CBCentralManager(delegate: self, queue: nil)
-	}
-
-	// MARK: Bluetooth enabled/disabled for the app
-	func centralManagerDidUpdateState(_ central: CBCentralManager) {
-		 if central.state == .poweredOn {
-
-			 isSwitchedOn = true
-			 startScanning()
-		 } else {
-
-			 isSwitchedOn = false
-		 }
 	}
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
 		if isSwitchedOn {
-			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 			DispatchQueue.main.async {
 				self.isScanning = self.centralManager.isScanning
 			}
@@ -192,36 +179,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 
 	// Called each time a peripheral is discovered
-	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
-		var peripheralName: String = peripheral.name ?? "Unknown"
-
-		if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-			peripheralName = name
-		}
-
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "????", longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
-		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
-
-		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
-
-			peripherals[peripheralIndex!] = newPeripheral
-			peripherals.remove(at: peripheralIndex!)
-			peripherals.append(newPeripheral)
-
-		} else {
-			
-			if newPeripheral.peripheral.state != CBPeripheralState.connected {
-				peripherals.append(newPeripheral)
-			}
-		}
-		
-		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
-		peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
-	}
-
-	// Called when a peripheral is connected
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		isConnecting = false
 		isConnected = true
@@ -1606,5 +1563,58 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		return false
+	}
+}
+
+// MARK: - CB Central Manager implmentation
+extension BLEManager: CBCentralManagerDelegate {
+	
+	// MARK: Bluetooth enabled/disabled
+	func centralManagerDidUpdateState(_ central: CBCentralManager) {
+		if central.state == CBManagerState.poweredOn {
+			print("BLE powered on")
+			isSwitchedOn = true
+			startScanning()
+		}
+		else {
+			isSwitchedOn = false
+		}
+		
+		var status = ""
+
+		switch central.state {
+			case .poweredOff:
+				status = "BLE is powered off"
+			case .poweredOn:
+				status = "BLE is poweredOn"
+			case .resetting:
+				status = "BLE is resetting"
+			case .unauthorized:
+				status = "BLE is unauthorized"
+			case .unknown:
+				status = "BLE is unknown"
+			case .unsupported:
+				status = "BLE is unsupported"
+			default:
+				status = "default"
+		}
+		print("BLEManager status: \(status)")
+	}
+	
+	// Called each time a peripheral is discovered
+	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+
+		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
+		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
+		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
+		
+		if let peripheralIndex = index {
+			peripherals[peripheralIndex] = device
+		} else {
+			peripherals.append(device)
+		}
+		let today = Date()
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
+		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 }

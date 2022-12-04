@@ -19,6 +19,7 @@ struct DeviceConfig: View {
 	@State var hasChanges = false
 	
 	@State var deviceRole = 0
+	//@State var buzzerGPIO = 12
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	
@@ -135,6 +136,7 @@ struct DeviceConfig: View {
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
 						dc.serialEnabled = serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
+						//dc.buzzerGpio = UInt32(buzzerGPIO)
 						
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 						

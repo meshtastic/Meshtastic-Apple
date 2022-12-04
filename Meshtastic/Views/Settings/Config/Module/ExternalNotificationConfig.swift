@@ -142,6 +142,7 @@ struct ExternalNotificationConfig: View {
 					enc.active = active
 					enc.output = UInt32(output)
 					enc.outputMs = UInt32(outputMilliseconds)
+					enc.usePwm = usePWM
 					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0{
 						// Should show a saved successfully alert once I know that to be true
