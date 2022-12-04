@@ -9,8 +9,6 @@ import MapKit
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
-	//static let shared = BLEManager()
-
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory,	in: .userDomainMask, appropriateFor: nil, create: true)
@@ -26,14 +24,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
 	@Published var isScanning: Bool = false
-	public var lastConnectionError: String
+	@Published  var lastConnectionError: String
+	@Published var invalidVersion = false
 	public var minimumVersion = "1.3.48"
 	public var connectedVersion: String
-	public var invalidVersion = false
 	public var preferredPeripheral = false
-
 	public var isSwitchedOn: Bool = false
-	
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
@@ -76,11 +72,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 	// MARK: init BLEManager
 	override init() {
-
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
-		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
 		centralManager = CBCentralManager(delegate: self, queue: nil)
 	}
 
