@@ -19,6 +19,8 @@ struct DeviceConfig: View {
 	@State var hasChanges = false
 	
 	@State var deviceRole = 0
+	@State var buzzerGPIO = 0
+	@State var buttonGPIO = 0
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	
@@ -53,6 +55,30 @@ struct DeviceConfig: View {
 						Label("Debug Log", systemImage: "ant.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				}
+				
+				Section(header: Text("GPIO")) {
+					
+					Picker("Button GPIO", selection: $buttonGPIO) {
+						ForEach(0..<40) {
+							if $0 == 0 {
+								Text("Unset")
+							} else {
+								Text("Pin \($0)")
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
+						ForEach(0..<40) {
+							if $0 == 0 {
+								Text("Unset")
+							} else {
+								Text("Pin \($0)")
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
 				}
 				
 			}
@@ -135,6 +161,8 @@ struct DeviceConfig: View {
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
 						dc.serialEnabled = serialEnabled
 						dc.debugLogEnabled = debugLogEnabled
+						dc.buttonGpio = UInt32(buttonGPIO)
+						dc.buzzerGpio = UInt32(buzzerGPIO)
 						
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 						
@@ -169,6 +197,8 @@ struct DeviceConfig: View {
 			self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
 			self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
 			self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
+			self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
+			self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 			self.hasChanges = false
 		}
 		.onChange(of: deviceRole) { newRole in
@@ -190,6 +220,20 @@ struct DeviceConfig: View {
 			if node != nil && node!.deviceConfig != nil {
 				
 				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
+			}
+		}
+		.onChange(of: buttonGPIO) { newButtonGPIO in
+			
+			if node != nil && node!.deviceConfig != nil {
+				
+				if newButtonGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
+			}
+		}
+		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
+			
+			if node != nil && node!.deviceConfig != nil {
+				
+				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 	}

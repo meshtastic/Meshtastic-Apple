@@ -7,7 +7,7 @@ import CoreData
 struct MeshtasticAppleApp: App {
 	
 	let persistenceController = PersistenceController.shared
-	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
+	@ObservedObject private var bleManager: BLEManager = BLEManager()
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
 	@Environment(\.scenePhase) var scenePhase
 

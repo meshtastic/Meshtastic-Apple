@@ -161,7 +161,7 @@ struct Connect: View {
 
 					if self.bleManager.isScanning {
 						Section(header: Text("Available Radios").font(.title)) {
-							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.rssi > $1.rssi })) { peripheral in
+							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
 								HStack {
 									Image(systemName: "circle.fill")
 										.imageScale(.large).foregroundColor(.gray)
@@ -184,7 +184,9 @@ struct Connect: View {
 										Text(peripheral.name).font(.title3)
 									}
 									Spacer()
-									Text(String(peripheral.rssi) + " dB").font(.title3)
+									VStack {
+										SignalStrengthIndicator(signalStrength: peripheral.getSignalStrength())
+									}
 								}.padding([.bottom, .top])
 							}
 						}.textCase(nil)

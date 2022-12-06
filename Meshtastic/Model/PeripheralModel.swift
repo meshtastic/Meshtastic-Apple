@@ -23,4 +23,16 @@ struct Peripheral: Identifiable {
 		self.lastUpdate = lastUpdate
 		self.peripheral = peripheral
 	}
+	
+	func getSignalStrength() -> SignalStrength {
+		if (NSNumber(value: rssi).compare(NSNumber(-65)) == ComparisonResult.orderedDescending) {
+			return SignalStrength.strong
+		}
+		else if (NSNumber(value: rssi).compare(NSNumber(-85)) == ComparisonResult.orderedDescending) {
+			return SignalStrength.normal
+		}
+		else {
+			return SignalStrength.weak
+		}
+	}
 }

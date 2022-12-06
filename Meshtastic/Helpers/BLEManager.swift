@@ -7,9 +7,7 @@ import MapKit
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
-class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-
-	static let shared = BLEManager()
+class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 	private static var documentsFolder: URL {
 		do {
@@ -20,24 +18,21 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 
 	var context: NSManagedObjectContext?
-	
 	var userSettings: UserSettings?
-
 	private var centralManager: CBCentralManager!
 
-	@Published var peripherals: [Peripheral]
+	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
-	@Published var lastConnectionError: String
-	@Published var minimumVersion = "1.3.48"
-	@Published var connectedVersion: String
-	@Published var invalidVersion = false
-	@Published var preferredPeripheral = false
-
-	@Published var isSwitchedOn: Bool = false
 	@Published var isScanning: Bool = false
-	@Published var isConnecting: Bool = false
-	@Published var isConnected: Bool = false
-	@Published var isSubscribed: Bool = false
+	@Published  var lastConnectionError: String
+	@Published var invalidVersion = false
+	public var minimumVersion = "1.3.48"
+	public var connectedVersion: String
+	public var preferredPeripheral = false
+	public var isSwitchedOn: Bool = false
+	public var isConnecting: Bool = false
+	public var isConnected: Bool = false
+	public var isSubscribed: Bool = false
 	
 	/// Used to make sure we never get foold by old BLE packets
 	private var configNonce: UInt32 = 1
@@ -57,52 +52,23 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
-	
-	// Meshtastic DFU details
-	let DFUSERVICE_UUID = CBUUID(string : "cb0b9a0b-a84c-4c0d-bdbb-442e3144ee30")
-	let DFUSIZE_UUID = CBUUID(string: "e74dd9c0-a301-4a6f-95a1-f0e1dbea8e1e")
-	let DFUDATA_UUID = CBUUID(string: "e272ebac-d463-4b98-bc84-5cc1a39ee517")
-	let DFUCRC32_UUID = CBUUID(string: "4826129c-c22a-43a3-b066-ce8f0d5bacc6")
-	let DFURESULT_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c77")
-	let DFUREGION_UUID = CBUUID(string: "5e134862-7411-4424-ac4a-210937432c67")
-
-	var DFUSIZE_characteristic: CBCharacteristic?
-	var DFUDATA_characteristic: CBCharacteristic?
-	var DFUCRC32_characteristic: CBCharacteristic?
-	var DFURESULT_characteristic: CBCharacteristic?
-	var DFUREGION_characteristic: CBCharacteristic?
 
 	//private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
 
 	// MARK: init BLEManager
 	override init() {
-
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
-		self.peripherals = [Peripheral]()
 		super.init()
-		// let bleQueue: DispatchQueue = DispatchQueue(label: "CentralManager")
 		centralManager = CBCentralManager(delegate: self, queue: nil)
-	}
-
-	// MARK: Bluetooth enabled/disabled for the app
-	func centralManagerDidUpdateState(_ central: CBCentralManager) {
-		 if central.state == .poweredOn {
-
-			 isSwitchedOn = true
-			 startScanning()
-		 } else {
-
-			 isSwitchedOn = false
-		 }
 	}
 
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
 		if isSwitchedOn {
-			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: nil)
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 			DispatchQueue.main.async {
 				self.isScanning = self.centralManager.isScanning
 			}
@@ -192,36 +158,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 	}
 
 	// Called each time a peripheral is discovered
-	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
-		var peripheralName: String = peripheral.name ?? "Unknown"
-
-		if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-			peripheralName = name
-		}
-
-		let newPeripheral = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: peripheralName, shortName: "????", longName: peripheralName, firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
-		let peripheralIndex = peripherals.firstIndex(where: { $0.id == newPeripheral.id })
-
-		if peripheralIndex != nil && newPeripheral.peripheral.state != CBPeripheralState.connected {
-
-			peripherals[peripheralIndex!] = newPeripheral
-			peripherals.remove(at: peripheralIndex!)
-			peripherals.append(newPeripheral)
-
-		} else {
-			
-			if newPeripheral.peripheral.state != CBPeripheralState.connected {
-				peripherals.append(newPeripheral)
-			}
-		}
-		
-		let today = Date()
-		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
-		peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
-	}
-
-	// Called when a peripheral is connected
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		isConnecting = false
 		isConnected = true
@@ -254,7 +190,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			return
 		}
 		// Discover Services
-		peripheral.discoverServices([meshtasticServiceCBUUID, DFUSERVICE_UUID])
+		peripheral.discoverServices([meshtasticServiceCBUUID])
 		MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
 	}
 
@@ -312,16 +248,12 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			if service.uuid == meshtasticServiceCBUUID {
 				peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
 				MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
-			}  else if (service.uuid == DFUSERVICE_UUID) {
-				peripheral.discoverCharacteristics([DFUDATA_UUID, DFUSIZE_UUID, DFUREGION_UUID, DFURESULT_UUID, DFUCRC32_UUID], for: service)
-				MeshLogger.log("✅ BLE Service for Meshtastic DFU discovered by \(peripheral.name ?? "Unknown")")
-		   }
+			}
 		}
 	}
 
 	// MARK: Discover Characteristics Event
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-		
 		
 		if let e = error {
 			MeshLogger.log("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
@@ -348,26 +280,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 				MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-				
-			case DFUSIZE_UUID:
-				MeshLogger.log("✅ BLE did discover DFU Size characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
-				DFUSIZE_characteristic = characteristic
-
-			case DFUDATA_UUID:
-				MeshLogger.log("✅ BLE did discover DFU Data characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
-				DFUDATA_characteristic = characteristic
-
-			case DFUCRC32_UUID:
-				MeshLogger.log("✅ BLE did discover DFU CRC32 characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
-				DFUCRC32_characteristic = characteristic
-				
-			case DFURESULT_UUID:
-				MeshLogger.log("✅ BLE did discover DFU Result characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
-				DFURESULT_characteristic = characteristic
-				
-			case DFUREGION_UUID:
-				MeshLogger.log("✅ BLE did discover DFU Region characteristic for Meshtastic DFU by \(peripheral.name ?? "Unknown")")
-				DFUREGION_characteristic = characteristic
 
 			default:
 				break
@@ -1606,5 +1518,58 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 			}
 		}
 		return false
+	}
+}
+
+// MARK: - CB Central Manager implmentation
+extension BLEManager: CBCentralManagerDelegate {
+	
+	// MARK: Bluetooth enabled/disabled
+	func centralManagerDidUpdateState(_ central: CBCentralManager) {
+		if central.state == CBManagerState.poweredOn {
+			print("BLE powered on")
+			isSwitchedOn = true
+			startScanning()
+		}
+		else {
+			isSwitchedOn = false
+		}
+		
+		var status = ""
+
+		switch central.state {
+			case .poweredOff:
+				status = "BLE is powered off"
+			case .poweredOn:
+				status = "BLE is poweredOn"
+			case .resetting:
+				status = "BLE is resetting"
+			case .unauthorized:
+				status = "BLE is unauthorized"
+			case .unknown:
+				status = "BLE is unknown"
+			case .unsupported:
+				status = "BLE is unsupported"
+			default:
+				status = "default"
+		}
+		print("BLEManager status: \(status)")
+	}
+	
+	// Called each time a peripheral is discovered
+	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+
+		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
+		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
+		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
+		
+		if let peripheralIndex = index {
+			peripherals[peripheralIndex] = device
+		} else {
+			peripherals.append(device)
+		}
+		let today = Date()
+		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
+		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 }
