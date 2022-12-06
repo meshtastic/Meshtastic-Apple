@@ -26,10 +26,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@Published var isScanning: Bool = false
 	@Published  var lastConnectionError: String
 	@Published var invalidVersion = false
+	@Published var preferredPeripheral = false
+	@Published var isSwitchedOn: Bool = false
+	
 	public var minimumVersion = "1.3.48"
 	public var connectedVersion: String
-	public var preferredPeripheral = false
-	public var isSwitchedOn: Bool = false
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
