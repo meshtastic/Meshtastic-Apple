@@ -159,7 +159,7 @@ struct Connect: View {
 					}
 					.textCase(nil)
 
-					if self.bleManager.isScanning {
+					if !self.bleManager.isConnected {
 						Section(header: Text("Available Radios").font(.title)) {
 							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
 								HStack {
@@ -201,33 +201,6 @@ struct Connect: View {
 
 				HStack(alignment: .center) {
 					Spacer()
-					if !bleManager.isScanning {
-						Button(action: {
-							self.bleManager.startScanning()
-						}) {
-							Label("Start Scanning", systemImage: "play.fill")
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						.padding()
-						
-					} else {
-
-						Button(action: {
-							
-							self.bleManager.stopScanning()
-							
-						}) {
-							
-							Label("Stop Scanning", systemImage: "stop.fill")
-							
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						.padding()
-					}
                       
 					#if targetEnvironment(macCatalyst)
 						

@@ -16,11 +16,13 @@ class UserSettings: ObservableObject {
 	@Published var preferredPeripheralId: String {
 		didSet {
 			UserDefaults.standard.set(preferredPeripheralId, forKey: "preferredPeripheralId")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var preferredNodeNum: Int64 {
 		didSet {
 			UserDefaults.standard.set(preferredNodeNum, forKey: "preferredNodeNum")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var provideLocation: Bool {
