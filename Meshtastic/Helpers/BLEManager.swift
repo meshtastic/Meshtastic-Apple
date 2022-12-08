@@ -23,8 +23,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
-	@Published var isScanning: Bool = false
-	@Published  var lastConnectionError: String
+	@Published var lastConnectionError: String
 	@Published var invalidVersion = false
 	@Published var preferredPeripheral = false
 	@Published var isSwitchedOn: Bool = false
@@ -34,12 +33,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
-	
-	/// Used to make sure we never get foold by old BLE packets
 	private var configNonce: UInt32 = 1
 
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
+	var timeoutTimerRuns = 0
 	var positionTimer: Timer?
 	let emptyNodeNum: UInt32 = 4294967295
 
@@ -70,9 +68,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func startScanning() {
 		if isSwitchedOn {
 			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-			DispatchQueue.main.async {
-				self.isScanning = self.centralManager.isScanning
-			}
 			print("✅ Scanning Started")
 		}
 	}
@@ -81,9 +76,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func stopScanning() {
 		if centralManager.isScanning {
 			centralManager.stopScan()
-			DispatchQueue.main.async{
-				self.isScanning = self.centralManager.isScanning
-			 }
 			print("🛑 Stopped Scanning")
 		}
 	}
@@ -115,6 +107,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			self.lastConnectionError = "🚨 Connection failed after \(timeoutTimerCount) attempts to connect to \(name). You may need to forget your device under Settings > Bluetooth."
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
+			self.timeoutTimerRuns += 1
 			self.startScanning()
 		} else {
 			MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
@@ -203,8 +196,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 	// Disconnect Peripheral Event
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
-		self.startScanning()
 		self.connectedPeripheral = nil
 		self.isConnecting = false
 		self.isSubscribed = false
@@ -213,12 +204,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			let errorCode = (e as NSError).code
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				// We will try and re-connect to this device
-				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it reappears within one minute."
-				if peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
-					self.connectTo(peripheral: peripheral)
-					MeshLogger.log("ℹ️ BLE Reconnecting: \(peripheral.name ?? "Unknown")")
-				}
+				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it come back in range."
+				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
 				lastConnectionError = e.localizedDescription
@@ -232,11 +219,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				lastConnectionError = e.localizedDescription
 				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			}
+
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
 			MeshLogger.log("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
 		}
+		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
+		self.startScanning()
 	}
 
 	// MARK: Peripheral Services functions
@@ -549,6 +539,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
+				timeoutTimerRuns = 0
 				isSubscribed = true
 				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
@@ -1559,7 +1550,11 @@ extension BLEManager: CBCentralManagerDelegate {
 	
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
+		
+		if timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
+			self.connectTo(peripheral: peripheral)
+			MeshLogger.log("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
+		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
