@@ -980,7 +980,7 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as! [NodeInfoEntity]
+		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as? [NodeInfoEntity] ?? []
 
 		if fetchedNode.count == 1 {
 			fetchedNode[0].id = Int64(packet.from)
@@ -1014,19 +1014,21 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				}
 			}
+			
+			do {
+				try context.save()
+				MeshLogger.log("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				MeshLogger.log("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+			}
+			
 		} else {
 			
 			// New node info not from device but potentially from another network
 		}
 		
-		do {
-			try context.save()
-			MeshLogger.log("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
-		} catch {
-			context.rollback()
-			let nsError = error as NSError
-			MeshLogger.log("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
-		}
 	} catch {
 		MeshLogger.log("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
