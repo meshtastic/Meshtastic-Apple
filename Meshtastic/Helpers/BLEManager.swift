@@ -501,11 +501,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					MeshLogger.log("ℹ️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .audioApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Audio App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+				case .tracerouteApp:
+					MeshLogger.log("ℹ️ MESH PACKET received for Trace Route App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .UNRECOGNIZED(_):
 					MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .max:
 					print("MAX PORT NUM OF 511")
-			
 			}
 			
 			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel

@@ -816,6 +816,12 @@ struct Config {
     var channelNum: UInt32 = 0
 
     ///
+    /// If true, duty cycle limits will be exceeded and thus you're possibly not following 
+    /// the local regulations if you're not a HAM.
+    /// Has no effect if the duty cycle of the used region is 100%. 
+    var overrideDutyCycle: Bool = false
+
+    ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
     /// in ignore_incoming will have packets they send droped on receive (by router.cpp)
@@ -1830,6 +1836,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     9: .standard(proto: "tx_enabled"),
     10: .standard(proto: "tx_power"),
     11: .standard(proto: "channel_num"),
+    12: .standard(proto: "override_duty_cycle"),
     103: .standard(proto: "ignore_incoming"),
   ]
 
@@ -1850,6 +1857,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 9: try { try decoder.decodeSingularBoolField(value: &self.txEnabled) }()
       case 10: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.overrideDutyCycle) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
       default: break
       }
@@ -1890,6 +1898,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.channelNum != 0 {
       try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 11)
     }
+    if self.overrideDutyCycle != false {
+      try visitor.visitSingularBoolField(value: self.overrideDutyCycle, fieldNumber: 12)
+    }
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
     }
@@ -1908,6 +1919,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.txEnabled != rhs.txEnabled {return false}
     if lhs.txPower != rhs.txPower {return false}
     if lhs.channelNum != rhs.channelNum {return false}
+    if lhs.overrideDutyCycle != rhs.overrideDutyCycle {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

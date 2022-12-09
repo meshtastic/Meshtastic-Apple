@@ -969,6 +969,10 @@ struct Routing {
     case noResponse // = 8
 
     ///
+    /// Cannot send currently because duty cycle regulations will be violated.
+    case dutyCycleLimit // = 9
+
+    ///
     /// The application layer service on the remote node received your request, but considered your request somehow invalid
     case badRequest // = 32
 
@@ -993,6 +997,7 @@ struct Routing {
       case 6: self = .noChannel
       case 7: self = .tooLarge
       case 8: self = .noResponse
+      case 9: self = .dutyCycleLimit
       case 32: self = .badRequest
       case 33: self = .notAuthorized
       default: self = .UNRECOGNIZED(rawValue)
@@ -1010,6 +1015,7 @@ struct Routing {
       case .noChannel: return 6
       case .tooLarge: return 7
       case .noResponse: return 8
+      case .dutyCycleLimit: return 9
       case .badRequest: return 32
       case .notAuthorized: return 33
       case .UNRECOGNIZED(let i): return i
@@ -1035,6 +1041,7 @@ extension Routing.Error: CaseIterable {
     .noChannel,
     .tooLarge,
     .noResponse,
+    .dutyCycleLimit,
     .badRequest,
     .notAuthorized,
   ]
@@ -2627,6 +2634,7 @@ extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "NO_CHANNEL"),
     7: .same(proto: "TOO_LARGE"),
     8: .same(proto: "NO_RESPONSE"),
+    9: .same(proto: "DUTY_CYCLE_LIMIT"),
     32: .same(proto: "BAD_REQUEST"),
     33: .same(proto: "NOT_AUTHORIZED"),
   ]

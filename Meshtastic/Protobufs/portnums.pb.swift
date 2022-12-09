@@ -131,6 +131,11 @@ enum PortNum: SwiftProtobuf.Enum {
   case simulatorApp // = 69
 
   ///
+  /// Provides a traceroute functionality to show the route a packet towards
+  /// a certain destination would take on the mesh.
+  case tracerouteApp // = 70
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
@@ -169,6 +174,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 67: self = .telemetryApp
     case 68: self = .zpsApp
     case 69: self = .simulatorApp
+    case 70: self = .tracerouteApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -196,6 +202,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .telemetryApp: return 67
     case .zpsApp: return 68
     case .simulatorApp: return 69
+    case .tracerouteApp: return 70
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -228,6 +235,7 @@ extension PortNum: CaseIterable {
     .telemetryApp,
     .zpsApp,
     .simulatorApp,
+    .tracerouteApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -262,6 +270,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     67: .same(proto: "TELEMETRY_APP"),
     68: .same(proto: "ZPS_APP"),
     69: .same(proto: "SIMULATOR_APP"),
+    70: .same(proto: "TRACEROUTE_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),
