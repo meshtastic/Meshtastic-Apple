@@ -33,6 +33,7 @@ struct ShareChannels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var dismiss
 	@State var channelSet: ChannelSet = ChannelSet()
 	@State var includeChannel0 = true
 	@State var includeChannel1 = true
@@ -48,8 +49,6 @@ struct ShareChannels: View {
 	var qrCodeImage = QrCodeImage()
 	
 	var body: some View {
-		
-	//	VStack {
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {
@@ -218,8 +217,6 @@ struct ShareChannels: View {
 							}
 						}
 					}
-					
-				//}
 			}
 			.sheet(isPresented: $isPresentingHelp) {
 				VStack {
@@ -244,6 +241,18 @@ struct ShareChannels: View {
 				.padding()
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
+				
+				#if targetEnvironment(macCatalyst)
+					Button {
+						dismiss()
+					} label: {
+						Label("Close", systemImage: "xmark")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
+				#endif
 			}
 			.navigationTitle("Generate QR Code")
 			.navigationBarTitleDisplayMode(.inline)
@@ -263,7 +272,6 @@ struct ShareChannels: View {
 			.onChange(of: includeChannel6) { includeCh6 in GenerateChannelSet() }
 			.onChange(of: includeChannel7) { includeCh7 in GenerateChannelSet() }
 		}
-	//	}
 	}
 	func GenerateChannelSet() {
 		channelSet = ChannelSet()
