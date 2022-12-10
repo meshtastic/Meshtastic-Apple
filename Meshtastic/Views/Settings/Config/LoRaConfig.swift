@@ -11,6 +11,7 @@ struct LoRaConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
 	
@@ -83,16 +84,12 @@ struct LoRaConfig: View {
 					lc.txEnabled = true
 					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
-						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-						
-					} else {
-						
+						goBack()
 					}
 				}
-				
 			} message: {
 				Text("After LoRa config saves the node will reboot.")
 			}

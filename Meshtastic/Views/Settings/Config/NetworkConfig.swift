@@ -11,6 +11,7 @@ struct NetworkConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
 	
@@ -119,10 +120,8 @@ struct NetworkConfig: View {
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
-						self.hasChanges = false
-						
-					} else {
-						
+						hasChanges = false
+						goBack()
 					}
 				}
 			} message: {

@@ -198,6 +198,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		self.connectedPeripheral = nil
 		self.isConnecting = false
+		self.isConnected = false
 		self.isSubscribed = false
 		if let e = error {
 			// https://developer.apple.com/documentation/corebluetooth/cberror/code

@@ -11,6 +11,7 @@ struct BluetoothConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
 	
@@ -19,6 +20,8 @@ struct BluetoothConfig: View {
 	@State var enabled = true
 	@State var mode = 0
 	@State var fixedPin = "123456"
+	@State var shortPin = false
+	var pinLength: Int = 6
 	
 	let numberFormatter: NumberFormatter = {
 		
@@ -57,77 +60,66 @@ struct BluetoothConfig: View {
 							TextField("Fixed PIN", text: $fixedPin)
 								.foregroundColor(.gray)
 								.onChange(of: fixedPin, perform: { value in
-
-									let digitCount = fixedPin.utf8.count
-									// Only mess with the value if it is too big
-									if digitCount > 6 || digitCount < 6 {
-
-										fixedPin = "123456"
-									}
-									
-									if digitCount < 6 {
-
-										fixedPin = "123456"
+									//Require that pin is no more than 6 numbers and no less than 6 numbers
+									if fixedPin.utf8.count == pinLength {
+										shortPin = false
+									} else if fixedPin.utf8.count > pinLength {
+										shortPin = false
+										fixedPin = String(fixedPin.prefix(pinLength))
+									} else if fixedPin.utf8.count < pinLength {
+										shortPin = true
 									}
 								})
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.decimalPad)
+						if shortPin {
+							
+							Text("BLE Pin must be 6 digits long.")
+								.font(.callout)
+								.foregroundColor(.red)
+						}
 					}
 				}
 			}
 			.disabled(bleManager.connectedPeripheral == nil)
 			
 			Button {
-							
 				isPresentingSaveConfirm = true
-				
 			} label: {
-				
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || shortPin)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure you want to save?",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
 				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
-					
 					var bc = Config.BluetoothConfig()
 					bc.enabled = enabled
 					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 					bc.fixedPin = UInt32(fixedPin) ?? 123456
-					
 					let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
-					
 					if adminMessageId > 0 {
-						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-						
-					} else {
-						
+						goBack()
 					}
 				}
-				
 			} message: {
-				
 				Text("After bluetooth config saves the node will reboot.")
 			}
 		}
 		.navigationTitle("Bluetooth (BLE) Config")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 			self.bleManager.context = context
