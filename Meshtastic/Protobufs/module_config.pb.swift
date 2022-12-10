@@ -242,20 +242,28 @@ struct ModuleConfig {
     var codec2Enabled: Bool = false
 
     ///
-    /// ADC where Microphone is connected
-    var micChan: UInt32 = 0
-
-    ///
-    /// DAC where Speaker is connected
-    var ampPin: UInt32 = 0
-
-    ///
     /// PTT Pin
     var pttPin: UInt32 = 0
 
     ///
     /// The audio sample rate to use for codec2
     var bitrate: ModuleConfig.AudioConfig.Audio_Baud = .codec2Default
+
+    ///
+    /// I2S Word Select
+    var i2SWs: UInt32 = 0
+
+    ///
+    /// I2S Data IN
+    var i2SSd: UInt32 = 0
+
+    ///
+    /// I2S Data OUT
+    var i2SDin: UInt32 = 0
+
+    ///
+    /// I2S Clock
+    var i2SSck: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1057,10 +1065,12 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "codec2_enabled"),
-    2: .standard(proto: "mic_chan"),
-    3: .standard(proto: "amp_pin"),
-    4: .standard(proto: "ptt_pin"),
-    5: .same(proto: "bitrate"),
+    2: .standard(proto: "ptt_pin"),
+    3: .same(proto: "bitrate"),
+    4: .standard(proto: "i2s_ws"),
+    5: .standard(proto: "i2s_sd"),
+    6: .standard(proto: "i2s_din"),
+    7: .standard(proto: "i2s_sck"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1070,10 +1080,12 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.codec2Enabled) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.micChan) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.ampPin) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.pttPin) }()
-      case 5: try { try decoder.decodeSingularEnumField(value: &self.bitrate) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.pttPin) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.bitrate) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.i2SWs) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.i2SSd) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.i2SDin) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.i2SSck) }()
       default: break
       }
     }
@@ -1083,27 +1095,35 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if self.codec2Enabled != false {
       try visitor.visitSingularBoolField(value: self.codec2Enabled, fieldNumber: 1)
     }
-    if self.micChan != 0 {
-      try visitor.visitSingularUInt32Field(value: self.micChan, fieldNumber: 2)
-    }
-    if self.ampPin != 0 {
-      try visitor.visitSingularUInt32Field(value: self.ampPin, fieldNumber: 3)
-    }
     if self.pttPin != 0 {
-      try visitor.visitSingularUInt32Field(value: self.pttPin, fieldNumber: 4)
+      try visitor.visitSingularUInt32Field(value: self.pttPin, fieldNumber: 2)
     }
     if self.bitrate != .codec2Default {
-      try visitor.visitSingularEnumField(value: self.bitrate, fieldNumber: 5)
+      try visitor.visitSingularEnumField(value: self.bitrate, fieldNumber: 3)
+    }
+    if self.i2SWs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.i2SWs, fieldNumber: 4)
+    }
+    if self.i2SSd != 0 {
+      try visitor.visitSingularUInt32Field(value: self.i2SSd, fieldNumber: 5)
+    }
+    if self.i2SDin != 0 {
+      try visitor.visitSingularUInt32Field(value: self.i2SDin, fieldNumber: 6)
+    }
+    if self.i2SSck != 0 {
+      try visitor.visitSingularUInt32Field(value: self.i2SSck, fieldNumber: 7)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.AudioConfig, rhs: ModuleConfig.AudioConfig) -> Bool {
     if lhs.codec2Enabled != rhs.codec2Enabled {return false}
-    if lhs.micChan != rhs.micChan {return false}
-    if lhs.ampPin != rhs.ampPin {return false}
     if lhs.pttPin != rhs.pttPin {return false}
     if lhs.bitrate != rhs.bitrate {return false}
+    if lhs.i2SWs != rhs.i2SWs {return false}
+    if lhs.i2SSd != rhs.i2SSd {return false}
+    if lhs.i2SDin != rhs.i2SDin {return false}
+    if lhs.i2SSck != rhs.i2SSck {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

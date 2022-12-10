@@ -10,6 +10,7 @@ struct UserConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
 	
@@ -90,6 +91,7 @@ struct UserConfig: View {
 						let adminMessageId = bleManager.saveUser(config: u, fromUser: node!.user!, toUser: node!.user!)
 						if adminMessageId > 0 {
 							hasChanges = false
+							goBack()
 						}
 					}
 				} message: {

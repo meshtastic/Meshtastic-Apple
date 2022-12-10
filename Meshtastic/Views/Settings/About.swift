@@ -34,7 +34,7 @@ struct AboutMeshtastic: View {
 					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
 						.font(.title2)
 				}
-				if locale.region?.identifier == "US" {
+				if locale.region?.identifier ?? "no locale" == "US" {
 					Section(header: Text("Get Devices")) {
 						Link("Buy Complete Radios", destination: URL(string: "https://www.etsy.com/shop/GarthVH")!)
 							.font(.title2)

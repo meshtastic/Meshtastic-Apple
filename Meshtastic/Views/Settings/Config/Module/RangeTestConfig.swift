@@ -48,6 +48,7 @@ struct RangeTestConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
 	
@@ -89,7 +90,7 @@ struct RangeTestConfig: View {
 			} label: {
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node!.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.myInfo?.hasWifi ?? false))
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -109,8 +110,7 @@ struct RangeTestConfig: View {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
-					} else {
-						
+						goBack()
 					}
 				}
 			}

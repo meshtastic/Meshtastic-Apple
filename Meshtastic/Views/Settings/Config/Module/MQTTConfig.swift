@@ -10,6 +10,7 @@ struct MQTTConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.dismiss) private var goBack
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
@@ -103,8 +104,6 @@ struct MQTTConfig: View {
 					}
 					.keyboardType(.default)
 					.scrollDismissesKeyboard(.interactively)
-					
-					
 					HStack {
 						Label("Password", systemImage: "wallet.pass")
 						TextField("Server Password", text: $password)
@@ -153,13 +152,11 @@ struct MQTTConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				
 				"Are you sure?",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
 				Button("Save MQTT Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-					
 					var mqtt = ModuleConfig.MQTTConfig()
 					mqtt.enabled = self.enabled
 					mqtt.address = self.address
@@ -167,17 +164,12 @@ struct MQTTConfig: View {
 					mqtt.password = self.password
 					mqtt.encryptionEnabled = self.encryptionEnabled
 					mqtt.jsonEnabled = self.jsonEnabled
-									
 					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: node!.user!, toUser: node!.user!)
-					
 					if adminMessageId > 0 {
-						
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
-						self.hasChanges = false
-						
-					} else {
-						
+						hasChanges = false
+						goBack()
 					}
 				}
 			}

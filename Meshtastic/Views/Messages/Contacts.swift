@@ -46,7 +46,15 @@ struct Contacts: View {
 													.padding(.trailing, 5)
 												VStack {
 													HStack {
-														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+														if channel.name?.isEmpty ?? false {
+															if channel.role == 1 {
+																Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
+															} else {
+																Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
+															}
+														} else {
+															Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+														}
 														Spacer()
 														if channel.allPrivateMessages.count > 0 {
 															VStack (alignment: .trailing) {
