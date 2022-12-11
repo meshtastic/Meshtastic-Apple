@@ -26,7 +26,6 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
 		
 		switch self {
-			
 		case .metric:
 			return Config.DisplayConfig.DisplayUnits.metric
 		case .imperial:
@@ -67,7 +66,6 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 		}
 	}
 }
-
 // Default of 0 is off
 enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
@@ -95,6 +93,39 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 			case .fifteenMinutes:
 				return "Fifteen Minutes"
 			}
+		}
+	}
+
+}
+// Default of 0 is auto
+enum OledTypes: Int, CaseIterable, Identifiable {
+
+	case auto = 0
+	case ssd1306 = 1
+	case sh1106 = 2
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .auto:
+				return "Automatic Detection"
+			case .ssd1306:
+				return "SSD 1306"
+			case .sh1106:
+				return "SH 1106"
+			}
+		}
+	}
+	func protoEnumValue() -> Config.DisplayConfig.OledType {
+		
+		switch self {
+		case .auto:
+			return Config.DisplayConfig.OledType.oledAuto
+		case .ssd1306:
+			return Config.DisplayConfig.OledType.oledSsd1306
+		case .sh1106:
+			return Config.DisplayConfig.OledType.oledSh1106
 		}
 	}
 }

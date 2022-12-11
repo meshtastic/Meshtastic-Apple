@@ -244,7 +244,7 @@ struct ShareChannels: View {
 				
 				#if targetEnvironment(macCatalyst)
 					Button {
-						dismiss()
+						isPresentingHelp = false
 					} label: {
 						Label("Close", systemImage: "xmark")
 					}

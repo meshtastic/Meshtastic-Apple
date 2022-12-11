@@ -123,6 +123,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
 					newDisplayConfig.compassNorthTop = config.display.compassNorthTop
 					newDisplayConfig.flipScreen = config.display.flipScreen
+					newDisplayConfig.oledType = Int32(config.display.oled.rawValue)
 					fetchedNode[0].displayConfig = newDisplayConfig
 					
 				} else {
@@ -132,6 +133,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
 					fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
 					fetchedNode[0].displayConfig?.flipScreen = config.display.flipScreen
+					fetchedNode[0].displayConfig?.oledType = Int32(config.display.oled.rawValue)
 				}
 				
 				do {
