@@ -23,6 +23,7 @@ struct DisplayConfig: View {
 	@State var gpsFormat = 0
 	@State var compassNorthTop = false
 	@State var flipScreen = false
+	@State var oledType = 0
 	
 	var body: some View {
 		
@@ -64,6 +65,14 @@ struct DisplayConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Flip screen vertically")
+						.font(.caption)
+					Picker("OLED Type", selection: $oledType ) {
+						ForEach(OledTypes.allCases) { ot in
+							Text(ot.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Override automatic OLED screen detection.")
 						.font(.caption)
 					
 				}
@@ -108,6 +117,7 @@ struct DisplayConfig: View {
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					dc.compassNorthTop = compassNorthTop
 					dc.flipScreen = flipScreen
+					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 					
 					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 					
@@ -133,6 +143,7 @@ struct DisplayConfig: View {
 			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
 			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
 			self.flipScreen = node?.displayConfig?.flipScreen ?? false
+			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.hasChanges = false
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
@@ -158,6 +169,11 @@ struct DisplayConfig: View {
 		.onChange(of: flipScreen) { newFlipScreen in
 			if node != nil && node!.displayConfig != nil {
 				if newFlipScreen != node!.displayConfig!.flipScreen { hasChanges = true }
+			}
+		}
+		.onChange(of: oledType) { newOledType in
+			if node != nil && node!.displayConfig != nil {
+				if newOledType != node!.displayConfig!.oledType { hasChanges = true }
 			}
 		}
 	}
