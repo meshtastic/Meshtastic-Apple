@@ -531,11 +531,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			// Use a RunLoop to prevent the timer from running on the main UI thread
 			if userSettings?.provideLocation ?? false {
 				if positionTimer != nil {
-
 					positionTimer!.invalidate()
 				}
 				positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-				RunLoop.current.add(positionTimer!, forMode: .common)
+				if positionTimer != nil {
+					RunLoop.current.add(positionTimer!, forMode: .common)
+				}
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
