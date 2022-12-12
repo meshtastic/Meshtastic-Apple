@@ -17,18 +17,17 @@ struct EnvironmentMetricsLog: View {
 	@State var exportString = ""
 	
 	var node: NodeInfoEntity
-
+	
 	var body: some View {
 		
 		NavigationStack {
 			
-			let tempReadingType = (!(node.telemetryConfig?.environmentDisplayFahrenheit ?? false)) ? "°C" : "°F"
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
 					TableColumn("Temperature") { em in
 						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.temperature))\(tempReadingType)")
+							Text(em.temperature.formattedTemperature())
 						}
 					}
 					TableColumn("Humidity") { em in
@@ -98,7 +97,7 @@ struct EnvironmentMetricsLog: View {
 							
 							GridRow {
 								
-								Text("\(String(format: "%.2f", em.temperature))\(tempReadingType)")
+								Text(em.temperature.formattedTemperature())
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.relativeHumidity))")
 									.font(.caption)

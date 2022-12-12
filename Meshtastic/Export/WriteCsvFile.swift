@@ -32,7 +32,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		for dm in telemetry{
 			if dm.metricsType == 1 {
 				csvString += "\n"
-				csvString += String(dm.temperature)
+				csvString += String(dm.temperature.localeTemperature())
 				csvString += ", "
 				csvString += String(dm.relativeHumidity)
 				csvString += ", "
