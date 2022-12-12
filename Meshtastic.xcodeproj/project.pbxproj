@@ -33,7 +33,6 @@
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
-		DD457184293C55CD000C49FB /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = DD457183293C55CD000C49FB /* NordicDFU */; };
 		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
@@ -237,7 +236,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9697FA527933B8C00250207 /* SQLite in Frameworks */,
-				DD457184293C55CD000C49FB /* NordicDFU in Frameworks */,
 				DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -572,7 +570,6 @@
 			packageProductDependencies = (
 				DD5394FB276993AD00AD86B1 /* SwiftProtobuf */,
 				C9697FA427933B8C00250207 /* SQLite */,
-				DD457183293C55CD000C49FB /* NordicDFU */,
 			);
 			productName = MeshtasticClient;
 			productReference = DDC2E15426CE248E0042C5E4 /* Meshtastic.app */;
@@ -1185,11 +1182,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
 			productName = SQLite;
-		};
-		DD457183293C55CD000C49FB /* NordicDFU */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD457182293C55CD000C49FB /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
-			productName = NordicDFU;
 		};
 		DD5394FB276993AD00AD86B1 /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
