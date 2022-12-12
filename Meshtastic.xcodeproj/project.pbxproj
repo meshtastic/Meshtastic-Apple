@@ -647,7 +647,6 @@
 			packageReferences = (
 				DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				C9697FA327933B8C00250207 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
-				DD457182293C55CD000C49FB /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
 			);
 			productRefGroup = DDC2E15526CE248E0042C5E4 /* Products */;
 			projectDirPath = "";
@@ -1157,14 +1156,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.9.2;
-			};
-		};
-		DD457182293C55CD000C49FB /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
 			};
 		};
 		DD5394FA276993AD00AD86B1 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {

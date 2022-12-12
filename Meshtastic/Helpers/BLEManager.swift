@@ -164,6 +164,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
 		}
+		UserDefaults.standard.synchronize()
 		// Invalidate and reset connection timer count
 		timeoutTimerCount = 0
 		if timeoutTimer != nil {
