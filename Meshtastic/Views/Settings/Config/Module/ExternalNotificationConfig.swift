@@ -123,7 +123,7 @@ struct ExternalNotificationConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)

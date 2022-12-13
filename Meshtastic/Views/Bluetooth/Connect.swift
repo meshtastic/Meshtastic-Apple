@@ -28,7 +28,7 @@ struct Connect: View {
             VStack {
 				List {
 					if bleManager.isSwitchedOn {
-					Section(header: Text("Connected Radio").font(.title)) {
+					Section(header: Text("connected.radio").font(.title)) {
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right")
@@ -160,7 +160,7 @@ struct Connect: View {
 					.textCase(nil)
 
 					if !self.bleManager.isConnected {
-						Section(header: Text("Available Radios").font(.title)) {
+						Section(header: Text("available.radios").font(.title)) {
 							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
 								HStack {
 									Image(systemName: "circle.fill")

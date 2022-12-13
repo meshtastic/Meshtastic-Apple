@@ -28,7 +28,7 @@ struct Contacts: View {
 
 		NavigationSplitView {
 			List {
-				Section(header: Text("Channels (groups)")) {
+				Section(header: Text("channels")) {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
@@ -128,7 +128,7 @@ struct Contacts: View {
 										deleteChannelMessages(channelIndex: channel.index, context: context)
 										context.refreshAllObjects()
 									} label: {
-										Text("Delete")
+										Text("delete")
 									}
 								}
 							}
@@ -137,7 +137,7 @@ struct Contacts: View {
 						
 					}
 				}
-				Section(header: Text("Direct Messages")) {
+				Section(header: Text("direct.messages")) {
 					ForEach(users) { (user: UserEntity) in
 						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
 							NavigationLink(destination: UserMessageList(user: user)) {
@@ -214,7 +214,7 @@ struct Contacts: View {
 													deleteUserMessages(user: user, context: context)
 													
 												} label: {
-													Text("Delete")
+													Text("delete")
 												}
 											}
 										}
@@ -227,7 +227,7 @@ struct Contacts: View {
 					}
 				}
 			}
-			.navigationTitle("Contacts")
+			.navigationTitle("contacts")
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
@@ -260,7 +260,7 @@ struct Contacts: View {
 				UserMessageList(user:user)
 				
 			} else {
-				Text("Select a Contact")
+				Text("select.contact")
 			}
 		}
     }

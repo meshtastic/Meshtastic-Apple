@@ -144,7 +144,7 @@ struct ChannelMessageList: View {
 												self.deleteMessageId = message.messageId
 												print(deleteMessageId)
 											}) {
-												Text("Delete")
+												Text("delete")
 												Image(systemName: "trash")
 											}
 										}

@@ -17,7 +17,17 @@ struct LastHeardText: View {
 			
 		} else {
 			
-			Text("Unknown Age")
+			Text("unknown.age")
 		}
+	}
+}
+struct LastHeardText_Previews: PreviewProvider {
+	static var previews: some View {
+		LastHeardText(lastHeard: Date())
+			.previewLayout(.fixed(width: 300, height: 100))
+			.environment(\.locale, .init(identifier: "en"))
+		LastHeardText(lastHeard: Date())
+			.previewLayout(.fixed(width: 300, height: 100))
+			.environment(\.locale, .init(identifier: "de"))
 	}
 }

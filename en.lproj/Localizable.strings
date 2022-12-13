@@ -1,0 +1,17 @@
+/* 
+  Localizable.strings
+  Meshtastic
+
+  Copyright(c) Garth Vander Houwen on 12/12/22.
+  
+*/
+"available.radios"="Available Radios";
+"cancel"="Cancel";
+"channels"="Channels (groups)";
+"connected.radio"="Connected Radio";
+"contacts"="Contacts";
+"delete"="Delete";
+"direct.messages"="Direct Messages";
+"save"="Save";
+"select.contact"="Select a Contact";
+"unknown.age"="Unknown Age";

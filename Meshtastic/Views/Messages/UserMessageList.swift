@@ -127,7 +127,7 @@ struct UserMessageList: View {
 															if ackDate >= sixMonthsAgo! {
 																Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
 															} else {
-																Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+																Text("unknown.age").font(.caption2).foregroundColor(.gray)
 															}
 														}
 													}
@@ -145,7 +145,7 @@ struct UserMessageList: View {
 													self.deleteMessageId = message.messageId
 													print(deleteMessageId)
 												}) {
-													Text("Delete")
+													Text("delete")
 													Image(systemName: "trash")
 												}
 											}

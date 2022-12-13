@@ -76,7 +76,7 @@ struct RangeTestConfig: View {
 					Text("This device will send out range test messages on the selected interval.")
 						.font(.caption)
 					Toggle(isOn: $save) {
-						Label("Save", systemImage: "square.and.arrow.down.fill")
+						Label("save", systemImage: "square.and.arrow.down.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
@@ -88,7 +88,7 @@ struct RangeTestConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.myInfo?.hasWifi ?? false))
 			.buttonStyle(.bordered)

@@ -156,7 +156,7 @@ struct EnvironmentMetricsLog: View {
 				
 			} label: {
 				
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
