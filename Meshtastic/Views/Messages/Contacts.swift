@@ -28,7 +28,7 @@ struct Contacts: View {
 
 		NavigationSplitView {
 			List {
-				Section(header: Text("channels")) {
+				Section(header: Text("Channels (groups)")) {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
@@ -92,24 +92,24 @@ struct Contacts: View {
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 								.contextMenu {
-									if false { // Hide mute channel menu item until I can check it in notifications
-										Button {
-											channel.mute = !channel.mute
-											
-											do {
-												try context.save()
-												// Would rather not do this but the merge changes on
-												// A single object is only working on mac GVH
-												context.refreshAllObjects()
-												//context.refresh(channel, mergeChanges: true)
-											} catch {
-												context.rollback()
-												print("💥 Save Channel Mute Error")
-											}
-										} label: {
-											Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
-										}
-									}
+//									Hide mute channel menu item until I can check it in notifications
+//									Button {
+//										channel.mute = !channel.mute
+//
+//										do {
+//											try context.save()
+//											// Would rather not do this but the merge changes on
+//											// A single object is only working on mac GVH
+//											context.refreshAllObjects()
+//											//context.refresh(channel, mergeChanges: true)
+//										} catch {
+//											context.rollback()
+//											print("💥 Save Channel Mute Error")
+//										}
+//									} label: {
+//										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+//									}
+
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
 											isPresentingDeleteChannelMessagesConfirm = true

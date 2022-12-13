@@ -1038,16 +1038,8 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
-	//print(packet.payloadVariant.debugDescription)
-	
 	if let messages = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
-		//let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
-		//if adminMessageId > 0 {
-
-		//}
-		//print(messages)
-	} else {
-		//print(try! packet.decoded.jsonString())
+		print(messages)
 	}
 }
 

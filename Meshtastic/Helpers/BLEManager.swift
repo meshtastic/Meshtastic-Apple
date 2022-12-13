@@ -458,7 +458,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 						}
 					}
 				}

@@ -6,12 +6,21 @@
   
 */
 "available.radios"="Available Radios";
+"ble.name"="BLE Name";
 "cancel"="Cancel";
 "channels"="Channels (groups)";
 "connected.radio"="Connected Radio";
+"communicating"="Communicating with device. .";
+"connecting"="Connecting . .";
 "contacts"="Contacts";
 "delete"="Delete";
 "direct.messages"="Direct Messages";
+"disconnect"="Disconnect";
+"firmware.version"="Firmware Version";
+"not.connected"="No device connected";
+"preferred.radio"="Preferred Radio";
 "save"="Save";
+"subscribed"="Subscribed to mesh";
 "select.contact"="Select a Contact";
+"set.region"="Set LoRa Region";
 "unknown.age"="Unknown Age";
