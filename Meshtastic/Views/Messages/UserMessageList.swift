@@ -243,7 +243,7 @@ struct UserMessageList: View {
 					}
 					
 				} label: {
-					Text("Share Position")
+					Text("share.postion")
 					Image(systemName: "mappin.and.ellipse")
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
@@ -277,7 +277,7 @@ struct UserMessageList: View {
 						.keyboardType(kbType!)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
-								Button("Dismiss Keyboard") {
+								Button("dismiss.keyboard") {
 									focusedField = nil
 								}
 								.font(.subheadline)

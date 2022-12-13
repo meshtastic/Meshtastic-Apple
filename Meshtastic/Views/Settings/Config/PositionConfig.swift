@@ -240,7 +240,7 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.navigationTitle("Position Config")
+		.navigationTitle("position.config")
 		.navigationBarItems(trailing:
 
 			ZStack {

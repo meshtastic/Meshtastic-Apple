@@ -26,16 +26,16 @@ struct Settings: View {
 
 					Image(systemName: "gearshape")
 						.symbolRenderingMode(.hierarchical)
-					Text("App Settings")
+					Text("app.settings")
 				}
-				Section("Radio Configuration") {
+				Section("radio.configuration") {
 					
 					NavigationLink {
 						ShareChannels(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "qrcode")
 							.symbolRenderingMode(.hierarchical)
-						Text("Share Channels QR Code")
+						Text("share.channels")
 					}
 					
 					NavigationLink {
@@ -45,7 +45,7 @@ struct Settings: View {
 						Image(systemName: "person.crop.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("User")
+						Text("user")
 					}
 					
 					NavigationLink() {
@@ -56,7 +56,7 @@ struct Settings: View {
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("LoRa")
+						Text("lora")
 					}
 					
 					NavigationLink() {
@@ -65,7 +65,7 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
-						Text("Bluetooth (BLE)")
+						Text("bluetooth")
 					}
 					
 					NavigationLink {
@@ -73,7 +73,7 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "flipphone")
 							.symbolRenderingMode(.hierarchical)
-						Text("Device")
+						Text("device")
 					}
 					
 					NavigationLink {
@@ -81,7 +81,7 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "display")
 							.symbolRenderingMode(.hierarchical)
-						Text("Display (Device Screen)")
+						Text("display")
 					}
 					
 					NavigationLink {
@@ -90,7 +90,7 @@ struct Settings: View {
 					
 						Image(systemName: "network")
 							.symbolRenderingMode(.hierarchical)
-						Text("Network")
+						Text("network")
 					}
 				
 					NavigationLink {
@@ -99,11 +99,11 @@ struct Settings: View {
 					
 						Image(systemName: "location")
 							.symbolRenderingMode(.hierarchical)
-						Text("Position")
+						Text("position")
 					}
 					
 				}
-				Section("Module Configuration") {
+				Section("module.configuration") {
 					
 					NavigationLink {
 						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -112,7 +112,7 @@ struct Settings: View {
 						Image(systemName: "list.bullet.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("Canned Messages")
+						Text("canned.messages")
 					}
 					
 					NavigationLink {
@@ -120,14 +120,14 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "megaphone")
 							.symbolRenderingMode(.hierarchical)
-						Text("External Notification")
+						Text("external.notification")
 					}
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "dot.radiowaves.right")
 							.symbolRenderingMode(.hierarchical)
-						Text("MQTT")
+						Text("mqtt")
 					}
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -197,7 +197,7 @@ struct Settings: View {
 			)
 		}
 		detail: {
-			Text("Select an item from the menu")
+			Text("select.menu.item")
 		}
 	}
 }

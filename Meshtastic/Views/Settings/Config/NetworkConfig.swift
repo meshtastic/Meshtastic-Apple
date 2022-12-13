@@ -128,7 +128,7 @@ struct NetworkConfig: View {
 				Text("After network config saves the node will reboot.")
 			}
 		}
-		.navigationTitle("Network Config")
+		.navigationTitle("network.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

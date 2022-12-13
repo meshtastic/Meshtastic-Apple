@@ -17,15 +17,15 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .defaultKeyboard:
-				return "Default"
+				return String(format: NSLocalizedString("default", comment: "Default Keyboard"))
 			case .asciiCapable:
-				return "ASCII Capable"
+				return String(format: NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard"))
 			case .twitter:
-				return "Twitter"
+				return String(format: NSLocalizedString("twitter", comment: "Twitter Keyboard"))
 			case .emailAddress:
-				return "Email Address"
+				return String(format: NSLocalizedString("email.address", comment: "Email Address Keyboard"))
 			case .numbersAndPunctuation:
-				return "Numbers and Punctuation"
+				return String(format: NSLocalizedString("numbers.punctuation", comment: "Numbers and Punctuation Keyboard"))
 			}
 		}
 	}
@@ -179,7 +179,7 @@ struct AppSettings: View {
 				}
 			}
 		}
-		.navigationTitle("App Settings")
+		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:
 			ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

@@ -182,7 +182,7 @@ struct DeviceConfig: View {
 			Spacer()
 		}
 		
-		.navigationTitle("Device Config")
+		.navigationTitle("device.config")
 		.navigationBarItems(trailing:
 
 			ZStack {

@@ -116,7 +116,7 @@ struct BluetoothConfig: View {
 				Text("After bluetooth config saves the node will reboot.")
 			}
 		}
-		.navigationTitle("Bluetooth (BLE) Config")
+		.navigationTitle("bluetooth.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

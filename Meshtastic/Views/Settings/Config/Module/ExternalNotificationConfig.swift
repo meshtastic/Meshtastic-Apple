@@ -153,7 +153,7 @@ struct ExternalNotificationConfig: View {
 					}
 				}
 			}
-			.navigationTitle("External Notification Config")
+			.navigationTitle("external.notification.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

@@ -174,7 +174,7 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.navigationTitle("MQTT Config")
+		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
