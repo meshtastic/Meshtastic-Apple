@@ -29,28 +29,28 @@ struct ContentView: View {
 				
 				Contacts()
 				.tabItem {
-					Label("Messages", systemImage: "message")
+					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
 			}
 			Connect()
 				.tabItem {
-					Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
+					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(Tab.ble)
 			NodeList()
 				.tabItem {
-					Label("Nodes", systemImage: "flipphone")
+					Label("nodes", systemImage: "flipphone")
 				}
 				.tag(Tab.nodes)
 			NodeMap()
 				.tabItem {
-					Label("Mesh Map", systemImage: "map")
+					Label("map", systemImage: "map")
 				}
 				.tag(Tab.map)
 			Settings()
 				.tabItem {
-					Label("Settings", systemImage: "gear")
+					Label("settings", systemImage: "gear")
 				}
 				.tag(Tab.settings)
         }

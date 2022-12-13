@@ -229,7 +229,7 @@ struct Connect: View {
                     }
 					.padding(.bottom, 10)
             }
-            .navigationTitle("Bluetooth")
+            .navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 				 ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

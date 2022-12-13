@@ -7,6 +7,7 @@
 */
 "available.radios"="Available Radios";
 "ble.name"="BLE Name";
+"bluetooth"="Bluetooth";
 "cancel"="Cancel";
 "channels"="Channels (groups)";
 "connected.radio"="Connected Radio";
@@ -15,11 +16,16 @@
 "contacts"="Contacts";
 "delete"="Delete";
 "direct.messages"="Direct Messages";
+"distance"="Distance";
 "disconnect"="Disconnect";
 "firmware.version"="Firmware Version";
+"map"="Mesh Map";
+"messages"="Messages";
+"nodes"="Nodes";
 "not.connected"="No device connected";
 "preferred.radio"="Preferred Radio";
 "save"="Save";
+"settings"="Settings";
 "subscribed"="Subscribed to mesh";
 "select.contact"="Select a Contact";
 "set.region"="Set LoRa Region";

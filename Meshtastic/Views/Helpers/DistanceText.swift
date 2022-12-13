@@ -16,7 +16,7 @@ struct DistanceText: View {
 	var body: some View {
 		
 		let distanceFormatter = MKDistanceFormatter()
-		Text("Distance: \(distanceFormatter.string(fromDistance: Double(meters)))")
+		Text("distance")+Text(": \(distanceFormatter.string(fromDistance: Double(meters)))")
 	}
 }
 struct DistanceText_Previews: PreviewProvider {
