@@ -106,7 +106,7 @@ struct DisplayConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm
 			) {
 				Button("Save Display Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {

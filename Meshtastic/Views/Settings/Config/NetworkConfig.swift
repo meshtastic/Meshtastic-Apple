@@ -33,7 +33,7 @@ struct NetworkConfig: View {
 				Section(header: Text("WiFi Options (ESP32 Only)")) {
 					
 					Toggle(isOn: $wifiEnabled) {
-						Label("Enabled", systemImage: "wifi")
+						Label("enabled", systemImage: "wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					HStack {
@@ -84,7 +84,7 @@ struct NetworkConfig: View {
 				.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 				Section(header: Text("Ethernet Options")) {
 					Toggle(isOn: $ethEnabled) {
-						Label("Enabled", systemImage: "network")
+						Label("enabled", systemImage: "network")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Enabling Ethernet will disable the bluetooth connection to the app.")

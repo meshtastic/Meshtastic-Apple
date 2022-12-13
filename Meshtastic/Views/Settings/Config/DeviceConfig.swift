@@ -31,7 +31,7 @@ struct DeviceConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					
 					Picker("Device Role", selection: $deviceRole ) {
 						ForEach(DeviceRoles.allCases) { dr in
@@ -96,7 +96,7 @@ struct DeviceConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					"Are you sure?",
+					"are.you.sure",
 					isPresented: $isPresentingNodeDBResetConfirm,
 					titleVisibility: .visible
 				) {

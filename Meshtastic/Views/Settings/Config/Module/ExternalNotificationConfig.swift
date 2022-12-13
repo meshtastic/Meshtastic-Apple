@@ -68,9 +68,9 @@ struct ExternalNotificationConfig: View {
 		
 		VStack {
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
-						Label("Enabled", systemImage: "megaphone")
+						Label("enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $alertBell) {
@@ -131,7 +131,7 @@ struct ExternalNotificationConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {

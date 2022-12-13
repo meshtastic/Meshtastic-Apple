@@ -31,11 +31,11 @@ struct SerialConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "terminal")
+						Label("enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -122,7 +122,7 @@ struct SerialConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {

@@ -358,7 +358,7 @@ struct NodeDetail: View {
 									.controlSize(.large)
 									.padding()
 									.confirmationDialog(
-										"Are you sure?",
+										"are.you.sure",
 										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
@@ -385,7 +385,7 @@ struct NodeDetail: View {
 								.padding()
 								.confirmationDialog(
 									
-									"Are you sure?",
+									"are.you.sure",
 									isPresented: $showingRebootConfirm
 									) {
 										

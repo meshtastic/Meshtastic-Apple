@@ -47,11 +47,11 @@ struct CannedMessagesConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "list.bullet.rectangle.fill")
+						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -220,7 +220,7 @@ struct CannedMessagesConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {

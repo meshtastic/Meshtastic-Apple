@@ -61,10 +61,10 @@ struct RangeTestConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "figure.walk")
+						Label("enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Picker("Sender Interval", selection: $sender ) {
@@ -96,7 +96,7 @@ struct RangeTestConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {

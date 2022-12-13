@@ -108,7 +108,7 @@ struct TelemetryConfig: View {
 					Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 						.font(.caption)
 					Toggle(isOn: $environmentMeasurementEnabled) {
-						Label("Enabled", systemImage: "chart.xyaxis.line")
+						Label("enabled", systemImage: "chart.xyaxis.line")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $environmentScreenEnabled) {
@@ -133,7 +133,7 @@ struct TelemetryConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {

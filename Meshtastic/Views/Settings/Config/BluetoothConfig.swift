@@ -37,11 +37,11 @@ struct BluetoothConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
+						Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					

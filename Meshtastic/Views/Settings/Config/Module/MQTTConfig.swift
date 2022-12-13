@@ -26,11 +26,11 @@ struct MQTTConfig: View {
 		VStack {
 			
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 						
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "dot.radiowaves.right")
+						Label("enabled", systemImage: "dot.radiowaves.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -152,7 +152,7 @@ struct MQTTConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
