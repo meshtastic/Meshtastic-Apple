@@ -3,8 +3,13 @@
   Meshtastic
 
   Copyright(c) Garth Vander Houwen on 12/12/22.
-  
+ 
 */
+"about"="About";
+"about.meshtastic"="About Meshtastic";
+"admin"="Admin";
+"admin.log"="Admin Message Log";
+"ago"="ago";
 "available.radios"="Available Radios";
 "ble.name"="BLE Name";
 "bluetooth"="Bluetooth";
@@ -12,6 +17,7 @@
 "channels"="Channels (groups)";
 "connected.radio"="Connected Radio";
 "communicating"="Communicating with device. .";
+"connected"="Currently Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
 "delete"="Delete";
@@ -19,14 +25,25 @@
 "distance"="Distance";
 "disconnect"="Disconnect";
 "firmware.version"="Firmware Version";
+"heard"="Heard";
+"logging"="Logging";
 "map"="Mesh Map";
+"mesh.log"="Mesh Log";
 "messages"="Messages";
 "nodes"="Nodes";
+"no.nodes"="No Meshtastic Nodes Found";
 "not.connected"="No device connected";
 "preferred.radio"="Preferred Radio";
+"range.test"="Range Test";
+"range.test.config"="Range Test Config";
 "save"="Save";
+"serial"="Serial";
+"serial.config"="Serial Config";
 "settings"="Settings";
 "subscribed"="Subscribed to mesh";
 "select.contact"="Select a Contact";
+"select.node"="Select a Node";
 "set.region"="Set LoRa Region";
+"telemetry"="Telemetry (Sensors)";
+"telemetry.config"="Telemetry Config";
 "unknown.age"="Unknown Age";

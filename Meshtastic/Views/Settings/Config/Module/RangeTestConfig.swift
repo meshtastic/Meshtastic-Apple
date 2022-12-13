@@ -114,7 +114,7 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.navigationTitle("Range Test Config")
+			.navigationTitle("range.test.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

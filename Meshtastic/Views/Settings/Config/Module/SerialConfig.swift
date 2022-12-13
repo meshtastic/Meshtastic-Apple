@@ -148,7 +148,7 @@ struct SerialConfig: View {
 				}
 			}
 			
-			.navigationTitle("Serial Config")
+			.navigationTitle("serial.config")
 			.navigationBarItems(trailing:
 
 				ZStack {

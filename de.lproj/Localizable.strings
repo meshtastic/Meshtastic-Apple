@@ -5,9 +5,11 @@
   Created by Garth Vander Houwen on 12/12/22.
   
 */
+"ago"="prije";
 "available.radios"="Verfügbare Funkgeräte";
 "cancel"="Absagen";
 "connected.radio"="Verbundenes Radio";
 "delete"="Löschen";
+"heard"="Čuo";
 "save"="Speichern";
 "unknown.age"="Unbekanntes Alter";

@@ -134,30 +134,30 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
-						Text("Range Test (ESP32 Only)")
+						Text("range.test")
 					}
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "terminal")
 							.symbolRenderingMode(.hierarchical)
-						Text("Serial")
+						Text("serial")
 					}
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "chart.xyaxis.line")
 							.symbolRenderingMode(.hierarchical)
-						Text("Telemetry (Sensors)")
+						Text("telemetry")
 					}
 				}
-				Section(header: Text("Logging")) {
+				Section(header: Text("logging")) {
 					NavigationLink {
 						MeshLog()
 					} label: {
 						Image(systemName: "list.bullet.rectangle")
 							.symbolRenderingMode(.hierarchical)
-						Text("Mesh Log")
+						Text("mesh.log")
 					}
 					NavigationLink {
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
@@ -165,11 +165,11 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "building.columns")
 							.symbolRenderingMode(.hierarchical)
-						Text("Admin Message Log")
+						Text("admin.log")
 					}
 				}
 				
-				Section(header: Text("About")) {
+				Section(header: Text("about")) {
 					
 					NavigationLink {
 						
@@ -180,10 +180,9 @@ struct Settings: View {
 						Image(systemName: "questionmark.app")
 							.symbolRenderingMode(.hierarchical)
 						
-						Text("About Meshtastic")
+						Text("about.meshtastic")
 					}
 				}
-
 			}
 			.onAppear {
 
@@ -192,7 +191,7 @@ struct Settings: View {
 				
 			}
 			.listStyle(GroupedListStyle())
-			.navigationTitle("Settings")
+			.navigationTitle("settings")
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
