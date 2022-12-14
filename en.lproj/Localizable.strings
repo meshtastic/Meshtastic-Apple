@@ -1,4 +1,4 @@
-/* 
+/*
   Localizable.strings
   Meshtastic
 
@@ -173,7 +173,7 @@
 "tapback.poop"="Poop";
 "telemetry"="Telemetry (Sensors)";
 "telemetry.config"="Telemetry Config";
-"timeout"="timeout"
+"timeout"="timeout";
 "twitter"="Twitter";
 "unknown.age"="Unknown Age";
 "update.interval"="Update Interval";
