@@ -1189,7 +1189,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	}
 }
 	
-func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
+func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 	
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
@@ -1235,7 +1235,10 @@ func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 			
 			try context.save()
-			MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
+			// Only log telemetery from the mesh not the connected device
+			if connectedNode != Int64(packet.from) {
+				MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
+			}
 			
 		} catch {
 			context.rollback()

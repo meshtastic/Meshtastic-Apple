@@ -86,7 +86,7 @@ struct TelemetryConfig: View {
 		
 		VStack {
 			Form {
-				Section(header: Text("Update Intervals")) {
+				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							Text(ui.description)

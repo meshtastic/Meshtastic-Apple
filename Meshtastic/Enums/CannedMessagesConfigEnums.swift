@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 9/10/22.
 //
+import Foundation
 
 // Default of 0 is unset
 enum ConfigPresets : Int, CaseIterable, Identifiable {
@@ -18,11 +19,11 @@ enum ConfigPresets : Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .unset:
-				return "Manual Configuration"
+				return NSLocalizedString("canned.messages.preset.manual", comment: "Manual Configuration")
 			case .rakRotaryEncoder:
-				return "RAK Rotary Encoder Module"
+				return NSLocalizedString("canned.messages.preset.rakrotary", comment: "RAK Rotary Encoder Module")
 			case .cardKB:
-				return "M5 Stack Card KB / RAK Keypad"
+				return NSLocalizedString("canned.messages.preset.cardkb", comment: "M5 Stack Card KB / RAK Keypad")
 			}
 		}
 	}
@@ -46,21 +47,21 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .none:
-				return "None"
+				return NSLocalizedString("inputevent.none", comment: "None")
 			case .up:
-				return "Up"
+				return NSLocalizedString("inputevent.up", comment: "Up")
 			case .down:
-				return "Down"
+				return NSLocalizedString("inputevent.down", comment: "Down")
 			case .left:
-				return "Left"
+				return NSLocalizedString("inputevent.left", comment: "Left")
 			case .right:
-				return "Right"
+				return NSLocalizedString("inputevent.right", comment: "Right")
 			case .select:
-				return "Select"
+				return NSLocalizedString("inputevent.select", comment: "Select")
 			case .back:
-				return "Back"
+				return NSLocalizedString("inputevent.back", comment: "Back")
 			case .cancel:
-				return "Cancel"
+				return NSLocalizedString("inputevent.cancel", comment: "Cancel")
 			}
 		}
 	}

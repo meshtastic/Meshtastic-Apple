@@ -78,8 +78,8 @@ struct MQTTConfig: View {
 					.autocorrectionDisabled()
 					
 					HStack {
-						Label("Username", systemImage: "person.text.rectangle")
-						TextField("Server Username", text: $username)
+						Label("mqtt.username", systemImage: "person.text.rectangle")
+						TextField("mqtt.username", text: $username)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -105,8 +105,8 @@ struct MQTTConfig: View {
 					.keyboardType(.default)
 					.scrollDismissesKeyboard(.interactively)
 					HStack {
-						Label("Password", systemImage: "wallet.pass")
-						TextField("Server Password", text: $password)
+						Label("password", systemImage: "wallet.pass")
+						TextField("password", text: $password)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)

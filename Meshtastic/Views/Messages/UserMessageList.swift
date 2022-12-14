@@ -68,9 +68,9 @@ struct UserMessageList: View {
 											.cornerRadius(15)
 											.contextMenu {
 												VStack{
-													Text("Channel: \(message.channel)")
+													Text("channel")+Text(": \(message.channel)")
 												}
-												Menu("Tapback response") {
+												Menu("tapback") {
 													ForEach(Tapbacks.allCases) { tb in
 														Button(action: {
 															if bleManager.sendMessage(message: tb.emojiString, toUserNum: user.num, channel: 0, isEmoji: true, replyID: message.messageId) {
@@ -90,16 +90,16 @@ struct UserMessageList: View {
 													self.focusedField = .messageText
 													print("I want to reply to \(message.messageId)")
 												}) {
-													Text("Reply")
+													Text("reply")
 													Image(systemName: "arrowshape.turn.up.left.2.fill")
 												}
 												Button(action: {
 													UIPasteboard.general.string = message.messagePayload
 												}) {
-													Text("Copy")
+													Text("copy")
 													Image(systemName: "doc.on.doc")
 												}
-												Menu("Message Details") {
+												Menu("message.details") {
 													VStack {
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
@@ -111,11 +111,11 @@ struct UserMessageList: View {
 													}
 													if currentUser && message.receivedACK {
 														VStack {
-															Text("Received Ack \(message.receivedACK ? "✔️" : "")")
+															Text("received.ack")+Text(" \(message.receivedACK ? "✔️" : "")")
 														}
 													} else if currentUser && message.ackError == 0 {
 														// Empty Error
-														Text("Waiting. . .")
+														Text("waiting")
 													} else if currentUser && message.ackError > 0 {
 														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
@@ -174,14 +174,14 @@ struct UserMessageList: View {
 											}
 										}
 										HStack {
+											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
 												// Ack Received
-												Text("Acknowledged").font(.caption2).foregroundColor(.gray)
+												Text("\(ackErrorVal?.display ?? "No Error" )").font(.caption2).foregroundColor(.gray)
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 											} else if currentUser && message.ackError > 0 {
-												let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 												Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
 													.font(.caption2).foregroundColor(.red)
 											}
@@ -243,12 +243,12 @@ struct UserMessageList: View {
 					}
 					
 				} label: {
-					Text("share.postion")
+					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
 				}
-				ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+				ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 					.frame(width: 130)
 					.padding(5)
 					.font(.subheadline)
@@ -260,7 +260,7 @@ struct UserMessageList: View {
 			HStack(alignment: .top) {
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
-					TextField("Message", text: $typingMessage, axis: .vertical)
+					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 							totalBytes = value.utf8.count
 							// Only mess with the value if it is too big
@@ -297,7 +297,7 @@ struct UserMessageList: View {
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
 									.font(.subheadline)

@@ -490,7 +490,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .rangeTestApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .telemetryApp:
-					if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, context: context!) }
+				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 				case .textMessageCompressedApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .zpsApp:

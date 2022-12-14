@@ -41,20 +41,20 @@ struct SerialConfig: View {
 					
 					Toggle(isOn: $echo) {
 
-						Label("Echo", systemImage: "repeat")
+						Label("echo", systemImage: "repeat")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("If set, any packets you send will be echoed back to your device.")
 						.font(.caption)
 					
-					Picker("Baud Rate", selection: $baudRate ) {
+					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Picker("Timeout", selection: $timeout ) {
+					Picker("timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
@@ -63,7 +63,7 @@ struct SerialConfig: View {
 					Text("The amount of time to wait before we consider your packet as done.")
 						.font(.caption)
 					
-					Picker("Mode", selection: $mode ) {
+					Picker("mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
 							Text(smt.description)
 						}

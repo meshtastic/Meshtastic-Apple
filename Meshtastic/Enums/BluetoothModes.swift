@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 8/19/22.
 //
+import Foundation
 
 enum BluetoothModes: Int, CaseIterable, Identifiable {
 
@@ -16,11 +17,11 @@ enum BluetoothModes: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .randomPin:
-				return "Random PIN"
+				return NSLocalizedString("bluetooth.mode.randompin", comment: "Random PIN")
 			case .fixedPin:
-				return "Fixed PIN"
+				return NSLocalizedString("bluetooth.mode.fixedpin", comment: "Fixed PIN")
 			case .noPin:
-				return "No PIN (Just Works)"
+				return NSLocalizedString("bluetooth.mode.nopin", comment: "No PIN (Just Works)")
 			}
 		}
 	}

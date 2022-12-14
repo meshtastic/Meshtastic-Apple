@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 9/10/22.
 //
+import Foundation
 
 enum SerialBaudRates: Int, CaseIterable, Identifiable {
 
@@ -30,7 +31,7 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 			switch self {
 
 			case .baudDefault:
-				return "Baud Default"
+				return NSLocalizedString("default", comment: "Default")
 			case .baud110:
 				return "110 Baud"
 			case .baud300:
@@ -118,15 +119,15 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .default:
-				return "Default"
+				return NSLocalizedString("serial.mode.default", comment: "Default")
 			case .simple:
-				return "Simple"
+				return NSLocalizedString("serial.mode.simple", comment: "Simple")
 			case .proto:
-				return "Protobufs"
+				return NSLocalizedString("serial.mode.proto", comment: "Protobufs")
 			case .txtmsg:
-				return "Text Message"
+				return NSLocalizedString("serial.mode.txtmsg", comment: "Text Message")
 			case .nmea:
-				return "NMEA Positions"
+				return NSLocalizedString("serial.mode.nmea", comment: "NMEA Positions")
 			}
 		}
 	}
@@ -166,20 +167,19 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 			case .unset:
 				return "Unset"
 			case .oneSecond:
-				return "One Second"
+				return NSLocalizedString("interval.one.second", comment: "One Second")
 			case .fiveSeconds:
-				return "Five Seconds"
+				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
 			case .tenSeconds:
-				return "Ten Seconds"
+				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
 			case .fifteenSeconds:
-				return "Fifteen Seconds"
+				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
 			case .thirtySeconds:
-				return "Thirty Seconds"
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 			case .oneMinute:
-				return "One Minute"
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
 			case .fiveMinutes:
-				return "Five Minutes"
-
+				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 			}
 		}
 	}

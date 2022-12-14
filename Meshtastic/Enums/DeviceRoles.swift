@@ -21,13 +21,13 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .client:
-				return "Client (default) - App connected client."
+				return NSLocalizedString("device.role.client", comment: "Client (default) - App connected client.")
 			case .clientMute:
-				return "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh."
+				return NSLocalizedString("device.role.clientmute", comment: "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh.")
 			case .router:
-				return "Router -  Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep."
+				return NSLocalizedString("device.role.router", comment: "Router -  Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep.")
 			case .routerClient:
-				return "Router Client - Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client."
+				return NSLocalizedString("device.role.routerclient", comment: "Router Client - Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client.")
 			}
 		}
 	}

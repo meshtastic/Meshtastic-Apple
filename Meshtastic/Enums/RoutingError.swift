@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 8/4/22.
 //
+import Foundation
 
 enum RoutingError: Int, CaseIterable, Identifiable {
 
@@ -16,6 +17,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	case noChannel = 6
 	case tooLarge = 7
 	case noResponse = 8
+	case dutyCycleLimit = 9
 	case badRequest = 32
 	case notAuthorized = 33
 
@@ -25,56 +27,29 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .none:
-				return "No Error."
+				return NSLocalizedString("routing.acknowledged", comment: "Acknowledged")
 			case .noRoute:
-				return "No Route"
+				return NSLocalizedString("routing.noroute", comment: "No Route")
 			case .gotNak:
-				return "Received a nak"
+				return NSLocalizedString("routing.gotnak", comment: "Received a negative acknowledgment")
 			case .timeout:
-				return "Timeout"
+				return NSLocalizedString("routing.timeout", comment: "Timeout")
 			case .noInterface:
-				return "No Interface"
+				return NSLocalizedString("routing.nointerface", comment: "No Interface")
 			case .maxRetransmit:
-				return "Max Retransmission Reached"
+				return NSLocalizedString("routing.maxretransmit", comment: "Max Retransmission Reached")
 			case .noChannel:
-				return "No Channel"
+				return NSLocalizedString("routing.nochannel", comment: "No Channel")
 			case .tooLarge:
-				return "The packet is too large"
+				return NSLocalizedString("routing.toolarge", comment: "The packet is too large")
 			case .noResponse:
-				return "No Response"
+				return NSLocalizedString("routing.noresponse", comment: "No Response")
+			case .dutyCycleLimit:
+				return NSLocalizedString("routing.dutycyclelimit", comment: "Regional Duty Cycle Limit Reached")
 			case .badRequest:
-				return "Bad Request"
+				return NSLocalizedString("routing.badRequest", comment: "Bad Request")
 			case .notAuthorized:
-				return "Not Authorized"
-			}
-		}
-	}
-	var description: String {
-		get {
-			switch self {
-			
-			case .none:
-				return "This message is not a failure."
-			case .noRoute:
-				return "Our node doesn't have a route to the requested destination anymore."
-			case .gotNak:
-				return "We received a nak while trying to forward on your behalf."
-			case .timeout:
-				return "We timed out while attempting to route this packet."
-			case .noInterface:
-				return "No suitable interface could be found for delivering this packet."
-			case .maxRetransmit:
-				return "We reached the max retransmission count (Hop Limit) and have received no responses."
-			case .noChannel:
-				return "No suitable channel was found for sending this packet (i.e. was requested channel index disabled?)."
-			case .tooLarge:
-				return "The packet was too big for sending (exceeds interface MTU after encoding)."
-			case .noResponse:
-				return "The request had want_response set, the request reached the destination node, but no service on that node wants to send a response (possibly due to bad channel permissions)."
-			case .badRequest:
-				return "The application layer service on the remote node received your request, but considered your request somehow invalid."
-			case .notAuthorized:
-				return "The application layer service on the remote node received your request, but considered your request not authorized (i.e you did not send the request on the required bound channel)."
+				return NSLocalizedString("routing.notauthorized", comment: "Not Authorized")
 			}
 		}
 	}
@@ -100,10 +75,13 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.tooLarge
 		case .noResponse:
 			return Routing.Error.noResponse
+		case .dutyCycleLimit:
+			return Routing.Error.dutyCycleLimit
 		case .badRequest:
 			return Routing.Error.badRequest
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
+		
 		}
 	}
 }

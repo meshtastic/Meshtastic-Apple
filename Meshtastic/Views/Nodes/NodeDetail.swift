@@ -138,7 +138,7 @@ struct NodeDetail: View {
 											.font(.title)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
-										Text("User Id:").font(.title)
+										Text("user").font(.title)+Text(":").font(.title)
 									}
 									//Text(node.user?.userId ?? "??????").font(.title).foregroundColor(.gray)
 									Text("!\(String(format:"%02x", node.num))")
@@ -176,7 +176,7 @@ struct NodeDetail: View {
 											.font(.title)
 												.foregroundColor(.accentColor)
 												.symbolRenderingMode(.hierarchical)
-										Text("Last Heard: ").font(.title)
+										Text("heard.last").font(.title)+Text(":").font(.title)
 										
 									}
 									DateTimeText(dateTime: node.lastHeard)

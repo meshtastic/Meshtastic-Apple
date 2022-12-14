@@ -37,8 +37,8 @@ struct NetworkConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					HStack {
-						Label("SSID", systemImage: "network")
-						TextField("SSID", text: $wifiSsid)
+						Label("ssid", systemImage: "network")
+						TextField("ssid", text: $wifiSsid)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -58,8 +58,8 @@ struct NetworkConfig: View {
 					}
 					.keyboardType(.default)
 					HStack {
-						Label("Password", systemImage: "wallet.pass")
-						TextField("Password", text: $wifiPsk)
+						Label("password", systemImage: "wallet.pass")
+						TextField("password", text: $wifiPsk)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
