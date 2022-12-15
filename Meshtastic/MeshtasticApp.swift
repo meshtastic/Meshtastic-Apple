@@ -66,6 +66,12 @@ struct MeshtasticAppleApp: App {
 				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
 				
 				if !self.saveChannels {
+					
+					//tell the system we want the file please
+					guard url.startAccessingSecurityScopedResource() else {
+						 return
+					}
+					
 					//do we need to delete an old one?
 					if (fileManager.fileExists(atPath: destination.path)) {
 						print("ℹ️ Found an old map file.  Deleting it")
