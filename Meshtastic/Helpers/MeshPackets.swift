@@ -78,11 +78,15 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					newDeviceConfig.role = Int32(config.device.role.rawValue)
 					newDeviceConfig.serialEnabled = config.device.serialEnabled
 					newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
+					newDeviceConfig.buttonGpio = Int32(config.device.buttonGpio)
+					newDeviceConfig.buzzerGpio =  Int32(config.device.buzzerGpio)
 					fetchedNode[0].deviceConfig = newDeviceConfig
 				} else {
 					fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
 					fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
 					fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
+					fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.device.buttonGpio)
+					fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.device.buzzerGpio)
 				}
 				
 				do {
