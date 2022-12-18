@@ -1314,19 +1314,30 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						
-						
-						
-						// Create an iOS Notification for the received private channel message and schedule it immediately
-						let manager = LocalNotificationManager()
-						manager.notifications = [
-							Notification(
-								id: ("notification.id.\(newMessage.messageId)"),
-								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-								content: messageText)
-						]
-						manager.schedule()
-						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+
+						do {
+							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel && !channel.mute {
+									// Create an iOS Notification for the received private channel message and schedule it immediately
+									let manager = LocalNotificationManager()
+									manager.notifications = [
+										Notification(
+											id: ("notification.id.\(newMessage.messageId)"),
+											title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+											content: messageText)
+									]
+									manager.schedule()
+									MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+								}
+							}
+						} catch {
+							
+							
+						}
 					}
 				}
 			} catch {
