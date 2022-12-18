@@ -76,7 +76,7 @@ struct ShareChannels: View {
 											.toggleStyle(.switch)
 											.labelsHidden()
 											.disabled(channel.role == 1)
-										Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords()).fixedSize()
+										Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 										if channel.psk?.hexDescription.count ??  0 <  3 {
 											Image(systemName: "lock.slash")
 												.foregroundColor(.red)

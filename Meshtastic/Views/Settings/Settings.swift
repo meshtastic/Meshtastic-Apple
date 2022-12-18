@@ -61,6 +61,17 @@ struct Settings: View {
 					
 					NavigationLink() {
 						
+						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+					
+						Image(systemName: "fibrechannel")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("channels")
+					}
+					
+					NavigationLink() {
+						
 						BluetoothConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")

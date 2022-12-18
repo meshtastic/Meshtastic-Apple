@@ -33,7 +33,7 @@
 "channel.role.disabled"="Deaktiviert";
 "channel.role.primary"="Primär";
 "channel.role.secondary"="Sekundär";
-"channels"="Kanäle (Gruppen)";
+"channels"="Kanäle";
 "clear.app.data"="App Daten löschen";
 "connected.radio"="Verbundenes Gerät";
 "communicating"="Verbinde mit Gerät...";
@@ -111,6 +111,7 @@
 "mqtt"="MQTT";
 "mqtt.config"="MQTT Config";
 "mqtt.username"="Benutzername";
+"name"="Name";
 "network"="Netzwerk";
 "network.config"="Netzwerkeinstellungen";
 "nodes"="Nodes";

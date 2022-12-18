@@ -69,6 +69,7 @@
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
+		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
 		DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */; };
@@ -187,6 +188,7 @@
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
+		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
 		DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAnnotation.swift; sourceTree = "<group>"; };
@@ -305,13 +307,14 @@
 			isa = PBXGroup;
 			children = (
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
-				DD3501882852FC3B000FC853 /* Settings.swift */,
-				DD4A911D2708C65400501B7E /* AppSettings.swift */,
-				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
-				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
-				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
-				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
+				DD4A911D2708C65400501B7E /* AppSettings.swift */,
+				DDA0B6B1294CDC55001356EC /* Channels.swift */,
+				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
+				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
+				DD3501882852FC3B000FC853 /* Settings.swift */,
+				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
+				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD61937A2863876A00E59241 /* Config */,
 			);
 			path = Settings;
@@ -737,6 +740,7 @@
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
+				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,

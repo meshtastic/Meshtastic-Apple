@@ -28,7 +28,7 @@ struct Contacts: View {
 
 		NavigationSplitView {
 			List {
-				Section(header: Text("Channels (groups)")) {
+				Section(header: Text("channels")) {
 					// Display Contacts for the rest of the non admin channels
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
