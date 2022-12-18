@@ -86,7 +86,6 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 			   context.delete(object)
 		   }
 		try context.save()
-		context.refresh(user, mergeChanges: true)
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
 	}

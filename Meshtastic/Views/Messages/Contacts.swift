@@ -124,7 +124,7 @@ struct Contacts: View {
 									
 									Button(role: .destructive) {
 										deleteChannelMessages(channel: channel, context: context)
-
+										context.refresh(node!.myInfo!, mergeChanges: true)
 									} label: {
 										Text("delete")
 									}
@@ -210,7 +210,7 @@ struct Contacts: View {
 												
 												Button(role: .destructive) {
 													deleteUserMessages(user: user, context: context)
-													
+													context.refresh(node!.user!, mergeChanges: true)
 												} label: {
 													Text("delete")
 												}
