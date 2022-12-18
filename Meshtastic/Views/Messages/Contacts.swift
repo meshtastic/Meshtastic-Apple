@@ -33,82 +33,79 @@ struct Contacts: View {
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
-								VStack {
-									NavigationLink(destination: ChannelMessageList(channel: channel)) {
-							
-										let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
-										let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-										let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-										let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-										VStack(alignment: .leading) {
-											HStack {
-												CircleText(text: String(channel.index), color: .accentColor, circleSize: 52, fontSize: 40, brightness: 0.1)
-													.padding(.trailing, 5)
-												VStack {
-													HStack {
-														if channel.name?.isEmpty ?? false {
-															if channel.role == 1 {
-																Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-															} else {
-																Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-															}
+								NavigationLink(destination: ChannelMessageList(channel: channel)) {
+						
+									let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
+									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
+									VStack(alignment: .leading) {
+										HStack {
+											CircleText(text: String(channel.index), color: .accentColor, circleSize: 52, fontSize: 40, brightness: 0.1)
+												.padding(.trailing, 5)
+											VStack {
+												HStack {
+													if channel.name?.isEmpty ?? false {
+														if channel.role == 1 {
+															Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
 														} else {
-															Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
+															Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
 														}
-														Spacer()
-														if channel.allPrivateMessages.count > 0 {
-															VStack (alignment: .trailing) {
-																if lastMessageDay == currentDay {
-																	Text(lastMessageTime, style: .time )
-																		.font(.subheadline)
-																} else if  lastMessageDay == (currentDay - 1) {
-																	Text("Yesterday")
-																		.font(.subheadline)
-																} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																	Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																		.font(.subheadline)
-																} else if lastMessageDay < (currentDay - 1800) {
-																	Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
-																		.font(.subheadline)
-																}
-															}
-															.brightness(-0.20)
-														}
+													} else {
+														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
 													}
+													Spacer()
 													if channel.allPrivateMessages.count > 0 {
-														HStack(alignment: .top) {
-															Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-																.truncationMode(.tail)
-																.frame(maxWidth: .infinity, alignment: .leading)
-																.brightness(-0.20)
-																.font(.body)
+														VStack (alignment: .trailing) {
+															if lastMessageDay == currentDay {
+																Text(lastMessageTime, style: .time )
+																	.font(.subheadline)
+															} else if  lastMessageDay == (currentDay - 1) {
+																Text("Yesterday")
+																	.font(.subheadline)
+															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.subheadline)
+															} else if lastMessageDay < (currentDay - 1800) {
+																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																	.font(.subheadline)
+															}
 														}
+														.brightness(-0.20)
 													}
 												}
-												.frame(maxWidth: .infinity, alignment: .leading)
+												if channel.allPrivateMessages.count > 0 {
+													HStack(alignment: .top) {
+														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+															.truncationMode(.tail)
+															.frame(maxWidth: .infinity, alignment: .leading)
+															.brightness(-0.20)
+															.font(.body)
+													}
+												}
 											}
+											.frame(maxWidth: .infinity, alignment: .leading)
 										}
 									}
 								}
 								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
 								.contextMenu {
-//									Hide mute channel menu item until I can check it in notifications
-//									Button {
-//										channel.mute = !channel.mute
-//
-//										do {
-//											try context.save()
-//											// Would rather not do this but the merge changes on
-//											// A single object is only working on mac GVH
-//											context.refreshAllObjects()
-//											//context.refresh(channel, mergeChanges: true)
-//										} catch {
-//											context.rollback()
-//											print("💥 Save Channel Mute Error")
-//										}
-//									} label: {
-//										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
-//									}
+									Button {
+										channel.mute = !channel.mute
+
+										do {
+											try context.save()
+											// Would rather not do this but the merge changes on
+											// A single object is only working on mac GVH
+											context.refreshAllObjects()
+											//context.refresh(channel, mergeChanges: true)
+										} catch {
+											context.rollback()
+											print("💥 Save Channel Mute Error")
+										}
+									} label: {
+										Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+									}
 
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
@@ -121,12 +118,13 @@ struct Contacts: View {
 								.confirmationDialog(
 									"This conversation will be deleted.",
 									isPresented: $isPresentingDeleteChannelMessagesConfirm,
+									
 									titleVisibility: .visible
 								) {
 									
 									Button(role: .destructive) {
-										deleteChannelMessages(channelIndex: channel.index, context: context)
-										context.refreshAllObjects()
+										deleteChannelMessages(channel: channel, context: context)
+
 									} label: {
 										Text("delete")
 									}

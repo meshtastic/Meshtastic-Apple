@@ -957,7 +957,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					fetchedMyInfo[0].channels = mutableChannels
 					do {
 						try context!.save()
-						
 					} catch {
 						print("Failed to clear existing channels from local app database")
 					}

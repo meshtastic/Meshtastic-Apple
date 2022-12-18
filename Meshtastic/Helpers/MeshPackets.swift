@@ -756,6 +756,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 			if fetchedMyInfo.count == 1 {
 					
 				let newChannel = ChannelEntity(context: context)
+				newChannel.id = Int32(channel.index)
 				newChannel.index = Int32(channel.index)
 				newChannel.uplinkEnabled = channel.settings.uplinkEnabled
 				newChannel.downlinkEnabled = channel.settings.downlinkEnabled

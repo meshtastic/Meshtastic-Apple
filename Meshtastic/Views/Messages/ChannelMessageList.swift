@@ -311,9 +311,22 @@ struct ChannelMessageList: View {
 						.focused($focusedField, equals: .messageText)
 						.multilineTextAlignment(.leading)
 						.frame(minHeight: 50)
-
+						.keyboardShortcut(.defaultAction)
+						.onSubmit {
+							#if targetEnvironment(macCatalyst)
+							if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
+								typingMessage = ""
+								focusedField = nil
+								replyMessageId = 0
+								if sendPositionWithMessage {
+									if bleManager.sendPosition(destNum: Int64(channel.index), wantAck: true) {
+										print("Location Sent")
+									}
+								}
+							}
+							#endif
+						}
 					Text(typingMessage).opacity(0).padding(.all, 0)
-
 				}
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
