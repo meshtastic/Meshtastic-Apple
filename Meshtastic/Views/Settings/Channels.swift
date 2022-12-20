@@ -129,7 +129,7 @@ struct Channels: View {
 										channelKey = "AQ=="
 									} else {
 										let key = generateChannelKey(size: channelKeySize)
-										channelKey = key.base64ToBase64url()
+										channelKey = key
 									}
 								} label: {
 									Image(systemName: "lock.rotation")
@@ -174,7 +174,7 @@ struct Channels: View {
 								channelKey = "AQ=="
 							} else {
 								let key = generateChannelKey(size: channelKeySize)
-								channelKey = key.base64ToBase64url()
+								channelKey = key
 							}
 							hasChanges = true
 						}
