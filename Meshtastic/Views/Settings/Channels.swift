@@ -24,7 +24,6 @@ struct Channels: View {
 
 	var node: NodeInfoEntity?
 	
-	
 	@State var hasChanges = false
 	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -126,19 +125,33 @@ struct Channels: View {
 									"Channel Name",
 									text: $channelName
 								)
+								.disableAutocorrection(true)
+								.keyboardType(.alphabet)
 								.foregroundColor(Color.gray)
+								.onChange(of: channelName, perform: { value in
+									channelName = channelName.replacing(" ", with: "")
+									let totalBytes = channelName.utf8.count
+									// Only mess with the value if it is too big
+									if totalBytes > 11 {
+										let firstNBytes = Data(channelName.utf8.prefix(11))
+										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+											// Set the channelName back to the last place where it was the right size
+											channelName = maxBytesString
+										}
+									}
+									hasChanges = true
+								})
 							}
 							HStack {
 								Picker("Key Size", selection: $channelKeySize) {
-									Text("Empty (0 bytes)").tag(0)
-									Text("Default (1 byte)").tag(-1)
-									Text("1 Bit (1 byte)").tag(1)
-									Text("AES-128 (16 bytes)").tag(16)
-									Text("AES-192 (24 bytes)").tag(24)
-									Text("AES-256 (32 bytes)").tag(32)
+									Text("Empty").tag(0)
+									Text("Default").tag(-1)
+									Text("1 bit").tag(1)
+									Text("128 bit").tag(16)
+									Text("192 bit").tag(24)
+									Text("256 bit").tag(32)
 								}
 								.pickerStyle(DefaultPickerStyle())
-								.fixedSize()
 								Spacer()
 								Button {
 									if channelKeySize == -1 {
@@ -164,9 +177,10 @@ struct Channels: View {
 									axis: .vertical
 								)
 								.foregroundColor(Color.gray)
-
 								.disabled(true)
+						
 							}
+							.textSelection(.enabled)
 							Picker("Channel Role", selection: $channelRole) {
 								if channelRole == 1 {
 									Text("Primary").tag(1)
