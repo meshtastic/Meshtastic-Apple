@@ -61,10 +61,10 @@ struct RangeTestConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "figure.walk")
+						Label("enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Picker("Sender Interval", selection: $sender ) {
@@ -76,7 +76,7 @@ struct RangeTestConfig: View {
 					Text("This device will send out range test messages on the selected interval.")
 						.font(.caption)
 					Toggle(isOn: $save) {
-						Label("Save", systemImage: "square.and.arrow.down.fill")
+						Label("save", systemImage: "square.and.arrow.down.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
@@ -88,7 +88,7 @@ struct RangeTestConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.myInfo?.hasWifi ?? false))
 			.buttonStyle(.bordered)
@@ -96,7 +96,7 @@ struct RangeTestConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -114,7 +114,7 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
-			.navigationTitle("Range Test Config")
+			.navigationTitle("range.test.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

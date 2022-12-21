@@ -37,11 +37,11 @@ struct BluetoothConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "antenna.radiowaves.left.and.right")
+						Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -87,7 +87,7 @@ struct BluetoothConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || shortPin)
 			.buttonStyle(.bordered)
@@ -116,7 +116,7 @@ struct BluetoothConfig: View {
 				Text("After bluetooth config saves the node will reboot.")
 			}
 		}
-		.navigationTitle("Bluetooth (BLE) Config")
+		.navigationTitle("bluetooth.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

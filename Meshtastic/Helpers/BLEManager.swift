@@ -458,7 +458,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
-							self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
+							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 						}
 					}
 				}
@@ -490,7 +490,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .rangeTestApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .telemetryApp:
-					if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, context: context!) }
+				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 				case .textMessageCompressedApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .zpsApp:
@@ -527,19 +527,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				MeshLogger.log("💥 Error Deleting the All - Broadcast User")
 			}
 
-			// MARK: Share Location Position Update Timer
-			// Use context to pass the radio name with the timer
-			// Use a RunLoop to prevent the timer from running on the main UI thread
-			if userSettings?.provideLocation ?? false {
-				if positionTimer != nil {
-					positionTimer!.invalidate()
-				}
-				positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-				if positionTimer != nil {
-					RunLoop.current.add(positionTimer!, forMode: .common)
-				}
-			}
-
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
@@ -548,6 +535,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
+				// MARK: Share Location Position Update Timer
+				// Use context to pass the radio name with the timer
+				// Use a RunLoop to prevent the timer from running on the main UI thread
+				if userSettings?.provideLocation ?? false {
+					if positionTimer != nil {
+						positionTimer!.invalidate()
+					}
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					if positionTimer != nil {
+						RunLoop.current.add(positionTimer!, forMode: .common)
+					}
+				}
+				
 				return
 			}
 
@@ -711,7 +711,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
-	public func sendPosition(destNum: Int64,  wantAck: Bool) -> Bool {
+	public func sendPosition(destNum: Int64,  wantResponse: Bool) -> Bool {
 		
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
@@ -734,14 +734,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
-		meshPacket.wantAck = wantAck
 	
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
-		if destNum != emptyNodeNum {
-			dataMessage.wantResponse = true
-		}
+		//if destNum != emptyNodeNum {
+			dataMessage.wantResponse = wantResponse
+		//}
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -765,7 +764,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
 				
-				let success = sendPosition(destNum: connectedPeripheral.num, wantAck: false)
+				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
 					
 					print("Failed to send positon to device")
@@ -940,6 +939,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
+	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setChannel = channel
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
 	public func saveChannelSet(base64UrlString: String) -> Bool {
 				
 		if isConnected {
@@ -957,7 +983,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					fetchedMyInfo[0].channels = mutableChannels
 					do {
 						try context!.save()
-						
 					} catch {
 						print("Failed to clear existing channels from local app database")
 					}

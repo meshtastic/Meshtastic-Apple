@@ -26,11 +26,11 @@ struct MQTTConfig: View {
 		VStack {
 			
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 						
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "dot.radiowaves.right")
+						Label("enabled", systemImage: "dot.radiowaves.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -78,8 +78,8 @@ struct MQTTConfig: View {
 					.autocorrectionDisabled()
 					
 					HStack {
-						Label("Username", systemImage: "person.text.rectangle")
-						TextField("Server Username", text: $username)
+						Label("mqtt.username", systemImage: "person.text.rectangle")
+						TextField("mqtt.username", text: $username)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -105,8 +105,8 @@ struct MQTTConfig: View {
 					.keyboardType(.default)
 					.scrollDismissesKeyboard(.interactively)
 					HStack {
-						Label("Password", systemImage: "wallet.pass")
-						TextField("Server Password", text: $password)
+						Label("password", systemImage: "wallet.pass")
+						TextField("password", text: $password)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -144,7 +144,7 @@ struct MQTTConfig: View {
 				
 			} label: {
 				
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -152,7 +152,7 @@ struct MQTTConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -174,7 +174,7 @@ struct MQTTConfig: View {
 				}
 			}
 		}
-		.navigationTitle("MQTT Config")
+		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 9/30/22.
 //
+import Foundation
 
 enum BubblePosition {
 	case left
@@ -45,19 +46,19 @@ enum Tapbacks: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .heart:
-				return "Heart"
+				return NSLocalizedString("tapback.heart", comment: "Heart")
 			case .thumbsUp:
-				return "Thumbs Up"
+				return NSLocalizedString("tapback.thumbsup", comment: "Thumbs Up")
 			case .thumbsDown:
-				return "Thumbs Down"
+				return NSLocalizedString("tapback.thumbsdown", comment: "Thumbs Down")
 			case .haHa:
-				return "HaHa"
+				return NSLocalizedString("tapback.haha", comment: "HaHa")
 			case .exclamation:
-				return "Exclamation Mark"
+				return NSLocalizedString("tapback.exclamation", comment: "Exclamation Mark")
 			case .question:
-				return "Question Mark"
+				return NSLocalizedString("tapback.question", comment: "Question Mark")
 			case .poop:
-				return "Poop"
+				return NSLocalizedString("tapback.poop", comment: "Poop")
 			}
 		}
 	}

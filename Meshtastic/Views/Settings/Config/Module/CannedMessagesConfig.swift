@@ -47,11 +47,11 @@ struct CannedMessagesConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "list.bullet.rectangle.fill")
+						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -212,7 +212,7 @@ struct CannedMessagesConfig: View {
 				isPresentingSaveConfirm = true
 				
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || (!hasChanges && !hasMessagesChanges))
 			.buttonStyle(.bordered)
@@ -220,7 +220,7 @@ struct CannedMessagesConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -265,7 +265,7 @@ struct CannedMessagesConfig: View {
 					}
 				}
 			}
-			.navigationTitle("Canned Messages Config")
+			.navigationTitle("canned.messages.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

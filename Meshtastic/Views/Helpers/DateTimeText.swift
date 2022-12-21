@@ -24,7 +24,7 @@ struct DateTimeText: View {
 			
 		} else {
 			
-			Text("Unknown Age")
+			Text("unknown.age")
 		}
 	}
 }

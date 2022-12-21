@@ -31,30 +31,30 @@ struct SerialConfig: View {
 
 			Form {
 				
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 				
 					Toggle(isOn: $enabled) {
 
-						Label("Enabled", systemImage: "terminal")
+						Label("enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $echo) {
 
-						Label("Echo", systemImage: "repeat")
+						Label("echo", systemImage: "repeat")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("If set, any packets you send will be echoed back to your device.")
 						.font(.caption)
 					
-					Picker("Baud Rate", selection: $baudRate ) {
+					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
 							Text(sbr.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Picker("Timeout", selection: $timeout ) {
+					Picker("timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
@@ -63,7 +63,7 @@ struct SerialConfig: View {
 					Text("The amount of time to wait before we consider your packet as done.")
 						.font(.caption)
 					
-					Picker("Mode", selection: $mode ) {
+					Picker("mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
 							Text(smt.description)
 						}
@@ -113,7 +113,7 @@ struct SerialConfig: View {
 				
 			} label: {
 				
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -122,7 +122,7 @@ struct SerialConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -148,7 +148,7 @@ struct SerialConfig: View {
 				}
 			}
 			
-			.navigationTitle("Serial Config")
+			.navigationTitle("serial.config")
 			.navigationBarItems(trailing:
 
 				ZStack {

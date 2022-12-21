@@ -97,7 +97,7 @@ struct DisplayConfig: View {
 				
 			} label: {
 				
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -106,7 +106,7 @@ struct DisplayConfig: View {
 			.padding()
 			.confirmationDialog(
 				
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm
 			) {
 				Button("Save Display Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
@@ -131,7 +131,7 @@ struct DisplayConfig: View {
 				}
 			}
 		}
-		.navigationTitle("Display Config")
+		.navigationTitle("display.config")
 		.navigationBarItems(trailing:
 			ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

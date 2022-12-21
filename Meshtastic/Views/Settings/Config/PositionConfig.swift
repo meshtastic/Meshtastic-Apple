@@ -193,7 +193,7 @@ struct PositionConfig: View {
 				
 			} label: {
 				
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -201,14 +201,14 @@ struct PositionConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
 				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					if fixedPosition {
-						let sendPosition = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
+						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantResponse: false)
 					}
 					
 					var pc = Config.PositionConfig()
@@ -240,7 +240,7 @@ struct PositionConfig: View {
 				}
 			}
 		}
-		.navigationTitle("Position Config")
+		.navigationTitle("position.config")
 		.navigationBarItems(trailing:
 
 			ZStack {

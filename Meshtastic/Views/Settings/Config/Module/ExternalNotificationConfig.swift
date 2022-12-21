@@ -68,9 +68,9 @@ struct ExternalNotificationConfig: View {
 		
 		VStack {
 			Form {
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
-						Label("Enabled", systemImage: "megaphone")
+						Label("enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $alertBell) {
@@ -123,7 +123,7 @@ struct ExternalNotificationConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -131,7 +131,7 @@ struct ExternalNotificationConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -153,7 +153,7 @@ struct ExternalNotificationConfig: View {
 					}
 				}
 			}
-			.navigationTitle("External Notification Config")
+			.navigationTitle("external.notification.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

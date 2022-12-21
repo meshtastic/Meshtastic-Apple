@@ -67,9 +67,9 @@ struct ChannelMessageList: View {
 										.cornerRadius(15)
 										.contextMenu {
 											VStack{
-												Text("Channel: \(message.channel)")
+												Text("channel")+Text(": \(message.channel)")
 											}
-											Menu("Tapback response") {
+											Menu("tapback") {
 												ForEach(Tapbacks.allCases) { tb in
 													Button(action: {
 														if bleManager.sendMessage(message: tb.emojiString, toUserNum: 0, channel: channel.index, isEmoji: true, replyID: message.messageId) {
@@ -89,16 +89,16 @@ struct ChannelMessageList: View {
 												self.focusedField = .messageText
 												print("I want to reply to \(message.messageId)")
 											}) {
-												Text("Reply")
+												Text("reply")
 												Image(systemName: "arrowshape.turn.up.left.2.fill")
 											}
 											Button(action: {
 												UIPasteboard.general.string = message.messagePayload
 											}) {
-												Text("Copy")
+												Text("copy")
 												Image(systemName: "doc.on.doc")
 											}
-											Menu("Message Details") {
+											Menu("message.details") {
 												VStack {
 													let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 													Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
@@ -110,11 +110,11 @@ struct ChannelMessageList: View {
 												}
 												if currentUser && message.receivedACK {
 													VStack {
-														Text("Received Ack \(message.receivedACK ? "✔️" : "")")
+														Text("received.ack")+Text(" \(message.receivedACK ? "✔️" : "")")
 													}
 												} else if currentUser && message.ackError == 0 {
 													// Empty Error
-													Text("Waiting. . .")
+													Text("waiting")
 												} else if currentUser && message.ackError > 0 {
 													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
@@ -126,7 +126,7 @@ struct ChannelMessageList: View {
 														if ackDate >= sixMonthsAgo! {
 															Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
 														} else {
-															Text("Unknown Age").font(.caption2).foregroundColor(.gray)
+															Text("unknown.age").font(.caption2).foregroundColor(.gray)
 														}
 													}
 												}
@@ -144,7 +144,7 @@ struct ChannelMessageList: View {
 												self.deleteMessageId = message.messageId
 												print(deleteMessageId)
 											}) {
-												Text("Delete")
+												Text("delete")
 												Image(systemName: "trash")
 											}
 										}
@@ -243,12 +243,12 @@ struct ChannelMessageList: View {
 					}
 
 				} label: {
-					Text("Share Position")
+					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
 				}
-				ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+				ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 					.frame(width: 130)
 					.padding(5)
 					.font(.subheadline)
@@ -260,7 +260,7 @@ struct ChannelMessageList: View {
 
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
-					TextField("Message", text: $typingMessage, axis: .vertical)
+					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 							totalBytes = value.utf8.count
 							// Only mess with the value if it is too big
@@ -277,7 +277,7 @@ struct ChannelMessageList: View {
 						.keyboardType(kbType!)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
-								Button("Dismiss Keyboard") {
+								Button("dismiss.keyboard") {
 									focusedField = nil
 								}
 								.font(.subheadline)
@@ -300,7 +300,7 @@ struct ChannelMessageList: View {
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
 
-								ProgressView("Bytes: \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
 									.font(.subheadline)
@@ -311,9 +311,22 @@ struct ChannelMessageList: View {
 						.focused($focusedField, equals: .messageText)
 						.multilineTextAlignment(.leading)
 						.frame(minHeight: 50)
-
+						.keyboardShortcut(.defaultAction)
+						.onSubmit {
+							#if targetEnvironment(macCatalyst)
+							if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
+								typingMessage = ""
+								focusedField = nil
+								replyMessageId = 0
+								if sendPositionWithMessage {
+									if bleManager.sendPosition(destNum: Int64(channel.index), wantAck: true) {
+										print("Location Sent")
+									}
+								}
+							}
+							#endif
+						}
 					Text(typingMessage).opacity(0).padding(.all, 0)
-
 				}
 				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
 				.padding(.bottom, 15)
@@ -323,7 +336,7 @@ struct ChannelMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: Int64(channel.index), wantAck: true) {
+							if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false) {
 								print("Location Sent")
 							}
 						}

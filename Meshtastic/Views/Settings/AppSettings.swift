@@ -17,15 +17,15 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .defaultKeyboard:
-				return "Default"
+				return NSLocalizedString("default", comment: "Default Keyboard")
 			case .asciiCapable:
-				return "ASCII Capable"
+				return NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard")
 			case .twitter:
-				return "Twitter"
+				return NSLocalizedString("twitter", comment: "Twitter Keyboard")
 			case .emailAddress:
-				return "Email Address"
+				return NSLocalizedString("email.address", comment: "Email Address Keyboard")
 			case .numbersAndPunctuation:
-				return "Numbers and Punctuation"
+				return NSLocalizedString("numbers.punctuation", comment: "Numbers and Punctuation Keyboard")
 			}
 		}
 	}
@@ -43,11 +43,11 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .satellite:
-				return "Satellite"
+				return NSLocalizedString("satellite", comment: "Satellite Map Type")
 			case .standard:
-				return "Standard"
+				return NSLocalizedString("standard", comment: "Standard Map Type")
 			case .hybrid:
-				return "Hybrid"
+				return NSLocalizedString("hybrid", comment: "Hybrid Map Type")
 			}
 		}
 	}
@@ -69,21 +69,21 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .fiveSeconds:
-				return "Five Seconds"
+				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
 			case .tenSeconds:
-				return "Ten Seconds"
+				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
 			case .fifteenSeconds:
-				return "Fifteen Seconds"
+				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
 			case .thirtySeconds:
-				return "Thirty Seconds"
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 			case .oneMinute:
-				return "One Minute"
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
 			case .fiveMinutes:
-				return "Five Minutes"
+				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 			case .tenMinutes:
-				return "Ten Minutes"
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
 			case .fifteenMinutes:
-				return "Fifteen Minutes"
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 			}
 		}
 	}
@@ -105,7 +105,7 @@ struct AppSettings: View {
     var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("USER DETAILS")) {
+				Section(header: Text("user.details")) {
 
 					HStack {
 						Label("Name", systemImage: "person.crop.rectangle.fill")
@@ -116,16 +116,16 @@ struct AppSettings: View {
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 				}
-				Section(header: Text("Options")) {
+				Section(header: Text("options")) {
 					
-					Picker("Keyboard Type", selection: $userSettings.keyboardType) {
+					Picker("keyboard.type", selection: $userSettings.keyboardType) {
 						ForEach(KeyboardType.allCases) { kb in
 							Text(kb.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 
-					 Picker("Map Type", selection: $userSettings.meshMapType) {
+					 Picker("map.type", selection: $userSettings.meshMapType) {
 						 ForEach(MeshMapType.allCases) { map in
 							 Text(map.description)
 						 }
@@ -134,23 +134,23 @@ struct AppSettings: View {
 					
 				}
 				
-				Section(header: Text("Phone GPS")) {
+				Section(header: Text("phone.gps")) {
 					
 					Toggle(isOn: $userSettings.provideLocation) {
 
-						Label("Provide location to mesh", systemImage: "location.circle.fill")
+						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if userSettings.provideLocation {
 						
-						Picker(" Update Interval", selection: $userSettings.provideLocationInterval) {
+						Picker("update.interval", selection: $userSettings.provideLocationInterval) {
 							ForEach(LocationUpdateInterval.allCases) { lu in
 								Text(lu.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
 						
-						Text("How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.")
+						Text("phone.gps.interval.description")
 							.font(.caption)
 							.listRowSeparator(.visible)
 					}
@@ -160,7 +160,7 @@ struct AppSettings: View {
 				Button {
 					isPresentingCoreDataResetConfirm = true
 				} label: {
-					Label("Clear App Data", systemImage: "trash")
+					Label("clear.app.data", systemImage: "trash")
 						.foregroundColor(.red)
 				}
 				.buttonStyle(.bordered)
@@ -168,7 +168,7 @@ struct AppSettings: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					"Are you sure?",
+					"are.you.sure",
 					isPresented: $isPresentingCoreDataResetConfirm,
 					titleVisibility: .visible
 				) {
@@ -179,7 +179,7 @@ struct AppSettings: View {
 				}
 			}
 		}
-		.navigationTitle("App Settings")
+		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:
 			ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

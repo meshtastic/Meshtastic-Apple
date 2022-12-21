@@ -33,12 +33,12 @@ struct NetworkConfig: View {
 				Section(header: Text("WiFi Options (ESP32 Only)")) {
 					
 					Toggle(isOn: $wifiEnabled) {
-						Label("Enabled", systemImage: "wifi")
+						Label("enabled", systemImage: "wifi")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					HStack {
-						Label("SSID", systemImage: "network")
-						TextField("SSID", text: $wifiSsid)
+						Label("ssid", systemImage: "network")
+						TextField("ssid", text: $wifiSsid)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -58,8 +58,8 @@ struct NetworkConfig: View {
 					}
 					.keyboardType(.default)
 					HStack {
-						Label("Password", systemImage: "wallet.pass")
-						TextField("Password", text: $wifiPsk)
+						Label("password", systemImage: "wallet.pass")
+						TextField("password", text: $wifiPsk)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -84,7 +84,7 @@ struct NetworkConfig: View {
 				.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
 				Section(header: Text("Ethernet Options")) {
 					Toggle(isOn: $ethEnabled) {
-						Label("Enabled", systemImage: "network")
+						Label("enabled", systemImage: "network")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Enabling Ethernet will disable the bluetooth connection to the app.")
@@ -96,7 +96,7 @@ struct NetworkConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -128,7 +128,7 @@ struct NetworkConfig: View {
 				Text("After network config saves the node will reboot.")
 			}
 		}
-		.navigationTitle("Network Config")
+		.navigationTitle("network.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

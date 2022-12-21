@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 9/21/22.
 //
+import Foundation
 
 // Default of 0 is Client
 enum ChannelRoles: Int, CaseIterable, Identifiable {
@@ -18,11 +19,11 @@ enum ChannelRoles: Int, CaseIterable, Identifiable {
 			switch self {
 			
 			case .disabled:
-				return "Disabled"
+				return NSLocalizedString("channel.role.disabled", comment: "Disabled")
 			case .primary:
-				return "Primary"
+				return NSLocalizedString("channel.role.primary", comment: "Primary")
 			case .secondary:
-				return "Secondary"
+				return NSLocalizedString("channel.role.secondary", comment: "Secondary")
 			}
 		}
 	}

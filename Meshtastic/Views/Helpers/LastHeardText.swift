@@ -7,17 +7,22 @@ import SwiftUI
 //
 struct LastHeardText: View {
 	var lastHeard: Date?
-	
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
-
 	var body: some View {
 		if (lastHeard != nil && lastHeard! >= sixMonthsAgo!){
-			
-			Text("Heard: \(lastHeard!, style: .relative) ago")
-			
+			Text("heard")+Text(": \(lastHeard!, style: .relative) ")+Text("ago")
 		} else {
-			
-			Text("Unknown Age")
+			Text("unknown.age")
 		}
+	}
+}
+struct LastHeardText_Previews: PreviewProvider {
+	static var previews: some View {
+		LastHeardText(lastHeard: Date())
+			.previewLayout(.fixed(width: 300, height: 100))
+			.environment(\.locale, .init(identifier: "en"))
+		LastHeardText(lastHeard: Date())
+			.previewLayout(.fixed(width: 300, height: 100))
+			.environment(\.locale, .init(identifier: "de"))
 	}
 }

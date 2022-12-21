@@ -28,7 +28,7 @@ struct Connect: View {
             VStack {
 				List {
 					if bleManager.isSwitchedOn {
-					Section(header: Text("Connected Radio").font(.title)) {
+					Section(header: Text("connected.radio").font(.title)) {
 						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right")
@@ -39,25 +39,26 @@ struct Connect: View {
 									if node != nil {
 										Text(bleManager.connectedPeripheral.longName).font(.title2)
 									}
-									Text("BLE Name: ").font(.caption)+Text(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")
+									Text("ble.name").font(.caption)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")")
 										.font(.caption).foregroundColor(Color.gray)
 									if node != nil {
-										Text("FW Version: ").font(.caption)+Text(node?.myInfo?.firmwareVersion ?? "Unknown")
+										Text("firmware.version").font(.caption)+Text(": \(node?.myInfo?.firmwareVersion ?? "Unknown")")
 											.font(.caption).foregroundColor(Color.gray)
 									}
 									if bleManager.isSubscribed {
-										Text("Subscribed to mesh").font(.caption)
+										Text("subscribed").font(.caption)
 											.foregroundColor(.green)
 									} else {
-										Text("Communicating with device. . . ").font(.caption)
+										Text("communicating").font(.caption)
 											.foregroundColor(.orange)
 									}
 								}
 								Spacer()
 								VStack(alignment: .center) {
-									Text("Preferred").font(.caption2)
-									Text("Radio").font(.caption2)
-									Toggle("Preferred Radio", isOn: $bleManager.preferredPeripheral)
+									Text("preferred.radio").font(.caption2)
+										.multilineTextAlignment(.center)
+										.frame(width: 75)
+									Toggle("preferred.radio", isOn: $bleManager.preferredPeripheral)
 										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 										.labelsHidden()
 										.onChange(of: bleManager.preferredPeripheral) { value in
@@ -91,7 +92,7 @@ struct Connect: View {
 										isPreferredRadio = false
 									}
 								} label: {
-									Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+									Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 								}
 							}
 							.contextMenu{
@@ -112,7 +113,7 @@ struct Connect: View {
 									NavigationLink {
 										LoRaConfig(node: node)
 									} label: {
-										Label("Set LoRa Region", systemImage: "globe.americas.fill")
+										Label("set.region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)
 											.font(.title)
 									}
@@ -127,7 +128,7 @@ struct Connect: View {
 										.imageScale(.large).foregroundColor(.orange)
 										.padding(.trailing)
 									if bleManager.timeoutTimerCount == 0 {
-										Text("Connecting . . .")
+										Text("connecting")
 											.font(.title3)
 											.foregroundColor(.orange)
 									} else {
@@ -151,7 +152,7 @@ struct Connect: View {
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.red)
 										.padding(.trailing)
-									Text("No device connected").font(.title3)
+									Text("not.connected").font(.title3)
 								}
 								.padding()
 							}
@@ -160,7 +161,7 @@ struct Connect: View {
 					.textCase(nil)
 
 					if !self.bleManager.isConnected {
-						Section(header: Text("Available Radios").font(.title)) {
+						Section(header: Text("available.radios").font(.title)) {
 							ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
 								HStack {
 									Image(systemName: "circle.fill")
@@ -215,7 +216,7 @@ struct Connect: View {
 							
 						}) {
 							
-							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 
 						}
 						.buttonStyle(.bordered)
@@ -228,7 +229,7 @@ struct Connect: View {
                     }
 					.padding(.bottom, 10)
             }
-            .navigationTitle("Bluetooth")
+            .navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 				 ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

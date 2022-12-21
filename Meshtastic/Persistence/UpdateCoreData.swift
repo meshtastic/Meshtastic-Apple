@@ -60,9 +60,9 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 	}
 }
 
-public func deleteChannelMessages(channelIndex: Int32, context: NSManagedObjectContext) {
+public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 	let fetchChannelMessagesRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
-	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %i AND toUser == nil AND admin == false", Int32(channelIndex))
+	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %i AND toUser == nil AND admin == false", Int32(channel.id))
 	fetchChannelMessagesRequest.includesPropertyValues = false
 	do {
 		let objects = try context.fetch(fetchChannelMessagesRequest) as! [NSManagedObject]
@@ -70,7 +70,6 @@ public func deleteChannelMessages(channelIndex: Int32, context: NSManagedObjectC
 			   context.delete(object)
 		   }
 		try context.save()
-		context.refreshAllObjects()
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
 	}
@@ -87,7 +86,6 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 			   context.delete(object)
 		   }
 		try context.save()
-		context.refresh(user, mergeChanges: true)
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
 	}

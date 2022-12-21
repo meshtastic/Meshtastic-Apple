@@ -49,23 +49,24 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .oneMinute:
-				return "One Minute"
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
 			case .fiveMinutes:
-				return "Five Minutes"
+				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 			case .tenMinutes:
-				return "Ten Minutes"
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
 			case .fifteenMinutes:
-				return "Fifteen Minutes"
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 			case .thirtyMinutes:
-				return "Thirty Minutes"
+				return NSLocalizedString("interval.thirty.minutes", comment: "Thirty Minutes")
 			case .oneHour:
-				return "One Hour"
+				return NSLocalizedString("interval.one.hour", comment: "One Hour")
 			case .max:
-				return "Always On"
+				return NSLocalizedString("always.on", comment: "Always On")
 			}
 		}
 	}
 }
+
 // Default of 0 is off
 enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
@@ -81,17 +82,17 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .off:
-				return "Off"
+				return NSLocalizedString("off", comment: "Off")
 			case .thirtySeconds:
-				return "Thirty Seconds"
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 			case .oneMinute:
-				return "One Minute"
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
 			case .fiveMinutes:
-				return "Five Minutes"
+				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 			case .tenMinutes:
-				return "Ten Minutes"
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
 			case .fifteenMinutes:
-				return "Fifteen Minutes"
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 			}
 		}
 	}
@@ -109,7 +110,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .auto:
-				return "Automatic Detection"
+				return NSLocalizedString("automatic.detection", comment: "Automatic Detection")
 			case .ssd1306:
 				return "SSD 1306"
 			case .sh1106:

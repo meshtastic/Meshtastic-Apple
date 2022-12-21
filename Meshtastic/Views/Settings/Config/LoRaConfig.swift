@@ -63,7 +63,7 @@ struct LoRaConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
@@ -94,7 +94,7 @@ struct LoRaConfig: View {
 				Text("After LoRa config saves the node will reboot.")
 			}
 		}
-		.navigationTitle("LoRa Config")
+		.navigationTitle("lora.config")
 		.navigationBarItems(trailing:
 			ZStack {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

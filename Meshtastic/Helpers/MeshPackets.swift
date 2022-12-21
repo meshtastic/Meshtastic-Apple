@@ -78,11 +78,15 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 					newDeviceConfig.role = Int32(config.device.role.rawValue)
 					newDeviceConfig.serialEnabled = config.device.serialEnabled
 					newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
+					newDeviceConfig.buttonGpio = Int32(config.device.buttonGpio)
+					newDeviceConfig.buzzerGpio =  Int32(config.device.buzzerGpio)
 					fetchedNode[0].deviceConfig = newDeviceConfig
 				} else {
 					fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
 					fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
 					fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
+					fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.device.buttonGpio)
+					fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.device.buzzerGpio)
 				}
 				
 				do {
@@ -752,6 +756,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 			if fetchedMyInfo.count == 1 {
 					
 				let newChannel = ChannelEntity(context: context)
+				newChannel.id = Int32(channel.index)
 				newChannel.index = Int32(channel.index)
 				newChannel.uplinkEnabled = channel.settings.uplinkEnabled
 				newChannel.downlinkEnabled = channel.settings.downlinkEnabled
@@ -1038,16 +1043,8 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
-	//print(packet.payloadVariant.debugDescription)
-	
 	if let messages = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
-		//let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, wantResponse: true)
-		//if adminMessageId > 0 {
-
-		//}
-		//print(messages)
-	} else {
-		//print(try! packet.decoded.jsonString())
+		print(messages)
 	}
 }
 
@@ -1197,7 +1194,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	}
 }
 	
-func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
+func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 	
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
@@ -1243,7 +1240,10 @@ func telemetryPacket(packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 			
 			try context.save()
-			MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
+			// Only log telemetery from the mesh not the connected device
+			if connectedNode != Int64(packet.from) {
+				MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
+			}
 			
 		} catch {
 			context.rollback()
@@ -1314,19 +1314,30 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						
-						
-						
-						// Create an iOS Notification for the received private channel message and schedule it immediately
-						let manager = LocalNotificationManager()
-						manager.notifications = [
-							Notification(
-								id: ("notification.id.\(newMessage.messageId)"),
-								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-								content: messageText)
-						]
-						manager.schedule()
-						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
+
+						do {
+							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel && !channel.mute {
+									// Create an iOS Notification for the received private channel message and schedule it immediately
+									let manager = LocalNotificationManager()
+									manager.notifications = [
+										Notification(
+											id: ("notification.id.\(newMessage.messageId)"),
+											title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+											content: messageText)
+									]
+									manager.schedule()
+									MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+								}
+							}
+						} catch {
+							
+							
+						}
 					}
 				}
 			} catch {

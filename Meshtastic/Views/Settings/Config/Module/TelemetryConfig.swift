@@ -86,7 +86,7 @@ struct TelemetryConfig: View {
 		
 		VStack {
 			Form {
-				Section(header: Text("Update Intervals")) {
+				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							Text(ui.description)
@@ -108,7 +108,7 @@ struct TelemetryConfig: View {
 					Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
 						.font(.caption)
 					Toggle(isOn: $environmentMeasurementEnabled) {
-						Label("Enabled", systemImage: "chart.xyaxis.line")
+						Label("enabled", systemImage: "chart.xyaxis.line")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $environmentScreenEnabled) {
@@ -125,7 +125,7 @@ struct TelemetryConfig: View {
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
-				Label("Save", systemImage: "square.and.arrow.down")
+				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || node!.telemetryConfig == nil)
 			.buttonStyle(.bordered)
@@ -133,7 +133,7 @@ struct TelemetryConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -154,7 +154,7 @@ struct TelemetryConfig: View {
 				}
 			}
 			
-			.navigationTitle("Telemetry Config")
+			.navigationTitle("telemetry.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
