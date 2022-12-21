@@ -30,7 +30,7 @@ struct Channels: View {
 	@State private var selectedIndex: Int32 = -1
 	
 	@State private var channelIndex: Int32 = 0
-	@State private var channelName = "Channel"
+	@State private var channelName = ""
 	@State private var channelKeySize = 32
 	@State private var channelKey = "AQ=="
 	@State private var channelRole = 2
@@ -60,7 +60,8 @@ struct Channels: View {
 								channelKeySize = 32
 							}
 							isPresentingEditView = true
-							channelName = channel.name ?? "Channel\(channelIndex)"
+							
+							channelName = channel.name ?? ""
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
 							hasChanges = false
@@ -96,7 +97,6 @@ struct Channels: View {
 					isPresentingEditView = true
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
-					channelName = "Channel\(channelIndex)"
 					channelKey = key
 					uplink = false
 					downlink = false
@@ -117,113 +117,111 @@ struct Channels: View {
 						.padding()
 					#endif
 					Form {
-						Section("Edit Channel \(channelIndex)") {
-							HStack {
-								Text("name")
-								Spacer()
-								TextField(
-									"Channel Name",
-									text: $channelName
-								)
-								.disableAutocorrection(true)
-								.keyboardType(.alphabet)
-								.foregroundColor(Color.gray)
-								.onChange(of: channelName, perform: { value in
-									channelName = channelName.replacing(" ", with: "")
-									let totalBytes = channelName.utf8.count
-									// Only mess with the value if it is too big
-									if totalBytes > 11 {
-										let firstNBytes = Data(channelName.utf8.prefix(11))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the channelName back to the last place where it was the right size
-											channelName = maxBytesString
-										}
+						HStack {
+							Text("name")
+							Spacer()
+							TextField(
+								"Channel Name",
+								text: $channelName
+							)
+							.disableAutocorrection(true)
+							.keyboardType(.alphabet)
+							.foregroundColor(Color.gray)
+							.disabled(channelRole == 1 && channelName.count > 0)
+							.onChange(of: channelName, perform: { value in
+								channelName = channelName.replacing(" ", with: "")
+								let totalBytes = channelName.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > 11 {
+									let firstNBytes = Data(channelName.utf8.prefix(11))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the channelName back to the last place where it was the right size
+										channelName = maxBytesString
 									}
-									hasChanges = true
-								})
-							}
-							HStack {
-								Picker("Key Size", selection: $channelKeySize) {
-									Text("Empty").tag(0)
-									Text("Default").tag(-1)
-									Text("1 bit").tag(1)
-									Text("128 bit").tag(16)
-									Text("192 bit").tag(24)
-									Text("256 bit").tag(32)
 								}
-								.pickerStyle(DefaultPickerStyle())
-								Spacer()
-								Button {
-									if channelKeySize == -1 {
-										channelKey = "AQ=="
-									} else {
-										let key = generateChannelKey(size: channelKeySize)
-										channelKey = key
-									}
-								} label: {
-									Image(systemName: "lock.rotation")
-										.font(.title)
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.small)
-							}
-							HStack (alignment: .top) {
-								Text("Key")
-								Spacer()
-								TextField (
-									"",
-									text: $channelKey,
-									axis: .vertical
-								)
-								.foregroundColor(Color.gray)
-								.disabled(true)
-						
-							}
-							.textSelection(.enabled)
-							Picker("Channel Role", selection: $channelRole) {
-								if channelRole == 1 {
-									Text("Primary").tag(1)
-								} else{
-									Text("Disabled").tag(0)
-									Text("Secondary").tag(2)
-								}
+								hasChanges = true
+							})
+						}
+						HStack {
+							Picker("Key Size", selection: $channelKeySize) {
+								Text("Empty").tag(0)
+								Text("Default").tag(-1)
+								Text("1 bit").tag(1)
+								Text("128 bit").tag(16)
+								Text("192 bit").tag(24)
+								Text("256 bit").tag(32)
 							}
 							.pickerStyle(DefaultPickerStyle())
-							.disabled(channelRole == 1)
-							Toggle("Uplink Enabled", isOn: $uplink)
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Toggle("Downlink Enabled", isOn: $downlink)
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							
-						}
-						.onSubmit {
-							//validate(name: channelName)
-						}
-						.onChange(of: channelName) { newName in
-							hasChanges = true
-						}
-						.onChange(of: channelKeySize) { newKeySize in
-							if channelKeySize == -1 {
-								channelKey = "AQ=="
-							} else {
-								let key = generateChannelKey(size: channelKeySize)
-								channelKey = key
+							Spacer()
+							Button {
+								if channelKeySize == -1 {
+									channelKey = "AQ=="
+								} else {
+									let key = generateChannelKey(size: channelKeySize)
+									channelKey = key
+								}
+							} label: {
+								Image(systemName: "lock.rotation")
+									.font(.title)
 							}
-							hasChanges = true
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.small)
 						}
-						.onChange(of: channelKey) { newKey in
-							hasChanges = true
+						HStack (alignment: .top) {
+							Text("Key")
+							Spacer()
+							TextField (
+								"",
+								text: $channelKey,
+								axis: .vertical
+							)
+							.foregroundColor(Color.gray)
+							.disabled(true)
+					
 						}
-						.onChange(of: channelRole) { newRole in
-							hasChanges = true
+						.textSelection(.enabled)
+						Picker("Channel Role", selection: $channelRole) {
+							if channelRole == 1 {
+								Text("Primary").tag(1)
+							} else{
+								Text("Disabled").tag(0)
+								Text("Secondary").tag(2)
+							}
 						}
-						.onChange(of: uplink) { newUplink in
-							hasChanges = true
+						.pickerStyle(DefaultPickerStyle())
+						.disabled(channelRole == 1)
+						Toggle("Uplink Enabled", isOn: $uplink)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle("Downlink Enabled", isOn: $downlink)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					.onSubmit {
+						//validate(name: channelName)
+					}
+					.onChange(of: channelName) { newName in
+						hasChanges = true
+					}
+					.onChange(of: channelKeySize) { newKeySize in
+						if channelKeySize == -1 {
+							channelKey = "AQ=="
+						} else {
+							let key = generateChannelKey(size: channelKeySize)
+							channelKey = key
 						}
-						.onChange(of: downlink) { newDownlink in
-							hasChanges = true
-						}
+						hasChanges = true
+					}
+					.onChange(of: channelKey) { newKey in
+						hasChanges = true
+					}
+					.onChange(of: channelRole) { newRole in
+						hasChanges = true
+					}
+					.onChange(of: uplink) { newUplink in
+						hasChanges = true
+					}
+					.onChange(of: downlink) { newDownlink in
+						hasChanges = true
 					}
 					HStack {
 						Button {
