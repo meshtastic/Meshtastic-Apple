@@ -24,9 +24,10 @@ struct Channels: View {
 
 	var node: NodeInfoEntity?
 	
-	@State private var isPresentingSaveConfirm: Bool = false
+	
 	@State var hasChanges = false
 	@State private var isPresentingEditView = false
+	@State private var isPresentingSaveConfirm: Bool = false
 	@State private var selectedIndex: Int32 = -1
 	
 	@State private var channelIndex: Int32 = 0
@@ -47,11 +48,23 @@ struct Channels: View {
 							selectedIndex = channel.index
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
-							channelKey = channel.psk?.hexDescription ?? ""
+							channelKey = channel.psk?.base64EncodedString() ?? ""
+							if channelKey.count == 0 {
+								channelKeySize = 0
+							} else if channelKey == "AQ==" {
+								channelKeySize = -1
+							} else if channelKey.count == 24 {
+								channelKeySize = 16
+							} else if channelKey.count == 32 {
+								channelKeySize = 24
+							} else if channelKey.count == 44 {
+								channelKeySize = 32
+							}
 							isPresentingEditView = true
 							channelName = channel.name ?? "Channel\(channelIndex)"
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
+							hasChanges = false
 						}) {
 							VStack(alignment: .leading) {
 								HStack {
@@ -88,6 +101,7 @@ struct Channels: View {
 					channelKey = key
 					uplink = false
 					downlink = false
+					hasChanges = false
 					
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")
@@ -99,7 +113,7 @@ struct Channels: View {
 				.sheet(isPresented: $isPresentingEditView) {
 					
 					#if targetEnvironment(macCatalyst)
-					Text("edit.channel")
+					Text("channel")
 						.font(.largeTitle)
 						.padding()
 					#endif
@@ -116,13 +130,15 @@ struct Channels: View {
 							}
 							HStack {
 								Picker("Key Size", selection: $channelKeySize) {
-									Text("Empty").tag(0)
-									Text("Default").tag(-1)
-									Text("1 Bit").tag(1)
-									Text("128 Bit").tag(16)
-									Text("256 Bit").tag(32)
+									Text("Empty (0 bytes)").tag(0)
+									Text("Default (1 byte)").tag(-1)
+									Text("1 Bit (1 byte)").tag(1)
+									Text("AES-128 (16 bytes)").tag(16)
+									Text("AES-192 (24 bytes)").tag(24)
+									Text("AES-256 (32 bytes)").tag(32)
 								}
 								.pickerStyle(DefaultPickerStyle())
+								.fixedSize()
 								Spacer()
 								Button {
 									if channelKeySize == -1 {
@@ -160,6 +176,7 @@ struct Channels: View {
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.disabled(channelRole == 1)
 							Toggle("Uplink Enabled", isOn: $uplink)
 								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 							Toggle("Downlink Enabled", isOn: $downlink)
@@ -168,6 +185,9 @@ struct Channels: View {
 						}
 						.onSubmit {
 							//validate(name: channelName)
+						}
+						.onChange(of: channelName) { newName in
+							hasChanges = true
 						}
 						.onChange(of: channelKeySize) { newKeySize in
 							if channelKeySize == -1 {
@@ -181,41 +201,54 @@ struct Channels: View {
 						.onChange(of: channelKey) { newKey in
 							hasChanges = true
 						}
-					}
-					Button {
-						isPresentingSaveConfirm = true
-					} label: {
-						Label("save", systemImage: "square.and.arrow.down")
-					}
-					.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					.confirmationDialog(
-						"are.you.sure",
-						isPresented: $isPresentingSaveConfirm,
-						titleVisibility: .visible
-					) {
-						Button("Save Channel \(channelIndex) to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-								
-							var channel = Channel()
-							channel.index = channelIndex
-							channel.settings.name = channelName
-							channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-							channel.settings.uplinkEnabled = uplink
-							channel.settings.downlinkEnabled = downlink
-
-							
-//							let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!)
-//
-//							if adminMessageId > 0 {
-//								// Should show a saved successfully alert once I know that to be true
-//								// for now just disable the button after a successful save
-//								hasChanges = false
-//								goBack()
-//							}
+						.onChange(of: channelRole) { newRole in
+							hasChanges = true
 						}
+						.onChange(of: uplink) { newUplink in
+							hasChanges = true
+						}
+						.onChange(of: downlink) { newDownlink in
+							hasChanges = true
+						}
+					}
+					HStack {
+						Button {
+							isPresentingSaveConfirm = true
+						} label: {
+							Label("save", systemImage: "square.and.arrow.down")
+						}
+						.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding(.bottom)
+						.confirmationDialog(
+							"are.you.sure",
+							isPresented: $isPresentingSaveConfirm,
+							titleVisibility: .visible
+						) {
+							Button("Save Channel \(channelIndex) to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+								
+								var channel = Channel()
+								channel.index = channelIndex
+								channel.settings.name = channelName
+								channel.settings.psk = Data(base64Encoded: channelKey, options: .ignoreUnknownCharacters) ?? Data()
+								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
+								channel.settings.uplinkEnabled = uplink
+								channel.settings.downlinkEnabled = downlink
+							}
+						}
+						#if targetEnvironment(macCatalyst)
+						Button {
+							isPresentingEditView = false
+						} label: {
+							Label("Close", systemImage: "xmark")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding(.bottom)
+						#endif
 					}
 					.presentationDetents([.medium, .large])
 				}
