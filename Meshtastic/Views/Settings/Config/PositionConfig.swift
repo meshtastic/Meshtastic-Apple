@@ -208,7 +208,7 @@ struct PositionConfig: View {
 				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
 					
 					if fixedPosition {
-						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantAck: true)
+						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantResponse: false)
 					}
 					
 					var pc = Config.PositionConfig()
