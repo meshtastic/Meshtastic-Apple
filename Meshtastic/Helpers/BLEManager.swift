@@ -940,6 +940,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
+	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setChannel = channel
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown")"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
 	public func saveChannelSet(base64UrlString: String) -> Bool {
 				
 		if isConnected {

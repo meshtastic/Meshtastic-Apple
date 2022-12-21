@@ -19,21 +19,20 @@ struct Channels: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.dismiss) private var dismiss
+	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 
+	
 	var node: NodeInfoEntity?
 	
 	@State var hasChanges = false
 	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State private var selectedIndex: Int32 = -1
-	
 	@State private var channelIndex: Int32 = 0
 	@State private var channelName = ""
 	@State private var channelKeySize = 32
 	@State private var channelKey = "AQ=="
-	@State private var channelRole = 2
+	@State private var channelRole = 0
 	@State private var uplink = false
 	@State private var downlink = false
 	
@@ -44,7 +43,6 @@ struct Channels: View {
 				if node != nil && node?.myInfo != nil {
 					ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 						Button(action:  {
-							selectedIndex = channel.index
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
 							channelKey = channel.psk?.base64EncodedString() ?? ""
@@ -59,11 +57,10 @@ struct Channels: View {
 							} else if channelKey.count == 44 {
 								channelKeySize = 32
 							}
-							isPresentingEditView = true
-							
 							channelName = channel.name ?? ""
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
+							isPresentingEditView = true
 							hasChanges = false
 						}) {
 							VStack(alignment: .leading) {
@@ -93,14 +90,14 @@ struct Channels: View {
 				
 				Button {
 					let key = generateChannelKey(size: 32)
-					print("Add Channel Key \(key) ")
-					isPresentingEditView = true
+					channelName = ""
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
 					channelKey = key
 					uplink = false
 					downlink = false
 					hasChanges = false
+					isPresentingEditView = true
 					
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")
@@ -244,10 +241,21 @@ struct Channels: View {
 								var channel = Channel()
 								channel.index = channelIndex
 								channel.settings.name = channelName
-								channel.settings.psk = Data(base64Encoded: channelKey, options: .ignoreUnknownCharacters) ?? Data()
+								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
 								channel.settings.uplinkEnabled = uplink
 								channel.settings.downlinkEnabled = downlink
+								
+								let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+								
+								if adminMessageId > 0 {
+									// Should show a saved successfully alert once I know that to be true
+									// for now just disable the button after a successful save
+									channelName = ""
+									hasChanges = false
+									isPresentingEditView = false
+									bleManager.disconnectPeripheral()
+								}
 							}
 						}
 						#if targetEnvironment(macCatalyst)
