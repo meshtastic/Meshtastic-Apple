@@ -232,6 +232,7 @@
 		DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshtasticTests.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
+		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1209,11 +1210,12 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */,
 				DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */,
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */;
+			currentVersion = DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

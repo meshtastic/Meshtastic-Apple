@@ -8,6 +8,7 @@ import SwiftUI
 
 enum OutputIntervals: Int, CaseIterable, Identifiable {
 
+	case unset = 0
 	case oneSecond = 1000
 	case twoSeconds = 2000
 	case threeSeconds = 3000
@@ -23,6 +24,8 @@ enum OutputIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			
+			case .unset:
+				return "Unset"
 			case .oneSecond:
 				return "One Second"
 			case .twoSeconds:
@@ -85,6 +88,8 @@ struct ExternalNotificationConfig: View {
 						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Use a PWM Buzzer (RAK buzzer module), disable PWM buzzer to set manual GPIO options.")
+						.font(.caption)
 				}
 				if !usePWM {
 					Section(header: Text("GPIO")) {
@@ -94,7 +99,6 @@ struct ExternalNotificationConfig: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Text("Specifies whether the external circuit is triggered when the device's GPIO is low or high.")
 							.font(.caption)
-							.listRowSeparator(.visible)
 						Picker("GPIO to monitor", selection: $output) {
 							ForEach(0..<40) {
 								if $0 == 0 {

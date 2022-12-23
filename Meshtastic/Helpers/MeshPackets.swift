@@ -1320,6 +1320,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						do {
 							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel {
+									context.refresh(channel, mergeChanges: true)
+								}
+								
 								if channel.index == newMessage.channel && !channel.mute {
 									// Create an iOS Notification for the received private channel message and schedule it immediately
 									let manager = LocalNotificationManager()

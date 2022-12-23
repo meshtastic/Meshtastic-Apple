@@ -481,32 +481,70 @@ struct ModuleConfig {
     // methods supported on all messages.
 
     ///
-    /// Preferences for the ExternalNotificationModule
+    /// Enable the ExternalNotificationModule
     var enabled: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// When using in On/Off mode, keep the output on for this many
+    /// milliseconds. Default 1000ms (1 second).
     var outputMs: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// Define the output pin GPIO setting Defaults to
+    /// EXT_NOTIFY_OUT if set for the board.
+    /// In standalone devices this pin should drive the LED to match the UI.
     var output: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// Optional: Define a secondary output pin for a vibra motor
+    /// This is used in standalone devices to match the UI.
+    var outputVibra: UInt32 = 0
+
+    ///
+    /// Optional: Define a tertiary output pin for an active buzzer
+    /// This is used in standalone devices to to match the UI.
+    var outputBuzzer: UInt32 = 0
+
+    ///
+    /// IF this is true, the 'output' Pin will be pulled active high, false
+    /// means active low.
     var active: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// True: Alert when a text message arrives (output)
     var alertMessage: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// True: Alert when a text message arrives (output_vibra)
+    var alertMessageVibra: Bool = false
+
+    ///
+    /// True: Alert when a text message arrives (output_buzzer)
+    var alertMessageBuzzer: Bool = false
+
+    ///
+    /// True: Alert when the bell character is received (output)
     var alertBell: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// True: Alert when the bell character is received (output_vibra)
+    var alertBellVibra: Bool = false
+
+    ///
+    /// True: Alert when the bell character is received (output_buzzer)
+    var alertBellBuzzer: Bool = false
+
+    ///
+    /// use a PWM output instead of a simple on/off output. This will ignore
+    /// the 'output', 'output_ms' and 'active' settings and use the
+    /// device.buzzer_gpio instead.
     var usePwm: Bool = false
+
+    ///
+    /// The notification will toggle with 'output_ms' for this time of seconds.
+    /// Default is 0 which means don't repeat at all. 60 would mean blink
+    /// and/or beep for 60 seconds
+    var nagTimeout: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1248,10 +1286,17 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     1: .same(proto: "enabled"),
     2: .standard(proto: "output_ms"),
     3: .same(proto: "output"),
+    8: .standard(proto: "output_vibra"),
+    9: .standard(proto: "output_buzzer"),
     4: .same(proto: "active"),
     5: .standard(proto: "alert_message"),
+    10: .standard(proto: "alert_message_vibra"),
+    11: .standard(proto: "alert_message_buzzer"),
     6: .standard(proto: "alert_bell"),
+    12: .standard(proto: "alert_bell_vibra"),
+    13: .standard(proto: "alert_bell_buzzer"),
     7: .standard(proto: "use_pwm"),
+    14: .standard(proto: "nag_timeout"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1267,6 +1312,13 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
       case 5: try { try decoder.decodeSingularBoolField(value: &self.alertMessage) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.alertBell) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.usePwm) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.outputVibra) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.outputBuzzer) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.alertMessageVibra) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.alertMessageBuzzer) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.alertBellVibra) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.alertBellBuzzer) }()
+      case 14: try { try decoder.decodeSingularUInt32Field(value: &self.nagTimeout) }()
       default: break
       }
     }
@@ -1294,6 +1346,27 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if self.usePwm != false {
       try visitor.visitSingularBoolField(value: self.usePwm, fieldNumber: 7)
     }
+    if self.outputVibra != 0 {
+      try visitor.visitSingularUInt32Field(value: self.outputVibra, fieldNumber: 8)
+    }
+    if self.outputBuzzer != 0 {
+      try visitor.visitSingularUInt32Field(value: self.outputBuzzer, fieldNumber: 9)
+    }
+    if self.alertMessageVibra != false {
+      try visitor.visitSingularBoolField(value: self.alertMessageVibra, fieldNumber: 10)
+    }
+    if self.alertMessageBuzzer != false {
+      try visitor.visitSingularBoolField(value: self.alertMessageBuzzer, fieldNumber: 11)
+    }
+    if self.alertBellVibra != false {
+      try visitor.visitSingularBoolField(value: self.alertBellVibra, fieldNumber: 12)
+    }
+    if self.alertBellBuzzer != false {
+      try visitor.visitSingularBoolField(value: self.alertBellBuzzer, fieldNumber: 13)
+    }
+    if self.nagTimeout != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nagTimeout, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1301,10 +1374,17 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if lhs.enabled != rhs.enabled {return false}
     if lhs.outputMs != rhs.outputMs {return false}
     if lhs.output != rhs.output {return false}
+    if lhs.outputVibra != rhs.outputVibra {return false}
+    if lhs.outputBuzzer != rhs.outputBuzzer {return false}
     if lhs.active != rhs.active {return false}
     if lhs.alertMessage != rhs.alertMessage {return false}
+    if lhs.alertMessageVibra != rhs.alertMessageVibra {return false}
+    if lhs.alertMessageBuzzer != rhs.alertMessageBuzzer {return false}
     if lhs.alertBell != rhs.alertBell {return false}
+    if lhs.alertBellVibra != rhs.alertBellVibra {return false}
+    if lhs.alertBellBuzzer != rhs.alertBellBuzzer {return false}
     if lhs.usePwm != rhs.usePwm {return false}
+    if lhs.nagTimeout != rhs.nagTimeout {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
