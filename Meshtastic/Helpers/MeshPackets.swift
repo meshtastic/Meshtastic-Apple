@@ -409,20 +409,36 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 				if fetchedNode[0].externalNotificationConfig == nil {
 					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
 					newExternalNotificationConfig.enabled = config.externalNotification.enabled
+					newExternalNotificationConfig.usePWM = config.externalNotification.usePwm
 					newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
+					newExternalNotificationConfig.alertBellBuzzer = config.externalNotification.alertBellBuzzer
+					newExternalNotificationConfig.alertBellVibra = config.externalNotification.alertBellVibra
 					newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
+					newExternalNotificationConfig.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
+					newExternalNotificationConfig.alertMessageVibra = config.externalNotification.alertMessageVibra
 					newExternalNotificationConfig.active = config.externalNotification.active
 					newExternalNotificationConfig.output = Int32(config.externalNotification.output)
+					newExternalNotificationConfig.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
+					newExternalNotificationConfig.outputVibra = Int32(config.externalNotification.outputVibra)
 					newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					newExternalNotificationConfig.nagTimeout = Int32(config.externalNotification.nagTimeout)
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
 					fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
+					fetchedNode[0].externalNotificationConfig?.usePWM = config.externalNotification.usePwm
 					fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
+					fetchedNode[0].externalNotificationConfig?.alertBellBuzzer = config.externalNotification.alertBellBuzzer
+					fetchedNode[0].externalNotificationConfig?.alertBellVibra = config.externalNotification.alertBellVibra
 					fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
+					fetchedNode[0].externalNotificationConfig?.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
+					fetchedNode[0].externalNotificationConfig?.alertMessageVibra = config.externalNotification.alertMessageVibra
 					fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
 					fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
+					fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
+					fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.externalNotification.outputVibra)
 					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.externalNotification.nagTimeout)
 				}
 				
 				do {
