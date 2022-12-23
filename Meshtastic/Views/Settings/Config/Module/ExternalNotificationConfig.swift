@@ -67,7 +67,7 @@ struct ExternalNotificationConfig: View {
 	@State var alertMessageBuzzer = false
 	@State var alertMessageVibra = false
 	@State var active = false
-	@State var usePWM = true
+	@State var usePWM = false
 	@State var output = 0
 	@State var outputBuzzer = 0
 	@State var outputVibra = 0
@@ -75,7 +75,7 @@ struct ExternalNotificationConfig: View {
 	@State var nagTimeout = 0
 	
 	var body: some View {
-
+		
 		Form {
 			Section(header: Text("options")) {
 				Toggle(isOn: $enabled) {
@@ -94,7 +94,7 @@ struct ExternalNotificationConfig: View {
 					Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Use a PWM output (like the RAK Buzzer) instead of a on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
+				Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 					.font(.caption)
 			}
 			if !usePWM {
@@ -123,6 +123,14 @@ struct ExternalNotificationConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("When using in GPIO mode, keep the output on for this long. ")
 						.font(.caption)
+					Picker("Nag timeout", selection: $nagTimeout ) {
+						ForEach(OutputIntervals.allCases) { oi in
+							Text(oi.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Specifies how long the monitored GPIO should output.")
+						.font(.caption)
 				}
 				
 				Section(header: Text("Optional GPIO")) {
@@ -135,7 +143,7 @@ struct ExternalNotificationConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $alertMessageBuzzer) {
-						Label("Alert GPIO Buzzer when receiving a message", systemImage: "message")
+						Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $alertMessageBuzzer) {
@@ -162,17 +170,8 @@ struct ExternalNotificationConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Picker("Nag timeout", selection: $nagTimeout ) {
-						ForEach(OutputIntervals.allCases) { oi in
-							Text(oi.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Specifies how long the monitored GPIO should output.")
-						.font(.caption)
 				}
 			}
-			
 		}
 		.disabled(bleManager.connectedPeripheral == nil)
 		Button {
@@ -234,7 +233,7 @@ struct ExternalNotificationConfig: View {
 			self.outputVibra = Int(node?.externalNotificationConfig?.outputVibra ?? 0)
 			self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
 			self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
-			self.usePWM = node?.externalNotificationConfig?.usePWM ?? true
+			self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
 			self.hasChanges = false
 		}
 		.onChange(of: enabled) { newEnabled in
