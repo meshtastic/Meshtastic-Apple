@@ -1308,7 +1308,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 				for match in matches {
 					guard let range = Range(match.range, in: messageText) else { continue }
 					let url = messageText[range]
-					print(match.url?.baseURL)
 					messageWithLink = messageText.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))](\(url))")
 				}
 				newMessage.messagePayload = messageWithLink
