@@ -9,6 +9,32 @@ import Foundation
 import CoreData
 import SwiftUI
 
+func generateMessageMarkdown (message: String) -> String {
+	
+	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+	let detector = try! NSDataDetector(types: types.rawValue)
+	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+	var messageWithMarkdown = message
+	if matches.count > 0 {
+
+		for match in matches {
+			guard let range = Range(match.range, in: message) else { continue }
+			if match.resultType == .address {
+				let address = message[range]
+				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
+			} else if match.resultType == .phoneNumber {
+				let phone = messageWithMarkdown[range]
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
+			} else if match.resultType == .link {
+				let url = messageWithMarkdown[range]
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(url))")
+			}
+		}
+	}
+	return messageWithMarkdown
+}
+
 func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	// We don't care about any of the Power settings, config is available for everyting else
@@ -1301,31 +1327,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			}
-			let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
-			let detector = try! NSDataDetector(types: types.rawValue)
-			let matches = detector.matches(in: messageText, options: [], range: NSRange(location: 0, length: messageText.utf16.count))
-			if matches.count > 0 {
-				var messageWithLink = messageText
-				for match in matches {
-					guard let range = Range(match.range, in: messageText) else { continue }
-					if match.resultType == .address {
-						let address = messageText[range]
-						let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-						messageWithLink = messageWithLink.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
-					} else if match.resultType == .phoneNumber {
-						let phone = messageText[range]
-						messageWithLink = messageWithLink.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
-					} else if match.resultType == .link {
-						let url = messageText[range]
-						messageWithLink = messageWithLink.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))](\(url))")
-					}
-				}
-				newMessage.messagePayload = messageText
-				newMessage.messagePayloadMarkdown = messageWithLink
-			} else {
-				newMessage.messagePayload = messageText
-				newMessage.messagePayloadMarkdown = messageText
-			}
+			newMessage.messagePayload = messageText
+			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
+
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
 			

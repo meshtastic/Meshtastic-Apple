@@ -620,6 +620,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						newMessage.replyID = replyID
 					}
 					newMessage.messagePayload = message
+					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
 
 					let dataType = PortNum.textMessageApp
 					let payloadData: Data = message.data(using: String.Encoding.utf8)!
