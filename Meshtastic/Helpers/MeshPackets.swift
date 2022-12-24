@@ -1301,18 +1301,30 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			}
-			let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+			let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+			let detector = try! NSDataDetector(types: types.rawValue)
 			let matches = detector.matches(in: messageText, options: [], range: NSRange(location: 0, length: messageText.utf16.count))
 			if matches.count > 0 {
-				var messageWithLink = ""
+				var messageWithLink = messageText
 				for match in matches {
 					guard let range = Range(match.range, in: messageText) else { continue }
-					let url = messageText[range]
-					messageWithLink = messageText.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))](\(url))")
+					if match.resultType == .address {
+						let address = messageText[range]
+						let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+						messageWithLink = messageWithLink.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
+					} else if match.resultType == .phoneNumber {
+						let phone = messageText[range]
+						messageWithLink = messageWithLink.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
+					} else if match.resultType == .link {
+						let url = messageText[range]
+						messageWithLink = messageWithLink.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))](\(url))")
+					}
 				}
-				newMessage.messagePayload = messageWithLink
+				newMessage.messagePayload = messageText
+				newMessage.messagePayloadMarkdown = messageWithLink
 			} else {
 				newMessage.messagePayload = messageText
+				newMessage.messagePayloadMarkdown = messageText
 			}
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()

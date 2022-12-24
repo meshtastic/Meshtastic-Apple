@@ -60,7 +60,7 @@ struct ChannelMessageList: View {
 										.offset(y: -5)
 								}
 								VStack(alignment: currentUser ? .trailing : .leading) {
-									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayload ?? "EMPTY MESSAGE")
+									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 									let skyBlue = Color(red: 0.4627, green: 0.8392, blue: 1.0)
 									Text(markdownText)
 										.tint(skyBlue)
