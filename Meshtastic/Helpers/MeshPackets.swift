@@ -1301,8 +1301,20 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			}
-
-			newMessage.messagePayload = messageText
+			let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+			let matches = detector.matches(in: messageText, options: [], range: NSRange(location: 0, length: messageText.utf16.count))
+			if matches.count > 0 {
+				var messageWithLink = ""
+				for match in matches {
+					guard let range = Range(match.range, in: messageText) else { continue }
+					let url = messageText[range]
+					print(match.url?.baseURL)
+					messageWithLink = messageText.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))](\(url))")
+				}
+				newMessage.messagePayload = messageWithLink
+			} else {
+				newMessage.messagePayload = messageText
+			}
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
 			
