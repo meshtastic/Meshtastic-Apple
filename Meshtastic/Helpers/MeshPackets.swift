@@ -19,6 +19,7 @@ func generateMessageMarkdown (message: String) -> String {
 
 		for match in matches {
 			guard let range = Range(match.range, in: message) else { continue }
+			print(match.url ?? "No URL")
 			if match.resultType == .address {
 				let address = message[range]
 				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
@@ -27,8 +28,10 @@ func generateMessageMarkdown (message: String) -> String {
 				let phone = messageWithMarkdown[range]
 				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
 			} else if match.resultType == .link {
-				let url = messageWithMarkdown[range]
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(url))")
+				let url = match.url?.absoluteString ?? ""
+				if url.count > 0 {
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(url))")
+				}
 			}
 		}
 	}
