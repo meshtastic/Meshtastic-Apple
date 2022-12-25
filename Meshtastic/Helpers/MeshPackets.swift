@@ -19,7 +19,6 @@ func generateMessageMarkdown (message: String) -> String {
 
 		for match in matches {
 			guard let range = Range(match.range, in: message) else { continue }
-			print(match.url ?? "No URL")
 			if match.resultType == .address {
 				let address = message[range]
 				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
@@ -726,7 +725,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.hasGps = myInfo.hasGps_p
 			myInfoEntity.hasWifi = myInfo.hasWifi_p
 			myInfoEntity.bitrate = myInfo.bitrate
-
 			// Swift does strings weird, this does work to get the version without the github hash
 			let lastDotIndex = myInfo.firmwareVersion.lastIndex(of: ".")
 			var version = myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: myInfo.firmwareVersion))]
@@ -737,15 +735,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.maxChannels = Int32(bitPattern: myInfo.maxChannels)
 			
 			do {
-
 				try context.save()
 				MeshLogger.log("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
 				return myInfoEntity
 
 			} catch {
-
 				context.rollback()
-
 				let nsError = error as NSError
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
@@ -756,7 +751,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].hasGps = myInfo.hasGps_p
 			fetchedMyInfo[0].bitrate = myInfo.bitrate
-			
 			let lastDotIndex = myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 			var version = myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: myInfo.firmwareVersion))]
 			version = version.dropLast()
@@ -766,20 +760,16 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].maxChannels = Int32(bitPattern: myInfo.maxChannels)
 			
 			do {
-
 				try context.save()
 				MeshLogger.log("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
 				return fetchedMyInfo[0]
 
 			} catch {
-
 				context.rollback()
-
 				let nsError = error as NSError
 				print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
 			}
 		}
-
 	} catch {
 
 		print("💥 Fetch MyInfo Error")
@@ -1154,7 +1144,6 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		
