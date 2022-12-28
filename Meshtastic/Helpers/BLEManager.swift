@@ -544,6 +544,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 								routeString += "\(node) --> "
 							}
 							routeString += "\(decodedInfo.packet.from)"
+							MeshLogger.log(routeString)
 						}
 					}
 				case .UNRECOGNIZED(_):
