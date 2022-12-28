@@ -1038,7 +1038,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
-					print(channelSet)
 					var i:Int32 = 0
 					for cs in channelSet.settings {
 						var chan = Channel()
@@ -1095,6 +1094,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							MeshLogger.log("✈️ Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
 					}
 					return true
+						
 				} catch {
 					return false
 				}
