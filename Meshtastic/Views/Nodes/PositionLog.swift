@@ -58,7 +58,14 @@ struct PositionLog: View {
 				
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
-					Grid(alignment: .topLeading, horizontalSpacing: 2) {
+					let columns = [
+						GridItem(.fixed(95)),
+						GridItem(.fixed(95)),
+						GridItem(),
+						GridItem(),
+						GridItem(.fixed(115))
+					]
+					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						
 						GridRow {
 							
@@ -78,7 +85,6 @@ struct PositionLog: View {
 								.font(.caption2)
 								.fontWeight(.bold)
 						}
-						Divider()
 						ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 							GridRow {
 								Text(String(format: "%.6f", mappin.latitude ?? 0))

@@ -23,6 +23,7 @@ struct Contacts: View {
 	@State private var selection: UserEntity? = nil // Nothing selected by default.
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
+	@State private var isPresentingTraceRouteSentAlert = false
 
     var body: some View {
 
@@ -194,6 +195,14 @@ struct Contacts: View {
 												} label: {
 													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 												}
+												Button {
+													let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
+													if success {
+														isPresentingTraceRouteSentAlert = true
+													}
+												} label: {
+													Label("Trace Route", systemImage: "signpost.right.and.left")
+												}
 												if user.messageList.count  > 0 {
 													Button(role: .destructive) {
 														isPresentingDeleteUserMessagesConfirm = true
@@ -202,12 +211,21 @@ struct Contacts: View {
 													}
 												}
 											}
+											.alert(
+												"Trace Route Sent",
+												isPresented: $isPresentingTraceRouteSentAlert
+											)
+											{
+												Button("OK", role: .cancel) { }
+											}
+											message: {
+												Text("This could take a while, response will appear in the mesh log.")
+											}
 											.confirmationDialog(
 												"This conversation will be deleted.",
 												isPresented: $isPresentingDeleteUserMessagesConfirm,
 												titleVisibility: .visible
 											) {
-												
 												Button(role: .destructive) {
 													deleteUserMessages(user: user, context: context)
 													context.refresh(node!.user!, mergeChanges: true)

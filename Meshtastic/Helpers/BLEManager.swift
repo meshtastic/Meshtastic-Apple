@@ -313,6 +313,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 	}
 	
+	func sendTraceRouteRequest(destNum: Int64,  wantResponse: Bool) -> Bool {
+		
+		var success = false
+		let fromNodeNum = connectedPeripheral.num
+
+		let routePacket = RouteDiscovery()
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(destNum)
+		meshPacket.from	= UInt32(fromNodeNum)//0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! routePacket.serializedData()
+		dataMessage.portnum = PortNum.tracerouteApp
+		dataMessage.wantResponse = wantResponse
+		meshPacket.decoded = dataMessage
+
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			success = true
+			MeshLogger.log("🪧 Sent a Trace Route Packet to node: \(destNum).")
+		}
+		return success
+	}
+	
 	func sendWantConfig() {
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
@@ -504,7 +533,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .audioApp:
 					MeshLogger.log("ℹ️ MESH PACKET received for Audio App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .tracerouteApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Trace Route App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
+						
+						if routingMessage.route.count == 0 {
+							MeshLogger.log("🪧 Trace Route request sent to \(decodedInfo.packet.from) was recieived directly.")
+						} else {
+							
+							var routeString = "🪧 Trace Route request returned: \(decodedInfo.packet.to) --> "
+							for node in routingMessage.route {
+								routeString += "\(node) --> "
+							}
+							routeString += "\(decodedInfo.packet.from)"
+						}
+					}
 				case .UNRECOGNIZED(_):
 					MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .max:
