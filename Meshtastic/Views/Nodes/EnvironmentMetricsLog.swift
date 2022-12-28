@@ -63,8 +63,14 @@ struct EnvironmentMetricsLog: View {
 				}
 			} else {
 				ScrollView {
-				
-				Grid(alignment: .topLeading, horizontalSpacing: 2) {
+					let columns = [
+						GridItem(),
+						GridItem(),
+						GridItem(),
+						GridItem(),
+						GridItem(.fixed(115))
+					]
+					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
 					GridRow {
 						
@@ -80,17 +86,10 @@ struct EnvironmentMetricsLog: View {
 						Text("Gas")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("DC")
-							.font(.caption)
-							.fontWeight(.bold)
-						Text("Volt")
-							.font(.caption)
-							.fontWeight(.bold)
 						Text("Timestamp")
 							.font(.caption)
 							.fontWeight(.bold)
 					}
-					Divider()
 					ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (em: TelemetryEntity) in
 						
 						if em.metricsType == 1 {
@@ -104,10 +103,6 @@ struct EnvironmentMetricsLog: View {
 								Text("\(String(format: "%.2f", em.barometricPressure))")
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.gasResistance))")
-									.font(.caption)
-								Text("\(String(format: "%.2f", em.current))")
-									.font(.caption)
-								Text("\(String(format: "%.2f", em.voltage))")
 									.font(.caption)
 								Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
 									.font(.caption)

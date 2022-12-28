@@ -9,6 +9,33 @@ import Foundation
 import CoreData
 import SwiftUI
 
+func generateMessageMarkdown (message: String) -> String {
+	
+	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+	let detector = try! NSDataDetector(types: types.rawValue)
+	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+	var messageWithMarkdown = message
+	if matches.count > 0 {
+
+		for match in matches {
+			guard let range = Range(match.range, in: message) else { continue }
+			if match.resultType == .address {
+				let address = message[range]
+				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
+			} else if match.resultType == .phoneNumber {
+				let phone = messageWithMarkdown[range]
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
+			} else if match.resultType == .link {
+				let url = messageWithMarkdown[range]
+				let absoluteUrl = match.url?.absoluteString ?? ""
+				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(absoluteUrl))")
+			}
+		}
+	}
+	return messageWithMarkdown
+}
+
 func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	// We don't care about any of the Power settings, config is available for everyting else
@@ -409,20 +436,36 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 				if fetchedNode[0].externalNotificationConfig == nil {
 					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
 					newExternalNotificationConfig.enabled = config.externalNotification.enabled
+					newExternalNotificationConfig.usePWM = config.externalNotification.usePwm
 					newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
+					newExternalNotificationConfig.alertBellBuzzer = config.externalNotification.alertBellBuzzer
+					newExternalNotificationConfig.alertBellVibra = config.externalNotification.alertBellVibra
 					newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
+					newExternalNotificationConfig.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
+					newExternalNotificationConfig.alertMessageVibra = config.externalNotification.alertMessageVibra
 					newExternalNotificationConfig.active = config.externalNotification.active
 					newExternalNotificationConfig.output = Int32(config.externalNotification.output)
+					newExternalNotificationConfig.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
+					newExternalNotificationConfig.outputVibra = Int32(config.externalNotification.outputVibra)
 					newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					newExternalNotificationConfig.nagTimeout = Int32(config.externalNotification.nagTimeout)
 					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 					
 				} else {
 					fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
+					fetchedNode[0].externalNotificationConfig?.usePWM = config.externalNotification.usePwm
 					fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
+					fetchedNode[0].externalNotificationConfig?.alertBellBuzzer = config.externalNotification.alertBellBuzzer
+					fetchedNode[0].externalNotificationConfig?.alertBellVibra = config.externalNotification.alertBellVibra
 					fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
+					fetchedNode[0].externalNotificationConfig?.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
+					fetchedNode[0].externalNotificationConfig?.alertMessageVibra = config.externalNotification.alertMessageVibra
 					fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
 					fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
+					fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
+					fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.externalNotification.outputVibra)
 					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
+					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.externalNotification.nagTimeout)
 				}
 				
 				do {
@@ -681,7 +724,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.hasGps = myInfo.hasGps_p
 			myInfoEntity.hasWifi = myInfo.hasWifi_p
 			myInfoEntity.bitrate = myInfo.bitrate
-
 			// Swift does strings weird, this does work to get the version without the github hash
 			let lastDotIndex = myInfo.firmwareVersion.lastIndex(of: ".")
 			var version = myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: myInfo.firmwareVersion))]
@@ -692,15 +734,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.maxChannels = Int32(bitPattern: myInfo.maxChannels)
 			
 			do {
-
 				try context.save()
 				MeshLogger.log("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
 				return myInfoEntity
 
 			} catch {
-
 				context.rollback()
-
 				let nsError = error as NSError
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
@@ -711,7 +750,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].hasGps = myInfo.hasGps_p
 			fetchedMyInfo[0].bitrate = myInfo.bitrate
-			
 			let lastDotIndex = myInfo.firmwareVersion.lastIndex(of: ".")//.lastIndex(of: ".", offsetBy: -1)
 			var version = myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset:6, in: myInfo.firmwareVersion))]
 			version = version.dropLast()
@@ -721,20 +759,16 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].maxChannels = Int32(bitPattern: myInfo.maxChannels)
 			
 			do {
-
 				try context.save()
 				MeshLogger.log("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
 				return fetchedMyInfo[0]
 
 			} catch {
-
 				context.rollback()
-
 				let nsError = error as NSError
 				print("💥 Error Updating Core Data MyInfoEntity: \(nsError)")
 			}
 		}
-
 	} catch {
 
 		print("💥 Fetch MyInfo Error")
@@ -1109,7 +1143,6 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-	print("Routing packet", packet)
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		
@@ -1285,8 +1318,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			}
-
 			newMessage.messagePayload = messageText
+			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
+
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
 			
@@ -1320,6 +1354,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						do {
 							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+								if channel.index == newMessage.channel {
+									context.refresh(channel, mergeChanges: true)
+								}
+								
 								if channel.index == newMessage.channel && !channel.mute {
 									// Create an iOS Notification for the received private channel message and schedule it immediately
 									let manager = LocalNotificationManager()

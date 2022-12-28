@@ -75,43 +75,50 @@ struct DeviceMetricsLog: View {
 				
 			} else {
 				ScrollView {
-					Grid(alignment: .topLeading, horizontalSpacing: 2) {
+					
+					let columns = [
+						GridItem(),
+						GridItem(),
+						GridItem(),
+						GridItem(),
+						GridItem(.fixed(120))
+					]
+					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
 							Text("Batt")
-								.font(.callout)
+								.font(.caption)
 								.fontWeight(.bold)
 							Text("Voltage")
-								.font(.callout)
+								.font(.caption)
 								.fontWeight(.bold)
 							Text("ChUtil")
-								.font(.callout)
+								.font(.caption)
 								.fontWeight(.bold)
 							Text("AirTm")
-								.font(.callout)
+								.font(.caption)
 								.fontWeight(.bold)
 							Text("Timestamp")
-								.font(.callout)
+								.font(.caption)
 								.fontWeight(.bold)
 						}
-						Divider()
 						ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (dm: TelemetryEntity) in
 							if dm.metricsType == 0 {
 								GridRow {
 									if dm.batteryLevel == 0 {
 										Text("USB")
-											.font(.callout)
+											.font(.caption)
 									} else {
 										Text("\(String(dm.batteryLevel))%")
-											.font(.callout)
+											.font(.caption)
 									}
 									Text(String(dm.voltage))
-										.font(.callout)
+										.font(.caption)
 									Text("\(String(format: "%.2f", dm.channelUtilization))%")
-										.font(.callout)
+										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
-										.font(.callout)
+										.font(.caption)
 									Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-										.font(.callout)
+										.font(.caption)
 								}
 							}
 						}

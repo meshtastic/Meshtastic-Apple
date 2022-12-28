@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct ChannelMessageList: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
@@ -29,7 +29,7 @@ struct ChannelMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-
+	
 	var body: some View {
 		NavigationStack {
 			ScrollViewReader { scrollView in
@@ -60,7 +60,10 @@ struct ChannelMessageList: View {
 										.offset(y: -5)
 								}
 								VStack(alignment: currentUser ? .trailing : .leading) {
-									Text(message.messagePayload ?? "EMPTY MESSAGE")
+									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
+									let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
+									Text(markdownText)
+										.tint(linkBlue)
 										.padding(10)
 										.foregroundColor(.white)
 										.background(currentUser ? .accentColor : Color(.gray))
@@ -241,7 +244,7 @@ struct ChannelMessageList: View {
 						
 						typingMessage =  "📍 " + userLongName + " has shared their position with you."
 					}
-
+					
 				} label: {
 					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")
@@ -257,7 +260,7 @@ struct ChannelMessageList: View {
 			}
 			#endif
 			HStack(alignment: .top) {
-
+				
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("message", text: $typingMessage, axis: .vertical)
@@ -293,13 +296,13 @@ struct ChannelMessageList: View {
 										
 										typingMessage =  "📍 " + userLongName + " has shared their position with you."
 									}
-
+									
 								} label: {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-
+								
 								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
@@ -313,18 +316,18 @@ struct ChannelMessageList: View {
 						.frame(minHeight: 50)
 						.keyboardShortcut(.defaultAction)
 						.onSubmit {
-							#if targetEnvironment(macCatalyst)
+						#if targetEnvironment(macCatalyst)
 							if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
 								typingMessage = ""
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: Int64(channel.index), wantAck: true) {
+									if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false) {
 										print("Location Sent")
 									}
 								}
 							}
-							#endif
+						#endif
 						}
 					Text(typingMessage).opacity(0).padding(.all, 0)
 				}

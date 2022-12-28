@@ -1,9 +1,9 @@
-//
-//  ShareChannel.swift
-//  MeshtasticApple
-//
-//  Copyright(c) Garth Vander Houwen 4/8/22.
-//
+////
+////  ShareChannel.swift
+////  MeshtasticApple
+////
+////  Copyright(c) Garth Vander Houwen 4/8/22.
+////
 //import SwiftUI
 //import CoreData
 //

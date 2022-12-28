@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct UserMessageList: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
@@ -28,8 +28,8 @@ struct UserMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-
-    var body: some View {
+	
+	var body: some View {
 		NavigationStack {
 			ScrollViewReader { scrollView in
 				ScrollView {
@@ -37,7 +37,7 @@ struct UserMessageList: View {
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != userSettings.preferredNodeNum {
 								let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
-
+								
 								if message.replyID > 0 {
 									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
 									HStack {
@@ -61,7 +61,11 @@ struct UserMessageList: View {
 											.offset(y: -5)
 									}
 									VStack(alignment: currentUser ? .trailing : .leading) {
-										Text(message.messagePayload ?? "EMPTY MESSAGE")
+										let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
+										
+										let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
+										Text(markdownText)
+											.tint(linkBlue)
 											.padding(10)
 											.foregroundColor(.white)
 											.background(currentUser ? .accentColor : Color(.gray))
@@ -256,7 +260,7 @@ struct UserMessageList: View {
 					.padding(.trailing)
 			}
 			#endif
-
+			
 			HStack(alignment: .top) {
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
@@ -310,18 +314,18 @@ struct UserMessageList: View {
 						.frame(minHeight: 50)
 						.keyboardShortcut(.defaultAction)
 						.onSubmit {
-							#if targetEnvironment(macCatalyst)
+						#if targetEnvironment(macCatalyst)
 							if bleManager.sendMessage(message: typingMessage, toUserNum: user.num, channel: 0, isEmoji: false, replyID: replyMessageId) {
 								typingMessage = ""
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: user.num, wantAck: true) {
+									if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
 										print("Location Sent")
 									}
 								}
 							}
-							#endif
+						#endif
 						}
 					Text(typingMessage).opacity(0).padding(.all, 0)
 				}
@@ -361,5 +365,5 @@ struct UserMessageList: View {
 				}
 			}
 		}
-    }
+	}
 }
