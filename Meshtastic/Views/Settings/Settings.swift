@@ -59,16 +59,16 @@ struct Settings: View {
 						Text("lora")
 					}
 					
-					NavigationLink() {
-
-						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
-					} label: {
-
-						Image(systemName: "fibrechannel")
-							.symbolRenderingMode(.hierarchical)
-
-						Text("channels")
-					}
+//					NavigationLink() {
+//
+//						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+//					} label: {
+//
+//						Image(systemName: "fibrechannel")
+//							.symbolRenderingMode(.hierarchical)
+//
+//						Text("channels")
+//					}
 					
 					NavigationLink() {
 						
