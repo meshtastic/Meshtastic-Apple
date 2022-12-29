@@ -95,6 +95,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case tloraV211P8 // = 15
 
   ///
+  /// TODO: REPLACE
+  case tloraT3S3 // = 16
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -177,6 +181,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 13: self = .rak11200
     case 14: self = .nanoG1
     case 15: self = .tloraV211P8
+    case 16: self = .tloraT3S3
     case 25: self = .stationG1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
@@ -214,6 +219,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .rak11200: return 13
     case .nanoG1: return 14
     case .tloraV211P8: return 15
+    case .tloraT3S3: return 16
     case .stationG1: return 25
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
@@ -256,6 +262,7 @@ extension HardwareModel: CaseIterable {
     .rak11200,
     .nanoG1,
     .tloraV211P8,
+    .tloraT3S3,
     .stationG1,
     .loraRelayV1,
     .nrf52840Dk,
@@ -2153,6 +2160,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "RAK11200"),
     14: .same(proto: "NANO_G1"),
     15: .same(proto: "TLORA_V2_1_1P8"),
+    16: .same(proto: "TLORA_T3_S3"),
     25: .same(proto: "STATION_G1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
