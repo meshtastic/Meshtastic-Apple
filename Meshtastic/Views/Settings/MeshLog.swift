@@ -10,7 +10,7 @@ struct MeshLog: View {
 	@State private var document: LogDocument = LogDocument(logFile: "MESHTASTIC MESH ACTIVITY LOG\n")
 
 	var body: some View {
-
+		
 		List(logs, id: \.self, rowContent: Text.init)
 			.task {
 				do {
@@ -62,9 +62,8 @@ struct MeshLog: View {
 				}
 			}
 		)
-
 		.textSelection(.enabled)
-		.font(.caption)
+		.font(.caption2)
 
 		HStack(alignment: .center) {
 			Spacer()

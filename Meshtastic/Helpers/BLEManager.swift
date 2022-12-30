@@ -206,7 +206,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			let errorCode = (e as NSError).code
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.6",
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ ble.errorcode.6",
 					comment: "The app will automatically reconnect to the preferred radio if it come back in range."),
 					e.localizedDescription)
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
@@ -217,7 +217,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.14",
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ ble.errorcode.14",
 					comment: "This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."),
 					e.localizedDescription)
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
@@ -288,31 +288,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 	
 	func requestDeviceMetadata() {
+		
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
 		MeshLogger.log("ℹ️ Requesting Device Metadata for \(connectedPeripheral!.peripheral.name ?? "Unknown")")
-		
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
-		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-		
 		meshPacket.decoded = dataMessage
-		
 		var toRadio: ToRadio = ToRadio()
 		toRadio.packet = meshPacket
-		
 		let binaryData: Data = try! toRadio.serializedData()
 		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		
 		// Either Read the config complete value or from num notify value
 		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 	}
@@ -341,7 +335,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
-			MeshLogger.log("🪧 Sent a Trace Route Packet to node: \(destNum).")
+			MeshLogger.log("🪧 Sent a Trace Route Request to node: \(destNum).")
 		}
 		return success
 	}
@@ -354,7 +348,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			invalidVersion = true
 			return
 		} else {
-		MeshLogger.log("ℹ️ Issuing wantConfig to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
+		MeshLogger.log("ℹ️ Issuing Want Config to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
 		//BLE Characteristics discovered, issue wantConfig
 		var toRadio: ToRadio = ToRadio()
 		configNonce += 1
@@ -367,7 +361,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-
 		if let errorText = error?.localizedDescription {
 			print("🚫 didUpdateNotificationStateFor error: \(errorText)")
 		}
@@ -386,7 +379,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
-				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.pin",
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ ble.errorcode.pin",
 					comment: "Please try connecting again and check the PIN carefully."),
 					e.localizedDescription)
 				print("🚨 \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
@@ -433,7 +426,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
 						invalidVersion = true
-						lastConnectionError = "🚨 Update your firmware"
+						lastConnectionError = "🚨" + NSLocalizedString("update.firmware", comment: "Update Your Firmware")
 						return
 						
 					} else {
@@ -573,7 +566,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				lastConnectionError = ""
 				timeoutTimerRuns = 0
 				isSubscribed = true
-				MeshLogger.log("🤜 Want Config Request Complete. Packet Id: \(decodedInfo.configCompleteID)")
+				print("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				// MARK: Share Location Position Update Timer

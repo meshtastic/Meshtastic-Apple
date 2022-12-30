@@ -185,6 +185,7 @@
 "timeout"="Zeitlimit erreicht";
 "twitter"="Twitter";
 "unknown.age"="Unbekanntes alter";
+"update.firmware"="Update Your Firmware";
 "update.interval"="Update intervall";
 "user"="Benutzer";
 "user.details"="Benutzer Details";

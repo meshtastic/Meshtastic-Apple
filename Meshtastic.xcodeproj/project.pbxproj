@@ -36,7 +36,6 @@
 		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
-		DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D826F3093800029299 /* MessageBubble.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158B2824A91E0032668E /* module_config.pb.swift */; };
 		DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C158D2824AA7E0032668E /* config.pb.swift */; };
@@ -155,7 +154,6 @@
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
-		DD47E3D826F3093800029299 /* MessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubble.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD4C158B2824A91E0032668E /* module_config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = module_config.pb.swift; sourceTree = "<group>"; };
 		DD4C158D2824AA7E0032668E /* config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = config.pb.swift; sourceTree = "<group>"; };
@@ -521,7 +519,6 @@
 			isa = PBXGroup;
 			children = (
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
-				DD47E3D826F3093800029299 /* MessageBubble.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
 				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
@@ -796,7 +793,6 @@
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				C9A88B57278B559900BD810A /* apponly.pb.swift in Sources */,
 				DD4C158E2824AA7E0032668E /* config.pb.swift in Sources */,
-				DD47E3D926F3093800029299 /* MessageBubble.swift in Sources */,
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,

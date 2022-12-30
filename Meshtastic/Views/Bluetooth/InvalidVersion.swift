@@ -17,7 +17,7 @@ struct InvalidVersion: View {
 		
 		VStack {
 			
-			Text("Update Firmware")
+			Text("update.firmware")
 				.font(.largeTitle)
 				.foregroundColor(.orange)
 			
