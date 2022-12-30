@@ -110,7 +110,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			self.timeoutTimerRuns += 1
 			self.startScanning()
 		} else {
-			MeshLogger.log("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
+			print("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
 		}
 	}
 
@@ -206,26 +206,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			let errorCode = (e as NSError).code
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
-				lastConnectionError = "🚨 \(e.localizedDescription) The app will automatically reconnect to the preferred radio if it come back in range."
-				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.6",
+					comment: "The app will automatically reconnect to the preferred radio if it come back in range."),
+					e.localizedDescription)
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
-				lastConnectionError = e.localizedDescription
-				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				lastConnectionError = "🚨 \(e.localizedDescription)"
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 				
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
-				lastConnectionError = "🚨 \(e.localizedDescription) This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."
-				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.14",
+					comment: "This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."),
+					e.localizedDescription)
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
 			} else {
-				lastConnectionError = e.localizedDescription
-				MeshLogger.log("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
+				lastConnectionError = "🚨" + e.localizedDescription
+				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			}
 
 		} else {
 			// Disconnected without error which indicates user intent to disconnect
 			// Happens when swiping to disconnect
-			MeshLogger.log("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
+			print("ℹ️ BLE Disconnected: \(peripheral.name ?? "Unknown"): User Initiated Disconnect")
 		}
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
@@ -240,7 +244,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		for service in services {
 			if service.uuid == meshtasticServiceCBUUID {
 				peripheral.discoverCharacteristics([TORADIO_UUID, FROMRADIO_UUID, FROMNUM_UUID], for: service)
-				MeshLogger.log("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
+				print("✅ BLE Service for Meshtastic discovered by \(peripheral.name ?? "Unknown")")
 			}
 		}
 	}
@@ -249,7 +253,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		
 		if let e = error {
-			MeshLogger.log("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
+			print("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
 			// Try and stop crashes when this error occurs
 			disconnectPeripheral()
 			return
@@ -261,16 +265,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			switch characteristic.uuid {
 				
 			case TORADIO_UUID:
-				MeshLogger.log("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				print("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				TORADIO_characteristic = characteristic
 
 			case FROMRADIO_UUID:
-				MeshLogger.log("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				print("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
 
 			case FROMNUM_UUID:
-				MeshLogger.log("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
+				print("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
 
