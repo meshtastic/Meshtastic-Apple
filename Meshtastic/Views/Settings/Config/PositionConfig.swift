@@ -113,7 +113,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						
 					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
-						ForEach(PositionBroadcastIntervals.allCases) { at in
+						ForEach(UpdateIntervals.allCases) { at in
 							Text(at.description)
 						}
 					}

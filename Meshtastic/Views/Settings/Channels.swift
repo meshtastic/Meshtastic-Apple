@@ -276,7 +276,6 @@ struct Channels: View {
 			}
 		}
 		.navigationTitle("channels")
-		.navigationSplitViewStyle(.automatic)
 		.navigationBarItems(trailing:
 		ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")

@@ -99,9 +99,17 @@
 "interval.fifteen.minutes"="Fifteen Minutes";
 "interval.thirty.minutes"="Thirty Minutes";
 "interval.one.hour"="One Hour";
+"interval.two.hours"="Two Hours";
+"interval.three.hours"="Three Hours";
+"interval.four.hours"="Four Hours";
+"interval.five.hours"="Five Hours";
 "interval.six.hours"="Six Hours";
 "interval.twelve.hours"="Twelve Hours";
+"interval.eighteen.hours"="Eighteen Hours";
 "interval.twentyfour.hours"="Twenty Four Hours";
+"interval.thirtysix.hours"="Thirty Six Hours";
+"interval.fortyeight.hours"="Forty Eight Hours Hours";
+"interval.seventytwo.hours"="Seventy Two Hours";
 "keyboard.type"="Keyboard Type";
 "logging"="Logging";
 "lora"="LoRa";

@@ -6,66 +6,6 @@
 //
 import SwiftUI
 
-enum UpdateIntervals: Int, CaseIterable, Identifiable {
-
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-	case twoHours = 7200
-	case threeHours = 10800
-	case fourHours = 14400
-	case fiveHours = 18000
-	case sixHours = 21600
-	case twelveHours = 43200
-	case eighteenHours = 64800
-	case twentyFourHours = 86400
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			case .fifteenSeconds:
-				return "Fifteen Seconds"
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			case .thirtyMinutes:
-				return "Thirty Minutes"
-			case .oneHour:
-				return "One Hour"
-			case .twoHours:
-				return "Two Hours"
-			case .threeHours:
-				return "Three Hours"
-			case .fourHours:
-				return "Four Hours"
-			case .fiveHours:
-				return "Five Hours"
-			case .sixHours:
-				return "Six Hours"
-			case .twelveHours:
-				return "Twelve Hours"
-			case .eighteenHours:
-				return "Eighteen Hours"
-			case .twentyFourHours:
-				return "Twenty Four Hours"
-			}
-		}
-	}
-}
-
 struct TelemetryConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
