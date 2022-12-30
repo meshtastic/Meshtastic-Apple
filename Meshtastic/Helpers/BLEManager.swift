@@ -565,7 +565,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				}
 
 			} catch {
-				MeshLogger.log("💥 Error Deleting the All - Broadcast User")
+				print("💥 Error Deleting the All - Broadcast User")
 			}
 
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
@@ -573,7 +573,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				lastConnectionError = ""
 				timeoutTimerRuns = 0
 				isSubscribed = true
-				MeshLogger.log("🤜 BLE Config Complete Packet Id: \(decodedInfo.configCompleteID)")
+				MeshLogger.log("🤜 Want Config Request Complete. Packet Id: \(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				// MARK: Share Location Position Update Timer
@@ -744,7 +744,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		MeshLogger.log("📍 Sent a Waypoint Packet from the Apple device GPS to node: \(fromNodeNum)")
+		MeshLogger.log("📍 Sent a Waypoint Packet from: \(fromNodeNum)")
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
@@ -1417,16 +1417,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? "Unknown")"
-		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
-		
 		return 0
 	}
 	
@@ -1503,16 +1499,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? "Unknown")"
-		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
-		
 		return 0
 	}
 	
@@ -1531,16 +1523,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? "Unknown")"
-		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
-		
 		return 0
 	}
 	
@@ -1550,11 +1538,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-						
 			let newMessage = MessageEntity(context: context!)
 			newMessage.messageId =  Int64(meshPacket.id)
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
@@ -1565,17 +1551,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			newMessage.toUser = toUser
 			
 			do {
-
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
 				MeshLogger.log("💾 \(adminDescription)")
-				
 				return true
-
 			} catch {
-
 				context!.rollback()
-
 				let nsError = error as NSError
 				MeshLogger.log("💥 Error inserting new core data MessageEntity: \(nsError)")
 			}
@@ -1624,7 +1605,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		
 		if timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
-			MeshLogger.log("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
+			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
