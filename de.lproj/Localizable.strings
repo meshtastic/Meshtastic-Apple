@@ -133,6 +133,7 @@
 "range.test.config"="Entfernungstest Konfiguration";
 "reply"="Antworten";
 "received.ack"="Empfangsbestätigung";
+"received.ack.real"="Recipient Ack";
 "routing.acknowledged"="Bestätigt";
 "routing.noroute"="Keine Route";
 "routing.gotnak"="Negative Empfangsbestätigung empfangen";

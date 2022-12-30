@@ -1076,9 +1076,35 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
-	if let messages = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
-		print(messages)
+	if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
+		
+		let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+		
+		do {
+			let fetchedNode = try context.fetch(fetchNodeRequest) as! [NodeInfoEntity]
+			if fetchedNode.count == 1 {
+			
+				let messages =  String(cmmc.textFormatString())
+					.replacingOccurrences(of: "11: ", with: "")
+					.replacingOccurrences(of: "\"", with: "")
+					.trimmingCharacters(in: .whitespacesAndNewlines)
+				fetchedNode[0].cannedMessageConfig?.messages = messages
+				do {
+					try context.save()
+					MeshLogger.log("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+				} catch {
+
+					context.rollback()
+
+					let nsError = error as NSError
+					print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+				}
+			}
+			
+		} catch {
+			print("💥 Error Deserializing POSITION_APP packet.")
+		}
 	}
 }
 
@@ -1184,6 +1210,13 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 		do {
 			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
 			if fetchedMessage?.count ?? 0 > 0 {
+				
+				if fetchedMessage![0].toUser != nil {
+					// Real ACK from DM Recipient
+					if packet.to != packet.from {
+						fetchedMessage![0].realACK = true
+					}
+				}
 				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
 				
 				if routingMessage.errorReason == Routing.Error.none {

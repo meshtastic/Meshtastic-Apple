@@ -261,6 +261,10 @@ struct CannedMessagesConfig: View {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							hasMessagesChanges = false
+							if !hasChanges {
+								bleManager.sendReboot(destNum: node!.num)
+								goBack()
+							}
 						}
 					}
 				}
@@ -282,7 +286,9 @@ struct CannedMessagesConfig: View {
 				self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
 				self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
 				self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
+				self.messages = node?.cannedMessageConfig?.messages ?? ""
 				self.hasChanges = false
+				self.hasMessagesChanges = false
 			}
 			.onChange(of: configPreset) { newPreset in
 				

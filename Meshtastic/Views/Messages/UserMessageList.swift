@@ -116,6 +116,7 @@ struct UserMessageList: View {
 													if currentUser && message.receivedACK {
 														VStack {
 															Text("received.ack")+Text(" \(message.receivedACK ? "✔️" : "")")
+															Text("received.ack.real")+Text(" \(message.realACK ? "✔️" : "")")
 														}
 													} else if currentUser && message.ackError == 0 {
 														// Empty Error
@@ -181,7 +182,7 @@ struct UserMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
 												// Ack Received
-												Text("\(ackErrorVal?.display ?? "No Error" )").font(.caption2).foregroundColor(.gray)
+												Text("\(ackErrorVal?.display ?? "No Error" )").font(.caption2).foregroundColor(message.realACK ? .gray : .orange)
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)

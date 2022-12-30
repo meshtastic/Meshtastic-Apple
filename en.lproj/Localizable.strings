@@ -133,6 +133,7 @@
 "range.test.config"="Range Test Config";
 "reply"="Reply";
 "received.ack"="Received Ack";
+"received.ack.real"="Recipient Ack";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
 "routing.gotnak"="Received a negative acknowledgment";
