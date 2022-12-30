@@ -35,6 +35,7 @@
 "channel.role.secondary"="Secondary";
 "channels"="Channels";
 "clear.app.data"="Clear App Data";
+"close"="Close";
 "connected.radio"="Connected Radio";
 "communicating"="Communicating with device. .";
 "connected"="Currently Connected";
@@ -58,9 +59,11 @@
 "echo"="Echo";
 "email.address"="Email Address";
 "enabled"="Enabled";
+"encrypted"="Encrypted";
 "external.notification"="External Notification";
 "external.notification.config"="External Notification Config";
 "firmware.version"="Firmware Version";
+"generate.qr.code"="Generate QR Code";
 "gpsformat.dec"="Decimal Degrees Format";
 "gpsformat.dms"="Degrees Minutes Seconds";
 "gpsformat.utm"="Universal Transverse Mercator";
@@ -70,6 +73,7 @@
 "heard"="Heard";
 "heard.last"="Last Heard";
 "hybrid"="Hybrid";
+"include"="Include";
 "inputevent.none"="None";
 "inputevent.up"="Up";
 "inputevent.down"="Down";

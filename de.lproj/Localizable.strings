@@ -35,6 +35,7 @@
 "channel.role.secondary"="Sekundär";
 "channels"="Kanäle";
 "clear.app.data"="App Daten löschen";
+"close"="Close";
 "connected.radio"="Verbundenes Gerät";
 "communicating"="Verbinde mit Gerät...";
 "connected"="Derzeit verbunden";
@@ -58,9 +59,11 @@
 "echo"="Echo";
 "email.address"="Email Adresse";
 "enabled"="Aktiviert";
+"encrypted"="Encrypted";
 "external.notification"="Externe Benachrichtigung";
 "external.notification.config"="Einstellungen der externen Benachrichtigung";
 "firmware.version"="Firmware Version";
+"generate.qr.code"="Generate QR Code";
 "gpsformat.dec"="Dezimalgrad Format";
 "gpsformat.dms"="Grad Minuten Sekunden";
 "gpsformat.utm"="Universal Transversal Mercator";
@@ -70,6 +73,7 @@
 "heard"="Gehört";
 "heard.last"="Zuletzt gehört";
 "hybrid"="Hybrid";
+"include"="Include";
 "inputevent.none"="Keins";
 "inputevent.up"="Hoch";
 "inputevent.down"="Runter";

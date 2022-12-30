@@ -51,7 +51,7 @@ struct InvalidVersion: View {
 					Button {
 						dismiss()
 					} label: {
-						Label("Close", systemImage: "xmark")
+						Label("close", systemImage: "xmark")
 						
 					}
 					.buttonStyle(.bordered)

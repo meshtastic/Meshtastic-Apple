@@ -263,7 +263,7 @@ struct Channels: View {
 						Button {
 							isPresentingEditView = false
 						} label: {
-							Label("Close", systemImage: "xmark")
+							Label("close", systemImage: "xmark")
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
