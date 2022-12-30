@@ -19,6 +19,7 @@
 "ble.name"="BLE Name";
 "%@ ble.errorcode.6"=" %@! The app will automatically reconnect to the preferred radio if it come back in range.";
 "%@ ble.errorcode.14"="%&!This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.";
+"%@ ble.errorcode.pin"=" %@! Please try connecting again and check the PIN carefully.";
 "bluetooth"="Bluetooth";
 "bluetooth.config"="Bluetooth Konfiguration";
 "bluetooth.mode.randompin"="Zufällige PIN";

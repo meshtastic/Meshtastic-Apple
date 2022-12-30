@@ -122,7 +122,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			self.lastConnectionError = ""
 		}
 		if connectedPeripheral != nil {
-			MeshLogger.log("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
+			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
 		}
 		centralManager?.connect(peripheral)
@@ -135,7 +135,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let context = ["name": "\(peripheral.name ?? "Unknown")"]
 		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
-		MeshLogger.log("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
+		print("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Disconnect Connected Peripheral
@@ -186,13 +186,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		// Discover Services
 		peripheral.discoverServices([meshtasticServiceCBUUID])
-		MeshLogger.log("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
+		print("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 		disconnectPeripheral()
-		MeshLogger.log("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
+		print("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
 	}
 
 	// Disconnect Peripheral Event
@@ -369,7 +369,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 
 		if let errorText = error?.localizedDescription {
-			MeshLogger.log("🚫 didUpdateNotificationStateFor error: \(errorText)")
+			print("🚫 didUpdateNotificationStateFor error: \(errorText)")
 		}
 	}
 
@@ -382,16 +382,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 			let errorCode = (e as NSError).code
 			
-			if errorCode == 5 { // CBATTErrorDomain Code=5 "Authentication is insufficient."
-				// BLE Pin connection error
-				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
-				MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
-				self.centralManager?.cancelPeripheralConnection(peripheral)
-			}
-			if errorCode == 15 { // CBATTErrorDomain Code=15 "Encryption is insufficient."
-				// BLE Pin connection error
-				lastConnectionError = "🚫 BLE \(e.localizedDescription) Please try connecting again and check the PIN carefully."
-				MeshLogger.log("🚫 BLE \(e.localizedDescription) Please try connecting again. You may need to forget the device under Settings > General > Bluetooth.")
+			if errorCode == 5 || errorCode == 15 {
+				// BLE PIN connection errors
+				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
+				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
+				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("%@ meshlog.ble.errorcode.pin",
+					comment: "Please try connecting again and check the PIN carefully."),
+					e.localizedDescription)
+				print("🚨 \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.centralManager?.cancelPeripheralConnection(peripheral)
 			}
 		}
@@ -403,11 +401,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
-
 			var decodedInfo = FromRadio()
 			
 			do {
-				
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
 				
 			} catch {
@@ -418,10 +414,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				
 				// Handle Any local only packets we get over BLE
 				case .unknownApp:
-				
 				var nowKnown = false
 				
-				// MyInfo
+				// MyInfo from initial connection
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
