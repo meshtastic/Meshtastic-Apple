@@ -25,6 +25,7 @@
 "bluetooth.mode.randompin"="Zufällige PIN";
 "bluetooth.mode.fixedpin"="Feste PIN";
 "bluetooth.mode.nopin"="Keine PIN (geht einfach)";
+"bluetooth.pairingmode"="Pairing Mode";
 "bytes"="Bytes";
 "cancel"="Abbrechen";
 "canned.messages"="Canned Messages";
@@ -39,6 +40,7 @@
 "channels"="Kanäle";
 "clear.app.data"="App Daten löschen";
 "close"="Close";
+"config.save.confirm"="After config values save the node will reboot.";
 "connected.radio"="Verbundenes Gerät";
 "communicating"="Verbinde mit Gerät...";
 "connected"="Derzeit verbunden";

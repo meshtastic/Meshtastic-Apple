@@ -213,6 +213,9 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
+		message: {
+			Text("config.save.confirm")
+		}
 		.navigationTitle("external.notification.config")
 		.navigationBarItems(trailing:
 								ZStack {

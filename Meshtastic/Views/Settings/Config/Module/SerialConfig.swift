@@ -147,7 +147,9 @@ struct SerialConfig: View {
 					}
 				}
 			}
-			
+			message: {
+				Text("config.save.confirm")
+			}
 			.navigationTitle("serial.config")
 			.navigationBarItems(trailing:
 

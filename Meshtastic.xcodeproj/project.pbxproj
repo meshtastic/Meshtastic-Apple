@@ -339,10 +339,10 @@
 			children = (
 				DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
 				DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
+				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 				DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
-				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 			);
 			path = Module;
 			sourceTree = "<group>";

@@ -104,7 +104,7 @@ struct NetworkConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure you want to save?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -125,7 +125,7 @@ struct NetworkConfig: View {
 					}
 				}
 			} message: {
-				Text("After network config saves the node will reboot.")
+				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("network.config")

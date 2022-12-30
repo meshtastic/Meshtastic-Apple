@@ -153,7 +153,9 @@ struct TelemetryConfig: View {
 					}
 				}
 			}
-			
+			message: {
+				Text("config.save.confirm")
+			}
 			.navigationTitle("telemetry.config")
 			.navigationBarItems(trailing:
 				ZStack {

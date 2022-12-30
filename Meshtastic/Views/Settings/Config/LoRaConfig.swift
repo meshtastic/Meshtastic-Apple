@@ -71,7 +71,7 @@ struct LoRaConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure you want to save?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
@@ -91,7 +91,7 @@ struct LoRaConfig: View {
 					}
 				}
 			} message: {
-				Text("After LoRa config saves the node will reboot.")
+				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("lora.config")

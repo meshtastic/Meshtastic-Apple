@@ -239,6 +239,9 @@ struct PositionConfig: View {
 					}
 				}
 			}
+			message: {
+				Text("config.save.confirm")
+			}
 		}
 		.navigationTitle("position.config")
 		.navigationBarItems(trailing:

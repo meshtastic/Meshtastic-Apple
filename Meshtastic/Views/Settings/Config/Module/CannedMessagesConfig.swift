@@ -269,6 +269,9 @@ struct CannedMessagesConfig: View {
 					}
 				}
 			}
+			message: {
+				Text("config.save.confirm")
+			}
 			.navigationTitle("canned.messages.config")
 			.navigationBarItems(trailing:
 				ZStack {

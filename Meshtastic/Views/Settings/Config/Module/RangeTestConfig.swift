@@ -114,6 +114,9 @@ struct RangeTestConfig: View {
 					}
 				}
 			}
+			message: {
+				Text("config.save.confirm")
+			}
 			.navigationTitle("range.test.config")
 			.navigationBarItems(trailing:
 				ZStack {

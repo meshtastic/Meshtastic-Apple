@@ -152,7 +152,7 @@ struct DeviceConfig: View {
 				.padding()
 				.confirmationDialog(
 					
-					"Are you sure you want to save?",
+					"are.you.sure",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
@@ -175,18 +175,14 @@ struct DeviceConfig: View {
 					} 
 				}
 				message: {
-					
-					Text("After device config saves the node will reboot.")
+					Text("config.save.confirm")
 				}
 			}
 			Spacer()
 		}
-		
 		.navigationTitle("device.config")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
