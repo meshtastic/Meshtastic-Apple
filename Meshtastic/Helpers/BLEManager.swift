@@ -688,10 +688,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					MeshLogger.log("📲 New messageId \(newMessage.messageId) sent to \(newMessage.toUser?.longName! ?? NSLocalizedString("unknown", comment: "Unknown"))")
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+						MeshLogger.log("💬 Sent a message from \(connectedPeripheral.num) to \(toUserNum)")
 						do {
 
 							try context!.save()
-							MeshLogger.log("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)")
+							print("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)")
 							success = true
 
 						} catch {

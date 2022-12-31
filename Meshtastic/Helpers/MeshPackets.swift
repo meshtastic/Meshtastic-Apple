@@ -1004,9 +1004,10 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	}
 }
 
-
 func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
+	MeshLogger.log("📍 Position Packet received from node: \(packet.from)")
+
 	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 	
@@ -1045,7 +1046,7 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					
 					do {
 						try context.save()
-						MeshLogger.log("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 					} catch {
 
 						context.rollback()
@@ -1068,38 +1069,9 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		
-		let error = routingMessage.errorReason
-		
-		var errorExplanation = "Unknown Routing Error"
-		
-		switch error {
-			case Routing.Error.none:
-				errorExplanation = "This message is not a failure"
-			case Routing.Error.noRoute:
-				errorExplanation = "Our node doesn't have a route to the requested destination anymore."
-			case Routing.Error.gotNak:
-				errorExplanation = "We received a nak while trying to forward on your behalf"
-			case Routing.Error.timeout:
-				errorExplanation = "Timeout"
-			case Routing.Error.noInterface:
-				errorExplanation = "No suitable interface could be found for delivering this packet"
-			case Routing.Error.maxRetransmit:
-				errorExplanation = "We reached the max retransmission count (typically for naive flood routing)"
-			case Routing.Error.noChannel:
-				errorExplanation = "No suitable channel was found for sending this packet (i.e. was requested channel index disabled?)"
-			case Routing.Error.tooLarge:
-				errorExplanation = "The packet was too big for sending (exceeds interface MTU after encoding)"
-			case Routing.Error.noResponse:
-				errorExplanation = "The request had want_response set, the request reached the destination node, but no service on that node wants to send a response (possibly due to bad channel permissions)"
-			case Routing.Error.badRequest:
-				errorExplanation = "The application layer service on the remote node received your request, but considered your request somehow invalid"
-			case Routing.Error.notAuthorized:
-				errorExplanation = "The application layer service on the remote node received your request, but considered your request not authorized (i.e you did not send the request on the required bound channel)"
-			fallthrough
-			default: ()
-		}
-		
-		MeshLogger.log("🕸️ ROUTING PACKET received for RequestID: \(packet.decoded.requestID) Error: \(errorExplanation)")
+		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
+				
+		MeshLogger.log("🕸️ Routing received for RequestID: \(packet.decoded.requestID) Ack Status: \(routingError?.display ?? NSLocalizedString("unknown", comment: ""))")
 		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 
@@ -1147,11 +1119,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				return
 			}
 			try context.save()
-			MeshLogger.log("💾 ACK Received and saved for MessageID \(packet.decoded.requestID)")
+			print("💾 ACK Saved for Message: \(packet.decoded.requestID)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			MeshLogger.log("💥 Error Saving ACK for message MessageID \(packet.id) Error: \(nsError)")
+			print("💥 Error Saving ACK for message: \(packet.id) Error: \(nsError)")
 		}
 	}
 }
@@ -1160,7 +1132,12 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
 		
-			let telemetry = TelemetryEntity(context: context)
+		// Only log telemetry from the mesh not the connected device
+		if connectedNode != Int64(packet.from) {
+			MeshLogger.log("📈 Telemetry received for: \(String(packet.from))")
+		}
+		
+		let telemetry = TelemetryEntity(context: context)
 		
 		let fetchNodeTelemetryRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -1194,9 +1171,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 			try context.save()
-			// Only log telemetery from the mesh not the connected device
+			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
-				MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
+				print("💾 Telemetry Saved for Node: \(packet.from)")
 			}
 		} catch {
 			context.rollback()
@@ -1212,7 +1189,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		MeshLogger.log("💬 Message received for text message app")
+		MeshLogger.log("💬 Message received from the text message app")
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 
@@ -1248,7 +1225,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			do {
 
 				try context.save()
-				MeshLogger.log("💾 Saved a new message for \(newMessage.messageId)")
+				print("💾 Saved a new message for \(newMessage.messageId)")
 				messageSaved = true
 				
 				if messageSaved {
@@ -1264,7 +1241,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								content: messageText)
 						]
 						manager.schedule()
-						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -1288,11 +1265,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 											content: messageText)
 									]
 									manager.schedule()
-									MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 								}
 							}
 						} catch {
-							
 							
 						}
 					}
