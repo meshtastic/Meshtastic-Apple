@@ -28,6 +28,8 @@ struct Contacts: View {
     var body: some View {
 
 		NavigationSplitView {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 			List {
 				Section(header: Text("channels")) {
 					// Display Contacts for the rest of the non admin channels
@@ -65,10 +67,10 @@ struct Contacts: View {
 																Text("Yesterday")
 																	.font(.subheadline)
 															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															}
 														}
@@ -162,10 +164,10 @@ struct Contacts: View {
 																Text("Yesterday")
 																	.font(.subheadline)
 															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															}
 														}

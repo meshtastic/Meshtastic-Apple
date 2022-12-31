@@ -21,7 +21,8 @@ struct AdminMessageList: View {
 	var user: UserEntity?
 
 	var body: some View {
-		
+		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
+		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
 		List {
 			if user != nil {
 			
@@ -29,7 +30,7 @@ struct AdminMessageList: View {
 				
 					HStack {
 						
-						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown")) - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: "h:mm:ss a"))")
+						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown")) - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")
 							.font(.caption)
 						
 						if am.receivedACK {

@@ -38,6 +38,8 @@ struct DeviceMetricsLog: View {
 					.frame(height: 150)
 				}
 			}
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
@@ -66,9 +68,9 @@ struct DeviceMetricsLog: View {
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
 						}
 					}
-					TableColumn("Time Stamp") { dm in
+					TableColumn("Date & Time") { dm in
 						if dm.metricsType == 0 {
-							Text(dm.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 						}
 					}
 				}
@@ -81,14 +83,14 @@ struct DeviceMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(120))
+						GridItem(.fixed(135))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
 							Text("Batt")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("Voltage")
+							Text("Volt")
 								.font(.caption)
 								.fontWeight(.bold)
 							Text("ChUtil")
@@ -97,7 +99,7 @@ struct DeviceMetricsLog: View {
 							Text("AirTm")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("Timestamp")
+							Text("Date & Time")
 								.font(.caption)
 								.fontWeight(.bold)
 						}
@@ -117,8 +119,9 @@ struct DeviceMetricsLog: View {
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
-									Text(dm.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
-										.font(.caption)
+									
+									Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+										.font(.caption2)
 								}
 							}
 						}

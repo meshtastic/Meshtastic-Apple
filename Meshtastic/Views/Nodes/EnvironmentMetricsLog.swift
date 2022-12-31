@@ -21,7 +21,8 @@ struct EnvironmentMetricsLog: View {
 	var body: some View {
 		
 		NavigationStack {
-			
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
@@ -55,9 +56,9 @@ struct EnvironmentMetricsLog: View {
 							Text("\(String(format: "%.2f", em.voltage))")
 						}
 					}
-					TableColumn("Time Stamp") { em in
+					TableColumn("Date & Time") { em in
 						if em.metricsType == 1 {
-							Text(em.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
+							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 						}
 					}
 				}
@@ -68,7 +69,7 @@ struct EnvironmentMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(115))
+						GridItem(.fixed(125))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
@@ -86,7 +87,7 @@ struct EnvironmentMetricsLog: View {
 						Text("Gas")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Timestamp")
+						Text("Date & Time")
 							.font(.caption)
 							.fontWeight(.bold)
 					}
@@ -104,8 +105,8 @@ struct EnvironmentMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.gasResistance))")
 									.font(.caption)
-								Text(em.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
-									.font(.caption)
+								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+									.font(.caption2)
 							}
 						}
 					}

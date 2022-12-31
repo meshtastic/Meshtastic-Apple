@@ -21,6 +21,8 @@ struct PositionLog: View {
 	var body: some View {
 		
 		NavigationStack {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 						
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
@@ -50,7 +52,7 @@ struct PositionLog: View {
 						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
-						Text(position.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
+						Text(position.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
 				
@@ -95,7 +97,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.altitude))
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 									.font(.caption2)
 							}
 						}

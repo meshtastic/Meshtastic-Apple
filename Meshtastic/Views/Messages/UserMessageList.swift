@@ -31,6 +31,8 @@ struct UserMessageList: View {
 	
 	var body: some View {
 		NavigationStack {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmss", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
@@ -105,8 +107,9 @@ struct UserMessageList: View {
 												}
 												Menu("message.details") {
 													VStack {
+
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
+														Text("\(messageDate.formattedDate(format: dateFormatString))").foregroundColor(.gray)
 													}
 													if !currentUser {
 														VStack {
@@ -130,7 +133,7 @@ struct UserMessageList: View {
 															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
 															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 															if ackDate >= sixMonthsAgo! {
-																Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+																Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss a"))").foregroundColor(.gray)
 															} else {
 																Text("unknown.age").font(.caption2).foregroundColor(.gray)
 															}
