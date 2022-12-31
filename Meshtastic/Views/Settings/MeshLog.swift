@@ -46,7 +46,6 @@ struct MeshLog: View {
 			contentType: UTType.plainText,
 			defaultFilename: "mesh-activity-log",
 			onCompletion: { result in
-
 				if case .success = result {
 					print("Mesh activity log download: success.")
 				} else {
@@ -55,13 +54,11 @@ struct MeshLog: View {
 			}
 		)
 		.textSelection(.enabled)
-		.font(.caption2)
-
+		.font(.caption)
+		
 		HStack(alignment: .center) {
 			Spacer()
-			
 			Button(role: .destructive) {
-							
 				let text = ""
 				do {
 					 try text.write(to: logFile!, atomically: false, encoding: .utf8)
@@ -69,35 +66,27 @@ struct MeshLog: View {
 				   } catch {
 					 print(error)
 				   }
-				
 			} label: {
-				
 				Label("Clear Log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
-
 			Spacer()
 			
 			Button {
-							
 				isExporting = true
-				
 			} label: {
-				
 				Label("Save Log", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
-			
 			Spacer()
-
 		}
 		.padding(.bottom, 10)
-		.navigationTitle("Mesh Activity Log")
+		.navigationTitle("mesh.log")
 	}
 }

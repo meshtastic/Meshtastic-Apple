@@ -695,11 +695,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							success = true
 
 						} catch {
-
 							context!.rollback()
-
 							let nsError = error as NSError
-							MeshLogger.log("💥 Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
+							print("💥 Unresolved Core Data error in Send Message Function your database is corrupted running a node db reset should clean up the data. Error: \(nsError)")
 						}
 					}
 				}
@@ -866,7 +864,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
+				print("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
 			}
 		}
 		return false
@@ -1043,7 +1041,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							MeshLogger.log("✈️ Sent a Channel for: \(String(self.connectedPeripheral.num)) Channel Index \(chan.index)")
+							MeshLogger.log("🎛️ Sent a Channel for: \(String(self.connectedPeripheral.num)) Channel Index \(chan.index)")
 						}
 					}
 					// Save the LoRa Config and the device will reboot
@@ -1066,7 +1064,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							MeshLogger.log("✈️ Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
+							MeshLogger.log("📻 Sent a LoRaConfig for: \(String(self.connectedPeripheral.num))")
 					}
 					return true
 						
@@ -1370,7 +1368,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let binaryData: Data = try! toRadio.serializedData()
 		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			MeshLogger.log("✈️ Sent a Canned Messages Module Get Messages Request Admin Message for node: \(String(destNum))")
+			MeshLogger.log("🥫 Requested Canned Messages Module Messages for node: \(String(destNum))")
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			return true
 		}
@@ -1534,7 +1532,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				MeshLogger.log("💥 Error inserting new core data MessageEntity: \(nsError)")
+				print("💥 Error inserting new core data MessageEntity: \(nsError)")
 			}
 		}
 		return false

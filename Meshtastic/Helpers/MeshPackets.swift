@@ -373,19 +373,17 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 				do {
 					try context.save()
 					print("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
-
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					MeshLogger.log("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+					print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
 				}
 			} else {
-				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
 			}
-			
 		} catch {
 			let nsError = error as NSError
-			MeshLogger.log("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
+			print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
 		}
 	}
 	
@@ -440,19 +438,15 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 				do {
 					try context.save()
 					print("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
-
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
-					MeshLogger.log("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 				}
-				
 			} else {
-				MeshLogger.log("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
+				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
 			}
-			
 		} catch {
-			
 			let nsError = error as NSError
 			print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
 		}
@@ -770,6 +764,12 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
+	if nodeInfo.hasUser {
+		MeshLogger.log("📟 Node info received for: \(nodeInfo.user.longName)")
+	} else {
+		MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
+	}
+	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
 
@@ -835,11 +835,6 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					if nodeInfo.hasUser {
-						MeshLogger.log("📟 Node info received for: \(nodeInfo.user.longName)")
-					} else {
-						MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
-					}
 					return newNode
 				} catch {
 					context.rollback()
@@ -871,12 +866,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			if nodeInfo.hasDeviceMetrics {
 				
 				let newTelemetry = TelemetryEntity(context: context)
-
 				newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
 				newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 				newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 				newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-				
 				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
@@ -926,9 +919,10 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 	return nil
 }
 
-
 func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
+	MeshLogger.log("📟 Node info received for: \(packet.from)")
+	
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
@@ -944,22 +938,17 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			fetchedNode[0].channel = Int32(packet.channel)
 			
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-		
 				if nodeInfoMessage.hasDeviceMetrics {
-					
 					let telemetry = TelemetryEntity(context: context)
-					
 					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
 					telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
 					telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 					telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
-					
 					var newTelemetries = [TelemetryEntity]()
 					newTelemetries.append(telemetry)
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
-					
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
@@ -968,36 +957,33 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				}
 			}
-			
 			do {
 				try context.save()
-				MeshLogger.log("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
+				print("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				MeshLogger.log("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+				print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
 			}
-			
 		} else {
-			
 			// New node info not from device but potentially from another network
 		}
-		
 	} catch {
-		MeshLogger.log("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
 	}
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	
 	if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
 		
+		MeshLogger.log("🥫 Canned Messages Messages Received For: \(packet.from)")
 		let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 		
 		do {
 			let fetchedNode = try context.fetch(fetchNodeRequest) as! [NodeInfoEntity]
 			if fetchedNode.count == 1 {
-			
 				let messages =  String(cmmc.textFormatString())
 					.replacingOccurrences(of: "11: ", with: "")
 					.replacingOccurrences(of: "\"", with: "")
@@ -1005,16 +991,13 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				fetchedNode[0].cannedMessageConfig?.messages = messages
 				do {
 					try context.save()
-					MeshLogger.log("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+					print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
 				} catch {
-
 					context.rollback()
-
 					let nsError = error as NSError
 					print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 				}
 			}
-			
 		} catch {
 			print("💥 Error Deserializing POSITION_APP packet.")
 		}
@@ -1210,21 +1193,18 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				fetchedNode[0].lastHeard = telemetry.time
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
-			
 			try context.save()
 			// Only log telemetery from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
 				MeshLogger.log("💾 Telemetry Saved for Node: \(packet.from)")
 			}
-			
 		} catch {
 			context.rollback()
 			let nsError = error as NSError
-			MeshLogger.log("💥 Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
+			print("💥 Error Saving Telemetry for Node \(packet.from) Error: \(nsError)")
 		}
-		
 	} else {
-		MeshLogger.log("💥 Error Fetching NodeInfoEntity for Node \(packet.from)")
+		print("💥 Error Fetching NodeInfoEntity for Node \(packet.from)")
 	}
 }
 
@@ -1320,10 +1300,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			} catch {
 				context.rollback()
 				let nsError = error as NSError
-				MeshLogger.log("💥 Failed to save new MessageEntity \(nsError)")
+				print("💥 Failed to save new MessageEntity \(nsError)")
 			}
 		} catch {
-			MeshLogger.log("💥 Fetch Message To and From Users Error")
+			print("💥 Fetch Message To and From Users Error")
 		}
 	}
 }
