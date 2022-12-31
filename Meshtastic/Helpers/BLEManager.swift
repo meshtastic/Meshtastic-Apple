@@ -348,7 +348,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			invalidVersion = true
 			return
 		} else {
-		MeshLogger.log("ℹ️ Issuing Want Config to \(connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
+		MeshLogger.log("🛎️ Issuing Want Config to \(connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 		//BLE Characteristics discovered, issue wantConfig
 		var toRadio: ToRadio = ToRadio()
 		configNonce += 1
@@ -484,16 +484,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					}
 				}
 				// Log any other unknownApp calls
-				if !nowKnown { MeshLogger.log("ℹ️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+				if !nowKnown { MeshLogger.log("🌐 MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				
 				case .textMessageApp:
 					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				case .remoteHardwareApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .positionApp:
 					positionPacket(packet: decodedInfo.packet, context: context!)
 				case .waypointApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .nodeinfoApp:
 					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
 				case .routingApp:
@@ -501,29 +501,29 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .adminApp:
 					adminAppPacket(packet: decodedInfo.packet, context: context!)
 				case .replyApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .ipTunnelApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for IP Tunnel App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for IP Tunnel App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .serialApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Serial App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Serial App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .storeForwardApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .rangeTestApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 				case .textMessageCompressedApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .zpsApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .privateApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .atakForwarder:
-					MeshLogger.log("ℹ️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .simulatorApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .audioApp:
-					MeshLogger.log("ℹ️ MESH PACKET received for Audio App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Audio App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .tracerouteApp:
 					if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 						
@@ -540,7 +540,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						}
 					}
 				case .UNRECOGNIZED(_):
-					MeshLogger.log("ℹ️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					MeshLogger.log("🌐 MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .max:
 					print("MAX PORT NUM OF 511")
 			}
@@ -809,43 +809,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 	}
 	
-	public func sendShutdown(destNum: Int64) -> Bool {
+	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.shutdownSeconds = 10
-		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-			
-			do {
-				try context!.save()
-				MeshLogger.log("💾 Saved a Shutdown Admin Message for node: \(String(destNum))")
-				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-				return true
-
-			} catch {
-				context!.rollback()
-				let nsError = error as NSError
-				MeshLogger.log("💥 Error Inserting New Core Data MessageEntity: \(nsError)")
-			}
+		let messageDescription = "Sent Shutdown Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
 		}
+
 		return false
 	}
 	
@@ -1546,7 +1529,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				MeshLogger.log("💾 \(adminDescription)")
+				print("⚙️ \(adminDescription)")
 				return true
 			} catch {
 				context!.rollback()

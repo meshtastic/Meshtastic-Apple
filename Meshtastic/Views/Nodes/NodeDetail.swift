@@ -362,9 +362,7 @@ struct NodeDetail: View {
 										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
-											
-											if !bleManager.sendShutdown(destNum: node.num) {
-												
+											if !bleManager.sendShutdown(fromUser: node.user!, toUser: node.user!) {
 												print("Shutdown Failed")
 											}
 										}

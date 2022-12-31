@@ -37,7 +37,7 @@ struct AdminMessageList: View {
 							Image(systemName: "checkmark.square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
+							Text("routing.acknowledged").foregroundColor(.gray).font(.caption) + Text(": \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
 								.foregroundColor(.gray)
 								.font(.caption)
 
@@ -56,13 +56,10 @@ struct AdminMessageList: View {
 		}
 		.navigationTitle("admin.log")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
 	}
