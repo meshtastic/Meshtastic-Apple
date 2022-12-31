@@ -65,7 +65,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin GPIO", selection: $output) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -110,7 +110,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -120,7 +120,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin vibra GPIO", selection: $outputVibra) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}

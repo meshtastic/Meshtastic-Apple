@@ -132,6 +132,8 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 	case oneMinute = 60
 	case twoMinutes = 120
 	case fiveMinutes = 300
+	case tenMinutes = 600
+	case fifteenMinutes = 900
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -158,6 +160,10 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 				return NSLocalizedString("interval.two.minutes", comment: "Two Minutes")
 			case .fiveMinutes:
 				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+			case .tenMinutes:
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+			case .fifteenMinutes:
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 			}
 		}
 	}

@@ -74,13 +74,9 @@ struct SerialConfig: View {
 					
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -89,13 +85,9 @@ struct SerialConfig: View {
 
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}

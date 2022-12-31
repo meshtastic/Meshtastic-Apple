@@ -124,9 +124,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
@@ -141,9 +139,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
@@ -158,9 +154,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
