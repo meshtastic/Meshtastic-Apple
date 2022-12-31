@@ -50,7 +50,7 @@ struct PositionLog: View {
 						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
-						Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+						Text(position.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 					}
 				}
 				
@@ -95,7 +95,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.altitude))
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 									.font(.caption2)
 							}
 						}
@@ -125,9 +125,7 @@ struct PositionLog: View {
 					titleVisibility: .visible
 				) {
 					Button("Delete all positions?", role: .destructive) {
-						
 						if clearPositions(destNum: node.num, context: context) {
-							
 							print("Successfully Cleared Position Log")
 							
 						} else {

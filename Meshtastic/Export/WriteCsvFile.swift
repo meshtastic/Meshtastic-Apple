@@ -23,7 +23,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.airUtilTx)
 				csvString += ", "
-				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
+				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd j:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
 			}
 		}
 	} else if metricsType == 1 {
@@ -44,7 +44,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.current)
 				csvString += ", "
-				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
+				csvString += dm.time?.formattedDate(format: "yyyy-MM-dd j:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
 			}
 		}
 	}
@@ -73,7 +73,7 @@ func PositionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		csvString += pos.time?.formattedDate(format: "yyyy-MM-dd HH:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
+		csvString += pos.time?.formattedDate(format: "yyyy-MM-dd j:mm:ss") ?? NSLocalizedString("unknown.age", comment: "")
 	}
 	return csvString
 }

@@ -150,6 +150,8 @@
 "radio.configuration"="Geräteeinstellungen";
 "range.test"="Entfernungstest";
 "range.test.config"="Entfernungstest Konfiguration";
+"reboot"="Reboot";
+"reboot.node"="Reboot node?";
 "reply"="Antworten";
 "received.ack"="Empfangsbestätigung";
 "received.ack.real"="Recipient Ack";

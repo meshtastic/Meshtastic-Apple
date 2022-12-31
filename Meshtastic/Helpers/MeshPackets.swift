@@ -764,11 +764,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
-	if nodeInfo.hasUser {
-		MeshLogger.log("📟 Node info received for: \(nodeInfo.user.longName)")
-	} else {
-		MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
-	}
+	MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
@@ -897,12 +893,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					
-					if nodeInfo.hasUser {
-						MeshLogger.log("📟 Node info received for: \(nodeInfo.user.longName)")
-					} else {
-						MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
-					}
+					print("💾 NodeInfo saved for \(nodeInfo.num)")
+
 					return fetchedNode[0]
 				} catch {
 					context.rollback()

@@ -192,27 +192,20 @@ struct NodeDetail: View {
 							HStack {
 
 								VStack(alignment: .center) {
-									
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
 								}
-
 								Divider()
-
 								VStack {
-
 									if node.user != nil {
-										
 										Image(node.user!.hwModel ?? "UNSET")
 											.resizable()
 											.frame(width: 75, height: 75)
 											.cornerRadius(5)
-
 										Text(String(node.user!.hwModel ?? "UNSET"))
 											.font(.callout).fixedSize()
 									}
 								}
 								.padding(5)
-								
 								
 								if node.snr > 0 {
 									Divider()
@@ -375,26 +368,23 @@ struct NodeDetail: View {
 									
 								}) {
 				
-									Label("Reboot", systemImage: "arrow.triangle.2.circlepath")
+									Label("reboot", systemImage: "arrow.triangle.2.circlepath")
 								}
 								.buttonStyle(.bordered)
 								.buttonBorderShape(.capsule)
 								.controlSize(.large)
 								.padding()
-								.confirmationDialog(
-									
-									"are.you.sure",
-									isPresented: $showingRebootConfirm
-									) {
-										
-									Button("Reboot Node?", role: .destructive) {
-										
-										if !bleManager.sendReboot(destNum: node.num) {
-											
-											print("Reboot Failed")
+								.confirmationDialog("are.you.sure",
+													
+										isPresented: $showingRebootConfirm
+										) {
+											Button("reboot.node", role: .destructive) {
+												
+												if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
+													print("Reboot Failed")
+												}
+											}
 										}
-									}
-								}
 							}
 							.padding(5)
 						}
@@ -402,12 +392,10 @@ struct NodeDetail: View {
 					.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")), displayMode: .inline)
+				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.padding(.bottom, 10)
 				.navigationBarItems(trailing:
-
 					ZStack {
-
 						ConnectedDevice(
 							bluetoothOn: bleManager.isSwitchedOn,
 							deviceConnected: bleManager.connectedPeripheral != nil,
@@ -418,18 +406,6 @@ struct NodeDetail: View {
 					self.bleManager.context = context
 				}
 			}
-		}
-	}
-}
-
-struct NodeInfoEntityDetail_Previews: PreviewProvider {
-
-	static let bleManager = BLEManager()
-
-	static var previews: some View {
-		Group {
-
-			// NodeDetail(node: node)
 		}
 	}
 }

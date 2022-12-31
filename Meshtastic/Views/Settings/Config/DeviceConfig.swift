@@ -90,7 +90,7 @@ struct DeviceConfig: View {
 				Button("Reset NodeDB", role: .destructive) {
 					isPresentingNodeDBResetConfirm = true
 				}
-				.disabled(bleManager.connectedPeripheral == nil)
+				.disabled(node?.user == nil)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -101,7 +101,7 @@ struct DeviceConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Erase all device and app data?", role: .destructive) {
-						if bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
+						if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
 						} else {
@@ -112,7 +112,7 @@ struct DeviceConfig: View {
 				Button("Factory Reset", role: .destructive) {
 					isPresentingFactoryResetConfirm = true
 				}
-				.disabled(bleManager.connectedPeripheral == nil)
+				.disabled(node?.user == nil)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -124,7 +124,7 @@ struct DeviceConfig: View {
 				) {
 					Button("Factory reset your device and app? ", role: .destructive) {
 						
-						if bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
+						if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
 						} else {

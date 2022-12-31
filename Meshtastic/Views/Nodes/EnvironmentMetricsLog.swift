@@ -57,7 +57,7 @@ struct EnvironmentMetricsLog: View {
 					}
 					TableColumn("Time Stamp") { em in
 						if em.metricsType == 1 {
-							Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+							Text(em.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 						}
 					}
 				}
@@ -104,7 +104,7 @@ struct EnvironmentMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.gasResistance))")
 									.font(.caption)
-								Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+								Text(em.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 									.font(.caption)
 							}
 						}

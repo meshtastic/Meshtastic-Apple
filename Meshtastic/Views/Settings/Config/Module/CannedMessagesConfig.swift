@@ -256,7 +256,7 @@ struct CannedMessagesConfig: View {
 							// for now just disable the button after a successful save
 							hasMessagesChanges = false
 							if !hasChanges {
-								bleManager.sendReboot(destNum: node!.num)
+								bleManager.sendReboot(fromUser: node!.user!, toUser: node!.user!)
 								goBack()
 							}
 						}

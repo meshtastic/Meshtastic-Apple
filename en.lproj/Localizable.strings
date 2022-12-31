@@ -151,6 +151,8 @@
 "range.test"="Range Test";
 "range.test.config"="Range Test Config";
 "reply"="Reply";
+"reboot"="Reboot";
+"reboot.node"="Reboot node?";
 "received.ack"="Received Ack";
 "received.ack.real"="Recipient Ack";
 "routing.acknowledged"="Acknowledged";

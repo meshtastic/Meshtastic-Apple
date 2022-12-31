@@ -68,7 +68,7 @@ struct DeviceMetricsLog: View {
 					}
 					TableColumn("Time Stamp") { dm in
 						if dm.metricsType == 0 {
-							Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+							Text(dm.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 						}
 					}
 				}
@@ -117,7 +117,7 @@ struct DeviceMetricsLog: View {
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
-									Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+									Text(dm.time?.formattedDate(format: "MM/dd/yy j:mm") ?? "Unknown time")
 										.font(.caption)
 								}
 							}
