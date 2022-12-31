@@ -354,7 +354,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "???", color: .accentColor, circleSize: 44, fontSize: 14).fixedSize()
-					Text(user.longName ?? "Unknown").font(.headline)
+					Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

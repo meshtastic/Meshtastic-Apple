@@ -39,10 +39,10 @@ struct Connect: View {
 									if node != nil {
 										Text(bleManager.connectedPeripheral.longName).font(.title2)
 									}
-									Text("ble.name").font(.caption)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "Unknown")")
+									Text("ble.name").font(.caption)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 										.font(.caption).foregroundColor(Color.gray)
 									if node != nil {
-										Text("firmware.version").font(.caption)+Text(": \(node?.myInfo?.firmwareVersion ?? "Unknown")")
+										Text("firmware.version").font(.caption)+Text(": \(node?.myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown"))")
 											.font(.caption).foregroundColor(Color.gray)
 									}
 									if bleManager.isSubscribed {
@@ -101,7 +101,7 @@ struct Connect: View {
 									
 									Text("Num: \(String(node!.num))")
 									Text("Short Name: \(node?.user?.shortName ?? "????")")
-									Text("Long Name: \(node?.user?.longName ?? "Unknown")")
+									Text("Long Name: \(node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 									Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
 									Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
 									Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")

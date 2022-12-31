@@ -291,7 +291,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
 
-		MeshLogger.log("ℹ️ Requesting Device Metadata for \(connectedPeripheral!.peripheral.name ?? "Unknown")")
+		MeshLogger.log("🛎️ Requesting Device Metadata for \(connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
@@ -348,7 +348,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			invalidVersion = true
 			return
 		} else {
-		MeshLogger.log("ℹ️ Issuing Want Config to \(connectedPeripheral!.peripheral.name ?? "Unknown")")
+		MeshLogger.log("ℹ️ Issuing Want Config to \(connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 		//BLE Characteristics discovered, issue wantConfig
 		var toRadio: ToRadio = ToRadio()
 		configNonce += 1
@@ -437,9 +437,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						
 						if myInfo != nil {
 							connectedPeripheral.num = myInfo!.myNodeNum
-							connectedPeripheral.firmwareVersion = myInfo?.firmwareVersion ?? "Unknown"
-							connectedPeripheral.name = myInfo?.bleName ?? "Unknown"
-							connectedPeripheral.longName = myInfo?.bleName ?? "Unknown"
+							connectedPeripheral.firmwareVersion = myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown")
+							connectedPeripheral.name = myInfo?.bleName ?? NSLocalizedString("unknown", comment: "Unknown")
+							connectedPeripheral.longName = myInfo?.bleName ?? NSLocalizedString("unknown", comment: "Unknown")
 						}
 					}
 				}
@@ -453,7 +453,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 							if nodeInfo!.user != nil {
 								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "????"
-								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "Unknown"
+								connectedPeripheral.longName = nodeInfo?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 							}
 						}
 					}
@@ -612,7 +612,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-			MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? "Unknown")")
+			MeshLogger.log("🚫 Message Send Failed, not properly connected to \(preferredPeripheral?.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 			success = false
 			
 		} else if message.count < 1 {
@@ -685,7 +685,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 					let binaryData: Data = try! toRadio.serializedData()
 					
-					MeshLogger.log("📲 New messageId \(newMessage.messageId) sent to \(newMessage.toUser?.longName! ?? "Unknown")")
+					MeshLogger.log("📲 New messageId \(newMessage.messageId) sent to \(newMessage.toUser?.longName! ?? NSLocalizedString("unknown", comment: "Unknown"))")
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						do {
@@ -991,7 +991,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1110,7 +1110,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved User Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved User Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1133,7 +1133,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved Bluetooth Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1158,7 +1158,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Device Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Device Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1183,7 +1183,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved Display Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Display Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1207,7 +1207,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved LoRa Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1235,7 +1235,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Position Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1264,7 +1264,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1292,7 +1292,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Canned Message Module Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1321,7 +1321,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "💾 Saved Canned Message Module Messages for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "💾 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1412,7 +1412,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
 		}
@@ -1438,7 +1438,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1466,7 +1466,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1494,7 +1494,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
 		}
@@ -1518,7 +1518,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? "Unknown")"
+		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
 		}

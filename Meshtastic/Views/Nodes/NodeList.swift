@@ -39,7 +39,7 @@ struct NodeList: View {
 								CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
-									Text(node.user?.longName ?? "Unknown").font(.headline)
+									Text(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 									if connected {
 										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")

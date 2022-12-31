@@ -404,7 +404,7 @@ struct NodeDetail: View {
 					.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.navigationBarTitle((node.user != nil)  ? String(node.user!.longName ?? "Unknown") : "Unknown", displayMode: .inline)
+				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")), displayMode: .inline)
 				.padding(.bottom, 10)
 				.navigationBarItems(trailing:
 

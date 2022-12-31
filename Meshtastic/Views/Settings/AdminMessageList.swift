@@ -29,7 +29,7 @@ struct AdminMessageList: View {
 				
 					HStack {
 						
-						Text("\(am.adminDescription ?? "Unknown") - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: "h:mm:ss a"))")
+						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown")) - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: "h:mm:ss a"))")
 							.font(.caption)
 						
 						if am.receivedACK {

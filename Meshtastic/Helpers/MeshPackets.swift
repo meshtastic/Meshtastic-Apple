@@ -1366,12 +1366,12 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						manager.notifications = [
 							Notification(
 								id: ("notification.id.\(newMessage.messageId)"),
-								title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+								title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 								content: messageText)
 						]
 						manager.schedule()
-						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+						MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 						
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -1390,12 +1390,12 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 									manager.notifications = [
 										Notification(
 											id: ("notification.id.\(newMessage.messageId)"),
-											title: "\(newMessage.fromUser?.longName ?? "Unknown")",
+											title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
 											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 											content: messageText)
 									]
 									manager.schedule()
-									MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "Unknown")")
+									MeshLogger.log("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 								}
 							}
 						} catch {

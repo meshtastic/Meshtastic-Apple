@@ -196,6 +196,7 @@
 "telemetry.config"="Telemetrie Einstellungen";
 "timeout"="Zeitlimit erreicht";
 "twitter"="Twitter";
+"unknown"="Unknown";
 "unknown.age"="Unbekanntes alter";
 "unset"="Unset";
 "update.firmware"="Update Your Firmware";
