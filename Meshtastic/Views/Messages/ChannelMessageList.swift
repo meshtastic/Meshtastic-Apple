@@ -120,7 +120,7 @@ struct ChannelMessageList: View {
 													Text("waiting")
 												} else if currentUser && message.ackError > 0 {
 													let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-													Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												}
 												if currentUser {
 													VStack {
@@ -184,7 +184,7 @@ struct ChannelMessageList: View {
 											Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 										} else if currentUser && message.ackError > 0 {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-											Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.font(.caption2).foregroundColor(.red)
 										}
 									}

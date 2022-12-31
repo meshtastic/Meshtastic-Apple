@@ -123,7 +123,7 @@ struct UserMessageList: View {
 														Text("waiting")
 													} else if currentUser && message.ackError > 0 {
 														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+														Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 													}
 													if currentUser {
 														VStack {
@@ -182,12 +182,12 @@ struct UserMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
 												// Ack Received
-												Text("\(ackErrorVal?.display ?? "No Error" )").font(.caption2).foregroundColor(message.realACK ? .gray : .orange)
+												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(message.realACK ? .gray : .orange)
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 											} else if currentUser && message.ackError > 0 {
-												Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 													.font(.caption2).foregroundColor(.red)
 											}
 										}

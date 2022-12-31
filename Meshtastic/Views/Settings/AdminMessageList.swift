@@ -37,15 +37,16 @@ struct AdminMessageList: View {
 							Image(systemName: "checkmark.square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
+							Text("acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
 								.foregroundColor(.gray)
 								.font(.caption)
 
 						} else {
+							let ackErrorVal = RoutingError(rawValue: Int(am.ackError))
 							Image(systemName: "square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Not Acknowledged")
+							Text(ackErrorVal?.display ?? "Empty Ack Error")
 								.foregroundColor(.gray)
 								.font(.caption)
 						}
@@ -53,7 +54,7 @@ struct AdminMessageList: View {
 				}
 			}
 		}
-		.navigationTitle("Admin Message Log")
+		.navigationTitle("admin.log")
 		.navigationBarItems(trailing:
 
 			ZStack {
