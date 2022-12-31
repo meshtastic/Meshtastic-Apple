@@ -86,6 +86,8 @@
 "inputevent.cancel"="Cancel";
 "interval.one.second"="One Second";
 "interval.two.seconds"="Two Seconds";
+"interval.three.seconds"="Three Seconds";
+"interval.four.seconds"="Four Seconds";
 "interval.five.seconds"="Five Seconds";
 "interval.ten.seconds"="Ten Seconds";
 "interval.fifteen.seconds"="Fifteen Seconds";
@@ -195,6 +197,7 @@
 "timeout"="timeout";
 "twitter"="Twitter";
 "unknown.age"="Unknown Age";
+"unset"="Unset";
 "update.firmware"="Update Your Firmware";
 "update.interval"="Update Interval";
 "user"="User";

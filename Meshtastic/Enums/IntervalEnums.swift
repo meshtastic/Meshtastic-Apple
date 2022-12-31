@@ -7,6 +7,90 @@
 
 import Foundation
 
+enum OutputIntervals: Int, CaseIterable, Identifiable {
+	
+	case unset = 0
+	case oneSecond = 1000
+	case twoSeconds = 2000
+	case threeSeconds = 3000
+	case fourSeconds = 4000
+	case fiveSeconds = 5000
+	case tenSeconds = 10000
+	case fifteenSeconds = 15000
+	case thirtySeconds = 30000
+	case oneMinute = 60000
+	
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+				
+			case .unset:
+				return NSLocalizedString("unset", comment: "Unset")
+			case .oneSecond:
+				return NSLocalizedString("interval.one.second", comment: "One Second")
+			case .twoSeconds:
+				return NSLocalizedString("interval.two.seconds", comment: "Two Seconds")
+			case .threeSeconds:
+				return NSLocalizedString("interval.three.seconds", comment: "Three Seconds")
+			case .fourSeconds:
+				return NSLocalizedString("interval.four.seconds", comment: "Four Seconds")
+			case .fiveSeconds:
+				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
+			case .tenSeconds:
+				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
+			case .fifteenSeconds:
+				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+			case .thirtySeconds:
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+			case .oneMinute:
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
+			}
+		}
+	}
+}
+
+// Default of 0 is off
+enum SenderIntervals: Int, CaseIterable, Identifiable {
+
+	case off = 0
+	case fifteenSeconds = 15
+	case thirtySeconds = 30
+	case oneMinute = 60
+	case fiveMinutes = 300
+	case tenMinutes = 600
+	case fifteenMinutes = 900
+	case thirtyMinutes = 1800
+	case oneHour = 3600
+
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .off:
+				return NSLocalizedString("off", comment: "Off")
+			case .fifteenSeconds:
+				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+			case .thirtySeconds:
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+			case .oneMinute:
+				return NSLocalizedString("interval.one.minute", comment: "One Minute")
+			case .fiveMinutes:
+				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+			case .tenMinutes:
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+			case .fifteenMinutes:
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
+			case .thirtyMinutes:
+				return NSLocalizedString("interval.thirty.minutes", comment: "Thirty Minutes")
+			case .oneHour:
+				return NSLocalizedString("interval.one.hour", comment: "One Hour")
+			}
+		}
+	}
+}
+
 enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
 	case fifteenSeconds = 15
