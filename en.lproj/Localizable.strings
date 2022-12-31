@@ -10,12 +10,15 @@
 "admin"="Admin";
 "admin.log"="Admin Message Log";
 "ago"="ago";
+"airtime"="Airtime";
 "always.on"="Always On";
 "app.settings"="App Settings";
 "are.you.sure"="Are you sure?";
 "ascii.capable"="ASCII Capable";
 "available.radios"="Available Radios";
 "automatic.detection"="Automatic Detection";
+"battery.level"="Battery Level";
+"battery.level.trend"="Battery Level Trend";
 "ble.name"="BLE Name";
 "bluetooth"="Bluetooth";
 "bluetooth.config"="Bluetooth Config";
@@ -34,6 +37,7 @@
 "channel.role.disabled"="Disabled";
 "channel.role.primary"="Primary";
 "channel.role.secondary"="Secondary";
+"channel.utilization"="Channel Utilization";
 "channels"="Channels";
 "clear.app.data"="Clear App Data";
 "close"="Close";
@@ -44,6 +48,7 @@
 "connecting"="Connecting . .";
 "contacts"="Contacts";
 "copy"="Copy";
+"current"="Current";
 "default"="Default";
 "delete"="Delete";
 "device"="Device";
@@ -196,7 +201,8 @@
 "tapback.poop"="Poop";
 "telemetry"="Telemetry (Sensors)";
 "telemetry.config"="Telemetry Config";
-"timeout"="timeout";
+"timeout"="Timeout";
+"timestamp"="Timestamp";
 "twitter"="Twitter";
 "unknown"="Unknown";
 "unknown.age"="Unknown Age";
@@ -205,4 +211,5 @@
 "update.interval"="Update Interval";
 "user"="User";
 "user.details"="User Details";
+"voltage"="Voltage";
 "waiting"="Waiting. . .";

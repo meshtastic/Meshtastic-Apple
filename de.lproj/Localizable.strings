@@ -10,12 +10,15 @@
 "admin"="admin";
 "admin.log"="Admin Message Log";
 "ago"="her";
+"airtime"="Airtime";
 "always.on"="Immer an";
 "app.settings"="App Einstellungen";
 "are.you.sure"="Bist Du sicher?";
 "ascii.capable"="ASCII fähig";
 "available.radios"="Geräte in der Nähe";
 "automatic.detection"="Automatische erkennung";
+"battery.level"="Battery Level";
+"battery.level.trend"="Battery Level Trend";
 "ble.name"="BLE Name";
 "%@ ble.errorcode.6"=" %@! The app will automatically reconnect to the preferred radio if it come back in range.";
 "%@ ble.errorcode.14"="%&!This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.";
@@ -37,6 +40,7 @@
 "channel.role.disabled"="Deaktiviert";
 "channel.role.primary"="Primär";
 "channel.role.secondary"="Sekundär";
+"channel.utilization"="Channel Utilization";
 "channels"="Kanäle";
 "clear.app.data"="App Daten löschen";
 "close"="Close";
@@ -47,6 +51,7 @@
 "connecting"="Verbinde...";
 "contacts"="Kontakte";
 "copy"="Kopieren";
+"current"="Current";
 "default"="Standard";
 "delete"="Löschen";
 "device"="Gerät";
@@ -197,6 +202,8 @@
 "telemetry"="Telemetrie (Sensoren)";
 "telemetry.config"="Telemetrie Einstellungen";
 "timeout"="Zeitlimit erreicht";
+"timeout"="Zeitlimit erreicht";
+"timestamp"="Timestamp";
 "twitter"="Twitter";
 "unknown"="Unknown";
 "unknown.age"="Unbekanntes alter";
@@ -205,4 +212,5 @@
 "update.interval"="Update intervall";
 "user"="Benutzer";
 "user.details"="Benutzer Details";
+"voltage"="Voltage";
 "waiting"="Warte...";

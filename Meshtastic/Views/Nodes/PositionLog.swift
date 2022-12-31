@@ -65,7 +65,7 @@ struct PositionLog: View {
 						GridItem(.fixed(95)),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(115))
+						GridItem(.fixed(130))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						
@@ -83,7 +83,7 @@ struct PositionLog: View {
 							Text("Alt")
 								.font(.caption2)
 								.fontWeight(.bold)
-							Text("Timestamp")
+							Text("timestamp")
 								.font(.caption2)
 								.fontWeight(.bold)
 						}

@@ -46,17 +46,17 @@ struct EnvironmentMetricsLog: View {
 							Text("\(String(format: "%.2f", em.gasResistance))")
 						}
 					}
-					TableColumn("Current") { em in
+					TableColumn("current") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.current))")
 						}
 					}
-					TableColumn("Voltage") { em in
+					TableColumn("voltage") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.voltage))")
 						}
 					}
-					TableColumn("Date & Time") { em in
+					TableColumn("timestamp") { em in
 						if em.metricsType == 1 {
 							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 						}
@@ -69,7 +69,7 @@ struct EnvironmentMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(125))
+						GridItem(.fixed(130))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
@@ -87,7 +87,7 @@ struct EnvironmentMetricsLog: View {
 						Text("Gas")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Date & Time")
+						Text("timestamp")
 							.font(.caption)
 							.fontWeight(.bold)
 					}
@@ -119,11 +119,8 @@ struct EnvironmentMetricsLog: View {
 		HStack {
 			
 			Button(role: .destructive) {
-							
 				isPresentingClearLogConfirm = true
-				
 			} label: {
-				
 				Label("Clear Log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
@@ -136,22 +133,15 @@ struct EnvironmentMetricsLog: View {
 				titleVisibility: .visible
 			) {
 				Button("Delete all environment metrics?", role: .destructive) {
-					
 					if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
-						
 						print("Clear Environment Metrics Log Failed")
-						
 					} 
 				}
 			}
-			
 			Button {
-				
 				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
 				isExporting = true
-				
 			} label: {
-				
 				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
@@ -162,13 +152,10 @@ struct EnvironmentMetricsLog: View {
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
 		.fileExporter(
@@ -177,15 +164,10 @@ struct EnvironmentMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user!.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
-
 				if case .success = result {
-					
 					print("Environment metrics log download succeeded.")
-					
 					self.isExporting = false
-					
 				} else {
-					
 					print("Environment metrics log download failed: \(result).")
 				}
 			}

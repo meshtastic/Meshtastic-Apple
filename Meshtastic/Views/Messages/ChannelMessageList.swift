@@ -137,7 +137,7 @@ struct ChannelMessageList: View {
 												}
 												if message.ackSNR != 0 {
 													VStack {
-														Text("Ack SNR\(String(format: "%.2f", message.ackSNR)) dB")
+														Text("Ack SNR: \(String(format: "%.2f", message.ackSNR)) dB")
 															.foregroundColor(.gray)
 													}
 												}

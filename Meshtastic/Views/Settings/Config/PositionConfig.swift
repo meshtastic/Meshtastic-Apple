@@ -155,7 +155,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeTimestamp) { //128
-						Label("Timestamp", systemImage: "clock")
+						Label("timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
