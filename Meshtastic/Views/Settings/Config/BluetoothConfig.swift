@@ -68,7 +68,7 @@ struct BluetoothConfig: View {
 					}
 					.keyboardType(.decimalPad)
 					if shortPin {
-						Text("BLE Pin must be 6 digits long.")
+						Text("bluetooth.pin.validation")
 							.font(.callout)
 							.foregroundColor(.red)
 					}
@@ -92,7 +92,7 @@ struct BluetoothConfig: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
+			Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown"))") {
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin

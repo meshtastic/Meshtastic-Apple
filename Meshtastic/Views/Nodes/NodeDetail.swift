@@ -197,11 +197,11 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									if node.user != nil {
-										Image(node.user!.hwModel ?? "UNSET")
+										Image(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset"))
 											.resizable()
 											.frame(width: 75, height: 75)
 											.cornerRadius(5)
-										Text(String(node.user!.hwModel ?? "UNSET"))
+										Text(String(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset")))
 											.font(.callout).fixedSize()
 									}
 								}

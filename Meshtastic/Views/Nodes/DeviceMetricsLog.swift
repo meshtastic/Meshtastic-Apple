@@ -82,7 +82,7 @@ struct DeviceMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(130))
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
@@ -95,7 +95,7 @@ struct DeviceMetricsLog: View {
 							Text("ChUtil")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("airtime")
+							Text("AirTm")
 								.font(.caption)
 								.fontWeight(.bold)
 							Text("timestamp")

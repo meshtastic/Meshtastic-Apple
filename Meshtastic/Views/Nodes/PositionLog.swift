@@ -61,11 +61,11 @@ struct PositionLog: View {
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
 					let columns = [
+						GridItem(.fixed(90)),
 						GridItem(.fixed(95)),
-						GridItem(.fixed(95)),
-						GridItem(),
-						GridItem(),
-						GridItem(.fixed(130))
+						GridItem(.fixed(45)),
+						GridItem(.fixed(40)),
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						

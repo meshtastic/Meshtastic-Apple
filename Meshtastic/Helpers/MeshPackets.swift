@@ -1126,7 +1126,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		
 		// Only log telemetry from the mesh not the connected device
 		if connectedNode != Int64(packet.from) {
-			MeshLogger.log("📈 Telemetry received for: \(String(packet.from))")
+			
+			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %d",
+				comment: "Telemetry received for: %d"),	packet.from)
+			MeshLogger.log("📈 \(logString)")
 		}
 		
 		let telemetry = TelemetryEntity(context: context)
@@ -1181,7 +1184,8 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		MeshLogger.log("💬 Message received from the text message app")
+		MeshLogger.log("💬 \(NSLocalizedString("mesh.log.textmessage.received", comment: "Message received from the text message app"))")
+		
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 

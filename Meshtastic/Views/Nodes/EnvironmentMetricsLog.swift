@@ -41,7 +41,7 @@ struct EnvironmentMetricsLog: View {
 							Text("\(String(format: "%.2f", em.barometricPressure))")
 						}
 					}
-					TableColumn("Gas Resistance") { em in
+					TableColumn("gas.resistance") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.gasResistance))")
 						}
@@ -69,12 +69,11 @@ struct EnvironmentMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(130))
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
 					GridRow {
-						
 						Text("Temp")
 							.font(.caption)
 							.fontWeight(.bold)
@@ -84,7 +83,7 @@ struct EnvironmentMetricsLog: View {
 						Text("Bar")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Gas")
+						Text("gas")
 							.font(.caption)
 							.fontWeight(.bold)
 						Text("timestamp")
