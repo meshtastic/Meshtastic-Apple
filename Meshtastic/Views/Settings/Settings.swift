@@ -44,7 +44,6 @@ struct Settings: View {
 					
 						Image(systemName: "person.crop.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("user")
 					}
 					
@@ -55,7 +54,6 @@ struct Settings: View {
 					
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("lora")
 					}
 					

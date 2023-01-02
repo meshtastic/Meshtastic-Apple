@@ -41,7 +41,8 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	// We don't care about any of the Power settings, config is available for everyting else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		
-		MeshLogger.log("🖥️ Bluetooth config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.bluetooth.config %@", comment: "Bluetooth config received: %@"), String(nodeNum))
+		MeshLogger.log("📶 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -81,7 +82,8 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 		
-		MeshLogger.log("📟 Device config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.config %@", comment: "Device config received: %@"), String(nodeNum))
+		MeshLogger.log("📟 \(logString)")
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		
@@ -122,7 +124,8 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 		
-		MeshLogger.log("🖥️ Display config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.display.config %@", comment: "Display config received: %@"), String(nodeNum))
+		MeshLogger.log("🖥️ \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -181,7 +184,8 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 		
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
-		MeshLogger.log("📻 LoRa config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config %@", comment: "LoRa config received: %@"), String(nodeNum))
+		MeshLogger.log("📻 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -237,7 +241,9 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 	
-		MeshLogger.log("📶 Network config received \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.network.config %@", comment: "Network config received: %@"), String(nodeNum))
+		MeshLogger.log("🌐 \(logString)")
+
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 		
@@ -270,13 +276,14 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 			}
 		} catch {
 			let nsError = error as NSError
-			print("💥 Fetching node for core data WiFiConfigEntity failed: \(nsError)")
+			print("💥 Fetching node for core data NetworkConfigEntity failed: \(nsError)")
 		}
 	}
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 		
-		MeshLogger.log("🗺️ Position config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.config %@", comment: "Positon config received: %@"), String(nodeNum))
+		MeshLogger.log("🗺️ \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -327,7 +334,8 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		
-		MeshLogger.log("🥫 Canned Message module config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessage.config %@", comment: "Canned Message module config received: %@"), String(nodeNum))
+		MeshLogger.log("🥫 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -389,7 +397,9 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
 		
-		MeshLogger.log("🚨 External Notifiation module config received: \(String(nodeNum))")
+		
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.externalnotification.config %@", comment: "External Notifiation module config received: %@"), String(nodeNum))
+		MeshLogger.log("📣 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -454,7 +464,8 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
 		
-		MeshLogger.log("🌐 MQTT module config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))
+		MeshLogger.log("🌉 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -501,7 +512,8 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
 		
-		MeshLogger.log("⛰️ Range Test module config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
+		MeshLogger.log("⛰️ \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -541,7 +553,8 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
 		
-		MeshLogger.log("🤖 Serial module config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.serial.config %@", comment: "Serial module config received: %@"), String(nodeNum))
+		MeshLogger.log("🤖 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -601,7 +614,8 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
 		
-		MeshLogger.log("📈 Telemetry module config received: \(String(nodeNum))")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.config %@", comment: "Telemetry module config received: %@"), String(nodeNum))
+		MeshLogger.log("📈 \(logString)")
 		
 		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -656,7 +670,9 @@ func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 	
-	MeshLogger.log("ℹ️ MyInfo received: \(String(myInfo.myNodeNum))")
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.myinfo %@", comment: "MyInfo received: %@"), String(myInfo.myNodeNum))
+	MeshLogger.log("ℹ️ \(logString)")
+	
 	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
 
@@ -721,10 +737,12 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
 	
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled  {
+
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.received %d %@", comment: "Channel %d received from: %@"), channel.index, String(fromNum))
+		MeshLogger.log("🎛️ \(logString)")
 		
-		MeshLogger.log("🎛️ Channel received: \(channel.settings.name)")
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
+		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", channel.index, String(fromNum))
 		
 		do {
 			
@@ -764,7 +782,8 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
-	MeshLogger.log("📟 Node info received for: \(nodeInfo.num)")
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(nodeInfo.num))
+	MeshLogger.log("📟 \(logString)")
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
@@ -913,7 +932,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	MeshLogger.log("📟 Node info received for: \(packet.from)")
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), packet.from)
+	MeshLogger.log("📟 \(logString)")
 	
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -967,9 +987,11 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "Canned Messages Messages Received For: %@"), String(packet.from))
+	MeshLogger.log("🥫 \(logString)")
+	
 	if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
 		
-		MeshLogger.log("🥫 Canned Messages Messages Received For: \(packet.from)")
 		let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 		
@@ -1012,7 +1034,6 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				if fetchedNode.count == 1 {
 			
 					let position = PositionEntity(context: context)
-					
 					position.snr = packet.rxSnr
 					position.seqNo = Int32(positionMessage.seqNumber)
 					position.latitudeI = positionMessage.latitudeI
@@ -1026,23 +1047,18 @@ func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					} else {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
-
 					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
 					mutablePositions.add(position)
-				
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
 					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-					
 					do {
 						try context.save()
 						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
 					} catch {
-
 						context.rollback()
-
 						let nsError = error as NSError
 						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
 					}
@@ -1126,9 +1142,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		
 		// Only log telemetry from the mesh not the connected device
 		if connectedNode != Int64(packet.from) {
-			
-			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %d",
-				comment: "Telemetry received for: %d"),	packet.from)
+			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "Telemetry received for: %@"), String(packet.from))
 			MeshLogger.log("📈 \(logString)")
 		}
 		
