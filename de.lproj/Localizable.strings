@@ -149,7 +149,9 @@
 "mesh.log.network.config %@"="Network config received: %@";
 "mesh.log.nodeinfo.received %@"="Node info received for: %@";
 "mesh.log.position.config %@"="Positon config received: %@";
+"mesh.log.position.received %@"="Position Packet received from node: %@";
 "mesh.log.rangetest.config %@"="Range Test module config received: %@";
+"mesh.log.routing.message %@ %@"="Routing received for RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial module config received: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
 "mesh.log.telemetry.config %@"="Telemetry module config received: %@";
@@ -158,6 +160,8 @@
 "mesh.log.textmessage.send.failed %@"="Message Send Failed, not properly connected to %@";
 "mesh.log.textmessage.sent %@ %@ %@"="Sent message %@ from %@ to %@";
 "mesh.log.traceroute.sent %@"="Sent a Trace Route Request to node: %@";
+"mesh.log.traceroute.received.direct %@"="Trace Route request sent to node: %@ was recieived directly.";
+"mesh.log.traceroute.received.route %@"="Trace Route request returned: %@";
 "mesh.log.wantconfig %@"="Issuing Want Config to %@";
 "mesh.log.waypoint.sent %@"="Sent a Waypoint Packet from: %@";
 "message"="Nachricht";

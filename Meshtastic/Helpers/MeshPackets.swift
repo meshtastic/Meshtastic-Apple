@@ -1020,7 +1020,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
-	MeshLogger.log("📍 Position Packet received from node: \(packet.from)")
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.received %@", comment: "Position Packet received from node: %@"), String(packet.from))
+	MeshLogger.log("📍 \(logString)")
 
 	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
@@ -1078,8 +1079,11 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
 		
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
+		
+		let routingErrorString = routingError?.display ?? NSLocalizedString("unknown", comment: "")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.routing.message %@ %@", comment: "Routing received for RequestID: %@ Ack Status: %@"), String(packet.decoded.requestID), routingErrorString)
+		MeshLogger.log("🕸️ \(logString)")
 				
-		MeshLogger.log("🕸️ Routing received for RequestID: \(packet.decoded.requestID) Ack Status: \(routingError?.display ?? NSLocalizedString("unknown", comment: ""))")
 		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
 

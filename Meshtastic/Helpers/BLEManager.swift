@@ -539,15 +539,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 						
 						if routingMessage.route.count == 0 {
-							MeshLogger.log("🪧 Trace Route request sent to \(decodedInfo.packet.from) was recieived directly.")
+							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.direct %@",
+								comment: "Trace Route request sent to node: %@ was recieived directly."), String(decodedInfo.packet.from))
+							MeshLogger.log("🪧 \(logString)")
 						} else {
 							
-							var routeString = "🪧 Trace Route request returned: \(decodedInfo.packet.to) --> "
+							var routeString = "\(decodedInfo.packet.to) --> "
 							for node in routingMessage.route {
 								routeString += "\(node) --> "
 							}
 							routeString += "\(decodedInfo.packet.from)"
-							MeshLogger.log(routeString)
+							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.route %@",
+								comment: "Trace Route request returned: %@"), routeString)
+							MeshLogger.log("🪧 \(logString)")
 						}
 					}
 				case .UNRECOGNIZED(_):
