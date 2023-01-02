@@ -25,6 +25,7 @@
 "ble.errorcode.14 %@"="%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.";
 "ble.errorcode.pin %@"="%@ Please try connecting again and check the PIN carefully.";
 "bluetooth"="Bluetooth";
+"bluetooth.off"="Bluetooth is off";
 "bluetooth.config"="Bluetooth Config";
 "bluetooth.mode.randompin"="Random PIN";
 "bluetooth.mode.fixedpin"="Fixed PIN";
@@ -45,6 +46,7 @@
 "channel.utilization"="Channel Utilization";
 "channels"="Channels";
 "clear.app.data"="Clear App Data";
+"clear.log"="Clear Log";
 "close"="Close";
 "config.save.confirm"="After config values save the node will reboot.";
 "connected.radio"="Connected Radio";
@@ -58,6 +60,8 @@
 "delete"="Delete";
 "device"="Device";
 "device.config"="Device Config";
+"device.metrics.delete"="Delete all device metrics?";
+"device.metrics.log"="Device Metrics Log";
 "device.role.client"="Client (default) - App connected client.";
 "device.role.clientmute"="Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh.";
 "device.role.router"="Router -  Mesh packets will prefer to be routed over this node. This node will not be used by client apps. The wifi/ble radios and the oled screen will be put to sleep.";

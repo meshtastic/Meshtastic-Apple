@@ -25,6 +25,7 @@
 "ble.errorcode.14 %@"="%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.";
 "ble.errorcode.pin %@"="%@ Please try connecting again and check the PIN carefully.";
 "bluetooth"="Bluetooth";
+"bluetooth.off"="Bluetooth is off";
 "bluetooth.config"="Bluetooth Konfiguration";
 "bluetooth.mode.randompin"="Zufällige PIN";
 "bluetooth.mode.fixedpin"="Feste PIN";
@@ -45,6 +46,7 @@
 "channel.utilization"="Channel Utilization";
 "channels"="Kanäle";
 "clear.app.data"="App Daten löschen";
+"clear.log"="Clear Log";
 "close"="Close";
 "config.save.confirm"="After config values save the node will reboot.";
 "connected.radio"="Verbundenes Gerät";
@@ -58,6 +60,8 @@
 "delete"="Löschen";
 "device"="Gerät";
 "device.config"="Gerätekonfiguration";
+"device.metrics.delete"="Delete all device metrics?";
+"device.metrics.log"="Device Metrics Log";
 "device.role.client"="Client (Standard) - Mit App verbundener Client.";
 "device.role.clientmute"="Client Leise - Das selbe wie Client, außer das die Pakete nicht über diesen Node weitergeleitet werden. Nimmt nicht am Mesh-Routing teil.";
 "device.role.router"="Router - Mesh Pakete werden bevorzugt über diesen Node gerouted. Dieser Node wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus.";

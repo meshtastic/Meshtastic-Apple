@@ -194,7 +194,7 @@ struct Connect: View {
 					}
 						
 					} else {
-						Text("Bluetooth: OFF")
+						Text("bluetooth.off")
 							.foregroundColor(.red)
 							.font(.title)
 					}

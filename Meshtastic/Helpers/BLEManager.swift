@@ -93,7 +93,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		self.timeoutTimerCount += 1
 		self.lastConnectionError = ""
 
-		if timeoutTimerCount == 2 {
+		if timeoutTimerCount == 10 {
 			if connectedPeripheral != nil {
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}

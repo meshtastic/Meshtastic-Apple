@@ -30,7 +30,7 @@ struct ConnectedDevice: View {
 
                 }
             } else {
-                Text("Bluetooth Off").font(.subheadline).foregroundColor(.red)
+                Text("bluetooth.off").font(.subheadline).foregroundColor(.red)
             }
         }
     }

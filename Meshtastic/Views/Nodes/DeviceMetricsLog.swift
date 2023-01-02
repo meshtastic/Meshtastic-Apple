@@ -134,7 +134,7 @@ struct DeviceMetricsLog: View {
 			Button(role: .destructive) {
 				isPresentingClearLogConfirm = true
 			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
+				Label("clear.log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
@@ -145,7 +145,7 @@ struct DeviceMetricsLog: View {
 				isPresented: $isPresentingClearLogConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Delete all device metrics?", role: .destructive) {
+				Button("device.metrics.delete", role: .destructive) {
 					if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
 						print("Cleared Device Metrics for \(node.num)")
 					} else {
@@ -164,7 +164,7 @@ struct DeviceMetricsLog: View {
 			.controlSize(.large)
 			.padding()
 		}
-		.navigationTitle("Device Metrics Log")
+		.navigationTitle("device.metrics.log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -177,14 +177,14 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user!.longName ?? "Node") Device Telemetry Log"),
+			defaultFilename: String("\(node.user!.longName ?? "Node") \(NSLocalizedString("device.metrics.log", comment: "Device Metrics Log"))"),
 			onCompletion: { result in
 				if case .success = result {
-					print("Device Telemetry log download succeeded.")
+					print("Device metrics log download succeeded.")
 					self.isExporting = false
 					
 				} else {
-					print("Device Telemetry log download failed: \(result).")
+					print("Device metrics log download failed: \(result).")
 				}
 			}
 		)

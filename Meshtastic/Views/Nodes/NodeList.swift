@@ -53,7 +53,7 @@ struct NodeList: View {
 										HStack(alignment: .bottom) {
 											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
 											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-											if lastPostion.coordinate != nil {
+											if lastPostion.coordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude   {
 												let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
 												let metersAway = nodeCoord.distance(from: myCoord)
 												Image(systemName: "lines.measurement.horizontal")

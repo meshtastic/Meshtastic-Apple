@@ -177,15 +177,10 @@ struct Settings: View {
 						Text("admin.log")
 					}
 				}
-				
 				Section(header: Text("about")) {
-					
 					NavigationLink {
-						
 						AboutMeshtastic()
-						
 					} label: {
-						
 						Image(systemName: "questionmark.app")
 							.symbolRenderingMode(.hierarchical)
 						
@@ -194,10 +189,8 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
-				
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")
