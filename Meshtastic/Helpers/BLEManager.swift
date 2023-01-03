@@ -1052,7 +1052,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config.sent %@",																				   comment: "Sent a LoRaConfig for: %@"), connectedPeripheral.num)
+							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config.sent %@",																				   comment: "Sent a LoRaConfig for: %@"), String(connectedPeripheral.num))
 							MeshLogger.log("📻 \(logString)")
 					}
 					return true
