@@ -25,7 +25,6 @@ struct MQTTConfig: View {
 				
 		Form {
 			Section(header: Text("options")) {
-					
 				Toggle(isOn: $enabled) {
 
 					Label("enabled", systemImage: "dot.radiowaves.right")
@@ -43,10 +42,8 @@ struct MQTTConfig: View {
 					Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
 			}
 			Section(header: Text("Custom Server")) {
-				
 				HStack {
 					Label("Address", systemImage: "server.rack")
 					TextField("Server Address", text: $address)
@@ -54,16 +51,11 @@ struct MQTTConfig: View {
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
 						.onChange(of: address, perform: { value in
-
 							let totalBytes = address.utf8.count
-							
 							// Only mess with the value if it is too big
 							if totalBytes > 30 {
-
 								let firstNBytes = Data(username.utf8.prefix(30))
-						
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									
 									// Set the shortName back to the last place where it was the right size
 									address = maxBytesString
 								}
@@ -187,17 +179,17 @@ struct MQTTConfig: View {
 			self.hasChanges = false
 		}
 		.onChange(of: enabled) { newEnabled in
-			if node != nil && node!.mqttConfig != nil {
+			if node != nil && node?.mqttConfig != nil {
 				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
-			if node != nil && node!.mqttConfig != nil {
+			if node != nil && node?.mqttConfig != nil {
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
-			if node != nil && node!.mqttConfig != nil {
+			if node != nil && node?.mqttConfig != nil {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}

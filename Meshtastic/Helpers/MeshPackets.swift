@@ -742,7 +742,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 		MeshLogger.log("🎛️ \(logString)")
 		
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", channel.index, String(fromNum))
+		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
 		
 		do {
 			
@@ -932,7 +932,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), packet.from)
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(packet.from))
 	MeshLogger.log("📟 \(logString)")
 	
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
