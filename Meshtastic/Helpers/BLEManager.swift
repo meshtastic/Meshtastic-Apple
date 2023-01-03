@@ -357,8 +357,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		} else {
 			
 		let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.wantconfig %@",
-			comment: "Issuing Want Config to %@"), nodeName)
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.wantconfig %@", comment: "Issuing Want Config to %@"), nodeName)
 		MeshLogger.log("🛎️ \(logString)")
 		//BLE Characteristics discovered, issue wantConfig
 		var toRadio: ToRadio = ToRadio()
@@ -1029,7 +1028,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						let binaryData: Data = try! toRadio.serializedData()
 						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.sent %d",																				   comment: "Sent a Channel for: %d Channel Index %d"), connectedPeripheral.num, chan.index)
+							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.sent %@ %d",																				   comment: "Sent a Channel for: %@ Channel Index %d"), String(connectedPeripheral.num), chan.index)
 							MeshLogger.log("🎛️ \(logString)")
 						}
 					}

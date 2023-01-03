@@ -913,7 +913,6 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				do {
 					try context.save()
 					print("💾 NodeInfo saved for \(nodeInfo.num)")
-
 					return fetchedNode[0]
 				} catch {
 					context.rollback()
