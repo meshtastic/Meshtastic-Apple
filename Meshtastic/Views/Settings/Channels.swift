@@ -91,7 +91,7 @@ struct Channels: View {
 				Button {
 					let key = generateChannelKey(size: 32)
 					channelName = ""
-					channelIndex = Int32(node!.myInfo!.channels!.array.count)
+					channelIndex = Int32((node!.myInfo!.channels!.array.count) - 1)
 					channelRole = 2
 					channelKey = key
 					uplink = false
@@ -247,6 +247,20 @@ struct Channels: View {
 									channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 									channel.settings.uplinkEnabled = uplink
 									channel.settings.downlinkEnabled = downlink
+									
+								} else {
+									if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
+										let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as! ChannelEntity
+										context.delete(channelEntity)
+										do {
+											try context.save()
+											print("💾 Deleted Channel: \(channel.settings.name)")
+										} catch {
+											context.rollback()
+											let nsError = error as NSError
+											print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+										}
+									}
 								}
 								
 								let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)

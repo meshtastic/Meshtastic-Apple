@@ -46,7 +46,7 @@ struct AboutMeshtastic: View {
 					Link("Documentation", destination: URL(string: "https://meshtastic.org/docs/getting-started")!)
 						.font(.title2)
 				}
-				Text("Meshtastic Copyright(c) Meshtastic LLC")
+				Text("Meshtastic® Copyright Meshtastic LLC")
 					.font(.caption)
 			}
 		}
