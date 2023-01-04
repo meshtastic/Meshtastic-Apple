@@ -54,8 +54,12 @@ struct ExternalNotificationConfig: View {
 				Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 					.font(.caption)
 			}
-			if !usePWM {
-				Section(header: Text("Primary GPIO")) {
+			Section(header: Text("Advanced GPIO Options")) {
+				Section(header: Text("Primary GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase))
+				{
 					Toggle(isOn: $active) {
 						Label("Active", systemImage: "togglepower")
 					}
@@ -90,7 +94,11 @@ struct ExternalNotificationConfig: View {
 						.font(.caption)
 				}
 				
-				Section(header: Text("Optional GPIO")) {
+				Section(header: Text("Optional GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase))
+				{
 					Toggle(isOn: $alertBellBuzzer) {
 						Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
 					}
