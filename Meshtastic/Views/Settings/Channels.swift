@@ -193,9 +193,9 @@ struct Channels: View {
 						Toggle("Downlink Enabled", isOn: $downlink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.onSubmit {
+					//.onSubmit {
 						//validate(name: channelName)
-					}
+					//}
 					.onChange(of: channelName) { newName in
 						hasChanges = true
 					}
@@ -222,7 +222,44 @@ struct Channels: View {
 					}
 					HStack {
 						Button {
-							isPresentingSaveConfirm = true
+							var channel = Channel()
+							channel.index = channelIndex
+							channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
+							if channel.role != Channel.Role.disabled {
+								channel.settings.id = UInt32(channelIndex)
+								channel.settings.name = channelName
+								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
+								channel.settings.uplinkEnabled = uplink
+								channel.settings.downlinkEnabled = downlink
+								
+							} else {
+								if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
+									let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as! ChannelEntity
+									context.delete(channelEntity)
+									do {
+										try context.save()
+										print("💾 Deleted Channel: \(channel.settings.name)")
+									} catch {
+										context.rollback()
+										let nsError = error as NSError
+										print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+									}
+								}
+							}
+							
+							let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							
+							if adminMessageId > 0 {
+								
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save.
+								
+								self.isPresentingEditView = false
+								channelName = ""
+								hasChanges = false
+								// Would rather send a getChannel but I can't seem to tell what admin message it is
+								bleManager.sendWantConfig()
+							}
 						} label: {
 							Label("save", systemImage: "square.and.arrow.down")
 						}
@@ -231,51 +268,6 @@ struct Channels: View {
 						.buttonBorderShape(.capsule)
 						.controlSize(.large)
 						.padding(.bottom)
-						.confirmationDialog(
-							"are.you.sure",
-							isPresented: $isPresentingSaveConfirm,
-							titleVisibility: .visible
-						) {
-							Button("Save Channel \(channelIndex) to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-								
-								var channel = Channel()
-								channel.index = channelIndex
-								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-								if channel.role != Channel.Role.disabled {
-									channel.settings.id = UInt32(channelIndex)
-									channel.settings.name = channelName
-									channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
-									channel.settings.uplinkEnabled = uplink
-									channel.settings.downlinkEnabled = downlink
-									
-								} else {
-									if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
-										let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as! ChannelEntity
-										context.delete(channelEntity)
-										do {
-											try context.save()
-											print("💾 Deleted Channel: \(channel.settings.name)")
-										} catch {
-											context.rollback()
-											let nsError = error as NSError
-											print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
-										}
-									}
-								}
-								
-								let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
-								
-								if adminMessageId > 0 {
-									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save.
-									// Would rather send a getChannel but I can't seem to tell what admin message it is
-									bleManager.sendWantConfig()
-									channelName = ""
-									hasChanges = false
-									isPresentingEditView = false
-								}
-							}
-						}
 						#if targetEnvironment(macCatalyst)
 						Button {
 							isPresentingEditView = false
