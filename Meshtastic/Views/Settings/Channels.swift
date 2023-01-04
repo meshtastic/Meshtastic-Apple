@@ -91,7 +91,7 @@ struct Channels: View {
 				Button {
 					let key = generateChannelKey(size: 32)
 					channelName = ""
-					channelIndex = Int32((node!.myInfo!.channels!.array.count) - 1)
+					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
 					channelKey = key
 					uplink = false
