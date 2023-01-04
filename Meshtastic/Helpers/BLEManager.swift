@@ -27,6 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@Published var invalidVersion = false
 	@Published var preferredPeripheral = false
 	@Published var isSwitchedOn: Bool = false
+	@Published var automaticallyReconnect: Bool = true
 	
 	public var minimumVersion = "1.3.48"
 	public var connectedVersion: String
@@ -123,6 +124,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		DispatchQueue.main.async {
 			self.isConnecting = true
 			self.lastConnectionError = ""
+			self.automaticallyReconnect = true
 		}
 		if connectedPeripheral != nil {
 			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
@@ -142,9 +144,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 
 	// Disconnect Connected Peripheral
-	func disconnectPeripheral() {
+	func disconnectPeripheral(reconnect: Bool = true) {
 
 		guard let connectedPeripheral = connectedPeripheral else { return }
+		automaticallyReconnect = reconnect
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 		FROMRADIO_characteristic = nil
 		isConnected = false
@@ -393,7 +396,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					comment: "Please try connecting again and check the PIN carefully."),
 					e.localizedDescription)
 				print("🚨 \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
-				self.centralManager?.cancelPeripheralConnection(peripheral)
+				self.disconnectPeripheral(reconnect: false)
 			}
 		}
 
@@ -566,11 +569,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			do {
 				let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
 				if fetchedUser.count > 0 {
-					
 					context?.delete(fetchedUser[0])
 					print("🗑️ Deleted the All - Broadcast User")
 				}
-
 			} catch {
 				print("💥 Error Deleting the All - Broadcast User")
 			}
@@ -942,6 +943,32 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
+	public func getChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getChannelRequest = UInt32(channel.index + 1)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Requested Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
 	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 
 		var adminPacket = AdminMessage()
@@ -956,13 +983,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		
+		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
 			return Int64(meshPacket.id)
 		}
 		
@@ -1567,7 +1593,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 		
-		if timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
+		if self.automaticallyReconnect && timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}

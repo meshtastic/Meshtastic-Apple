@@ -88,7 +88,7 @@ struct Connect: View {
 
 								Button(role: .destructive) {
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-										bleManager.disconnectPeripheral()
+										bleManager.disconnectPeripheral(reconnect: false)
 										isPreferredRadio = false
 									}
 								} label: {
@@ -287,6 +287,6 @@ struct Connect: View {
 		})
     }
 	func didDismissSheet() {
-		bleManager.disconnectPeripheral()
+		bleManager.disconnectPeripheral(reconnect: false)
 	}
 }

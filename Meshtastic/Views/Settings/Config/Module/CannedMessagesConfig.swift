@@ -74,7 +74,7 @@ struct CannedMessagesConfig: View {
 				
 				HStack {
 					Label("Messages", systemImage: "message.fill")
-					TextField("Messages seperate with |", text: $messages)
+					TextField("Messages seperate with |", text: $messages, axis: .vertical)
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
@@ -256,7 +256,7 @@ struct CannedMessagesConfig: View {
 							// for now just disable the button after a successful save
 							hasMessagesChanges = false
 							if !hasChanges {
-								bleManager.sendReboot(fromUser: node!.user!, toUser: node!.user!)
+								bleManager.sendWantConfig()
 								goBack()
 							}
 						}

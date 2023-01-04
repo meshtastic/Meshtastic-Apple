@@ -240,22 +240,25 @@ struct Channels: View {
 								
 								var channel = Channel()
 								channel.index = channelIndex
-								channel.settings.id = UInt32(channelIndex)
-								channel.settings.name = channelName
-								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-								channel.settings.uplinkEnabled = uplink
-								channel.settings.downlinkEnabled = downlink
+								if channel.role != Channel.Role.disabled {
+									channel.settings.id = UInt32(channelIndex)
+									channel.settings.name = channelName
+									channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
+									channel.settings.uplinkEnabled = uplink
+									channel.settings.downlinkEnabled = downlink
+								}
 								
 								let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 								
 								if adminMessageId > 0 {
 									// Should show a saved successfully alert once I know that to be true
-									// for now just disable the button after a successful save
+									// for now just disable the button after a successful save.
+									// Would rather send a getChannel but I can't seem to tell what admin message it is
+									bleManager.sendWantConfig()
 									channelName = ""
 									hasChanges = false
 									isPresentingEditView = false
-									bleManager.disconnectPeripheral()
 								}
 							}
 						}

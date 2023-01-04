@@ -985,34 +985,37 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "Canned Messages Messages Received For: %@"), String(packet.from))
-	MeshLogger.log("🥫 \(logString)")
-	
+
 	if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
-		
-		let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-		
-		do {
-			let fetchedNode = try context.fetch(fetchNodeRequest) as! [NodeInfoEntity]
-			if fetchedNode.count == 1 {
-				let messages =  String(cmmc.textFormatString())
-					.replacingOccurrences(of: "11: ", with: "")
-					.replacingOccurrences(of: "\"", with: "")
-					.trimmingCharacters(in: .whitespacesAndNewlines)
-				fetchedNode[0].cannedMessageConfig?.messages = messages
-				do {
-					try context.save()
-					print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+			
+		if !cmmc.messages.isEmpty {
+			
+			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "Canned Messages Messages Received For: %@"), String(packet.from))
+			MeshLogger.log("🥫 \(logString)")
+			
+			let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+			fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+			
+			do {
+				let fetchedNode = try context.fetch(fetchNodeRequest) as! [NodeInfoEntity]
+				if fetchedNode.count == 1 {
+					let messages =  String(cmmc.textFormatString())
+						.replacingOccurrences(of: "11: ", with: "")
+						.replacingOccurrences(of: "\"", with: "")
+						.trimmingCharacters(in: .whitespacesAndNewlines)
+					fetchedNode[0].cannedMessageConfig?.messages = messages
+					do {
+						try context.save()
+						print("💾 Updated Canned Messages Messages For: \(fetchedNode[0].num)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+					}
 				}
+			} catch {
+				print("💥 Error Deserializing POSITION_APP packet.")
 			}
-		} catch {
-			print("💥 Error Deserializing POSITION_APP packet.")
 		}
 	}
 }
