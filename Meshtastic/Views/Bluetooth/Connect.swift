@@ -210,7 +210,7 @@ struct Connect: View {
 						Button(role: .destructive, action: {
 							
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-								bleManager.disconnectPeripheral()
+								bleManager.disconnectPeripheral(reconnect: false)
 								isPreferredRadio = false
 							}
 							

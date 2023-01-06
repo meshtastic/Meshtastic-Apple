@@ -126,8 +126,17 @@ struct Contacts: View {
 								) {
 									
 									Button(role: .destructive) {
-										deleteChannelMessages(channel: channel, context: context)
-										context.refresh(node!.myInfo!, mergeChanges: true)
+										do {
+										   for message in channel.allPrivateMessages {
+											   context.delete(message)
+										   }
+											try context.save()
+											context.refresh(node!.myInfo!, mergeChanges: true)
+										} catch let error as NSError {
+											print("Error: \(error.localizedDescription)")
+										}
+										//deleteChannelMessages(channel: channel, context: context)
+										
 									} label: {
 										Text("delete")
 									}

@@ -86,7 +86,7 @@ struct Channels: View {
 					}
 				}
 			}
-			if node?.myInfo?.channels?.array.count ?? 0 < 8 {
+			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 				
 				Button {
 					let key = generateChannelKey(size: 32)
