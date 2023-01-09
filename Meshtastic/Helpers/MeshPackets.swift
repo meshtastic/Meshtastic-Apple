@@ -1025,7 +1025,11 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		}
 		
 		else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
-			print("I am a channel response")
+			
+			if let channel = try? Channel(serializedData: packet.decoded.payload) {
+				print("got a channel over the admin channel")
+				//channelPacket(channel: channel, fromNum: Int64(packet.from), context: context)
+			}
 		}
 	}
 	

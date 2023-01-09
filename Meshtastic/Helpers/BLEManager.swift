@@ -978,7 +978,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.from	= 0 //UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()

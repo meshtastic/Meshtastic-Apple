@@ -257,7 +257,8 @@ struct Channels: View {
 								self.isPresentingEditView = false
 								channelName = ""
 								hasChanges = false
-								// Would rather send a getChannel but I can't seem to tell what admin message it is
+								// Would rather send a getChannel but I can't seem serialize it properly yet
+								//bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 								bleManager.sendWantConfig()
 							}
 						} label: {
