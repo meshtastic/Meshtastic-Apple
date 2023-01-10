@@ -63,7 +63,7 @@ struct DeviceConfig: View {
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -73,7 +73,7 @@ struct DeviceConfig: View {
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -90,7 +90,7 @@ struct DeviceConfig: View {
 				Button("Reset NodeDB", role: .destructive) {
 					isPresentingNodeDBResetConfirm = true
 				}
-				.disabled(bleManager.connectedPeripheral == nil)
+				.disabled(node?.user == nil)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -101,7 +101,7 @@ struct DeviceConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Erase all device and app data?", role: .destructive) {
-						if bleManager.sendNodeDBReset(destNum: bleManager.connectedPeripheral.num) {
+						if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
 						} else {
@@ -112,7 +112,7 @@ struct DeviceConfig: View {
 				Button("Factory Reset", role: .destructive) {
 					isPresentingFactoryResetConfirm = true
 				}
-				.disabled(bleManager.connectedPeripheral == nil)
+				.disabled(node?.user == nil)
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
@@ -124,7 +124,7 @@ struct DeviceConfig: View {
 				) {
 					Button("Factory reset your device and app? ", role: .destructive) {
 						
-						if bleManager.sendFactoryReset(destNum: bleManager.connectedPeripheral.num) {
+						if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
 						} else {
@@ -152,11 +152,13 @@ struct DeviceConfig: View {
 				.padding()
 				.confirmationDialog(
 					
-					"Are you sure you want to save?",
+					"are.you.sure",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					Button("Save Device Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+					let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+					Button(buttonText) {
 						
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
@@ -175,18 +177,14 @@ struct DeviceConfig: View {
 					} 
 				}
 				message: {
-					
-					Text("After device config saves the node will reboot.")
+					Text("config.save.confirm")
 				}
 			}
 			Spacer()
 		}
-		
 		.navigationTitle("device.config")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {

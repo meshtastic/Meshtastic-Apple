@@ -74,13 +74,9 @@ struct SerialConfig: View {
 					
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -89,13 +85,9 @@ struct SerialConfig: View {
 
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -126,8 +118,9 @@ struct SerialConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Serial Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-						
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 					var sc = ModuleConfig.SerialConfig()
 					sc.enabled = enabled
 					sc.echo = echo
@@ -147,7 +140,9 @@ struct SerialConfig: View {
 					}
 				}
 			}
-			
+			message: {
+				Text("config.save.confirm")
+			}
 			.navigationTitle("serial.config")
 			.navigationBarItems(trailing:
 

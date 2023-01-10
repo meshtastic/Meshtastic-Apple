@@ -7,52 +7,6 @@
 
 import Foundation
 
-enum PositionBroadcastIntervals: Int, CaseIterable, Identifiable {
-
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-	case sixHours = 21600
-	case twelveHours = 43200
-	case twentyFourHours = 86400
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-
-			case .fifteenSeconds:
-				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
-			case .thirtySeconds:
-				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
-			case .oneMinute:
-				return NSLocalizedString("interval.one.minute", comment: "One Minute")
-			case .fiveMinutes:
-				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
-			case .tenMinutes:
-				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
-			case .fifteenMinutes:
-				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
-			case .thirtyMinutes:
-				return NSLocalizedString("interval.thirty.minutes", comment: "Thirty Minutes")
-			case .oneHour:
-				return NSLocalizedString("interval.one.hour", comment: "One Hour")
-			case .sixHours:
-				return NSLocalizedString("interval.six.hours", comment: "Six Hours")
-			case .twelveHours:
-				return NSLocalizedString("interval.twelve.hours", comment: "Twelve Hours")
-			case .twentyFourHours:
-				return NSLocalizedString("interval.twentyfour.hours", comment: "Twenty Four Hours")
-			}
-		}
-	}
-}
-
 enum GpsFormats: Int, CaseIterable, Identifiable {
 
 	case gpsFormatDec = 0
@@ -178,6 +132,8 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 	case oneMinute = 60
 	case twoMinutes = 120
 	case fiveMinutes = 300
+	case tenMinutes = 600
+	case fifteenMinutes = 900
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -204,6 +160,10 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 				return NSLocalizedString("interval.two.minutes", comment: "Two Minutes")
 			case .fiveMinutes:
 				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+			case .tenMinutes:
+				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+			case .fifteenMinutes:
+				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 			}
 		}
 	}

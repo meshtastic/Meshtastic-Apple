@@ -74,7 +74,7 @@ struct CannedMessagesConfig: View {
 				
 				HStack {
 					Label("Messages", systemImage: "message.fill")
-					TextField("Messages seperate with |", text: $messages)
+					TextField("Messages seperate with |", text: $messages, axis: .vertical)
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
@@ -124,9 +124,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
@@ -141,9 +139,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
@@ -158,9 +154,7 @@ struct CannedMessagesConfig: View {
 						ForEach(0..<40) {
 							
 							if $0 == 0 {
-								
-								Text("Unset")
-								
+								Text("unset")
 							} else {
 							
 								Text("Pin \($0)")
@@ -224,8 +218,9 @@ struct CannedMessagesConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Canned Messages Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-						
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 					if hasChanges {
 						var cmc = ModuleConfig.CannedMessageConfig()
 						cmc.enabled = enabled
@@ -261,9 +256,16 @@ struct CannedMessagesConfig: View {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
 							hasMessagesChanges = false
+							if !hasChanges {
+								bleManager.sendWantConfig()
+								goBack()
+							}
 						}
 					}
 				}
+			}
+			message: {
+				Text("config.save.confirm")
 			}
 			.navigationTitle("canned.messages.config")
 			.navigationBarItems(trailing:
@@ -282,7 +284,9 @@ struct CannedMessagesConfig: View {
 				self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
 				self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
 				self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
+				self.messages = node?.cannedMessageConfig?.messages ?? ""
 				self.hasChanges = false
+				self.hasMessagesChanges = false
 			}
 			.onChange(of: configPreset) { newPreset in
 				

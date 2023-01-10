@@ -6,44 +6,6 @@
 //
 import SwiftUI
 
-// Default of 0 is off
-enum SenderIntervals: Int, CaseIterable, Identifiable {
-
-	case off = 0
-	case fifteenSeconds = 15
-	case thirtySeconds = 30
-	case oneMinute = 60
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-
-
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-			case .off:
-				return "Off"
-			case .fifteenSeconds:
-				return "Fifteen Seconds"
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			case .fiveMinutes:
-				return "Five Minutes"
-			case .tenMinutes:
-				return "Ten Minutes"
-			case .fifteenMinutes:
-				return "Fifteen Minutes"
-			case .thirtyMinutes:
-				return "Thirty Minutes"
-			}
-		}
-	}
-}
-
 struct RangeTestConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -100,7 +62,9 @@ struct RangeTestConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Range Test Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 				var rtc = ModuleConfig.RangeTestConfig()
 					rtc.enabled = enabled
 					rtc.save = save
@@ -113,6 +77,9 @@ struct RangeTestConfig: View {
 						goBack()
 					}
 				}
+			}
+			message: {
+				Text("config.save.confirm")
 			}
 			.navigationTitle("range.test.config")
 			.navigationBarItems(trailing:

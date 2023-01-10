@@ -20,7 +20,8 @@ struct Contacts: View {
 	
 	private var users: FetchedResults<UserEntity>
 	@State var node: NodeInfoEntity? = nil
-	@State private var selection: UserEntity? = nil // Nothing selected by default.
+	@State private var userSelection: UserEntity? = nil // Nothing selected by default.
+	@State private var channelSelection: ChannelEntity? = nil // Nothing selected by default.
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -28,6 +29,8 @@ struct Contacts: View {
     var body: some View {
 
 		NavigationSplitView {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 			List {
 				Section(header: Text("channels")) {
 					// Display Contacts for the rest of the non admin channels
@@ -65,10 +68,10 @@ struct Contacts: View {
 																Text("Yesterday")
 																	.font(.subheadline)
 															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															}
 														}
@@ -111,6 +114,7 @@ struct Contacts: View {
 									if channel.allPrivateMessages.count > 0 {
 										Button(role: .destructive) {
 											isPresentingDeleteChannelMessagesConfirm = true
+											channelSelection = channel
 										} label: {
 											Label("Delete Messages", systemImage: "trash")
 										}
@@ -119,13 +123,12 @@ struct Contacts: View {
 								.confirmationDialog(
 									"This conversation will be deleted.",
 									isPresented: $isPresentingDeleteChannelMessagesConfirm,
-									
 									titleVisibility: .visible
 								) {
-									
 									Button(role: .destructive) {
-										deleteChannelMessages(channel: channel, context: context)
+										deleteChannelMessages(channel: channelSelection!, context: context)
 										context.refresh(node!.myInfo!, mergeChanges: true)
+										channelSelection = nil
 									} label: {
 										Text("delete")
 									}
@@ -151,7 +154,7 @@ struct Contacts: View {
 												.padding(.trailing, 5)
 											VStack {
 												HStack {
-													Text(user.longName ?? "Unknown").font(.headline)
+													Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 													Spacer()
 													if user.messageList.count > 0 {
 														VStack (alignment: .trailing) {
@@ -162,10 +165,10 @@ struct Contacts: View {
 																Text("Yesterday")
 																	.font(.subheadline)
 															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: "MM/dd/yy"))
+																Text(lastMessageTime.formattedDate(format: dateFormatString))
 																	.font(.subheadline)
 															}
 														}
@@ -206,6 +209,7 @@ struct Contacts: View {
 												if user.messageList.count  > 0 {
 													Button(role: .destructive) {
 														isPresentingDeleteUserMessagesConfirm = true
+														userSelection = user
 													} label: {
 														Label("Delete Messages", systemImage: "trash")
 													}
@@ -227,7 +231,7 @@ struct Contacts: View {
 												titleVisibility: .visible
 											) {
 												Button(role: .destructive) {
-													deleteUserMessages(user: user, context: context)
+													deleteUserMessages(user: userSelection!, context: context)
 													context.refresh(node!.user!, mergeChanges: true)
 												} label: {
 													Text("delete")
@@ -272,7 +276,7 @@ struct Contacts: View {
 			}
 		}
 		detail: {
-			if let user = selection {
+			if let user = userSelection {
 				UserMessageList(user:user)
 				
 			} else {

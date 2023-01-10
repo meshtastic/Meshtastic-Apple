@@ -5,9 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/7/22.
 //
 import SwiftUI
-#if canImport(Charts)
 import Charts
-#endif
 
 struct DeviceMetricsLog: View {
 	
@@ -24,7 +22,7 @@ struct DeviceMetricsLog: View {
 			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
 			let data = node.telemetries!.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg))
 			if data.count > 0 {
-				GroupBox(label:	Label("Battery Level Trend", systemImage: "battery.100")) {
+				GroupBox(label:	Label("battery.level.trend", systemImage: "battery.100")) {
 					Chart(data.array as! [TelemetryEntity], id: \.self) {
 						LineMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
@@ -38,10 +36,13 @@ struct DeviceMetricsLog: View {
 					.frame(height: 150)
 				}
 			}
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
-					TableColumn("Battery Level") { dm in
+					
+					TableColumn("battery.level") { dm in
 						if dm.metricsType == 0 {
 							if dm.batteryLevel == 0 {
 								Text("Powered")
@@ -51,24 +52,24 @@ struct DeviceMetricsLog: View {
 							}
 						}
 					}
-					TableColumn("Voltage") { dm in
+					TableColumn("voltage") { dm in
 						if dm.metricsType == 0 {
 							Text("\(String(format: "%.2f", dm.voltage))")
 						}
 					}
-					TableColumn("Channel Utilization") { dm in
+					TableColumn("channel.utilization") { dm in
 						if dm.metricsType == 0 {
 							Text(String(format: "%.2f", dm.channelUtilization))
 						}
 					}
-					TableColumn("Airtime") { dm in
+					TableColumn("airtime") { dm in
 						if dm.metricsType == 0 {
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
 						}
 					}
-					TableColumn("Time Stamp") { dm in
+					TableColumn("timestamp") { dm in
 						if dm.metricsType == 0 {
-							Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 						}
 					}
 				}
@@ -81,14 +82,14 @@ struct DeviceMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(120))
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
 							Text("Batt")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("Voltage")
+							Text("Volt")
 								.font(.caption)
 								.fontWeight(.bold)
 							Text("ChUtil")
@@ -97,7 +98,7 @@ struct DeviceMetricsLog: View {
 							Text("AirTm")
 								.font(.caption)
 								.fontWeight(.bold)
-							Text("Timestamp")
+							Text("timestamp")
 								.font(.caption)
 								.fontWeight(.bold)
 						}
@@ -117,8 +118,9 @@ struct DeviceMetricsLog: View {
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
-									Text(dm.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-										.font(.caption)
+									
+									Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+										.font(.caption2)
 								}
 							}
 						}
@@ -132,7 +134,7 @@ struct DeviceMetricsLog: View {
 			Button(role: .destructive) {
 				isPresentingClearLogConfirm = true
 			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
+				Label("clear.log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
@@ -143,7 +145,7 @@ struct DeviceMetricsLog: View {
 				isPresented: $isPresentingClearLogConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Delete all device metrics?", role: .destructive) {
+				Button("device.metrics.delete", role: .destructive) {
 					if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
 						print("Cleared Device Metrics for \(node.num)")
 					} else {
@@ -162,7 +164,7 @@ struct DeviceMetricsLog: View {
 			.controlSize(.large)
 			.padding()
 		}
-		.navigationTitle("Device Metrics Log")
+		.navigationTitle("device.metrics.log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
@@ -175,14 +177,14 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user!.longName ?? "Node") Device Telemetry Log"),
+			defaultFilename: String("\(node.user!.longName ?? "Node") \(NSLocalizedString("device.metrics.log", comment: "Device Metrics Log"))"),
 			onCompletion: { result in
 				if case .success = result {
-					print("Device Telemetry log download succeeded.")
+					print("Device metrics log download succeeded.")
 					self.isExporting = false
 					
 				} else {
-					print("Device Telemetry log download failed: \(result).")
+					print("Device metrics log download failed: \(result).")
 				}
 			}
 		)

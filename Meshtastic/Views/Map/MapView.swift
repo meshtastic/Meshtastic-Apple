@@ -124,7 +124,7 @@ private extension MapView {
 			if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
 				let annotation = PositionAnnotation()
 				annotation.coordinate = (node.positions!.lastObject as! PositionEntity).coordinate!
-				annotation.title = node.user?.longName ?? "Unknown"
+				annotation.title = node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				annotation.shortName = node.user?.shortName?.uppercased() ?? "???"
 
 				view.addAnnotation(annotation)

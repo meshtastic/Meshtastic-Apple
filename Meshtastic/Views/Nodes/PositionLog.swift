@@ -21,6 +21,8 @@ struct PositionLog: View {
 	var body: some View {
 		
 		NavigationStack {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 						
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
@@ -50,7 +52,7 @@ struct PositionLog: View {
 						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
-						Text(position.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+						Text(position.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
 				
@@ -59,11 +61,11 @@ struct PositionLog: View {
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
 					let columns = [
+						GridItem(.fixed(90)),
 						GridItem(.fixed(95)),
-						GridItem(.fixed(95)),
-						GridItem(),
-						GridItem(),
-						GridItem(.fixed(115))
+						GridItem(.fixed(45)),
+						GridItem(.fixed(40)),
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						
@@ -81,7 +83,7 @@ struct PositionLog: View {
 							Text("Alt")
 								.font(.caption2)
 								.fontWeight(.bold)
-							Text("Timestamp")
+							Text("timestamp")
 								.font(.caption2)
 								.fontWeight(.bold)
 						}
@@ -95,7 +97,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.altitude))
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 									.font(.caption2)
 							}
 						}
@@ -125,9 +127,7 @@ struct PositionLog: View {
 					titleVisibility: .visible
 				) {
 					Button("Delete all positions?", role: .destructive) {
-						
 						if clearPositions(destNum: node.num, context: context) {
-							
 							print("Successfully Cleared Position Log")
 							
 						} else {

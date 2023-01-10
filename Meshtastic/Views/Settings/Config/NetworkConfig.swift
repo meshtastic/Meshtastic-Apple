@@ -104,17 +104,19 @@ struct NetworkConfig: View {
 			.controlSize(.large)
 			.padding()
 			.confirmationDialog(
-				"Are you sure you want to save?",
+				"are.you.sure",
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
 					network.wifiPsk = self.wifiPsk
 					network.ethEnabled = self.ethEnabled
-					network.ethMode = Config.NetworkConfig.EthMode.dhcp
+					//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 					
 					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
@@ -125,7 +127,7 @@ struct NetworkConfig: View {
 					}
 				}
 			} message: {
-				Text("After network config saves the node will reboot.")
+				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("network.config")

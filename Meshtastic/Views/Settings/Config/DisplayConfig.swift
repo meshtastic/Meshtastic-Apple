@@ -27,109 +27,108 @@ struct DisplayConfig: View {
 	
 	var body: some View {
 		
-		VStack {
-
-			Form {
-				Section(header: Text("Device Screen")) {
-					
-					Picker("Screen on for", selection: $screenOnSeconds ) {
-						ForEach(ScreenOnIntervals.allCases) { soi in
-							Text(soi.description)
-						}
+		Form {
+			Section(header: Text("Device Screen")) {
+				
+				Picker("Screen on for", selection: $screenOnSeconds ) {
+					ForEach(ScreenOnIntervals.allCases) { soi in
+						Text(soi.description)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Text("How long the screen remains on after the user button is pressed or messages are received.")
-						.font(.caption)
-					
-					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
-						ForEach(ScreenCarouselIntervals.allCases) { sci in
-							Text(sci.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
-						.font(.caption)
-					
-					Toggle(isOn: $compassNorthTop) {
-
-						Label("Always point north", systemImage: "location.north.circle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("The compass heading on the screen outside of the circle will always point north.")
-						.font(.caption)
-					
-					Toggle(isOn: $flipScreen) {
-
-						Label("Flip Screen", systemImage: "pip.swap")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Flip screen vertically")
-						.font(.caption)
-					Picker("OLED Type", selection: $oledType ) {
-						ForEach(OledTypes.allCases) { ot in
-							Text(ot.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Override automatic OLED screen detection.")
-						.font(.caption)
-					
 				}
-				Section(header: Text("Format")) {
-					Picker("GPS Format", selection: $gpsFormat ) {
-						ForEach(GpsFormats.allCases) { lu in
-							Text(lu.description)
-						}
+				.pickerStyle(DefaultPickerStyle())
+				
+				Text("How long the screen remains on after the user button is pressed or messages are received.")
+					.font(.caption)
+				
+				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
+					ForEach(ScreenCarouselIntervals.allCases) { sci in
+						Text(sci.description)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Text("The format used to display GPS coordinates on the device screen.")
-						.font(.caption)
-						.listRowSeparator(.visible)
 				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
+					.font(.caption)
+				
+				Toggle(isOn: $compassNorthTop) {
+
+					Label("Always point north", systemImage: "location.north.circle")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("The compass heading on the screen outside of the circle will always point north.")
+					.font(.caption)
+				
+				Toggle(isOn: $flipScreen) {
+
+					Label("Flip Screen", systemImage: "pip.swap")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("Flip screen vertically")
+					.font(.caption)
+				Picker("OLED Type", selection: $oledType ) {
+					ForEach(OledTypes.allCases) { ot in
+						Text(ot.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("Override automatic OLED screen detection.")
+					.font(.caption)
+				
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
-			
-			Button {
-							
-				isPresentingSaveConfirm = true
+			Section(header: Text("Format")) {
+				Picker("GPS Format", selection: $gpsFormat ) {
+					ForEach(GpsFormats.allCases) { lu in
+						Text(lu.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
 				
-			} label: {
-				
-				Label("save", systemImage: "square.and.arrow.down")
+				Text("The format used to display GPS coordinates on the device screen.")
+					.font(.caption)
+					.listRowSeparator(.visible)
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm
-			) {
-				Button("Save Display Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-					
-					var dc = Config.DisplayConfig()
-					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
-					dc.screenOnSecs = UInt32(screenOnSeconds)
-					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
-					dc.compassNorthTop = compassNorthTop
-					dc.flipScreen = flipScreen
-					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
-					
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
-					
-					if adminMessageId > 0 {
+		}
+		.disabled(bleManager.connectedPeripheral == nil)
+		
+		Button {
 						
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+			isPresentingSaveConfirm = true
+			
+		} label: {
+			
+			Label("save", systemImage: "square.and.arrow.down")
+		}
+		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding()
+		.confirmationDialog(
+			"are.you.sure",
+			isPresented: $isPresentingSaveConfirm
+		) {
+			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+			Button(buttonText) {
+				var dc = Config.DisplayConfig()
+				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+				dc.screenOnSecs = UInt32(screenOnSeconds)
+				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+				dc.compassNorthTop = compassNorthTop
+				dc.flipScreen = flipScreen
+				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+				
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
+				if adminMessageId > 0 {
+					
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
+		}
+		message: {
+			Text("config.save.confirm")
 		}
 		.navigationTitle("display.config")
 		.navigationBarItems(trailing:

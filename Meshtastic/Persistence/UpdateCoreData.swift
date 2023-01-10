@@ -61,11 +61,8 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 }
 
 public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
-	let fetchChannelMessagesRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
-	fetchChannelMessagesRequest.predicate = NSPredicate(format: "channel == %i AND toUser == nil AND admin == false", Int32(channel.id))
-	fetchChannelMessagesRequest.includesPropertyValues = false
 	do {
-		let objects = try context.fetch(fetchChannelMessagesRequest) as! [NSManagedObject]
+		let objects = channel.allPrivateMessages// try context.fetch(fetchChannelMessagesRequest) as! [NSManagedObject]
 		   for object in objects {
 			   context.delete(object)
 		   }
@@ -77,11 +74,8 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 
-	let fetchUserMessagesRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
-	fetchUserMessagesRequest.predicate = NSPredicate(format: "((toUser.num == %lld) OR (fromUser.num == %lld)) AND toUser != nil AND fromUser != nil AND admin == false", Int64(user.num), Int64(user.num))
-	fetchUserMessagesRequest.includesPropertyValues = false
 	do {
-		let objects = try context.fetch(fetchUserMessagesRequest) as! [NSManagedObject]
+		let objects = user.messageList//try context.fetch(fetchUserMessagesRequest) as! [NSManagedObject]
 		   for object in objects {
 			   context.delete(object)
 		   }

@@ -21,7 +21,8 @@ struct AdminMessageList: View {
 	var user: UserEntity?
 
 	var body: some View {
-		
+		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
+		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
 		List {
 			if user != nil {
 			
@@ -29,7 +30,7 @@ struct AdminMessageList: View {
 				
 					HStack {
 						
-						Text("\(am.adminDescription ?? "Unknown") - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)), style: .date) \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: "h:mm:ss a"))")
+						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown")) - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")
 							.font(.caption)
 						
 						if am.receivedACK {
@@ -37,15 +38,16 @@ struct AdminMessageList: View {
 							Image(systemName: "checkmark.square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Acknowledged: \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
+							Text("routing.acknowledged").foregroundColor(.gray).font(.caption) + Text(": \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
 								.foregroundColor(.gray)
 								.font(.caption)
 
 						} else {
+							let ackErrorVal = RoutingError(rawValue: Int(am.ackError))
 							Image(systemName: "square")
 								.foregroundColor(.gray)
 								.font(.caption)
-							Text("Not Acknowledged")
+							Text(ackErrorVal?.display ?? "Empty Ack Error")
 								.foregroundColor(.gray)
 								.font(.caption)
 						}
@@ -53,15 +55,12 @@ struct AdminMessageList: View {
 				}
 			}
 		}
-		.navigationTitle("Admin Message Log")
+		.navigationTitle("admin.log")
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
 	}

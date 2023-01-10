@@ -111,6 +111,16 @@ struct ModuleConfig {
     set {payloadVariant = .audio(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  var remoteHardware: ModuleConfig.RemoteHardwareConfig {
+    get {
+      if case .remoteHardware(let v)? = payloadVariant {return v}
+      return ModuleConfig.RemoteHardwareConfig()
+    }
+    set {payloadVariant = .remoteHardware(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -140,6 +150,9 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     case audio(ModuleConfig.AudioConfig)
+    ///
+    /// TODO: REPLACE
+    case remoteHardware(ModuleConfig.RemoteHardwareConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -177,6 +190,10 @@ struct ModuleConfig {
       }()
       case (.audio, .audio): return {
         guard case .audio(let l) = lhs, case .audio(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.remoteHardware, .remoteHardware): return {
+        guard case .remoteHardware(let l) = lhs, case .remoteHardware(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -224,6 +241,22 @@ struct ModuleConfig {
     ///
     /// Whether to send / consume json packets on MQTT
     var jsonEnabled: Bool = false
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+  }
+
+  ///
+  /// RemoteHardwareModule Config
+  struct RemoteHardwareConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Whether the Module is enabled
+    var enabled: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -844,6 +877,7 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
 extension ModuleConfig: @unchecked Sendable {}
 extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
+extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig: @unchecked Sendable {}
@@ -870,6 +904,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     6: .same(proto: "telemetry"),
     7: .standard(proto: "canned_message"),
     8: .same(proto: "audio"),
+    9: .standard(proto: "remote_hardware"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -982,6 +1017,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .audio(v)
         }
       }()
+      case 9: try {
+        var v: ModuleConfig.RemoteHardwareConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .remoteHardware(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .remoteHardware(v)
+        }
+      }()
       default: break
       }
     }
@@ -1024,6 +1072,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .audio?: try {
       guard case .audio(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    }()
+    case .remoteHardware?: try {
+      guard case .remoteHardware(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     }()
     case nil: break
     }
@@ -1094,6 +1146,38 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.password != rhs.password {return false}
     if lhs.encryptionEnabled != rhs.encryptionEnabled {return false}
     if lhs.jsonEnabled != rhs.jsonEnabled {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.RemoteHardwareConfig, rhs: ModuleConfig.RemoteHardwareConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

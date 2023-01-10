@@ -474,7 +474,7 @@ struct Config {
 
     ///
     /// acquire an address via DHCP or assign static
-    var ethMode: Config.NetworkConfig.EthMode = .dhcp
+    var addressMode: Config.NetworkConfig.AddressMode = .dhcp
 
     ///
     /// struct to keep static address
@@ -489,7 +489,7 @@ struct Config {
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    enum EthMode: SwiftProtobuf.Enum {
+    enum AddressMode: SwiftProtobuf.Enum {
       typealias RawValue = Int
 
       ///
@@ -591,6 +591,14 @@ struct Config {
     ///
     /// Override auto-detect in screen
     var oled: Config.DisplayConfig.OledType = .oledAuto
+
+    ///
+    /// Display Mode
+    var displaymode: Config.DisplayConfig.DisplayMode = .default
+
+    ///
+    /// Print first line in pseudo-bold? FALSE is original style, TRUE is bold
+    var headingBold: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -733,6 +741,52 @@ struct Config {
         case .oledAuto: return 0
         case .oledSsd1306: return 1
         case .oledSh1106: return 2
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    enum DisplayMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// Default. The old style for the 128x64 OLED screen
+      case `default` // = 0
+
+      ///
+      /// Rearrange display elements to cater for bicolor OLED displays
+      case twocolor // = 1
+
+      ///
+      /// Same as TwoColor, but with inverted top bar. Not so good for Epaper displays
+      case inverted // = 2
+
+      ///
+      /// TFT Full Color Displays (not implemented yet)
+      case color // = 3
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .default
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .default
+        case 1: self = .twocolor
+        case 2: self = .inverted
+        case 3: self = .color
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .default: return 0
+        case .twocolor: return 1
+        case .inverted: return 2
+        case .color: return 3
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1099,9 +1153,9 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
   ]
 }
 
-extension Config.NetworkConfig.EthMode: CaseIterable {
+extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.NetworkConfig.EthMode] = [
+  static var allCases: [Config.NetworkConfig.AddressMode] = [
     .dhcp,
     .static,
   ]
@@ -1133,6 +1187,16 @@ extension Config.DisplayConfig.OledType: CaseIterable {
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
+  ]
+}
+
+extension Config.DisplayConfig.DisplayMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.DisplayConfig.DisplayMode] = [
+    .default,
+    .twocolor,
+    .inverted,
+    .color,
   ]
 }
 
@@ -1189,12 +1253,13 @@ extension Config.PositionConfig: @unchecked Sendable {}
 extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.NetworkConfig: @unchecked Sendable {}
-extension Config.NetworkConfig.EthMode: @unchecked Sendable {}
+extension Config.NetworkConfig.AddressMode: @unchecked Sendable {}
 extension Config.NetworkConfig.IpV4Config: @unchecked Sendable {}
 extension Config.DisplayConfig: @unchecked Sendable {}
 extension Config.DisplayConfig.GpsCoordinateFormat: @unchecked Sendable {}
 extension Config.DisplayConfig.DisplayUnits: @unchecked Sendable {}
 extension Config.DisplayConfig.OledType: @unchecked Sendable {}
+extension Config.DisplayConfig.DisplayMode: @unchecked Sendable {}
 extension Config.LoRaConfig: @unchecked Sendable {}
 extension Config.LoRaConfig.RegionCode: @unchecked Sendable {}
 extension Config.LoRaConfig.ModemPreset: @unchecked Sendable {}
@@ -1607,7 +1672,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     4: .standard(proto: "wifi_psk"),
     5: .standard(proto: "ntp_server"),
     6: .standard(proto: "eth_enabled"),
-    7: .standard(proto: "eth_mode"),
+    7: .standard(proto: "address_mode"),
     8: .standard(proto: "ipv4_config"),
   ]
 
@@ -1622,7 +1687,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 4: try { try decoder.decodeSingularStringField(value: &self.wifiPsk) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.ntpServer) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.ethEnabled) }()
-      case 7: try { try decoder.decodeSingularEnumField(value: &self.ethMode) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.addressMode) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
       default: break
       }
@@ -1649,8 +1714,8 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.ethEnabled != false {
       try visitor.visitSingularBoolField(value: self.ethEnabled, fieldNumber: 6)
     }
-    if self.ethMode != .dhcp {
-      try visitor.visitSingularEnumField(value: self.ethMode, fieldNumber: 7)
+    if self.addressMode != .dhcp {
+      try visitor.visitSingularEnumField(value: self.addressMode, fieldNumber: 7)
     }
     try { if let v = self._ipv4Config {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
@@ -1664,14 +1729,14 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.wifiPsk != rhs.wifiPsk {return false}
     if lhs.ntpServer != rhs.ntpServer {return false}
     if lhs.ethEnabled != rhs.ethEnabled {return false}
-    if lhs.ethMode != rhs.ethMode {return false}
+    if lhs.addressMode != rhs.addressMode {return false}
     if lhs._ipv4Config != rhs._ipv4Config {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Config.NetworkConfig.EthMode: SwiftProtobuf._ProtoNameProviding {
+extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHCP"),
     1: .same(proto: "STATIC"),
@@ -1738,6 +1803,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     5: .standard(proto: "flip_screen"),
     6: .same(proto: "units"),
     7: .same(proto: "oled"),
+    8: .same(proto: "displaymode"),
+    9: .standard(proto: "heading_bold"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1753,6 +1820,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 5: try { try decoder.decodeSingularBoolField(value: &self.flipScreen) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.units) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.oled) }()
+      case 8: try { try decoder.decodeSingularEnumField(value: &self.displaymode) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.headingBold) }()
       default: break
       }
     }
@@ -1780,6 +1849,12 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.oled != .oledAuto {
       try visitor.visitSingularEnumField(value: self.oled, fieldNumber: 7)
     }
+    if self.displaymode != .default {
+      try visitor.visitSingularEnumField(value: self.displaymode, fieldNumber: 8)
+    }
+    if self.headingBold != false {
+      try visitor.visitSingularBoolField(value: self.headingBold, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1791,6 +1866,8 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.flipScreen != rhs.flipScreen {return false}
     if lhs.units != rhs.units {return false}
     if lhs.oled != rhs.oled {return false}
+    if lhs.displaymode != rhs.displaymode {return false}
+    if lhs.headingBold != rhs.headingBold {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1819,6 +1896,15 @@ extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "OLED_AUTO"),
     1: .same(proto: "OLED_SSD1306"),
     2: .same(proto: "OLED_SH1106"),
+  ]
+}
+
+extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DEFAULT"),
+    1: .same(proto: "TWOCOLOR"),
+    2: .same(proto: "INVERTED"),
+    3: .same(proto: "COLOR"),
   ]
 }
 

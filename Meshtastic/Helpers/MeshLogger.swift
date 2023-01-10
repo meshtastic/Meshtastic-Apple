@@ -12,9 +12,11 @@ class MeshLogger {
 		guard let logFile = logFile else {
 			return
 		}
-
+		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssSSa", options: 0, locale: Locale.current)
+		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss.SS a")
+		
 		let formatter = DateFormatter()
-		formatter.dateFormat = "M/d/yy h:mm:ss.SSSS"
+		formatter.dateFormat = dateFormatString
 		let timestamp = formatter.string(from: Date())
 		guard let data = (message + " - " + timestamp + "\n").data(using: String.Encoding.utf8) else { return }
 		print(message)

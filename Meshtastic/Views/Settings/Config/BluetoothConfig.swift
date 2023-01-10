@@ -33,88 +33,86 @@ struct BluetoothConfig: View {
 	
 	var body: some View {
 		
-		VStack {
-
-			Form {
-				
-				Section(header: Text("options")) {
-				
-					Toggle(isOn: $enabled) {
-
-						Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					
-					Picker("Pairing Mode", selection: $mode ) {
-						ForEach(BluetoothModes.allCases) { bm in
-							Text(bm.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					if mode == 1 {
-						
-						HStack {
-							Label("Fixed PIN", systemImage: "wallet.pass")
-							TextField("Fixed PIN", text: $fixedPin)
-								.foregroundColor(.gray)
-								.onChange(of: fixedPin, perform: { value in
-									//Require that pin is no more than 6 numbers and no less than 6 numbers
-									if fixedPin.utf8.count == pinLength {
-										shortPin = false
-									} else if fixedPin.utf8.count > pinLength {
-										shortPin = false
-										fixedPin = String(fixedPin.prefix(pinLength))
-									} else if fixedPin.utf8.count < pinLength {
-										shortPin = true
-									}
-								})
-								.foregroundColor(.gray)
-						}
-						.keyboardType(.decimalPad)
-						if shortPin {
-							
-							Text("BLE Pin must be 6 digits long.")
-								.font(.callout)
-								.foregroundColor(.red)
-						}
-					}
-				}
-			}
-			.disabled(bleManager.connectedPeripheral == nil)
+		Form {
+			Section(header: Text("options")) {
 			
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || shortPin)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"Are you sure you want to save?",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				Button("Save Config for \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")") {
-					var bc = Config.BluetoothConfig()
-					bc.enabled = enabled
-					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-					bc.fixedPin = UInt32(fixedPin) ?? 123456
-					let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+				Toggle(isOn: $enabled) {
+					Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Picker("bluetooth.pairingmode", selection: $mode ) {
+					ForEach(BluetoothModes.allCases) { bm in
+						Text(bm.description)
 					}
 				}
-			} message: {
-				Text("After bluetooth config saves the node will reboot.")
+				.pickerStyle(DefaultPickerStyle())
+				
+				if mode == 1 {
+					HStack {
+						Label("bluetooth.mode.fixedpin", systemImage: "wallet.pass")
+						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
+							.foregroundColor(.gray)
+							.onChange(of: fixedPin, perform: { value in
+								// Don't let the first character be 0 because it will get stripped when saving a UInt32
+								if fixedPin.first == "0" {
+									fixedPin = fixedPin.replacing("0", with: "")
+								}
+								//Require that pin is no more than 6 numbers and no less than 6 numbers
+								if fixedPin.utf8.count == pinLength {
+									shortPin = false
+								} else if fixedPin.utf8.count > pinLength {
+									shortPin = false
+									fixedPin = String(fixedPin.prefix(pinLength))
+								} else if fixedPin.utf8.count < pinLength {
+									shortPin = true
+								}
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.decimalPad)
+					if shortPin {
+						Text("bluetooth.pin.validation")
+							.font(.callout)
+							.foregroundColor(.red)
+					}
+				}
 			}
+		}
+		.disabled(bleManager.connectedPeripheral == nil)
+		
+		Button {
+			isPresentingSaveConfirm = true
+		} label: {
+			Label("save", systemImage: "square.and.arrow.down")
+		}
+		.disabled(bleManager.connectedPeripheral == nil || !hasChanges || shortPin)
+		.buttonStyle(.bordered)
+		.buttonBorderShape(.capsule)
+		.controlSize(.large)
+		.padding()
+		.confirmationDialog(
+			"are.you.sure",
+			isPresented: $isPresentingSaveConfirm,
+			titleVisibility: .visible
+		) {
+			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+			Button(buttonText) {
+				var bc = Config.BluetoothConfig()
+				bc.enabled = enabled
+				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
+				bc.fixedPin = UInt32(fixedPin) ?? 123456
+				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
+				}
+			}
+		} message: {
+			Text("config.save.confirm")
 		}
 		.navigationTitle("bluetooth.config")
 		.navigationBarItems(trailing:

@@ -31,6 +31,8 @@ struct UserMessageList: View {
 	
 	var body: some View {
 		NavigationStack {
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmss", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 			ScrollViewReader { scrollView in
 				ScrollView {
 					LazyVStack {
@@ -105,8 +107,9 @@ struct UserMessageList: View {
 												}
 												Menu("message.details") {
 													VStack {
+
 														let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
-														Text("Date \(messageDate, style: .date) \(messageDate.formattedDate(format: "h:mm:ss a"))").font(.caption2).foregroundColor(.gray)
+														Text("\(messageDate.formattedDate(format: dateFormatString))").foregroundColor(.gray)
 													}
 													if !currentUser {
 														VStack {
@@ -116,20 +119,21 @@ struct UserMessageList: View {
 													if currentUser && message.receivedACK {
 														VStack {
 															Text("received.ack")+Text(" \(message.receivedACK ? "✔️" : "")")
+															Text("received.ack.real")+Text(" \(message.realACK ? "✔️" : "")")
 														}
 													} else if currentUser && message.ackError == 0 {
 														// Empty Error
 														Text("waiting")
 													} else if currentUser && message.ackError > 0 {
 														let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
-														Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+														Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 													}
 													if currentUser {
 														VStack {
 															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
 															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 															if ackDate >= sixMonthsAgo! {
-																Text((ackDate.formattedDate(format: "h:mm:ss a"))).font(.caption2).foregroundColor(.gray)
+																Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss a"))").foregroundColor(.gray)
 															} else {
 																Text("unknown.age").font(.caption2).foregroundColor(.gray)
 															}
@@ -137,7 +141,7 @@ struct UserMessageList: View {
 													}
 													if message.ackSNR != 0 {
 														VStack {
-															Text("Ack SNR\(String(format: "%.2f", message.ackSNR)) dB")
+															Text("Ack SNR: \(String(format: "%.2f", message.ackSNR)) dB")
 																.font(.caption2)
 																.foregroundColor(.gray)
 														}
@@ -181,12 +185,12 @@ struct UserMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
 												// Ack Received
-												Text("\(ackErrorVal?.display ?? "No Error" )").font(.caption2).foregroundColor(.gray)
+												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(message.realACK ? .gray : .orange)
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)
 											} else if currentUser && message.ackError > 0 {
-												Text("\(ackErrorVal?.display ?? "No Error" )").fixedSize(horizontal: false, vertical: true)
+												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 													.font(.caption2).foregroundColor(.red)
 											}
 										}
@@ -353,7 +357,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "???", color: .accentColor, circleSize: 44, fontSize: 14).fixedSize()
-					Text(user.longName ?? "Unknown").font(.headline)
+					Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

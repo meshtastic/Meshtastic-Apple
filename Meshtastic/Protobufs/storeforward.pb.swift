@@ -33,42 +33,97 @@ struct StoreAndForward {
 
   ///
   /// TODO: REPLACE
+  var variant: StoreAndForward.OneOf_Variant? = nil
+
+  ///
+  /// TODO: REPLACE
   var stats: StoreAndForward.Statistics {
-    get {return _stats ?? StoreAndForward.Statistics()}
-    set {_stats = newValue}
+    get {
+      if case .stats(let v)? = variant {return v}
+      return StoreAndForward.Statistics()
+    }
+    set {variant = .stats(newValue)}
   }
-  /// Returns true if `stats` has been explicitly set.
-  var hasStats: Bool {return self._stats != nil}
-  /// Clears the value of `stats`. Subsequent reads from it will return its default value.
-  mutating func clearStats() {self._stats = nil}
 
   ///
   /// TODO: REPLACE
   var history: StoreAndForward.History {
-    get {return _history ?? StoreAndForward.History()}
-    set {_history = newValue}
+    get {
+      if case .history(let v)? = variant {return v}
+      return StoreAndForward.History()
+    }
+    set {variant = .history(newValue)}
   }
-  /// Returns true if `history` has been explicitly set.
-  var hasHistory: Bool {return self._history != nil}
-  /// Clears the value of `history`. Subsequent reads from it will return its default value.
-  mutating func clearHistory() {self._history = nil}
 
   ///
   /// TODO: REPLACE
   var heartbeat: StoreAndForward.Heartbeat {
-    get {return _heartbeat ?? StoreAndForward.Heartbeat()}
-    set {_heartbeat = newValue}
+    get {
+      if case .heartbeat(let v)? = variant {return v}
+      return StoreAndForward.Heartbeat()
+    }
+    set {variant = .heartbeat(newValue)}
   }
-  /// Returns true if `heartbeat` has been explicitly set.
-  var hasHeartbeat: Bool {return self._heartbeat != nil}
-  /// Clears the value of `heartbeat`. Subsequent reads from it will return its default value.
-  mutating func clearHeartbeat() {self._heartbeat = nil}
+
+  ///
+  /// Empty Payload
+  var empty: Bool {
+    get {
+      if case .empty(let v)? = variant {return v}
+      return false
+    }
+    set {variant = .empty(newValue)}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
-  /// 1   - 99  = From Router
-  /// 101 - 199 = From Client
+  /// TODO: REPLACE
+  enum OneOf_Variant: Equatable {
+    ///
+    /// TODO: REPLACE
+    case stats(StoreAndForward.Statistics)
+    ///
+    /// TODO: REPLACE
+    case history(StoreAndForward.History)
+    ///
+    /// TODO: REPLACE
+    case heartbeat(StoreAndForward.Heartbeat)
+    ///
+    /// Empty Payload
+    case empty(Bool)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: StoreAndForward.OneOf_Variant, rhs: StoreAndForward.OneOf_Variant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.stats, .stats): return {
+        guard case .stats(let l) = lhs, case .stats(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.history, .history): return {
+        guard case .history(let l) = lhs, case .history(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.heartbeat, .heartbeat): return {
+        guard case .heartbeat(let l) = lhs, case .heartbeat(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.empty, .empty): return {
+        guard case .empty(let l) = lhs, case .empty(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  ///
+  /// 001 - 063 = From Router
+  /// 064 - 127 = From Client
   enum RequestResponse: SwiftProtobuf.Enum {
     typealias RawValue = Int
 
@@ -102,25 +157,29 @@ struct StoreAndForward {
     case routerHistory // = 6
 
     ///
+    /// Router is responding to a request for stats.
+    case routerStats // = 7
+
+    ///
     /// Client is an in error state.
-    case clientError // = 101
+    case clientError // = 64
 
     ///
     /// Client has requested a replay from the router.
-    case clientHistory // = 102
+    case clientHistory // = 65
 
     ///
     /// Client has requested stats from the router.
-    case clientStats // = 103
+    case clientStats // = 66
 
     ///
     /// Client has requested the router respond. This can work as a
     /// "are you there" message.
-    case clientPing // = 104
+    case clientPing // = 67
 
     ///
     /// The response to a "Ping"
-    case clientPong // = 105
+    case clientPong // = 68
 
     ///
     /// Client has requested that the router abort processing the client's request
@@ -140,11 +199,12 @@ struct StoreAndForward {
       case 4: self = .routerPong
       case 5: self = .routerBusy
       case 6: self = .routerHistory
-      case 101: self = .clientError
-      case 102: self = .clientHistory
-      case 103: self = .clientStats
-      case 104: self = .clientPing
-      case 105: self = .clientPong
+      case 7: self = .routerStats
+      case 64: self = .clientError
+      case 65: self = .clientHistory
+      case 66: self = .clientStats
+      case 67: self = .clientPing
+      case 68: self = .clientPong
       case 106: self = .clientAbort
       default: self = .UNRECOGNIZED(rawValue)
       }
@@ -159,11 +219,12 @@ struct StoreAndForward {
       case .routerPong: return 4
       case .routerBusy: return 5
       case .routerHistory: return 6
-      case .clientError: return 101
-      case .clientHistory: return 102
-      case .clientStats: return 103
-      case .clientPing: return 104
-      case .clientPong: return 105
+      case .routerStats: return 7
+      case .clientError: return 64
+      case .clientHistory: return 65
+      case .clientStats: return 66
+      case .clientPing: return 67
+      case .clientPong: return 68
       case .clientAbort: return 106
       case .UNRECOGNIZED(let i): return i
       }
@@ -264,10 +325,6 @@ struct StoreAndForward {
   }
 
   init() {}
-
-  fileprivate var _stats: StoreAndForward.Statistics? = nil
-  fileprivate var _history: StoreAndForward.History? = nil
-  fileprivate var _heartbeat: StoreAndForward.Heartbeat? = nil
 }
 
 #if swift(>=4.2)
@@ -282,6 +339,7 @@ extension StoreAndForward.RequestResponse: CaseIterable {
     .routerPong,
     .routerBusy,
     .routerHistory,
+    .routerStats,
     .clientError,
     .clientHistory,
     .clientStats,
@@ -295,6 +353,7 @@ extension StoreAndForward.RequestResponse: CaseIterable {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension StoreAndForward: @unchecked Sendable {}
+extension StoreAndForward.OneOf_Variant: @unchecked Sendable {}
 extension StoreAndForward.RequestResponse: @unchecked Sendable {}
 extension StoreAndForward.Statistics: @unchecked Sendable {}
 extension StoreAndForward.History: @unchecked Sendable {}
@@ -310,6 +369,7 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     2: .same(proto: "stats"),
     3: .same(proto: "history"),
     4: .same(proto: "heartbeat"),
+    5: .same(proto: "empty"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -319,9 +379,53 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.rr) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._stats) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._history) }()
-      case 4: try { try decoder.decodeSingularMessageField(value: &self._heartbeat) }()
+      case 2: try {
+        var v: StoreAndForward.Statistics?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .stats(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .stats(v)
+        }
+      }()
+      case 3: try {
+        var v: StoreAndForward.History?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .history(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .history(v)
+        }
+      }()
+      case 4: try {
+        var v: StoreAndForward.Heartbeat?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .heartbeat(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .heartbeat(v)
+        }
+      }()
+      case 5: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.variant != nil {try decoder.handleConflictingOneOf()}
+          self.variant = .empty(v)
+        }
+      }()
       default: break
       }
     }
@@ -335,23 +439,31 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if self.rr != .unset {
       try visitor.visitSingularEnumField(value: self.rr, fieldNumber: 1)
     }
-    try { if let v = self._stats {
+    switch self.variant {
+    case .stats?: try {
+      guard case .stats(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._history {
+    }()
+    case .history?: try {
+      guard case .history(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._heartbeat {
+    }()
+    case .heartbeat?: try {
+      guard case .heartbeat(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    } }()
+    }()
+    case .empty?: try {
+      guard case .empty(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    }()
+    case nil: break
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: StoreAndForward, rhs: StoreAndForward) -> Bool {
     if lhs.rr != rhs.rr {return false}
-    if lhs._stats != rhs._stats {return false}
-    if lhs._history != rhs._history {return false}
-    if lhs._heartbeat != rhs._heartbeat {return false}
+    if lhs.variant != rhs.variant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -366,11 +478,12 @@ extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "ROUTER_PONG"),
     5: .same(proto: "ROUTER_BUSY"),
     6: .same(proto: "ROUTER_HISTORY"),
-    101: .same(proto: "CLIENT_ERROR"),
-    102: .same(proto: "CLIENT_HISTORY"),
-    103: .same(proto: "CLIENT_STATS"),
-    104: .same(proto: "CLIENT_PING"),
-    105: .same(proto: "CLIENT_PONG"),
+    7: .same(proto: "ROUTER_STATS"),
+    64: .same(proto: "CLIENT_ERROR"),
+    65: .same(proto: "CLIENT_HISTORY"),
+    66: .same(proto: "CLIENT_STATS"),
+    67: .same(proto: "CLIENT_PING"),
+    68: .same(proto: "CLIENT_PONG"),
     106: .same(proto: "CLIENT_ABORT"),
   ]
 }

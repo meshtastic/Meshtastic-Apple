@@ -7,6 +7,7 @@
 
 import UIKit
 import MapKit
+import SwiftUI
 
 // a simple circle annotation, with a string in it
 class PositionAnnotation: NSObject, MKAnnotation {
@@ -53,11 +54,7 @@ class PositionAnnotationView: MKAnnotationView {
 		guard let context = UIGraphicsGetCurrentContext() else { return }
 
 		let circleRect = CGRect(x: 1, y: 1, width: 38, height: 38)
-
-		context.setFillColor(CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
-
+		context.setFillColor(Color.accentColor.cgColor ?? CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
 		context.fillEllipse(in: circleRect)
-
 	}
-
 }
