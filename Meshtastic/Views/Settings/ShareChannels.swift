@@ -56,15 +56,15 @@ struct ShareChannels: View {
 						Grid() {
 							GridRow {
 								Spacer()
-								Text("Include")
+								Text("include")
 									.font(.caption)
 									.fontWeight(.bold)
 									.padding(.trailing)
-								Text("Channel")
+								Text("channel")
 									.font(.caption)
 									.fontWeight(.bold)
 									.padding(.trailing)
-								Text("Encrypted")
+								Text("encrypted")
 									.font(.caption)
 									.fontWeight(.bold)
 							}
@@ -246,7 +246,7 @@ struct ShareChannels: View {
 					Button {
 						isPresentingHelp = false
 					} label: {
-						Label("Close", systemImage: "xmark")
+						Label("close", systemImage: "xmark")
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
@@ -254,7 +254,7 @@ struct ShareChannels: View {
 					.padding()
 				#endif
 			}
-			.navigationTitle("Generate QR Code")
+			.navigationTitle("generate.qr.code")
 			.navigationBarTitleDisplayMode(.inline)
 			.navigationBarItems(trailing:
 			ZStack {

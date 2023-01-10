@@ -21,7 +21,7 @@ struct NodeAnnotation: View {
 		} else {
 				
 			VStack(spacing: 0) {
-				Text("Unknown Time")
+				Text("unknown.age")
 					.font(.caption2).foregroundColor(.accentColor)
 				.padding(5)
 				.background(Color(.white))

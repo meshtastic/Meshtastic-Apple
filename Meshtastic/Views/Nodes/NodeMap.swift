@@ -84,8 +84,6 @@ struct NodeMap: View {
 	
     var body: some View {
 
-		//self.$userLocation = LocationHelper.currentLocation
-
         NavigationStack {
             ZStack {
 
@@ -112,11 +110,9 @@ struct NodeMap: View {
 				)
 
                .frame(maxHeight: .infinity)
-               .ignoresSafeArea(.all, edges: [.leading, .trailing])
-            }
+			   .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+			}
         }
-		.navigationTitle("Mesh Map")
-		.navigationBarTitleDisplayMode(.inline)
 		
 		.navigationBarItems(leading:
 			MeshtasticLogo(), trailing:

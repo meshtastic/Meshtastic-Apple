@@ -31,7 +31,7 @@ struct MeshtasticAppleApp: App {
 				print("URL received \(userActivity)")
 				self.incomingUrl = userActivity.webpageURL
 				
-				if self.incomingUrl!.absoluteString.lowercased().contains("meshtastic.org/e/#") {
+				if ((self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil) {
 					
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.channelSettings = components.last!

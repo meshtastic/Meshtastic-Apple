@@ -165,7 +165,7 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 			case .unset:
-				return "Unset"
+				return NSLocalizedString("unset", comment: "Unset")
 			case .oneSecond:
 				return NSLocalizedString("interval.one.second", comment: "One Second")
 			case .fiveSeconds:

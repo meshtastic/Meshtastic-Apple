@@ -118,20 +118,6 @@ public struct MapView: UIViewRepresentable {
 		mapView.delegate = context.coordinator
 		mapView.register(PositionAnnotationView.self, forAnnotationViewWithReuseIdentifier: NSStringFromClass(PositionAnnotationView.self))
 		
-		/*Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { timer in
-			for node in self.locationNodes {
-				// try and get the last position
-				if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
-					let annotation = PositionAnnotation()
-					annotation.coordinate = (node.positions!.lastObject as! PositionEntity).coordinate!
-					annotation.title = node.user?.longName ?? "Unknown"
-					annotation.shortName = node.user?.shortName?.uppercased() ?? "???"
-
-					mapView.addAnnotation(annotation)
-				}
-			}
-		}*/
-		
 		return mapView
 	}
 	
@@ -229,18 +215,6 @@ public struct MapView: UIViewRepresentable {
 		} else {
 			shouldMoveRegion = true
 		}
-
-		/*for node in self.locationNodes {
-			// try and get the last position
-			if (node.positions?.count ?? 0) > 0 && (node.positions!.lastObject as! PositionEntity).coordinate != nil {
-				let annotation = PositionAnnotation()
-				annotation.coordinate = (node.positions!.lastObject as! PositionEntity).coordinate!
-				annotation.title = node.user?.longName ?? "Unknown"
-				annotation.shortName = node.user?.shortName?.uppercased() ?? "???"
-
-				mapView.addAnnotation(annotation)
-			}
-		}*/
 		
 		var displayedNodes: [Int64] = []
 		for position in self.positions {
@@ -249,8 +223,8 @@ public struct MapView: UIViewRepresentable {
 			}
 			
 			let annotation = PositionAnnotation()
-			annotation.coordinate = position.coordinate!
-			annotation.title = position.nodePosition!.user?.longName ?? "Unknown"
+			annotation.coordinate = position.nodeCoordinate!
+			annotation.title = position.nodePosition!.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 			annotation.shortName = position.nodePosition!.user?.shortName?.uppercased() ?? "???"
 
 			mapView.addAnnotation(annotation)

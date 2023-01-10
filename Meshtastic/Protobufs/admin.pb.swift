@@ -155,6 +155,26 @@ struct AdminMessage {
   }
 
   ///
+  /// Get the Ringtone in the response to this message.
+  var getRingtoneRequest: Bool {
+    get {
+      if case .getRingtoneRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getRingtoneRequest(newValue)}
+  }
+
+  ///
+  /// Get the Ringtone in the response to this message.
+  var getRingtoneResponse: String {
+    get {
+      if case .getRingtoneResponse(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .getRingtoneResponse(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   var setOwner: User {
     get {
@@ -206,6 +226,16 @@ struct AdminMessage {
       return String()
     }
     set {payloadVariant = .setCannedMessageModuleMessages(newValue)}
+  }
+
+  ///
+  /// Set the ringtone for ExternalNotification.
+  var setRingtoneMessage: String {
+    get {
+      if case .setRingtoneMessage(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .setRingtoneMessage(newValue)}
   }
 
   ///
@@ -357,6 +387,12 @@ struct AdminMessage {
     /// Device metadata response
     case getDeviceMetadataResponse(DeviceMetadata)
     ///
+    /// Get the Ringtone in the response to this message.
+    case getRingtoneRequest(Bool)
+    ///
+    /// Get the Ringtone in the response to this message.
+    case getRingtoneResponse(String)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -375,6 +411,9 @@ struct AdminMessage {
     ///
     /// Set the Canned Message Module messages text.
     case setCannedMessageModuleMessages(String)
+    ///
+    /// Set the ringtone for ExternalNotification.
+    case setRingtoneMessage(String)
     ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
@@ -466,6 +505,14 @@ struct AdminMessage {
         guard case .getDeviceMetadataResponse(let l) = lhs, case .getDeviceMetadataResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.getRingtoneRequest, .getRingtoneRequest): return {
+        guard case .getRingtoneRequest(let l) = lhs, case .getRingtoneRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getRingtoneResponse, .getRingtoneResponse): return {
+        guard case .getRingtoneResponse(let l) = lhs, case .getRingtoneResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       case (.setOwner, .setOwner): return {
         guard case .setOwner(let l) = lhs, case .setOwner(let r) = rhs else { preconditionFailure() }
         return l == r
@@ -484,6 +531,10 @@ struct AdminMessage {
       }()
       case (.setCannedMessageModuleMessages, .setCannedMessageModuleMessages): return {
         guard case .setCannedMessageModuleMessages(let l) = lhs, case .setCannedMessageModuleMessages(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setRingtoneMessage, .setRingtoneMessage): return {
+        guard case .setRingtoneMessage(let l) = lhs, case .setRingtoneMessage(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.beginEditSettings, .beginEditSettings): return {
@@ -634,6 +685,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case audioConfig // = 7
+
+    ///
+    /// TODO: REPLACE
+    case remotehardwareConfig // = 8
     case UNRECOGNIZED(Int)
 
     init() {
@@ -650,6 +705,7 @@ struct AdminMessage {
       case 5: self = .telemetryConfig
       case 6: self = .cannedmsgConfig
       case 7: self = .audioConfig
+      case 8: self = .remotehardwareConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -664,6 +720,7 @@ struct AdminMessage {
       case .telemetryConfig: return 5
       case .cannedmsgConfig: return 6
       case .audioConfig: return 7
+      case .remotehardwareConfig: return 8
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -699,6 +756,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .telemetryConfig,
     .cannedmsgConfig,
     .audioConfig,
+    .remotehardwareConfig,
   ]
 }
 
@@ -728,11 +786,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     11: .standard(proto: "get_canned_message_module_messages_response"),
     12: .standard(proto: "get_device_metadata_request"),
     13: .standard(proto: "get_device_metadata_response"),
+    14: .standard(proto: "get_ringtone_request"),
+    15: .standard(proto: "get_ringtone_response"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
     35: .standard(proto: "set_module_config"),
     36: .standard(proto: "set_canned_message_module_messages"),
+    37: .standard(proto: "set_ringtone_message"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     66: .standard(proto: "confirm_set_channel"),
@@ -872,6 +933,22 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .getDeviceMetadataResponse(v)
         }
       }()
+      case 14: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getRingtoneRequest(v)
+        }
+      }()
+      case 15: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getRingtoneResponse(v)
+        }
+      }()
       case 32: try {
         var v: User?
         var hadOneofValue = false
@@ -930,6 +1007,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .setCannedMessageModuleMessages(v)
+        }
+      }()
+      case 37: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setRingtoneMessage(v)
         }
       }()
       case 64: try {
@@ -1071,6 +1156,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .getDeviceMetadataResponse(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
     }()
+    case .getRingtoneRequest?: try {
+      guard case .getRingtoneRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 14)
+    }()
+    case .getRingtoneResponse?: try {
+      guard case .getRingtoneResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 15)
+    }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
@@ -1090,6 +1183,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .setCannedMessageModuleMessages?: try {
       guard case .setCannedMessageModuleMessages(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 36)
+    }()
+    case .setRingtoneMessage?: try {
+      guard case .setRingtoneMessage(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 37)
     }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
@@ -1165,5 +1262,6 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "TELEMETRY_CONFIG"),
     6: .same(proto: "CANNEDMSG_CONFIG"),
     7: .same(proto: "AUDIO_CONFIG"),
+    8: .same(proto: "REMOTEHARDWARE_CONFIG"),
   ]
 }

@@ -21,7 +21,8 @@ struct EnvironmentMetricsLog: View {
 	var body: some View {
 		
 		NavigationStack {
-			
+			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
@@ -40,24 +41,24 @@ struct EnvironmentMetricsLog: View {
 							Text("\(String(format: "%.2f", em.barometricPressure))")
 						}
 					}
-					TableColumn("Gas Resistance") { em in
+					TableColumn("gas.resistance") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.gasResistance))")
 						}
 					}
-					TableColumn("Current") { em in
+					TableColumn("current") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.current))")
 						}
 					}
-					TableColumn("Voltage") { em in
+					TableColumn("voltage") { em in
 						if em.metricsType == 1 {
 							Text("\(String(format: "%.2f", em.voltage))")
 						}
 					}
-					TableColumn("Time Stamp") { em in
+					TableColumn("timestamp") { em in
 						if em.metricsType == 1 {
-							Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
+							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 						}
 					}
 				}
@@ -68,12 +69,11 @@ struct EnvironmentMetricsLog: View {
 						GridItem(),
 						GridItem(),
 						GridItem(),
-						GridItem(.fixed(115))
+						GridItem(.fixed(140))
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
 					GridRow {
-						
 						Text("Temp")
 							.font(.caption)
 							.fontWeight(.bold)
@@ -83,10 +83,10 @@ struct EnvironmentMetricsLog: View {
 						Text("Bar")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Gas")
+						Text("gas")
 							.font(.caption)
 							.fontWeight(.bold)
-						Text("Timestamp")
+						Text("timestamp")
 							.font(.caption)
 							.fontWeight(.bold)
 					}
@@ -104,8 +104,8 @@ struct EnvironmentMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.gasResistance))")
 									.font(.caption)
-								Text(em.time?.formattedDate(format: "MM/dd/yy hh:mm") ?? "Unknown time")
-									.font(.caption)
+								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+									.font(.caption2)
 							}
 						}
 					}
@@ -118,11 +118,8 @@ struct EnvironmentMetricsLog: View {
 		HStack {
 			
 			Button(role: .destructive) {
-							
 				isPresentingClearLogConfirm = true
-				
 			} label: {
-				
 				Label("Clear Log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
@@ -135,22 +132,15 @@ struct EnvironmentMetricsLog: View {
 				titleVisibility: .visible
 			) {
 				Button("Delete all environment metrics?", role: .destructive) {
-					
 					if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
-						
 						print("Clear Environment Metrics Log Failed")
-						
 					} 
 				}
 			}
-			
 			Button {
-				
 				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
 				isExporting = true
-				
 			} label: {
-				
 				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
@@ -161,13 +151,10 @@ struct EnvironmentMetricsLog: View {
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
-
 			ZStack {
-
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-
 			self.bleManager.context = context
 		}
 		.fileExporter(
@@ -176,15 +163,10 @@ struct EnvironmentMetricsLog: View {
 			contentType: .commaSeparatedText,
 			defaultFilename: String("\(node.user!.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
-
 				if case .success = result {
-					
 					print("Environment metrics log download succeeded.")
-					
 					self.isExporting = false
-					
 				} else {
-					
 					print("Environment metrics log download failed: \(result).")
 				}
 			}

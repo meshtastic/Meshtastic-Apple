@@ -95,6 +95,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case tloraV211P8 // = 15
 
   ///
+  /// TODO: REPLACE
+  case tloraT3S3 // = 16
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -151,6 +155,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case heltecWslV3 // = 44
 
   ///
+  /// New BETAFPV ELRS Micro TX Module 2.4G with ESP32 CPU
+  case betafpv2400Tx // = 45
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -177,6 +185,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 13: self = .rak11200
     case 14: self = .nanoG1
     case 15: self = .tloraV211P8
+    case 16: self = .tloraT3S3
     case 25: self = .stationG1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
@@ -191,6 +200,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 42: self = .m5Stack
     case 43: self = .heltecV3
     case 44: self = .heltecWslV3
+    case 45: self = .betafpv2400Tx
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -214,6 +224,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .rak11200: return 13
     case .nanoG1: return 14
     case .tloraV211P8: return 15
+    case .tloraT3S3: return 16
     case .stationG1: return 25
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
@@ -228,6 +239,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .m5Stack: return 42
     case .heltecV3: return 43
     case .heltecWslV3: return 44
+    case .betafpv2400Tx: return 45
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -256,6 +268,7 @@ extension HardwareModel: CaseIterable {
     .rak11200,
     .nanoG1,
     .tloraV211P8,
+    .tloraT3S3,
     .stationG1,
     .loraRelayV1,
     .nrf52840Dk,
@@ -270,6 +283,7 @@ extension HardwareModel: CaseIterable {
     .m5Stack,
     .heltecV3,
     .heltecWslV3,
+    .betafpv2400Tx,
     .privateHw,
   ]
 }
@@ -1765,6 +1779,28 @@ extension LogRecord.Level: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+struct QueueStatus {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Last attempt to queue status, ErrorCode 
+  var res: Int32 = 0
+
+  /// Free entries in the outgoing queue 
+  var free: UInt32 = 0
+
+  /// Maximum entries in the outgoing queue 
+  var maxlen: UInt32 = 0
+
+  /// What was mesh packet id that generated this response? 
+  var meshPacketID: UInt32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 ///
 /// Packets from the radio to the phone will appear on the fromRadio characteristic.
 /// It will support READ and NOTIFY. When a new packet arrives the device will BLE notify?
@@ -1888,6 +1924,15 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .channel(newValue)}
   }
 
+  /// Queue status info 
+  var queueStatus: QueueStatus {
+    get {
+      if case .queueStatus(let v)? = _storage._payloadVariant {return v}
+      return QueueStatus()
+    }
+    set {_uniqueStorage()._payloadVariant = .queueStatus(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -1928,6 +1973,8 @@ struct FromRadio {
     ///
     /// One packet is sent for each channel
     case channel(Channel)
+    /// Queue status info 
+    case queueStatus(QueueStatus)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -1969,6 +2016,10 @@ struct FromRadio {
       }()
       case (.channel, .channel): return {
         guard case .channel(let l) = lhs, case .channel(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.queueStatus, .queueStatus): return {
+        guard case .queueStatus(let l) = lhs, case .queueStatus(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2126,6 +2177,7 @@ extension NodeInfo: @unchecked Sendable {}
 extension MyNodeInfo: @unchecked Sendable {}
 extension LogRecord: @unchecked Sendable {}
 extension LogRecord.Level: @unchecked Sendable {}
+extension QueueStatus: @unchecked Sendable {}
 extension FromRadio: @unchecked Sendable {}
 extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
@@ -2153,6 +2205,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "RAK11200"),
     14: .same(proto: "NANO_G1"),
     15: .same(proto: "TLORA_V2_1_1P8"),
+    16: .same(proto: "TLORA_T3_S3"),
     25: .same(proto: "STATION_G1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
@@ -2167,6 +2220,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     42: .same(proto: "M5STACK"),
     43: .same(proto: "HELTEC_V3"),
     44: .same(proto: "HELTEC_WSL_V3"),
+    45: .same(proto: "BETAFPV_2400_TX"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3237,6 +3291,56 @@ extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "QueueStatus"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "res"),
+    2: .same(proto: "free"),
+    3: .same(proto: "maxlen"),
+    4: .standard(proto: "mesh_packet_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.res) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.free) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.maxlen) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.meshPacketID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.res != 0 {
+      try visitor.visitSingularInt32Field(value: self.res, fieldNumber: 1)
+    }
+    if self.free != 0 {
+      try visitor.visitSingularUInt32Field(value: self.free, fieldNumber: 2)
+    }
+    if self.maxlen != 0 {
+      try visitor.visitSingularUInt32Field(value: self.maxlen, fieldNumber: 3)
+    }
+    if self.meshPacketID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.meshPacketID, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: QueueStatus, rhs: QueueStatus) -> Bool {
+    if lhs.res != rhs.res {return false}
+    if lhs.free != rhs.free {return false}
+    if lhs.maxlen != rhs.maxlen {return false}
+    if lhs.meshPacketID != rhs.meshPacketID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "FromRadio"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -3250,6 +3354,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     8: .same(proto: "rebooted"),
     9: .same(proto: "moduleConfig"),
     10: .same(proto: "channel"),
+    11: .same(proto: "queueStatus"),
   ]
 
   fileprivate class _StorageClass {
@@ -3389,6 +3494,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .channel(v)
           }
         }()
+        case 11: try {
+          var v: QueueStatus?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .queueStatus(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .queueStatus(v)
+          }
+        }()
         default: break
         }
       }
@@ -3440,6 +3558,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .channel?: try {
         guard case .channel(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+      }()
+      case .queueStatus?: try {
+        guard case .queueStatus(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       }()
       case nil: break
       }

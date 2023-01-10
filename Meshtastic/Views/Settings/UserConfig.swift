@@ -80,7 +80,7 @@ struct UserConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					"Are you sure you want to save?",
+					"are.you.sure",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
@@ -95,7 +95,7 @@ struct UserConfig: View {
 						}
 					}
 				} message: {
-					Text("After user config saves the node will reboot.")
+					Text("config.save.confirm")
 				}
 			}
 			Spacer()

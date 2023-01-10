@@ -39,7 +39,7 @@ struct NodeList: View {
 								CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
-									Text(node.user?.longName ?? "Unknown").font(.headline)
+									Text(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 									if connected {
 										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")
@@ -53,8 +53,8 @@ struct NodeList: View {
 										HStack(alignment: .bottom) {
 											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
 											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-											if lastPostion.coordinate != nil {
-												let nodeCoord = CLLocation(latitude: lastPostion.coordinate!.latitude, longitude: lastPostion.coordinate!.longitude)
+											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude   {
+												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 												let metersAway = nodeCoord.distance(from: myCoord)
 												Image(systemName: "lines.measurement.horizontal")
 													.font(.title3)

@@ -44,7 +44,6 @@ struct Settings: View {
 					
 						Image(systemName: "person.crop.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("user")
 					}
 					
@@ -55,20 +54,19 @@ struct Settings: View {
 					
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("lora")
 					}
 					
-//					NavigationLink() {
-//
-//						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
-//					} label: {
-//
-//						Image(systemName: "fibrechannel")
-//							.symbolRenderingMode(.hierarchical)
-//
-//						Text("channels")
-//					}
+					NavigationLink() {
+
+						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+					} label: {
+
+						Image(systemName: "fibrechannel")
+							.symbolRenderingMode(.hierarchical)
+
+						Text("channels")
+					}
 					
 					NavigationLink() {
 						
@@ -179,15 +177,10 @@ struct Settings: View {
 						Text("admin.log")
 					}
 				}
-				
 				Section(header: Text("about")) {
-					
 					NavigationLink {
-						
 						AboutMeshtastic()
-						
 					} label: {
-						
 						Image(systemName: "questionmark.app")
 							.symbolRenderingMode(.hierarchical)
 						
@@ -196,10 +189,8 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
-				
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

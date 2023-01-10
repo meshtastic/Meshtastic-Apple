@@ -6,49 +6,6 @@
 //
 import SwiftUI
 
-enum OutputIntervals: Int, CaseIterable, Identifiable {
-	
-	case unset = 0
-	case oneSecond = 1000
-	case twoSeconds = 2000
-	case threeSeconds = 3000
-	case fourSeconds = 4000
-	case fiveSeconds = 5000
-	case tenSeconds = 10000
-	case fifteenSeconds = 15000
-	case thirtySeconds = 30000
-	case oneMinute = 60000
-	
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-				
-			case .unset:
-				return "Unset"
-			case .oneSecond:
-				return "One Second"
-			case .twoSeconds:
-				return "Two Seconds"
-			case .threeSeconds:
-				return "Three Seconds"
-			case .fourSeconds:
-				return "Four Seconds"
-			case .fiveSeconds:
-				return "Five Seconds"
-			case .tenSeconds:
-				return "Ten Seconds"
-			case .fifteenSeconds:
-				return "Fifteen Seconds"
-			case .thirtySeconds:
-				return "Thirty Seconds"
-			case .oneMinute:
-				return "One Minute"
-			}
-		}
-	}
-}
-
 struct ExternalNotificationConfig: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -97,8 +54,12 @@ struct ExternalNotificationConfig: View {
 				Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 					.font(.caption)
 			}
-			if !usePWM {
-				Section(header: Text("Primary GPIO")) {
+			Section(header: Text("Advanced GPIO Options")) {
+				Section(header: Text("Primary GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase))
+				{
 					Toggle(isOn: $active) {
 						Label("Active", systemImage: "togglepower")
 					}
@@ -108,7 +69,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin GPIO", selection: $output) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -133,7 +94,11 @@ struct ExternalNotificationConfig: View {
 						.font(.caption)
 				}
 				
-				Section(header: Text("Optional GPIO")) {
+				Section(header: Text("Optional GPIO")
+					.font(.caption)
+					.foregroundColor(.gray)
+					.textCase(.uppercase))
+				{
 					Toggle(isOn: $alertBellBuzzer) {
 						Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
 					}
@@ -153,7 +118,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -163,7 +128,7 @@ struct ExternalNotificationConfig: View {
 					Picker("Output pin vibra GPIO", selection: $outputVibra) {
 						ForEach(0..<40) {
 							if $0 == 0 {
-								Text("Unset")
+								Text("unset")
 							} else {
 								Text("Pin \($0)")
 							}
@@ -189,7 +154,9 @@ struct ExternalNotificationConfig: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			Button("Save External Notification Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+			Button(buttonText) {
 				var enc = ModuleConfig.ExternalNotificationConfig()
 				enc.enabled = enabled
 				enc.alertBell = alertBell
@@ -212,6 +179,9 @@ struct ExternalNotificationConfig: View {
 					goBack()
 				}
 			}
+		}
+		message: {
+			Text("config.save.confirm")
 		}
 		.navigationTitle("external.notification.config")
 		.navigationBarItems(trailing:

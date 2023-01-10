@@ -113,7 +113,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						
 					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
-						ForEach(PositionBroadcastIntervals.allCases) { at in
+						ForEach(UpdateIntervals.allCases) { at in
 							Text(at.description)
 						}
 					}
@@ -155,7 +155,7 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $includeTimestamp) { //128
-						Label("Timestamp", systemImage: "clock")
+						Label("timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -205,7 +205,9 @@ struct PositionConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Position Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 					
 					if fixedPosition {
 						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantResponse: false)
@@ -238,6 +240,9 @@ struct PositionConfig: View {
 						goBack()
 					}
 				}
+			}
+			message: {
+				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("position.config")
