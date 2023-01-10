@@ -23,7 +23,7 @@ extension PositionEntity {
 		return d / 1e7
 	}
 
-	var coordinate: CLLocationCoordinate2D? {
+	var nodeCoordinate: CLLocationCoordinate2D? {
 		if latitudeI != 0 && longitudeI != 0 {
 			let coord = CLLocationCoordinate2D(latitude: latitude!, longitude: longitude!)
 			return coord
@@ -31,12 +31,17 @@ extension PositionEntity {
 		   return nil
 		}
 	}
-
+	
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
-		if coordinate != nil {
-			pointAnn.coordinate = coordinate!
+		if nodeCoordinate != nil {
+			pointAnn.coordinate = nodeCoordinate!
 		}
 		return pointAnn
 	}
+}
+
+extension PositionEntity: MKAnnotation {
+	public var coordinate: CLLocationCoordinate2D { nodeCoordinate! }
+	public var subtitle: String? { time?.formatted() }
 }

@@ -1,73 +1,62 @@
 /*
-Abstract:
-A view showing the details for a node.
-*/
+ Abstract:
+ A view showing the details for a node.
+ */
 
 import SwiftUI
 import MapKit
 import CoreLocation
 
 struct NodeDetail: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	@State private var mapType: MKMapType = .standard
 	
 	@State private var showingDetailsPopover = false
 	
 	@State var satsInView = 0
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-
+	
 	var node: NodeInfoEntity
-
+	
 	var body: some View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
-
+		
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						let mostRecent = node.positions?.lastObject as! PositionEntity
-						if mostRecent.coordinate != nil {
-							let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
-							
-							let regionBinding = Binding<MKCoordinateRegion>(
-								get: {
-									MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-								},
-								set: { _ in }
-							)
+						let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
+						ZStack {
+							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								let annotations = node.positions?.array as! [PositionEntity]
-								
-								Map(coordinateRegion: regionBinding,
-									interactionModes: [.all],
-									showsUserLocation: true,
-									userTrackingMode: .constant(.follow),
-									annotationItems: annotations) { location in
+								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
+								VStack {
+									Spacer()
+									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
+										.font(.caption2)
 									
-									return MapAnnotation(
-										coordinate: location.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
-										content: {
-											
-											NodeAnnotation(time: location.time!)
-										}
-									)
+									Picker("", selection: $mapType) {
+										Text("Standard").tag(MKMapType.standard)
+										Text("Hybrid").tag(MKMapType.hybrid)
+										Text("Satellite").tag(MKMapType.satellite)
+									}
+									.pickerStyle(SegmentedPickerStyle())
 								}
-								.ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
-								
 							}
-							Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
-								.offset( y:-40)
+							.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+							.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.65)
 						}
-						
 					} else {
 						HStack {
-
+							
 						}
-						.padding([.top], 60)
+						.padding([.top], 20)
 					}
 					
 					ScrollView {
@@ -80,13 +69,13 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									if node.user != nil {
-		
+										
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
 											.frame(width: 100, height: 100)
 											.cornerRadius(5)
-
+										
 										Text(String(hwModelString))
 											.foregroundColor(.gray)
 											.font(.largeTitle).fixedSize()
@@ -96,7 +85,7 @@ struct NodeDetail: View {
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-
+										
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -109,15 +98,15 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-
+								
 								if node.telemetries?.count ?? 0 >= 1 {
-
+									
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										if mostRecent.voltage > 0 {
-
+											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
 												.font(.title)
 												.foregroundColor(.gray)
@@ -147,7 +136,7 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									HStack {
-									Image(systemName: "number")
+										Image(systemName: "number")
 											.font(.title2)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
@@ -160,8 +149,8 @@ struct NodeDetail: View {
 									HStack {
 										Image(systemName: "globe")
 											.font(.title)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
 										Text("MAC Address: ").font(.title)
 										
 									}
@@ -174,8 +163,8 @@ struct NodeDetail: View {
 									HStack {
 										Image(systemName: "clock.badge.checkmark.fill")
 											.font(.title)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
 										Text("heard.last").font(.title)+Text(":").font(.title)
 										
 									}
@@ -190,7 +179,7 @@ struct NodeDetail: View {
 						} else {
 							
 							HStack {
-
+								
 								VStack(alignment: .center) {
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
 								}
@@ -210,7 +199,7 @@ struct NodeDetail: View {
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-
+										
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -223,15 +212,15 @@ struct NodeDetail: View {
 									}
 									.padding(5)
 								}
-
+								
 								if node.telemetries?.count ?? 0 >= 1 {
-
+									
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
-
+									
 									Divider()
-
+									
 									VStack(alignment: .center) {
-
+										
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										
 										if mostRecent.voltage > 0 {
@@ -262,7 +251,7 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									HStack {
-									Image(systemName: "number")
+										Image(systemName: "number")
 											.font(.title2)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
@@ -275,9 +264,9 @@ struct NodeDetail: View {
 							Divider()
 							HStack {
 								Image(systemName: "globe")
-										.font(.headline)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
+									.font(.headline)
+									.foregroundColor(.accentColor)
+									.symbolRenderingMode(.hierarchical)
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
@@ -334,16 +323,16 @@ struct NodeDetail: View {
 						}
 						
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-
+							
 							HStack {
 								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
-								
+									
 									Button(action: {
 										
 										showingShutdownConfirm = true
 									}) {
-											
+										
 										Label("Power Off", systemImage: "power")
 									}
 									.buttonStyle(.bordered)
@@ -361,13 +350,13 @@ struct NodeDetail: View {
 										}
 									}
 								}
-							
+								
 								Button(action: {
 									
 									showingRebootConfirm = true
 									
 								}) {
-				
+									
 									Label("reboot", systemImage: "arrow.triangle.2.circlepath")
 								}
 								.buttonStyle(.bordered)
@@ -376,31 +365,31 @@ struct NodeDetail: View {
 								.padding()
 								.confirmationDialog("are.you.sure",
 													
-										isPresented: $showingRebootConfirm
-										) {
-											Button("reboot.node", role: .destructive) {
-												
-												if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
-													print("Reboot Failed")
-												}
-											}
+													isPresented: $showingRebootConfirm
+								) {
+									Button("reboot.node", role: .destructive) {
+										
+										if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
+											print("Reboot Failed")
 										}
+									}
+								}
 							}
 							.padding(5)
 						}
 					}
-					.offset( y:-40)
+					//.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.padding(.bottom, 10)
 				.navigationBarItems(trailing:
-					ZStack {
-						ConnectedDevice(
-							bluetoothOn: bleManager.isSwitchedOn,
-							deviceConnected: bleManager.connectedPeripheral != nil,
-							name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-					}
+										ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				}
 				)
 				.onAppear {
 					self.bleManager.context = context

@@ -223,7 +223,7 @@ public struct MapView: UIViewRepresentable {
 			}
 			
 			let annotation = PositionAnnotation()
-			annotation.coordinate = position.coordinate!
+			annotation.coordinate = position.nodeCoordinate!
 			annotation.title = position.nodePosition!.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 			annotation.shortName = position.nodePosition!.user?.shortName?.uppercased() ?? "???"
 
