@@ -215,6 +215,7 @@
 "routing.notauthorized"="Not Authorized";
 "satellite"="Satellite";
 "save"="Save";
+"save.config %@"="Save Config for %@";
 "serial"="Serial";
 "serial.config"="Serial Config";
 "serial.mode.default"="Default";

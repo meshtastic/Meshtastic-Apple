@@ -106,8 +106,9 @@ struct DisplayConfig: View {
 			"are.you.sure",
 			isPresented: $isPresentingSaveConfirm
 		) {
-			Button("Save Display Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
-				
+			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+			Button(buttonText) {
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)

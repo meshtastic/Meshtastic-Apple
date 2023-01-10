@@ -77,7 +77,9 @@ struct TelemetryConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				Button("Save Telemetry Module Config to \(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown")?") {
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
 					var tc = ModuleConfig.TelemetryConfig()
 					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
 					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
