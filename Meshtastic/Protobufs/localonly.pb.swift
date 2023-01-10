@@ -212,6 +212,17 @@ struct LocalModuleConfig {
   mutating func clearAudio() {_uniqueStorage()._audio = nil}
 
   ///
+  /// The part of the config that is specific to the Remote Hardware module
+  var remoteHardware: ModuleConfig.RemoteHardwareConfig {
+    get {return _storage._remoteHardware ?? ModuleConfig.RemoteHardwareConfig()}
+    set {_uniqueStorage()._remoteHardware = newValue}
+  }
+  /// Returns true if `remoteHardware` has been explicitly set.
+  var hasRemoteHardware: Bool {return _storage._remoteHardware != nil}
+  /// Clears the value of `remoteHardware`. Subsequent reads from it will return its default value.
+  mutating func clearRemoteHardware() {_uniqueStorage()._remoteHardware = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -369,6 +380,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     6: .same(proto: "telemetry"),
     7: .standard(proto: "canned_message"),
     9: .same(proto: "audio"),
+    10: .standard(proto: "remote_hardware"),
     8: .same(proto: "version"),
   ]
 
@@ -381,6 +393,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _telemetry: ModuleConfig.TelemetryConfig? = nil
     var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
     var _audio: ModuleConfig.AudioConfig? = nil
+    var _remoteHardware: ModuleConfig.RemoteHardwareConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -396,6 +409,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _telemetry = source._telemetry
       _cannedMessage = source._cannedMessage
       _audio = source._audio
+      _remoteHardware = source._remoteHardware
       _version = source._version
     }
   }
@@ -424,6 +438,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._cannedMessage) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         case 9: try { try decoder.decodeSingularMessageField(value: &_storage._audio) }()
+        case 10: try { try decoder.decodeSingularMessageField(value: &_storage._remoteHardware) }()
         default: break
         }
       }
@@ -463,6 +478,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._audio {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
       } }()
+      try { if let v = _storage._remoteHardware {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -480,6 +498,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._telemetry != rhs_storage._telemetry {return false}
         if _storage._cannedMessage != rhs_storage._cannedMessage {return false}
         if _storage._audio != rhs_storage._audio {return false}
+        if _storage._remoteHardware != rhs_storage._remoteHardware {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

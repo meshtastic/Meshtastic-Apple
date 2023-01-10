@@ -54,6 +54,10 @@ struct BluetoothConfig: View {
 						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
 							.foregroundColor(.gray)
 							.onChange(of: fixedPin, perform: { value in
+								// Don't let the first character be 0 because it will get stripped when saving a UInt32
+								if fixedPin.first == "0" {
+									fixedPin = fixedPin.replacing("0", with: "")
+								}
 								//Require that pin is no more than 6 numbers and no less than 6 numbers
 								if fixedPin.utf8.count == pinLength {
 									shortPin = false

@@ -24,14 +24,14 @@ enum EthernetMode: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
-	func protoEnumValue() -> Config.NetworkConfig.EthMode {
+	func protoEnumValue() -> Config.NetworkConfig.AddressMode {
 		
 		switch self {
 			
 		case .dhcp:
-			return Config.NetworkConfig.EthMode.dhcp
+			return Config.NetworkConfig.AddressMode.dhcp
 		case .staticip:
-			return Config.NetworkConfig.EthMode.static
+			return Config.NetworkConfig.AddressMode.static
 		}
 	}
 }

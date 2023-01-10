@@ -114,7 +114,7 @@ struct NetworkConfig: View {
 					network.wifiSsid = self.wifiSsid
 					network.wifiPsk = self.wifiPsk
 					network.ethEnabled = self.ethEnabled
-					network.ethMode = Config.NetworkConfig.EthMode.dhcp
+					//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 					
 					let adminMessageId =  bleManager.saveWiFiConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
