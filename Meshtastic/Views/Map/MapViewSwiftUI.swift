@@ -19,8 +19,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.mapType = mapViewType
 		mapView.setRegion(region, animated: true)
 		mapView.isRotateEnabled = true
+		mapView.isPitchEnabled = true
+		mapView.showsBuildings = true;
 		mapView.addAnnotations(positions)
+		mapView.showsUserLocation = true
+		mapView.setUserTrackingMode(.followWithHeading, animated: true)
+		mapView.showsCompass = true
+		mapView.showsScale = true
+		mapView.isScrollEnabled = true
 		mapView.delegate = context.coordinator
+		let gestureRecognizer = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapMap(sender:)))
+		mapView.addGestureRecognizer(gestureRecognizer)
+		  
 		return mapView
 	}
 	
@@ -33,14 +43,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	}
 	
 	final class MapCoordinator: NSObject, MKMapViewDelegate {
-		
+				
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			
 			switch annotation {
 				
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "nodeGroup")
-				annotationView.markerTintColor = .darkGray
+				annotationView.markerTintColor = .systemRed
 				return annotationView
 			case _ as PositionEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
@@ -51,6 +61,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.titleVisibility = .visible
 				return annotationView
 			default: return nil
+			}
+		}
+		@objc func tapMap(sender: UITapGestureRecognizer) {
+			if sender.state == .ended {
+				//let locationInMap = sender.location(in: control.mapView)
+				//let coordinateSet = control.mapView.convert(locationInMap, toCoordinateFrom: control.mapView)
 			}
 		}
 	}

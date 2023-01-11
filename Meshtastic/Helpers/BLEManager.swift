@@ -789,9 +789,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
-		//if destNum != emptyNodeNum {
-			dataMessage.wantResponse = wantResponse
-		//}
+		dataMessage.wantResponse = wantResponse
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -809,18 +807,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 	
 	@objc func positionTimerFired(timer: Timer) {
-		
 		// Check for connected node
 		if connectedPeripheral != nil {
-
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
-				
 				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
-					
 					print("Failed to send positon to device")
-					
 				}
 			}
 		}

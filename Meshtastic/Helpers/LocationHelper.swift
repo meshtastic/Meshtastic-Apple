@@ -6,7 +6,6 @@ class LocationHelper: NSObject, ObservableObject {
 
     // Apple Park
     static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
-	
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
 	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
@@ -82,6 +81,7 @@ class LocationHelper: NSObject, ObservableObject {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+		locationManager.allowsBackgroundLocationUpdates = true
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }

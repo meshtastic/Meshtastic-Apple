@@ -19,6 +19,7 @@ struct NodeDetail: View {
 	@State var satsInView = 0
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State var presentingWaypointForm = false
 	
 	var node: NodeInfoEntity
 	
@@ -35,7 +36,10 @@ struct NodeDetail: View {
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
+								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+																								  //MKCoordinateSpan(latitudeDelta: 0.16405544070813249, longitudeDelta: 0.1232528799585566)
+																								  
+																								 ), mapViewType: mapType)
 								VStack {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
@@ -129,7 +133,6 @@ struct NodeDetail: View {
 											.symbolRenderingMode(.hierarchical)
 										Text("user").font(.title)+Text(":").font(.title)
 									}
-									//Text(node.user?.userId ?? "??????").font(.title).foregroundColor(.gray)
 									Text("!\(String(format:"%02x", node.num))")
 										.font(.title).foregroundColor(.gray)
 								}
@@ -173,7 +176,6 @@ struct NodeDetail: View {
 										.foregroundColor(.gray)
 								}
 							}
-							.padding()
 							Divider()
 							
 						} else {
@@ -194,7 +196,6 @@ struct NodeDetail: View {
 											.font(.callout).fixedSize()
 									}
 								}
-								.padding(5)
 								
 								if node.snr > 0 {
 									Divider()
@@ -210,19 +211,13 @@ struct NodeDetail: View {
 											.foregroundColor(.gray)
 											.fixedSize()
 									}
-									.padding(5)
 								}
 								
 								if node.telemetries?.count ?? 0 >= 1 {
-									
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
-									
 									Divider()
-									
 									VStack(alignment: .center) {
-										
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										
 										if mostRecent.voltage > 0 {
 											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
@@ -230,14 +225,11 @@ struct NodeDetail: View {
 												.foregroundColor(.gray)
 												.fixedSize()
 										}
-										
 									}
 								}
 							}
 							Divider()
 							HStack(alignment: .center) {
-								
-								
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -260,7 +252,6 @@ struct NodeDetail: View {
 									Text(String(node.num)).font(.title3).foregroundColor(.gray)
 								}
 							}
-							.padding(5)
 							Divider()
 							HStack {
 								Image(systemName: "globe")
@@ -270,7 +261,7 @@ struct NodeDetail: View {
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
-							.padding([.bottom], 0)
+							.padding([.bottom], 10)
 							Divider()
 						}
 						
@@ -374,15 +365,17 @@ struct NodeDetail: View {
 										}
 									}
 								}
-							}
-							.padding(5)
-						}
+							}						}
 					}
-					//.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
+				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
+					
+					WaypointFormView()
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
+				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
-				.padding(.bottom, 10)
 				.navigationBarItems(trailing:
 										ZStack {
 					ConnectedDevice(

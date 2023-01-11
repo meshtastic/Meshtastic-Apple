@@ -1150,9 +1150,13 @@ struct Waypoint {
   /// Name of the waypoint - max 30 chars
   var name: String = String()
 
-  ///*
+  ///
   /// Description of the waypoint - max 100 chars
   var description_p: String = String()
+
+  ///
+  /// Designator icon for the waypoint in the form of a unicode emoji
+  var emoji: UInt32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2778,6 +2782,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     5: .same(proto: "locked"),
     6: .same(proto: "name"),
     7: .same(proto: "description"),
+    8: .same(proto: "emoji"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2793,6 +2798,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 5: try { try decoder.decodeSingularBoolField(value: &self.locked) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 7: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
+      case 8: try { try decoder.decodeSingularFixed32Field(value: &self.emoji) }()
       default: break
       }
     }
@@ -2820,6 +2826,9 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.description_p.isEmpty {
       try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 7)
     }
+    if self.emoji != 0 {
+      try visitor.visitSingularFixed32Field(value: self.emoji, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2831,6 +2840,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.locked != rhs.locked {return false}
     if lhs.name != rhs.name {return false}
     if lhs.description_p != rhs.description_p {return false}
+    if lhs.emoji != rhs.emoji {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -1,6 +1,13 @@
 import Foundation
 import SwiftUI
 
+extension Character {
+	var isEmoji: Bool {
+		guard let scalar = unicodeScalars.first else { return false }
+		return scalar.properties.isEmoji && (scalar.value >= 0x203C || unicodeScalars.count > 1)
+	}
+}
+
 extension Data {
 	var macAddressString: String {
 		let mac: String = reduce("") {$0 + String(format: "%02x:", $1)}
@@ -71,6 +78,10 @@ extension String {
 			.replacingOccurrences(of: "/", with: "_")
 			.replacingOccurrences(of: "=", with: "")
 		return base64url
+	}
+	
+	func onlyEmojis() -> Bool {
+		return count > 0 && !contains { !$0.isEmoji }
 	}
 	
 	func image(fontSize:CGFloat = 40, bgColor:UIColor = UIColor.clear, imageSize:CGSize? = nil) -> UIImage?
