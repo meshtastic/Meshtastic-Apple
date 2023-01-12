@@ -37,7 +37,7 @@ struct DeviceMetricsLog: View {
 				}
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
@@ -119,7 +119,7 @@ struct DeviceMetricsLog: View {
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
 									
-									Text(dm.time?.formattedDate(format: dateFormatString).replacingOccurrences(of: ",", with: " ") ?? "Unknown time")
+									Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 										.font(.caption2)
 								}
 							}

@@ -22,7 +22,7 @@ struct PositionLog: View {
 		
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 						
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
@@ -97,7 +97,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.altitude))
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: dateFormatString).replacingOccurrences(of: ",", with: " ") ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 									.font(.caption2)
 							}
 						}
