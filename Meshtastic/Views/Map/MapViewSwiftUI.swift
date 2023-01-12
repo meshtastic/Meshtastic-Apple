@@ -10,12 +10,12 @@ import MapKit
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
+	let mapView = MKMapView()
 	let positions: [PositionEntity]
 	let region: MKCoordinateRegion
 	let mapViewType: MKMapType
 	
 	func makeUIView(context: Context) -> MKMapView {
-		let mapView = MKMapView()
 		mapView.mapType = mapViewType
 		mapView.setRegion(region, animated: true)
 		mapView.isRotateEnabled = true
@@ -28,9 +28,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsScale = true
 		mapView.isScrollEnabled = true
 		mapView.delegate = context.coordinator
-		let gestureRecognizer = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapMap(sender:)))
-		mapView.addGestureRecognizer(gestureRecognizer)
-		  
 		return mapView
 	}
 	
@@ -39,11 +36,22 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
-		.init()
+		return Coordinator(self)
 	}
 	
-	final class MapCoordinator: NSObject, MKMapViewDelegate {
-				
+	final class MapCoordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
+		
+		var parent: MapViewSwiftUI
+		var gRecognizer = UITapGestureRecognizer()
+		
+		init(_ parent: MapViewSwiftUI) {
+			self.parent = parent
+			super.init()
+			self.gRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapHandler))
+			self.gRecognizer.delegate = self
+			self.parent.mapView.addGestureRecognizer(gRecognizer)
+		}
+		
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			
 			switch annotation {
@@ -63,11 +71,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			default: return nil
 			}
 		}
-		@objc func tapMap(sender: UITapGestureRecognizer) {
-			if sender.state == .ended {
-				//let locationInMap = sender.location(in: control.mapView)
-				//let coordinateSet = control.mapView.convert(locationInMap, toCoordinateFrom: control.mapView)
-			}
+		
+		@objc func tapHandler(_ gesture: UITapGestureRecognizer) {
+			// Screen Position - CGPoint
+			let location = gRecognizer.location(in: self.parent.mapView)
+			// Map Coordinate - CLLocationCoordinate2D
+			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
+			print(coordinate)
 		}
 	}
 }
