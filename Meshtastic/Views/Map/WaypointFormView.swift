@@ -10,23 +10,21 @@ import SwiftUI
 struct WaypointFormView: View {
 	
 	@Environment(\.dismiss) private var dismiss
+	@FocusState private var emojiIsFocused: Bool
 	@State private var id: Int32?
 	@State private var name: String = ""
 	@State private var description: String = ""
-	@State private var emoji: String = ""
-	@FocusState private var emojiIsFocused: Bool
+	@State private var emoji: String = "📍"
 	@State private var latitude: Double = 0.0
 	@State private var longitude: Double = 0.0
-	@State private var expire: Date = Date.now.addingTimeInterval(60 * 60)
+	@State private var expire: Date = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
 
-	
-	
 	var body: some View {
-		
+
 		Form {
-			
-			Section(header: Text("Waypoint")) {
+			Section(header: Text("Waypoint").font(.title3)) {
+				Text("Distance Away").foregroundColor(Color.gray)
 				Text("Lat/Long ") + Text(" \(String(latitude) + "," + String(longitude))").foregroundColor(Color.gray)
 				HStack {
 					Text("Name")
@@ -70,9 +68,9 @@ struct WaypointFormView: View {
 					})
 				}
 				HStack {
-					Text("Emoji")
+					Text("Icon")
 					Spacer()
-					EmojiOnlyTextField(text: $emoji, placeholder: "emoji")
+					EmojiOnlyTextField(text: $emoji, placeholder: "Select an emoji")
 						.font(.title)
 						.focused($emojiIsFocused)
 						.onChange(of: emoji) { value in
@@ -111,7 +109,7 @@ struct WaypointFormView: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(5)
 			
 			Button {
 				dismiss()
@@ -121,7 +119,7 @@ struct WaypointFormView: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(5)
 		}
 	}
 }

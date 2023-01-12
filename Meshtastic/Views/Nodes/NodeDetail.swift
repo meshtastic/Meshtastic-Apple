@@ -11,15 +11,12 @@ struct NodeDetail: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
-	@State private var mapType: MKMapType = .standard
-	
-	@State private var showingDetailsPopover = false
-	
 	@State var satsInView = 0
+	@State private var mapType: MKMapType = .standard
+	@State private var showingDetailsPopover = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State var presentingWaypointForm = false
+	@State private var presentingWaypointForm = true
 	
 	var node: NodeInfoEntity
 	
@@ -36,10 +33,7 @@ struct NodeDetail: View {
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-																								  //MKCoordinateSpan(latitudeDelta: 0.16405544070813249, longitudeDelta: 0.1232528799585566)
-																								  
-																								 ), mapViewType: mapType)
+								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
 								VStack {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
@@ -58,7 +52,6 @@ struct NodeDetail: View {
 						}
 					} else {
 						HStack {
-							
 						}
 						.padding([.top], 20)
 					}
@@ -73,7 +66,6 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									if node.user != nil {
-										
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
@@ -343,9 +335,7 @@ struct NodeDetail: View {
 								}
 								
 								Button(action: {
-									
 									showingRebootConfirm = true
-									
 								}) {
 									
 									Label("reboot", systemImage: "arrow.triangle.2.circlepath")

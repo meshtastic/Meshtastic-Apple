@@ -78,11 +78,11 @@ struct DeviceMetricsLog: View {
 				ScrollView {
 					
 					let columns = [
-						GridItem(),
-						GridItem(),
-						GridItem(),
-						GridItem(),
-						GridItem(.fixed(140))
+						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
+						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {

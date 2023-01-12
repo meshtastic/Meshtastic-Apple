@@ -65,11 +65,11 @@ struct EnvironmentMetricsLog: View {
 			} else {
 				ScrollView {
 					let columns = [
-						GridItem(),
-						GridItem(),
-						GridItem(),
-						GridItem(),
-						GridItem(.fixed(140))
+						GridItem(spacing: 0.1),
+						GridItem(spacing: 0.1),
+						GridItem(spacing: 0.1),
+						GridItem(spacing: 0.1),
+						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 					
