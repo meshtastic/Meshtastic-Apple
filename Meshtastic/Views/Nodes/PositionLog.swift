@@ -97,7 +97,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.altitude))
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: dateFormatString).replacingOccurrences(of: ",", with: " ") ?? "Unknown time")
 									.font(.caption2)
 							}
 						}

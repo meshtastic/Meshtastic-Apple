@@ -58,7 +58,7 @@ struct EnvironmentMetricsLog: View {
 					}
 					TableColumn("timestamp") { em in
 						if em.metricsType == 1 {
-							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+							Text(em.time?.formattedDate(format: dateFormatString).replacingOccurrences(of: ",", with: " ") ?? "Unknown time")
 						}
 					}
 				}

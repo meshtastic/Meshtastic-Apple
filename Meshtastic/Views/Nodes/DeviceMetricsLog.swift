@@ -119,7 +119,7 @@ struct DeviceMetricsLog: View {
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
 									
-									Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+									Text(dm.time?.formattedDate(format: dateFormatString).replacingOccurrences(of: ",", with: " ") ?? "Unknown time")
 										.font(.caption2)
 								}
 							}

@@ -91,13 +91,13 @@ struct WaypointFormView: View {
 						}
 					
 				}
+				DatePicker("Expire", selection: $expire, in: Date.now...)
+					.datePickerStyle(.compact)
+					.font(.callout)
 				Toggle(isOn: $locked) {
 					Label("Locked", systemImage: "lock")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				DatePicker("Expire", selection: $expire, in: Date.now...)
-					.datePickerStyle(.compact)
-					.font(.callout)
 			}
 		}
 		HStack {
