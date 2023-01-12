@@ -355,7 +355,9 @@ struct NodeDetail: View {
 										}
 									}
 								}
-							}						}
+							}
+							.padding(5)
+						}
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])

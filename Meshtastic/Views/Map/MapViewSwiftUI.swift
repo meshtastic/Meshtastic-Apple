@@ -32,7 +32,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true;
 		mapView.addAnnotations(positions)
 		mapView.showsUserLocation = true
-		mapView.setUserTrackingMode(.followWithHeading, animated: true)
+		mapView.setUserTrackingMode(.none, animated: false)
 		mapView.showsCompass = true
 		mapView.showsScale = true
 		mapView.isScrollEnabled = true
