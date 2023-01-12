@@ -129,6 +129,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A65FA974296876BF00A97686 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
 		C9A88B54278B503C00BD810A /* MapViewModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewModule.swift; sourceTree = "<group>"; };
@@ -661,6 +662,7 @@
 				en,
 				de,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -865,6 +867,7 @@
 			children = (
 				DDCDC6CC29481FCC004C1DDA /* en */,
 				DDCDC6CE294821AD004C1DDA /* de */,
+				A65FA974296876BF00A97686 /* zh-Hans */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
