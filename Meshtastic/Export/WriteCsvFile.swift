@@ -56,7 +56,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 func PositionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: " ")
+	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
 	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \(NSLocalizedString("timestamp", comment: ""))"
 	for pos in positions {
