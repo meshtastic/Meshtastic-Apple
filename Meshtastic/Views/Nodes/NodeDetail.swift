@@ -13,10 +13,11 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@State var satsInView = 0
 	@State private var mapType: MKMapType = .standard
+	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State private var showingDetailsPopover = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var presentingWaypointForm = true
+	@State private var presentingWaypointForm = false
 	
 	var node: NodeInfoEntity
 	
@@ -33,7 +34,10 @@ struct NodeDetail: View {
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								MapViewSwiftUI(positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
+								MapViewSwiftUI(onMarkerTap: { coord in
+									presentingWaypointForm = true
+									waypointCoordinate = coord
+								}, positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
 								VStack {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
@@ -362,8 +366,7 @@ struct NodeDetail: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-					
-					WaypointFormView()
+					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation)
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				}

@@ -10,6 +10,7 @@ import MapKit
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
+	var onMarkerTap: (_ waypointCoordinate: CLLocationCoordinate2D? ) -> Void
 	let mapView = MKMapView()
 	let positions: [PositionEntity]
 	let region: MKCoordinateRegion
@@ -35,6 +36,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.setUserTrackingMode(.none, animated: false)
 		mapView.showsCompass = true
 		mapView.showsScale = true
+		mapView.isZoomEnabled = true
 		mapView.isScrollEnabled = true
 		mapView.delegate = context.coordinator
 		return mapView
@@ -57,7 +59,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.parent = parent
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
-			self.longPressRecognizer.minimumPressDuration = 1.0
+			self.longPressRecognizer.minimumPressDuration = 0.2
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 		}
@@ -83,13 +85,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
-			if gesture.state == .ended {
+			//if gesture.state == .ended {
 				// Screen Position - CGPoint
 				let location = longPressRecognizer.location(in: self.parent.mapView)
 				// Map Coordinate - CLLocationCoordinate2D
 				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
 				print(coordinate)
-			}
+				
+				// Add annotation:
+				let annotation = MKPointAnnotation()
+				annotation.title = "Dropped Pin"
+				annotation.coordinate = coordinate
+				parent.mapView.addAnnotation(annotation)
+				parent.onMarkerTap(coordinate)
+				UINotificationFeedbackGenerator().notificationOccurred(.success)
+			//}
 		}
 	}
 	

@@ -6,26 +6,35 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct WaypointFormView: View {
 	
+	@State var coordinate: CLLocationCoordinate2D
 	@Environment(\.dismiss) private var dismiss
 	@FocusState private var emojiIsFocused: Bool
 	@State private var id: Int32?
 	@State private var name: String = ""
 	@State private var description: String = ""
 	@State private var emoji: String = "📍"
-	@State private var latitude: Double = 0.0
-	@State private var longitude: Double = 0.0
-	@State private var expire: Date = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
+	@State private var expires: Bool = false
+	@State private var expire: Date = Date()// = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
-
+	
 	var body: some View {
-
 		Form {
-			Section(header: Text("Waypoint").font(.title3)) {
-				Text("Distance Away").foregroundColor(Color.gray)
-				Text("Lat/Long ") + Text(" \(String(latitude) + "," + String(longitude))").foregroundColor(Color.gray)
+			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
+			Section(header: Text("Waypoint")) {
+				HStack {
+					Text("Location: \(String(format: "%.5f", coordinate.latitude ) + "," + String(format: "%.5f", coordinate.longitude ))")
+						.foregroundColor(Color.gray)
+						.font(.caption2)
+					if coordinate.latitude != LocationHelper.DefaultLocation.latitude && coordinate.longitude != LocationHelper.DefaultLocation.longitude {
+						DistanceText(meters: distance)
+							.foregroundColor(Color.gray)
+							.font(.caption2)
+					}
+				}
 				HStack {
 					Text("Name")
 					Spacer()
@@ -91,9 +100,15 @@ struct WaypointFormView: View {
 						}
 					
 				}
-				DatePicker("Expire", selection: $expire, in: Date.now...)
-					.datePickerStyle(.compact)
-					.font(.callout)
+				Toggle(isOn: $expires) {
+					Label("Expires", systemImage: "clock.badge.xmark")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				if expires {
+					DatePicker("Expire", selection: $expire, in: Date.now...)
+						.datePickerStyle(.compact)
+						.font(.callout)
+				}
 				Toggle(isOn: $locked) {
 					Label("Locked", systemImage: "lock")
 				}
@@ -103,13 +118,14 @@ struct WaypointFormView: View {
 		HStack {
 			Button {
 				dismiss()
+				
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding(5)
+			.padding()
 			
 			Button {
 				dismiss()
@@ -119,7 +135,11 @@ struct WaypointFormView: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding(5)
+			.padding()
 		}
 	}
 }
+//var smiley = "😊"
+//var data: NSData = smiley.dataUsingEncoding(NSUTF32LittleEndianStringEncoding, allowLossyConversion: false)!
+//var unicode:UInt32 = UInt32()
+//data.getBytes(&unicode)
