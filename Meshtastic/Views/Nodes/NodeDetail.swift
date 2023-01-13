@@ -45,10 +45,14 @@ struct NodeDetail: View {
 									
 									Picker("", selection: $mapType) {
 										Text("Standard").tag(MKMapType.standard)
+										Text("Muted").tag(MKMapType.mutedStandard)
 										Text("Hybrid").tag(MKMapType.hybrid)
+										Text("Hybrid Flyover").tag(MKMapType.hybridFlyover)
 										Text("Satellite").tag(MKMapType.satellite)
+										Text("Sat Flyover").tag(MKMapType.satelliteFlyover)
 									}
 									.pickerStyle(SegmentedPickerStyle())
+									.padding(.bottom, 30)
 								}
 							}
 							.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
@@ -341,7 +345,6 @@ struct NodeDetail: View {
 								Button(action: {
 									showingRebootConfirm = true
 								}) {
-									
 									Label("reboot", systemImage: "arrow.triangle.2.circlepath")
 								}
 								.buttonStyle(.bordered)
@@ -349,11 +352,9 @@ struct NodeDetail: View {
 								.controlSize(.large)
 								.padding()
 								.confirmationDialog("are.you.sure",
-													
-													isPresented: $showingRebootConfirm
+									isPresented: $showingRebootConfirm
 								) {
 									Button("reboot.node", role: .destructive) {
-										
 										if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
 											print("Reboot Failed")
 										}
