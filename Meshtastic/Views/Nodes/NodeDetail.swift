@@ -18,6 +18,13 @@ struct NodeDetail: View {
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var presentingWaypointForm = false
+	@State private var showOverlays: Bool = true
+	@State private var overlays: [MapViewSwiftUI.Overlay] = []
+	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
+			mapName: "offlinemap",
+			tileType: "png",
+			canReplaceMapContent: true
+		)
 	
 	var node: NodeInfoEntity
 	
@@ -37,7 +44,10 @@ struct NodeDetail: View {
 								MapViewSwiftUI(onMarkerTap: { coord in
 									presentingWaypointForm = true
 									waypointCoordinate = coord
-								}, positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType)
+								}, positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
+									customMapOverlay: self.customMapOverlay,
+									overlays: self.overlays
+								)
 								VStack {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")

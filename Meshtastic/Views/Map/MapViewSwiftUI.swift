@@ -44,6 +44,34 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		mapView.mapType = mapViewType
+		
+		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
+			mapView.removeOverlays(mapView.overlays)
+			if self.customMapOverlay != nil {
+				
+				let fileManager = FileManager.default
+				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
+				if fileManager.fileExists(atPath: tilePath) {
+				//if let tilePath = Bundle.main.path(forResource: "offline_map", ofType: "mbtiles") {
+					
+					print("Loading local map file")
+					
+					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
+					
+						overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
+					
+						mapView.addOverlay(overlay)
+					}
+				} else {
+					print("Couldn't find a local map file to load")
+				}
+			}
+			DispatchQueue.main.async {
+				self.presentCustomMapOverlayHash = self.customMapOverlay
+				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
+			}
+		}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
@@ -55,6 +83,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
 		
+		var overlays: [Overlay] = []
+		
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
 			super.init()
@@ -62,6 +92,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.minimumPressDuration = 0.2
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
+			self.overlays = []
 		}
 		
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -80,26 +111,73 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.markerTintColor = UIColor(.accentColor)
 				annotationView.titleVisibility = .visible
 				return annotationView
+			case _ as WaypointEntity:
+				return nil
+				
 			default: return nil
 			}
 		}
 		
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
-			//if gesture.state == .ended {
-				// Screen Position - CGPoint
-				let location = longPressRecognizer.location(in: self.parent.mapView)
-				// Map Coordinate - CLLocationCoordinate2D
-				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-				print(coordinate)
-				
-				// Add annotation:
-				let annotation = MKPointAnnotation()
-				annotation.title = "Dropped Pin"
-				annotation.coordinate = coordinate
-				parent.mapView.addAnnotation(annotation)
-				parent.onMarkerTap(coordinate)
-				UINotificationFeedbackGenerator().notificationOccurred(.success)
-			//}
+			// Screen Position - CGPoint
+			let location = longPressRecognizer.location(in: self.parent.mapView)
+			// Map Coordinate - CLLocationCoordinate2D
+			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
+			print(coordinate)
+			
+			// Add annotation:
+			let annotation = MKPointAnnotation()
+			annotation.title = "Dropped Pin"
+			annotation.coordinate = coordinate
+			parent.mapView.addAnnotation(annotation)
+			parent.onMarkerTap(coordinate)
+			UINotificationFeedbackGenerator().notificationOccurred(.success)
+		}
+		
+		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+
+			if let index = self.overlays.firstIndex(where: { overlay_ in overlay_.shape.hash == overlay.hash }) {
+
+				let unwrappedOverlay = self.overlays[index]
+				if let circleOverlay = unwrappedOverlay.shape as? MKCircle {
+					let renderer = MKCircleRenderer(circle: circleOverlay)
+					renderer.fillColor = unwrappedOverlay.fillColor
+					renderer.strokeColor = unwrappedOverlay.strokeColor
+					renderer.lineWidth = unwrappedOverlay.lineWidth
+					return renderer
+				} else if let polygonOverlay = unwrappedOverlay.shape as? MKPolygon {
+					let renderer = MKPolygonRenderer(polygon: polygonOverlay)
+					renderer.fillColor = unwrappedOverlay.fillColor
+					renderer.strokeColor = unwrappedOverlay.strokeColor
+					renderer.lineWidth = unwrappedOverlay.lineWidth
+					return renderer
+				} else if let multiPolygonOverlay = unwrappedOverlay.shape as? MKMultiPolygon {
+					let renderer = MKMultiPolygonRenderer(multiPolygon: multiPolygonOverlay)
+					renderer.fillColor = unwrappedOverlay.fillColor
+					renderer.strokeColor = unwrappedOverlay.strokeColor
+					renderer.lineWidth = unwrappedOverlay.lineWidth
+					return renderer
+				} else if let polyLineOverlay = unwrappedOverlay.shape as? MKPolyline {
+					let renderer = MKPolylineRenderer(polyline: polyLineOverlay)
+					renderer.fillColor = unwrappedOverlay.fillColor
+					renderer.strokeColor = unwrappedOverlay.strokeColor
+					renderer.lineWidth = unwrappedOverlay.lineWidth
+					return renderer
+				} else if let multiPolylineOverlay = unwrappedOverlay.shape as? MKMultiPolyline {
+					let renderer = MKMultiPolylineRenderer(multiPolyline: multiPolylineOverlay)
+					renderer.fillColor = unwrappedOverlay.fillColor
+					renderer.strokeColor = unwrappedOverlay.strokeColor
+					renderer.lineWidth = unwrappedOverlay.lineWidth
+					return renderer
+				} else {
+					return MKOverlayRenderer()
+				}
+
+			} else if let tileOverlay = overlay as? MKTileOverlay {
+				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			} else {
+				return MKOverlayRenderer()
+			}
 		}
 	}
 	
@@ -107,13 +185,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	public struct DefaultTile: Hashable {
 		let tileName: String
 		let tileType: String
-
+		
 		public init(tileName: String, tileType: String) {
 			self.tileName = tileName
 			self.tileType = tileType
 		}
 	}
-
+	
 	public struct CustomMapOverlay: Equatable, Hashable {
 		let mapName: String
 		let tileType: String
@@ -121,7 +199,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		var minimumZoomLevel: Int?
 		var maximumZoomLevel: Int?
 		let defaultTile: DefaultTile?
-
+		
 		public init(
 			mapName: String,
 			tileType: String,
@@ -158,15 +236,15 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.defaultTile = defaultTile
 		}
 	}
-
+	
 	public class CustomMapOverlaySource: MKTileOverlay {
-
+		
 		// requires folder: tiles/{mapName}/z/y/y,{tileType}
 		private var parent: MapView
 		private let mapName: String
 		private let tileType: String
 		private let defaultTile: DefaultTile?
-
+		
 		public init(
 			parent: MapView,
 			mapName: String,
@@ -179,7 +257,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.defaultTile = defaultTile
 			super.init(urlTemplate: "")
 		}
-
+		
 		public override func url(forTilePath path: MKTileOverlayPath) -> URL {
 			if let tileUrl = Bundle.main.url(
 				forResource: "\(path.y)",
@@ -198,11 +276,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			} else {
 				let urlstring = self.mapName+"\(path.z)/\(path.x)/\(path.y).png"
 				return URL(string: urlstring)!
-				// Bundle.main.url(forResource: "surrounding", withExtension: "png", subdirectory: "tiles")!
 			}
-		
+			
 		}
-		
 	}
 	
 	public struct Overlay {
@@ -213,12 +289,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
 			lhs.fillColor == rhs.fillColor
 		}
-
+		
 		var shape: MKOverlay
 		var fillColor: UIColor?
 		var strokeColor: UIColor?
 		var lineWidth: CGFloat
-
+		
 		public init(
 			shape: MKOverlay,
 			fillColor: UIColor? = nil,
