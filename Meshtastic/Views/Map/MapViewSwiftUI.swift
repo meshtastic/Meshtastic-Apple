@@ -72,10 +72,46 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
+		self.moveToMeshRegion(mapView)
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
 		return Coordinator(self)
+	}
+	
+	func moveToMeshRegion(_ mapView: MKMapView) {
+		//go through the annotations and create a bounding box that encloses them
+		var minLat: CLLocationDegrees = 90.0
+		var maxLat: CLLocationDegrees = -90.0
+		var minLon: CLLocationDegrees = 180.0
+		var maxLon: CLLocationDegrees = -180.0
+		
+		for annotation in mapView.annotations {
+			if annotation.isKind(of: MKAnnotation.self) {
+				minLat = min(minLat, annotation.coordinate.latitude)
+				maxLat = max(maxLat, annotation.coordinate.latitude)
+				minLon = min(minLon, annotation.coordinate.longitude)
+				maxLon = max(maxLon, annotation.coordinate.longitude)
+			}
+		}
+		
+		//check if the mesh region looks sensible before we move to it.  Otherwise we won't move the map (leave it at the current location)
+		if maxLat < minLat || (maxLat-minLat) > 5 || maxLon < minLon || (maxLon-minLon) > 5 {
+			return
+		} else if minLat == maxLat && minLon == maxLon {
+			//then we are focussed on a single point (probably because there is only one node with a position)
+			//widen that out a little (don't zoom way in to that point)
+			
+			//0.001 degrees latitude is about 100m
+			//the mapView.regionThatFits call below will expand this out to a rectangle
+			minLat = minLat - 0.001
+			maxLat = maxLat + 0.001
+		}
+		
+		let centerCoord = CLLocationCoordinate2D(latitude: (minLat+maxLat)/2, longitude: (minLon+maxLon)/2)
+		let span = MKCoordinateSpan(latitudeDelta: (maxLat-minLat)*1.5, longitudeDelta: (maxLon-minLon)*1.5)
+		let region = mapView.regionThatFits(MKCoordinateRegion(center: centerCoord, span: span))
+		mapView.setRegion(region, animated: true)
 	}
 	
 	final class MapCoordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
@@ -240,13 +276,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	public class CustomMapOverlaySource: MKTileOverlay {
 		
 		// requires folder: tiles/{mapName}/z/y/y,{tileType}
-		private var parent: MapView
+		private var parent: MapViewSwiftUI
 		private let mapName: String
 		private let tileType: String
 		private let defaultTile: DefaultTile?
 		
 		public init(
-			parent: MapView,
+			parent: MapViewSwiftUI,
 			mapName: String,
 			tileType: String,
 			defaultTile: DefaultTile?

@@ -15,14 +15,13 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-
 	@AppStorage("meshMapType") var type: String = "hybrid"
 	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
 		didSet {
 			if customTileServer == "" {
 				self.customMapOverlay = nil
 			} else {
-				self.customMapOverlay = MapView.CustomMapOverlay(
+				self.customMapOverlay = MapViewSwiftUI.CustomMapOverlay(
 					mapName: customTileServer,
 					tileType: "png",
 					canReplaceMapContent: true
@@ -30,94 +29,71 @@ struct NodeMap: View {
 			}
 		}
 	}
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)], animation: .default)
+	private var positions: FetchedResults<PositionEntity>
 	
-	@State private var showLabels: Bool = false
-
-	//@State private var annotationItems: [MapLocation] = []
-	//@FetchRequest( sortDescriptors: [NSSortDescriptor(keyPath: \NodeInfoEntity.lastHeard, ascending: false)], animation: .default)
-	//private var locationNodes: FetchedResults<NodeInfoEntity>
-
-	/*@State private var mapRegion: MKCoordinateRegion = MKCoordinateRegion(
-		center: CLLocationCoordinate2D(
-			latitude: -38.758247,
-			longitude: 175.360208
-		),
-		span: MKCoordinateSpan(
-			latitudeDelta: 0.01,
-			longitudeDelta: 0.01
-		)
-	)*/
-	
-	@State private var customMapOverlay: MapView.CustomMapOverlay? = MapView.CustomMapOverlay(
+	@State private var mapType: MKMapType = .standard
+	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State private var presentingWaypointForm = false
+	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
 			canReplaceMapContent: true
 		)
-
-	//@State private var mapType: MKMapType = MKMapType.standard
-
-	@State private var zoomEnabled: Bool = true
-	@State private var showZoomScale: Bool = true
-	@State private var useMinZoomBoundary: Bool = false
-	@State private var minZoom: Double = 0
-	@State private var useMaxZoomBoundary: Bool = false
-	@State private var maxZoom: Double = 3000000
-
-	@State private var scrollEnabled: Bool = true
-	@State private var useScrollBoundaries: Bool = false
-	@State private var scrollBoundaries: MKCoordinateRegion = MKCoordinateRegion()
-
-	@State private var rotationEnabled: Bool = true
-	@State private var showCompassWhenRotated: Bool = true
-
-	@State private var showUserLocation: Bool = true
-	@State private var userTrackingMode: MKUserTrackingMode = MKUserTrackingMode.none
-	@State private var userLocation: CLLocationCoordinate2D? = LocationHelper.currentLocation
-
-	@State private var showAnnotations: Bool = true
-	@State private var annotations: [MKPointAnnotation] = []
-
-	@State private var showOverlays: Bool = true
-	@State private var overlays: [MapView.Overlay] = []
-
-	@State private var showMapCenter: Bool = false
+	@State private var overlays: [MapViewSwiftUI.Overlay] = []
+	
+	//@State private var showLabels: Bool = false
+	//@State private var zoomEnabled: Bool = true
+	//@State private var showZoomScale: Bool = true
+	//@State private var useMinZoomBoundary: Bool = false
+	//@State private var minZoom: Double = 0
+	//@State private var useMaxZoomBoundary: Bool = false
+	//@State private var maxZoom: Double = 3000000
+	//@State private var scrollEnabled: Bool = true
+	//@State private var useScrollBoundaries: Bool = false
+	//@State private var scrollBoundaries: MKCoordinateRegion = MKCoordinateRegion()
+	//@State private var rotationEnabled: Bool = true
+	//@State private var showCompassWhenRotated: Bool = true
+	//@State private var showUserLocation: Bool = true
+	//@State private var userTrackingMode: MKUserTrackingMode = MKUserTrackingMode.none
+	//@State private var userLocation: CLLocationCoordinate2D? = LocationHelper.currentLocation
+	//@State private var showAnnotations: Bool = true
+	//@State private var annotations: [MKPointAnnotation] = []
+	//@State private var showOverlays: Bool = true
+	//@State private var showMapCenter: Bool = false
 	
     var body: some View {
 
         NavigationStack {
-            ZStack {
-
-				//MapView(nodes: self.locationNodes)//.environmentObject(bleManager)
-                // }
-				MapView(
-					//region: self.$mapRegion,
+			ZStack {
+				MapViewSwiftUI(onMarkerTap: { coord in
+					presentingWaypointForm = true
+					waypointCoordinate = coord
+				}, positions: Array(positions), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
 					customMapOverlay: self.customMapOverlay,
-					mapType: self.type,
-					zoomEnabled: self.zoomEnabled,
-					showZoomScale: self.showZoomScale,
-					zoomRange: (minHeight: self.useMinZoomBoundary ? self.minZoom : 0, maxHeight: self.useMaxZoomBoundary ? self.maxZoom : .infinity),
-					scrollEnabled: self.scrollEnabled,
-					scrollBoundaries: self.useScrollBoundaries ? self.scrollBoundaries : nil,
-					rotationEnabled: self.rotationEnabled,
-					showCompassWhenRotated: self.showCompassWhenRotated,
-					showUserLocation: self.showUserLocation,
-					userTrackingMode: self.userTrackingMode,
-					userLocation: self.$userLocation,
-					//annotations: self.annotations,
-					//locationNodes: self.locationNodes.map({ nodeinfo in return nodeinfo }),
 					overlays: self.overlays
-					//context: self.context
 				)
-
-               .frame(maxHeight: .infinity)
-			   .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+				VStack {
+					Spacer()
+					
+					Picker("", selection: $mapType) {
+						Text("Standard").tag(MKMapType.standard)
+						Text("Muted").tag(MKMapType.mutedStandard)
+						Text("Hybrid").tag(MKMapType.hybrid)
+						Text("Hybrid Flyover").tag(MKMapType.hybridFlyover)
+						Text("Satellite").tag(MKMapType.satellite)
+						Text("Sat Flyover").tag(MKMapType.satelliteFlyover)
+					}
+					.pickerStyle(SegmentedPickerStyle())
+					.padding(.bottom, 30)
+				}
 			}
+			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+			.frame(maxHeight: .infinity)
         }
-		
 		.navigationBarItems(leading:
 			MeshtasticLogo(), trailing:
 		ZStack {
-
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,
 				deviceConnected: bleManager.connectedPeripheral != nil,
@@ -125,10 +101,8 @@ struct NodeMap: View {
 					"????")
 		})
 		.onAppear(perform: {
-
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-
 		})
     }
 }
