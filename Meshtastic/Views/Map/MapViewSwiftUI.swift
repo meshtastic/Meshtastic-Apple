@@ -16,7 +16,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let region: MKCoordinateRegion
 	let mapViewType: MKMapType
 	
-	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
@@ -24,6 +23,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	var overlays: [Overlay] = []
+	let dynamicRegion: Bool = true
 	
 	func makeUIView(context: Context) -> MKMapView {
 		mapView.mapType = mapViewType
@@ -72,7 +72,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
-		self.moveToMeshRegion(mapView)
+		if dynamicRegion {
+			self.moveToMeshRegion(mapView)
+		}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
