@@ -90,6 +90,11 @@ struct NodeMap: View {
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
+			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
+				WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation)
+					.presentationDetents([.medium, .large])
+					.presentationDragIndicator(.automatic)
+			}
         }
 		.navigationBarItems(leading:
 			MeshtasticLogo(), trailing:

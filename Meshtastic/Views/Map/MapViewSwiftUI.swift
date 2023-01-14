@@ -161,7 +161,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let location = longPressRecognizer.location(in: self.parent.mapView)
 			// Map Coordinate - CLLocationCoordinate2D
 			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-			print(coordinate)
 			
 			// Add annotation:
 			let annotation = MKPointAnnotation()
@@ -210,7 +209,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				} else {
 					return MKOverlayRenderer()
 				}
-
 			} else if let tileOverlay = overlay as? MKTileOverlay {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
 			} else {
