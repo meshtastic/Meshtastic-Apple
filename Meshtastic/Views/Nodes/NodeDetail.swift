@@ -55,7 +55,7 @@ struct NodeDetail: View {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
 										.font(.caption)
-										.padding()
+										.offset(y: 20)
 									Picker("Map Type", selection: $mapType) {
 										Text("Standard").tag(MKMapType.standard)
 										Text("Muted").tag(MKMapType.mutedStandard)

@@ -727,24 +727,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
-	public func sendWaypoint(destNum: Int64, name: String, wantAck: Bool) -> Bool {
+	public func sendWaypoint(waypoint: Waypoint) -> Bool {
 		
 		var success = false
-		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
-			return false
-		}
-		var waypointPacket = Waypoint()
-		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-		waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
-		waypointPacket.name = name
+		let fromNodeNum = UInt32(connectedPeripheral.num)
+		var waypointPacket = waypoint
+		waypointPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		var meshPacket = MeshPacket()
-		meshPacket.to = UInt32(destNum)
-		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
-		meshPacket.wantAck = true//wantAck
+		meshPacket.to = emptyNodeNum
+		meshPacket.from	= fromNodeNum
+		//meshPacket.wantAck = true
 		var dataMessage = DataMessage()
+		dataMessage.wantResponse = true
 		dataMessage.payload = try! waypointPacket.serializedData()
 		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage

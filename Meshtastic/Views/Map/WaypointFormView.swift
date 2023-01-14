@@ -10,13 +10,14 @@ import CoreLocation
 
 struct WaypointFormView: View {
 	
+	@EnvironmentObject var bleManager: BLEManager
 	@State var coordinate: CLLocationCoordinate2D
 	@Environment(\.dismiss) private var dismiss
-	@FocusState private var emojiIsFocused: Bool
+	@FocusState private var iconIsFocused: Bool
 	@State private var id: Int32?
 	@State private var name: String = ""
 	@State private var description: String = ""
-	@State private var emoji: String = "📍"
+	@State private var icon: String = "📍"
 	@State private var expires: Bool = false
 	@State private var expire: Date = Date()// = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
@@ -81,23 +82,23 @@ struct WaypointFormView: View {
 				HStack {
 					Text("Icon")
 					Spacer()
-					EmojiOnlyTextField(text: $emoji, placeholder: "Select an emoji")
+					EmojiOnlyTextField(text: $icon, placeholder: "Select an emoji")
 						.font(.title)
-						.focused($emojiIsFocused)
-						.onChange(of: emoji) { value in
+						.focused($iconIsFocused)
+						.onChange(of: icon) { value in
 							
 							// If you have anything other than emojis in your string make it empty
 							if !value.onlyEmojis() {
-								emoji = ""
+								icon = ""
 							}
 							// If a second emoji is entered delete the first one
 							if value.count >= 1 {
 								
 								if value.count > 1 {
 									let index = value.index(value.startIndex, offsetBy: 1)
-									emoji = String(value[index])
+									icon = String(value[index])
 								}
-								emojiIsFocused = false
+								iconIsFocused = false
 							}
 						}
 					
@@ -119,6 +120,15 @@ struct WaypointFormView: View {
 		}
 		HStack {
 			Button {
+				var newWaypoint = Waypoint()
+				newWaypoint.name = name.count < 1 ? "Dropped Pin" : name
+				newWaypoint.description_p = description
+				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
+				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+				//newWaypoint.icon = icon
+				newWaypoint.locked = locked
+				//newWaypoint.expire = expire
+				bleManager.sendWaypoint(waypoint: newWaypoint)
 				dismiss()
 				
 			} label: {
