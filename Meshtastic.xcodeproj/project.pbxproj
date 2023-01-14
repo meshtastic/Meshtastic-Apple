@@ -68,6 +68,7 @@
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormView.swift */; };
+		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
@@ -192,6 +193,8 @@
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
 		DD964FBE296E76EF007C176F /* WaypointFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormView.swift; sourceTree = "<group>"; };
+		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
+		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
@@ -565,6 +568,7 @@
 				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
+				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -777,6 +781,7 @@
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
+				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
@@ -1226,13 +1231,14 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */,
 				DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */,
 				DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */,
 				DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */,
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */;
+			currentVersion = DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

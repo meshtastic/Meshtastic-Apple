@@ -28,6 +28,9 @@ struct NodeDetail: View {
 	
 	var node: NodeInfoEntity
 	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .default)
+	private var waypoints: FetchedResults<WaypointEntity>
+	
 	var body: some View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
@@ -44,16 +47,16 @@ struct NodeDetail: View {
 								MapViewSwiftUI(onMarkerTap: { coord in
 									presentingWaypointForm = true
 									waypointCoordinate = coord
-								}, positions: annotations, region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
+								}, positions: annotations, waypoints: Array(waypoints), region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
 								)
 								VStack {
 									Spacer()
 									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
-										.font(.caption2)
-									
-									Picker("", selection: $mapType) {
+										.font(.caption)
+										.padding()
+									Picker("Map Type", selection: $mapType) {
 										Text("Standard").tag(MKMapType.standard)
 										Text("Muted").tag(MKMapType.mutedStandard)
 										Text("Hybrid").tag(MKMapType.hybrid)
@@ -61,8 +64,7 @@ struct NodeDetail: View {
 										Text("Satellite").tag(MKMapType.satellite)
 										Text("Sat Flyover").tag(MKMapType.satelliteFlyover)
 									}
-									.pickerStyle(SegmentedPickerStyle())
-									.padding(.bottom, 30)
+									.pickerStyle(.menu)
 								}
 							}
 							.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])

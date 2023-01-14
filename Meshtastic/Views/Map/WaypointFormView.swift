@@ -27,6 +27,7 @@ struct WaypointFormView: View {
 			Section(header: Text("Waypoint")) {
 				HStack {
 					Text("Location: \(String(format: "%.5f", coordinate.latitude ) + "," + String(format: "%.5f", coordinate.longitude ))")
+						.textSelection(.enabled)
 						.foregroundColor(Color.gray)
 						.font(.caption2)
 					if coordinate.latitude != LocationHelper.DefaultLocation.latitude && coordinate.longitude != LocationHelper.DefaultLocation.longitude {

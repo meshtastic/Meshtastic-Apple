@@ -2,7 +2,7 @@
 //  MapViewSwitUI.swift
 //  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 1/9/23.
+//  Copyright(c) Josh Pirihi & Garth Vander Houwen 1/16/22.
 //
 
 import SwiftUI
@@ -13,6 +13,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onMarkerTap: (_ waypointCoordinate: CLLocationCoordinate2D? ) -> Void
 	let mapView = MKMapView()
 	let positions: [PositionEntity]
+	let waypoints: [WaypointEntity]
 	let region: MKCoordinateRegion
 	let mapViewType: MKMapType
 	
@@ -26,18 +27,24 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let dynamicRegion: Bool = true
 	
 	func makeUIView(context: Context) -> MKMapView {
+		// Parameters
+		mapView.addAnnotations(positions)
 		mapView.mapType = mapViewType
 		mapView.setRegion(region, animated: true)
-		mapView.isRotateEnabled = true
-		mapView.isPitchEnabled = true
-		mapView.showsBuildings = true;
-		mapView.addAnnotations(positions)
-		mapView.showsUserLocation = true
 		mapView.setUserTrackingMode(.none, animated: false)
+		// Other MKMapView Settings
+		mapView.isPitchEnabled = true
+		mapView.isRotateEnabled = true
+		mapView.isScrollEnabled = true
+		mapView.isZoomEnabled = true
+		mapView.showsBuildings = true
 		mapView.showsCompass = true
 		mapView.showsScale = true
-		mapView.isZoomEnabled = true
-		mapView.isScrollEnabled = true
+		mapView.showsTraffic = true
+		mapView.showsUserLocation = true
+		#if targetEnvironment(macCatalyst)
+		mapView.showsZoomControls = true
+		#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -149,9 +156,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.markerTintColor = UIColor(.accentColor)
 				annotationView.titleVisibility = .visible
 				return annotationView
-			case _ as WaypointEntity:
-				return nil
-				
+			case let waypointAnnotation as WaypointEntity:
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
+				annotationView.canShowCallout = true
+				annotationView.glyphText = "🪧"
+				annotationView.clusteringIdentifier = "waypointGroup"
+				annotationView.markerTintColor = UIColor(.green)
+				annotationView.titleVisibility = .visible
+				return annotationView
 			default: return nil
 			}
 		}
@@ -161,7 +173,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let location = longPressRecognizer.location(in: self.parent.mapView)
 			// Map Coordinate - CLLocationCoordinate2D
 			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-			
 			// Add annotation:
 			let annotation = MKPointAnnotation()
 			annotation.title = "Dropped Pin"
@@ -244,7 +255,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			maximumZoomLevel: Int? = nil,
 			defaultTile: DefaultTile? = nil
 		) {
-			
 			self.mapName = mapName
 			self.tileType = tileType
 			self.canReplaceMapContent = canReplaceMapContent

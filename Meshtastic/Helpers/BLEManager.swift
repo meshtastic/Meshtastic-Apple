@@ -506,7 +506,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .positionApp:
 					positionPacket(packet: decodedInfo.packet, context: context!)
 				case .waypointApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					waypointPacket(packet: decodedInfo.packet, context: context!)
 				case .nodeinfoApp:
 					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
 				case .routingApp:
@@ -627,7 +627,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-			let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
+			let nodeName = connectedPeripheral?.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.textmessage.send.failed %@",
 				comment: "Message Send Failed, not properly connected to %@"), nodeName)
 			MeshLogger.log("🚫 \(logString)")

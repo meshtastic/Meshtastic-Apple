@@ -32,6 +32,9 @@ struct NodeMap: View {
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)], animation: .default)
 	private var positions: FetchedResults<PositionEntity>
 	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .default)
+	private var waypoints: FetchedResults<WaypointEntity>
+	
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State private var presentingWaypointForm = false
@@ -42,50 +45,29 @@ struct NodeMap: View {
 		)
 	@State private var overlays: [MapViewSwiftUI.Overlay] = []
 	
-	//@State private var showLabels: Bool = false
-	//@State private var zoomEnabled: Bool = true
-	//@State private var showZoomScale: Bool = true
-	//@State private var useMinZoomBoundary: Bool = false
-	//@State private var minZoom: Double = 0
-	//@State private var useMaxZoomBoundary: Bool = false
-	//@State private var maxZoom: Double = 3000000
-	//@State private var scrollEnabled: Bool = true
-	//@State private var useScrollBoundaries: Bool = false
-	//@State private var scrollBoundaries: MKCoordinateRegion = MKCoordinateRegion()
-	//@State private var rotationEnabled: Bool = true
-	//@State private var showCompassWhenRotated: Bool = true
-	//@State private var showUserLocation: Bool = true
-	//@State private var userTrackingMode: MKUserTrackingMode = MKUserTrackingMode.none
-	//@State private var userLocation: CLLocationCoordinate2D? = LocationHelper.currentLocation
-	//@State private var showAnnotations: Bool = true
-	//@State private var annotations: [MKPointAnnotation] = []
-	//@State private var showOverlays: Bool = true
-	//@State private var showMapCenter: Bool = false
-	
     var body: some View {
 
         NavigationStack {
 			ZStack {
+				
 				MapViewSwiftUI(onMarkerTap: { coord in
 					presentingWaypointForm = true
 					waypointCoordinate = coord
-				}, positions: Array(positions), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
+				}, positions: Array(positions), waypoints: Array(waypoints), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays
 				)
 				VStack {
 					Spacer()
-					
-					Picker("", selection: $mapType) {
+					Picker("Map Type", selection: $mapType) {
 						Text("Standard").tag(MKMapType.standard)
-						Text("Muted").tag(MKMapType.mutedStandard)
+						Text("Standard Muted").tag(MKMapType.mutedStandard)
 						Text("Hybrid").tag(MKMapType.hybrid)
 						Text("Hybrid Flyover").tag(MKMapType.hybridFlyover)
 						Text("Satellite").tag(MKMapType.satellite)
-						Text("Sat Flyover").tag(MKMapType.satelliteFlyover)
+						Text("Satellite Flyover").tag(MKMapType.satelliteFlyover)
 					}
-					.pickerStyle(SegmentedPickerStyle())
-					.padding(.bottom, 30)
+					.pickerStyle(.menu)
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
@@ -109,13 +91,5 @@ struct NodeMap: View {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 		})
-    }
-}
-
-struct NodeMap_Previews: PreviewProvider {
-    static let bleManager = BLEManager()
-
-    static var previews: some View {
-        NodeMap()
     }
 }

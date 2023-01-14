@@ -153,7 +153,7 @@
 //		
 //		mapView.isScrollEnabled = self.userTrackingMode == MKUserTrackingMode.none ? self.scrollEnabled : false
 //		
-//		if let scrollBoundary = self.scrollBoundaries, (mapView.cameraBoundary?.region.center.latitude != scrollBoundary.center.latitude || mapView.cameraBoundary?.region.center.longitude != scrollBoundary.center.longitude || mapView.cameraBoundary?.region.span.latitudeDelta != scrollBoundary.span.latitudeDelta || mapView.cameraBoundary?.region.span.longitudeDelta != scrollBoundary.span.longitudeDelta) {
+//		if let scrollBoundary = self.scrollBoundaries, (mapView.cameraBoundary?.region.center.latitude != scrollBoundary.center.latitude || mapView.cameraBoundary?.region.center.longitude != scrollBoundary.center.longitude || mapView.camera Boundary?.region.span.latitudeDelta != scrollBoundary.span.latitudeDelta || mapView.cameraBoundary?.region.span.longitudeDelta != scrollBoundary.span.longitudeDelta) {
 //			mapView.cameraBoundary = MKMapView.CameraBoundary(coordinateRegion: scrollBoundary)
 //		} else if self.scrollBoundaries == nil && mapView.cameraBoundary != nil {
 //			mapView.cameraBoundary = nil

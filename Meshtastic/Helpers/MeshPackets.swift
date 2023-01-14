@@ -1311,3 +1311,68 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 		}
 	}
 }
+
+func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "Waypoint Packet received from node: %@"), String(packet.from))
+	MeshLogger.log("📍 \(logString)")
+
+	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")
+	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
+	
+	do {
+		
+		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
+			// Don't save empty waypoint packets
+			if waypointMessage.longitudeI > 0 || waypointMessage.latitudeI > 0 {
+				let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as! [WaypointEntity]
+				if fetchedWaypoint.isEmpty {
+					let waypoint = WaypointEntity(context: context)
+
+					waypoint.id = Int64(packet.id)
+					waypoint.name = waypointMessage.name
+					waypoint.longDescription = waypointMessage.description_p
+					waypoint.latitudeI = waypointMessage.latitudeI
+					waypoint.longitudeI = waypointMessage.longitudeI
+					//waypoint.icon = Int32(waypointMessage.icon)
+					waypoint.locked = waypointMessage.locked
+					if waypointMessage.expire != 0 {
+						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+					}
+					do {
+						try context.save()
+						print("💾 Updated Node Waypoint App Packet For: \(waypoint.id)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						print("💥 Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					}
+				} else {
+					fetchedWaypoint[0].id = Int64(packet.id)
+					fetchedWaypoint[0].name = waypointMessage.name
+					fetchedWaypoint[0].longDescription = waypointMessage.description_p
+					fetchedWaypoint[0].latitudeI = waypointMessage.latitudeI
+					fetchedWaypoint[0].longitudeI = waypointMessage.longitudeI
+					//fetchedWaypoint[0].icon = Int32(waypointMessage.icon)
+					fetchedWaypoint[0].locked = waypointMessage.locked
+					if waypointMessage.expire != 0 {
+						fetchedWaypoint[0].expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+					}
+					do {
+						try context.save()
+						print("💾 Updated Node Waypoint App Packet For: \(fetchedWaypoint[0].id)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						print("💥 Error Saving WaypointEntity from WAYPOINT_APP \(nsError)")
+					}
+				}
+			} else {
+				print("💥 Empty WAYPOINT_APP Packet")
+				print(try! packet.jsonString())
+			}
+		}
+	} catch {
+		print("💥 Error Deserializing WAYPOINT_APP packet.")
+	}
+}
