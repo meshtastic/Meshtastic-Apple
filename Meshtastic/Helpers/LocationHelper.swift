@@ -80,8 +80,10 @@ class LocationHelper: NSObject, ObservableObject {
 
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
+		locationManager.activityType = .otherNavigation
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }

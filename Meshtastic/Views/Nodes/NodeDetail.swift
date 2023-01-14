@@ -45,8 +45,8 @@ struct NodeDetail: View {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
 								MapViewSwiftUI(onMarkerTap: { coord in
-									presentingWaypointForm = true
 									waypointCoordinate = coord
+									presentingWaypointForm = true
 								}, positions: annotations, waypoints: Array(waypoints), region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays

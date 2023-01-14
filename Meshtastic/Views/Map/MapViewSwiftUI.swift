@@ -166,7 +166,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					
 				}
 				annotationView.clusteringIdentifier = "waypointGroup"
-				annotationView.markerTintColor = UIColor(.green)
+				annotationView.markerTintColor = UIColor(.indigo)
 				annotationView.titleVisibility = .visible
 				return annotationView
 			default: return nil

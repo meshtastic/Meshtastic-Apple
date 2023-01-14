@@ -51,9 +51,14 @@ struct NodeMap: View {
 			ZStack {
 				
 				MapViewSwiftUI(onMarkerTap: { coord in
-					presentingWaypointForm = true
 					waypointCoordinate = coord
-				}, positions: Array(positions), waypoints: Array(waypoints), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
+					if waypointCoordinate?.latitude ?? LocationHelper.DefaultLocation.latitude == LocationHelper.DefaultLocation.latitude {
+						presentingWaypointForm = false
+					} else {
+						presentingWaypointForm = true
+					}
+					
+				}, positions: Array(positions), waypoints: Array(waypoints), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)), mapViewType: mapType,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays
 				)
