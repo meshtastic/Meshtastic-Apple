@@ -736,9 +736,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var meshPacket = MeshPacket()
 		meshPacket.to = emptyNodeNum
 		meshPacket.from	= fromNodeNum
-		//meshPacket.wantAck = true
+		meshPacket.id = waypointPacket.id
+		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.wantResponse = true
 		dataMessage.payload = try! waypointPacket.serializedData()
 		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage
