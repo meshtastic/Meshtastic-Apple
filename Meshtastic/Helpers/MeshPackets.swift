@@ -1329,7 +1329,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				if fetchedWaypoint.isEmpty {
 					let waypoint = WaypointEntity(context: context)
 
-					waypoint.id = Int64(packet.id)
+					waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))//Int64(packet.id)
 					waypoint.name = waypointMessage.name
 					waypoint.longDescription = waypointMessage.description_p
 					waypoint.latitudeI = waypointMessage.latitudeI
