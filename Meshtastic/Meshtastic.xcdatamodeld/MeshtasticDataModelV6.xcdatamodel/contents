@@ -275,6 +275,6 @@
         <attribute name="locked" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="longDescription" optional="YES" attributeType="String" maxValueString="100"/>
         <attribute name="longitudeI" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="name" optional="YES" attributeType="String" maxValueString="30"/>
+        <attribute name="name" attributeType="String" minValueString="1" maxValueString="30"/>
     </entity>
 </model>

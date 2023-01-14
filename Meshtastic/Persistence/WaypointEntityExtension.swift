@@ -49,6 +49,6 @@ extension WaypointEntity {
 
 extension WaypointEntity: MKAnnotation {
 	public var coordinate: CLLocationCoordinate2D { waypointCoordinate ?? LocationHelper.DefaultLocation }
-	public var title: String? { self.title ?? "" }
-	public var subtitle: String? { self.description }
+	public var title: String? { name ?? "Dropped Pin" }
+	public var subtitle: String? { longDescription }
 }

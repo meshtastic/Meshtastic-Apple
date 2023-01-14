@@ -29,6 +29,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	func makeUIView(context: Context) -> MKMapView {
 		// Parameters
 		mapView.addAnnotations(positions)
+		mapView.addAnnotations(waypoints)
 		mapView.mapType = mapViewType
 		mapView.setRegion(region, animated: true)
 		mapView.setUserTrackingMode(.none, animated: false)
@@ -159,7 +160,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
 				annotationView.canShowCallout = true
-				annotationView.glyphText = "🪧"
+				if waypointAnnotation.icon == 0 {
+					annotationView.glyphText = "🪧"
+				} else {
+					
+				}
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.green)
 				annotationView.titleVisibility = .visible

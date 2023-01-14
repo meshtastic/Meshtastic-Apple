@@ -17,7 +17,7 @@ struct WaypointFormView: View {
 	@State private var id: Int32?
 	@State private var name: String = ""
 	@State private var description: String = ""
-	@State private var icon: String = "📍"
+	@State private var icon: String = "🪧"
 	@State private var expires: Bool = false
 	@State private var expire: Date = Date()// = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
@@ -125,6 +125,9 @@ struct WaypointFormView: View {
 				newWaypoint.description_p = description
 				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
 				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+				let uni = icon.unicodeScalars // Unicode scalar values of the string
+				let unicode = uni[uni.startIndex].value // First element as an UInt32
+				newWaypoint.icon = unicode
 				//newWaypoint.icon = icon
 				newWaypoint.locked = locked
 				//newWaypoint.expire = expire
@@ -132,7 +135,7 @@ struct WaypointFormView: View {
 				dismiss()
 				
 			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
+				Label("Send", systemImage: "arrow.up")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
@@ -151,7 +154,3 @@ struct WaypointFormView: View {
 		}
 	}
 }
-//var smiley = "😊"
-//var data: NSData = smiley.dataUsingEncoding(NSUTF32LittleEndianStringEncoding, allowLossyConversion: false)!
-//var unicode:UInt32 = UInt32()
-//data.getBytes(&unicode)

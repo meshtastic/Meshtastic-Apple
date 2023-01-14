@@ -1314,7 +1314,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "Waypoint Packet received from node: %@"), String(packet.from))
+let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "Waypoint Packet received from node: %@"), String(packet.from))
 	MeshLogger.log("📍 \(logString)")
 
 	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")
@@ -1329,12 +1329,12 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				if fetchedWaypoint.isEmpty {
 					let waypoint = WaypointEntity(context: context)
 
-					waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))//Int64(packet.id)
+					waypoint.id = Int64(packet.id)
 					waypoint.name = waypointMessage.name
 					waypoint.longDescription = waypointMessage.description_p
 					waypoint.latitudeI = waypointMessage.latitudeI
 					waypoint.longitudeI = waypointMessage.longitudeI
-					//waypoint.icon = Int32(waypointMessage.icon)
+					waypoint.icon = Int32(waypointMessage.icon)
 					waypoint.locked = waypointMessage.locked
 					if waypointMessage.expire != 0 {
 						waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
@@ -1353,7 +1353,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					fetchedWaypoint[0].longDescription = waypointMessage.description_p
 					fetchedWaypoint[0].latitudeI = waypointMessage.latitudeI
 					fetchedWaypoint[0].longitudeI = waypointMessage.longitudeI
-					//fetchedWaypoint[0].icon = Int32(waypointMessage.icon)
+					fetchedWaypoint[0].icon = Int32(waypointMessage.icon)
 					fetchedWaypoint[0].locked = waypointMessage.locked
 					if waypointMessage.expire != 0 {
 						fetchedWaypoint[0].expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
