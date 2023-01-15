@@ -53,7 +53,7 @@ struct NodeMap: View {
 				
 				MapViewSwiftUI(onMarkerTap: { coord in
 					waypointCoordinate = coord
-					if waypointCoordinate?.latitude ?? LocationHelper.DefaultLocation.latitude == LocationHelper.DefaultLocation.latitude {
+					if waypointCoordinate == nil {
 						presentingWaypointForm = false
 					} else {
 						presentingWaypointForm = true
@@ -79,9 +79,11 @@ struct NodeMap: View {
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
 			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-				WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation)
-					.presentationDetents([.medium, .large])
-					.presentationDragIndicator(.automatic)
+				if waypointCoordinate != nil {
+					WaypointFormView(coordinate: waypointCoordinate!)
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
+				}
 			}
         }
 		.navigationBarItems(leading:

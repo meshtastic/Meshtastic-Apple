@@ -11,8 +11,9 @@ import CoreLocation
 struct WaypointFormView: View {
 	
 	@EnvironmentObject var bleManager: BLEManager
-	@State var coordinate: CLLocationCoordinate2D
 	@Environment(\.dismiss) private var dismiss
+	@State var coordinate: CLLocationCoordinate2D
+	
 	@FocusState private var iconIsFocused: Bool
 	@State private var id: Int32?
 	@State private var name: String = ""

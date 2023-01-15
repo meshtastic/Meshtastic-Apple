@@ -181,12 +181,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let location = longPressRecognizer.location(in: self.parent.mapView)
 			// Map Coordinate - CLLocationCoordinate2D
 			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
+			parent.onMarkerTap(coordinate)
 			// Add annotation:
 			let annotation = MKPointAnnotation()
 			annotation.title = "Dropped Pin"
 			annotation.coordinate = coordinate
 			parent.mapView.addAnnotation(annotation)
-			parent.onMarkerTap(coordinate)
 			UINotificationFeedbackGenerator().notificationOccurred(.success)
 		}
 		

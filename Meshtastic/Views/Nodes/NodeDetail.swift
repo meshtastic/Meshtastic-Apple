@@ -46,7 +46,11 @@ struct NodeDetail: View {
 							ZStack {
 								MapViewSwiftUI(onMarkerTap: { coord in
 									waypointCoordinate = coord
-									presentingWaypointForm = true
+									if waypointCoordinate == nil {
+										presentingWaypointForm = false
+									} else {
+										presentingWaypointForm = true
+									}
 								}, positions: annotations, waypoints: Array(waypoints), region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
@@ -379,9 +383,11 @@ struct NodeDetail: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation)
-						.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.automatic)
+					if waypointCoordinate != nil {
+						WaypointFormView(coordinate: waypointCoordinate!)
+							.presentationDetents([.medium, .large])
+							.presentationDragIndicator(.automatic)
+					}
 				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
