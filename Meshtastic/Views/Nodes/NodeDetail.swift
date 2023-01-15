@@ -51,7 +51,7 @@ struct NodeDetail: View {
 									} else {
 										presentingWaypointForm = true
 									}
-								}, positions: annotations, waypoints: Array(waypoints), region: MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)), mapViewType: mapType,
+								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
 								)

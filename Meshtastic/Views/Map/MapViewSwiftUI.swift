@@ -14,7 +14,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let mapView = MKMapView()
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
-	let region: MKCoordinateRegion
 	let mapViewType: MKMapType
 	
 	// Offline Maps
@@ -28,11 +27,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> MKMapView {
 		// Parameters
-		mapView.addAnnotations(positions)
+		mapView.fit(annotations: positions, andShow: true)
 		mapView.addAnnotations(waypoints)
 		mapView.mapType = mapViewType
-		mapView.setRegion(region, animated: true)
-		mapView.setUserTrackingMode(.none, animated: false)
+		mapView.setUserTrackingMode(.none, animated: true)
 		// Other MKMapView Settings
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
@@ -61,12 +59,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
 				if fileManager.fileExists(atPath: tilePath) {
-				//if let tilePath = Bundle.main.path(forResource: "offline_map", ofType: "mbtiles") {
-					
 					print("Loading local map file")
-					
 					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
-					
 						overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
 						mapView.addOverlay(overlay)
 					}
@@ -79,9 +73,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
-		if dynamicRegion {
-			self.moveToMeshRegion(mapView)
-		}
 		mapView.removeAnnotations(mapView.annotations)
 		mapView.addAnnotations(positions)
 		mapView.addAnnotations(waypoints)
@@ -91,53 +82,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		return Coordinator(self)
 	}
 	
-	func moveToMeshRegion(_ mapView: MKMapView) {
-		//go through the annotations and create a bounding box that encloses them
-		var minLat: CLLocationDegrees = 90.0
-		var maxLat: CLLocationDegrees = -90.0
-		var minLon: CLLocationDegrees = 180.0
-		var maxLon: CLLocationDegrees = -180.0
-		
-		for annotation in mapView.annotations {
-			if annotation.isKind(of: MKAnnotation.self) {
-				minLat = min(minLat, annotation.coordinate.latitude)
-				maxLat = max(maxLat, annotation.coordinate.latitude)
-				minLon = min(minLon, annotation.coordinate.longitude)
-				maxLon = max(maxLon, annotation.coordinate.longitude)
-			}
-		}
-		
-		//check if the mesh region looks sensible before we move to it.  Otherwise we won't move the map (leave it at the current location)
-		if maxLat < minLat || (maxLat-minLat) > 5 || maxLon < minLon || (maxLon-minLon) > 5 {
-			return
-		} else if minLat == maxLat && minLon == maxLon {
-			//then we are focussed on a single point (probably because there is only one node with a position)
-			//widen that out a little (don't zoom way in to that point)
-			
-			//0.001 degrees latitude is about 100m
-			//the mapView.regionThatFits call below will expand this out to a rectangle
-			minLat = minLat - 0.001
-			maxLat = maxLat + 0.001
-		}
-		
-		let centerCoord = CLLocationCoordinate2D(latitude: (minLat+maxLat)/2, longitude: (minLon+maxLon)/2)
-		let span = MKCoordinateSpan(latitudeDelta: (maxLat-minLat)*1.5, longitudeDelta: (maxLon-minLon)*1.5)
-		let region = mapView.regionThatFits(MKCoordinateRegion(center: centerCoord, span: span))
-		mapView.setRegion(region, animated: true)
-	}
-	
 	final class MapCoordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
 		
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
-		
 		var overlays: [Overlay] = []
 		
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
-			self.longPressRecognizer.minimumPressDuration = 0.2
+			self.longPressRecognizer.minimumPressDuration = 0.3
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 			self.overlays = []
@@ -163,7 +118,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
 				annotationView.canShowCallout = true
 				if waypointAnnotation.icon == 0 {
-					print(waypointAnnotation.icon)
 					annotationView.glyphText = "📍"
 				} else {
 					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "📍")

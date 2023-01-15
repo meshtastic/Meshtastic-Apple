@@ -69,6 +69,7 @@
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormView.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
+		DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC32974767D007C176F /* MapViewFitExtension.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
@@ -195,6 +196,7 @@
 		DD964FBE296E76EF007C176F /* WaypointFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormView.swift; sourceTree = "<group>"; };
 		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
+		DD964FC32974767D007C176F /* MapViewFitExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewFitExtension.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
 				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
 				DD964FBE296E76EF007C176F /* WaypointFormView.swift */,
+				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -784,6 +787,7 @@
 				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
+				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,

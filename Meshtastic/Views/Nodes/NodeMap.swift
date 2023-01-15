@@ -59,7 +59,7 @@ struct NodeMap: View {
 						presentingWaypointForm = true
 					}
 					
-				}, positions: Array(positions), waypoints: Array(waypoints), region: MKCoordinateRegion(center: LocationHelper.currentLocation, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)), mapViewType: mapType,
+				}, positions: Array(positions), waypoints: Array(waypoints), mapViewType: mapType,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays
 				)
