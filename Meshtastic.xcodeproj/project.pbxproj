@@ -280,11 +280,7 @@
 			isa = PBXGroup;
 			children = (
 				C9A7BC0E27759A6800760B50 /* Custom */,
-				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
-				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
-				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
 				DD964FBE296E76EF007C176F /* WaypointFormView.swift */,
-				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -292,6 +288,10 @@
 		C9A7BC0E27759A6800760B50 /* Custom */ = {
 			isa = PBXGroup;
 			children = (
+				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
+				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
+				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
+				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
 				C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */,
 			);
 			path = Custom;
