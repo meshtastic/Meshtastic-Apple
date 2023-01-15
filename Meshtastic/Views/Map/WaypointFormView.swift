@@ -17,7 +17,7 @@ struct WaypointFormView: View {
 	@State private var id: Int32?
 	@State private var name: String = ""
 	@State private var description: String = ""
-	@State private var icon: String = "🪧"
+	@State private var icon: String = "📍"
 	@State private var expires: Bool = false
 	@State private var expire: Date = Date()// = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
@@ -125,21 +125,27 @@ struct WaypointFormView: View {
 				newWaypoint.description_p = description
 				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
 				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
-				let uni = icon.unicodeScalars // Unicode scalar values of the string
-				let unicode = uni[uni.startIndex].value // First element as an UInt32
+				// Unicode scalar value for the icon emoji string
+				let unicodeScalers = icon.unicodeScalars
+				// First element as an UInt32
+				let unicode = unicodeScalers[unicodeScalers.startIndex].value
 				newWaypoint.icon = unicode
-				//newWaypoint.icon = icon
 				newWaypoint.locked = locked
-				//newWaypoint.expire = expire
-				bleManager.sendWaypoint(waypoint: newWaypoint)
-				dismiss()
-				
+				if expire.timeIntervalSince1970 > 0 {
+					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+				}
+				if bleManager.sendWaypoint(waypoint: newWaypoint) {
+					dismiss()
+				} else {
+					
+				}
 			} label: {
 				Label("Send", systemImage: "arrow.up")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
+			.disabled(bleManager.connectedPeripheral == nil)
 			.padding()
 			
 			Button {

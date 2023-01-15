@@ -164,9 +164,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.canShowCallout = true
 				if waypointAnnotation.icon == 0 {
 					print(waypointAnnotation.icon)
-					annotationView.glyphText = "🪧"
+					annotationView.glyphText = "📍"
 				} else {
-					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "🪧")
+					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "📍")
 				}
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.indigo)

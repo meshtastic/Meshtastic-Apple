@@ -50,5 +50,8 @@ extension WaypointEntity {
 extension WaypointEntity: MKAnnotation {
 	public var coordinate: CLLocationCoordinate2D { waypointCoordinate ?? LocationHelper.DefaultLocation }
 	public var title: String? { name ?? "Dropped Pin" }
-	public var subtitle: String? { longDescription }
+	public var subtitle: String? {
+		(longDescription ?? "") +
+		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted()))" : "") +
+		String(locked ? "\n🔒 Locked" : "") }
 }
