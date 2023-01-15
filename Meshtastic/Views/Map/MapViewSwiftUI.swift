@@ -83,6 +83,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		if dynamicRegion {
 			self.moveToMeshRegion(mapView)
 		}
+		mapView.removeAnnotations(mapView.annotations)
+		mapView.addAnnotations(positions)
+		mapView.addAnnotations(waypoints)
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
