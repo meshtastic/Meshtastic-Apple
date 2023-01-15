@@ -752,6 +752,21 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
+			let wayPointEntity = WaypointEntity(context: context!)
+			wayPointEntity.id = Int64(waypointPacket.id)
+			wayPointEntity.name = waypointPacket.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
+			wayPointEntity.longDescription = waypointPacket.description_p
+			wayPointEntity.icon	= Int32(waypointPacket.icon)
+			wayPointEntity.latitudeI = waypointPacket.latitudeI
+			wayPointEntity.longitudeI = waypointPacket.longitudeI
+			do {
+				try context!.save()
+				print("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
+			} catch {
+				context!.rollback()
+				let nsError = error as NSError
+				print("💥 Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError)")
+			}
 		}
 		return success
 	}

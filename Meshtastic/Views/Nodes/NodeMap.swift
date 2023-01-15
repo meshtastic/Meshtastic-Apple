@@ -29,10 +29,11 @@ struct NodeMap: View {
 			}
 		}
 	}
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)],
+				  predicate: NSPredicate(format: "time >= %@", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .easeIn)
 	private var positions: FetchedResults<PositionEntity>
 	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .easeIn)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType = .standard
