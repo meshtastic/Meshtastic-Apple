@@ -68,7 +68,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
 					
 						overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
-					
 						mapView.addOverlay(overlay)
 					}
 				} else {
@@ -164,9 +163,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
 				annotationView.canShowCallout = true
 				if waypointAnnotation.icon == 0 {
+					print(waypointAnnotation.icon)
 					annotationView.glyphText = "🪧"
 				} else {
-					
+					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "🪧")
 				}
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
