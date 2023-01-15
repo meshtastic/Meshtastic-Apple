@@ -756,7 +756,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			wayPointEntity.id = Int64(waypointPacket.id)
 			wayPointEntity.name = waypointPacket.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
 			wayPointEntity.longDescription = waypointPacket.description_p
-			wayPointEntity.icon	= Int32(waypointPacket.icon)
+			wayPointEntity.icon	= Int64(waypointPacket.icon)
 			wayPointEntity.latitudeI = waypointPacket.latitudeI
 			wayPointEntity.longitudeI = waypointPacket.longitudeI
 			do {

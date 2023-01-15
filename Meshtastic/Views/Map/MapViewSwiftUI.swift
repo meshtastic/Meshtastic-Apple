@@ -149,7 +149,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "nodeGroup")
-				annotationView.markerTintColor = .systemRed
+				annotationView.markerTintColor = .brown//.systemRed
 				return annotationView
 			case _ as PositionEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
