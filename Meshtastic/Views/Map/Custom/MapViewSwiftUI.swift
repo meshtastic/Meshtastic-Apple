@@ -15,6 +15,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
+	let centerOnPositionsOnly: Bool
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -27,8 +28,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> MKMapView {
 		// Parameters
-		mapView.fit(annotations: positions, andShow: true)
 		mapView.addAnnotations(waypoints)
+		if centerOnPositionsOnly {
+			mapView.fit(annotations: positions, andShow: true)
+		} else {
+			mapView.addAnnotations(positions)
+			mapView.fitAllAnnotations()
+		}
 		mapView.mapType = mapViewType
 		mapView.setUserTrackingMode(.none, animated: true)
 		// Other MKMapView Settings

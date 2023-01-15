@@ -52,8 +52,10 @@ struct NodeDetail: View {
 										presentingWaypointForm = true
 									}
 								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
+									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
+									
 								)
 								VStack {
 									Spacer()
