@@ -92,6 +92,7 @@
 "heard"="Heard";
 "heard.last"="Last Heard";
 "hybrid"="Hybrid";
+"hybrid.flyover"="Hybrid Flyover";
 "include"="Include";
 "inputevent.none"="None";
 "inputevent.up"="Up";
@@ -214,6 +215,7 @@
 "routing.badRequest"="Bad Request";
 "routing.notauthorized"="Not Authorized";
 "satellite"="Satellite";
+"satellite.flyover"="Satellite Flyover";
 "save"="Save";
 "save.config %@"="Save Config for %@";
 "serial"="Serial";
@@ -232,6 +234,7 @@
 "select.menu.item"="Select an item from the menu";
 "set.region"="Set LoRa Region";
 "standard"="Standard";
+"standard.muted"="Standard Muted";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";

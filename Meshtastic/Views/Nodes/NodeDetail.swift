@@ -28,7 +28,10 @@ struct NodeDetail: View {
 	
 	var node: NodeInfoEntity
 	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
+				  predicate: NSPredicate(
+					format: "expire == nil || expire >= %@", Date() as NSDate
+				  ), animation: .easeIn)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	var body: some View {

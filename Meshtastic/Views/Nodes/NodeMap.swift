@@ -33,11 +33,10 @@ struct NodeMap: View {
 				  predicate: NSPredicate(format: "time >= %@", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .easeIn)
 	private var positions: FetchedResults<PositionEntity>
 	
-	//@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-	//			  predicate: NSPredicate(format: "expire >= %@", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .easeIn)
-	//private var waypoints: FetchedResults<WaypointEntity>
-	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)], animation: .easeIn)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
+				  predicate: NSPredicate(
+					format: "expire == nil || expire >= %@", Date() as NSDate
+				  ), animation: .easeIn)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType = .standard

@@ -53,5 +53,5 @@ extension WaypointEntity: MKAnnotation {
 	public var subtitle: String? {
 		(longDescription ?? "") +
 		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted()))" : "") +
-		String(locked ? "\n🔒 Locked" : "") }
+		String(locked > 0 ? "\n🔒 Locked" : "") }
 }

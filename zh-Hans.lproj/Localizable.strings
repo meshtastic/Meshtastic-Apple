@@ -92,6 +92,7 @@
 "heard"="收到";
 "heard.last"="最后收到";
 "hybrid"="混合";
+"hybrid.flyover"="Hybrid Flyover";
 "include"="包含";
 "inputevent.none"="无";
 "inputevent.up"="上";
@@ -214,6 +215,7 @@
 "routing.badRequest"="错误请求";
 "routing.notauthorized"="未授权";
 "satellite"="卫星";
+"satellite.flyover"="Satellite Flyover";
 "save"="保存";
 "save.config %@"="保存%@的配置";
 "serial"="串口";
@@ -232,6 +234,7 @@
 "select.menu.item"="从菜单选择一个选项";
 "set.region"="设置 LoRa 区域";
 "standard"="标准";
+"standard.muted"="Standard Muted";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";

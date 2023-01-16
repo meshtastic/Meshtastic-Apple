@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MapKit
 
 enum KeyboardType: Int, CaseIterable, Identifiable {
 
@@ -36,22 +37,49 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 
 enum MeshMapType: String, CaseIterable, Identifiable {
 
-	case satellite = "satellite"
+	case standard = "standard"  
+	case mutedStandard = "mutedStandard"
 	case hybrid = "hybrid"
-	case standard = "standard"
+	case hybridFlyover = "hybridFlyover"
+	case satellite = "satellite"
+	case satelliteFlyover = "satelliteFlyover"
+	
 
 	var id: String { self.rawValue }
 
 	var description: String {
 		get {
 			switch self {
-			case .satellite:
-				return NSLocalizedString("satellite", comment: "Satellite Map Type")
 			case .standard:
-				return NSLocalizedString("standard", comment: "Standard Map Type")
+				return NSLocalizedString("standard", comment: "Standard")
+			case .mutedStandard:
+				return NSLocalizedString("standard.muted", comment: "Standard Muted")
 			case .hybrid:
-				return NSLocalizedString("hybrid", comment: "Hybrid Map Type")
+				return NSLocalizedString("hybrid", comment: "Hybrid")
+			case .hybridFlyover:
+				return NSLocalizedString("hybrid.flyover", comment: "Hybrid Flyover")
+			case .satellite:
+				return NSLocalizedString("satellite", comment: "Satellite")
+			case .satelliteFlyover:
+				return NSLocalizedString("satellite.flyover", comment: "Satellite Flyover")
 			}
+		}
+	}
+	func MKMapTypeValue() -> MKMapType {
+		
+		switch self {
+		case .standard:
+			return MKMapType.standard
+		case .mutedStandard:
+			return MKMapType.mutedStandard
+		case .hybrid:
+			return MKMapType.hybrid
+		case .hybridFlyover:
+			return MKMapType.hybridFlyover
+		case .satellite:
+			return MKMapType.satellite
+		case .satelliteFlyover:
+			return MKMapType.satelliteFlyover
 		}
 	}
 }

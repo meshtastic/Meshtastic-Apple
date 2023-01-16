@@ -1143,8 +1143,9 @@ struct Waypoint {
   var expire: UInt32 = 0
 
   ///
-  /// If true, only allow the original sender to update the waypoint.
-  var locked: Bool = false
+  /// If greater than zero, treat the value as a nodenum only allowing them to update the waypoint.
+  /// If zero, the waypoint is open to be edited by any member of the mesh.
+  var lockedTo: UInt32 = 0
 
   ///
   /// Name of the waypoint - max 30 chars
@@ -2779,7 +2780,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     2: .standard(proto: "latitude_i"),
     3: .standard(proto: "longitude_i"),
     4: .same(proto: "expire"),
-    5: .same(proto: "locked"),
+    5: .standard(proto: "locked_to"),
     6: .same(proto: "name"),
     7: .same(proto: "description"),
     8: .same(proto: "icon"),
@@ -2795,7 +2796,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
       case 3: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.expire) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.locked) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.lockedTo) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 7: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
       case 8: try { try decoder.decodeSingularFixed32Field(value: &self.icon) }()
@@ -2817,8 +2818,8 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.expire != 0 {
       try visitor.visitSingularUInt32Field(value: self.expire, fieldNumber: 4)
     }
-    if self.locked != false {
-      try visitor.visitSingularBoolField(value: self.locked, fieldNumber: 5)
+    if self.lockedTo != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lockedTo, fieldNumber: 5)
     }
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 6)
@@ -2837,7 +2838,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}
     if lhs.expire != rhs.expire {return false}
-    if lhs.locked != rhs.locked {return false}
+    if lhs.lockedTo != rhs.lockedTo {return false}
     if lhs.name != rhs.name {return false}
     if lhs.description_p != rhs.description_p {return false}
     if lhs.icon != rhs.icon {return false}

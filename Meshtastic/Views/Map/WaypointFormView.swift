@@ -131,7 +131,9 @@ struct WaypointFormView: View {
 				// First element as an UInt32
 				let unicode = unicodeScalers[unicodeScalers.startIndex].value
 				newWaypoint.icon = unicode
-				newWaypoint.locked = locked
+				if locked {
+					newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+				}
 				if expire.timeIntervalSince1970 > 0 {
 					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
 				}
