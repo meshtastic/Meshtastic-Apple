@@ -732,7 +732,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var waypointPacket = waypoint
-		waypointPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		var meshPacket = MeshPacket()
 		meshPacket.to = emptyNodeNum
 		meshPacket.from	= fromNodeNum
@@ -752,13 +751,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
-			let wayPointEntity = WaypointEntity(context: context!)
-			wayPointEntity.id = Int64(waypointPacket.id)
-			wayPointEntity.name = waypointPacket.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
-			wayPointEntity.longDescription = waypointPacket.description_p
-			wayPointEntity.icon	= Int64(waypointPacket.icon)
-			wayPointEntity.latitudeI = waypointPacket.latitudeI
-			wayPointEntity.longitudeI = waypointPacket.longitudeI
+			
+			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context!)
+			wayPointEntity.name = waypoint.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
+			wayPointEntity.longDescription = waypoint.description_p
+			wayPointEntity.icon	= Int64(waypoint.icon)
+			wayPointEntity.latitudeI = waypoint.latitudeI
+			wayPointEntity.longitudeI = waypoint.longitudeI
 			do {
 				try context!.save()
 				print("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")

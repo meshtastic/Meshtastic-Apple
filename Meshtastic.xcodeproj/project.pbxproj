@@ -70,6 +70,7 @@
 		DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormView.swift */; };
 		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
 		DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC32974767D007C176F /* MapViewFitExtension.swift */; };
+		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
@@ -197,6 +198,7 @@
 		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
 		DD964FC32974767D007C176F /* MapViewFitExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewFitExtension.swift; sourceTree = "<group>"; };
+		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
@@ -570,6 +572,7 @@
 				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
 				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
@@ -804,6 +807,7 @@
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
+				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,

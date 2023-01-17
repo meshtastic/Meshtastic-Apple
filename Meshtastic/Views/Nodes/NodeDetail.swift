@@ -14,6 +14,7 @@ struct NodeDetail: View {
 	@State var satsInView = 0
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var editingWaypoint: Int = 0
 	@State private var showingDetailsPopover = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
@@ -47,11 +48,10 @@ struct NodeDetail: View {
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								MapViewSwiftUI(onMarkerTap: { coord in
+								MapViewSwiftUI(onMarkerTap: { coord, id in
 									waypointCoordinate = coord
-									if waypointCoordinate == nil {
-										presentingWaypointForm = false
-									} else {
+									editingWaypoint = id ?? 0
+									if waypointCoordinate != nil {
 										presentingWaypointForm = true
 									}
 								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
@@ -66,12 +66,9 @@ struct NodeDetail: View {
 										.font(.caption)
 										.offset(y: 20)
 									Picker("Map Type", selection: $mapType) {
-										Text("Standard").tag(MKMapType.standard)
-										Text("Muted").tag(MKMapType.mutedStandard)
-										Text("Hybrid").tag(MKMapType.hybrid)
-										Text("Hybrid Flyover").tag(MKMapType.hybridFlyover)
-										Text("Satellite").tag(MKMapType.satellite)
-										Text("Sat Flyover").tag(MKMapType.satelliteFlyover)
+										ForEach(MeshMapType.allCases) { map in
+											Text(map.description).tag(map.MKMapTypeValue())
+										}
 									}
 									.pickerStyle(.menu)
 								}
@@ -388,11 +385,9 @@ struct NodeDetail: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-					if waypointCoordinate != nil {
-						WaypointFormView(coordinate: waypointCoordinate!)
+					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, id: editingWaypoint)
 							.presentationDetents([.medium, .large])
 							.presentationDragIndicator(.automatic)
-					}
 				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:

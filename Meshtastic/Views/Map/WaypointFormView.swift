@@ -13,9 +13,10 @@ struct WaypointFormView: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var coordinate: CLLocationCoordinate2D
+	@State var id: Int = 0
 	
 	@FocusState private var iconIsFocused: Bool
-	@State private var id: Int32?
+	
 	@State private var name: String = ""
 	@State private var description: String = ""
 	@State private var icon: String = "📍"
@@ -26,7 +27,7 @@ struct WaypointFormView: View {
 	var body: some View {
 		Form {
 			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
-			Section(header: Text("Waypoint")) {
+			Section(header: Text((id > 0) ? "Editing Waypoint" : "Create Waypoint")) {
 				HStack {
 					Text("Location: \(String(format: "%.5f", coordinate.latitude ) + "," + String(format: "%.5f", coordinate.longitude ))")
 						.textSelection(.enabled)
@@ -121,7 +122,14 @@ struct WaypointFormView: View {
 		}
 		HStack {
 			Button {
+
 				var newWaypoint = Waypoint()
+				
+				if id == 0 {
+					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				} else {
+					newWaypoint.id = UInt32(id)
+				}
 				newWaypoint.name = name.count < 1 ? "Dropped Pin" : name
 				newWaypoint.description_p = description
 				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
@@ -160,6 +168,21 @@ struct WaypointFormView: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
+		}
+		.onAppear {
+			if id > 0 {
+				let waypoint  = getWaypoint(id: Int64(id), context: bleManager.context!)
+				id = Int(waypoint.id)
+				name = waypoint.name ?? "Dropped Pin"
+				description = waypoint.longDescription ?? ""
+				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+				if waypoint.expire != nil {
+					expires = true
+					expire = waypoint.expire ?? Date()
+				} else {
+					expires = false
+				}
+			}
 		}
 	}
 }

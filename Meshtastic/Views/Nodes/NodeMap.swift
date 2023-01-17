@@ -41,6 +41,7 @@ struct NodeMap: View {
 	
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
@@ -54,7 +55,8 @@ struct NodeMap: View {
         NavigationStack {
 			ZStack {
 				
-				MapViewSwiftUI(onMarkerTap: { coord in
+				MapViewSwiftUI(onMarkerTap: { coord, id in
+					editingWaypoint = id ?? 0
 					waypointCoordinate = coord
 					if waypointCoordinate == nil {
 						presentingWaypointForm = false
@@ -69,12 +71,9 @@ struct NodeMap: View {
 				VStack {
 					Spacer()
 					Picker("Map Type", selection: $mapType) {
-						Text("Standard").tag(MKMapType.standard)
-						Text("Standard Muted").tag(MKMapType.mutedStandard)
-						Text("Hybrid").tag(MKMapType.hybrid)
-						Text("Hybrid Flyover").tag(MKMapType.hybridFlyover)
-						Text("Satellite").tag(MKMapType.satellite)
-						Text("Satellite Flyover").tag(MKMapType.satelliteFlyover)
+						ForEach(MeshMapType.allCases) { map in
+							Text(map.description).tag(map.MKMapTypeValue())
+						}
 					}
 					.pickerStyle(.menu)
 				}
@@ -83,7 +82,7 @@ struct NodeMap: View {
 			.frame(maxHeight: .infinity)
 			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
 				if waypointCoordinate != nil {
-					WaypointFormView(coordinate: waypointCoordinate!)
+					WaypointFormView(coordinate: waypointCoordinate!, id: editingWaypoint)
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				}

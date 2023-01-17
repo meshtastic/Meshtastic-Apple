@@ -102,6 +102,9 @@ struct AppSettings: View {
 		.onAppear {
 			self.bleManager.context = context
 		}
+		.onChange(of: userSettings.provideLocation) { newProvideLocation in
+			self.bleManager.sendWantConfig()
+		}
 	}
 }
 

@@ -3,14 +3,13 @@
 //  Meshtastic
 //
 //  Copyright(c) Josh Pirihi & Garth Vander Houwen 1/16/22.
-//
 
 import SwiftUI
 import MapKit
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
-	var onMarkerTap: (_ waypointCoordinate: CLLocationCoordinate2D? ) -> Void
+	var onMarkerTap: (_ waypointCoordinate: CLLocationCoordinate2D?, _ tag: Int? ) -> Void
 	let mapView = MKMapView()
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
@@ -111,9 +110,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "nodeGroup")
 				annotationView.markerTintColor = .brown//.systemRed
+				annotationView.tag = -1
 				return annotationView
 			case _ as PositionEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
+				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				annotationView.glyphText = "📟"
 				annotationView.clusteringIdentifier = "nodeGroup"
@@ -122,6 +123,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
+				annotationView.tag = Int(waypointAnnotation.id)
 				annotationView.canShowCallout = true
 				if waypointAnnotation.icon == 0 {
 					annotationView.glyphText = "📍"
@@ -136,12 +138,24 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
+		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView)
+		{
+			// Only Allow Edit for annotations with a tag
+			if view.tag > 0 {
+				// Screen Position - CGPoint
+				let location = longPressRecognizer.location(in: self.parent.mapView)
+				// Map Coordinate - CLLocationCoordinate2D
+				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
+				parent.onMarkerTap(coordinate, view.tag)
+			}
+		}
+		
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
 			// Screen Position - CGPoint
 			let location = longPressRecognizer.location(in: self.parent.mapView)
 			// Map Coordinate - CLLocationCoordinate2D
 			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-			parent.onMarkerTap(coordinate)
+			parent.onMarkerTap(coordinate, 0)
 			// Add annotation:
 			let annotation = MKPointAnnotation()
 			annotation.title = "Dropped Pin"
@@ -291,7 +305,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let urlstring = self.mapName+"\(path.z)/\(path.x)/\(path.y).png"
 				return URL(string: urlstring)!
 			}
-			
 		}
 	}
 	
