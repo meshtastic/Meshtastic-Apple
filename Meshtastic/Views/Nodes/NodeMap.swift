@@ -55,14 +55,18 @@ struct NodeMap: View {
         NavigationStack {
 			ZStack {
 				
-				MapViewSwiftUI(onMarkerTap: { coord, id in
-					editingWaypoint = id ?? 0
+				MapViewSwiftUI(onLongPress: { coord, id in
+					print(id)
 					waypointCoordinate = coord
 					if waypointCoordinate == nil {
 						presentingWaypointForm = false
 					} else {
 						presentingWaypointForm = true
 					}
+				}, onWaypointEdit: { wpId in
+					editingWaypoint = wpId 
+					presentingWaypointForm = true
+					
 				}, positions: Array(positions), waypoints: Array(waypoints), mapViewType: mapType,
 					centerOnPositionsOnly: false,
 					customMapOverlay: self.customMapOverlay,

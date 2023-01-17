@@ -48,12 +48,16 @@ struct NodeDetail: View {
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								MapViewSwiftUI(onMarkerTap: { coord, id in
+								MapViewSwiftUI(onLongPress: { coord, id in
 									waypointCoordinate = coord
-									editingWaypoint = id ?? 0
+									
 									if waypointCoordinate != nil {
 										presentingWaypointForm = true
 									}
+								}, onWaypointEdit: { wpId in
+									editingWaypoint = wpId
+									presentingWaypointForm = true
+									
 								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,

@@ -18,7 +18,7 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 			return fetchedWaypoint[0]
 		}
 	} catch {
-		return WaypointEntity()
+		return WaypointEntity(context: context)
 	}
-	return WaypointEntity()
+	return WaypointEntity(context: context)
 }

@@ -21,7 +21,7 @@ struct WaypointFormView: View {
 	@State private var description: String = ""
 	@State private var icon: String = "📍"
 	@State private var expires: Bool = false
-	@State private var expire: Date = Date()// = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
+	@State private var expire: Date = Date() // = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
 	
 	var body: some View {
@@ -126,6 +126,7 @@ struct WaypointFormView: View {
 				var newWaypoint = Waypoint()
 				
 				if id == 0 {
+
 					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 				} else {
 					newWaypoint.id = UInt32(id)
@@ -146,7 +147,15 @@ struct WaypointFormView: View {
 					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
 				}
 				if bleManager.sendWaypoint(waypoint: newWaypoint) {
+					id = 0
+					name = ""
+					description = ""
+					locked = false
+					expires = false
+					expire = Date.now.addingTimeInterval(60 * 120)
+					icon = "📍"
 					dismiss()
+					
 				} else {
 					
 				}
