@@ -86,7 +86,7 @@ struct NodeMap: View {
 			.frame(maxHeight: .infinity)
 			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
 				if waypointCoordinate != nil {
-					WaypointFormView(coordinate: waypointCoordinate!, id: editingWaypoint)
+					WaypointFormView(coordinate: waypointCoordinate!, waypointId: editingWaypoint)
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				}

@@ -13,13 +13,15 @@ struct WaypointFormView: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var coordinate: CLLocationCoordinate2D
-	@State var id: Int = 0
+	@State var waypointId : Int = 0
 	
 	@FocusState private var iconIsFocused: Bool
 	
 	@State private var name: String = ""
 	@State private var description: String = ""
 	@State private var icon: String = "📍"
+	@State private var latitude: Double = 0
+	@State private var longitude: Double = 0
 	@State private var expires: Bool = false
 	@State private var expire: Date = Date() // = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
@@ -27,9 +29,9 @@ struct WaypointFormView: View {
 	var body: some View {
 		Form {
 			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
-			Section(header: Text((id > 0) ? "Editing Waypoint" : "Create Waypoint")) {
+			Section(header: Text((waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
 				HStack {
-					Text("Location: \(String(format: "%.5f", coordinate.latitude ) + "," + String(format: "%.5f", coordinate.longitude ))")
+					Text("Location: \(String(format: "%.5f", latitude) + "," + String(format: "%.5f", longitude))")
 						.textSelection(.enabled)
 						.foregroundColor(Color.gray)
 						.font(.caption2)
@@ -125,11 +127,10 @@ struct WaypointFormView: View {
 
 				var newWaypoint = Waypoint()
 				
-				if id == 0 {
-
-					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+				if waypointId > 0 {
+					newWaypoint.id = UInt32(waypointId)
 				} else {
-					newWaypoint.id = UInt32(id)
+					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 				}
 				newWaypoint.name = name.count < 1 ? "Dropped Pin" : name
 				newWaypoint.description_p = description
@@ -147,7 +148,7 @@ struct WaypointFormView: View {
 					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
 				}
 				if bleManager.sendWaypoint(waypoint: newWaypoint) {
-					id = 0
+					waypointId = 0
 					name = ""
 					description = ""
 					locked = false
@@ -178,19 +179,28 @@ struct WaypointFormView: View {
 			.controlSize(.large)
 			.padding()
 		}
+		.onChange(of: waypointId) { newId in
+			print(newId)
+			
+		}
 		.onAppear {
-			if id > 0 {
-				let waypoint  = getWaypoint(id: Int64(id), context: bleManager.context!)
-				id = Int(waypoint.id)
+			if waypointId > 0 {
+				let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
+				waypointId = Int(waypoint.id)
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+				latitude = Double(waypoint.latitudeI) / 1e7
+				longitude = Double(waypoint.longitudeI) / 1e7
 				if waypoint.expire != nil {
 					expires = true
 					expire = waypoint.expire ?? Date()
 				} else {
 					expires = false
 				}
+			} else {
+				latitude = coordinate.latitude
+				longitude = coordinate.longitude
 			}
 		}
 	}

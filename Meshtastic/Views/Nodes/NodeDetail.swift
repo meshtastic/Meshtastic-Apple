@@ -55,9 +55,10 @@ struct NodeDetail: View {
 										presentingWaypointForm = true
 									}
 								}, onWaypointEdit: { wpId in
-									editingWaypoint = wpId
-									presentingWaypointForm = true
-									
+									if wpId > 0 {
+										editingWaypoint = wpId
+										presentingWaypointForm = true
+									}
 								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
@@ -389,7 +390,7 @@ struct NodeDetail: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, id: editingWaypoint)
+					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
 							.presentationDetents([.medium, .large])
 							.presentationDragIndicator(.automatic)
 				}
