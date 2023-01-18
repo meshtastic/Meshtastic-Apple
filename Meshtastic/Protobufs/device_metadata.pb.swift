@@ -57,7 +57,7 @@ struct DeviceMetadata {
 
   ///
   /// Indicates the device's current enabled position flags
-  var positionFlags: Config.PositionConfig.PositionFlags = .unset
+  var positionFlags: UInt32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -96,7 +96,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 5: try { try decoder.decodeSingularBoolField(value: &self.hasBluetooth_p) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.hasEthernet_p) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
-      case 8: try { try decoder.decodeSingularEnumField(value: &self.positionFlags) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
       default: break
       }
     }
@@ -124,8 +124,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.role != .client {
       try visitor.visitSingularEnumField(value: self.role, fieldNumber: 7)
     }
-    if self.positionFlags != .unset {
-      try visitor.visitSingularEnumField(value: self.positionFlags, fieldNumber: 8)
+    if self.positionFlags != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionFlags, fieldNumber: 8)
     }
     try unknownFields.traverse(visitor: &visitor)
   }

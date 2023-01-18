@@ -52,6 +52,7 @@ struct NodeDetail: View {
 									waypointCoordinate = coord
 									
 									if waypointCoordinate != nil {
+										editingWaypoint = 0
 										presentingWaypointForm = true
 									}
 								}, onWaypointEdit: { wpId in

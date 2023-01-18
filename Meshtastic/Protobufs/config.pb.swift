@@ -487,6 +487,10 @@ struct Config {
     /// Clears the value of `ipv4Config`. Subsequent reads from it will return its default value.
     mutating func clearIpv4Config() {self._ipv4Config = nil}
 
+    ///
+    /// rsyslog Server and Port
+    var rsyslogServer: String = String()
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum AddressMode: SwiftProtobuf.Enum {
@@ -1688,6 +1692,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     6: .standard(proto: "eth_enabled"),
     7: .standard(proto: "address_mode"),
     8: .standard(proto: "ipv4_config"),
+    9: .standard(proto: "rsyslog_server"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1703,6 +1708,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 6: try { try decoder.decodeSingularBoolField(value: &self.ethEnabled) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.addressMode) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.rsyslogServer) }()
       default: break
       }
     }
@@ -1734,6 +1740,9 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try { if let v = self._ipv4Config {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     } }()
+    if !self.rsyslogServer.isEmpty {
+      try visitor.visitSingularStringField(value: self.rsyslogServer, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1745,6 +1754,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.ethEnabled != rhs.ethEnabled {return false}
     if lhs.addressMode != rhs.addressMode {return false}
     if lhs._ipv4Config != rhs._ipv4Config {return false}
+    if lhs.rsyslogServer != rhs.rsyslogServer {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

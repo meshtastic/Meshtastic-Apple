@@ -177,12 +177,6 @@ struct WaypointFormView: View {
 			
 		}
 		.onAppear {
-				name = ""
-				description = ""
-				locked = false
-				expires = false
-				expire = Date.now.addingTimeInterval(60 * 120)
-				icon = "📍"
 			if waypointId > 0 {
 				let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
 				waypointId = Int(waypoint.id)
@@ -198,6 +192,12 @@ struct WaypointFormView: View {
 					expires = false
 				}
 			} else {
+				name = ""
+				description = ""
+				locked = false
+				expires = false
+				expire = Date.now.addingTimeInterval(60 * 120)
+				icon = "📍"
 				latitude = coordinate.latitude
 				longitude = coordinate.longitude
 			}
