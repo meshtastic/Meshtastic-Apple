@@ -29,7 +29,6 @@ for pf in $pfiles
 do
   echo "Generating $pf..."
   protoc --swift_out=${sdir} --proto_path=${pdir} $pf
-  echo protoc --swift_out=${sdir} --proto_path=${pdir} $pf
 done
 echo "Done generating the swift files from the proto files."
 echo "Build, test, and commit changes."

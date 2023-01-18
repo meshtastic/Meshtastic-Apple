@@ -51,6 +51,14 @@ struct DeviceMetadata {
   /// Indicates that the device has an ethernet peripheral
   var hasEthernet_p: Bool = false
 
+  ///
+  /// Indicates that the device's role in the mesh
+  var role: Config.DeviceConfig.Role = .client
+
+  ///
+  /// Indicates the device's current enabled position flags
+  var positionFlags: Config.PositionConfig.PositionFlags = .unset
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -71,6 +79,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     4: .same(proto: "hasWifi"),
     5: .same(proto: "hasBluetooth"),
     6: .same(proto: "hasEthernet"),
+    7: .same(proto: "role"),
+    8: .standard(proto: "position_flags"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -85,6 +95,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 4: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.hasBluetooth_p) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.hasEthernet_p) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 8: try { try decoder.decodeSingularEnumField(value: &self.positionFlags) }()
       default: break
       }
     }
@@ -109,6 +121,12 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.hasEthernet_p != false {
       try visitor.visitSingularBoolField(value: self.hasEthernet_p, fieldNumber: 6)
     }
+    if self.role != .client {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 7)
+    }
+    if self.positionFlags != .unset {
+      try visitor.visitSingularEnumField(value: self.positionFlags, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -119,6 +137,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.hasWifi_p != rhs.hasWifi_p {return false}
     if lhs.hasBluetooth_p != rhs.hasBluetooth_p {return false}
     if lhs.hasEthernet_p != rhs.hasEthernet_p {return false}
+    if lhs.role != rhs.role {return false}
+    if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

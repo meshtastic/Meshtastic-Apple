@@ -124,7 +124,7 @@ struct WaypointFormView: View {
 		}
 		HStack {
 			Button {
-
+				
 				var newWaypoint = Waypoint()
 				
 				if waypointId > 0 {
@@ -132,7 +132,7 @@ struct WaypointFormView: View {
 				} else {
 					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 				}
-				newWaypoint.name = name.count < 1 ? "Dropped Pin" : name
+				newWaypoint.name = name
 				newWaypoint.description_p = description
 				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
 				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
@@ -149,16 +149,9 @@ struct WaypointFormView: View {
 				}
 				if bleManager.sendWaypoint(waypoint: newWaypoint) {
 					waypointId = 0
-					name = ""
-					description = ""
-					locked = false
-					expires = false
-					expire = Date.now.addingTimeInterval(60 * 120)
-					icon = "📍"
 					dismiss()
-					
 				} else {
-					
+					print("Send waypoint failed")
 				}
 			} label: {
 				Label("Send", systemImage: "arrow.up")
@@ -184,6 +177,12 @@ struct WaypointFormView: View {
 			
 		}
 		.onAppear {
+				name = ""
+				description = ""
+				locked = false
+				expires = false
+				expire = Date.now.addingTimeInterval(60 * 120)
+				icon = "📍"
 			if waypointId > 0 {
 				let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
 				waypointId = Int(waypoint.id)

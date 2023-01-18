@@ -1929,13 +1929,24 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .channel(newValue)}
   }
 
-  /// Queue status info 
+  ///
+  /// Queue status info
   var queueStatus: QueueStatus {
     get {
       if case .queueStatus(let v)? = _storage._payloadVariant {return v}
       return QueueStatus()
     }
     set {_uniqueStorage()._payloadVariant = .queueStatus(newValue)}
+  }
+
+  ///
+  /// File Transfer Chunk
+  var xmodemPacket: XModem {
+    get {
+      if case .xmodemPacket(let v)? = _storage._payloadVariant {return v}
+      return XModem()
+    }
+    set {_uniqueStorage()._payloadVariant = .xmodemPacket(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1978,8 +1989,12 @@ struct FromRadio {
     ///
     /// One packet is sent for each channel
     case channel(Channel)
-    /// Queue status info 
+    ///
+    /// Queue status info
     case queueStatus(QueueStatus)
+    ///
+    /// File Transfer Chunk
+    case xmodemPacket(XModem)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2025,6 +2040,10 @@ struct FromRadio {
       }()
       case (.queueStatus, .queueStatus): return {
         guard case .queueStatus(let l) = lhs, case .queueStatus(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.xmodemPacket, .xmodemPacket): return {
+        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2089,6 +2108,14 @@ struct ToRadio {
     set {payloadVariant = .disconnect(newValue)}
   }
 
+  var xmodemPacket: XModem {
+    get {
+      if case .xmodemPacket(let v)? = payloadVariant {return v}
+      return XModem()
+    }
+    set {payloadVariant = .xmodemPacket(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2112,6 +2139,7 @@ struct ToRadio {
     /// This is useful for serial links where there is no hardware/protocol based notification that the client has dropped the link.
     /// (Sending this message is optional for clients)
     case disconnect(Bool)
+    case xmodemPacket(XModem)
 
   #if !swift(>=4.1)
     static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
@@ -2129,6 +2157,10 @@ struct ToRadio {
       }()
       case (.disconnect, .disconnect): return {
         guard case .disconnect(let l) = lhs, case .disconnect(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.xmodemPacket, .xmodemPacket): return {
+        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -3366,6 +3398,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     9: .same(proto: "moduleConfig"),
     10: .same(proto: "channel"),
     11: .same(proto: "queueStatus"),
+    12: .same(proto: "xmodemPacket"),
   ]
 
   fileprivate class _StorageClass {
@@ -3518,6 +3551,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .queueStatus(v)
           }
         }()
+        case 12: try {
+          var v: XModem?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .xmodemPacket(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .xmodemPacket(v)
+          }
+        }()
         default: break
         }
       }
@@ -3574,6 +3620,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         guard case .queueStatus(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       }()
+      case .xmodemPacket?: try {
+        guard case .xmodemPacket(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      }()
       case nil: break
       }
     }
@@ -3602,6 +3652,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     1: .same(proto: "packet"),
     3: .standard(proto: "want_config_id"),
     4: .same(proto: "disconnect"),
+    5: .same(proto: "xmodemPacket"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3639,6 +3690,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .disconnect(v)
         }
       }()
+      case 5: try {
+        var v: XModem?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .xmodemPacket(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .xmodemPacket(v)
+        }
+      }()
       default: break
       }
     }
@@ -3661,6 +3725,10 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     case .disconnect?: try {
       guard case .disconnect(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    }()
+    case .xmodemPacket?: try {
+      guard case .xmodemPacket(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
     case nil: break
     }

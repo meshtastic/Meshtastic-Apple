@@ -23,6 +23,8 @@
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
 		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
+		DD2F145129787595009E4638 /* xmodem.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2F144F29787595009E4638 /* xmodem.pb.swift */; };
+		DD2F145229787595009E4638 /* rtttl.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2F145029787595009E4638 /* rtttl.pb.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
@@ -148,6 +150,8 @@
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
 		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
+		DD2F144F29787595009E4638 /* xmodem.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = xmodem.pb.swift; sourceTree = "<group>"; };
+		DD2F145029787595009E4638 /* rtttl.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = rtttl.pb.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
@@ -405,21 +409,23 @@
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
-				DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */,
-				DDCFF600285453A7005FA625 /* localonly.pb.swift */,
-				DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */,
 				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
 				C9A88B56278B559900BD810A /* apponly.pb.swift */,
+				DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
 				DD4C158D2824AA7E0032668E /* config.pb.swift */,
 				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
+				DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */,
+				DDCFF600285453A7005FA625 /* localonly.pb.swift */,
 				DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */,
 				DD4C158B2824A91E0032668E /* module_config.pb.swift */,
 				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
 				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
 				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
+				DD2F145029787595009E4638 /* rtttl.pb.swift */,
 				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
 				DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */,
+				DD2F144F29787595009E4638 /* xmodem.pb.swift */,
 			);
 			path = Protobufs;
 			sourceTree = "<group>";
@@ -755,6 +761,7 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				DD2F145129787595009E4638 /* xmodem.pb.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
@@ -832,6 +839,7 @@
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD58C5F22919AD3C00D5BEFB /* ChannelEntityExtension.swift in Sources */,
 				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
+				DD2F145229787595009E4638 /* rtttl.pb.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,

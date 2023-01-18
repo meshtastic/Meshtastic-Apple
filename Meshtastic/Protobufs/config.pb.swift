@@ -941,6 +941,14 @@ struct Config {
       ///
       /// WLAN Band
       case lora24 // = 13
+
+      ///
+      /// Ukraine 433mhz
+      case ua433 // = 14
+
+      ///
+      /// Ukraine 868mhz
+      case ua868 // = 15
       case UNRECOGNIZED(Int)
 
       init() {
@@ -963,6 +971,8 @@ struct Config {
         case 11: self = .nz865
         case 12: self = .th
         case 13: self = .lora24
+        case 14: self = .ua433
+        case 15: self = .ua868
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -983,6 +993,8 @@ struct Config {
         case .nz865: return 11
         case .th: return 12
         case .lora24: return 13
+        case .ua433: return 14
+        case .ua868: return 15
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1217,6 +1229,8 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
     .nz865,
     .th,
     .lora24,
+    .ua433,
+    .ua868,
   ]
 }
 
@@ -2028,6 +2042,8 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     11: .same(proto: "NZ_865"),
     12: .same(proto: "TH"),
     13: .same(proto: "LORA_24"),
+    14: .same(proto: "UA_433"),
+    15: .same(proto: "UA_868"),
   ]
 }
 
