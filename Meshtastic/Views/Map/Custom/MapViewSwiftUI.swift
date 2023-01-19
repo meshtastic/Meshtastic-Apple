@@ -135,35 +135,25 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
 				annotationView.titleVisibility = .visible
-				let editWaypoint = UIButton(type: .detailDisclosure)
-				editWaypoint.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
-				annotationView.rightCalloutAccessoryView = editWaypoint
+				let subtitle = UILabel()
+				subtitle.text = waypointAnnotation.longDescription
+				subtitle.numberOfLines = 0
+				let editIcon = UIButton(type: .detailDisclosure)
+				editIcon.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+				// Build the Callout
+				annotationView.detailCalloutAccessoryView = subtitle;
+				annotationView.rightCalloutAccessoryView = editIcon
 				return annotationView
 			default: return nil
 			}
 		}
 		
 		func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-			let control = view.annotation as! WaypointEntity
-			print(control)
-			// Only Allow Edit for annotations with a id
-			//if control.id > 0 {
-			print(view.tag)
-			parent.onWaypointEdit(view.tag)
-			//}
+			// Only Allow Edit for waypoint annotations with a id
+			if view.tag > 0 {
+				parent.onWaypointEdit(view.tag)
+			}
 		}
-		
-//		func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView)
-//		{
-//			// Only Allow Edit for annotations with a tag
-//			if view.tag > 0 {
-//				// Screen Position - CGPoint
-//				let location = longPressRecognizer.location(in: self.parent.mapView)
-//				// Map Coordinate - CLLocationCoordinate2D
-//				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-//				parent.onMarkerTap(coordinate, view.tag)
-//			}
-//		}
 		
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
 			// Screen Position - CGPoint
