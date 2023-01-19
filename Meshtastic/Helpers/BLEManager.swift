@@ -291,9 +291,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 	}
 	
-	func requestDeviceMetadata() {
+	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, context: NSManagedObjectContext) -> Int64 {
 		
-		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
+		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return 0 }
 
 		let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
 		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.devicemetadata %@",
@@ -310,12 +310,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-		var toRadio: ToRadio = ToRadio()
-		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
-		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		// Either Read the config complete value or from num notify value
-		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+		let messageDescription = "Requested Device Metadata for node \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown")) by \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		return 0
 	}
 	
 	func sendTraceRouteRequest(destNum: Int64,  wantResponse: Bool) -> Bool {

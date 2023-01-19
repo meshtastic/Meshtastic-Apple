@@ -119,7 +119,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.canShowCallout = true
 				annotationView.glyphText = "📟"
 				annotationView.clusteringIdentifier = "nodeGroup"
-				annotationView.markerTintColor = UIColor(.accentColor)
+				annotationView.markerTintColor = UIColor(.indigo)
 				annotationView.titleVisibility = .visible
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
@@ -133,15 +133,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "📍")
 				}
 				annotationView.clusteringIdentifier = "waypointGroup"
-				annotationView.markerTintColor = UIColor(.indigo)
+				annotationView.markerTintColor = UIColor(.accentColor)
+				annotationView.displayPriority = .required
 				annotationView.titleVisibility = .visible
+				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
+				leftIcon.backgroundColor = UIColor(.accentColor)
+				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
 				subtitle.text = waypointAnnotation.longDescription
 				subtitle.numberOfLines = 0
+				annotationView.detailCalloutAccessoryView = subtitle
 				let editIcon = UIButton(type: .detailDisclosure)
 				editIcon.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
-				// Build the Callout
-				annotationView.detailCalloutAccessoryView = subtitle;
 				annotationView.rightCalloutAccessoryView = editIcon
 				return annotationView
 			default: return nil

@@ -47,6 +47,17 @@
         <attribute name="serialEnabled" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="canShutdown" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="deviceStateVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="firmwareVersion" optional="YES" attributeType="String"/>
+        <attribute name="hasBluetooth" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="hasEthernet" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="hasWifi" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="positionFlags" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="metadataNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="metadata" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="DisplayConfigEntity" representedClassName="DisplayConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="compassNorthTop" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="flipScreen" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -170,6 +181,7 @@
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
         <relationship name="externalNotificationConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExternalNotificationConfigEntity" inverseName="externalNotificationConfigNode" inverseEntity="ExternalNotificationConfigEntity"/>
         <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
+        <relationship name="metadata" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceMetadataEntity" inverseName="metadataNode" inverseEntity="DeviceMetadataEntity"/>
         <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
