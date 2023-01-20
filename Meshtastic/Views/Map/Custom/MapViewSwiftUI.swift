@@ -98,7 +98,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.parent = parent
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
-			self.longPressRecognizer.minimumPressDuration = 0.3
+			self.longPressRecognizer.minimumPressDuration = 0.4
+			//self.longPressRecognizer.numberOfTouchesRequired = 1
+			//self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 			self.overlays = []
@@ -163,13 +165,15 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let location = longPressRecognizer.location(in: self.parent.mapView)
 			// Map Coordinate - CLLocationCoordinate2D
 			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-			parent.onLongPress(coordinate, 0)
 			// Add annotation:
-			let annotation = MKPointAnnotation()
-			annotation.title = "Dropped Pin"
-			annotation.coordinate = coordinate
-			parent.mapView.addAnnotation(annotation)
-			UINotificationFeedbackGenerator().notificationOccurred(.success)
+			if coordinate.longitude != LocationHelper.DefaultLocation.longitude && coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+				let annotation = MKPointAnnotation()
+				annotation.title = "Dropped Pin"
+				annotation.coordinate = coordinate
+				parent.mapView.addAnnotation(annotation)
+				UINotificationFeedbackGenerator().notificationOccurred(.success)
+				parent.onLongPress(coordinate, 0)
+			}
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {

@@ -763,6 +763,9 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 					mutableChannels.add(newChannel)
 				}
 				fetchedMyInfo[0].channels = mutableChannels.copy() as? NSOrderedSet
+				if newChannel.name?.lowercased() == "admin" {
+					fetchedMyInfo[0].adminIndex = newChannel.index
+				}
 				do {
 					try context.save()
 				} catch {
@@ -771,6 +774,47 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				print("💾 Updated MyInfo channel \(channel.index) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum)")
 			} else if channel.role.rawValue > 0 {
 				print("💥 Trying to save a channel to a MyInfo that does not exist: \(fromNum)")
+			}
+		} catch {
+			context.rollback()
+			let nsError = error as NSError
+			print("💥 Error Saving MyInfo Channel from ADMIN_APP \(nsError)")
+		}
+	}
+}
+
+func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
+	
+	if metadata.isInitialized {
+		
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "Device Metadata received from: %@"), String(fromNum))
+		MeshLogger.log("🎛️ \(logString)")
+		
+		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
+		
+		do {
+			
+			let fetchedNode = try context.fetch(fetchedNodeRequest) as! [NodeInfoEntity]
+			if fetchedNode.count == 1 {
+				let newMetadata = DeviceMetadataEntity(context: context)
+				newMetadata.firmwareVersion = metadata.firmwareVersion
+				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
+				newMetadata.canShutdown = metadata.canShutdown
+				newMetadata.hasWifi = metadata.hasWifi_p
+				newMetadata.hasBluetooth = metadata.hasBluetooth_p
+				newMetadata.hasEthernet	= metadata.hasEthernet_p
+				newMetadata.role = Int32(metadata.role.rawValue)
+				newMetadata.positionFlags = Int32(metadata.positionFlags)
+				
+				fetchedNode[0].metadata = newMetadata
+				
+				do {
+					try context.save()
+				} catch {
+					print("Failed to save device metadata")
+				}
+				print("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
 			}
 		} catch {
 			context.rollback()
@@ -986,7 +1030,11 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
+	MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
+	
 	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
+		
+		MeshLogger.log("🕸️ MESH PACKET received for Admin App \(adminMessage.getDeviceMetadataResponse)")
 		
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 			
@@ -1022,14 +1070,16 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					}
 				}
 			}
-		}
-		
-		else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
-			
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
+			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
+			
+			print(try! adminMessage.getDeviceMetadataResponse.jsonString())
+			
+			
 		}
 	}
-	
 }
 
 func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {

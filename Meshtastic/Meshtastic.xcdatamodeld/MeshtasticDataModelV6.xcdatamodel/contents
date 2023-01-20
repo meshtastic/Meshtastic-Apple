@@ -135,6 +135,7 @@
         <relationship name="mqttConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="mqttConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="MyInfoEntity" representedClassName="MyInfoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="adminIndex" optional="YES" attributeType="Integer 32" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="bitrate" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="bleName" optional="YES" attributeType="String"/>
         <attribute name="errorCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

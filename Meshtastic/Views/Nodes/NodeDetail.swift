@@ -397,13 +397,12 @@ struct NodeDetail: View {
 				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
-										ZStack {
+					ZStack {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-				}
-				)
+				})
 				.onAppear {
 					self.bleManager.context = context
 				}
