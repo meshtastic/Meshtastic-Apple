@@ -23,6 +23,11 @@ SwiftUI client applicaitons for iOS, iPadOS and macOS.
 
 ## To update protobufs:
 
+- Ensure the protobufs are cloned:
+  ```bash
+  git submodule update --init
+  ```
+
 - install swift-protobuf:
   ```bash
   brew install swift-protobuf
