@@ -28,37 +28,40 @@ struct Settings: View {
 						.symbolRenderingMode(.hierarchical)
 					Text("app.settings")
 				}
-				Section("Configure") {
-					Picker("Configuring Node", selection: $selectedNode) {
-						if connectedNodeNum == 0 {
-							Text("Connect to a Node").tag(0)
-						}
-						ForEach(nodes) { node in
-							if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-								Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-									.tag(Int(node.num))
-							} else if node.metadata != nil {
-								Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-									.tag(Int(node.num))
-							} else {
-								Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-									.tag(Int(node.num))
+				let node = nodes.first(where: { $0.num == connectedNodeNum })
+				if node?.myInfo?.adminIndex ?? 0 > 0 {
+					Section("Configure") {
+						Picker("Configuring Node", selection: $selectedNode) {
+							if connectedNodeNum == 0 {
+								Text("Connect to a Node").tag(0)
+							}
+							ForEach(nodes) { node in
+								if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+									Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								} else if node.metadata != nil {
+									Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								} else {
+									Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								}
 							}
 						}
-					}
-					.pickerStyle(.menu)
-					.labelsHidden()
-					.onChange(of: selectedNode) { newValue in
-						if selectedNode > 0 {
-							let node = nodes.first(where: { $0.num == newValue })
-							let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-							connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
-							
-							if node?.metadata == nil && node!.num != connectedNodeNum {
-								let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+						.pickerStyle(.menu)
+						.labelsHidden()
+						.onChange(of: selectedNode) { newValue in
+							if selectedNode > 0 {
+								let node = nodes.first(where: { $0.num == newValue })
+								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+								
+								if node?.metadata == nil && node!.num != connectedNodeNum {
+									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 									
-								if adminMessageId > 0 {
-									print("Saved node metadata")
+									if adminMessageId > 0 {
+										print("Saved node metadata")
+									}
 								}
 							}
 						}
