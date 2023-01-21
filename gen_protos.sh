@@ -2,7 +2,7 @@
 
 # simple sanity checking for repo
 if [ ! -d "../protobufs" ]; then
-  echo "Please check out the https://github.com/meshtastic/Meshtastic-protobufs the parent directory."
+  echo "Please check out protobuf submodule by running: `git submodule update --init`"
   exit
 fi
 
