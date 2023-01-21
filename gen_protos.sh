@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # simple sanity checking for repo
-if [ ! -d "../Meshtastic-protobufs" ]; then
+if [ ! -d "../protobufs" ]; then
   echo "Please check out the https://github.com/meshtastic/Meshtastic-protobufs the parent directory."
   exit
 fi
