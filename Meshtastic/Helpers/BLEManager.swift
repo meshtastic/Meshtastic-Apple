@@ -1188,17 +1188,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
+		if adminIndex > 0 {
+			meshPacket.channel = UInt32(adminIndex)
+		}
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1386,6 +1388,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.get %@",																				   comment: "Requested Canned Messages Module Messages for node: %@"), String(connectedPeripheral.num))
 			MeshLogger.log("🥫 \(logString)")
+			return true
+		}
+		
+		return false
+	}
+	
+	public func getLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Sent a Get LoRa Config request on the admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
 			return true
 		}
 		

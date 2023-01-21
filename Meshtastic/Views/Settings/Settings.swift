@@ -86,7 +86,7 @@ struct Settings: View {
 					.disabled(selectedNode == 0)
 					
 					NavigationLink() {
-						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)

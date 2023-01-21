@@ -184,59 +184,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config %@", comment: "LoRa config received: %@"), String(nodeNum))
-		MeshLogger.log("📻 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save LoRa Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].loRaConfig == nil {
-					let newLoRaConfig = LoRaConfigEntity(context: context)
-					newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-					newLoRaConfig.usePreset = config.lora.usePreset
-					newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					newLoRaConfig.bandwidth = Int32(config.lora.bandwidth)
-					newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
-					newLoRaConfig.codingRate = Int32(config.lora.codingRate)
-					newLoRaConfig.frequencyOffset = config.lora.frequencyOffset
-					newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
-					newLoRaConfig.txPower = Int32(config.lora.txPower)
-					newLoRaConfig.txEnabled = config.lora.txEnabled
-					newLoRaConfig.channelNum = Int32(config.lora.channelNum)
-					fetchedNode[0].loRaConfig = newLoRaConfig
-				} else {
-					fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-					fetchedNode[0].loRaConfig?.usePreset = config.lora.usePreset
-					fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-					fetchedNode[0].loRaConfig?.bandwidth = Int32(config.lora.bandwidth)
-					fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
-					fetchedNode[0].loRaConfig?.codingRate = Int32(config.lora.codingRate)
-					fetchedNode[0].loRaConfig?.frequencyOffset = config.lora.frequencyOffset
-					fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
-					fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
-					fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
-					fetchedNode[0].loRaConfig?.channelNum = Int32(config.lora.channelNum)
-				}
-				do {
-					try context.save()
-					print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data LoRaConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Lora Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data LoRaConfigEntity failed: \(nsError)")
-		}
+		upsertLoraConfigPacket(config: config, nodeNum: nodeNum, context: context)
 	}
 	
 	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
@@ -911,7 +859,6 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(channel)
 			
-			
 			if nodeInfo.hasUser {
 				
 				fetchedNode[0].user!.userId = nodeInfo.user.id
@@ -1074,10 +1021,14 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			
-			print(try! adminMessage.getDeviceMetadataResponse.jsonString())
-			
-			
+			if let config = try? Config(serializedData: packet.decoded.payload) {
+				
+				if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+					upsertLoraConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+				}
+			}
 		}
 	}
 }

@@ -111,7 +111,7 @@ struct Connect: View {
 							if isUnsetRegion {
 								HStack {
 									NavigationLink {
-										LoRaConfig(node: node)
+										LoRaConfig(node: node, connectedNode: node)
 									} label: {
 										Label("set.region", systemImage: "globe.americas.fill")
 											.foregroundColor(.red)

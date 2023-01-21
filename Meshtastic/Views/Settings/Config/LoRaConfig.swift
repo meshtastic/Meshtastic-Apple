@@ -14,6 +14,7 @@ struct LoRaConfig: View {
 	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
+	var connectedNode: NodeInfoEntity?
 	
 	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
@@ -75,7 +76,7 @@ struct LoRaConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					var lc = Config.LoRaConfig()
@@ -84,7 +85,7 @@ struct LoRaConfig: View {
 					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 					lc.usePreset = true
 					lc.txEnabled = true
-					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -102,14 +103,22 @@ struct LoRaConfig: View {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
+			
 			self.bleManager.context = context
-			self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 0)
+			self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
 			self.region = Int(node?.loRaConfig?.regionCode ?? 0)
 			self.usePreset = node?.loRaConfig?.usePreset ?? true
 			self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)
 			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.hasChanges = false
+			
+			// Need to request a LoRaConfig from the remote node before allowing changes
+			if node?.loRaConfig == nil {
+				
+				let adminMessageId = bleManager.getLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			}
+			
 		}
 		.onChange(of: region) { newRegion in
 			if node != nil && node!.loRaConfig != nil {
