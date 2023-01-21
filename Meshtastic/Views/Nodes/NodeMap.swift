@@ -82,11 +82,10 @@ struct NodeMap: View {
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
 			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-				if waypointCoordinate != nil {
-					WaypointFormView(coordinate: waypointCoordinate!, waypointId: editingWaypoint)
-						.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.automatic)
-				}
+				WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
+					.presentationDetents([.medium, .large])
+					.presentationDragIndicator(.automatic)
+				
 			}
         }
 		.navigationBarItems(leading:
