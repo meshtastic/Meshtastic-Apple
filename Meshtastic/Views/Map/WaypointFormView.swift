@@ -27,6 +27,7 @@ struct WaypointFormView: View {
 	@State private var locked: Bool = false
 	
 	var body: some View {
+		
 		Form {
 			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
 			Section(header: Text((waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
@@ -132,7 +133,7 @@ struct WaypointFormView: View {
 				} else {
 					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 				}
-				newWaypoint.name = name
+				newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 				newWaypoint.description_p = description
 				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
 				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
@@ -160,17 +161,36 @@ struct WaypointFormView: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.disabled(bleManager.connectedPeripheral == nil)
-			.padding()
+			.padding(.bottom)
 			
-			Button {
+			Button(role:.cancel) {
 				dismiss()
 			} label: {
-				Label("cancel", systemImage: "xmark")
+				Label("cancel", systemImage: "x.circle")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+
+			if waypointId > 0 {
+				Button(role: .destructive) {
+					let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
+					bleManager.context!.delete(waypoint)
+					do {
+						try bleManager.context!.save()
+					} catch {
+						bleManager.context!.rollback()
+					}
+					dismiss()
+				} label: {
+					Label("delete", systemImage: "trash")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding(.bottom)
+			}
 		}
 		.onChange(of: waypointId) { newId in
 			print(newId)

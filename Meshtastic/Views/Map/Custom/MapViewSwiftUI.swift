@@ -9,7 +9,7 @@ import MapKit
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
-	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D?, _ tag: Int ) -> Void
+	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
 	let positions: [PositionEntity]
@@ -172,7 +172,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotation.coordinate = coordinate
 				parent.mapView.addAnnotation(annotation)
 				UINotificationFeedbackGenerator().notificationOccurred(.success)
-				parent.onLongPress(coordinate, 0)
+				parent.onLongPress(coordinate)
 			}
 		}
 		
