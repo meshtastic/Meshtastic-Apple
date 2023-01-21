@@ -98,9 +98,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.parent = parent
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
-			self.longPressRecognizer.minimumPressDuration = 0.4
+			self.longPressRecognizer.minimumPressDuration = 0.5
 			//self.longPressRecognizer.numberOfTouchesRequired = 1
-			//self.longPressRecognizer.cancelsTouchesInView = true
+			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 			self.overlays = []
@@ -113,6 +113,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "nodeGroup")
 				annotationView.markerTintColor = .brown//.systemRed
+				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
 			case _ as PositionEntity:
@@ -122,7 +123,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.glyphText = "📟"
 				annotationView.clusteringIdentifier = "nodeGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
-				annotationView.titleVisibility = .visible
+				annotationView.titleVisibility = .adaptive
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
@@ -137,7 +138,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.accentColor)
 				annotationView.displayPriority = .required
-				annotationView.titleVisibility = .visible
+				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.accentColor)
 				annotationView.leftCalloutAccessoryView = leftIcon

@@ -734,9 +734,8 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
 	
 	if metadata.isInitialized {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "Device Metadata received from: %@"), String(fromNum))
-		MeshLogger.log("🎛️ \(logString)")
+		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "Device Metadata admin message received from: %@"), String(fromNum))
+		MeshLogger.log("🏷️ \(logString)")
 		
 		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
@@ -977,11 +976,7 @@ func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
-	MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
-	
 	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
-		
-		MeshLogger.log("🕸️ MESH PACKET received for Admin App \(adminMessage.getDeviceMetadataResponse)")
 		
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 			
@@ -1019,16 +1014,20 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
+			
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
-		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			if let config = try? Config(serializedData: packet.decoded.payload) {
-				
-				if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+				if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+					//upsertLoraConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 					upsertLoraConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
 				}
 			}
+		} else {
+			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}
 	}
 }

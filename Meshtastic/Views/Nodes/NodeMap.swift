@@ -40,7 +40,7 @@ struct NodeMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType = .standard
-	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
@@ -58,7 +58,11 @@ struct NodeMap: View {
 				MapViewSwiftUI(onLongPress: { coord in
 					waypointCoordinate = coord
 					editingWaypoint = 0
-					presentingWaypointForm = true
+					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+						print("Apple Park")
+					} else {
+						presentingWaypointForm = true
+					}
 				}, onWaypointEdit: { wpId in
 					if wpId > 0 {
 						editingWaypoint = wpId
@@ -82,7 +86,7 @@ struct NodeMap: View {
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
 			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
-				WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
+				WaypointFormView(coordinate: waypointCoordinate, waypointId: editingWaypoint)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.automatic)
 				

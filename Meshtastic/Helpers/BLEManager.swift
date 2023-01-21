@@ -730,6 +730,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	
 	public func sendWaypoint(waypoint: Waypoint) -> Bool {
 		
+		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
+			return false
+		}
+		
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var waypointPacket = waypoint

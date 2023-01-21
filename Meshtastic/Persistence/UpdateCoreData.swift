@@ -143,7 +143,6 @@ func upsertLoraConfigPacket(config: Config, nodeNum: Int64, context: NSManagedOb
 			}
 			do {
 				try context.save()
-				context.refreshAllObjects()
 				print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
