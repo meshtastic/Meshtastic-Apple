@@ -12,15 +12,7 @@ if [ ! -x "`which protoc`" ]; then
   exit
 fi
 
-pdir=$(realpath "../Meshtastic-protobufs")
-sdir=$(realpath "./Meshtastic/Protobufs")
-echo "pdir:$pdir sdir:$sdir"
-pfiles="admin.proto apponly.proto cannedmessages.proto channel.proto config.proto device_metadata.proto deviceonly.proto localonly.proto mesh.proto module_config.proto mqtt.proto portnums.proto remote_hardware.proto 
-storeforward.proto telemetry.proto"
-for pf in $pfiles
-do
-  echo "Generating $pf..."
-  protoc --swift_out=${sdir} --proto_path=${pdir} $pf
-done
+protoc --proto_path=./protobufs --swift_out=./Meshtastic/Protobufs ./protobufs/meshtastic/*.proto
+
 echo "Done generating the swift files from the proto files."
 echo "Build, test, and commit changes."
