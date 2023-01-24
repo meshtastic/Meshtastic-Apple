@@ -113,7 +113,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
-					.disabled(selectedNode == 0)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
