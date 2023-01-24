@@ -51,6 +51,8 @@ struct LoRaConfig: View {
 				}
 				Section(header: Text("Mesh Options")) {
 					Picker("Number of hops", selection: $hopLimit) {
+						Text("Please Select")
+							.tag(0)
 						ForEach(HopValues.allCases) { hop in
 							Text(hop.description)
 						}
@@ -115,10 +117,10 @@ struct LoRaConfig: View {
 			
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if node?.loRaConfig == nil {
-				
-				let adminMessageId = bleManager.getLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				print("empty lora config")
+				let adminMessageId = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 			}
-			
+			print(node?.loRaConfig?.regionCode)
 		}
 		.onChange(of: region) { newRegion in
 			if node != nil && node!.loRaConfig != nil {

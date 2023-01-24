@@ -274,7 +274,7 @@
         <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
         <fetchedProperty name="adminMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(toUser.num == $FETCH_SOURCE.num) AND isEmoji == false AND admin = true"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND isEmoji == false AND admin = true"/>
         </fetchedProperty>
         <fetchedProperty name="allMessages" optional="YES">
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false"/>

@@ -14,6 +14,7 @@ struct BluetoothConfig: View {
 	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
+	var connectedNode: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -125,6 +126,13 @@ struct BluetoothConfig: View {
 			self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
 			self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
 			self.hasChanges = false
+			
+			// Need to request a LoRaConfig from the remote node before allowing changes
+			if node?.bluetoothConfig == nil {
+				print("empty bluetooth config")
+				
+			}
+			let adminMessageId = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 		}
 		.onChange(of: enabled) { newEnabled in
 			if node != nil && node!.bluetoothConfig != nil {

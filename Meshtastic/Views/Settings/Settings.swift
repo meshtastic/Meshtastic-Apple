@@ -107,13 +107,13 @@ struct Settings: View {
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
-						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					.disabled(selectedNode == 0)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -221,7 +221,7 @@ struct Settings: View {
 						Text("mesh.log")
 					}
 					NavigationLink {
-						let connectedNode = nodes.first(where: { $0.num == selectedNode })
+						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 						AdminMessageList(user: connectedNode?.user)
 					} label: {
 						Image(systemName: "building.columns")
@@ -243,13 +243,12 @@ struct Settings: View {
 			.onAppear {
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
+				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
 				if initialLoad {
 					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
 					initialLoad = false
 				}
-				connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
-				//let node = nodes.first(where: { $0.num == connectedNodeNum })
-				//selectedNode = node?.num ?? 0
+				
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

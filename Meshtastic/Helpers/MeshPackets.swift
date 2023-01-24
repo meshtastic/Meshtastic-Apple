@@ -40,241 +40,17 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	// We don't care about any of the Power settings, config is available for everyting else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.bluetooth.config %@", comment: "Bluetooth config received: %@"), String(nodeNum))
-		MeshLogger.log("📶 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save Device Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].bluetoothConfig == nil {
-					let newBluetoothConfig = BluetoothConfigEntity(context: context)
-					newBluetoothConfig.enabled = config.bluetooth.enabled
-					newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
-					newBluetoothConfig.fixedPin = Int32(config.bluetooth.fixedPin)
-					fetchedNode[0].bluetoothConfig = newBluetoothConfig
-				} else {
-					fetchedNode[0].bluetoothConfig?.enabled = config.bluetooth.enabled
-					fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
-					fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.bluetooth.fixedPin)
-				}
-				do {
-					try context.save()
-					print("💾 Updated Bluetooth Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Bluetooth Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data BluetoothConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.config %@", comment: "Device config received: %@"), String(nodeNum))
-		MeshLogger.log("📟 \(logString)")
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save Device Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].deviceConfig == nil {
-					let newDeviceConfig = DeviceConfigEntity(context: context)
-					newDeviceConfig.role = Int32(config.device.role.rawValue)
-					newDeviceConfig.serialEnabled = config.device.serialEnabled
-					newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
-					newDeviceConfig.buttonGpio = Int32(config.device.buttonGpio)
-					newDeviceConfig.buzzerGpio =  Int32(config.device.buzzerGpio)
-					fetchedNode[0].deviceConfig = newDeviceConfig
-				} else {
-					fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
-					fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
-					fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
-					fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.device.buttonGpio)
-					fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.device.buzzerGpio)
-				}
-				do {
-					try context.save()
-					print("💾 Updated Device Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data DeviceConfigEntity: \(nsError)")
-				}
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data DeviceConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.display.config %@", comment: "Display config received: %@"), String(nodeNum))
-		MeshLogger.log("🖥️ \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
-			// Found a node, save Device Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].displayConfig == nil {
-					
-					let newDisplayConfig = DisplayConfigEntity(context: context)
-					newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
-					newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
-					newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
-					newDisplayConfig.compassNorthTop = config.display.compassNorthTop
-					newDisplayConfig.flipScreen = config.display.flipScreen
-					newDisplayConfig.oledType = Int32(config.display.oled.rawValue)
-					fetchedNode[0].displayConfig = newDisplayConfig
-					
-				} else {
-					
-					fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
-					fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
-					fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
-					fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
-					fetchedNode[0].displayConfig?.flipScreen = config.display.flipScreen
-					fetchedNode[0].displayConfig?.oledType = Int32(config.display.oled.rawValue)
-				}
-				
-				do {
-					
-					try context.save()
-					print("💾 Updated Display Config for node number: \(String(nodeNum))")
-					
-				} catch {
-					
-					context.rollback()
-					
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data DisplayConfigEntity: \(nsError)")
-				}
-			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Display Config")
-			}
-			
-		} catch {
-			
-			let nsError = error as NSError
-			print("💥 Fetching node for core data DisplayConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-		
-		upsertLoraConfigPacket(config: config, nodeNum: nodeNum, context: context)
-	}
-	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.network.config %@", comment: "Network config received: %@"), String(nodeNum))
-		MeshLogger.log("🌐 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save WiFi Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].networkConfig == nil {
-					let newNetworkConfig = NetworkConfigEntity(context: context)
-					newNetworkConfig.wifiSsid = config.network.wifiSsid
-					newNetworkConfig.wifiPsk = config.network.wifiPsk
-					fetchedNode[0].networkConfig = newNetworkConfig
-				} else {
-					fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
-					fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
-				}
-				
-				do {
-					try context.save()
-					print("💾 Updated Network Config for node number: \(String(nodeNum))")
-					
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data WiFiConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Network Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data NetworkConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.config %@", comment: "Positon config received: %@"), String(nodeNum))
-		MeshLogger.log("🗺️ \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save LoRa Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].positionConfig == nil {
-					let newPositionConfig = PositionConfigEntity(context: context)
-					newPositionConfig.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
-					newPositionConfig.deviceGpsEnabled = config.position.gpsEnabled
-					newPositionConfig.fixedPosition = config.position.fixedPosition
-					newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-					newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-					newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-					newPositionConfig.positionFlags = Int32(config.position.positionFlags)
-					fetchedNode[0].positionConfig = newPositionConfig
-				} else {
-					fetchedNode[0].positionConfig?.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
-					fetchedNode[0].positionConfig?.deviceGpsEnabled = config.position.gpsEnabled
-					fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
-					fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-					fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-					fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-					fetchedNode[0].positionConfig?.positionFlags = Int32(config.position.positionFlags)
-				}
-				do {
-					try context.save()
-					print("💾 Updated Position Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data PositionConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Position Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
-		}
+		upsertBluetoothConfigPacket(config: config, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+		upsertDeviceConfigPacket(config: config, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+		upsertDisplayConfigPacket(config: config, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+		upsertLoRaConfigPacket(config: config, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+		upsertNetworkConfigPacket(config: config, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+		upsertPositionConfigPacket(config: config, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -1020,10 +796,16 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
 			if let config = try? Config(serializedData: packet.decoded.payload) {
+				
 				if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-					//upsertLoraConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					upsertBluetoothConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+					upsertDeviceConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
 				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-					upsertLoraConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					upsertLoRaConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
 				}
 			}
 		} else {

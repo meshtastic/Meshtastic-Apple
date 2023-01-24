@@ -312,7 +312,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Requested Device Metadata for node \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown")) by \(fromUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛎️ Requested Device Metadata for node \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown")) by \(fromUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
 		}
@@ -1398,7 +1398,36 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return false
 	}
 	
-	public func getLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested Bluetooth Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
@@ -1417,7 +1446,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Sent a Get LoRa Config request on the admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1578,7 +1607,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				print("⚙️ \(adminDescription)")
+				print(adminDescription)
 				return true
 			} catch {
 				context!.rollback()
