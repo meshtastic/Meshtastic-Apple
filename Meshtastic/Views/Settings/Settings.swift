@@ -18,6 +18,30 @@ struct Settings: View {
 	@State private var connectedNodeNum: Int = 0
 	@State private var initialLoad: Bool = true
 	
+	@State private var selection: SettingsSidebar = .about
+	
+	enum SettingsSidebar {
+		case appSettings
+		case shareChannels
+		case userConfig
+		case loraConfig
+		case channelConfig
+		case bluetoothConfig
+		case deviceConfig
+		case displayConfig
+		case networkConfig
+		case positionConfig
+		case cannedMessagesConfig
+		case externalNotificationConfig
+		case mqttConfig
+		case rangeTestConfig
+		case serialConfig
+		case telemetryConfig
+		case meshLog
+		case adminMessageLog
+		case about
+	}
+	
 	var body: some View {
 		NavigationSplitView {
 			List {
@@ -28,6 +52,7 @@ struct Settings: View {
 						.symbolRenderingMode(.hierarchical)
 					Text("app.settings")
 				}
+				.tag(SettingsSidebar.appSettings)
 				let node = nodes.first(where: { $0.num == connectedNodeNum })
 				if node?.myInfo?.adminIndex ?? 0 > 0 {
 					Section("Configure") {
@@ -51,19 +76,19 @@ struct Settings: View {
 						.pickerStyle(.menu)
 						.labelsHidden()
 						.onChange(of: selectedNode) { newValue in
-							if selectedNode > 0 {
-								let node = nodes.first(where: { $0.num == newValue })
-								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
-								
-								if node?.metadata == nil && node!.num != connectedNodeNum {
-									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-									
-									if adminMessageId > 0 {
-										print("Saved node metadata")
-									}
-								}
-							}
+//							if selectedNode > 0 {
+//								let node = nodes.first(where: { $0.num == newValue })
+//								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+//								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+//								
+//								if node?.metadata == nil && node!.num != connectedNodeNum {
+//									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+//									
+//									if adminMessageId > 0 {
+//										print("Saved node metadata")
+//									}
+//								}
+//							}
 						}
 					}
 				}
@@ -77,7 +102,9 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("share.channels")
 					}
+					.tag(SettingsSidebar.shareChannels)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					
 					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
@@ -86,6 +113,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("user")
 					}
+					.tag(SettingsSidebar.userConfig)
 					.disabled(selectedNode == 0)
 					
 					NavigationLink() {
@@ -95,7 +123,9 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("lora")
 					}
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					.tag(SettingsSidebar.loraConfig)
+					.disabled(selectedNode == 0)
+					//.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -104,6 +134,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("channels")
 					}
+					.tag(SettingsSidebar.channelConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
@@ -113,6 +144,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
+					.tag(SettingsSidebar.bluetoothConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -122,6 +154,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("device")
 					}
+					.tag(SettingsSidebar.deviceConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -131,6 +164,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("display")
 					}
+					.tag(SettingsSidebar.displayConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -141,6 +175,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("network")
 					}
+					.tag(SettingsSidebar.networkConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				
 					NavigationLink {
@@ -151,6 +186,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("position")
 					}
+					.tag(SettingsSidebar.positionConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 				}
@@ -165,6 +201,7 @@ struct Settings: View {
 
 						Text("canned.messages")
 					}
+					.tag(SettingsSidebar.cannedMessagesConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -174,6 +211,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("external.notification")
 					}
+					.tag(SettingsSidebar.externalNotificationConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -183,6 +221,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("mqtt")
 					}
+					.tag(SettingsSidebar.mqttConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -192,6 +231,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("range.test")
 					}
+					.tag(SettingsSidebar.rangeTestConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -201,6 +241,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("serial")
 					}
+					.tag(SettingsSidebar.serialConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
@@ -210,6 +251,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("telemetry")
 					}
+					.tag(SettingsSidebar.telemetryConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				}
 				Section(header: Text("logging")) {
@@ -220,6 +262,8 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("mesh.log")
 					}
+					.tag(SettingsSidebar.meshLog)
+					
 					NavigationLink {
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 						AdminMessageList(user: connectedNode?.user)
@@ -228,6 +272,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("admin.log")
 					}
+					.tag(SettingsSidebar.adminMessageLog)
 				}
 				Section(header: Text("about")) {
 					NavigationLink {
@@ -238,6 +283,7 @@ struct Settings: View {
 						
 						Text("about.meshtastic")
 					}
+					.tag(SettingsSidebar.about)
 				}
 			}
 			.onAppear {

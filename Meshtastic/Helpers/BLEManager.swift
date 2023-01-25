@@ -779,9 +779,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
+		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
+
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -826,7 +827,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if userSettings!.provideLocation {
 				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
-					print("Failed to send positon to device")
+					print("Failed to send position to device")
 				}
 			}
 		}
@@ -1247,7 +1248,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveWiFiConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.network = config

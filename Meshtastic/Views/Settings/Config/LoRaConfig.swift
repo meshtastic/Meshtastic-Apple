@@ -120,7 +120,6 @@ struct LoRaConfig: View {
 				print("empty lora config")
 				let adminMessageId = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 			}
-			print(node?.loRaConfig?.regionCode)
 		}
 		.onChange(of: region) { newRegion in
 			if node != nil && node!.loRaConfig != nil {

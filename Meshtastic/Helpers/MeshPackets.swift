@@ -38,7 +38,7 @@ func generateMessageMarkdown (message: String) -> String {
 
 func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
-	// We don't care about any of the Power settings, config is available for everyting else
+	// We don't care about any of the Power settings, config is available for everything else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
@@ -519,7 +519,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 		do {
 			
 			let fetchedNode = try context.fetch(fetchedNodeRequest) as! [NodeInfoEntity]
-			if fetchedNode.count == 1 {
+			if fetchedNode.count > 0 {
 				let newMetadata = DeviceMetadataEntity(context: context)
 				newMetadata.firmwareVersion = metadata.firmwareVersion
 				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
@@ -529,7 +529,6 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 				newMetadata.hasEthernet	= metadata.hasEthernet_p
 				newMetadata.role = Int32(metadata.role.rawValue)
 				newMetadata.positionFlags = Int32(metadata.positionFlags)
-				
 				fetchedNode[0].metadata = newMetadata
 				
 				do {
@@ -805,6 +804,12 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					
 				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 					upsertLoRaConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+					upsertNetworkConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
+				} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+					upsertPositionConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
 					
 				}
 			}
