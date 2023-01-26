@@ -589,7 +589,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newNode.user = newUser
 			}
 			
-			if nodeInfo.position.latitudeI > 0 || nodeInfo.position.longitudeI > 0 {
+			if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000)
+			{
 				let position = PositionEntity(context: context)
 				position.seqNo = Int32(nodeInfo.position.seqNumber)
 				position.latitudeI = nodeInfo.position.latitudeI
@@ -656,14 +657,19 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			
 			if nodeInfo.hasPosition {
 				
-				let position = PositionEntity(context: context)
-				position.latitudeI = nodeInfo.position.latitudeI
-				position.longitudeI = nodeInfo.position.longitudeI
-				position.altitude = nodeInfo.position.altitude
-				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-				let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-				fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+				
+				if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
+					
+					let position = PositionEntity(context: context)
+					position.latitudeI = nodeInfo.position.latitudeI
+					position.longitudeI = nodeInfo.position.longitudeI
+					position.altitude = nodeInfo.position.altitude
+					position.satsInView = Int32(nodeInfo.position.satsInView)
+					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
+					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+				}
+				
 			}
 			
 			// Look for a MyInfo
@@ -753,6 +759,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
 	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
 		
+		
+		
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 			
 			if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
@@ -816,62 +824,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}
-	}
-}
-
-func positionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.received %@", comment: "Position Packet received from node: %@"), String(packet.from))
-	MeshLogger.log("📍 \(logString)")
-	
-	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-	
-	do {
-		
-		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
-			// Don't save empty position packets
-			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 {
-				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
-				if fetchedNode.count == 1 {
-					
-					let position = PositionEntity(context: context)
-					position.snr = packet.rxSnr
-					position.seqNo = Int32(positionMessage.seqNumber)
-					position.latitudeI = positionMessage.latitudeI
-					position.longitudeI = positionMessage.longitudeI
-					position.altitude = positionMessage.altitude
-					position.satsInView = Int32(positionMessage.satsInView)
-					position.speed = Int32(positionMessage.groundSpeed)
-					position.heading = Int32(positionMessage.groundTrack)
-					if positionMessage.timestamp != 0 {
-						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
-					} else {
-						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-					}
-					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-					mutablePositions.add(position)
-					fetchedNode[0].id = Int64(packet.from)
-					fetchedNode[0].num = Int64(packet.from)
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
-					fetchedNode[0].snr = packet.rxSnr
-					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
-					do {
-						try context.save()
-						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
-					} catch {
-						context.rollback()
-						let nsError = error as NSError
-						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
-					}
-				}
-			} else {
-				print("💥 Empty POSITION_APP Packet")
-				print(try! packet.jsonString())
-			}
-		}
-	} catch {
-		print("💥 Error Deserializing POSITION_APP packet.")
 	}
 }
 

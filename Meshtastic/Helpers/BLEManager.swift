@@ -505,7 +505,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .remoteHardwareApp:
 					MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .positionApp:
-					positionPacket(packet: decodedInfo.packet, context: context!)
+					upsertPositionPacket(packet: decodedInfo.packet, context: context!)
 				case .waypointApp:
 					waypointPacket(packet: decodedInfo.packet, context: context!)
 				case .nodeinfoApp:

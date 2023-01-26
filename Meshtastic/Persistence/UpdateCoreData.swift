@@ -62,7 +62,7 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 
 public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 	do {
-		let objects = channel.allPrivateMessages// try context.fetch(fetchChannelMessagesRequest) as! [NSManagedObject]
+		let objects = channel.allPrivateMessages
 		   for object in objects {
 			   context.delete(object)
 		   }
@@ -75,7 +75,7 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
 
 	do {
-		let objects = user.messageList//try context.fetch(fetchUserMessagesRequest) as! [NSManagedObject]
+		let objects = user.messageList
 		   for object in objects {
 			   context.delete(object)
 		   }
@@ -98,6 +98,64 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 		} catch let error as NSError {
 			 print(error)
 		}
+	}
+}
+
+func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.received %@", comment: "Position Packet received from node: %@"), String(packet.from))
+	MeshLogger.log("📍 \(logString)")
+	
+	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodePositionRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+	
+	do {
+		
+		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
+
+			// Don't save empty position packets
+			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000)
+			{
+				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
+				if fetchedNode.count == 1 {
+					
+					let position = PositionEntity(context: context)
+					position.snr = packet.rxSnr
+					position.seqNo = Int32(positionMessage.seqNumber)
+					position.latitudeI = positionMessage.latitudeI
+					position.longitudeI = positionMessage.longitudeI
+					position.altitude = positionMessage.altitude
+					position.satsInView = Int32(positionMessage.satsInView)
+					position.speed = Int32(positionMessage.groundSpeed)
+					position.heading = Int32(positionMessage.groundTrack)
+					if positionMessage.timestamp != 0 {
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
+					} else {
+						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					}
+					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					mutablePositions.add(position)
+					fetchedNode[0].id = Int64(packet.from)
+					fetchedNode[0].num = Int64(packet.from)
+					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					fetchedNode[0].snr = packet.rxSnr
+					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+					do {
+						try context.save()
+						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")
+					} catch {
+						context.rollback()
+						let nsError = error as NSError
+						print("💥 Error Saving NodeInfoEntity from POSITION_APP \(nsError)")
+					}
+				}
+			} else {
+				print("💥 Empty POSITION_APP Packet")
+				print(try! packet.jsonString())
+			}
+		}
+	} catch {
+		print("💥 Error Deserializing POSITION_APP packet.")
 	}
 }
 
@@ -208,6 +266,7 @@ func upsertDisplayConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 				newDisplayConfig.compassNorthTop = config.display.compassNorthTop
 				newDisplayConfig.flipScreen = config.display.flipScreen
 				newDisplayConfig.oledType = Int32(config.display.oled.rawValue)
+				newDisplayConfig.displayMode = Int32(config.display.displaymode.rawValue)
 				fetchedNode[0].displayConfig = newDisplayConfig
 				
 			} else {
@@ -218,6 +277,7 @@ func upsertDisplayConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 				fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
 				fetchedNode[0].displayConfig?.flipScreen = config.display.flipScreen
 				fetchedNode[0].displayConfig?.oledType = Int32(config.display.oled.rawValue)
+				fetchedNode[0].displayConfig?.displayMode = Int32(config.display.displaymode.rawValue)
 			}
 			
 			do {
