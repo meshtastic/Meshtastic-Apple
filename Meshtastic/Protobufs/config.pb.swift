@@ -725,6 +725,10 @@ struct Config {
       ///
       /// Default / Auto
       case oledSh1106 // = 2
+
+      ///
+      /// Can not be auto detected but set by proto. Used for 128x128 screens
+      case oledSh1107 // = 3
       case UNRECOGNIZED(Int)
 
       init() {
@@ -736,6 +740,7 @@ struct Config {
         case 0: self = .oledAuto
         case 1: self = .oledSsd1306
         case 2: self = .oledSh1106
+        case 3: self = .oledSh1107
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -745,6 +750,7 @@ struct Config {
         case .oledAuto: return 0
         case .oledSsd1306: return 1
         case .oledSh1106: return 2
+        case .oledSh1107: return 3
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -878,6 +884,10 @@ struct Config {
     /// the local regulations if you're not a HAM.
     /// Has no effect if the duty cycle of the used region is 100%. 
     var overrideDutyCycle: Bool = false
+
+    ///
+    /// If true, sets RX boosted gain mode on SX126X based radios
+    var sx126XRxBoostedGain: Bool = false
 
     ///
     /// For testing it is useful sometimes to force a node to never listen to
@@ -1203,6 +1213,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
+    .oledSh1107,
   ]
 }
 
@@ -1920,6 +1931,7 @@ extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "OLED_AUTO"),
     1: .same(proto: "OLED_SSD1306"),
     2: .same(proto: "OLED_SH1106"),
+    3: .same(proto: "OLED_SH1107"),
   ]
 }
 
@@ -1947,6 +1959,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     10: .standard(proto: "tx_power"),
     11: .standard(proto: "channel_num"),
     12: .standard(proto: "override_duty_cycle"),
+    13: .standard(proto: "sx126x_rx_boosted_gain"),
     103: .standard(proto: "ignore_incoming"),
   ]
 
@@ -1968,6 +1981,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 10: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.overrideDutyCycle) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self.sx126XRxBoostedGain) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
       default: break
       }
@@ -2011,6 +2025,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.overrideDutyCycle != false {
       try visitor.visitSingularBoolField(value: self.overrideDutyCycle, fieldNumber: 12)
     }
+    if self.sx126XRxBoostedGain != false {
+      try visitor.visitSingularBoolField(value: self.sx126XRxBoostedGain, fieldNumber: 13)
+    }
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
     }
@@ -2030,6 +2047,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.txPower != rhs.txPower {return false}
     if lhs.channelNum != rhs.channelNum {return false}
     if lhs.overrideDutyCycle != rhs.overrideDutyCycle {return false}
+    if lhs.sx126XRxBoostedGain != rhs.sx126XRxBoostedGain {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

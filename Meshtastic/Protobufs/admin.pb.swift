@@ -260,29 +260,6 @@ struct AdminMessage {
   }
 
   ///
-  /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
-  /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
-  /// If you fail to do so, the radio will assume loss of comms and revert your changes.
-  /// These messages are optional when changing the local node.
-  var confirmSetChannel: Bool {
-    get {
-      if case .confirmSetChannel(let v)? = payloadVariant {return v}
-      return false
-    }
-    set {payloadVariant = .confirmSetChannel(newValue)}
-  }
-
-  ///
-  /// TODO: REPLACE
-  var confirmSetRadio: Bool {
-    get {
-      if case .confirmSetRadio(let v)? = payloadVariant {return v}
-      return false
-    }
-    set {payloadVariant = .confirmSetRadio(newValue)}
-  }
-
-  ///
   /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
   /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
   var rebootOtaSeconds: Int32 {
@@ -422,15 +399,6 @@ struct AdminMessage {
     /// Commits an open transaction for any edits made to config, module config, owner, and channel settings
     case commitEditSettings(Bool)
     ///
-    /// Setting channels/radio config remotely carries the risk that you might send an invalid config and the radio never talks to your mesh again.
-    /// Therefore if setting either of these properties remotely, you must send a confirm_xxx message within 10 minutes.
-    /// If you fail to do so, the radio will assume loss of comms and revert your changes.
-    /// These messages are optional when changing the local node.
-    case confirmSetChannel(Bool)
-    ///
-    /// TODO: REPLACE
-    case confirmSetRadio(Bool)
-    ///
     /// Tell the node to reboot into the OTA Firmware in this many seconds (or <0 to cancel reboot)
     /// Only Implemented for ESP32 Devices. This needs to be issued to send a new main firmware via bluetooth.
     case rebootOtaSeconds(Int32)
@@ -543,14 +511,6 @@ struct AdminMessage {
       }()
       case (.commitEditSettings, .commitEditSettings): return {
         guard case .commitEditSettings(let l) = lhs, case .commitEditSettings(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.confirmSetChannel, .confirmSetChannel): return {
-        guard case .confirmSetChannel(let l) = lhs, case .confirmSetChannel(let r) = rhs else { preconditionFailure() }
-        return l == r
-      }()
-      case (.confirmSetRadio, .confirmSetRadio): return {
-        guard case .confirmSetRadio(let l) = lhs, case .confirmSetRadio(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.rebootOtaSeconds, .rebootOtaSeconds): return {
@@ -796,8 +756,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     37: .standard(proto: "set_ringtone_message"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
-    66: .standard(proto: "confirm_set_channel"),
-    67: .standard(proto: "confirm_set_radio"),
     95: .standard(proto: "reboot_ota_seconds"),
     96: .standard(proto: "exit_simulator"),
     97: .standard(proto: "reboot_seconds"),
@@ -1033,22 +991,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .commitEditSettings(v)
         }
       }()
-      case 66: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .confirmSetChannel(v)
-        }
-      }()
-      case 67: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
-        if let v = v {
-          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
-          self.payloadVariant = .confirmSetRadio(v)
-        }
-      }()
       case 95: try {
         var v: Int32?
         try decoder.decodeSingularInt32Field(value: &v)
@@ -1195,14 +1137,6 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .commitEditSettings?: try {
       guard case .commitEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 65)
-    }()
-    case .confirmSetChannel?: try {
-      guard case .confirmSetChannel(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 66)
-    }()
-    case .confirmSetRadio?: try {
-      guard case .confirmSetRadio(let v)? = self.payloadVariant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 67)
     }()
     case .rebootOtaSeconds?: try {
       guard case .rebootOtaSeconds(let v)? = self.payloadVariant else { preconditionFailure() }

@@ -104,7 +104,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 	case auto = 0
 	case ssd1306 = 1
 	case sh1106 = 2
-	//case sh1107 = 3
+	case sh1107 = 3
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -116,8 +116,8 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 				return "SSD 1306"
 			case .sh1106:
 				return "SH 1106"
-			//case .sh1107:
-			//	return "SH 1107"
+			case .sh1107:
+				return "SH 1107"
 			}
 		}
 	}
@@ -130,8 +130,8 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 			return Config.DisplayConfig.OledType.oledSsd1306
 		case .sh1106:
 			return Config.DisplayConfig.OledType.oledSh1106
-		//case .sh1107:
-		//	return Config.DisplayConfig.OledType.oledSh1107
+		case .sh1107:
+			return Config.DisplayConfig.OledType.oledSh1107
 		}
 	}
 }

@@ -103,7 +103,10 @@ struct AppSettings: View {
 			self.bleManager.context = context
 		}
 		.onChange(of: userSettings.provideLocation) { newProvideLocation in
-			self.bleManager.sendWantConfig()
+			
+			if bleManager.connectedPeripheral != nil {
+				self.bleManager.sendWantConfig()
+			}
 		}
 	}
 }
