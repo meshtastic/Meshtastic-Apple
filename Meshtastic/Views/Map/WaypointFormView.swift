@@ -25,6 +25,7 @@ struct WaypointFormView: View {
 	@State private var expires: Bool = false
 	@State private var expire: Date = Date() // = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
+	@State private var lockedTo: Int64 = 0
 	
 	var body: some View {
 		
@@ -108,15 +109,15 @@ struct WaypointFormView: View {
 						}
 					
 				}
-				Toggle(isOn: $expires) {
-					Label("Expires", systemImage: "clock.badge.xmark")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				if expires {
-					DatePicker("Expire", selection: $expire, in: Date.now...)
-						.datePickerStyle(.compact)
-						.font(.callout)
-				}
+//				Toggle(isOn: $expires) {
+//					Label("Expires", systemImage: "clock.badge.xmark")
+//				}
+//				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+//				if expires {
+//					DatePicker("Expire", selection: $expire, in: Date.now...)
+//						.datePickerStyle(.compact)
+//						.font(.callout)
+//				}
 				Toggle(isOn: $locked) {
 					Label("Locked", systemImage: "lock")
 				}
@@ -143,7 +144,12 @@ struct WaypointFormView: View {
 				let unicode = unicodeScalers[unicodeScalers.startIndex].value
 				newWaypoint.icon = unicode
 				if locked {
-					newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+					
+					if lockedTo == 0 {
+						newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+					} else {
+						newWaypoint.lockedTo = UInt32(lockedTo)
+					}
 				}
 				if expire.timeIntervalSince1970 > 0 {
 					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
@@ -213,6 +219,10 @@ struct WaypointFormView: View {
 				} else {
 					expires = false
 				}
+				if waypoint.locked > 0 {
+					locked = true
+					lockedTo = waypoint.locked
+				}
 			} else {
 				name = ""
 				description = ""
@@ -227,8 +237,7 @@ struct WaypointFormView: View {
 			if coordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 				// Too close to apple park, bail out
 				waypointId = 0
-				//dismiss()
-				//print(coordinate.distance(from: LocationHelper.DefaultLocation))
+				dismiss()
 			}
 		}
 	}

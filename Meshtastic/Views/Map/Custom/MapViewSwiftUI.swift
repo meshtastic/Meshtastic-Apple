@@ -162,12 +162,16 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
-			// Screen Position - CGPoint
-			let location = longPressRecognizer.location(in: self.parent.mapView)
-			// Map Coordinate - CLLocationCoordinate2D
-			let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
-			// Add annotation:
-			if coordinate.longitude != LocationHelper.DefaultLocation.longitude && coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+			
+			if gesture.state != UIGestureRecognizer.State.ended {
+				return
+			} else if gesture.state != UIGestureRecognizer.State.began {
+				
+				// Screen Position - CGPoint
+				let location = longPressRecognizer.location(in: self.parent.mapView)
+				
+				// Map Coordinate - CLLocationCoordinate2D
+				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
 				let annotation = MKPointAnnotation()
 				annotation.title = "Dropped Pin"
 				annotation.coordinate = coordinate

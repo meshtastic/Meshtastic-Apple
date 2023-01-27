@@ -169,6 +169,7 @@
 "mesh.log.traceroute.sent %@"="Sent a Trace Route Request to node: %@";
 "mesh.log.wantconfig %@"="Issuing Want Config to %@";
 "mesh.log.waypoint.sent %@"="Sent a Waypoint Packet from: %@";
+"mesh.log.waypoint.received %@"="Waypoint Packet received from node: %@";
 "message"="消息";
 "message.details"="消息详情";
 "messages"="消息";

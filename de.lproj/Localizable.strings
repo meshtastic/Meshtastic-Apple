@@ -169,6 +169,7 @@
 "mesh.log.traceroute.received.route %@"="Traceroute Ergebnis: %@";
 "mesh.log.wantconfig %@"="Issuing Want Config to %@";
 "mesh.log.waypoint.sent %@"="Sent a Waypoint Packet from: %@";
+"mesh.log.waypoint.received %@"="Waypoint Packet received from node: %@";
 "message"="Nachricht";
 "message.details"="Nachrichtendetails";
 "messages"="Nachrichten";

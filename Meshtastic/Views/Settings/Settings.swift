@@ -124,8 +124,7 @@ struct Settings: View {
 						Text("lora")
 					}
 					.tag(SettingsSidebar.loraConfig)
-					.disabled(selectedNode == 0)
-					//.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
