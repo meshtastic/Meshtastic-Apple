@@ -1143,16 +1143,21 @@ struct Waypoint {
   var expire: UInt32 = 0
 
   ///
-  /// If true, only allow the original sender to update the waypoint.
-  var locked: Bool = false
+  /// If greater than zero, treat the value as a nodenum only allowing them to update the waypoint.
+  /// If zero, the waypoint is open to be edited by any member of the mesh.
+  var lockedTo: UInt32 = 0
 
   ///
   /// Name of the waypoint - max 30 chars
   var name: String = String()
 
-  ///*
+  ///
   /// Description of the waypoint - max 100 chars
   var description_p: String = String()
+
+  ///
+  /// Designator icon for the waypoint in the form of a unicode emoji
+  var icon: UInt32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1924,13 +1929,24 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .channel(newValue)}
   }
 
-  /// Queue status info 
+  ///
+  /// Queue status info
   var queueStatus: QueueStatus {
     get {
       if case .queueStatus(let v)? = _storage._payloadVariant {return v}
       return QueueStatus()
     }
     set {_uniqueStorage()._payloadVariant = .queueStatus(newValue)}
+  }
+
+  ///
+  /// File Transfer Chunk
+  var xmodemPacket: XModem {
+    get {
+      if case .xmodemPacket(let v)? = _storage._payloadVariant {return v}
+      return XModem()
+    }
+    set {_uniqueStorage()._payloadVariant = .xmodemPacket(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1973,8 +1989,12 @@ struct FromRadio {
     ///
     /// One packet is sent for each channel
     case channel(Channel)
-    /// Queue status info 
+    ///
+    /// Queue status info
     case queueStatus(QueueStatus)
+    ///
+    /// File Transfer Chunk
+    case xmodemPacket(XModem)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2020,6 +2040,10 @@ struct FromRadio {
       }()
       case (.queueStatus, .queueStatus): return {
         guard case .queueStatus(let l) = lhs, case .queueStatus(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.xmodemPacket, .xmodemPacket): return {
+        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2084,6 +2108,14 @@ struct ToRadio {
     set {payloadVariant = .disconnect(newValue)}
   }
 
+  var xmodemPacket: XModem {
+    get {
+      if case .xmodemPacket(let v)? = payloadVariant {return v}
+      return XModem()
+    }
+    set {payloadVariant = .xmodemPacket(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2107,6 +2139,7 @@ struct ToRadio {
     /// This is useful for serial links where there is no hardware/protocol based notification that the client has dropped the link.
     /// (Sending this message is optional for clients)
     case disconnect(Bool)
+    case xmodemPacket(XModem)
 
   #if !swift(>=4.1)
     static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
@@ -2124,6 +2157,10 @@ struct ToRadio {
       }()
       case (.disconnect, .disconnect): return {
         guard case .disconnect(let l) = lhs, case .disconnect(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.xmodemPacket, .xmodemPacket): return {
+        guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2775,9 +2812,10 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     2: .standard(proto: "latitude_i"),
     3: .standard(proto: "longitude_i"),
     4: .same(proto: "expire"),
-    5: .same(proto: "locked"),
+    5: .standard(proto: "locked_to"),
     6: .same(proto: "name"),
     7: .same(proto: "description"),
+    8: .same(proto: "icon"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2790,9 +2828,10 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
       case 3: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.expire) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.locked) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.lockedTo) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 7: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
+      case 8: try { try decoder.decodeSingularFixed32Field(value: &self.icon) }()
       default: break
       }
     }
@@ -2811,14 +2850,17 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if self.expire != 0 {
       try visitor.visitSingularUInt32Field(value: self.expire, fieldNumber: 4)
     }
-    if self.locked != false {
-      try visitor.visitSingularBoolField(value: self.locked, fieldNumber: 5)
+    if self.lockedTo != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lockedTo, fieldNumber: 5)
     }
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 6)
     }
     if !self.description_p.isEmpty {
       try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 7)
+    }
+    if self.icon != 0 {
+      try visitor.visitSingularFixed32Field(value: self.icon, fieldNumber: 8)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2828,9 +2870,10 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.latitudeI != rhs.latitudeI {return false}
     if lhs.longitudeI != rhs.longitudeI {return false}
     if lhs.expire != rhs.expire {return false}
-    if lhs.locked != rhs.locked {return false}
+    if lhs.lockedTo != rhs.lockedTo {return false}
     if lhs.name != rhs.name {return false}
     if lhs.description_p != rhs.description_p {return false}
+    if lhs.icon != rhs.icon {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3355,6 +3398,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     9: .same(proto: "moduleConfig"),
     10: .same(proto: "channel"),
     11: .same(proto: "queueStatus"),
+    12: .same(proto: "xmodemPacket"),
   ]
 
   fileprivate class _StorageClass {
@@ -3507,6 +3551,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .queueStatus(v)
           }
         }()
+        case 12: try {
+          var v: XModem?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .xmodemPacket(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .xmodemPacket(v)
+          }
+        }()
         default: break
         }
       }
@@ -3563,6 +3620,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         guard case .queueStatus(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       }()
+      case .xmodemPacket?: try {
+        guard case .xmodemPacket(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      }()
       case nil: break
       }
     }
@@ -3591,6 +3652,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     1: .same(proto: "packet"),
     3: .standard(proto: "want_config_id"),
     4: .same(proto: "disconnect"),
+    5: .same(proto: "xmodemPacket"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3628,6 +3690,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .disconnect(v)
         }
       }()
+      case 5: try {
+        var v: XModem?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .xmodemPacket(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .xmodemPacket(v)
+        }
+      }()
       default: break
       }
     }
@@ -3650,6 +3725,10 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     case .disconnect?: try {
       guard case .disconnect(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    }()
+    case .xmodemPacket?: try {
+      guard case .xmodemPacket(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
     case nil: break
     }

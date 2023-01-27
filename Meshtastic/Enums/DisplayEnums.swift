@@ -104,6 +104,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 	case auto = 0
 	case ssd1306 = 1
 	case sh1106 = 2
+	//case sh1107 = 3
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -115,6 +116,8 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 				return "SSD 1306"
 			case .sh1106:
 				return "SH 1106"
+			//case .sh1107:
+			//	return "SH 1107"
 			}
 		}
 	}
@@ -127,6 +130,46 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 			return Config.DisplayConfig.OledType.oledSsd1306
 		case .sh1106:
 			return Config.DisplayConfig.OledType.oledSh1106
+		//case .sh1107:
+		//	return Config.DisplayConfig.OledType.oledSh1107
+		}
+	}
+}
+
+// Default of 0 is auto
+enum DisplayModes: Int, CaseIterable, Identifiable {
+
+	case defaultMode = 0
+	case twoColor = 1
+	case inverted = 2
+	case color = 3
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .defaultMode:
+				return "Default 128x64 screen layout"
+			case .twoColor:
+				return "Optimized for 2 color displays"
+			case .inverted:
+				return "Inverted top bar for 2 Color display"
+			case .color:
+				return "TFT Full Color Displays"
+			}
+		}
+	}
+	func protoEnumValue() -> Config.DisplayConfig.DisplayMode {
+		
+		switch self {
+		case .defaultMode:
+			return Config.DisplayConfig.DisplayMode.default
+		case .twoColor:
+			return Config.DisplayConfig.DisplayMode.twocolor
+		case .inverted:
+			return Config.DisplayConfig.DisplayMode.inverted
+		case .color:
+			return Config.DisplayConfig.DisplayMode.color
 		}
 	}
 }

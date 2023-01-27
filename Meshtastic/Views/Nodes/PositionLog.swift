@@ -22,7 +22,7 @@ struct PositionLog: View {
 		
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma")
+			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 						
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				//Add a table for mac and ipad
@@ -31,10 +31,10 @@ struct PositionLog: View {
 						Text(String(position.seqNo))
 					}
 					TableColumn("Latitude") { position in
-						Text(String(format: "%.6f", position.latitude ?? 0))
+						Text(String(format: "%.5f", position.latitude ?? 0))
 					}
 					TableColumn("Longitude") { position in
-						Text(String(format: "%.6f", position.longitude ?? 0))
+						Text(String(format: "%.5f", position.longitude ?? 0))
 					}
 					TableColumn("Altitude") { position in
 						Text(String(position.altitude))
@@ -61,11 +61,11 @@ struct PositionLog: View {
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
 					let columns = [
-						GridItem(.fixed(90)),
-						GridItem(.fixed(95)),
-						GridItem(.fixed(45)),
-						GridItem(.fixed(40)),
-						GridItem(.fixed(140))
+						GridItem(spacing: 0.1),
+						GridItem(spacing: 0.1),
+						GridItem(.flexible(minimum: 35, maximum: 40), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 35), spacing: 0.1),
+						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						
@@ -89,9 +89,9 @@ struct PositionLog: View {
 						}
 						ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 							GridRow {
-								Text(String(format: "%.6f", mappin.latitude ?? 0))
+								Text(String(format: "%.5f", mappin.latitude ?? 0))
 									.font(.caption2)
-								Text(String(format: "%.6f", mappin.longitude ?? 0))
+								Text(String(format: "%.5f", mappin.longitude ?? 0))
 									.font(.caption2)
 								Text(String(mappin.satsInView))
 									.font(.caption2)
@@ -102,19 +102,15 @@ struct PositionLog: View {
 							}
 						}
 					}
-					.padding(.leading, 15)
-					.padding(.trailing, 5)
 				}
+				.padding(.leading)
 			}
 
 			HStack {
 
 				Button(role: .destructive) {
-								
 					isPresentingClearLogConfirm = true
-					
 				} label: {
-					
 					Label("Clear Log", systemImage: "trash.fill")
 				}
 				.buttonStyle(.bordered)

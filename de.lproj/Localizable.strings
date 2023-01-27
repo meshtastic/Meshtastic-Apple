@@ -92,6 +92,7 @@
 "heard"="Gehört";
 "heard.last"="Zuletzt gehört";
 "hybrid"="Hybrid";
+"hybrid.flyover"="Hybrid Flyover";
 "include"="Include";
 "inputevent.none"="Keins";
 "inputevent.up"="Hoch";
@@ -168,6 +169,7 @@
 "mesh.log.traceroute.received.route %@"="Traceroute Ergebnis: %@";
 "mesh.log.wantconfig %@"="Issuing Want Config to %@";
 "mesh.log.waypoint.sent %@"="Sent a Waypoint Packet from: %@";
+"mesh.log.waypoint.received %@"="Waypoint Packet received from node: %@";
 "message"="Nachricht";
 "message.details"="Nachrichtendetails";
 "messages"="Nachrichten";
@@ -214,6 +216,7 @@
 "routing.badRequest"="Bad Request";
 "routing.notauthorized"="Nicht authorisiert";
 "satellite"="Satellit";
+"satellite.flyover"="Satellite Flyover";
 "save"="Speichern";
 "save.config %@"="Save Config for %@";
 "serial"="Serial";
@@ -232,6 +235,7 @@
 "select.menu.item"="Wähle einen Menüeintrag aus";
 "set.region"="Setze LoRa Region";
 "standard"="Standard";
+"standard.muted"="Standard Muted";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Gehört";

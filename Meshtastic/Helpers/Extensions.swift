@@ -1,5 +1,24 @@
 import Foundation
 import SwiftUI
+import MapKit
+
+extension Character {
+	var isEmoji: Bool {
+		guard let scalar = unicodeScalars.first else { return false }
+		return scalar.properties.isEmoji && (scalar.value >= 0x203C || unicodeScalars.count > 1)
+	}
+}
+
+extension CLLocationCoordinate2D {
+	/// Returns distance from coordianate in meters.
+	/// - Parameter from: coordinate which will be used as end point.
+	/// - Returns: Returns distance in meters.
+	func distance(from: CLLocationCoordinate2D) -> CLLocationDistance {
+		let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
+		let to = CLLocation(latitude: self.latitude, longitude: self.longitude)
+		return from.distance(from: to)
+	}
+}
 
 extension Data {
 	var macAddressString: String {
@@ -71,6 +90,10 @@ extension String {
 			.replacingOccurrences(of: "/", with: "_")
 			.replacingOccurrences(of: "=", with: "")
 		return base64url
+	}
+	
+	func onlyEmojis() -> Bool {
+		return count > 0 && !contains { !$0.isEmoji }
 	}
 	
 	func image(fontSize:CGFloat = 40, bgColor:UIColor = UIColor.clear, imageSize:CGSize? = nil) -> UIImage?

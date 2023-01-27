@@ -487,6 +487,10 @@ struct Config {
     /// Clears the value of `ipv4Config`. Subsequent reads from it will return its default value.
     mutating func clearIpv4Config() {self._ipv4Config = nil}
 
+    ///
+    /// rsyslog Server and Port
+    var rsyslogServer: String = String()
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum AddressMode: SwiftProtobuf.Enum {
@@ -941,6 +945,14 @@ struct Config {
       ///
       /// WLAN Band
       case lora24 // = 13
+
+      ///
+      /// Ukraine 433mhz
+      case ua433 // = 14
+
+      ///
+      /// Ukraine 868mhz
+      case ua868 // = 15
       case UNRECOGNIZED(Int)
 
       init() {
@@ -963,6 +975,8 @@ struct Config {
         case 11: self = .nz865
         case 12: self = .th
         case 13: self = .lora24
+        case 14: self = .ua433
+        case 15: self = .ua868
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -983,6 +997,8 @@ struct Config {
         case .nz865: return 11
         case .th: return 12
         case .lora24: return 13
+        case .ua433: return 14
+        case .ua868: return 15
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1217,6 +1233,8 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
     .nz865,
     .th,
     .lora24,
+    .ua433,
+    .ua868,
   ]
 }
 
@@ -1674,6 +1692,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     6: .standard(proto: "eth_enabled"),
     7: .standard(proto: "address_mode"),
     8: .standard(proto: "ipv4_config"),
+    9: .standard(proto: "rsyslog_server"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1689,6 +1708,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 6: try { try decoder.decodeSingularBoolField(value: &self.ethEnabled) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.addressMode) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._ipv4Config) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.rsyslogServer) }()
       default: break
       }
     }
@@ -1720,6 +1740,9 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try { if let v = self._ipv4Config {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     } }()
+    if !self.rsyslogServer.isEmpty {
+      try visitor.visitSingularStringField(value: self.rsyslogServer, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1731,6 +1754,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.ethEnabled != rhs.ethEnabled {return false}
     if lhs.addressMode != rhs.addressMode {return false}
     if lhs._ipv4Config != rhs._ipv4Config {return false}
+    if lhs.rsyslogServer != rhs.rsyslogServer {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2028,6 +2052,8 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     11: .same(proto: "NZ_865"),
     12: .same(proto: "TH"),
     13: .same(proto: "LORA_24"),
+    14: .same(proto: "UA_433"),
+    15: .same(proto: "UA_868"),
   ]
 }
 

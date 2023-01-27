@@ -1,73 +1,88 @@
 /*
-Abstract:
-A view showing the details for a node.
-*/
+ Abstract:
+ A view showing the details for a node.
+ */
 
 import SwiftUI
 import MapKit
 import CoreLocation
 
 struct NodeDetail: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
-	@State private var showingDetailsPopover = false
-	
 	@State var satsInView = 0
+	@State private var mapType: MKMapType = .standard
+	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var editingWaypoint: Int = 0
+	@State private var showingDetailsPopover = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-
+	@State private var presentingWaypointForm = false
+	@State private var showOverlays: Bool = true
+	@State private var overlays: [MapViewSwiftUI.Overlay] = []
+	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
+			mapName: "offlinemap",
+			tileType: "png",
+			canReplaceMapContent: true
+		)
+	
 	var node: NodeInfoEntity
-
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
+				  predicate: NSPredicate(
+					format: "expire == nil || expire >= %@", Date() as NSDate
+				  ), animation: .easeIn)
+	private var waypoints: FetchedResults<WaypointEntity>
+	
 	var body: some View {
 		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
-
+		
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						let mostRecent = node.positions?.lastObject as! PositionEntity
-						if mostRecent.coordinate != nil {
-							let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
-							
-							let regionBinding = Binding<MKCoordinateRegion>(
-								get: {
-									MKCoordinateRegion(center: nodeCoordinatePosition, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-								},
-								set: { _ in }
-							)
+						let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
+						ZStack {
+							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
-								let annotations = node.positions?.array as! [PositionEntity]
-								
-								Map(coordinateRegion: regionBinding,
-									interactionModes: [.all],
-									showsUserLocation: true,
-									userTrackingMode: .constant(.follow),
-									annotationItems: annotations) { location in
+								MapViewSwiftUI(onLongPress: { coord in
+									waypointCoordinate = coord
+									editingWaypoint = 0
+									presentingWaypointForm = true
+								}, onWaypointEdit: { wpId in
+									if wpId > 0 {
+										editingWaypoint = wpId
+										presentingWaypointForm = true
+									}
+								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
+									centerOnPositionsOnly: true,
+									customMapOverlay: self.customMapOverlay,
+									overlays: self.overlays
 									
-									return MapAnnotation(
-										coordinate: location.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0),
-										content: {
-											
-											NodeAnnotation(time: location.time!)
+								)
+								VStack {
+									Spacer()
+									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
+										.font(.caption)
+										.offset(y: 20)
+									Picker("Map Type", selection: $mapType) {
+										ForEach(MeshMapType.allCases) { map in
+											Text(map.description).tag(map.MKMapTypeValue())
 										}
-									)
+									}
+									.pickerStyle(.menu)
 								}
-								.ignoresSafeArea(.all, edges: [.leading, .trailing])
-								.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 2)
-								
 							}
-							Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
-								.offset( y:-40)
+							.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
+							.frame(idealWidth: bounds.size.width, minHeight: bounds.size.height / 1.65)
 						}
-						
 					} else {
 						HStack {
-
 						}
-						.padding([.top], 60)
+						.padding([.top], 20)
 					}
 					
 					ScrollView {
@@ -80,13 +95,12 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									if node.user != nil {
-		
 										Image(hwModelString)
 											.resizable()
 											.aspectRatio(contentMode: .fill)
 											.frame(width: 100, height: 100)
 											.cornerRadius(5)
-
+										
 										Text(String(hwModelString))
 											.foregroundColor(.gray)
 											.font(.largeTitle).fixedSize()
@@ -96,7 +110,7 @@ struct NodeDetail: View {
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-
+										
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -109,15 +123,15 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-
+								
 								if node.telemetries?.count ?? 0 >= 1 {
-
+									
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										if mostRecent.voltage > 0 {
-
+											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
 												.font(.title)
 												.foregroundColor(.gray)
@@ -140,14 +154,13 @@ struct NodeDetail: View {
 											.symbolRenderingMode(.hierarchical)
 										Text("user").font(.title)+Text(":").font(.title)
 									}
-									//Text(node.user?.userId ?? "??????").font(.title).foregroundColor(.gray)
 									Text("!\(String(format:"%02x", node.num))")
 										.font(.title).foregroundColor(.gray)
 								}
 								Divider()
 								VStack {
 									HStack {
-									Image(systemName: "number")
+										Image(systemName: "number")
 											.font(.title2)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
@@ -160,8 +173,8 @@ struct NodeDetail: View {
 									HStack {
 										Image(systemName: "globe")
 											.font(.title)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
 										Text("MAC Address: ").font(.title)
 										
 									}
@@ -174,8 +187,8 @@ struct NodeDetail: View {
 									HStack {
 										Image(systemName: "clock.badge.checkmark.fill")
 											.font(.title)
-												.foregroundColor(.accentColor)
-												.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.accentColor)
+											.symbolRenderingMode(.hierarchical)
 										Text("heard.last").font(.title)+Text(":").font(.title)
 										
 									}
@@ -184,13 +197,12 @@ struct NodeDetail: View {
 										.foregroundColor(.gray)
 								}
 							}
-							.padding()
 							Divider()
 							
 						} else {
 							
 							HStack {
-
+								
 								VStack(alignment: .center) {
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
 								}
@@ -205,12 +217,11 @@ struct NodeDetail: View {
 											.font(.callout).fixedSize()
 									}
 								}
-								.padding(5)
 								
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-
+										
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -221,19 +232,13 @@ struct NodeDetail: View {
 											.foregroundColor(.gray)
 											.fixedSize()
 									}
-									.padding(5)
 								}
-
+								
 								if node.telemetries?.count ?? 0 >= 1 {
-
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
-
 									Divider()
-
 									VStack(alignment: .center) {
-
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										
 										if mostRecent.voltage > 0 {
 											
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
@@ -241,14 +246,11 @@ struct NodeDetail: View {
 												.foregroundColor(.gray)
 												.fixedSize()
 										}
-										
 									}
 								}
 							}
 							Divider()
 							HStack(alignment: .center) {
-								
-								
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -262,7 +264,7 @@ struct NodeDetail: View {
 								Divider()
 								VStack {
 									HStack {
-									Image(systemName: "number")
+										Image(systemName: "number")
 											.font(.title2)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
@@ -271,17 +273,16 @@ struct NodeDetail: View {
 									Text(String(node.num)).font(.title3).foregroundColor(.gray)
 								}
 							}
-							.padding(5)
 							Divider()
 							HStack {
 								Image(systemName: "globe")
-										.font(.headline)
-										.foregroundColor(.accentColor)
-										.symbolRenderingMode(.hierarchical)
+									.font(.headline)
+									.foregroundColor(.accentColor)
+									.symbolRenderingMode(.hierarchical)
 								Text("MAC Address: ")
 								Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
 							}
-							.padding([.bottom], 0)
+							.padding([.bottom], 10)
 							Divider()
 						}
 						
@@ -334,16 +335,16 @@ struct NodeDetail: View {
 						}
 						
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
-
+							
 							HStack {
 								
 								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
-								
+									
 									Button(action: {
 										
 										showingShutdownConfirm = true
 									}) {
-											
+										
 										Label("Power Off", systemImage: "power")
 									}
 									.buttonStyle(.bordered)
@@ -361,13 +362,10 @@ struct NodeDetail: View {
 										}
 									}
 								}
-							
+								
 								Button(action: {
-									
 									showingRebootConfirm = true
-									
 								}) {
-				
 									Label("reboot", systemImage: "arrow.triangle.2.circlepath")
 								}
 								.buttonStyle(.bordered)
@@ -375,33 +373,33 @@ struct NodeDetail: View {
 								.controlSize(.large)
 								.padding()
 								.confirmationDialog("are.you.sure",
-													
-										isPresented: $showingRebootConfirm
-										) {
-											Button("reboot.node", role: .destructive) {
-												
-												if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
-													print("Reboot Failed")
-												}
-											}
+									isPresented: $showingRebootConfirm
+								) {
+									Button("reboot.node", role: .destructive) {
+										if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
+											print("Reboot Failed")
 										}
+									}
+								}
 							}
 							.padding(5)
 						}
 					}
-					.offset( y:-40)
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
+				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
+					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
+							.presentationDetents([.medium, .large])
+							.presentationDragIndicator(.automatic)
+				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
-				.padding(.bottom, 10)
 				.navigationBarItems(trailing:
 					ZStack {
-						ConnectedDevice(
-							bluetoothOn: bleManager.isSwitchedOn,
-							deviceConnected: bleManager.connectedPeripheral != nil,
-							name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
-					}
-				)
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				})
 				.onAppear {
 					self.bleManager.context = context
 				}

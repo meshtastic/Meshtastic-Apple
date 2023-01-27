@@ -291,9 +291,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 	}
 	
-	func requestDeviceMetadata() {
+	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
 		
-		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return }
+		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return 0 }
 
 		let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
 		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.devicemetadata %@",
@@ -303,19 +303,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-		var toRadio: ToRadio = ToRadio()
-		toRadio.packet = meshPacket
-		let binaryData: Data = try! toRadio.serializedData()
-		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-		// Either Read the config complete value or from num notify value
-		connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
+		let messageDescription = "🛎️ Requested Device Metadata for node \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown")) by \(fromUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		return 0
 	}
 	
 	func sendTraceRouteRequest(destNum: Int64,  wantResponse: Bool) -> Bool {
@@ -504,9 +505,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				case .remoteHardwareApp:
 					MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 				case .positionApp:
-					positionPacket(packet: decodedInfo.packet, context: context!)
+					upsertPositionPacket(packet: decodedInfo.packet, context: context!)
 				case .waypointApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Waypoint App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+					waypointPacket(packet: decodedInfo.packet, context: context!)
 				case .nodeinfoApp:
 					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
 				case .routingApp:
@@ -627,7 +628,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
-			let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
+			let nodeName = connectedPeripheral?.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.textmessage.send.failed %@",
 				comment: "Message Send Failed, not properly connected to %@"), nodeName)
 			MeshLogger.log("🚫 \(logString)")
@@ -727,23 +728,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return success
 	}
 	
-	public func sendWaypoint(destNum: Int64, name: String, wantAck: Bool) -> Bool {
+	public func sendWaypoint(waypoint: Waypoint) -> Bool {
 		
-		var success = false
-		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
+		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
 			return false
 		}
-		var waypointPacket = Waypoint()
-		waypointPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		waypointPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		let oneWeekFromNow = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-		waypointPacket.expire = UInt32(oneWeekFromNow!.timeIntervalSince1970)
-		waypointPacket.name = name
+		
+		var success = false
+		let fromNodeNum = UInt32(connectedPeripheral.num)
+		var waypointPacket = waypoint
 		var meshPacket = MeshPacket()
-		meshPacket.to = UInt32(destNum)
-		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
-		meshPacket.wantAck = true//wantAck
+		meshPacket.to = emptyNodeNum
+		meshPacket.from	= fromNodeNum
+		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! waypointPacket.serializedData()
 		dataMessage.portnum = PortNum.waypointApp
@@ -758,6 +755,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
+			
+			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context!)
+			wayPointEntity.id = Int64(waypoint.id)
+			wayPointEntity.name = waypoint.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
+			wayPointEntity.longDescription = waypoint.description_p
+			wayPointEntity.icon	= Int64(waypoint.icon)
+			wayPointEntity.latitudeI = waypoint.latitudeI
+			wayPointEntity.longitudeI = waypoint.longitudeI
+			do {
+				try context!.save()
+				print("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
+			} catch {
+				context!.rollback()
+				let nsError = error as NSError
+				print("💥 Error Saving NodeInfoEntity from WAYPOINT_APP \(nsError)")
+			}
 		}
 		return success
 	}
@@ -766,9 +779,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || (LocationHelper.currentLocation.latitude == LocationHelper.DefaultLocation.latitude && LocationHelper.currentLocation.longitude == LocationHelper.DefaultLocation.longitude) {
+		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
+
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -789,9 +803,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
 		dataMessage.portnum = PortNum.positionApp
-		//if destNum != emptyNodeNum {
-			dataMessage.wantResponse = wantResponse
-		//}
+		dataMessage.wantResponse = wantResponse
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio!
@@ -809,18 +821,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 	
 	@objc func positionTimerFired(timer: Timer) {
-		
 		// Check for connected node
 		if connectedPeripheral != nil {
-
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
-				
 				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 				if !success {
-					
-					print("Failed to send positon to device")
-					
+					print("Failed to send position to device")
 				}
 			}
 		}
@@ -829,7 +836,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.shutdownSeconds = 10
+		adminPacket.shutdownSeconds = 5
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -852,7 +859,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendReboot(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.rebootSeconds = 10
+		adminPacket.rebootSeconds = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedPeripheral.num)
@@ -860,7 +867,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1090,17 +1096,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return false
 	}
 	
-	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1187,17 +1193,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from = UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
+		if adminIndex > 0 {
+			meshPacket.channel = UInt32(adminIndex)
+		}
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1240,7 +1248,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveWiFiConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.network = config
@@ -1385,6 +1393,64 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.get %@",																				   comment: "Requested Canned Messages Module Messages for node: %@"), String(connectedPeripheral.num))
 			MeshLogger.log("🥫 \(logString)")
+			return true
+		}
+		
+		return false
+	}
+	
+	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested Bluetooth Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return true
+		}
+		
+		return false
+	}
+	
+	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
 			return true
 		}
 		
@@ -1542,7 +1608,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				print("⚙️ \(adminDescription)")
+				print(adminDescription)
 				return true
 			} catch {
 				context!.rollback()

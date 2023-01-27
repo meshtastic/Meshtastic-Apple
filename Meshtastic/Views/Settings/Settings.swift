@@ -12,22 +12,87 @@ struct Settings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
+	@State private var selectedNode: Int = 0
+	@State private var connectedNodeNum: Int = 0
+	@State private var initialLoad: Bool = true
+	
+	@State private var selection: SettingsSidebar = .about
+	
+	enum SettingsSidebar {
+		case appSettings
+		case shareChannels
+		case userConfig
+		case loraConfig
+		case channelConfig
+		case bluetoothConfig
+		case deviceConfig
+		case displayConfig
+		case networkConfig
+		case positionConfig
+		case cannedMessagesConfig
+		case externalNotificationConfig
+		case mqttConfig
+		case rangeTestConfig
+		case serialConfig
+		case telemetryConfig
+		case meshLog
+		case adminMessageLog
+		case about
+	}
 	
 	var body: some View {
 		NavigationSplitView {
 			List {
-				let connectedNodeNum = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0
-				
 				NavigationLink() {
 					AppSettings()
 				} label: {
-
 					Image(systemName: "gearshape")
 						.symbolRenderingMode(.hierarchical)
 					Text("app.settings")
 				}
+				.tag(SettingsSidebar.appSettings)
+				let node = nodes.first(where: { $0.num == connectedNodeNum })
+				if node?.myInfo?.adminIndex ?? 0 > 0 {
+					Section("Configure") {
+						Picker("Configuring Node", selection: $selectedNode) {
+							if connectedNodeNum == 0 {
+								Text("Connect to a Node").tag(0)
+							}
+							ForEach(nodes) { node in
+								if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+									Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								} else if node.metadata != nil {
+									Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								} else {
+									Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										.tag(Int(node.num))
+								}
+							}
+						}
+						.pickerStyle(.menu)
+						.labelsHidden()
+						.onChange(of: selectedNode) { newValue in
+//							if selectedNode > 0 {
+//								let node = nodes.first(where: { $0.num == newValue })
+//								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+//								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+//								
+//								if node?.metadata == nil && node!.num != connectedNodeNum {
+//									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+//									
+//									if adminMessageId > 0 {
+//										print("Saved node metadata")
+//									}
+//								}
+//							}
+						}
+					}
+				}
+				
 				Section("radio.configuration") {
 					
 					NavigationLink {
@@ -37,85 +102,97 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("share.channels")
 					}
+					.tag(SettingsSidebar.shareChannels)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						UserConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						UserConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 					
 						Image(systemName: "person.crop.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
 						Text("user")
 					}
+					.tag(SettingsSidebar.userConfig)
+					.disabled(selectedNode == 0)
 					
 					NavigationLink() {
-						
-						LoRaConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-					
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("lora")
 					}
+					.tag(SettingsSidebar.loraConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
-
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-
 						Image(systemName: "fibrechannel")
 							.symbolRenderingMode(.hierarchical)
-
 						Text("channels")
 					}
+					.tag(SettingsSidebar.channelConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
-						
-						BluetoothConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
+					.tag(SettingsSidebar.bluetoothConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						DeviceConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "flipphone")
 							.symbolRenderingMode(.hierarchical)
 						Text("device")
 					}
+					.tag(SettingsSidebar.deviceConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						DisplayConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "display")
 							.symbolRenderingMode(.hierarchical)
 						Text("display")
 					}
+					.tag(SettingsSidebar.displayConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						NetworkConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 					
 						Image(systemName: "network")
 							.symbolRenderingMode(.hierarchical)
 						Text("network")
 					}
+					.tag(SettingsSidebar.networkConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				
 					NavigationLink {
-						PositionConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 					
 						Image(systemName: "location")
 							.symbolRenderingMode(.hierarchical)
 						Text("position")
 					}
+					.tag(SettingsSidebar.positionConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 				}
 				Section("module.configuration") {
 					
 					NavigationLink {
-						CannedMessagesConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 
 						Image(systemName: "list.bullet.rectangle.fill")
@@ -123,42 +200,58 @@ struct Settings: View {
 
 						Text("canned.messages")
 					}
+					.tag(SettingsSidebar.cannedMessagesConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						ExternalNotificationConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "megaphone")
 							.symbolRenderingMode(.hierarchical)
 						Text("external.notification")
 					}
+					.tag(SettingsSidebar.externalNotificationConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					
 					NavigationLink {
-						MQTTConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "dot.radiowaves.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("mqtt")
 					}
+					.tag(SettingsSidebar.mqttConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					
 					NavigationLink {
-						RangeTestConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "point.3.connected.trianglepath.dotted")
 							.symbolRenderingMode(.hierarchical)
 						Text("range.test")
 					}
+					.tag(SettingsSidebar.rangeTestConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					
 					NavigationLink {
-						SerialConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "terminal")
 							.symbolRenderingMode(.hierarchical)
 						Text("serial")
 					}
+					.tag(SettingsSidebar.serialConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+					
 					NavigationLink {
-						TelemetryConfig(node: nodes.first(where: { $0.num == connectedNodeNum }))
+						TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "chart.xyaxis.line")
 							.symbolRenderingMode(.hierarchical)
 						Text("telemetry")
 					}
+					.tag(SettingsSidebar.telemetryConfig)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				}
 				Section(header: Text("logging")) {
 					NavigationLink {
@@ -168,6 +261,8 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("mesh.log")
 					}
+					.tag(SettingsSidebar.meshLog)
+					
 					NavigationLink {
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 						AdminMessageList(user: connectedNode?.user)
@@ -176,6 +271,7 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("admin.log")
 					}
+					.tag(SettingsSidebar.adminMessageLog)
 				}
 				Section(header: Text("about")) {
 					NavigationLink {
@@ -186,11 +282,18 @@ struct Settings: View {
 						
 						Text("about.meshtastic")
 					}
+					.tag(SettingsSidebar.about)
 				}
 			}
 			.onAppear {
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
+				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+				if initialLoad {
+					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+					initialLoad = false
+				}
+				
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

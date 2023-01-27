@@ -24,29 +24,20 @@ struct DisplayConfig: View {
 	@State var compassNorthTop = false
 	@State var flipScreen = false
 	@State var oledType = 0
+	@State var displayMode = 0
 	
 	var body: some View {
 		
 		Form {
 			Section(header: Text("Device Screen")) {
 				
-				Picker("Screen on for", selection: $screenOnSeconds ) {
-					ForEach(ScreenOnIntervals.allCases) { soi in
-						Text(soi.description)
+				Picker("Display Mode", selection: $displayMode ) {
+					ForEach(DisplayModes.allCases) { dm in
+						Text(dm.description)
 					}
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
-				Text("How long the screen remains on after the user button is pressed or messages are received.")
-					.font(.caption)
-				
-				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
-					ForEach(ScreenCarouselIntervals.allCases) { sci in
-						Text(sci.description)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
+				Text("Override automatic OLED screen detection.")
 					.font(.caption)
 				
 				Toggle(isOn: $compassNorthTop) {
@@ -64,6 +55,7 @@ struct DisplayConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("Flip screen vertically")
 					.font(.caption)
+				
 				Picker("OLED Type", selection: $oledType ) {
 					ForEach(OledTypes.allCases) { ot in
 						Text(ot.description)
@@ -74,7 +66,25 @@ struct DisplayConfig: View {
 					.font(.caption)
 				
 			}
-			Section(header: Text("Format")) {
+			Section(header: Text("Timing & Format")) {
+				Picker("Screen on for", selection: $screenOnSeconds ) {
+					ForEach(ScreenOnIntervals.allCases) { soi in
+						Text(soi.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("How long the screen remains on after the user button is pressed or messages are received.")
+					.font(.caption)
+				
+				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
+					ForEach(ScreenCarouselIntervals.allCases) { sci in
+						Text(sci.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
+					.font(.caption)
+				
 				Picker("GPS Format", selection: $gpsFormat ) {
 					ForEach(GpsFormats.allCases) { lu in
 						Text(lu.description)
@@ -116,6 +126,7 @@ struct DisplayConfig: View {
 				dc.compassNorthTop = compassNorthTop
 				dc.flipScreen = flipScreen
 				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				
 				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
@@ -143,6 +154,7 @@ struct DisplayConfig: View {
 			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
 			self.flipScreen = node?.displayConfig?.flipScreen ?? false
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
+			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
 			self.hasChanges = false
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
@@ -173,6 +185,11 @@ struct DisplayConfig: View {
 		.onChange(of: oledType) { newOledType in
 			if node != nil && node!.displayConfig != nil {
 				if newOledType != node!.displayConfig!.oledType { hasChanges = true }
+			}
+		}
+		.onChange(of: displayMode) { newDisplayMode in
+			if node != nil && node!.displayConfig != nil {
+				if newDisplayMode != node!.displayConfig!.displayMode { hasChanges = true }
 			}
 		}
 	}

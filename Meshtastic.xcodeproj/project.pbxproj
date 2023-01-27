@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C9483F6D2773017500998F6B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9483F6C2773017500998F6B /* MapView.swift */; };
 		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */; };
@@ -22,7 +21,10 @@
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
+		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
+		DD2F145129787595009E4638 /* xmodem.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2F144F29787595009E4638 /* xmodem.pb.swift */; };
+		DD2F145229787595009E4638 /* rtttl.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2F145029787595009E4638 /* rtttl.pb.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
 		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
@@ -66,6 +68,11 @@
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
+		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
+		DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormView.swift */; };
+		DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */; };
+		DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC32974767D007C176F /* MapViewFitExtension.swift */; };
+		DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FC52975DBFD007C176F /* QueryCoreData.swift */; };
 		DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */; };
 		DD97E96828EFE9A00056DDA4 /* About.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD97E96728EFE9A00056DDA4 /* About.swift */; };
 		DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD994B68295F88B60013760A /* IntervalEnums.swift */; };
@@ -127,7 +134,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C9483F6C2773017500998F6B /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		A65FA974296876BF00A97686 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAnnotationView.swift; sourceTree = "<group>"; };
 		C9A88B54278B503C00BD810A /* MapViewModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewModule.swift; sourceTree = "<group>"; };
@@ -141,7 +148,10 @@
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
+		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
+		DD2F144F29787595009E4638 /* xmodem.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = xmodem.pb.swift; sourceTree = "<group>"; };
+		DD2F145029787595009E4638 /* rtttl.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = rtttl.pb.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
@@ -187,6 +197,12 @@
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
+		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
+		DD964FBE296E76EF007C176F /* WaypointFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormView.swift; sourceTree = "<group>"; };
+		DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
+		DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointEntityExtension.swift; sourceTree = "<group>"; };
+		DD964FC32974767D007C176F /* MapViewFitExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewFitExtension.swift; sourceTree = "<group>"; };
+		DD964FC52975DBFD007C176F /* QueryCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryCoreData.swift; sourceTree = "<group>"; };
 		DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticLogo.swift; sourceTree = "<group>"; };
 		DD97E96728EFE9A00056DDA4 /* About.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = About.swift; sourceTree = "<group>"; };
 		DD994B68295F88B60013760A /* IntervalEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalEnums.swift; sourceTree = "<group>"; };
@@ -270,9 +286,7 @@
 			isa = PBXGroup;
 			children = (
 				C9A7BC0E27759A6800760B50 /* Custom */,
-				C9483F6C2773017500998F6B /* MapView.swift */,
-				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
-				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
+				DD964FBE296E76EF007C176F /* WaypointFormView.swift */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -280,6 +294,10 @@
 		C9A7BC0E27759A6800760B50 /* Custom */ = {
 			isa = PBXGroup;
 			children = (
+				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
+				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
+				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
+				C9A88B54278B503C00BD810A /* MapViewModule.swift */,
 				C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */,
 			);
 			path = Custom;
@@ -391,21 +409,23 @@
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
-				DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */,
-				DDCFF600285453A7005FA625 /* localonly.pb.swift */,
-				DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */,
 				DDAF8C6126ED0A230058C060 /* admin.pb.swift */,
 				C9A88B56278B559900BD810A /* apponly.pb.swift */,
+				DD4DED8F27AD2975004BA27E /* cannedmessages.pb.swift */,
 				DDAF8C6426ED0A490058C060 /* channel.pb.swift */,
 				DD4C158D2824AA7E0032668E /* config.pb.swift */,
 				DDAF8C6826ED0D070058C060 /* deviceonly.pb.swift */,
+				DDB3107128A6224100F1DE3D /* device_metadata.pb.swift */,
+				DDCFF600285453A7005FA625 /* localonly.pb.swift */,
 				DDAF8C5726ED07FD0058C060 /* mesh.pb.swift */,
 				DD4C158B2824A91E0032668E /* module_config.pb.swift */,
 				DDAF8C6026ED0A230058C060 /* mqtt.pb.swift */,
 				DDAF8C5C26ED09490058C060 /* portnums.pb.swift */,
 				DDAF8C6626ED0C8C0058C060 /* remote_hardware.pb.swift */,
+				DD2F145029787595009E4638 /* rtttl.pb.swift */,
 				DD17E5DC277D49D400010EC2 /* storeforward.pb.swift */,
 				DDB2CC6D27F3EB47009C5FCC /* telemetry.pb.swift */,
+				DD2F144F29787595009E4638 /* xmodem.pb.swift */,
 			);
 			path = Protobufs;
 			sourceTree = "<group>";
@@ -546,6 +566,7 @@
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
 				DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */,
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
+				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -557,7 +578,9 @@
 				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
 				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
+				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -655,6 +678,7 @@
 				en,
 				de,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -729,6 +753,7 @@
 				DDCFF601285453A7005FA625 /* localonly.pb.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DDAF8C6E26ED19040058C060 /* Extensions.swift in Sources */,
+				DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
@@ -736,6 +761,7 @@
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
+				DD2F145129787595009E4638 /* xmodem.pb.swift in Sources */,
 				DD4C158C2824A91E0032668E /* module_config.pb.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
@@ -743,7 +769,9 @@
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,
 				DDC4D568275499A500A4208E /* Persistence.swift in Sources */,
 				DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */,
+				DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */,
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
+				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DDAF8C6926ED0D070058C060 /* deviceonly.pb.swift in Sources */,
@@ -766,8 +794,10 @@
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
 				C9A7BC1027759A9600760B50 /* PositionAnnotationView.swift in Sources */,
 				DD882F5D2772E4640005BF05 /* Contacts.swift in Sources */,
+				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeList.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
+				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD17E5DE277D49D400010EC2 /* storeforward.pb.swift in Sources */,
@@ -783,8 +813,8 @@
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
-				C9483F6D2773017500998F6B /* MapView.swift in Sources */,
 				DDAF8C5826ED07FD0058C060 /* mesh.pb.swift in Sources */,
+				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
@@ -809,6 +839,7 @@
 				C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */,
 				DD58C5F22919AD3C00D5BEFB /* ChannelEntityExtension.swift in Sources */,
 				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
+				DD2F145229787595009E4638 /* rtttl.pb.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD539502276DAA6A00AD86B1 /* MapLocation.swift in Sources */,
@@ -857,6 +888,7 @@
 			children = (
 				DDCDC6CC29481FCC004C1DDA /* en */,
 				DDCDC6CE294821AD004C1DDA /* de */,
+				A65FA974296876BF00A97686 /* zh-Hans */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1006,7 +1038,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.0.11;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1039,7 +1071,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.10;
+				MARKETING_VERSION = 2.0.11;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1215,13 +1247,14 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */,
 				DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */,
 				DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */,
 				DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */,
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */;
+			currentVersion = DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

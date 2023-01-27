@@ -21,7 +21,7 @@
 "battery.level.trend"="Battery Level Trend";
 "ble.name"="BLE Name";
 "ble.connection.timeout %d %@"="Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth.";
-"ble.errorcode.6 %@"="%@ The app will automatically reconnect to the preferred radio if it come back in range.";
+"ble.errorcode.6 %@"="%@ The app will automatically reconnect to the preferred radio if it comes back in range.";
 "ble.errorcode.14 %@"="%@ This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio.";
 "ble.errorcode.pin %@"="%@ Please try connecting again and check the PIN carefully.";
 "bluetooth"="Bluetooth";
@@ -92,6 +92,7 @@
 "heard"="Heard";
 "heard.last"="Last Heard";
 "hybrid"="Hybrid";
+"hybrid.flyover"="Hybrid Flyover";
 "include"="Include";
 "inputevent.none"="None";
 "inputevent.up"="Up";
@@ -168,6 +169,7 @@
 "mesh.log.traceroute.sent %@"="Sent a Trace Route Request to node: %@";
 "mesh.log.wantconfig %@"="Issuing Want Config to %@";
 "mesh.log.waypoint.sent %@"="Sent a Waypoint Packet from: %@";
+"mesh.log.waypoint.received %@"="Waypoint Packet received from node: %@";
 "message"="Message";
 "message.details"="Message Details";
 "messages"="Messages";
@@ -214,6 +216,7 @@
 "routing.badRequest"="Bad Request";
 "routing.notauthorized"="Not Authorized";
 "satellite"="Satellite";
+"satellite.flyover"="Satellite Flyover";
 "save"="Save";
 "save.config %@"="Save Config for %@";
 "serial"="Serial";
@@ -232,6 +235,7 @@
 "select.menu.item"="Select an item from the menu";
 "set.region"="Set LoRa Region";
 "standard"="Standard";
+"standard.muted"="Standard Muted";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";

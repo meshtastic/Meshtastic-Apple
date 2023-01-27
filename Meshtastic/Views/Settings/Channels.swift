@@ -250,16 +250,10 @@ struct Channels: View {
 							let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 							
 							if adminMessageId > 0 {
-								
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save.
-								
 								self.isPresentingEditView = false
 								channelName = ""
 								hasChanges = false
-								// Would rather send a getChannel but I can't seem serialize it properly yet
 								bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
-								//bleManager.sendWantConfig()
 							}
 						} label: {
 							Label("save", systemImage: "square.and.arrow.down")
