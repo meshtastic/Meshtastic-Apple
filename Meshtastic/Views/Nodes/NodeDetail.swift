@@ -4,6 +4,7 @@
  */
 
 import SwiftUI
+import WeatherKit
 import MapKit
 import CoreLocation
 
@@ -11,6 +12,7 @@ struct NodeDetail: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@State var satsInView = 0
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
@@ -34,6 +36,14 @@ struct NodeDetail: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .easeIn)
 	private var waypoints: FetchedResults<WaypointEntity>
+	
+	/// The current weather condition for the city.
+	@State private var condition: WeatherCondition?
+	@State private var temperature: Measurement<UnitTemperature>?
+	@State private var symbolName: String = "cloud.fill"
+	
+	@State private var attributionLink: URL?
+	@State private var attributionLogo: URL?
 	
 	var body: some View {
 		
@@ -63,17 +73,31 @@ struct NodeDetail: View {
 									overlays: self.overlays
 									
 								)
-								VStack {
+								VStack (alignment: .leading) {
 									Spacer()
-									Text(mostRecent.satsInView > 0 ? "Sats: \(mostRecent.satsInView)" : " ")
-										.font(.caption)
-										.offset(y: 20)
-									Picker("Map Type", selection: $mapType) {
-										ForEach(MeshMapType.allCases) { map in
-											Text(map.description).tag(map.MKMapTypeValue())
+									HStack (alignment: .bottom, spacing: 1) {
+							
+										Picker("Map Type", selection: $mapType) {
+											ForEach(MeshMapType.allCases) { map in
+												Text(map.description).tag(map.MKMapTypeValue())
+											}
 										}
+										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+										.pickerStyle(.menu)
+										.padding(5)
+										VStack {
+											if mostRecent.satsInView > 0 {
+												Text("Sats: \(mostRecent.satsInView)")
+													.font(.caption)
+													.padding(.bottom, 1)
+											}
+											Label(temperature?.formatted() ?? "??", systemImage: symbolName)
+												.font(.caption)
+										}
+										.padding(10)
+										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+										.padding(5)
 									}
-									.pickerStyle(.menu)
 								}
 							}
 							.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
@@ -332,6 +356,20 @@ struct NodeDetail: View {
 								}
 								Divider()
 							}
+							VStack {
+								AsyncImage(url: attributionLogo) { image in
+									image
+										.resizable()
+										.scaledToFit()
+								} placeholder: {
+									ProgressView()
+										.controlSize(.mini)
+								}
+								.frame(height: 15)
+								
+								Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+							}
+							.font(.footnote)
 						}
 						
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
@@ -402,6 +440,30 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
+				}
+				.task(id: node.num) {
+					do {
+						
+						if node.positions?.count ?? 0 > 0 {
+							
+							let mostRecent = node.positions?.lastObject as! PositionEntity
+							
+							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
+							condition = weather.currentWeather.condition
+							temperature = weather.currentWeather.temperature
+							symbolName = weather.currentWeather.symbolName
+							
+							let attribution = try await WeatherService.shared.attribution
+							attributionLink = attribution.legalPageURL
+							attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
+							
+						}
+						
+					} catch {
+						print("Could not gather weather information...", error.localizedDescription)
+						condition = .clear
+						symbolName = "cloud.fill"
+					}
 				}
 			}
 		}
