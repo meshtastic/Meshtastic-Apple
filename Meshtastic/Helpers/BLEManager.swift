@@ -596,8 +596,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
-				}
-				
+				}				
 				return
 			}
 
@@ -736,13 +735,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
-		var waypointPacket = waypoint
 		var meshPacket = MeshPacket()
 		meshPacket.to = emptyNodeNum
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! waypointPacket.serializedData()
+		dataMessage.payload = try! waypoint.serializedData()
 		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage
 		var toRadio: ToRadio!
@@ -758,7 +756,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context!)
 			wayPointEntity.id = Int64(waypoint.id)
-			wayPointEntity.name = waypoint.name.count >= 1 ? waypointPacket.name : "Dropped Pin"
+			wayPointEntity.name = waypoint.name.count >= 1 ? waypoint.name : "Dropped Pin"
 			wayPointEntity.longDescription = waypoint.description_p
 			wayPointEntity.icon	= Int64(waypoint.icon)
 			wayPointEntity.latitudeI = waypoint.latitudeI
@@ -862,7 +860,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.rebootSeconds = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable

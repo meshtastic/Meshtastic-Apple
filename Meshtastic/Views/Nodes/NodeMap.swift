@@ -80,7 +80,9 @@ struct NodeMap: View {
 							Text(map.description).tag(map.MKMapTypeValue())
 						}
 					}
+					.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 					.pickerStyle(.menu)
+					.padding(.bottom, 5)
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])

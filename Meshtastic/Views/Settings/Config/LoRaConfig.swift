@@ -116,9 +116,9 @@ struct LoRaConfig: View {
 			self.hasChanges = false
 			
 			// Need to request a LoRaConfig from the remote node before allowing changes
-			if node?.loRaConfig == nil {
+			if connectedNode != nil && node?.loRaConfig == nil {
 				print("empty lora config")
-				let adminMessageId = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				_ = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 			}
 		}
 		.onChange(of: region) { newRegion in

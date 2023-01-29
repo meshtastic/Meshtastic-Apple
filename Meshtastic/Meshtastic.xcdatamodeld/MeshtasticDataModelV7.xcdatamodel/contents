@@ -282,11 +282,9 @@
         </fetchedProperty>
     </entity>
     <entity name="WaypointEntity" representedClassName="WaypointEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="created" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="expire" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="icon" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="latitudeI" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="locked" attributeType="Integer 64" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="longDescription" optional="YES" attributeType="String" maxValueString="100"/>
