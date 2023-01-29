@@ -54,7 +54,6 @@ struct NodeDetail: View {
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						let mostRecent = node.positions?.lastObject as! PositionEntity
-						let nodeCoordinatePosition = CLLocationCoordinate2D(latitude: mostRecent.latitude!, longitude: mostRecent.longitude!)
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
@@ -362,10 +361,9 @@ struct NodeDetail: View {
 							
 							HStack {
 								
-								if  hwModelString == "TBEAM" || hwModelString == "TECHO" || hwModelString.contains("4631") {
+								if node.metadata != nil && node.metadata?.canShutdown ?? false {
 									
 									Button(action: {
-										
 										showingShutdownConfirm = true
 									}) {
 										

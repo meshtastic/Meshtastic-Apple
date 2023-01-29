@@ -135,7 +135,7 @@ struct BluetoothConfig: View {
 			
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if connectedNode != nil && node?.bluetoothConfig == nil {
-				let adminMessageId = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 			}
 		}
 		.onChange(of: enabled) { newEnabled in

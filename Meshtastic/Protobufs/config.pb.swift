@@ -188,12 +188,24 @@ struct Config {
       /// Router device role.
       ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps. 
       ///   The wifi/ble radios and the oled screen will be put to sleep.
+      ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
 
       ///
       /// Router Client device role
       ///   Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client.
       case routerClient // = 3
+
+      ///
+      /// Repeater device role
+      ///   Mesh packets will simply be rebroadcasted over this node. Nodes under this role node will not originate NodeInfo, Position, Telemetry
+      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factory, and coding rate. 
+      case repeater // = 4
+
+      ///
+      /// Tracker device role
+      ///   Position Mesh packets for will be higher priority and sent more frequently by default.
+      case tracker // = 5
       case UNRECOGNIZED(Int)
 
       init() {
@@ -206,6 +218,8 @@ struct Config {
         case 1: self = .clientMute
         case 2: self = .router
         case 3: self = .routerClient
+        case 4: self = .repeater
+        case 5: self = .tracker
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -216,6 +230,8 @@ struct Config {
         case .clientMute: return 1
         case .router: return 2
         case .routerClient: return 3
+        case .repeater: return 4
+        case .tracker: return 5
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1048,6 +1064,10 @@ struct Config {
       ///
       /// Short Range - Fast
       case shortFast // = 6
+
+      ///
+      /// Long Range - Moderately Fast
+      case longModerate // = 7
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1063,6 +1083,7 @@ struct Config {
         case 4: self = .mediumFast
         case 5: self = .shortSlow
         case 6: self = .shortFast
+        case 7: self = .longModerate
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1076,6 +1097,7 @@ struct Config {
         case .mediumFast: return 4
         case .shortSlow: return 5
         case .shortFast: return 6
+        case .longModerate: return 7
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1159,6 +1181,8 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .clientMute,
     .router,
     .routerClient,
+    .repeater,
+    .tracker,
   ]
 }
 
@@ -1259,6 +1283,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
     .mediumFast,
     .shortSlow,
     .shortFast,
+    .longModerate,
   ]
 }
 
@@ -1520,6 +1545,8 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "CLIENT_MUTE"),
     2: .same(proto: "ROUTER"),
     3: .same(proto: "ROUTER_CLIENT"),
+    4: .same(proto: "REPEATER"),
+    5: .same(proto: "TRACKER"),
   ]
 }
 
@@ -2084,6 +2111,7 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "MEDIUM_FAST"),
     5: .same(proto: "SHORT_SLOW"),
     6: .same(proto: "SHORT_FAST"),
+    7: .same(proto: "LONG_MODERATE"),
   ]
 }
 
