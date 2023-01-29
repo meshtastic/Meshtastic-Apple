@@ -356,20 +356,6 @@ struct NodeDetail: View {
 								}
 								Divider()
 							}
-							VStack {
-								AsyncImage(url: attributionLogo) { image in
-									image
-										.resizable()
-										.scaledToFit()
-								} placeholder: {
-									ProgressView()
-										.controlSize(.mini)
-								}
-								.frame(height: 15)
-								
-								Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
-							}
-							.font(.footnote)
 						}
 						
 						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
@@ -411,7 +397,7 @@ struct NodeDetail: View {
 								.controlSize(.large)
 								.padding()
 								.confirmationDialog("are.you.sure",
-									isPresented: $showingRebootConfirm
+													isPresented: $showingRebootConfirm
 								) {
 									Button("reboot.node", role: .destructive) {
 										if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
@@ -421,7 +407,23 @@ struct NodeDetail: View {
 								}
 							}
 							.padding(5)
+							Divider()
 						}
+						
+						VStack {
+							AsyncImage(url: attributionLogo) { image in
+								image
+									.resizable()
+									.scaledToFit()
+							} placeholder: {
+								ProgressView()
+									.controlSize(.mini)
+							}
+							.frame(height: 15)
+							
+							Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+						}
+						.font(.footnote)
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])

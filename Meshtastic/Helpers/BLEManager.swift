@@ -862,7 +862,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.rebootSeconds = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable

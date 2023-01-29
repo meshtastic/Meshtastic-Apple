@@ -76,19 +76,19 @@ struct Settings: View {
 						.pickerStyle(.menu)
 						.labelsHidden()
 						.onChange(of: selectedNode) { newValue in
-//							if selectedNode > 0 {
-//								let node = nodes.first(where: { $0.num == newValue })
-//								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-//								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
-//								
-//								if node?.metadata == nil && node!.num != connectedNodeNum {
-//									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-//									
-//									if adminMessageId > 0 {
-//										print("Saved node metadata")
-//									}
-//								}
-//							}
+							if selectedNode > 0 {
+								let node = nodes.first(where: { $0.num == newValue })
+								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+								
+								if node?.metadata == nil && node!.num != connectedNodeNum {
+									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+									
+									if adminMessageId > 0 {
+										print("Saved node metadata")
+									}
+								}
+							}
 						}
 					}
 				}
@@ -114,7 +114,6 @@ struct Settings: View {
 						Text("user")
 					}
 					.tag(SettingsSidebar.userConfig)
-					.disabled(selectedNode == 0)
 					
 					NavigationLink() {
 						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
