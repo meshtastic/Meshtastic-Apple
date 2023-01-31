@@ -106,7 +106,7 @@ struct Settings: View {
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						UserConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 					
 						Image(systemName: "person.crop.rectangle.fill")
@@ -116,14 +116,13 @@ struct Settings: View {
 					.tag(SettingsSidebar.userConfig)
 					
 					NavigationLink() {
-						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("lora")
 					}
 					.tag(SettingsSidebar.loraConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))

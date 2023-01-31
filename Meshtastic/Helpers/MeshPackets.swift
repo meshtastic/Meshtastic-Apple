@@ -46,7 +46,7 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 		upsertDisplayConfigPacket(config: config, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-		upsertLoRaConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 		upsertNetworkConfigPacket(config: config, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
@@ -759,8 +759,6 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	
 	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
 		
-		
-		
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 			
 			if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
@@ -811,7 +809,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					upsertDeviceConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
 					
 				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-					upsertLoRaConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+					
+					let lc = try? Config.LoRaConfig(serializedData: packet.decoded.payload)
+					upsertLoRaConfigPacket(config: lc!, nodeNum: Int64(packet.from), context: context)
 					
 				} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 					upsertNetworkConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)

@@ -13,7 +13,6 @@ struct UserConfig: View {
 	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
-	var connectedNode: NodeInfoEntity?
 	
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -86,10 +85,13 @@ struct UserConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
+						
+						let connectedUser = getUser(id: bleManager.connectedPeripheral.num, context: context)
+						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 						var u = User()
 						u.shortName = shortName
 						u.longName = longName
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							hasChanges = false
 							goBack()

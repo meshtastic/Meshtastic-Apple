@@ -304,7 +304,7 @@ func upsertDisplayConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 	}
 }
 
-func upsertLoRaConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config %@", comment: "LoRa config received: %@"), String(nodeNum))
 	MeshLogger.log("📻 \(logString)")
@@ -320,33 +320,34 @@ func upsertLoRaConfigPacket(config: Config, nodeNum: Int64, context: NSManagedOb
 			if fetchedNode[0].loRaConfig == nil {
 				// No lora config for node, save a new lora config
 				let newLoRaConfig = LoRaConfigEntity(context: context)
-				newLoRaConfig.regionCode = Int32(config.lora.region.rawValue)
-				newLoRaConfig.usePreset = config.lora.usePreset
-				newLoRaConfig.modemPreset = Int32(config.lora.modemPreset.rawValue)
-				newLoRaConfig.bandwidth = Int32(config.lora.bandwidth)
-				newLoRaConfig.spreadFactor = Int32(config.lora.spreadFactor)
-				newLoRaConfig.codingRate = Int32(config.lora.codingRate)
-				newLoRaConfig.frequencyOffset = config.lora.frequencyOffset
-				newLoRaConfig.hopLimit = Int32(config.lora.hopLimit)
-				newLoRaConfig.txPower = Int32(config.lora.txPower)
-				newLoRaConfig.txEnabled = config.lora.txEnabled
-				newLoRaConfig.channelNum = Int32(config.lora.channelNum)
+				newLoRaConfig.regionCode = Int32(config.region.rawValue)
+				newLoRaConfig.usePreset = config.usePreset
+				newLoRaConfig.modemPreset = Int32(config.modemPreset.rawValue)
+				newLoRaConfig.bandwidth = Int32(config.bandwidth)
+				newLoRaConfig.spreadFactor = Int32(config.spreadFactor)
+				newLoRaConfig.codingRate = Int32(config.codingRate)
+				newLoRaConfig.frequencyOffset = config.frequencyOffset
+				newLoRaConfig.hopLimit = Int32(config.hopLimit)
+				newLoRaConfig.txPower = Int32(config.txPower)
+				newLoRaConfig.txEnabled = config.txEnabled
+				newLoRaConfig.channelNum = Int32(config.channelNum)
 				fetchedNode[0].loRaConfig = newLoRaConfig
 			} else {
-				fetchedNode[0].loRaConfig?.regionCode = Int32(config.lora.region.rawValue)
-				fetchedNode[0].loRaConfig?.usePreset = config.lora.usePreset
-				fetchedNode[0].loRaConfig?.modemPreset = Int32(config.lora.modemPreset.rawValue)
-				fetchedNode[0].loRaConfig?.bandwidth = Int32(config.lora.bandwidth)
-				fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.lora.spreadFactor)
-				fetchedNode[0].loRaConfig?.codingRate = Int32(config.lora.codingRate)
-				fetchedNode[0].loRaConfig?.frequencyOffset = config.lora.frequencyOffset
-				fetchedNode[0].loRaConfig?.hopLimit = Int32(config.lora.hopLimit)
-				fetchedNode[0].loRaConfig?.txPower = Int32(config.lora.txPower)
-				fetchedNode[0].loRaConfig?.txEnabled = config.lora.txEnabled
-				fetchedNode[0].loRaConfig?.channelNum = Int32(config.lora.channelNum)
+				fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
+				fetchedNode[0].loRaConfig?.usePreset = config.usePreset
+				fetchedNode[0].loRaConfig?.modemPreset = Int32(config.modemPreset.rawValue)
+				fetchedNode[0].loRaConfig?.bandwidth = Int32(config.bandwidth)
+				fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.spreadFactor)
+				fetchedNode[0].loRaConfig?.codingRate = Int32(config.codingRate)
+				fetchedNode[0].loRaConfig?.frequencyOffset = config.frequencyOffset
+				fetchedNode[0].loRaConfig?.hopLimit = Int32(config.hopLimit)
+				fetchedNode[0].loRaConfig?.txPower = Int32(config.txPower)
+				fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled
+				fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
 			}
 			do {
 				try context.save()
+				context.refresh(fetchedNode[0], mergeChanges: true)
 				print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()

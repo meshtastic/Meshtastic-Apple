@@ -168,6 +168,10 @@ struct Config {
     /// Defaults to PIN_BUZZER if defined.
     var buzzerGpio: UInt32 = 0
 
+    ///
+    /// Sets the role of node
+    var rebroadcastMode: Config.DeviceConfig.RebroadcastMode = .all
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -198,13 +202,13 @@ struct Config {
 
       ///
       /// Repeater device role
-      ///   Mesh packets will simply be rebroadcasted over this node. Nodes under this role node will not originate NodeInfo, Position, Telemetry
-      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factory, and coding rate. 
+      ///   Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
+      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate. 
       case repeater // = 4
 
       ///
       /// Tracker device role
-      ///   Position Mesh packets for will be higher priority and sent more frequently by default.
+      ///   Position Mesh packets will be prioritized higher and sent more frequently by default.
       case tracker // = 5
       case UNRECOGNIZED(Int)
 
@@ -232,6 +236,51 @@ struct Config {
         case .routerClient: return 3
         case .repeater: return 4
         case .tracker: return 5
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    ///
+    /// Defines the device's behavior for how messages are rebroadcast
+    enum RebroadcastMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// Default behavior.
+      /// Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params.
+      case all // = 0
+
+      ///
+      /// Same as behavior as ALL but skips packet decoding and simply rebroadcasts them.
+      /// Only available in Repeater role. Setting this on any other roles will result in ALL behavior.
+      case allSkipDecoding // = 1
+
+      ///
+      /// Ignores observed messages from foreign meshes that are open or those which it cannot decrypt.
+      /// Only rebroadcasts message on the nodes local primary / secondary channels.
+      case localOnly // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .all
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .all
+        case 1: self = .allSkipDecoding
+        case 2: self = .localOnly
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .all: return 0
+        case .allSkipDecoding: return 1
+        case .localOnly: return 2
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -906,6 +955,14 @@ struct Config {
     var sx126XRxBoostedGain: Bool = false
 
     ///
+    /// This parameter is for advanced users and licensed HAM radio operators.
+    /// Ignore Channel Calculation and use this frequency instead. The frequency_offset
+    /// will still be applied. This will allow you to use out-of-band frequencies.
+    /// Please respect your local laws and regulations. If you are a HAM, make sure you
+    /// enable HAM mode and turn off encryption.
+    var overrideFrequency: Float = 0
+
+    ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
     /// in ignore_incoming will have packets they send droped on receive (by router.cpp)
@@ -1186,6 +1243,15 @@ extension Config.DeviceConfig.Role: CaseIterable {
   ]
 }
 
+extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.DeviceConfig.RebroadcastMode] = [
+    .all,
+    .allSkipDecoding,
+    .localOnly,
+  ]
+}
+
 extension Config.PositionConfig.PositionFlags: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.PositionConfig.PositionFlags] = [
@@ -1303,6 +1369,7 @@ extension Config: @unchecked Sendable {}
 extension Config.OneOf_PayloadVariant: @unchecked Sendable {}
 extension Config.DeviceConfig: @unchecked Sendable {}
 extension Config.DeviceConfig.Role: @unchecked Sendable {}
+extension Config.DeviceConfig.RebroadcastMode: @unchecked Sendable {}
 extension Config.PositionConfig: @unchecked Sendable {}
 extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
@@ -1491,6 +1558,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     3: .standard(proto: "debug_log_enabled"),
     4: .standard(proto: "button_gpio"),
     5: .standard(proto: "buzzer_gpio"),
+    6: .standard(proto: "rebroadcast_mode"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1504,6 +1572,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 3: try { try decoder.decodeSingularBoolField(value: &self.debugLogEnabled) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.buttonGpio) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.buzzerGpio) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
       default: break
       }
     }
@@ -1525,6 +1594,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.buzzerGpio != 0 {
       try visitor.visitSingularUInt32Field(value: self.buzzerGpio, fieldNumber: 5)
     }
+    if self.rebroadcastMode != .all {
+      try visitor.visitSingularEnumField(value: self.rebroadcastMode, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1534,6 +1606,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.debugLogEnabled != rhs.debugLogEnabled {return false}
     if lhs.buttonGpio != rhs.buttonGpio {return false}
     if lhs.buzzerGpio != rhs.buzzerGpio {return false}
+    if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1547,6 +1620,14 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "ROUTER_CLIENT"),
     4: .same(proto: "REPEATER"),
     5: .same(proto: "TRACKER"),
+  ]
+}
+
+extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ALL"),
+    1: .same(proto: "ALL_SKIP_DECODING"),
+    2: .same(proto: "LOCAL_ONLY"),
   ]
 }
 
@@ -1987,6 +2068,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     11: .standard(proto: "channel_num"),
     12: .standard(proto: "override_duty_cycle"),
     13: .standard(proto: "sx126x_rx_boosted_gain"),
+    14: .standard(proto: "override_frequency"),
     103: .standard(proto: "ignore_incoming"),
   ]
 
@@ -2009,6 +2091,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.channelNum) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.overrideDutyCycle) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.sx126XRxBoostedGain) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self.overrideFrequency) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
       default: break
       }
@@ -2055,6 +2138,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.sx126XRxBoostedGain != false {
       try visitor.visitSingularBoolField(value: self.sx126XRxBoostedGain, fieldNumber: 13)
     }
+    if self.overrideFrequency != 0 {
+      try visitor.visitSingularFloatField(value: self.overrideFrequency, fieldNumber: 14)
+    }
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
     }
@@ -2075,6 +2161,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.channelNum != rhs.channelNum {return false}
     if lhs.overrideDutyCycle != rhs.overrideDutyCycle {return false}
     if lhs.sx126XRxBoostedGain != rhs.sx126XRxBoostedGain {return false}
+    if lhs.overrideFrequency != rhs.overrideFrequency {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

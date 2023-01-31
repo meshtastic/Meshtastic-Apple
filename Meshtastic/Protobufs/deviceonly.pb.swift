@@ -220,9 +220,34 @@ struct OEMStore {
   /// The default device encryption key, 16 or 32 byte
   var oemAesKey: Data = Data()
 
+  ///
+  /// A Preset LocalConfig to apply during factory reset
+  var oemLocalConfig: LocalConfig {
+    get {return _oemLocalConfig ?? LocalConfig()}
+    set {_oemLocalConfig = newValue}
+  }
+  /// Returns true if `oemLocalConfig` has been explicitly set.
+  var hasOemLocalConfig: Bool {return self._oemLocalConfig != nil}
+  /// Clears the value of `oemLocalConfig`. Subsequent reads from it will return its default value.
+  mutating func clearOemLocalConfig() {self._oemLocalConfig = nil}
+
+  ///
+  /// A Preset LocalModuleConfig to apply during factory reset
+  var oemLocalModuleConfig: LocalModuleConfig {
+    get {return _oemLocalModuleConfig ?? LocalModuleConfig()}
+    set {_oemLocalModuleConfig = newValue}
+  }
+  /// Returns true if `oemLocalModuleConfig` has been explicitly set.
+  var hasOemLocalModuleConfig: Bool {return self._oemLocalModuleConfig != nil}
+  /// Clears the value of `oemLocalModuleConfig`. Subsequent reads from it will return its default value.
+  mutating func clearOemLocalModuleConfig() {self._oemLocalModuleConfig = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _oemLocalConfig: LocalConfig? = nil
+  fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -413,6 +438,8 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     4: .standard(proto: "oem_font"),
     5: .standard(proto: "oem_text"),
     6: .standard(proto: "oem_aes_key"),
+    7: .standard(proto: "oem_local_config"),
+    8: .standard(proto: "oem_local_module_config"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -427,12 +454,18 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 4: try { try decoder.decodeSingularEnumField(value: &self.oemFont) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.oemText) }()
       case 6: try { try decoder.decodeSingularBytesField(value: &self.oemAesKey) }()
+      case 7: try { try decoder.decodeSingularMessageField(value: &self._oemLocalConfig) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._oemLocalModuleConfig) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.oemIconWidth != 0 {
       try visitor.visitSingularUInt32Field(value: self.oemIconWidth, fieldNumber: 1)
     }
@@ -451,6 +484,12 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.oemAesKey.isEmpty {
       try visitor.visitSingularBytesField(value: self.oemAesKey, fieldNumber: 6)
     }
+    try { if let v = self._oemLocalConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._oemLocalModuleConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -461,6 +500,8 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.oemFont != rhs.oemFont {return false}
     if lhs.oemText != rhs.oemText {return false}
     if lhs.oemAesKey != rhs.oemAesKey {return false}
+    if lhs._oemLocalConfig != rhs._oemLocalConfig {return false}
+    if lhs._oemLocalModuleConfig != rhs._oemLocalModuleConfig {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
