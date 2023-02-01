@@ -224,7 +224,6 @@ struct Settings: View {
 						Text("range.test")
 					}
 					.tag(SettingsSidebar.rangeTestConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -244,7 +243,6 @@ struct Settings: View {
 						Text("telemetry")
 					}
 					.tag(SettingsSidebar.telemetryConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				}
 				Section(header: Text("logging")) {
 					NavigationLink {
