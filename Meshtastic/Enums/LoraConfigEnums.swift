@@ -22,6 +22,8 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	case `in` = 10
 	case nz865 = 11
 	case th = 12
+	case ua433 = 14
+	case ua868 = 15
 	case lora24 = 13
 
 	var id: Int { self.rawValue }
@@ -54,6 +56,10 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return "New Zealand 865mhz"
 			case .th:
 				return "Thailand"
+			case .ua433:
+				return "Ukraine 433mhz"
+			case .ua868:
+				return "Ukraine 868mhz"
 			case .lora24:
 				return "2.4 GHZ"
 			}
@@ -90,6 +96,10 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 				return Config.LoRaConfig.RegionCode.nz865
 			case .th:
 				return Config.LoRaConfig.RegionCode.th
+			case .ua433:
+				return Config.LoRaConfig.RegionCode.ua433
+			case .ua868:
+				return Config.LoRaConfig.RegionCode.ua868
 			case .lora24:
 				return Config.LoRaConfig.RegionCode.lora24
 		}
@@ -100,6 +110,7 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 	
 	case LongFast = 0
 	case LongSlow = 1
+	case LongModerate = 7
 	case VLongSlow = 2
 	case MedSlow = 3
 	case MedFast = 4
@@ -115,6 +126,8 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 				return "Long Range - Fast"
 			case .LongSlow:
 				return "Long Range - Slow"
+			case .LongModerate:
+				return "Long Range - Moderate"
 			case .VLongSlow:
 				return "Very Long Range - Slow"
 			case .MedSlow:
@@ -136,10 +149,12 @@ enum ModemPresets : Int, CaseIterable, Identifiable {
 				return Config.LoRaConfig.ModemPreset.longFast
 			case .LongSlow:
 				return Config.LoRaConfig.ModemPreset.longSlow
+			case .LongModerate:
+				return Config.LoRaConfig.ModemPreset.longModerate
 			case .VLongSlow:
-			return Config.LoRaConfig.ModemPreset.veryLongSlow
+				return Config.LoRaConfig.ModemPreset.veryLongSlow
 			case .MedSlow:
-			return Config.LoRaConfig.ModemPreset.mediumSlow
+				return Config.LoRaConfig.ModemPreset.mediumSlow
 			case .MedFast:
 				return Config.LoRaConfig.ModemPreset.mediumFast
 			case .ShortSlow:

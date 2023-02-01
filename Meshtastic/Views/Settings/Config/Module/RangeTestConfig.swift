@@ -46,7 +46,7 @@ struct RangeTestConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil || !(node != nil && node!.myInfo?.hasWifi ?? false))
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -62,14 +62,16 @@ struct RangeTestConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
+					
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				var rtc = ModuleConfig.RangeTestConfig()
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -92,6 +94,15 @@ struct RangeTestConfig: View {
 				self.save = node?.rangeTestConfig?.save ?? false
 				self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
 				self.hasChanges = false
+				
+				// Need to request a RangeTestModule Config from the remote node before allowing changes
+				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
+					print("empty range test module config")
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode.id > 0 {
+						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
+				}
 			}
 			.onChange(of: enabled) { newEnabled in
 				if node != nil && node!.rangeTestConfig != nil {

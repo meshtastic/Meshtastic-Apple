@@ -97,7 +97,7 @@ struct SerialConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(node == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.serialConfig == nil)
 			
 			Button {
 							
@@ -118,9 +118,10 @@ struct SerialConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					var sc = ModuleConfig.SerialConfig()
 					sc.enabled = enabled
 					sc.echo = echo
@@ -130,7 +131,7 @@ struct SerialConfig: View {
 					sc.timeout = UInt32(timeout)
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode.user!, toUser: node!.user!)
 					
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -160,6 +161,15 @@ struct SerialConfig: View {
 				self.timeout = Int(node?.serialConfig?.timeout ?? 0)
 				self.mode = Int(node?.serialConfig?.mode ?? 0)
 				self.hasChanges = false
+				
+				// Need to request a SerialModuleConfig from the remote node before allowing changes
+				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
+					print("empty serial module config")
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode.id > 0 {
+						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
+				}
 
 			}
 			.onChange(of: enabled) { newEnabled in

@@ -61,7 +61,7 @@ struct TelemetryConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -77,7 +77,8 @@ struct TelemetryConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					var tc = ModuleConfig.TelemetryConfig()
@@ -86,7 +87,7 @@ struct TelemetryConfig: View {
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: node!.user!, toUser:  node!.user!)
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode.user!, toUser:  node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -111,6 +112,15 @@ struct TelemetryConfig: View {
 				self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 				self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 				self.hasChanges = false
+				
+				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
+				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
+					print("empty telemetry module config")
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode.id > 0 {
+						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
+				}
 			}
 			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
 				if node != nil && node!.telemetryConfig != nil {

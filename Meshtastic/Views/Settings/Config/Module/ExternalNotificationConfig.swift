@@ -138,7 +138,7 @@ struct ExternalNotificationConfig: View {
 				}
 			}
 		}
-		.disabled(bleManager.connectedPeripheral == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.externalNotificationConfig == nil)
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {
@@ -154,7 +154,8 @@ struct ExternalNotificationConfig: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 			Button(buttonText) {
 				var enc = ModuleConfig.ExternalNotificationConfig()
@@ -171,7 +172,7 @@ struct ExternalNotificationConfig: View {
 				enc.outputVibra = UInt32(outputVibra)
 				enc.outputMs = UInt32(outputMilliseconds)
 				enc.usePwm = usePWM
-				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: node!.user!, toUser: node!.user!)
+				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode.user!, toUser: node!.user!)
 				if adminMessageId > 0{
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -205,6 +206,15 @@ struct ExternalNotificationConfig: View {
 			self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
 			self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
 			self.hasChanges = false
+			
+			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
+				print("empty external notification module config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
+			}
 		}
 		.onChange(of: enabled) { newEnabled in
 			if node != nil && node!.externalNotificationConfig != nil {

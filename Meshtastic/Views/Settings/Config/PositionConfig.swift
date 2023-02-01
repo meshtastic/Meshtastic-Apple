@@ -185,14 +185,11 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
 			
 			Button {
-							
 				isPresentingSaveConfirm = true
-				
 			} label: {
-				
 				Label("save", systemImage: "square.and.arrow.down")
 			}
 			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
@@ -205,14 +202,14 @@ struct PositionConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					
 					if fixedPosition {
 						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantResponse: false)
 					}
-					
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					var pc = Config.PositionConfig()
 					pc.positionBroadcastSmartEnabled = smartPositionEnabled
 					pc.gpsEnabled = deviceGpsEnabled
@@ -232,7 +229,7 @@ struct PositionConfig: View {
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
 					pc.positionFlags = UInt32(pf.rawValue)
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -278,6 +275,14 @@ struct PositionConfig: View {
 			
 			self.hasChanges = false
 			
+			// Need to request a PositionConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
+				print("empty position config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
+			}
 		}
 		.onChange(of: deviceGpsEnabled) { newDeviceGps in
 			if node != nil && node!.positionConfig != nil {

@@ -15,7 +15,7 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	@AppStorage("meshMapType") var type: String = "hybrid"
+	
 	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
 		didSet {
 			if customTileServer == "" {
@@ -39,7 +39,7 @@ struct NodeMap: View {
 				  ), animation: .easeIn)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	@State private var mapType: MKMapType = .standard
+	@State private var mapType: MKMapType?
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
@@ -68,7 +68,9 @@ struct NodeMap: View {
 						editingWaypoint = wpId
 						presentingWaypointForm = true
 					}
-				}, positions: Array(positions), waypoints: Array(waypoints), mapViewType: mapType,
+				}, positions: Array(positions),
+					waypoints: Array(waypoints),
+					mapViewType: mapType ?? MKMapType.standard,
 					centerOnPositionsOnly: false,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays

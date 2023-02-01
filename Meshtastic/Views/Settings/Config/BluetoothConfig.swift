@@ -14,7 +14,6 @@ struct BluetoothConfig: View {
 	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
-	var connectedNode: NodeInfoEntity?
 	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -80,7 +79,7 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.disabled(bleManager.connectedPeripheral == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
 		
 		Button {
 			isPresentingSaveConfirm = true
@@ -97,14 +96,15 @@ struct BluetoothConfig: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 			Button(buttonText) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				var bc = Config.BluetoothConfig()
 				bc.enabled = enabled
 				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
 				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: node!.user!, toUser: node!.user!)
+				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
 					// for now just disable the button after a successful save
@@ -127,15 +127,13 @@ struct BluetoothConfig: View {
 			self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
 			self.hasChanges = false
 			
-			// Need to request a LoRaConfig from the remote node before allowing changes
-			if node?.bluetoothConfig == nil {
-				print("empty bluetooth config")
-				
-			}
-			
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if connectedNode != nil && node?.bluetoothConfig == nil {
-				_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
+				print("empty bluetooth config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
 			}
 		}
 		.onChange(of: enabled) { newEnabled in

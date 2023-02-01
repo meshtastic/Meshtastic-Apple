@@ -106,7 +106,7 @@ struct Settings: View {
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
-						UserConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 					
 						Image(systemName: "person.crop.rectangle.fill")
@@ -116,14 +116,13 @@ struct Settings: View {
 					.tag(SettingsSidebar.userConfig)
 					
 					NavigationLink() {
-						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "dot.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("lora")
 					}
 					.tag(SettingsSidebar.loraConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
@@ -136,14 +135,13 @@ struct Settings: View {
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
-						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
 					.tag(SettingsSidebar.bluetoothConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -153,7 +151,6 @@ struct Settings: View {
 						Text("device")
 					}
 					.tag(SettingsSidebar.deviceConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -163,7 +160,6 @@ struct Settings: View {
 						Text("display")
 					}
 					.tag(SettingsSidebar.displayConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -174,7 +170,6 @@ struct Settings: View {
 						Text("network")
 					}
 					.tag(SettingsSidebar.networkConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				
 					NavigationLink {
 						PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -185,7 +180,6 @@ struct Settings: View {
 						Text("position")
 					}
 					.tag(SettingsSidebar.positionConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 				}
 				Section("module.configuration") {
@@ -200,7 +194,6 @@ struct Settings: View {
 						Text("canned.messages")
 					}
 					.tag(SettingsSidebar.cannedMessagesConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -210,7 +203,6 @@ struct Settings: View {
 						Text("external.notification")
 					}
 					.tag(SettingsSidebar.externalNotificationConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -220,7 +212,6 @@ struct Settings: View {
 						Text("mqtt")
 					}
 					.tag(SettingsSidebar.mqttConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -230,7 +221,6 @@ struct Settings: View {
 						Text("range.test")
 					}
 					.tag(SettingsSidebar.rangeTestConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -240,7 +230,6 @@ struct Settings: View {
 						Text("serial")
 					}
 					.tag(SettingsSidebar.serialConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -250,7 +239,6 @@ struct Settings: View {
 						Text("telemetry")
 					}
 					.tag(SettingsSidebar.telemetryConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				}
 				Section(header: Text("logging")) {
 					NavigationLink {
