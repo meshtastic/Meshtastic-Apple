@@ -185,7 +185,7 @@ struct PositionConfig: View {
 					}
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
 			
 			Button {
 				isPresentingSaveConfirm = true

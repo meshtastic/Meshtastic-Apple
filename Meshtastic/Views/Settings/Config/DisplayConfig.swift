@@ -97,7 +97,7 @@ struct DisplayConfig: View {
 					.listRowSeparator(.visible)
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
 		
 		Button {
 						

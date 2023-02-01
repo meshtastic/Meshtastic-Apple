@@ -85,7 +85,7 @@ struct DeviceConfig: View {
 				}
 				
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
 			
 			HStack {
 				

@@ -79,7 +79,7 @@ struct BluetoothConfig: View {
 				}
 			}
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
 		
 		Button {
 			isPresentingSaveConfirm = true

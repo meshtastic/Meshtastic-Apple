@@ -91,7 +91,7 @@ struct NetworkConfig: View {
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
-			.disabled(!(node != nil))
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.networkConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
