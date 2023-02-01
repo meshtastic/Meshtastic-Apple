@@ -357,11 +357,11 @@ struct NodeDetail: View {
 							}
 						}
 						
-						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
+						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num && node.metadata != nil {
 							
 							HStack {
 								
-								if node.metadata != nil && node.metadata?.canShutdown ?? false {
+								if node.metadata?.canShutdown ?? false {
 									
 									Button(action: {
 										showingShutdownConfirm = true
@@ -440,6 +440,10 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
+					
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: node.myInfo!.adminIndex, context: context)
+
 				}
 				.task(id: node.num) {
 					do {
