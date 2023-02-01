@@ -48,9 +48,9 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-		upsertNetworkConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-		upsertPositionConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -813,10 +813,10 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
 				
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-				upsertNetworkConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
 				
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-				upsertPositionConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
 
 			}
 		} else {

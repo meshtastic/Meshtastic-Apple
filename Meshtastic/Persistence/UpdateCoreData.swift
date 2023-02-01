@@ -363,7 +363,7 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 	}
 }
 
-func upsertNetworkConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.network.config %@", comment: "Network config received: %@"), String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
@@ -378,12 +378,16 @@ func upsertNetworkConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].networkConfig == nil {
 				let newNetworkConfig = NetworkConfigEntity(context: context)
-				newNetworkConfig.wifiSsid = config.network.wifiSsid
-				newNetworkConfig.wifiPsk = config.network.wifiPsk
+				newNetworkConfig.wifiEnabled = config.wifiEnabled
+				newNetworkConfig.wifiSsid = config.wifiSsid
+				newNetworkConfig.wifiPsk = config.wifiPsk
+				newNetworkConfig.ethEnabled = config.ethEnabled
 				fetchedNode[0].networkConfig = newNetworkConfig
 			} else {
-				fetchedNode[0].networkConfig?.wifiSsid = config.network.wifiSsid
-				fetchedNode[0].networkConfig?.wifiPsk = config.network.wifiPsk
+				fetchedNode[0].networkConfig?.ethEnabled = config.ethEnabled
+				fetchedNode[0].networkConfig?.wifiEnabled = config.wifiEnabled
+				fetchedNode[0].networkConfig?.wifiSsid = config.wifiSsid
+				fetchedNode[0].networkConfig?.wifiPsk = config.wifiPsk
 			}
 			
 			do {
@@ -404,7 +408,7 @@ func upsertNetworkConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 	}
 }
 
-func upsertPositionConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.config %@", comment: "Positon config received: %@"), String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
@@ -419,22 +423,22 @@ func upsertPositionConfigPacket(config: Config, nodeNum: Int64, context: NSManag
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].positionConfig == nil {
 				let newPositionConfig = PositionConfigEntity(context: context)
-				newPositionConfig.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
-				newPositionConfig.deviceGpsEnabled = config.position.gpsEnabled
-				newPositionConfig.fixedPosition = config.position.fixedPosition
-				newPositionConfig.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-				newPositionConfig.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-				newPositionConfig.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-				newPositionConfig.positionFlags = Int32(config.position.positionFlags)
+				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
+				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
+				newPositionConfig.fixedPosition = config.fixedPosition
+				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
+				newPositionConfig.gpsAttemptTime = Int32(config.gpsAttemptTime)
+				newPositionConfig.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				newPositionConfig.positionFlags = Int32(config.positionFlags)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
-				fetchedNode[0].positionConfig?.smartPositionEnabled = config.position.positionBroadcastSmartEnabled
-				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.position.gpsEnabled
-				fetchedNode[0].positionConfig?.fixedPosition = config.position.fixedPosition
-				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.position.gpsUpdateInterval)
-				fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.position.gpsAttemptTime)
-				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.position.positionBroadcastSecs)
-				fetchedNode[0].positionConfig?.positionFlags = Int32(config.position.positionFlags)
+				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
+				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
+				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
+				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
+				fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.gpsAttemptTime)
+				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {
 				try context.save()
