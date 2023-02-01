@@ -194,7 +194,6 @@ struct Settings: View {
 						Text("canned.messages")
 					}
 					.tag(SettingsSidebar.cannedMessagesConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -204,7 +203,6 @@ struct Settings: View {
 						Text("external.notification")
 					}
 					.tag(SettingsSidebar.externalNotificationConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -214,7 +212,6 @@ struct Settings: View {
 						Text("mqtt")
 					}
 					.tag(SettingsSidebar.mqttConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -233,7 +230,6 @@ struct Settings: View {
 						Text("serial")
 					}
 					.tag(SettingsSidebar.serialConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))

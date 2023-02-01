@@ -200,7 +200,7 @@ struct CannedMessagesConfig: View {
 				.disabled(configPreset > 0)
 			}
 			.scrollDismissesKeyboard(.immediately)
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.cannedMessageConfig == nil)
 			
 			Button {
 				isPresentingSaveConfirm = true
@@ -287,6 +287,15 @@ struct CannedMessagesConfig: View {
 				self.messages = node?.cannedMessageConfig?.messages ?? ""
 				self.hasChanges = false
 				self.hasMessagesChanges = false
+				
+				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
+				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
+					print("empty canned messages module config")
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode.id > 0 {
+						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					}
+				}
 			}
 			.onChange(of: configPreset) { newPreset in
 				

@@ -57,338 +57,17 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 func moduleConfig (config: ModuleConfig, context:NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 	
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessage.config %@", comment: "Canned Message module config received: %@"), String(nodeNum))
-		MeshLogger.log("🥫 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
-			// Found a node, save Canned Message Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].cannedMessageConfig == nil {
-					
-					let newCannedMessageConfig = CannedMessageConfigEntity(context: context)
-					
-					newCannedMessageConfig.enabled = config.cannedMessage.enabled
-					newCannedMessageConfig.sendBell = config.cannedMessage.sendBell
-					newCannedMessageConfig.rotary1Enabled = config.cannedMessage.rotary1Enabled
-					newCannedMessageConfig.updown1Enabled = config.cannedMessage.updown1Enabled
-					newCannedMessageConfig.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
-					newCannedMessageConfig.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
-					newCannedMessageConfig.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
-					newCannedMessageConfig.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
-					newCannedMessageConfig.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
-					newCannedMessageConfig.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
-					
-					fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
-					
-				} else {
-					
-					fetchedNode[0].cannedMessageConfig?.enabled = config.cannedMessage.enabled
-					fetchedNode[0].cannedMessageConfig?.sendBell = config.cannedMessage.sendBell
-					fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.cannedMessage.rotary1Enabled
-					fetchedNode[0].cannedMessageConfig?.updown1Enabled = config.cannedMessage.updown1Enabled
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(config.cannedMessage.inputbrokerPinA)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(config.cannedMessage.inputbrokerPinB)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(config.cannedMessage.inputbrokerPinPress)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = Int32(config.cannedMessage.inputbrokerEventCw.rawValue)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.cannedMessage.inputbrokerEventCcw.rawValue)
-					fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.cannedMessage.inputbrokerEventPress.rawValue)
-				}
-				
-				do {
-					try context.save()
-					print("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
-		
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.externalnotification.config %@", comment: "External Notifiation module config received: %@"), String(nodeNum))
-		MeshLogger.log("📣 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save External Notificaitone Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].externalNotificationConfig == nil {
-					let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
-					newExternalNotificationConfig.enabled = config.externalNotification.enabled
-					newExternalNotificationConfig.usePWM = config.externalNotification.usePwm
-					newExternalNotificationConfig.alertBell = config.externalNotification.alertBell
-					newExternalNotificationConfig.alertBellBuzzer = config.externalNotification.alertBellBuzzer
-					newExternalNotificationConfig.alertBellVibra = config.externalNotification.alertBellVibra
-					newExternalNotificationConfig.alertMessage = config.externalNotification.alertMessage
-					newExternalNotificationConfig.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
-					newExternalNotificationConfig.alertMessageVibra = config.externalNotification.alertMessageVibra
-					newExternalNotificationConfig.active = config.externalNotification.active
-					newExternalNotificationConfig.output = Int32(config.externalNotification.output)
-					newExternalNotificationConfig.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
-					newExternalNotificationConfig.outputVibra = Int32(config.externalNotification.outputVibra)
-					newExternalNotificationConfig.outputMilliseconds = Int32(config.externalNotification.outputMs)
-					newExternalNotificationConfig.nagTimeout = Int32(config.externalNotification.nagTimeout)
-					fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
-					
-				} else {
-					fetchedNode[0].externalNotificationConfig?.enabled = config.externalNotification.enabled
-					fetchedNode[0].externalNotificationConfig?.usePWM = config.externalNotification.usePwm
-					fetchedNode[0].externalNotificationConfig?.alertBell = config.externalNotification.alertBell
-					fetchedNode[0].externalNotificationConfig?.alertBellBuzzer = config.externalNotification.alertBellBuzzer
-					fetchedNode[0].externalNotificationConfig?.alertBellVibra = config.externalNotification.alertBellVibra
-					fetchedNode[0].externalNotificationConfig?.alertMessage = config.externalNotification.alertMessage
-					fetchedNode[0].externalNotificationConfig?.alertMessageBuzzer = config.externalNotification.alertMessageBuzzer
-					fetchedNode[0].externalNotificationConfig?.alertMessageVibra = config.externalNotification.alertMessageVibra
-					fetchedNode[0].externalNotificationConfig?.active = config.externalNotification.active
-					fetchedNode[0].externalNotificationConfig?.output = Int32(config.externalNotification.output)
-					fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(config.externalNotification.outputBuzzer)
-					fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.externalNotification.outputVibra)
-					fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.externalNotification.outputMs)
-					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.externalNotification.nagTimeout)
-				}
-				
-				do {
-					try context.save()
-					print("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))
-		MeshLogger.log("🌉 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save MQTT Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].mqttConfig == nil {
-					let newMQTTConfig = MQTTConfigEntity(context: context)
-					newMQTTConfig.enabled = config.mqtt.enabled
-					newMQTTConfig.address = config.mqtt.address
-					newMQTTConfig.address = config.mqtt.username
-					newMQTTConfig.password = config.mqtt.password
-					newMQTTConfig.encryptionEnabled = config.mqtt.encryptionEnabled
-					newMQTTConfig.jsonEnabled = config.mqtt.jsonEnabled
-					fetchedNode[0].mqttConfig = newMQTTConfig
-				} else {
-					fetchedNode[0].mqttConfig?.enabled = config.mqtt.enabled
-					fetchedNode[0].mqttConfig?.address = config.mqtt.address
-					fetchedNode[0].mqttConfig?.address = config.mqtt.username
-					fetchedNode[0].mqttConfig?.password = config.mqtt.password
-					fetchedNode[0].mqttConfig?.encryptionEnabled = config.mqtt.encryptionEnabled
-					fetchedNode[0].mqttConfig?.jsonEnabled = config.mqtt.jsonEnabled
-				}
-				do {
-					try context.save()
-					print("💾 Updated MQTT Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
-		MeshLogger.log("⛰️ \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save Device Config
-			if !fetchedNode.isEmpty {
-				if fetchedNode[0].rangeTestConfig == nil {
-					let newRangeTestConfig = RangeTestConfigEntity(context: context)
-					newRangeTestConfig.sender = Int32(config.rangeTest.sender)
-					newRangeTestConfig.enabled = config.rangeTest.enabled
-					newRangeTestConfig.save = config.rangeTest.save
-					fetchedNode[0].rangeTestConfig = newRangeTestConfig
-				} else {
-					fetchedNode[0].rangeTestConfig?.sender = Int32(config.rangeTest.sender)
-					fetchedNode[0].rangeTestConfig?.enabled = config.rangeTest.enabled
-					fetchedNode[0].rangeTestConfig?.save = config.rangeTest.save
-				}
-				do {
-					try context.save()
-					print("💾 Updated Range Test Config for node number: \(String(nodeNum))")
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
-				}
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
-			}
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.serial.config %@", comment: "Serial module config received: %@"), String(nodeNum))
-		MeshLogger.log("🤖 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
-			// Found a node, save Device Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].serialConfig == nil {
-					
-					let newSerialConfig = SerialConfigEntity(context: context)
-					newSerialConfig.enabled = config.serial.enabled
-					newSerialConfig.echo = config.serial.echo
-					newSerialConfig.rxd = Int32(config.serial.rxd)
-					newSerialConfig.txd = Int32(config.serial.txd)
-					newSerialConfig.baudRate = Int32(config.serial.baud.rawValue)
-					newSerialConfig.timeout = Int32(config.serial.timeout)
-					newSerialConfig.mode = Int32(config.serial.mode.rawValue)
-					fetchedNode[0].serialConfig = newSerialConfig
-					
-				} else {
-					fetchedNode[0].serialConfig?.enabled = config.serial.enabled
-					fetchedNode[0].serialConfig?.echo = config.serial.echo
-					fetchedNode[0].serialConfig?.rxd = Int32(config.serial.rxd)
-					fetchedNode[0].serialConfig?.txd = Int32(config.serial.txd)
-					fetchedNode[0].serialConfig?.baudRate = Int32(config.serial.baud.rawValue)
-					fetchedNode[0].serialConfig?.timeout = Int32(config.serial.timeout)
-					fetchedNode[0].serialConfig?.mode = Int32(config.serial.mode.rawValue)
-				}
-				
-				do {
-					try context.save()
-					print("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
-					
-				} catch {
-					
-					context.rollback()
-					
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data SerialConfigEntity: \(nsError)")
-				}
-				
-			} else {
-				
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
-			}
-			
-		} catch {
-			
-			let nsError = error as NSError
-			print("💥 Fetching node for core data SerialConfigEntity failed: \(nsError)")
-		}
-	}
-	
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
-		
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.config %@", comment: "Telemetry module config received: %@"), String(nodeNum))
-		MeshLogger.log("📈 \(logString)")
-		
-		let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-		fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
-		
-		do {
-			
-			let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			// Found a node, save Telemetry Config
-			if !fetchedNode.isEmpty {
-				
-				if fetchedNode[0].telemetryConfig == nil {
-					
-					let newTelemetryConfig = TelemetryConfigEntity(context: context)
-					
-					newTelemetryConfig.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
-					newTelemetryConfig.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
-					newTelemetryConfig.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-					newTelemetryConfig.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
-					newTelemetryConfig.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-					
-					fetchedNode[0].telemetryConfig = newTelemetryConfig
-					
-				} else {
-					
-					fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.telemetry.deviceUpdateInterval)
-					fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.telemetry.environmentUpdateInterval)
-					fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.telemetry.environmentMeasurementEnabled
-					fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.telemetry.environmentScreenEnabled
-					fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.telemetry.environmentDisplayFahrenheit
-				}
-				
-				do {
-					try context.save()
-					print("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
-					
-				} catch {
-					context.rollback()
-					let nsError = error as NSError
-					print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
-				}
-				
-			} else {
-				print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
-			}
-			
-		} catch {
-			let nsError = error as NSError
-			print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
-		}
+		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
+		upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
+		upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
+		upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
+		upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
+		upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -800,9 +479,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
 			
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
-		
+			
 			let config = adminMessage.getConfigResponse
-
+			
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
 				
@@ -817,8 +496,32 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
-
+				
 			}
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
+			
+			let moduleConfig = adminMessage.getModuleConfigResponse
+			
+			if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
+				upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from), context: context)
+				
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
+				upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from), context: context)
+				
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
+				upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from), context: context)
+				
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
+				upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from), context: context)
+				
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
+				upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from), context: context)
+				
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
+				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
+				
+			}
+			
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}

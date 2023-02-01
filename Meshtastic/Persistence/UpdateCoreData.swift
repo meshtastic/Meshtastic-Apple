@@ -7,14 +7,14 @@
 import CoreData
 
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
-
+	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
-
+	
 	do {
-
+		
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
+		
 		let newPostions = [PositionEntity]()
 		fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
 		
@@ -26,7 +26,7 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			context.rollback()
 			return false
 		}
-
+		
 	} catch {
 		print("💥 Fetch NodeInfoEntity Error")
 		return false
@@ -37,11 +37,11 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
-
+	
 	do {
-
+		
 		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-			
+		
 		let emptyTelemetry = [TelemetryEntity]()
 		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
 		
@@ -53,7 +53,7 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 			context.rollback()
 			return false
 		}
-
+		
 	} catch {
 		print("💥 Fetch NodeInfoEntity Error")
 		return false
@@ -63,9 +63,9 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObjectContext) {
 	do {
 		let objects = channel.allPrivateMessages
-		   for object in objects {
-			   context.delete(object)
-		   }
+		for object in objects {
+			context.delete(object)
+		}
 		try context.save()
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
@@ -73,12 +73,12 @@ public func deleteChannelMessages(channel: ChannelEntity, context: NSManagedObje
 }
 
 public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext) {
-
+	
 	do {
 		let objects = user.messageList
-		   for object in objects {
-			   context.delete(object)
-		   }
+		for object in objects {
+			context.delete(object)
+		}
 		try context.save()
 	} catch let error as NSError {
 		print("Error: \(error.localizedDescription)")
@@ -92,11 +92,11 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 		let entity = persistenceController.managedObjectModel.entities[i]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
 		let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-			
+		
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
 		} catch let error as NSError {
-			 print(error)
+			print(error)
 		}
 	}
 }
@@ -112,7 +112,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	do {
 		
 		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
-
+			
 			// Don't save empty position packets
 			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000)
 			{
@@ -454,5 +454,339 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 	} catch {
 		let nsError = error as NSError
 		print("💥 Fetching node for core data PositionConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessage.config %@", comment: "Canned Message module config received: %@"), String(nodeNum))
+	MeshLogger.log("🥫 \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		
+		// Found a node, save Canned Message Config
+		if !fetchedNode.isEmpty {
+			
+			if fetchedNode[0].cannedMessageConfig == nil {
+				
+				let newCannedMessageConfig = CannedMessageConfigEntity(context: context)
+				
+				newCannedMessageConfig.enabled = config.enabled
+				newCannedMessageConfig.sendBell = config.sendBell
+				newCannedMessageConfig.rotary1Enabled = config.rotary1Enabled
+				newCannedMessageConfig.updown1Enabled = config.updown1Enabled
+				newCannedMessageConfig.inputbrokerPinA = Int32(config.inputbrokerPinA)
+				newCannedMessageConfig.inputbrokerPinB = Int32(config.inputbrokerPinB)
+				newCannedMessageConfig.inputbrokerPinPress = Int32(config.inputbrokerPinPress)
+				newCannedMessageConfig.inputbrokerEventCw = Int32(config.inputbrokerEventCw.rawValue)
+				newCannedMessageConfig.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
+				newCannedMessageConfig.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
+				
+				fetchedNode[0].cannedMessageConfig = newCannedMessageConfig
+				
+			} else {
+				
+				fetchedNode[0].cannedMessageConfig?.enabled = config.enabled
+				fetchedNode[0].cannedMessageConfig?.sendBell = config.sendBell
+				fetchedNode[0].cannedMessageConfig?.rotary1Enabled = config.rotary1Enabled
+				fetchedNode[0].cannedMessageConfig?.updown1Enabled = config.updown1Enabled
+				fetchedNode[0].cannedMessageConfig?.inputbrokerPinA = Int32(config.inputbrokerPinA)
+				fetchedNode[0].cannedMessageConfig?.inputbrokerPinB = Int32(config.inputbrokerPinB)
+				fetchedNode[0].cannedMessageConfig?.inputbrokerPinPress = Int32(config.inputbrokerPinPress)
+				fetchedNode[0].cannedMessageConfig?.inputbrokerEventCw = Int32(config.inputbrokerEventCw.rawValue)
+				fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
+				fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
+			}
+			
+			do {
+				try context.save()
+				print("💾 Updated Canned Message Module Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data CannedMessageConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Canned Message Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data CannedMessageConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.externalnotification.config %@", comment: "External Notifiation module config received: %@"), String(nodeNum))
+	MeshLogger.log("📣 \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		// Found a node, save External Notificaitone Config
+		if !fetchedNode.isEmpty {
+			
+			if fetchedNode[0].externalNotificationConfig == nil {
+				let newExternalNotificationConfig = ExternalNotificationConfigEntity(context: context)
+				newExternalNotificationConfig.enabled = config.enabled
+				newExternalNotificationConfig.usePWM = config.usePwm
+				newExternalNotificationConfig.alertBell = config.alertBell
+				newExternalNotificationConfig.alertBellBuzzer = config.alertBellBuzzer
+				newExternalNotificationConfig.alertBellVibra = config.alertBellVibra
+				newExternalNotificationConfig.alertMessage = config.alertMessage
+				newExternalNotificationConfig.alertMessageBuzzer = config.alertMessageBuzzer
+				newExternalNotificationConfig.alertMessageVibra = config.alertMessageVibra
+				newExternalNotificationConfig.active = config.active
+				newExternalNotificationConfig.output = Int32(config.output)
+				newExternalNotificationConfig.outputBuzzer = Int32(config.outputBuzzer)
+				newExternalNotificationConfig.outputVibra = Int32(config.outputVibra)
+				newExternalNotificationConfig.outputMilliseconds = Int32(config.outputMs)
+				newExternalNotificationConfig.nagTimeout = Int32(config.nagTimeout)
+				fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
+				
+			} else {
+				fetchedNode[0].externalNotificationConfig?.enabled = config.enabled
+				fetchedNode[0].externalNotificationConfig?.usePWM = config.usePwm
+				fetchedNode[0].externalNotificationConfig?.alertBell = config.alertBell
+				fetchedNode[0].externalNotificationConfig?.alertBellBuzzer = config.alertBellBuzzer
+				fetchedNode[0].externalNotificationConfig?.alertBellVibra = config.alertBellVibra
+				fetchedNode[0].externalNotificationConfig?.alertMessage = config.alertMessage
+				fetchedNode[0].externalNotificationConfig?.alertMessageBuzzer = config.alertMessageBuzzer
+				fetchedNode[0].externalNotificationConfig?.alertMessageVibra = config.alertMessageVibra
+				fetchedNode[0].externalNotificationConfig?.active = config.active
+				fetchedNode[0].externalNotificationConfig?.output = Int32(config.output)
+				fetchedNode[0].externalNotificationConfig?.outputBuzzer = Int32(config.outputBuzzer)
+				fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.outputVibra)
+				fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.outputMs)
+				fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.nagTimeout)
+			}
+			
+			do {
+				try context.save()
+				print("💾 Updated External Notification Module Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))
+	MeshLogger.log("🌉 \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		// Found a node, save MQTT Config
+		if !fetchedNode.isEmpty {
+			
+			if fetchedNode[0].mqttConfig == nil {
+				let newMQTTConfig = MQTTConfigEntity(context: context)
+				newMQTTConfig.enabled = config.enabled
+				newMQTTConfig.address = config.address
+				newMQTTConfig.address = config.username
+				newMQTTConfig.password = config.password
+				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
+				newMQTTConfig.jsonEnabled = config.jsonEnabled
+				fetchedNode[0].mqttConfig = newMQTTConfig
+			} else {
+				fetchedNode[0].mqttConfig?.enabled = config.enabled
+				fetchedNode[0].mqttConfig?.address = config.address
+				fetchedNode[0].mqttConfig?.address = config.username
+				fetchedNode[0].mqttConfig?.password = config.password
+				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
+				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
+			}
+			do {
+				try context.save()
+				print("💾 Updated MQTT Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data MQTTConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save MQTT Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data MQTTConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
+	MeshLogger.log("⛰️ \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		// Found a node, save Device Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].rangeTestConfig == nil {
+				let newRangeTestConfig = RangeTestConfigEntity(context: context)
+				newRangeTestConfig.sender = Int32(config.sender)
+				newRangeTestConfig.enabled = config.enabled
+				newRangeTestConfig.save = config.save
+				fetchedNode[0].rangeTestConfig = newRangeTestConfig
+			} else {
+				fetchedNode[0].rangeTestConfig?.sender = Int32(config.sender)
+				fetchedNode[0].rangeTestConfig?.enabled = config.enabled
+				fetchedNode[0].rangeTestConfig?.save = config.save
+			}
+			do {
+				try context.save()
+				print("💾 Updated Range Test Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data RangeTestConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Range Test Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data RangeTestConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.serial.config %@", comment: "Serial module config received: %@"), String(nodeNum))
+	MeshLogger.log("🤖 \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		
+		// Found a node, save Device Config
+		if !fetchedNode.isEmpty {
+			
+			if fetchedNode[0].serialConfig == nil {
+				
+				let newSerialConfig = SerialConfigEntity(context: context)
+				newSerialConfig.enabled = config.enabled
+				newSerialConfig.echo = config.echo
+				newSerialConfig.rxd = Int32(config.rxd)
+				newSerialConfig.txd = Int32(config.txd)
+				newSerialConfig.baudRate = Int32(config.baud.rawValue)
+				newSerialConfig.timeout = Int32(config.timeout)
+				newSerialConfig.mode = Int32(config.mode.rawValue)
+				fetchedNode[0].serialConfig = newSerialConfig
+				
+			} else {
+				fetchedNode[0].serialConfig?.enabled = config.enabled
+				fetchedNode[0].serialConfig?.echo = config.echo
+				fetchedNode[0].serialConfig?.rxd = Int32(config.rxd)
+				fetchedNode[0].serialConfig?.txd = Int32(config.txd)
+				fetchedNode[0].serialConfig?.baudRate = Int32(config.baud.rawValue)
+				fetchedNode[0].serialConfig?.timeout = Int32(config.timeout)
+				fetchedNode[0].serialConfig?.mode = Int32(config.mode.rawValue)
+			}
+			
+			do {
+				try context.save()
+				print("💾 Updated Serial Module Config for node number: \(String(nodeNum))")
+				
+			} catch {
+				
+				context.rollback()
+				
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data SerialConfigEntity: \(nsError)")
+			}
+			
+		} else {
+			
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Serial Module Config")
+		}
+		
+	} catch {
+		
+		let nsError = error as NSError
+		print("💥 Fetching node for core data SerialConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.config %@", comment: "Telemetry module config received: %@"), String(nodeNum))
+	MeshLogger.log("📈 \(logString)")
+	
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		// Found a node, save Telemetry Config
+		if !fetchedNode.isEmpty {
+			
+			if fetchedNode[0].telemetryConfig == nil {
+				
+				let newTelemetryConfig = TelemetryConfigEntity(context: context)
+				
+				newTelemetryConfig.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
+				newTelemetryConfig.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
+				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
+				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+				
+				fetchedNode[0].telemetryConfig = newTelemetryConfig
+				
+			} else {
+				
+				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
+				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
+				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
+				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
+				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+			}
+			
+			do {
+				try context.save()
+				print("💾 Updated Telemetry Module Config for node number: \(String(nodeNum))")
+				
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data TelemetryConfigEntity: \(nsError)")
+			}
+			
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Telemetry Module Config")
+		}
+		
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
 	}
 }
