@@ -159,7 +159,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 	}
 }
 
-func upsertBluetoothConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.bluetooth.config %@", comment: "Bluetooth config received: %@"), String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
@@ -174,14 +174,14 @@ func upsertBluetoothConfigPacket(config: Config, nodeNum: Int64, context: NSMana
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].bluetoothConfig == nil {
 				let newBluetoothConfig = BluetoothConfigEntity(context: context)
-				newBluetoothConfig.enabled = config.bluetooth.enabled
-				newBluetoothConfig.mode = Int32(config.bluetooth.mode.rawValue)
-				newBluetoothConfig.fixedPin = Int32(config.bluetooth.fixedPin)
+				newBluetoothConfig.enabled = config.enabled
+				newBluetoothConfig.mode = Int32(config.mode.rawValue)
+				newBluetoothConfig.fixedPin = Int32(config.fixedPin)
 				fetchedNode[0].bluetoothConfig = newBluetoothConfig
 			} else {
-				fetchedNode[0].bluetoothConfig?.enabled = config.bluetooth.enabled
-				fetchedNode[0].bluetoothConfig?.mode = Int32(config.bluetooth.mode.rawValue)
-				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.bluetooth.fixedPin)
+				fetchedNode[0].bluetoothConfig?.enabled = config.enabled
+				fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
+				fetchedNode[0].bluetoothConfig?.fixedPin = Int32(config.fixedPin)
 			}
 			do {
 				try context.save()
@@ -200,7 +200,7 @@ func upsertBluetoothConfigPacket(config: Config, nodeNum: Int64, context: NSMana
 	}
 }
 
-func upsertDeviceConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.config %@", comment: "Device config received: %@"), String(nodeNum))
 	MeshLogger.log("📟 \(logString)")
@@ -214,18 +214,18 @@ func upsertDeviceConfigPacket(config: Config, nodeNum: Int64, context: NSManaged
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].deviceConfig == nil {
 				let newDeviceConfig = DeviceConfigEntity(context: context)
-				newDeviceConfig.role = Int32(config.device.role.rawValue)
-				newDeviceConfig.serialEnabled = config.device.serialEnabled
-				newDeviceConfig.debugLogEnabled = config.device.debugLogEnabled
-				newDeviceConfig.buttonGpio = Int32(config.device.buttonGpio)
-				newDeviceConfig.buzzerGpio =  Int32(config.device.buzzerGpio)
+				newDeviceConfig.role = Int32(config.role.rawValue)
+				newDeviceConfig.serialEnabled = config.serialEnabled
+				newDeviceConfig.debugLogEnabled = config.debugLogEnabled
+				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
+				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
-				fetchedNode[0].deviceConfig?.role = Int32(config.device.role.rawValue)
-				fetchedNode[0].deviceConfig?.serialEnabled = config.device.serialEnabled
-				fetchedNode[0].deviceConfig?.debugLogEnabled = config.device.debugLogEnabled
-				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.device.buttonGpio)
-				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.device.buzzerGpio)
+				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
+				fetchedNode[0].deviceConfig?.serialEnabled = config.serialEnabled
+				fetchedNode[0].deviceConfig?.debugLogEnabled = config.debugLogEnabled
+				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
+				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 			}
 			do {
 				try context.save()
@@ -242,7 +242,7 @@ func upsertDeviceConfigPacket(config: Config, nodeNum: Int64, context: NSManaged
 	}
 }
 
-func upsertDisplayConfigPacket(config: Config, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 	
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.display.config %@", comment: "Display config received: %@"), String(nodeNum))
 	MeshLogger.log("🖥️ \(logString)")
@@ -260,24 +260,24 @@ func upsertDisplayConfigPacket(config: Config, nodeNum: Int64, context: NSManage
 			if fetchedNode[0].displayConfig == nil {
 				
 				let newDisplayConfig = DisplayConfigEntity(context: context)
-				newDisplayConfig.gpsFormat = Int32(config.display.gpsFormat.rawValue)
-				newDisplayConfig.screenOnSeconds = Int32(config.display.screenOnSecs)
-				newDisplayConfig.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
-				newDisplayConfig.compassNorthTop = config.display.compassNorthTop
-				newDisplayConfig.flipScreen = config.display.flipScreen
-				newDisplayConfig.oledType = Int32(config.display.oled.rawValue)
-				newDisplayConfig.displayMode = Int32(config.display.displaymode.rawValue)
+				newDisplayConfig.gpsFormat = Int32(config.gpsFormat.rawValue)
+				newDisplayConfig.screenOnSeconds = Int32(config.screenOnSecs)
+				newDisplayConfig.screenCarouselInterval = Int32(config.autoScreenCarouselSecs)
+				newDisplayConfig.compassNorthTop = config.compassNorthTop
+				newDisplayConfig.flipScreen = config.flipScreen
+				newDisplayConfig.oledType = Int32(config.oled.rawValue)
+				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
 				fetchedNode[0].displayConfig = newDisplayConfig
 				
 			} else {
 				
-				fetchedNode[0].displayConfig?.gpsFormat = Int32(config.display.gpsFormat.rawValue)
-				fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.display.screenOnSecs)
-				fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.display.autoScreenCarouselSecs)
-				fetchedNode[0].displayConfig?.compassNorthTop = config.display.compassNorthTop
-				fetchedNode[0].displayConfig?.flipScreen = config.display.flipScreen
-				fetchedNode[0].displayConfig?.oledType = Int32(config.display.oled.rawValue)
-				fetchedNode[0].displayConfig?.displayMode = Int32(config.display.displaymode.rawValue)
+				fetchedNode[0].displayConfig?.gpsFormat = Int32(config.gpsFormat.rawValue)
+				fetchedNode[0].displayConfig?.screenOnSeconds = Int32(config.screenOnSecs)
+				fetchedNode[0].displayConfig?.screenCarouselInterval = Int32(config.autoScreenCarouselSecs)
+				fetchedNode[0].displayConfig?.compassNorthTop = config.compassNorthTop
+				fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
+				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
+				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
 			}
 			
 			do {

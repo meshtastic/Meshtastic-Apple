@@ -35,12 +35,14 @@ struct DeviceConfig: View {
 					
 					Picker("Device Role", selection: $deviceRole ) {
 						ForEach(DeviceRoles.allCases) { dr in
-							Text(dr.description)
+							Text(dr.name)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
-					.padding(.bottom, 10)
+					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
 				
 				Section(header: Text("Debug")) {
@@ -83,7 +85,7 @@ struct DeviceConfig: View {
 				}
 				
 			}
-			.disabled(bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 			
 			HStack {
 				
@@ -138,11 +140,9 @@ struct DeviceConfig: View {
 			HStack {
 				
 				Button {
-								
 					isPresentingSaveConfirm = true
 					
 				} label: {
-					
 					Label("save", systemImage: "square.and.arrow.down")
 				}
 				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
@@ -156,10 +156,10 @@ struct DeviceConfig: View {
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+					let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 					Button(buttonText) {
-						
+						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 						var dc = Config.DeviceConfig()
 						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
 						dc.serialEnabled = serialEnabled
@@ -167,7 +167,7 @@ struct DeviceConfig: View {
 						dc.buttonGpio = UInt32(buttonGPIO)
 						dc.buzzerGpio = UInt32(buzzerGPIO)
 						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -195,6 +195,15 @@ struct DeviceConfig: View {
 			self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 			self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 			self.hasChanges = false
+			
+			// Need to request a LoRaConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
+				print("empty device config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
+			}
 		}
 		.onChange(of: deviceRole) { newRole in
 			

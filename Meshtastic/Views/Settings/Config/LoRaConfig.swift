@@ -61,7 +61,7 @@ struct LoRaConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {

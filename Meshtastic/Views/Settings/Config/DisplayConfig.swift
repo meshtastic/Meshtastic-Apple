@@ -97,7 +97,7 @@ struct DisplayConfig: View {
 					.listRowSeparator(.visible)
 			}
 		}
-		.disabled(bleManager.connectedPeripheral == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 		
 		Button {
 						
@@ -116,9 +116,10 @@ struct DisplayConfig: View {
 			"are.you.sure",
 			isPresented: $isPresentingSaveConfirm
 		) {
-			let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 			Button(buttonText) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				var dc = Config.DisplayConfig()
 				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
 				dc.screenOnSecs = UInt32(screenOnSeconds)
@@ -128,7 +129,7 @@ struct DisplayConfig: View {
 				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: node!.user!, toUser: node!.user!)
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
 				if adminMessageId > 0 {
 					
 					// Should show a saved successfully alert once I know that to be true
@@ -156,6 +157,15 @@ struct DisplayConfig: View {
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
 			self.hasChanges = false
+			
+			// Need to request a LoRaConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
+				print("empty display config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
+			}
 		}
 		.onChange(of: screenOnSeconds) { newScreenSecs in
 			if node != nil && node!.displayConfig != nil {

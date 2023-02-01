@@ -135,14 +135,13 @@ struct Settings: View {
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink() {
-						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }), connectedNode: nodes.first(where: { $0.num == connectedNodeNum }))
+						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("bluetooth")
 					}
 					.tag(SettingsSidebar.bluetoothConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -152,7 +151,6 @@ struct Settings: View {
 						Text("device")
 					}
 					.tag(SettingsSidebar.deviceConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -162,7 +160,6 @@ struct Settings: View {
 						Text("display")
 					}
 					.tag(SettingsSidebar.displayConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 					NavigationLink {
 						NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -173,7 +170,6 @@ struct Settings: View {
 						Text("network")
 					}
 					.tag(SettingsSidebar.networkConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				
 					NavigationLink {
 						PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
@@ -184,7 +180,6 @@ struct Settings: View {
 						Text("position")
 					}
 					.tag(SettingsSidebar.positionConfig)
-					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 					
 				}
 				Section("module.configuration") {

@@ -40,11 +40,11 @@ func localConfig (config: Config, context:NSManagedObjectContext, nodeNum: Int64
 	
 	// We don't care about any of the Power settings, config is available for everything else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-		upsertBluetoothConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-		upsertDeviceConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertDeviceConfigPacket(config: config.device, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
-		upsertDisplayConfigPacket(config: config, nodeNum: nodeNum, context: context)
+		upsertDisplayConfigPacket(config: config.display, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 		upsertLoRaConfigPacket(config: config.lora, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
@@ -800,26 +800,24 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
 			
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
-			if let config = try? Config(serializedData: packet.decoded.payload) {
+		
+			let config = adminMessage.getConfigResponse
+
+			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
+				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
 				
-				if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
-					upsertBluetoothConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
-					
-				} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
-					upsertDeviceConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
-					
-				} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
-					
-					let lc = try? Config.LoRaConfig(serializedData: packet.decoded.payload)
-					upsertLoRaConfigPacket(config: lc!, nodeNum: Int64(packet.from), context: context)
-					
-				} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
-					upsertNetworkConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
-					
-				} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
-					upsertPositionConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
-					
-				}
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
+				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
+				
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
+				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
+				
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
+				upsertNetworkConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+				
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
+				upsertPositionConfigPacket(config: config, nodeNum: Int64(packet.from), context: context)
+
 			}
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")

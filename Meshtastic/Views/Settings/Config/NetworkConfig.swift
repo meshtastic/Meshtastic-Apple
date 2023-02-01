@@ -25,7 +25,6 @@ struct NetworkConfig: View {
 	@State var ethEnabled = false
 	@State var ethMode = 0
 	
-	
 	var body: some View {
 		
 		VStack {
@@ -108,9 +107,10 @@ struct NetworkConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					var network = Config.NetworkConfig()
 					network.wifiEnabled = self.wifiEnabled
 					network.wifiSsid = self.wifiSsid
@@ -118,7 +118,7 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 					
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: node!.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
@@ -143,6 +143,15 @@ struct NetworkConfig: View {
 			self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
 			self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
 			self.hasChanges = false
+			
+			// Need to request a NetworkConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
+				print("empty network config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode.id > 0 {
+					_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				}
+			}
 		}
 		.onChange(of: wifiEnabled) { newEnabled in
 			if node != nil && node!.networkConfig != nil {
