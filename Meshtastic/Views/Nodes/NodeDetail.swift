@@ -442,7 +442,10 @@ struct NodeDetail: View {
 					self.bleManager.context = context
 					
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: node.myInfo!.adminIndex, context: context)
+					if connectedNode.myInfo != nil {
+						
+						let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
+					}
 
 				}
 				.task(id: node.num) {
