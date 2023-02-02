@@ -881,7 +881,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.factoryReset = 1
+		adminPacket.factoryReset = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -905,7 +905,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.nodedbReset = 1
+		adminPacket.nodedbReset = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
