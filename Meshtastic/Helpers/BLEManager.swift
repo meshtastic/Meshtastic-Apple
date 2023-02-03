@@ -295,10 +295,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return 0 }
 
-		let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.devicemetadata %@",
-			comment: "Requesting Device Metadata for %@"), nodeName)
-		MeshLogger.log("🛎️ \(logString)")
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
@@ -834,7 +830,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.shutdownSeconds = 5
+		adminPacket.shutdownSeconds = 10
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -857,7 +853,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendReboot(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.rebootSeconds = 5
+		adminPacket.rebootSeconds = 10
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -905,7 +901,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.nodedbReset = 5
+		adminPacket.nodedbReset = 10
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
