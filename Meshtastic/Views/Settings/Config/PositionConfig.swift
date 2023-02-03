@@ -229,7 +229,7 @@ struct PositionConfig: View {
 					if includeSpeed { pf.insert(.Speed) }
 					if includeHeading { pf.insert(.Heading) }
 					pc.positionFlags = UInt32(pf.rawValue)
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

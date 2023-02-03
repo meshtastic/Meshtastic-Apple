@@ -71,7 +71,7 @@ struct RangeTestConfig: View {
 					rtc.enabled = enabled
 					rtc.save = save
 					rtc.sender = UInt32(sender)
-					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save

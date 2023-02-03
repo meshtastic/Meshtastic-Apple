@@ -1116,13 +1116,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveBluetoothConfig(config: Config.BluetoothConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveBluetoothConfig(config: Config.BluetoothConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.bluetooth = config
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1139,14 +1140,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.device = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1165,13 +1167,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		if adminIndex > 0 {
+			meshPacket.channel = UInt32(adminIndex)
+		}
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1215,14 +1220,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.position = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1244,14 +1250,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.network = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1273,14 +1280,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
+	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1301,14 +1309,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Int64 {
+	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
 		adminPacket.setCannedMessageModuleMessages = messages
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1316,7 +1325,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-		dataMessage.wantResponse = wantResponse
+		dataMessage.wantResponse = true
 		
 		meshPacket.decoded = dataMessage
 		
@@ -1327,6 +1336,138 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			return Int64(meshPacket.id)
 		}
 		
+		return 0
+	}
+	
+	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.externalNotification = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	
+	public func saveMQTTConfig(config: ModuleConfig.MQTTConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.mqtt = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	
+	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.rangeTest = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
+	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.serial = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.hopLimit = 0
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	
+	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+				
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.telemetry = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
 		return 0
 	}
 	
@@ -1723,133 +1864,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			return true
 		}
 		return false
-	}
-	
-	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-
-		var adminPacket = AdminMessage()
-		adminPacket.setModuleConfig.externalNotification = config
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		
-		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-
-		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			return Int64(meshPacket.id)
-		}
-		return 0
-	}
-	
-	public func saveMQTTConfig(config: ModuleConfig.MQTTConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		
-		var adminPacket = AdminMessage()
-		adminPacket.setModuleConfig.mqtt = config
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-		
-		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		
-		meshPacket.decoded = dataMessage
-		
-		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			return Int64(meshPacket.id)
-		}
-		return 0
-	}
-	
-	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		
-		var adminPacket = AdminMessage()
-		adminPacket.setModuleConfig.rangeTest = config
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		
-		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		
-		meshPacket.decoded = dataMessage
-
-		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-		
-		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			
-			return Int64(meshPacket.id)
-		}
-		
-		return 0
-	}
-	
-	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-		
-		var adminPacket = AdminMessage()
-		adminPacket.setModuleConfig.serial = config
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-		
-		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-
-		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			return Int64(meshPacket.id)
-		}
-		return 0
-	}
-	
-	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-				
-		var adminPacket = AdminMessage()
-		adminPacket.setModuleConfig.telemetry = config
-		
-		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(fromUser.num)
-		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-		meshPacket.priority =  MeshPacket.Priority.reliable
-		meshPacket.wantAck = true
-		
-		var dataMessage = DataMessage()
-		dataMessage.payload = try! adminPacket.serializedData()
-		dataMessage.portnum = PortNum.adminApp
-		meshPacket.decoded = dataMessage
-
-		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			return Int64(meshPacket.id)
-		}
-		return 0
 	}
 	
 	// Send an admin message to a radio, save a message to core data for logging

@@ -170,7 +170,7 @@ struct DeviceConfig: View {
 						dc.buttonGpio = UInt32(buttonGPIO)
 						dc.buzzerGpio = UInt32(buzzerGPIO)
 						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
