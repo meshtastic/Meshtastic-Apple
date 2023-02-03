@@ -123,17 +123,17 @@ struct TelemetryConfig: View {
 				}
 			}
 			.onChange(of: deviceUpdateInterval) { newDeviceInterval in
-				if node != nil && node!.telemetryConfig != nil {
+				if node != nil && node?.telemetryConfig != nil {
 					if newDeviceInterval != node!.telemetryConfig!.deviceUpdateInterval { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentUpdateInterval) { newEnvInterval in
-				if node != nil && node!.telemetryConfig != nil {
+				if node != nil && node?.telemetryConfig != nil {
 					if newEnvInterval != node!.telemetryConfig!.environmentUpdateInterval { hasChanges = true	}
 				}
 			}
 			.onChange(of: environmentMeasurementEnabled) { newEnvEnabled in
-				if node != nil && node!.telemetryConfig != nil {
+				if node != nil && node?.telemetryConfig != nil {
 					if newEnvEnabled != node!.telemetryConfig!.environmentMeasurementEnabled { hasChanges = true	}
 				}
 			}
@@ -143,7 +143,7 @@ struct TelemetryConfig: View {
 				}
 			}
 			.onChange(of: environmentDisplayFahrenheit) { newEnvDisplayF in
-				if node != nil && node!.telemetryConfig != nil {
+				if node != nil && node?.telemetryConfig != nil {
 					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
 				}
 			}

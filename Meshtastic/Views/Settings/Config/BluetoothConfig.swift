@@ -128,7 +128,7 @@ struct BluetoothConfig: View {
 			self.hasChanges = false
 			
 			// Need to request a BluetoothConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
+			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
 				print("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if connectedNode.id > 0 {
