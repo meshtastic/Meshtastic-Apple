@@ -87,56 +87,59 @@ struct DeviceConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
 			
-			HStack {
-				
-				Button("Reset NodeDB", role: .destructive) {
-					isPresentingNodeDBResetConfirm = true
-				}
-				.disabled(node?.user == nil)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"are.you.sure",
-					isPresented: $isPresentingNodeDBResetConfirm,
-					titleVisibility: .visible
-				) {
-					Button("Erase all device and app data?", role: .destructive) {
-						if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
-							bleManager.disconnectPeripheral()
-							clearCoreDataDatabase(context: context)
-						} else {
-							print("NodeDB Reset Failed")
+			// Only show these buttons for the BLE connected node
+			if bleManager.connectedPeripheral != nil && node?.num ?? -1  == bleManager.connectedPeripheral.num {
+				HStack {
+					
+					Button("Reset NodeDB", role: .destructive) {
+						isPresentingNodeDBResetConfirm = true
+					}
+					.disabled(node?.user == nil)
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
+					.confirmationDialog(
+						"are.you.sure",
+						isPresented: $isPresentingNodeDBResetConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Erase all device and app data?", role: .destructive) {
+							
+							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
+								bleManager.disconnectPeripheral()
+								clearCoreDataDatabase(context: context)
+							} else {
+								print("NodeDB Reset Failed")
+							}
 						}
 					}
-				}
-				Button("Factory Reset", role: .destructive) {
-					isPresentingFactoryResetConfirm = true
-				}
-				.disabled(node?.user == nil)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
-					isPresented: $isPresentingFactoryResetConfirm,
-					titleVisibility: .visible
-				) {
-					Button("Factory reset your device and app? ", role: .destructive) {
-						
-						if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
-							bleManager.disconnectPeripheral()
-							clearCoreDataDatabase(context: context)
-						} else {
-							print("Factory Reset Failed")
+					Button("Factory Reset", role: .destructive) {
+						isPresentingFactoryResetConfirm = true
+					}
+					.disabled(node?.user == nil)
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding()
+					.confirmationDialog(
+						"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
+						isPresented: $isPresentingFactoryResetConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Factory reset your device and app? ", role: .destructive) {
 							
+							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
+								bleManager.disconnectPeripheral()
+								clearCoreDataDatabase(context: context)
+							} else {
+								print("Factory Reset Failed")
+								
+							}
 						}
 					}
 				}
 			}
-			
 			HStack {
 				
 				Button {

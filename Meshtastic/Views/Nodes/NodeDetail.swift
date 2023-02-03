@@ -379,7 +379,7 @@ struct NodeDetail: View {
 										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
-											if !bleManager.sendShutdown(fromUser: connectedNode.user!, toUser: node.user!) {
+											if !bleManager.sendShutdown(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
 												print("Shutdown Failed")
 											}
 										}
@@ -399,7 +399,7 @@ struct NodeDetail: View {
 													isPresented: $showingRebootConfirm
 								) {
 									Button("reboot.node", role: .destructive) {
-										if !bleManager.sendReboot(fromUser: connectedNode.user!, toUser: node.user!) {
+										if !bleManager.sendReboot(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
 											print("Reboot Failed")
 										}
 									}

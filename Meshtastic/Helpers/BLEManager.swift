@@ -827,22 +827,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 	}
 	
-	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity) -> Bool {
+	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.shutdownSeconds = 10
+		adminPacket.shutdownSeconds = 5
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Sent Shutdown Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		let messageDescription = "🚀 Sent Shutdown Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -850,10 +851,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return false
 	}
 	
-	public func sendReboot(fromUser: UserEntity, toUser: UserEntity) -> Bool {
+	public func sendReboot(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.rebootSeconds = 10
+		adminPacket.rebootSeconds = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
@@ -861,13 +862,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
+		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Sent Reboot Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		let messageDescription = "🚀 Sent Reboot Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -891,7 +892,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Sent Factory Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		let messageDescription = "🚀 Sent Factory Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -909,13 +910,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Sent NodeDB Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		let messageDescription = "🚀 Sent NodeDB Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
