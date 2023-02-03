@@ -443,10 +443,13 @@ struct NodeDetail: View {
 				.onAppear {
 					self.bleManager.context = context
 					
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode.myInfo != nil {
+					if bleManager.connectedPeripheral != nil {
 						
-						let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
+						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+						if connectedNode.myInfo != nil {
+							
+							let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
+						}
 					}
 
 				}
