@@ -303,6 +303,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -318,13 +319,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func sendTraceRouteRequest(destNum: Int64,  wantResponse: Bool) -> Bool {
 		
 		var success = false
+		guard (connectedPeripheral!.peripheral.state == CBPeripheralState.connected) else { return success }
+
 		let fromNodeNum = connectedPeripheral.num
-
 		let routePacket = RouteDiscovery()
-
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
-		meshPacket.from	= UInt32(fromNodeNum)//0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
+		meshPacket.from	= UInt32(fromNodeNum)
+		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! routePacket.serializedData()
 		dataMessage.portnum = PortNum.tracerouteApp
@@ -1105,7 +1107,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved User Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved User Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1128,7 +1130,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1153,7 +1155,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Device Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1178,7 +1180,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved Display Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1204,7 +1206,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-		let messageDescription = "Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -1232,7 +1234,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1261,7 +1263,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Network Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1289,7 +1291,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1318,7 +1320,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "💾 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1335,7 +1337,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= 0 //UInt32(cnodeNum)
+		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
@@ -1363,8 +1365,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.getCannedMessageModuleMessagesRequest = true
 		
 		var meshPacket: MeshPacket = MeshPacket()
-		meshPacket.to = UInt32(connectedPeripheral.num)
-		meshPacket.from	= 0 //UInt32(connectedPeripheral.num)
+		meshPacket.to = UInt32(destNum)
+		meshPacket.from	= UInt32(connectedPeripheral.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
@@ -1404,6 +1406,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1431,6 +1434,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1458,6 +1462,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1485,6 +1490,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1514,6 +1520,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1540,6 +1547,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1566,6 +1574,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1592,6 +1601,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1618,6 +1628,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1644,6 +1655,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1670,6 +1682,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1696,6 +1709,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
 		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
