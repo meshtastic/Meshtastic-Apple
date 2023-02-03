@@ -357,11 +357,12 @@ struct NodeDetail: View {
 							}
 						}
 						
-						if self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num && self.bleManager.connectedPeripheral.num == node.num {
+						if (self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num)
+							|| (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
 							
 							HStack {
-								
-								if node.metadata != nil && node.metadata?.canShutdown ?? false {
+								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+								if node.metadata?.canShutdown ?? false {
 									
 									Button(action: {
 										showingShutdownConfirm = true
@@ -378,7 +379,7 @@ struct NodeDetail: View {
 										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
-											if !bleManager.sendShutdown(fromUser: node.user!, toUser: node.user!) {
+											if !bleManager.sendShutdown(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
 												print("Shutdown Failed")
 											}
 										}
@@ -398,7 +399,7 @@ struct NodeDetail: View {
 													isPresented: $showingRebootConfirm
 								) {
 									Button("reboot.node", role: .destructive) {
-										if !bleManager.sendReboot(fromUser: node.user!, toUser: node.user!) {
+										if !bleManager.sendReboot(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
 											print("Reboot Failed")
 										}
 									}
@@ -407,21 +408,22 @@ struct NodeDetail: View {
 							.padding(5)
 							Divider()
 						}
-						
-						VStack {
-							AsyncImage(url: attributionLogo) { image in
-								image
-									.resizable()
-									.scaledToFit()
-							} placeholder: {
-								ProgressView()
-									.controlSize(.mini)
+						if node.positions?.count ?? 0 > 0 {
+							VStack {
+								AsyncImage(url: attributionLogo) { image in
+									image
+										.resizable()
+										.scaledToFit()
+								} placeholder: {
+									ProgressView()
+										.controlSize(.mini)
+								}
+								.frame(height: 15)
+								
+								Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
 							}
-							.frame(height: 15)
-							
-							Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+							.font(.footnote)
 						}
-						.font(.footnote)
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
@@ -440,6 +442,16 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
+					
+					if bleManager.connectedPeripheral != nil {
+						
+						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+						if connectedNode.myInfo != nil {
+							
+							let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
+						}
+					}
+
 				}
 				.task(id: node.num) {
 					do {
@@ -456,9 +468,7 @@ struct NodeDetail: View {
 							let attribution = try await WeatherService.shared.attribution
 							attributionLink = attribution.legalPageURL
 							attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
-							
 						}
-						
 					} catch {
 						print("Could not gather weather information...", error.localizedDescription)
 						condition = .clear

@@ -131,7 +131,7 @@ struct SerialConfig: View {
 					sc.timeout = UInt32(timeout)
 					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 					
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
 					
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true

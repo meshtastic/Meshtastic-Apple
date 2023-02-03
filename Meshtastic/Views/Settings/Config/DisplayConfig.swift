@@ -129,7 +129,7 @@ struct DisplayConfig: View {
 				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 				
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!)
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					
 					// Should show a saved successfully alert once I know that to be true

@@ -85,7 +85,7 @@ struct Settings: View {
 									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 									
 									if adminMessageId > 0 {
-										print("Saved node metadata")
+										print("Sent node metadata request from node details")
 									}
 								}
 							}

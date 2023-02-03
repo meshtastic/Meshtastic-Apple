@@ -118,7 +118,7 @@ struct NetworkConfig: View {
 					network.ethEnabled = self.ethEnabled
 					//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 					
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!)
+					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
