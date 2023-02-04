@@ -759,6 +759,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			wayPointEntity.icon	= Int64(waypoint.icon)
 			wayPointEntity.latitudeI = waypoint.latitudeI
 			wayPointEntity.longitudeI = waypoint.longitudeI
+			if waypoint.expire > 0 {
+				wayPointEntity.expire = Date.init(timeIntervalSince1970: Double(waypoint.expire))
+			} else {
+				wayPointEntity.expire = nil
+			}
+			if waypoint.lockedTo > 0 {
+				wayPointEntity.locked = Int64(waypoint.lockedTo)
+			} else {
+				wayPointEntity.locked = 0
+			}
 			do {
 				try context!.save()
 				print("💾 Updated Waypoint from Waypoint App Packet From: \(fromNodeNum)")
