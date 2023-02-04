@@ -146,6 +146,7 @@
 "mesh.log.device.config %@"="Device config received: %@";
 "mesh.log.display.config %@"="Display config received: %@";
 "mesh.log.devicemetadata %@"="Requesting Device Metadata for %@";
+"mesh.log.device.metadata.received %@"="Device Metadata admin message received from: %@";
 "mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
