@@ -109,15 +109,15 @@ struct WaypointFormView: View {
 						}
 					
 				}
-//				Toggle(isOn: $expires) {
-//					Label("Expires", systemImage: "clock.badge.xmark")
-//				}
-//				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-//				if expires {
-//					DatePicker("Expire", selection: $expire, in: Date.now...)
-//						.datePickerStyle(.compact)
-//						.font(.callout)
-//				}
+				Toggle(isOn: $expires) {
+					Label("Expires", systemImage: "clock.badge.xmark")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				if expires {
+					DatePicker("Expire", selection: $expire, in: Date.now...)
+						.datePickerStyle(.compact)
+						.font(.callout)
+				}
 				Toggle(isOn: $locked) {
 					Label("Locked", systemImage: "lock")
 				}
@@ -182,17 +182,56 @@ struct WaypointFormView: View {
 			.padding(.bottom)
 
 			if waypointId > 0 {
-				Button(role: .destructive) {
+				
+				Menu {
+					Button("For me", action: {
 					let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
-					bleManager.context!.delete(waypoint)
-					do {
-						try bleManager.context!.save()
-					} catch {
-						bleManager.context!.rollback()
-					}
-					dismiss()
-				} label: {
+						bleManager.context!.delete(waypoint)
+					 do {
+						 try bleManager.context!.save()
+					 } catch {
+						 bleManager.context!.rollback()
+					 }
+					 dismiss() })
+					Button("For everyone", action: {
+						var newWaypoint = Waypoint()
+						
+						if waypointId > 0 {
+							newWaypoint.id = UInt32(waypointId)
+						} else {
+							newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+						}
+						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
+						newWaypoint.description_p = description
+						newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
+						newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+						// Unicode scalar value for the icon emoji string
+						let unicodeScalers = icon.unicodeScalars
+						// First element as an UInt32
+						let unicode = unicodeScalers[unicodeScalers.startIndex].value
+						newWaypoint.icon = unicode
+						if locked {
+							
+							if lockedTo == 0 {
+								newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
+							} else {
+								newWaypoint.lockedTo = UInt32(lockedTo)
+							}
+						}
+						newWaypoint.expire = 1
+						if bleManager.sendWaypoint(waypoint: newWaypoint) {
+							waypointId = 0
+							dismiss()
+						} else {
+							waypointId = 0
+							dismiss()
+							print("Send waypoint failed")
+						}
+					})
+				}
+				label: {
 					Label("delete", systemImage: "trash")
+						.foregroundColor(.red)
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
@@ -234,11 +273,11 @@ struct WaypointFormView: View {
 				longitude = coordinate.longitude
 			}
 			
-			if coordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-				// Too close to apple park, bail out
-				waypointId = 0
-				dismiss()
-			}
+//			if coordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+//				// Too close to apple park, bail out
+//				waypointId = 0
+//				dismiss()
+//			}
 		}
 	}
 }
