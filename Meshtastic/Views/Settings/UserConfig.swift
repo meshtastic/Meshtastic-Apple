@@ -19,12 +19,13 @@ struct UserConfig: View {
 	@State var hasChanges = false
 	@State var shortName = ""
 	@State var longName = ""
+	@State var isLicensed = false
 	
 	var body: some View {
 			
 		VStack {
 			Form {
-				Section(header: Text("USER DETAILS")) {
+				Section(header: Text("User Details")) {
 					HStack {
 						Label("Long Name", systemImage: "person.crop.rectangle.fill")
 						TextField("Long Name", text: $longName)
@@ -64,6 +65,13 @@ struct UserConfig: View {
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
 					Text("The short name is used in maps and messaging and will be appended to the last 4 of the device MAC address to set the device's BLE Name.  It can be up to 4 bytes long.")
+						.font(.caption)
+					
+					Toggle(isOn: $isLicensed) {
+						Label("Licensed User", systemImage: "person.text.rectangle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Enable only if you are a licensed amateur radio user for your region.")
 						.font(.caption)
 				}
 			}

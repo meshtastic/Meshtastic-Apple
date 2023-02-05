@@ -116,7 +116,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
-			case _ as PositionEntity:
+			case let positionAnnotation as PositionEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
@@ -124,6 +124,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.clusteringIdentifier = "nodeGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
 				annotationView.titleVisibility = .adaptive
+				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
+				leftIcon.backgroundColor = UIColor(.indigo)
+				annotationView.leftCalloutAccessoryView = leftIcon
+				let subtitle = UILabel()
+				subtitle.text = "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
+				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
+				subtitle.text! += "Altitude: \(String(positionAnnotation.altitude)) \n"
+				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
+				subtitle.numberOfLines = 0
+				annotationView.detailCalloutAccessoryView = subtitle
+				//let detailsIcon = UIButton(type: .detailDisclosure)
+				//detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
+				//annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")

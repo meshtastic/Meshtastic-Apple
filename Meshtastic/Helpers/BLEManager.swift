@@ -972,7 +972,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Requested Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🎛️ Requested Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -997,7 +997,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
 
-		let messageDescription = "Saved Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
