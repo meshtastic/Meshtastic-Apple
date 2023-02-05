@@ -5,41 +5,6 @@
 //  Copyright Garth Vander Houwen 2/4/23.
 //
 
-//https://developer.apple.com/documentation/weatherkit/weathercondition
-
-// clear *
-// cloudy *
-// foggy
-// haze
-// mostlyClear
-// partlyCloudy
-// smoky *
-// breezy
-// windy
-// drizzle
-// heavyRain
-// isolatedThunderstorms
-// rain *
-// sunShowers
-// scatteredThunderstorms
-// strongStorms
-// thunderstorms
-// frigid *
-// hail
-// hot *
-// flurries
-// sleet
-// snow *
-// sunFlurries
-// wintryMix
-// blizzard
-// blowingSnow
-// freezingDrizzle
-// freezingRain
-// heavySnow
-// hurricane
-// tropicalStorm
-
 enum WeatherConditions: Int, CaseIterable, Identifiable {
 
 	case clear = 0
