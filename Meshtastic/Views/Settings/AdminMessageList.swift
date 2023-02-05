@@ -30,27 +30,26 @@ struct AdminMessageList: View {
 					
 					VStack (alignment: .leading) {
 						
-						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown")) - \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")
+						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown"))")
+							.font(.caption)
+							 
+						Text("Sent \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")
+							.foregroundColor(.gray)
 							.font(.caption2)
 						
-						HStack{
-							if am.receivedACK {
-								
-								Image(systemName: "checkmark.square")
-									.foregroundColor(.gray)
-									.font(.caption)
-								Text("routing.acknowledged").foregroundColor(.gray).font(.caption) + Text(": \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
-									.foregroundColor(.gray)
-									.font(.caption)
-								
-							} else {
-								let ackErrorVal = RoutingError(rawValue: Int(am.ackError))
-								Image(systemName: "square")
-									.foregroundColor(.gray)
-									.font(.caption)
+						HStack (spacing: 0) {
+							let ackErrorVal = RoutingError(rawValue: Int(am.ackError))
+							
+							if am.ackTimestamp > 0 {
 								Text(ackErrorVal?.display ?? "Empty Ack Error")
+									.foregroundColor(am.receivedACK ? .gray : .red)
+									.font(.caption2)
+							}
+							
+							if am.receivedACK  && am.ackTimestamp > 0 {
+								Text(" \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
 									.foregroundColor(.gray)
-									.font(.caption)
+									.font(.caption2)
 							}
 						}
 					}
