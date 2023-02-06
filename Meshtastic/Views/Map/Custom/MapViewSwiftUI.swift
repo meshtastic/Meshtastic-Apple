@@ -130,7 +130,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let subtitle = UILabel()
 				subtitle.text = "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
 				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
-				subtitle.text! += "Altitude: \(String(positionAnnotation.altitude)) \n"
+				let distanceFormatter = MKDistanceFormatter()
+				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
+				if positionAnnotation.nodePosition?.metadata != nil {
+					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
+					
+					if pf.contains(.Satsinview) {
+						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
+					} else if pf.contains(.Speed) {
+						let formatter = MeasurementFormatter()
+						formatter.locale = Locale.current
+						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
+					}
+				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle

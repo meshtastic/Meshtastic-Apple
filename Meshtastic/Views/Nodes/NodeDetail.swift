@@ -13,7 +13,6 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@State var satsInView = 0
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
@@ -85,11 +84,6 @@ struct NodeDetail: View {
 										.pickerStyle(.menu)
 										.padding(5)
 										VStack {
-											if mostRecent.satsInView > 0 {
-												Text("Sats: \(mostRecent.satsInView)")
-													.font(.caption)
-													.padding(.bottom, 1)
-											}
 											Label(temperature?.formatted() ?? "??", systemImage: symbolName)
 												.font(.caption)
 										}
@@ -446,7 +440,7 @@ struct NodeDetail: View {
 					if bleManager.connectedPeripheral != nil {
 						
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						if connectedNode.myInfo != nil {
+						if connectedNode.user != nil && node.user != nil &&  connectedNode.myInfo != nil {
 							
 							let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
 						}
