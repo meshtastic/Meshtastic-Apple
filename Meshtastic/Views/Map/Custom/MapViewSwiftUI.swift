@@ -174,7 +174,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				leftIcon.backgroundColor = UIColor(.accentColor)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				if subtitle.text?.count ?? 0 > 0 {
+				if waypointAnnotation.longDescription?.count ?? 0 > 0 {
 					subtitle.text = (waypointAnnotation.longDescription ?? "") + "\n"
 				}
 				else {
