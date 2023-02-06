@@ -134,21 +134,27 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
 				if positionAnnotation.nodePosition?.metadata != nil {
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
-					
 					if pf.contains(.Satsinview) {
 						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
-					} else if pf.contains(.Speed) {
+					}
+					if pf.contains(.SeqNo) {
+						subtitle.text! += "Sequence: \(String(positionAnnotation.seqNo)) \n"
+					}
+					if pf.contains(.Speed) {
 						let formatter = MeasurementFormatter()
 						formatter.locale = Locale.current
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
+					}
+					if pf.contains(.Heading) {
+						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
 					}
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
-				//let detailsIcon = UIButton(type: .detailDisclosure)
-				//detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
-				//annotationView.rightCalloutAccessoryView = detailsIcon
+				let detailsIcon = UIButton(type: .detailDisclosure)
+				detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
+				annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
