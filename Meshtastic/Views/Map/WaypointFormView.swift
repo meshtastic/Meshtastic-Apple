@@ -151,8 +151,10 @@ struct WaypointFormView: View {
 						newWaypoint.lockedTo = UInt32(lockedTo)
 					}
 				}
-				if expire.timeIntervalSince1970 > 0 {
+				if expires {
 					newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+				} else {
+					newWaypoint.expire = 0
 				}
 				if bleManager.sendWaypoint(waypoint: newWaypoint) {
 					waypointId = 0
@@ -198,9 +200,7 @@ struct WaypointFormView: View {
 						
 						if waypointId > 0 {
 							newWaypoint.id = UInt32(waypointId)
-						} else {
-							newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
-						}
+						} 
 						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 						newWaypoint.description_p = description
 						newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)

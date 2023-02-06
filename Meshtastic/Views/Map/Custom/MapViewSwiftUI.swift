@@ -174,7 +174,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				leftIcon.backgroundColor = UIColor(.accentColor)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				subtitle.text = waypointAnnotation.longDescription
+				if subtitle.text?.count ?? 0 > 0 {
+					subtitle.text = (waypointAnnotation.longDescription ?? "") + "\n"
+				}
+				else {
+					subtitle.text = ""
+				}
+				if waypointAnnotation.created != nil {
+					subtitle.text! += "Created: \(waypointAnnotation.created?.formatted() ?? "Unknown") \n"
+				}
+				if waypointAnnotation.lastUpdated != nil {
+					subtitle.text! += "Updated: \(waypointAnnotation.lastUpdated?.formatted() ?? "Unknown") \n"
+				}
+				if waypointAnnotation.expire != nil {
+					subtitle.text! += "Expires: \(waypointAnnotation.expire?.formatted() ?? "Unknown") \n"
+				}
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
 				let editIcon = UIButton(type: .detailDisclosure)

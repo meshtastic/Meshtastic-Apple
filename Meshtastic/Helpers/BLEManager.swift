@@ -759,7 +759,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			wayPointEntity.icon	= Int64(waypoint.icon)
 			wayPointEntity.latitudeI = waypoint.latitudeI
 			wayPointEntity.longitudeI = waypoint.longitudeI
-			if waypoint.expire > 0 {
+			
+			if waypoint.expire > 1 {
 				wayPointEntity.expire = Date.init(timeIntervalSince1970: Double(waypoint.expire))
 			} else {
 				wayPointEntity.expire = nil
@@ -768,6 +769,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				wayPointEntity.locked = Int64(waypoint.lockedTo)
 			} else {
 				wayPointEntity.locked = 0
+			}
+			if wayPointEntity.created == nil {
+				wayPointEntity.created = Date()
+			} else {
+				wayPointEntity.lastUpdated = Date()
 			}
 			do {
 				try context!.save()

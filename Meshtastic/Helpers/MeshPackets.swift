@@ -806,9 +806,10 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				waypoint.locked = Int64(waypointMessage.lockedTo)
 				if waypointMessage.expire > 0 {
 					waypoint.expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+				}else {
+					waypoint.expire = nil
 				}
 				waypoint.created = Date()
-				waypoint.lastUpdated = Date()
 				do {
 					try context.save()
 					print("💾 Updated Node Waypoint App Packet For: \(waypoint.id)")
@@ -825,8 +826,10 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				fetchedWaypoint[0].longitudeI = waypointMessage.longitudeI
 				fetchedWaypoint[0].icon = Int64(waypointMessage.icon)
 				fetchedWaypoint[0].locked = Int64(waypointMessage.lockedTo)
-				if waypointMessage.expire > 0 {
+				if waypointMessage.expire > 1 {
 					fetchedWaypoint[0].expire = Date(timeIntervalSince1970: TimeInterval(Int64(waypointMessage.expire)))
+				} else {
+					fetchedWaypoint[0].expire = nil
 				}
 				fetchedWaypoint[0].lastUpdated = Date()
 				do {
