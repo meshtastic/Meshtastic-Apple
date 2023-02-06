@@ -36,10 +36,10 @@ class LocationHelper: NSObject, ObservableObject {
 	
 	static var currentHeading: CLLocationDirection {
 
-		guard let speed = shared.locationManager.location?.course else {
+		guard let heading = shared.locationManager.location?.course else {
 			return DefaultHeading
 		}
-		return speed
+		return heading
 	}
 	
 	static var currentTimestamp: Date {

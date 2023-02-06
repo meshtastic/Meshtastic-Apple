@@ -759,7 +759,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			wayPointEntity.icon	= Int64(waypoint.icon)
 			wayPointEntity.latitudeI = waypoint.latitudeI
 			wayPointEntity.longitudeI = waypoint.longitudeI
-			if waypoint.expire > 0 {
+			
+			if waypoint.expire > 1 {
 				wayPointEntity.expire = Date.init(timeIntervalSince1970: Double(waypoint.expire))
 			} else {
 				wayPointEntity.expire = nil
@@ -768,6 +769,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				wayPointEntity.locked = Int64(waypoint.lockedTo)
 			} else {
 				wayPointEntity.locked = 0
+			}
+			if wayPointEntity.created == nil {
+				wayPointEntity.created = Date()
+			} else {
+				wayPointEntity.lastUpdated = Date()
 			}
 			do {
 				try context!.save()
@@ -796,15 +802,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		// Get Errors without some speed
-		if LocationHelper.currentSpeed >= 5 {
-			
+		if LocationHelper.currentSpeed >= 0 {
 			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed)
+		}
+		if LocationHelper.currentHeading >= 0 {
 			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
 		}
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
-		meshPacket.from	= 0 // Send 0 as from from phone to device to avoid warning about client trying to set node num
+		meshPacket.from	= UInt32(fromNodeNum)
 	
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()

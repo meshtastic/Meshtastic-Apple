@@ -130,13 +130,31 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let subtitle = UILabel()
 				subtitle.text = "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
 				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
-				subtitle.text! += "Altitude: \(String(positionAnnotation.altitude)) \n"
+				let distanceFormatter = MKDistanceFormatter()
+				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
+				if positionAnnotation.nodePosition?.metadata != nil {
+					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
+					if pf.contains(.Satsinview) {
+						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
+					}
+					if pf.contains(.SeqNo) {
+						subtitle.text! += "Sequence: \(String(positionAnnotation.seqNo)) \n"
+					}
+					if pf.contains(.Speed) {
+						let formatter = MeasurementFormatter()
+						formatter.locale = Locale.current
+						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
+					}
+					if pf.contains(.Heading) {
+						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+					}
+				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
-				//let detailsIcon = UIButton(type: .detailDisclosure)
-				//detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
-				//annotationView.rightCalloutAccessoryView = detailsIcon
+				let detailsIcon = UIButton(type: .detailDisclosure)
+				detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
+				annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
@@ -156,7 +174,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				leftIcon.backgroundColor = UIColor(.accentColor)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				subtitle.text = waypointAnnotation.longDescription
+				if subtitle.text?.count ?? 0 > 0 {
+					subtitle.text = (waypointAnnotation.longDescription ?? "") + "\n"
+				}
+				else {
+					subtitle.text = ""
+				}
+				if waypointAnnotation.created != nil {
+					subtitle.text! += "Created: \(waypointAnnotation.created?.formatted() ?? "Unknown") \n"
+				}
+				if waypointAnnotation.lastUpdated != nil {
+					subtitle.text! += "Updated: \(waypointAnnotation.lastUpdated?.formatted() ?? "Unknown") \n"
+				}
+				if waypointAnnotation.expire != nil {
+					subtitle.text! += "Expires: \(waypointAnnotation.expire?.formatted() ?? "Unknown") \n"
+				}
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
 				let editIcon = UIButton(type: .detailDisclosure)
