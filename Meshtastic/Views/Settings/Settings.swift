@@ -57,7 +57,7 @@ struct Settings: View {
 				if node?.myInfo?.adminIndex ?? 0 > 0 {
 					Section("Configure") {
 						Picker("Configuring Node", selection: $selectedNode) {
-							if connectedNodeNum == 0 {
+							if selectedNode == 0 {
 								Text("Connect to a Node").tag(0)
 							}
 							ForEach(nodes) { node in

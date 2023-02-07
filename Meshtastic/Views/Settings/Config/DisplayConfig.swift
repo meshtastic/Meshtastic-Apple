@@ -120,22 +120,24 @@ struct DisplayConfig: View {
 			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 			Button(buttonText) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				var dc = Config.DisplayConfig()
-				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
-				dc.screenOnSecs = UInt32(screenOnSeconds)
-				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
-				dc.compassNorthTop = compassNorthTop
-				dc.flipScreen = flipScreen
-				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
-				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
-				
-				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-				if adminMessageId > 0 {
+				if connectedNode != nil {
+					var dc = Config.DisplayConfig()
+					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+					dc.screenOnSecs = UInt32(screenOnSeconds)
+					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+					dc.compassNorthTop = compassNorthTop
+					dc.flipScreen = flipScreen
+					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 					
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		}
@@ -162,8 +164,8 @@ struct DisplayConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
 				print("empty display config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestDisplayConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

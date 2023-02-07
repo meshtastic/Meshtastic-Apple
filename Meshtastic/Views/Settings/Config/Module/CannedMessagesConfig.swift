@@ -292,8 +292,8 @@ struct CannedMessagesConfig: View {
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
 					print("empty canned messages module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode.id > 0 {
-						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if connectedNode != nil && connectedNode!.num > 0 {
+						_ = bleManager.requestCannedMessagesModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}

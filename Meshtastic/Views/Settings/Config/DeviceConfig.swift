@@ -163,21 +163,23 @@ struct DeviceConfig: View {
 					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 					Button(buttonText) {
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						var dc = Config.DeviceConfig()
-						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-						dc.serialEnabled = serialEnabled
-						dc.debugLogEnabled = debugLogEnabled
-						dc.buttonGpio = UInt32(buttonGPIO)
-						dc.buzzerGpio = UInt32(buzzerGPIO)
-						
-						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
+						if connectedNode != nil {
+							var dc = Config.DeviceConfig()
+							dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+							dc.serialEnabled = serialEnabled
+							dc.debugLogEnabled = debugLogEnabled
+							dc.buttonGpio = UInt32(buttonGPIO)
+							dc.buzzerGpio = UInt32(buzzerGPIO)
+							
+							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+							if adminMessageId > 0 {
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
 						}
-					} 
+					}
 				}
 				message: {
 					Text("config.save.confirm")
@@ -203,8 +205,8 @@ struct DeviceConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestDeviceConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

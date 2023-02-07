@@ -207,34 +207,37 @@ struct PositionConfig: View {
 				Button(buttonText) {
 					
 					if fixedPosition {
-						_ = bleManager.sendPosition(destNum: bleManager.connectedPeripheral.num, wantResponse: false)
+						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true)
 					}
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					var pc = Config.PositionConfig()
-					pc.positionBroadcastSmartEnabled = smartPositionEnabled
-					pc.gpsEnabled = deviceGpsEnabled
-					pc.fixedPosition = fixedPosition
-					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
-					pc.gpsAttemptTime = UInt32(gpsAttemptTime)
-					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-					var pf : PositionFlags = []
-					if includeAltitude { pf.insert(.Altitude) }
-					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
-					if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
-					if includeDop { pf.insert(.Dop) }
-					if includeHvdop { pf.insert(.Hvdop) }
-					if includeSatsinview { pf.insert(.Satsinview) }
-					if includeSeqNo { pf.insert(.SeqNo) }
-					if includeTimestamp { pf.insert(.Timestamp) }
-					if includeSpeed { pf.insert(.Speed) }
-					if includeHeading { pf.insert(.Heading) }
-					pc.positionFlags = UInt32(pf.rawValue)
-					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					
+					if connectedNode != nil {
+						var pc = Config.PositionConfig()
+						pc.positionBroadcastSmartEnabled = smartPositionEnabled
+						pc.gpsEnabled = deviceGpsEnabled
+						pc.fixedPosition = fixedPosition
+						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
+						pc.gpsAttemptTime = UInt32(gpsAttemptTime)
+						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+						var pf : PositionFlags = []
+						if includeAltitude { pf.insert(.Altitude) }
+						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
+						if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
+						if includeDop { pf.insert(.Dop) }
+						if includeHvdop { pf.insert(.Hvdop) }
+						if includeSatsinview { pf.insert(.Satsinview) }
+						if includeSeqNo { pf.insert(.SeqNo) }
+						if includeTimestamp { pf.insert(.Timestamp) }
+						if includeSpeed { pf.insert(.Speed) }
+						if includeHeading { pf.insert(.Heading) }
+						pc.positionFlags = UInt32(pf.rawValue)
+						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -279,8 +282,8 @@ struct PositionConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestPositionConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil &&  connectedNode!.num > 0 {
+					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

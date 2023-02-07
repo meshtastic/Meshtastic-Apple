@@ -78,21 +78,23 @@ struct TelemetryConfig: View {
 				titleVisibility: .visible
 			) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
-				Button(buttonText) {
-					var tc = ModuleConfig.TelemetryConfig()
-					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
-					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
-					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-					tc.environmentScreenEnabled = environmentScreenEnabled
-					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode.user!, toUser:  node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+				if connectedNode != nil {
+					let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
+					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+					Button(buttonText) {
+						var tc = ModuleConfig.TelemetryConfig()
+						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+						tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
+						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+						tc.environmentScreenEnabled = environmentScreenEnabled
+						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+						let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser:  node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -117,8 +119,8 @@ struct TelemetryConfig: View {
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
 					print("empty telemetry module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode.id > 0 {
-						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if connectedNode != nil && connectedNode!.num > 0 {
+						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}

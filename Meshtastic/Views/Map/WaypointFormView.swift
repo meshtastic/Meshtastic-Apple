@@ -273,11 +273,11 @@ struct WaypointFormView: View {
 				longitude = coordinate.longitude
 			}
 			
-//			if coordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-//				// Too close to apple park, bail out
-//				waypointId = 0
-//				dismiss()
-//			}
+			if coordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+				// Too close to apple park, bail out
+				waypointId = 0
+				dismiss()
+			}
 		}
 	}
 }

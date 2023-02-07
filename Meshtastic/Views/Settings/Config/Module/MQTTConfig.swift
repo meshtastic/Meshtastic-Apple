@@ -144,22 +144,24 @@ struct MQTTConfig: View {
 			titleVisibility: .visible
 		) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
-			Button(buttonText) {
-				var mqtt = ModuleConfig.MQTTConfig()
-				mqtt.enabled = self.enabled
-				mqtt.address = self.address
-				mqtt.username = self.username
-				mqtt.password = self.password
-				mqtt.encryptionEnabled = self.encryptionEnabled
-				mqtt.jsonEnabled = self.jsonEnabled
-				let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+			if connectedNode != nil {
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
+					var mqtt = ModuleConfig.MQTTConfig()
+					mqtt.enabled = self.enabled
+					mqtt.address = self.address
+					mqtt.username = self.username
+					mqtt.password = self.password
+					mqtt.encryptionEnabled = self.encryptionEnabled
+					mqtt.jsonEnabled = self.jsonEnabled
+					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		}
@@ -185,8 +187,8 @@ struct MQTTConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
 				print("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

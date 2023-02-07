@@ -122,22 +122,24 @@ struct SerialConfig: View {
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					var sc = ModuleConfig.SerialConfig()
-					sc.enabled = enabled
-					sc.echo = echo
-					sc.rxd = UInt32(rxd)
-					sc.txd = UInt32(txd)
-					sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
-					sc.timeout = UInt32(timeout)
-					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
-					
-					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-					
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					if connectedNode != nil {
+						var sc = ModuleConfig.SerialConfig()
+						sc.enabled = enabled
+						sc.echo = echo
+						sc.rxd = UInt32(rxd)
+						sc.txd = UInt32(txd)
+						sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+						sc.timeout = UInt32(timeout)
+						sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
+						
+						let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			}
@@ -166,8 +168,8 @@ struct SerialConfig: View {
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
 					print("empty serial module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode.id > 0 {
-						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+					if connectedNode != nil && connectedNode!.num > 0 {
+						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}
 

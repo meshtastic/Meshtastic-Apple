@@ -100,16 +100,18 @@ struct BluetoothConfig: View {
 			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 			Button(buttonText) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				var bc = Config.BluetoothConfig()
-				bc.enabled = enabled
-				bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
-				bc.fixedPin = UInt32(fixedPin) ?? 123456
-				let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-				if adminMessageId > 0 {
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+				if connectedNode != nil {
+					var bc = Config.BluetoothConfig()
+					bc.enabled = enabled
+					bc.mode = BluetoothModes(rawValue: mode)?.protoEnumValue() ?? Config.BluetoothConfig.PairingMode.randomPin
+					bc.fixedPin = UInt32(fixedPin) ?? 123456
+					let adminMessageId =  bleManager.saveBluetoothConfig(config: bc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		} message: {
@@ -131,8 +133,8 @@ struct BluetoothConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
 				print("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

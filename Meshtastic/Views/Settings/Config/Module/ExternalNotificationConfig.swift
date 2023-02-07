@@ -155,29 +155,31 @@ struct ExternalNotificationConfig: View {
 			titleVisibility: .visible
 		) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
-			Button(buttonText) {
-				var enc = ModuleConfig.ExternalNotificationConfig()
-				enc.enabled = enabled
-				enc.alertBell = alertBell
-				enc.alertBellBuzzer = alertBellBuzzer
-				enc.alertBellVibra = alertBellVibra
-				enc.alertMessage = alertMessage
-				enc.alertMessageBuzzer = alertMessageBuzzer
-				enc.alertMessageVibra = alertMessageVibra
-				enc.active = active
-				enc.output = UInt32(output)
-				enc.outputBuzzer = UInt32(outputBuzzer)
-				enc.outputVibra = UInt32(outputVibra)
-				enc.outputMs = UInt32(outputMilliseconds)
-				enc.usePwm = usePWM
-				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-				if adminMessageId > 0{
-					// Should show a saved successfully alert once I know that to be true
-					// for now just disable the button after a successful save
-					hasChanges = false
-					goBack()
+			if connectedNode != nil {
+				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
+				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				Button(buttonText) {
+					var enc = ModuleConfig.ExternalNotificationConfig()
+					enc.enabled = enabled
+					enc.alertBell = alertBell
+					enc.alertBellBuzzer = alertBellBuzzer
+					enc.alertBellVibra = alertBellVibra
+					enc.alertMessage = alertMessage
+					enc.alertMessageBuzzer = alertMessageBuzzer
+					enc.alertMessageVibra = alertMessageVibra
+					enc.active = active
+					enc.output = UInt32(output)
+					enc.outputBuzzer = UInt32(outputBuzzer)
+					enc.outputVibra = UInt32(outputVibra)
+					enc.outputMs = UInt32(outputMilliseconds)
+					enc.usePwm = usePWM
+					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0{
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
+					}
 				}
 			}
 		}
@@ -211,8 +213,8 @@ struct ExternalNotificationConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
 				print("empty external notification module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestExternalNotificationModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

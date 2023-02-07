@@ -29,14 +29,15 @@ struct NodeMap: View {
 			}
 		}
 	}
+	//&& nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)],
-				  predicate: NSPredicate(format: "time >= %@", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .easeIn)
+				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .easeIn)
+				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType?

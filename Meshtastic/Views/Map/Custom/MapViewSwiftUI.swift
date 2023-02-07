@@ -79,9 +79,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
-		mapView.removeAnnotations(mapView.annotations)
-		mapView.addAnnotations(positions)
-		mapView.addAnnotations(waypoints)
+		
+		DispatchQueue.main.async {
+			mapView.removeAnnotations(mapView.annotations)
+			mapView.addAnnotations(positions)
+			mapView.addAnnotations(waypoints)
+		}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
@@ -123,6 +126,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.glyphText = "📟"
 				annotationView.clusteringIdentifier = "nodeGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
+				annotationView.displayPriority = .required
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.indigo)
@@ -174,7 +178,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				leftIcon.backgroundColor = UIColor(.accentColor)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				if subtitle.text?.count ?? 0 > 0 {
+				if waypointAnnotation.longDescription?.count ?? 0 > 0 {
 					subtitle.text = (waypointAnnotation.longDescription ?? "") + "\n"
 				}
 				else {

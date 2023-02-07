@@ -7,7 +7,7 @@
 
 import CoreData
 
-public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {
+public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoEntity? {
 	
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
@@ -18,9 +18,9 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 			return fetchNodeInfo[0]
 		}
 	} catch {
-		return NodeInfoEntity(context: context)
+		return nil
 	}
-	return NodeInfoEntity(context: context)
+	return nil
 }
 
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
