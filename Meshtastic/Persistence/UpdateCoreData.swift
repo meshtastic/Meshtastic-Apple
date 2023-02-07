@@ -327,6 +327,8 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 				newLoRaConfig.spreadFactor = Int32(config.spreadFactor)
 				newLoRaConfig.codingRate = Int32(config.codingRate)
 				newLoRaConfig.frequencyOffset = config.frequencyOffset
+				newLoRaConfig.overrideFrequency = config.overrideFrequency
+				newLoRaConfig.overrideDutyCycle = config.overrideDutyCycle
 				newLoRaConfig.hopLimit = Int32(config.hopLimit)
 				newLoRaConfig.txPower = Int32(config.txPower)
 				newLoRaConfig.txEnabled = config.txEnabled
@@ -340,6 +342,8 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 				fetchedNode[0].loRaConfig?.spreadFactor = Int32(config.spreadFactor)
 				fetchedNode[0].loRaConfig?.codingRate = Int32(config.codingRate)
 				fetchedNode[0].loRaConfig?.frequencyOffset = config.frequencyOffset
+				fetchedNode[0].loRaConfig?.overrideFrequency = config.overrideFrequency
+				fetchedNode[0].loRaConfig?.overrideDutyCycle = config.overrideDutyCycle
 				fetchedNode[0].loRaConfig?.hopLimit = Int32(config.hopLimit)
 				fetchedNode[0].loRaConfig?.txPower = Int32(config.txPower)
 				fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled

@@ -92,6 +92,8 @@
         <attribute name="frequencyOffset" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="hopLimit" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="modemPreset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="overrideDutyCycle" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="overrideFrequency" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="regionCode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="spreadFactor" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="txEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
