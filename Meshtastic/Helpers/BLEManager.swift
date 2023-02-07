@@ -920,11 +920,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		
 		var adminPacket = AdminMessage()
-		adminPacket.nodedbReset = 10
+		adminPacket.nodedbReset = 5
 		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.from	= 0 // UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true

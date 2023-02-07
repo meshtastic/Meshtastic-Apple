@@ -123,6 +123,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.glyphText = "📟"
 				annotationView.clusteringIdentifier = "nodeGroup"
 				annotationView.markerTintColor = UIColor(.indigo)
+				annotationView.displayPriority = .required
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.indigo)
