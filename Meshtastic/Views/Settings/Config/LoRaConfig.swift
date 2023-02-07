@@ -81,18 +81,20 @@ struct LoRaConfig: View {
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					var lc = Config.LoRaConfig()
-					lc.hopLimit = UInt32(hopLimit)
-					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-					lc.usePreset = true
-					lc.txEnabled = true
-					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					if connectedNode != nil {
+						var lc = Config.LoRaConfig()
+						lc.hopLimit = UInt32(hopLimit)
+						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+						lc.usePreset = true
+						lc.txEnabled = true
+						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			} message: {
@@ -119,8 +121,8 @@ struct LoRaConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
 				print("empty lora config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestLoRaConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

@@ -79,9 +79,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
-		mapView.removeAnnotations(mapView.annotations)
-		mapView.addAnnotations(positions)
-		mapView.addAnnotations(waypoints)
+		
+		DispatchQueue.main.async {
+			mapView.removeAnnotations(mapView.annotations)
+			mapView.addAnnotations(positions)
+			mapView.addAnnotations(waypoints)
+		}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {

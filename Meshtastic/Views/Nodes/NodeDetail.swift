@@ -33,7 +33,7 @@ struct NodeDetail: View {
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .easeIn)
+				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	/// The current weather condition for the city.
@@ -52,7 +52,7 @@ struct NodeDetail: View {
 			GeometryReader { bounds in
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
-						let mostRecent = node.positions?.lastObject as! PositionEntity
+					//	let mostRecent = node.positions?.lastObject as! PositionEntity
 						ZStack {
 							let annotations = node.positions?.array as! [PositionEntity]
 							ZStack {
@@ -373,7 +373,7 @@ struct NodeDetail: View {
 										isPresented: $showingShutdownConfirm
 									) {
 										Button("Shutdown Node?", role: .destructive) {
-											if !bleManager.sendShutdown(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
+											if !bleManager.sendShutdown(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 												print("Shutdown Failed")
 											}
 										}
@@ -393,7 +393,7 @@ struct NodeDetail: View {
 													isPresented: $showingRebootConfirm
 								) {
 									Button("reboot.node", role: .destructive) {
-										if !bleManager.sendReboot(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex) {
+										if !bleManager.sendReboot(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 											print("Reboot Failed")
 										}
 									}
@@ -440,9 +440,9 @@ struct NodeDetail: View {
 					if bleManager.connectedPeripheral != nil {
 						
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						if connectedNode.user != nil && node.user != nil &&  connectedNode.myInfo != nil {
+						if connectedNode != nil && connectedNode!.user != nil && node.user != nil &&  connectedNode!.myInfo != nil {
 							
-							let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode.user!, toUser: node.user!, adminIndex: connectedNode.myInfo!.adminIndex, context: context)
+							let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 						}
 					}
 

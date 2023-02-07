@@ -111,19 +111,21 @@ struct NetworkConfig: View {
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					var network = Config.NetworkConfig()
-					network.wifiEnabled = self.wifiEnabled
-					network.wifiSsid = self.wifiSsid
-					network.wifiPsk = self.wifiPsk
-					network.ethEnabled = self.ethEnabled
-					//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
-					
-					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+					if connectedNode != nil {
+						var network = Config.NetworkConfig()
+						network.wifiEnabled = self.wifiEnabled
+						network.wifiSsid = self.wifiSsid
+						network.wifiPsk = self.wifiPsk
+						network.ethEnabled = self.ethEnabled
+						//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
+						
+						let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
+						}
 					}
 				}
 			} message: {
@@ -148,8 +150,8 @@ struct NetworkConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode.id > 0 {
-					_ = bleManager.requestNetworkConfig(fromUser: connectedNode.user!, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
+				if connectedNode != nil && connectedNode!.num > 0 {
+					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}

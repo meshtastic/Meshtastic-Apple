@@ -96,13 +96,15 @@ struct UserConfig: View {
 						
 						let connectedUser = getUser(id: bleManager.connectedPeripheral.num, context: context)
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						var u = User()
-						u.shortName = shortName
-						u.longName = longName
-						let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							hasChanges = false
-							goBack()
+						if connectedNode != nil {
+							var u = User()
+							u.shortName = shortName
+							u.longName = longName
+							let adminMessageId = bleManager.saveUser(config: u, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+							if adminMessageId > 0 {
+								hasChanges = false
+								goBack()
+							}
 						}
 					}
 				} message: {
