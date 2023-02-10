@@ -1132,6 +1132,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
+	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setHamMode = ham
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🛟 Saved Ham Parameters for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
 	public func saveBluetoothConfig(config: Config.BluetoothConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
