@@ -60,7 +60,7 @@ struct UserConfig: View {
 						.keyboardType(.default)
 						.disableAutocorrection(true)
 					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to 36 bytes long.")
-							.font(.caption)
+							.font(.caption2)
 					
 					HStack {
 						Label("Short Name", systemImage: "circlebadge.fill")
@@ -81,8 +81,8 @@ struct UserConfig: View {
 					}
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
-					Text("The short name will be appended to the last 4 of the device MAC address to set the device's BLE Name.  It can be up to 4 bytes long.")
-						.font(.caption)
+					Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
+						.font(.caption2)
 					
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0	 {
@@ -187,8 +187,6 @@ struct UserConfig: View {
 			self.isLicensed = node?.user?.isLicensed ?? false
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.00
-			
-	
 			self.hasChanges = false
 		}
 		.onChange(of: shortName) { newShort in
@@ -207,10 +205,10 @@ struct UserConfig: View {
 			}
 		}
 		.onChange(of: overrideFrequency) { newOverrideFrequency in
-			hasChanges = true
+			//hasChanges = true
 		}
 		.onChange(of: txPower) { newTxPower in
-			hasChanges = true
+			//hasChanges = true
 		}
 	}
 }
