@@ -125,7 +125,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.canShowCallout = true
 				annotationView.glyphText = "📟"
 				
-				let latest = parent.positions.first(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 })
+				let latest = parent.positions.last(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 })
 				
 				if latest == positionAnnotation {
 					annotationView.markerTintColor = .systemRed

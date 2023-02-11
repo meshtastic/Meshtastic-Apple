@@ -30,7 +30,7 @@ struct NodeMap: View {
 		}
 	}
 	//&& nodePosition != nil
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)],
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
