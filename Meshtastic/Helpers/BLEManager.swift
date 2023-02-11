@@ -674,7 +674,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
 
 					let dataType = PortNum.textMessageApp
-					let payloadData: Data = message.data(using: String.Encoding.utf8)!
+					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
+					messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
+					let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
 
 					var dataMessage = DataMessage()
 					dataMessage.payload = payloadData
