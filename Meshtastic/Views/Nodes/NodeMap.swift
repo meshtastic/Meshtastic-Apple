@@ -30,7 +30,7 @@ struct NodeMap: View {
 		}
 	}
 	//&& nodePosition != nil
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: false)],
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
@@ -40,7 +40,7 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	@State private var mapType: MKMapType?
+	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false

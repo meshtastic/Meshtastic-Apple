@@ -20,7 +20,7 @@ struct DeviceMetricsLog: View {
 	var body: some View {
 		NavigationStack {
 			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
-			let data = node.telemetries!.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg))
+			let data = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg)) ?? []
 			if data.count > 0 {
 				GroupBox(label:	Label("battery.level.trend", systemImage: "battery.100")) {
 					Chart(data.array as! [TelemetryEntity], id: \.self) {
