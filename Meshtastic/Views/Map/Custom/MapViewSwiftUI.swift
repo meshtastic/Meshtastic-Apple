@@ -114,7 +114,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			switch annotation {
 				
 			case _ as MKClusterAnnotation:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "nodeGroup")
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "NodeGroup")
 				annotationView.markerTintColor = .brown//.systemRed
 				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
@@ -124,9 +124,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				annotationView.glyphText = "📟"
-				annotationView.clusteringIdentifier = "nodeGroup"
-				annotationView.markerTintColor = UIColor(.indigo)
-				annotationView.displayPriority = .required
+				
+				let latest = parent.positions.first(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 })
+				
+				if latest == positionAnnotation {
+					annotationView.markerTintColor = .systemRed
+					annotationView.displayPriority = .required
+					annotationView.titleVisibility = .visible
+				}
+				else {
+					annotationView.markerTintColor = UIColor(.indigo)
+					annotationView.displayPriority = .defaultHigh
+					annotationView.titleVisibility = .adaptive
+					annotationView.clusteringIdentifier = "nodeGroup"
+				}
+				
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.indigo)
@@ -172,7 +184,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.accentColor)
-				annotationView.displayPriority = .required
+				annotationView.displayPriority = .defaultHigh
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.accentColor)

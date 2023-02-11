@@ -40,7 +40,7 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	@State private var mapType: MKMapType?
+	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
