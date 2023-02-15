@@ -12,8 +12,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
-	let positions: [PositionEntity]
-	let waypoints: [WaypointEntity]
+	dynamic var positions: [PositionEntity]
+	dynamic let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
 	let centerOnPositionsOnly: Bool
 	
@@ -120,17 +120,20 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.tag = -1
 				return annotationView
 			case let positionAnnotation as PositionEntity:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
+				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
+			
+				let latest = parent.positions.last(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 && true })
+
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				annotationView.glyphText = "📟"
-				
-				let latest = parent.positions.last(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 })
 				
 				if latest == positionAnnotation {
 					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
+				//	annotationView.clusteringIdentifier = "nodeGroupLatest"
 				}
 				else {
 					annotationView.markerTintColor = UIColor(.indigo)
@@ -173,7 +176,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: String(waypointAnnotation.id))
 				annotationView.tag = Int(waypointAnnotation.id)
 				annotationView.isEnabled = true
 				annotationView.canShowCallout = true

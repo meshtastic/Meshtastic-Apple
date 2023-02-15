@@ -84,7 +84,7 @@ struct NodeDetail: View {
 										.pickerStyle(.menu)
 										.padding(5)
 										VStack {
-											Label(temperature?.formatted() ?? "??", systemImage: symbolName)
+											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
 										}
 										.padding(10)

@@ -60,7 +60,6 @@
 		DD5E5212298EE33B00D21B61 /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E5200298EE33B00D21B61 /* apponly.pb.swift */; };
 		DD5E5213298EE33B00D21B61 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E5201298EE33B00D21B61 /* deviceonly.pb.swift */; };
 		DD5E523A298EFA5300D21B61 /* TelemetryWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E5239298EFA5300D21B61 /* TelemetryWeather.swift */; };
-		DD5E523C298F02D400D21B61 /* LicensedUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E523B298F02D400D21B61 /* LicensedUser.swift */; };
 		DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */; };
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
@@ -194,7 +193,6 @@
 		DD5E5200298EE33B00D21B61 /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
 		DD5E5201298EE33B00D21B61 /* deviceonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = deviceonly.pb.swift; sourceTree = "<group>"; };
 		DD5E5239298EFA5300D21B61 /* TelemetryWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryWeather.swift; sourceTree = "<group>"; };
-		DD5E523B298F02D400D21B61 /* LicensedUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensedUser.swift; sourceTree = "<group>"; };
 		DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityIndexCompact.swift; sourceTree = "<group>"; };
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
@@ -343,7 +341,6 @@
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
 				DDA0B6B1294CDC55001356EC /* Channels.swift */,
-				DD5E523B298F02D400D21B61 /* LicensedUser.swift */,
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
@@ -858,7 +855,6 @@
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
-				DD5E523C298F02D400D21B61 /* LicensedUser.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
