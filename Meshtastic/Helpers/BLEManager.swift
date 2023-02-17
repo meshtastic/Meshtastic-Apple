@@ -498,6 +498,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						}
 					}
 				}
+				// Device Metadata
+				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
+					nowKnown = true
+					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
+				}
+			
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				

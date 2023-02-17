@@ -794,6 +794,10 @@ struct HamParameters {
   /// Ensure your radio is capable of operating of the selected frequency before setting this.
   var frequency: Float = 0
 
+  ///
+  /// Optional short name of user
+  var shortName: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -1335,6 +1339,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "call_sign"),
     2: .standard(proto: "tx_power"),
     3: .same(proto: "frequency"),
+    4: .standard(proto: "short_name"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1346,6 +1351,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 1: try { try decoder.decodeSingularStringField(value: &self.callSign) }()
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.txPower) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.frequency) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
       default: break
       }
     }
@@ -1361,6 +1367,9 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.frequency != 0 {
       try visitor.visitSingularFloatField(value: self.frequency, fieldNumber: 3)
     }
+    if !self.shortName.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1368,6 +1377,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.callSign != rhs.callSign {return false}
     if lhs.txPower != rhs.txPower {return false}
     if lhs.frequency != rhs.frequency {return false}
+    if lhs.shortName != rhs.shortName {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

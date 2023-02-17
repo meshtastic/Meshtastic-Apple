@@ -351,12 +351,11 @@ struct NodeDetail: View {
 							}
 						}
 						
-						if (self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num)
-							|| (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
+						if (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
 							
 							HStack {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-								if node.metadata?.canShutdown ?? false {
+								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {//node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
 									
 									Button(action: {
 										showingShutdownConfirm = true

@@ -139,7 +139,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.markerTintColor = UIColor(.indigo)
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
-					annotationView.clusteringIdentifier = "nodeGroup"
+					//annotationView.clusteringIdentifier = "nodeGroup"
 				}
 				
 				annotationView.titleVisibility = .adaptive

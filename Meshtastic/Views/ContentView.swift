@@ -25,7 +25,7 @@ struct ContentView: View {
 
         TabView(selection: $selection) {
 			
-			if userSettings.preferredNodeNum > 0 {
+			if userSettings.preferredPeripheralId.count > 0 {
 				
 				Contacts()
 				.tabItem {

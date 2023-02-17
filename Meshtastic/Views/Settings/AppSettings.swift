@@ -13,10 +13,6 @@ struct AppSettings: View {
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var preferredDeviceConnected = false
 
-	var perferredPeripheral: String {
-		UserDefaults.standard.object(forKey: "preferredPeripheralName") as? String ?? ""
-	}
-
     var body: some View {
 		VStack {
 			Form {

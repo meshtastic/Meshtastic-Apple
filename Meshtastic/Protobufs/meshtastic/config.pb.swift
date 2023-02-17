@@ -172,6 +172,11 @@ struct Config {
     /// Sets the role of node
     var rebroadcastMode: Config.DeviceConfig.RebroadcastMode = .all
 
+    ///
+    /// Send our nodeinfo this often
+    /// Defaults to 900 Seconds (15 minutes)
+    var nodeInfoBroadcastSecs: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1561,6 +1566,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     4: .standard(proto: "button_gpio"),
     5: .standard(proto: "buzzer_gpio"),
     6: .standard(proto: "rebroadcast_mode"),
+    7: .standard(proto: "node_info_broadcast_secs"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1575,6 +1581,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.buttonGpio) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.buzzerGpio) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.nodeInfoBroadcastSecs) }()
       default: break
       }
     }
@@ -1599,6 +1606,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.rebroadcastMode != .all {
       try visitor.visitSingularEnumField(value: self.rebroadcastMode, fieldNumber: 6)
     }
+    if self.nodeInfoBroadcastSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeInfoBroadcastSecs, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1609,6 +1619,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.buttonGpio != rhs.buttonGpio {return false}
     if lhs.buzzerGpio != rhs.buzzerGpio {return false}
     if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
+    if lhs.nodeInfoBroadcastSecs != rhs.nodeInfoBroadcastSecs {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -50,7 +50,6 @@
 		DD5E5208298EE33B00D21B61 /* rtttl.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51F6298EE33B00D21B61 /* rtttl.pb.swift */; };
 		DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51F7298EE33B00D21B61 /* module_config.pb.swift */; };
 		DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51F8298EE33B00D21B61 /* channel.pb.swift */; };
-		DD5E520B298EE33B00D21B61 /* device_metadata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51F9298EE33B00D21B61 /* device_metadata.pb.swift */; };
 		DD5E520C298EE33B00D21B61 /* portnums.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51FA298EE33B00D21B61 /* portnums.pb.swift */; };
 		DD5E520D298EE33B00D21B61 /* storeforward.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51FB298EE33B00D21B61 /* storeforward.pb.swift */; };
 		DD5E520E298EE33B00D21B61 /* mqtt.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51FC298EE33B00D21B61 /* mqtt.pb.swift */; };
@@ -183,7 +182,6 @@
 		DD5E51F6298EE33B00D21B61 /* rtttl.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = rtttl.pb.swift; sourceTree = "<group>"; };
 		DD5E51F7298EE33B00D21B61 /* module_config.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = module_config.pb.swift; sourceTree = "<group>"; };
 		DD5E51F8298EE33B00D21B61 /* channel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = channel.pb.swift; sourceTree = "<group>"; };
-		DD5E51F9298EE33B00D21B61 /* device_metadata.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = device_metadata.pb.swift; sourceTree = "<group>"; };
 		DD5E51FA298EE33B00D21B61 /* portnums.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = portnums.pb.swift; sourceTree = "<group>"; };
 		DD5E51FB298EE33B00D21B61 /* storeforward.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = storeforward.pb.swift; sourceTree = "<group>"; };
 		DD5E51FC298EE33B00D21B61 /* mqtt.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mqtt.pb.swift; sourceTree = "<group>"; };
@@ -237,6 +235,7 @@
 		DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfigEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
+		DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -363,7 +362,6 @@
 				DD5E51F6298EE33B00D21B61 /* rtttl.pb.swift */,
 				DD5E51F7298EE33B00D21B61 /* module_config.pb.swift */,
 				DD5E51F8298EE33B00D21B61 /* channel.pb.swift */,
-				DD5E51F9298EE33B00D21B61 /* device_metadata.pb.swift */,
 				DD5E51FA298EE33B00D21B61 /* portnums.pb.swift */,
 				DD5E51FB298EE33B00D21B61 /* storeforward.pb.swift */,
 				DD5E51FC298EE33B00D21B61 /* mqtt.pb.swift */,
@@ -847,7 +845,6 @@
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
-				DD5E520B298EE33B00D21B61 /* device_metadata.pb.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
@@ -1280,6 +1277,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */,
 				DD5E51CC2986643400D21B61 /* MeshtasticDataModelV7.xcdatamodel */,
 				DD964FC029724F6D007C176F /* MeshtasticDataModelV6.xcdatamodel */,
 				DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */,
@@ -1288,7 +1286,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD5E51CC2986643400D21B61 /* MeshtasticDataModelV7.xcdatamodel */;
+			currentVersion = DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

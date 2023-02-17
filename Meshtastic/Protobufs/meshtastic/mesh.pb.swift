@@ -159,6 +159,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case betafpv2400Tx // = 45
 
   ///
+  /// BetaFPV ExpressLRS "Nano" TX Module 900MHz with ESP32 CPU
+  case betafpv900NanoTx // = 46
+
+  ///
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   case privateHw // = 255
   case UNRECOGNIZED(Int)
@@ -201,6 +205,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 43: self = .heltecV3
     case 44: self = .heltecWslV3
     case 45: self = .betafpv2400Tx
+    case 46: self = .betafpv900NanoTx
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -240,6 +245,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .heltecV3: return 43
     case .heltecWslV3: return 44
     case .betafpv2400Tx: return 45
+    case .betafpv900NanoTx: return 46
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -284,6 +290,7 @@ extension HardwareModel: CaseIterable {
     .heltecV3,
     .heltecWslV3,
     .betafpv2400Tx,
+    .betafpv900NanoTx,
     .privateHw,
   ]
 }
@@ -1949,6 +1956,16 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .xmodemPacket(newValue)}
   }
 
+  ///
+  /// Device metadata message
+  var metadata: DeviceMetadata {
+    get {
+      if case .metadata(let v)? = _storage._payloadVariant {return v}
+      return DeviceMetadata()
+    }
+    set {_uniqueStorage()._payloadVariant = .metadata(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -1995,6 +2012,9 @@ struct FromRadio {
     ///
     /// File Transfer Chunk
     case xmodemPacket(XModem)
+    ///
+    /// Device metadata message
+    case metadata(DeviceMetadata)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2044,6 +2064,10 @@ struct FromRadio {
       }()
       case (.xmodemPacket, .xmodemPacket): return {
         guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.metadata, .metadata): return {
+        guard case .metadata(let l) = lhs, case .metadata(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2192,6 +2216,54 @@ struct Compressed {
   init() {}
 }
 
+///
+/// Device metadata response
+struct DeviceMetadata {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Device firmware version string
+  var firmwareVersion: String = String()
+
+  ///
+  /// Device state version
+  var deviceStateVersion: UInt32 = 0
+
+  ///
+  /// Indicates whether the device can shutdown CPU natively or via power management chip
+  var canShutdown: Bool = false
+
+  ///
+  /// Indicates that the device has native wifi capability
+  var hasWifi_p: Bool = false
+
+  ///
+  /// Indicates that the device has native bluetooth capability
+  var hasBluetooth_p: Bool = false
+
+  ///
+  /// Indicates that the device has an ethernet peripheral
+  var hasEthernet_p: Bool = false
+
+  ///
+  /// Indicates that the device's role in the mesh
+  var role: Config.DeviceConfig.Role = .client
+
+  ///
+  /// Indicates the device's current enabled position flags
+  var positionFlags: UInt32 = 0
+
+  ///
+  /// Device hardware model
+  var hwModel: HardwareModel = .unset
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
@@ -2220,6 +2292,7 @@ extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
 extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension Compressed: @unchecked Sendable {}
+extension DeviceMetadata: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -2260,6 +2333,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     43: .same(proto: "HELTEC_V3"),
     44: .same(proto: "HELTEC_WSL_V3"),
     45: .same(proto: "BETAFPV_2400_TX"),
+    46: .same(proto: "BETAFPV_900_NANO_TX"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3401,6 +3475,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     10: .same(proto: "channel"),
     11: .same(proto: "queueStatus"),
     12: .same(proto: "xmodemPacket"),
+    13: .same(proto: "metadata"),
   ]
 
   fileprivate class _StorageClass {
@@ -3566,6 +3641,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .xmodemPacket(v)
           }
         }()
+        case 13: try {
+          var v: DeviceMetadata?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .metadata(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .metadata(v)
+          }
+        }()
         default: break
         }
       }
@@ -3625,6 +3713,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .xmodemPacket?: try {
         guard case .xmodemPacket(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      }()
+      case .metadata?: try {
+        guard case .metadata(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       }()
       case nil: break
       }
@@ -3777,6 +3869,86 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   static func ==(lhs: Compressed, rhs: Compressed) -> Bool {
     if lhs.portnum != rhs.portnum {return false}
     if lhs.data != rhs.data {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "firmware_version"),
+    2: .standard(proto: "device_state_version"),
+    3: .same(proto: "canShutdown"),
+    4: .same(proto: "hasWifi"),
+    5: .same(proto: "hasBluetooth"),
+    6: .same(proto: "hasEthernet"),
+    7: .same(proto: "role"),
+    8: .standard(proto: "position_flags"),
+    9: .standard(proto: "hw_model"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.deviceStateVersion) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.canShutdown) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.hasBluetooth_p) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.hasEthernet_p) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
+      case 9: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.firmwareVersion.isEmpty {
+      try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 1)
+    }
+    if self.deviceStateVersion != 0 {
+      try visitor.visitSingularUInt32Field(value: self.deviceStateVersion, fieldNumber: 2)
+    }
+    if self.canShutdown != false {
+      try visitor.visitSingularBoolField(value: self.canShutdown, fieldNumber: 3)
+    }
+    if self.hasWifi_p != false {
+      try visitor.visitSingularBoolField(value: self.hasWifi_p, fieldNumber: 4)
+    }
+    if self.hasBluetooth_p != false {
+      try visitor.visitSingularBoolField(value: self.hasBluetooth_p, fieldNumber: 5)
+    }
+    if self.hasEthernet_p != false {
+      try visitor.visitSingularBoolField(value: self.hasEthernet_p, fieldNumber: 6)
+    }
+    if self.role != .client {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 7)
+    }
+    if self.positionFlags != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionFlags, fieldNumber: 8)
+    }
+    if self.hwModel != .unset {
+      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 9)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
+    if lhs.firmwareVersion != rhs.firmwareVersion {return false}
+    if lhs.deviceStateVersion != rhs.deviceStateVersion {return false}
+    if lhs.canShutdown != rhs.canShutdown {return false}
+    if lhs.hasWifi_p != rhs.hasWifi_p {return false}
+    if lhs.hasBluetooth_p != rhs.hasBluetooth_p {return false}
+    if lhs.hasEthernet_p != rhs.hasEthernet_p {return false}
+    if lhs.role != rhs.role {return false}
+    if lhs.positionFlags != rhs.positionFlags {return false}
+    if lhs.hwModel != rhs.hwModel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
