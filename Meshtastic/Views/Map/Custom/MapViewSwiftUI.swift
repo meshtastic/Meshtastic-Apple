@@ -7,6 +7,10 @@
 import SwiftUI
 import MapKit
 
+func degreesToRadians(_ number: Double) -> Double {
+	return number * .pi / 180
+}
+
 struct MapViewSwiftUI: UIViewRepresentable {
 	
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
@@ -116,7 +120,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "NodeGroup")
 				annotationView.markerTintColor = .brown//.systemRed
-				annotationView.displayPriority = .defaultLow
+				//annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
 			case let positionAnnotation as PositionEntity:
@@ -127,19 +131,16 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
-				annotationView.glyphText = "📟"
 				
 				if latest == positionAnnotation {
 					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
-				//	annotationView.clusteringIdentifier = "nodeGroupLatest"
 				}
 				else {
 					annotationView.markerTintColor = UIColor(.indigo)
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
-					//annotationView.clusteringIdentifier = "nodeGroup"
 				}
 				
 				annotationView.titleVisibility = .adaptive
@@ -165,8 +166,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
 					}
 					if pf.contains(.Heading) {
+						
+						annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+					} else {
+						annotationView.glyphText = "📟"
 					}
+				} else {
+					annotationView.glyphText = "📟"
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
