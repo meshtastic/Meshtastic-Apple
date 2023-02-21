@@ -40,6 +40,7 @@ struct NodeDetail: View {
 	/// The current weather condition for the city.
 	@State private var condition: WeatherCondition?
 	@State private var temperature: Measurement<UnitTemperature>?
+	@State private var humidity: Int?
 	@State private var symbolName: String = "cloud.fill"
 	
 	@State private var attributionLink: URL?
@@ -87,6 +88,10 @@ struct NodeDetail: View {
 										VStack {
 											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
+											
+											
+											Label("\(humidity ?? 0)%", systemImage: "humidity")
+												.font(.caption2)
 										}
 										.padding(10)
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -469,6 +474,7 @@ struct NodeDetail: View {
 							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
 							condition = weather.currentWeather.condition
 							temperature = weather.currentWeather.temperature
+							humidity = Int(weather.currentWeather.humidity * 100)
 							symbolName = weather.currentWeather.symbolName
 							
 							let attribution = try await WeatherService.shared.attribution
