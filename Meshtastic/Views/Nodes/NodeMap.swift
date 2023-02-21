@@ -29,7 +29,7 @@ struct NodeMap: View {
 			}
 		}
 	}
-	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	
 	//&& nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
@@ -42,7 +42,7 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	@State private var mapType: MKMapType = .hybridFlyover
+	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false

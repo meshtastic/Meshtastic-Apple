@@ -13,6 +13,7 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
+	@AppStorage("meshMapType") private var meshMapType = "standard"
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
@@ -435,6 +436,28 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
+					switch meshMapType {
+						case "standard":
+							mapType = .standard
+							break
+						case "mutedStandard":
+							mapType = .mutedStandard
+							break
+						case "hybrid":
+							mapType = .hybrid
+							break
+						case "hybridFlyover":
+							mapType = .hybridFlyover
+							break
+						case "satellite":
+							mapType = .satellite
+							break
+						case "satelliteFlyover":
+							mapType = .satelliteFlyover
+							break
+						default:
+							mapType = .hybridFlyover
+					}
 				}
 				.task(id: node.num) {
 					do {

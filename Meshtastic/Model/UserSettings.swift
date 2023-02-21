@@ -59,7 +59,7 @@ class UserSettings: ObservableObject {
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybridFlyover"
+		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "standard"
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 	}
 }
