@@ -29,6 +29,8 @@ struct NodeMap: View {
 			}
 		}
 	}
+	@AppStorage("meshMapType") private var meshMapType = "standard"
+	
 	//&& nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -40,7 +42,7 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	@State private var mapType: MKMapType = .standard
+	@State private var mapType: MKMapType = .hybridFlyover
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
@@ -71,7 +73,7 @@ struct NodeMap: View {
 					}
 				}, positions: Array(positions),
 					waypoints: Array(waypoints),
-					mapViewType: mapType ?? MKMapType.standard,
+					mapViewType: mapType ,
 					centerOnPositionsOnly: false,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays
@@ -109,6 +111,29 @@ struct NodeMap: View {
 		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
+			
+			switch meshMapType {
+				case "standard":
+					mapType = .standard
+					break
+				case "mutedStandard":
+					mapType = .mutedStandard
+					break
+				case "hybrid":
+					mapType = .hybrid
+					break
+				case "hybridFlyover":
+					mapType = .hybridFlyover
+					break
+				case "satellite":
+					mapType = .satellite
+					break
+				case "satelliteFlyover":
+					mapType = .satelliteFlyover
+					break
+				default:
+					mapType = .hybridFlyover
+			}
 		})
     }
 }

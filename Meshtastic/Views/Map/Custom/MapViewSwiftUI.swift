@@ -16,9 +16,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
-	dynamic var positions: [PositionEntity]
+	dynamic let positions: [PositionEntity]
 	dynamic let waypoints: [WaypointEntity]
-	let mapViewType: MKMapType
+	dynamic let mapViewType: MKMapType
+	
 	let centerOnPositionsOnly: Bool
 	
 	// Offline Maps
@@ -64,7 +65,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 			mapView.removeOverlays(mapView.overlays)
 			if self.customMapOverlay != nil {
-				
+
 				let fileManager = FileManager.default
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
@@ -148,7 +149,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				leftIcon.backgroundColor = UIColor(.indigo)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				subtitle.text = "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
+				subtitle.text = "Long Name: \(positionAnnotation.nodePosition?.user?.longName ?? "Unknown") \n"
+				subtitle.text! += "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
 				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
 				let distanceFormatter = MKDistanceFormatter()
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"

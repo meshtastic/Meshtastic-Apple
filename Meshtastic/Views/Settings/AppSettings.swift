@@ -35,13 +35,6 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-
-					 Picker("map.type", selection: $userSettings.meshMapType) {
-						 ForEach(MeshMapType.allCases) { map in
-							 Text(map.description)
-						 }
-					 }
-					 .pickerStyle(DefaultPickerStyle())
 					
 				}
 				
@@ -65,6 +58,16 @@ struct AppSettings: View {
 							.font(.caption)
 							.listRowSeparator(.visible)
 					}
+				}
+				
+				Section(header: Text("map options")) {
+					
+					 Picker("map.type", selection: $userSettings.meshMapType) {
+						 ForEach(MeshMapType.allCases) { map in
+							 Text(map.description)
+						 }
+					 }
+					 .pickerStyle(DefaultPickerStyle())
 				}
 			}
 			HStack {
