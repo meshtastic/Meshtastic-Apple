@@ -123,9 +123,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			switch annotation {
 				
 			case _ as MKClusterAnnotation:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "NodeGroup")
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
 				annotationView.markerTintColor = .brown//.systemRed
-				//annotationView.displayPriority = .defaultLow
+				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
 			case let positionAnnotation as PositionEntity:
@@ -147,9 +147,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}
-				
-				
-				//annotationView.tag = -1
+				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
