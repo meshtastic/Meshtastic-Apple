@@ -21,13 +21,11 @@ struct Connect: View {
 	@State var isPreferredRadio: Bool = false
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
-	@State var isPresentingPreferredPeripherialDialog = false
-	@State var showDialogForNextPeripherialChange = true
 
-    var body: some View {
+	var body: some View {
 	
 		NavigationStack {
-            VStack {
+			VStack {
 				List {
 					if bleManager.isSwitchedOn {
 					Section(header: Text("connected.radio").font(.title)) {
@@ -63,44 +61,23 @@ struct Connect: View {
 									Toggle("preferred.radio", isOn: $bleManager.preferredPeripheral)
 										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 										.labelsHidden()
-										.confirmationDialog(
-													"Are you sure? Switching your preferred peripheral will clear all app data from the phone.",
-													isPresented: $isPresentingPreferredPeripherialDialog,
-													titleVisibility: .visible
-												) {
-													Button("Confirm", role: .destructive) {
-														
-														if bleManager.preferredPeripheral {
-															if bleManager.connectedPeripheral != nil {
-																userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-																userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
-																bleManager.preferredPeripheral = true
-																isPreferredRadio = true
-																showDialogForNextPeripherialChange = false
-															}
-														} else {
-
-															if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
-																userSettings.preferredPeripheralId = ""
-																userSettings.preferredNodeNum = 0
-																bleManager.preferredPeripheral = false
-																isPreferredRadio = false
-															}
-														}
-														bleManager.disconnectPeripheral()
-														clearCoreDataDatabase(context: context)
-													}
-													Button("Cancel", role: .cancel) {
-														showDialogForNextPeripherialChange = false
-														bleManager.preferredPeripheral = !bleManager.preferredPeripheral
-													}
-										}
 										.onChange(of: bleManager.preferredPeripheral) { value in
-										
-										if showDialogForNextPeripherialChange {
-											isPresentingPreferredPeripherialDialog = true
-										} else {
-											showDialogForNextPeripherialChange = true
+											if value {
+												if bleManager.connectedPeripheral != nil {
+													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+													userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
+													bleManager.preferredPeripheral = true
+													isPreferredRadio = true
+												}
+											} else {
+
+											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+
+												userSettings.preferredPeripheralId = ""
+												userSettings.preferredNodeNum = 0
+												bleManager.preferredPeripheral = false
+												isPreferredRadio = false
+											}
 										}
 									}
 								}
@@ -225,7 +202,7 @@ struct Connect: View {
 
 				HStack(alignment: .center) {
 					Spacer()
-                      
+					  
 					#if targetEnvironment(macCatalyst)
 						
 					if bleManager.connectedPeripheral != nil {
@@ -249,15 +226,15 @@ struct Connect: View {
 					}
 					#endif
 						Spacer()
-                    }
+					}
 					.padding(.bottom, 10)
-            }
-            .navigationTitle("bluetooth")
+			}
+			.navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 				 ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			 })
-        }
+		}
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 				.presentationDetents([.large])
@@ -290,7 +267,7 @@ struct Connect: View {
 				}
 			}
 		}
-        .onAppear(perform: {
+		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 				
@@ -308,7 +285,7 @@ struct Connect: View {
 				isPreferredRadio = false
 			}
 		})
-    }
+	}
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

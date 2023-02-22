@@ -22,7 +22,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
-	@AppStorage("meshMapRecenter") private var recenter = true
+	@AppStorage("meshMapRecenter") private var recenter = false
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
