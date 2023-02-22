@@ -71,7 +71,7 @@ struct AppSettings: View {
 				}
 					 
 				Section(header: Text("mesh map options")) {
-					Picker("map.centering", selection: $userSettings.meshMapType) {
+					Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
 						ForEach(CenteringMode.allCases) { cm in
 							Text(cm.description)
 						}

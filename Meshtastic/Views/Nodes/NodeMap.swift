@@ -30,6 +30,7 @@ struct NodeMap: View {
 		}
 	}
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
+	@AppStorage("meshMapCenteringMode") private var meshMapCenteringMode = 0
 	
 	//&& nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
@@ -43,6 +44,7 @@ struct NodeMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType = .standard
+	@State private var mapCenteringMode: CenteringMode = .allAnnotations
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
@@ -73,7 +75,8 @@ struct NodeMap: View {
 					}
 				}, positions: Array(positions),
 					waypoints: Array(waypoints),
-					mapViewType: mapType ,
+					mapViewType: mapType,
+					centeringMode: mapCenteringMode,
 					centerOnPositionsOnly: false,
 					customMapOverlay: self.customMapOverlay,
 					overlays: self.overlays
@@ -111,7 +114,7 @@ struct NodeMap: View {
 		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-			
+			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
 			switch meshMapType {
 				case "standard":
 					mapType = .standard

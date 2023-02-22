@@ -67,7 +67,9 @@ struct NodeDetail: View {
 										editingWaypoint = wpId
 										presentingWaypointForm = true
 									}
-								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
+								}, positions: annotations, waypoints: Array(waypoints),
+									mapViewType: mapType,
+									centeringMode: .allPositions,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays

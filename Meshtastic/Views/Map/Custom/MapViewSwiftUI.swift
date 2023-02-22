@@ -16,9 +16,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
-	dynamic let positions: [PositionEntity]
-	dynamic let waypoints: [WaypointEntity]
-	dynamic let mapViewType: MKMapType
+	let positions: [PositionEntity]
+	let waypoints: [WaypointEntity]
+	let mapViewType: MKMapType
+	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
 	
@@ -33,16 +34,27 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> MKMapView {
 		// Parameters
-		mapView.addAnnotations(waypoints)
-		if centerOnPositionsOnly {
-			mapView.fit(annotations: positions, andShow: true)
-		} else {
-			mapView.addAnnotations(positions)
-			mapView.fitAllAnnotations()
-		}
 		mapView.mapType = mapViewType
-		mapView.setUserTrackingMode(.none, animated: true)
+		mapView.addAnnotations(waypoints)
+		// Logic to manage the map centering options
+		switch centeringMode {
+			case .allAnnotations:
+				mapView.addAnnotations(positions)
+				mapView.fitAllAnnotations()
+			case .allPositions:
+				mapView.fit(annotations: positions, andShow: true)
+			case .clientGps:
+				
+				let span =  MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+				let region = MKCoordinateRegion(center: center, span: span)
+				mapView.setRegion(region, animated: true)
+				mapView.setUserTrackingMode(.followWithHeading, animated: true)
+				mapView.addAnnotations(positions)
+		}
+		
 		// Other MKMapView Settings
+		mapView.showsUserLocation = true
 		mapView.preferredConfiguration.elevationStyle = .realistic
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
@@ -52,7 +64,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsCompass = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		mapView.showsUserLocation = true
+		
 		#if targetEnvironment(macCatalyst)
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
@@ -90,6 +102,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		DispatchQueue.main.async {
+			if centeringMode == CenteringMode.clientGps {
+				let span =  MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+				let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
+					mapView.setRegion(region, animated: true)
+			}
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(positions)
 			mapView.addAnnotations(waypoints)
