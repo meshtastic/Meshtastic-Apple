@@ -45,7 +45,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.fit(annotations: positions, andShow: true)
 			case .clientGps:
 				
-				let span =  MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
 				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
 				let region = MKCoordinateRegion(center: center, span: span)
 				mapView.setRegion(region, animated: true)
@@ -68,8 +68,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#if targetEnvironment(macCatalyst)
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
-		#else
-		mapView.showsPointsOfInterest = true
 		#endif
 		mapView.delegate = context.coordinator
 		return mapView
@@ -102,14 +100,20 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		DispatchQueue.main.async {
-			if centeringMode == CenteringMode.clientGps {
-				let span =  MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+			mapView.removeAnnotations(mapView.annotations)
+			mapView.addAnnotations(waypoints)
+			switch centeringMode {
+			case .allAnnotations:
+				mapView.addAnnotations(positions)
+				mapView.fitAllAnnotations()
+			case .allPositions:
+				mapView.fit(annotations: positions, andShow: true)
+			case .clientGps:
+				mapView.addAnnotations(positions)
+				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
 				let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
 					mapView.setRegion(region, animated: true)
 			}
-			mapView.removeAnnotations(mapView.annotations)
-			mapView.addAnnotations(positions)
-			mapView.addAnnotations(waypoints)
 		}
 	}
 	
