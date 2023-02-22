@@ -138,7 +138,8 @@
 "lora.config"="LoRa Config";
 "map"="Mesh Map";
 "map.type"="Default Type";
-"map.centering"="Centering";
+"map.centering"="Centering Mode";
+"map.recentering"="Automatic Re-centering";
 "mesh.log"="Mesh Log";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";

@@ -77,6 +77,12 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					
+					Toggle(isOn: $userSettings.meshMapRecentering) {
+
+						Label("map.recentering", systemImage: "rectangle.center.inset.filled")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			HStack {

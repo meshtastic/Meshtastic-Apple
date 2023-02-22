@@ -22,6 +22,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
+	@AppStorage("meshMapRecenter") private var recenter = true
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -38,19 +39,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.addAnnotations(waypoints)
 		// Logic to manage the map centering options
 		switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(positions)
-				mapView.fitAllAnnotations()
-			case .allPositions:
-				mapView.fit(annotations: positions, andShow: true)
-			case .clientGps:
-				
-				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-				let region = MKCoordinateRegion(center: center, span: span)
-				mapView.setRegion(region, animated: true)
-				mapView.setUserTrackingMode(.followWithHeading, animated: true)
-				mapView.addAnnotations(positions)
+		case .allAnnotations:
+			mapView.addAnnotations(positions)
+			mapView.fitAllAnnotations()
+		case .allPositions:
+			mapView.fit(annotations: positions, andShow: true)
+		case .clientGps:
+			
+			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+			let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+			let region = MKCoordinateRegion(center: center, span: span)
+			mapView.setRegion(region, animated: true)
+			mapView.setUserTrackingMode(.followWithHeading, animated: true)
+			mapView.addAnnotations(positions)
 		}
 		
 		// Other MKMapView Settings
@@ -61,14 +62,27 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.isScrollEnabled = true
 		mapView.isZoomEnabled = true
 		mapView.showsBuildings = true
-		mapView.showsCompass = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
 		
-		#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
+		// Show the default always visible compass and the mac only controls
+		mapView.showsCompass = true
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
-		#endif
+#else
+		
+#if os(iOS)
+		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
+		mapView.showsCompass = false
+		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
+		compassButton.compassVisibility = .visible          // Make it visible
+		mapView.addSubview(compassButton) // Add it to the view
+		compassButton.translatesAutoresizingMaskIntoConstraints = false
+		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
+		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+#endif
+#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -79,7 +93,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 			mapView.removeOverlays(mapView.overlays)
 			if self.customMapOverlay != nil {
-
+				
 				let fileManager = FileManager.default
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
@@ -105,14 +119,22 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			switch centeringMode {
 			case .allAnnotations:
 				mapView.addAnnotations(positions)
-				mapView.fitAllAnnotations()
+				if recenter {
+					mapView.fitAllAnnotations()
+				}
 			case .allPositions:
-				mapView.fit(annotations: positions, andShow: true)
+				if recenter {
+					mapView.fit(annotations: positions, andShow: true)
+				} else {
+					mapView.addAnnotations(positions)
+				}
 			case .clientGps:
 				mapView.addAnnotations(positions)
-				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-				let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
+				if recenter {
+					let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+					let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
 					mapView.setRegion(region, animated: true)
+				}
 			}
 		}
 	}
@@ -289,9 +311,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-
+			
 			if let index = self.overlays.firstIndex(where: { overlay_ in overlay_.shape.hash == overlay.hash }) {
-
+				
 				let unwrappedOverlay = self.overlays[index]
 				if let circleOverlay = unwrappedOverlay.shape as? MKCircle {
 					let renderer = MKCircleRenderer(circle: circleOverlay)

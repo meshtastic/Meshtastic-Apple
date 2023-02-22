@@ -138,6 +138,7 @@
 "lora.config"="LoRa Einstellungen";
 "map"="Mesh Karte";
 "map.centering"="Centering";
+"map.recentering"="Automatic Re-centering";
 "map.type"="kartentyp";
 "mesh.log"="Mesh Log";
 "mesh.log.bluetooth.config %@"="Bluetooth Konfiguration empfangen: %@";
