@@ -21,6 +21,8 @@ struct Connect: View {
 	@State var isPreferredRadio: Bool = false
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var isPresentingPreferredPeripherialDialog = false
+	@State var showDialogForNextPeripherialChange = true
 
 	var body: some View {
 	
@@ -61,23 +63,44 @@ struct Connect: View {
 									Toggle("preferred.radio", isOn: $bleManager.preferredPeripheral)
 										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 										.labelsHidden()
+										.confirmationDialog(
+													"Are you sure? Switching your preferred peripheral will clear all app data from the phone.",
+													isPresented: $isPresentingPreferredPeripherialDialog,
+													titleVisibility: .visible
+												) {
+													Button("Confirm", role: .destructive) {
+														
+														if bleManager.preferredPeripheral {
+															if bleManager.connectedPeripheral != nil {
+																userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+																userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
+																bleManager.preferredPeripheral = true
+																isPreferredRadio = true
+																showDialogForNextPeripherialChange = false
+															}
+														} else {
+
+															if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+																userSettings.preferredPeripheralId = ""
+																userSettings.preferredNodeNum = 0
+																bleManager.preferredPeripheral = false
+																isPreferredRadio = false
+															}
+														}
+														bleManager.disconnectPeripheral()
+														clearCoreDataDatabase(context: context)
+													}
+													Button("Cancel", role: .cancel) {
+														showDialogForNextPeripherialChange = false
+														bleManager.preferredPeripheral = !bleManager.preferredPeripheral
+													}
+										}
 										.onChange(of: bleManager.preferredPeripheral) { value in
-											if value {
-												if bleManager.connectedPeripheral != nil {
-													userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
-													userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
-													bleManager.preferredPeripheral = true
-													isPreferredRadio = true
-												}
-											} else {
-
-											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
-
-												userSettings.preferredPeripheralId = ""
-												userSettings.preferredNodeNum = 0
-												bleManager.preferredPeripheral = false
-												isPreferredRadio = false
-											}
+										
+										if showDialogForNextPeripherialChange {
+											isPresentingPreferredPeripherialDialog = true
+										} else {
+											showDialogForNextPeripherialChange = true
 										}
 									}
 								}
