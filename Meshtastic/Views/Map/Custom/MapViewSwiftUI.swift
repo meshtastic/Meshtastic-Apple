@@ -151,14 +151,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				return annotationView
 			case let positionAnnotation as PositionEntity:
 				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
-			
-				let latest = parent.positions.last(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 && true })
-
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				
-				if latest == positionAnnotation {
+				if positionAnnotation.latest {
 					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
