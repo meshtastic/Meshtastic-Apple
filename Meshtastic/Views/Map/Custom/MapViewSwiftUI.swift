@@ -43,6 +43,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.mapType = mapViewType
 		mapView.setUserTrackingMode(.none, animated: true)
 		// Other MKMapView Settings
+		mapView.preferredConfiguration.elevationStyle = .realistic
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
 		mapView.isScrollEnabled = true
@@ -54,6 +55,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsUserLocation = true
 		#if targetEnvironment(macCatalyst)
 		mapView.showsZoomControls = true
+		mapView.showsPitchControl = true
+		#else
+		mapView.showsPointsOfInterest = true
 		#endif
 		mapView.delegate = context.coordinator
 		return mapView
@@ -144,6 +148,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.titleVisibility = .adaptive
 				}
 				
+				
+				//annotationView.tag = -1
+				annotationView.canShowCallout = true
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.indigo)
@@ -155,6 +162,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let distanceFormatter = MKDistanceFormatter()
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
 				if positionAnnotation.nodePosition?.metadata != nil {
+					
+					if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.client ||
+						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.clientMute ||
+						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.routerClient{
+						annotationView.glyphImage = UIImage(systemName: "flipphone")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.repeater {
+						annotationView.glyphImage = UIImage(systemName: "repeat")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.router {
+						annotationView.glyphImage = UIImage(systemName: "wifi.router.fill")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.tracker {
+						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
+					}
+					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
 					if pf.contains(.Satsinview) {
 						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
@@ -171,11 +191,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						
 						annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
-					} else {
-						annotationView.glyphText = "📟"
 					}
 				} else {
-					annotationView.glyphText = "📟"
+					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0

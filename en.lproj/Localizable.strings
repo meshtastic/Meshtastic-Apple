@@ -137,7 +137,8 @@
 "lora"="LoRa";
 "lora.config"="LoRa Config";
 "map"="Mesh Map";
-"map.type"="Map Type";
+"map.type"="Default Type";
+"map.centering"="Centering";
 "mesh.log"="Mesh Log";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";

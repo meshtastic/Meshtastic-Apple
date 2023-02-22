@@ -137,6 +137,7 @@
 "lora"="LoRa";
 "lora.config"="LoRa 配置";
 "map"="Mesh 地图";
+"map.centering"="Centering";
 "map.type"="地图类型";
 "mesh.log"="Mesh 日志";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";

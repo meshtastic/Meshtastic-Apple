@@ -60,14 +60,23 @@ struct AppSettings: View {
 					}
 				}
 				
-				Section(header: Text("map options")) {
+				Section(header: Text("global map options")) {
 					
-					 Picker("map.type", selection: $userSettings.meshMapType) {
-						 ForEach(MeshMapType.allCases) { map in
-							 Text(map.description)
-						 }
-					 }
-					 .pickerStyle(DefaultPickerStyle())
+					Picker("map.type", selection: $userSettings.meshMapType) {
+						ForEach(MeshMapType.allCases) { map in
+							Text(map.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+				}
+					 
+				Section(header: Text("mesh map options")) {
+					Picker("map.centering", selection: $userSettings.meshMapType) {
+						ForEach(CenteringMode.allCases) { cm in
+							Text(cm.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
 				}
 			}
 			HStack {

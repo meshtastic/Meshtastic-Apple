@@ -219,6 +219,7 @@
     <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heading" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latest" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="satsInView" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
