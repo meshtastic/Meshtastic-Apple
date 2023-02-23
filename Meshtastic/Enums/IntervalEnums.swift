@@ -93,6 +93,8 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 
 enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
+	case fiveSeconds = 5
+	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
@@ -118,6 +120,10 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 		get {
 			switch self {
 				
+			case .fiveSeconds:
+				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
+			case .tenSeconds:
+				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
 			case .fifteenSeconds:
 				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
 			case .thirtySeconds:

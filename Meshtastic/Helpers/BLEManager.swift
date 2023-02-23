@@ -2011,38 +2011,38 @@ extension BLEManager: CBCentralManagerDelegate {
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 	
-//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-//
-//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
-//			return
-//		}
-//		print(peripherals)
-//		if peripherals.count > 0 {
-//			//connectedPeripheral.peripheral = peripherals[0]
-//			 // 5
-//			//connectedPeripheral.peripheral.delegate = self
-//
-//			for peripheral in peripherals {
-//
-//			switch peripheral.state {
-//			case .connecting: // I've only seen this happen when
-//				// re-launching attached to Xcode.
-//				print("Xcode Restore")
-//
-//			case .connected: // Store for connection / requesting
-//				// notifications when BT starts.
-//				print("Actual restore")
-//				//centralManager.connect(peripheral)
-//			default: break
-//			}
-//
-//
-//
-//			//	connectedPeripheral.peripheral
-//			//connectedPeripheral.peripheral = peripheral
-//			//connectedPeripheral.peripheral.delegate = self
-//			}
-//		}
-//		print("willRestoreState Hit!")
-//	}
+	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+
+		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+			return
+		}
+		print(peripherals)
+		if peripherals.count > 0 {
+			//connectedPeripheral.peripheral = peripherals[0]
+			 // 5
+			//connectedPeripheral.peripheral.delegate = self
+
+			for peripheral in peripherals {
+
+			switch peripheral.state {
+			case .connecting: // I've only seen this happen when
+				// re-launching attached to Xcode.
+				print("Xcode Restore")
+
+			case .connected: // Store for connection / requesting
+				// notifications when BT starts.
+				print("Actual restore")
+				//centralManager.connect(peripheral)
+			default: break
+			}
+
+
+
+			//	connectedPeripheral.peripheral
+			//connectedPeripheral.peripheral = peripheral
+			//connectedPeripheral.peripheral.delegate = self
+			}
+		}
+		print("willRestoreState Hit!")
+	}
 }
