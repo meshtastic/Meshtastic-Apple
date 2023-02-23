@@ -54,6 +54,7 @@
         <attribute name="hasBluetooth" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="hasEthernet" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="hasWifi" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="hwModel" optional="YES" attributeType="String"/>
         <attribute name="positionFlags" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="metadataNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="metadata" inverseEntity="NodeInfoEntity"/>
@@ -178,6 +179,7 @@
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastHeard" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
@@ -217,6 +219,7 @@
     <entity name="PositionEntity" representedClassName="PositionEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heading" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latest" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="satsInView" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

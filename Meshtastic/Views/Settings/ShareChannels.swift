@@ -288,7 +288,7 @@ struct ShareChannels: View {
 		loRaConfig.usePreset = node?.loRaConfig?.usePreset ?? true
 		loRaConfig.channelNum = UInt32(node?.loRaConfig?.channelNum ?? 0)
 		channelSet.loraConfig = loRaConfig
-		if node != nil && node?.myInfo != nil {
+		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
 			for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
 				if ch.role > 0 {
 					

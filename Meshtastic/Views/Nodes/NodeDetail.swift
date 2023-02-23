@@ -13,6 +13,7 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
+	@AppStorage("meshMapType") private var meshMapType = "standard"
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
@@ -39,6 +40,7 @@ struct NodeDetail: View {
 	/// The current weather condition for the city.
 	@State private var condition: WeatherCondition?
 	@State private var temperature: Measurement<UnitTemperature>?
+	@State private var humidity: Int?
 	@State private var symbolName: String = "cloud.fill"
 	
 	@State private var attributionLink: URL?
@@ -65,7 +67,9 @@ struct NodeDetail: View {
 										editingWaypoint = wpId
 										presentingWaypointForm = true
 									}
-								}, positions: annotations, waypoints: Array(waypoints), mapViewType: mapType,
+								}, positions: annotations, waypoints: Array(waypoints),
+									mapViewType: mapType,
+									centeringMode: .allPositions,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
@@ -84,8 +88,12 @@ struct NodeDetail: View {
 										.pickerStyle(.menu)
 										.padding(5)
 										VStack {
-											Label(temperature?.formatted() ?? "??", systemImage: symbolName)
+											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
+											
+											
+											Label("\(humidity ?? 0)%", systemImage: "humidity")
+												.font(.caption2)
 										}
 										.padding(10)
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -351,12 +359,11 @@ struct NodeDetail: View {
 							}
 						}
 						
-						if (self.bleManager.connectedPeripheral != nil && self.bleManager.connectedPeripheral.num == node.num)
-							|| (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
+						if (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
 							
 							HStack {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-								if node.metadata?.canShutdown ?? false {
+								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {//node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
 									
 									Button(action: {
 										showingShutdownConfirm = true
@@ -436,6 +443,28 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
+					switch meshMapType {
+						case "standard":
+							mapType = .standard
+							break
+						case "mutedStandard":
+							mapType = .mutedStandard
+							break
+						case "hybrid":
+							mapType = .hybrid
+							break
+						case "hybridFlyover":
+							mapType = .hybridFlyover
+							break
+						case "satellite":
+							mapType = .satellite
+							break
+						case "satelliteFlyover":
+							mapType = .satelliteFlyover
+							break
+						default:
+							mapType = .hybridFlyover
+					}
 				}
 				.task(id: node.num) {
 					do {
@@ -447,6 +476,7 @@ struct NodeDetail: View {
 							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
 							condition = weather.currentWeather.condition
 							temperature = weather.currentWeather.temperature
+							humidity = Int(weather.currentWeather.humidity * 100)
 							symbolName = weather.currentWeather.symbolName
 							
 							let attribution = try await WeatherService.shared.attribution

@@ -35,6 +35,27 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 	}
 }
 
+enum CenteringMode: Int, CaseIterable, Identifiable {
+
+	case allAnnotations = 0
+	case allPositions = 1
+	case clientGps = 2
+
+	var id: Int { self.rawValue }
+	var description: String {
+		get {
+			switch self {
+			case .allAnnotations:
+				return "All Annotations"// NSLocalizedString("default", comment: "Default Keyboard")
+			case .allPositions:
+				return "All Node Postions"// NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard")
+			case .clientGps:
+				return "Client GPS"//NSLocalizedString("email.address", comment: "Email Address Keyboard")
+			}
+		}
+	}
+}
+
 enum MeshMapType: String, CaseIterable, Identifiable {
 
 	case standard = "standard"  

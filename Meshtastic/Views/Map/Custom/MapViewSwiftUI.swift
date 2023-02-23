@@ -7,6 +7,10 @@
 import SwiftUI
 import MapKit
 
+func degreesToRadians(_ number: Double) -> Double {
+	return number * .pi / 180
+}
+
 struct MapViewSwiftUI: UIViewRepresentable {
 	
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
@@ -15,7 +19,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
+	let centeringMode: CenteringMode
+	
 	let centerOnPositionsOnly: Bool
+	@AppStorage("meshMapRecentering") private var recenter = false
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -28,28 +35,54 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> MKMapView {
 		// Parameters
+		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
-		if centerOnPositionsOnly {
-			mapView.fit(annotations: positions, andShow: true)
-		} else {
+		// Logic to manage the map centering options
+		switch centeringMode {
+		case .allAnnotations:
 			mapView.addAnnotations(positions)
 			mapView.fitAllAnnotations()
+		case .allPositions:
+			mapView.fit(annotations: positions, andShow: true)
+		case .clientGps:
+			
+			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+			let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+			let region = MKCoordinateRegion(center: center, span: span)
+			mapView.setRegion(region, animated: true)
+			mapView.setUserTrackingMode(.followWithHeading, animated: true)
+			mapView.addAnnotations(positions)
 		}
-		mapView.mapType = mapViewType
-		mapView.setUserTrackingMode(.none, animated: true)
+		
 		// Other MKMapView Settings
+		mapView.showsUserLocation = true
+		mapView.preferredConfiguration.elevationStyle = .realistic
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
 		mapView.isScrollEnabled = true
 		mapView.isZoomEnabled = true
 		mapView.showsBuildings = true
-		mapView.showsCompass = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		mapView.showsUserLocation = true
-		#if targetEnvironment(macCatalyst)
+		
+#if targetEnvironment(macCatalyst)
+		// Show the default always visible compass and the mac only controls
+		mapView.showsCompass = true
 		mapView.showsZoomControls = true
-		#endif
+		mapView.showsPitchControl = true
+#else
+		
+#if os(iOS)
+		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
+		mapView.showsCompass = false
+		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
+		compassButton.compassVisibility = .visible          // Make it visible
+		mapView.addSubview(compassButton) // Add it to the view
+		compassButton.translatesAutoresizingMaskIntoConstraints = false
+		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
+		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+#endif
+#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -82,8 +115,27 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		
 		DispatchQueue.main.async {
 			mapView.removeAnnotations(mapView.annotations)
-			mapView.addAnnotations(positions)
 			mapView.addAnnotations(waypoints)
+			switch centeringMode {
+			case .allAnnotations:
+				mapView.addAnnotations(positions)
+				if recenter {
+					mapView.fitAllAnnotations()
+				}
+			case .allPositions:
+				if recenter {
+					mapView.fit(annotations: positions, andShow: true)
+				} else {
+					mapView.addAnnotations(positions)
+				}
+			case .clientGps:
+				mapView.addAnnotations(positions)
+				if recenter {
+					let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+					let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
+					mapView.setRegion(region, animated: true)
+				}
+			}
 		}
 	}
 	
@@ -114,20 +166,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			switch annotation {
 				
 			case _ as MKClusterAnnotation:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "NodeGroup")
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
 				annotationView.markerTintColor = .brown//.systemRed
 				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
 			case let positionAnnotation as PositionEntity:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Node")
+				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
-				annotationView.glyphText = "📟"
 				
-				let latest = parent.positions.last(where: { $0.nodePosition?.num ?? 0 == positionAnnotation.nodePosition?.num ?? -1 })
-				
-				if latest == positionAnnotation {
+				if positionAnnotation.latest {
 					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
@@ -136,19 +186,33 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.markerTintColor = UIColor(.indigo)
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
-					annotationView.clusteringIdentifier = "nodeGroup"
 				}
-				
+				annotationView.tag = -1
+				annotationView.canShowCallout = true
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.indigo)
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
-				subtitle.text = "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
+				subtitle.text = "Long Name: \(positionAnnotation.nodePosition?.user?.longName ?? "Unknown") \n"
+				subtitle.text! += "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
 				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
 				let distanceFormatter = MKDistanceFormatter()
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
 				if positionAnnotation.nodePosition?.metadata != nil {
+					
+					if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.client ||
+						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.clientMute ||
+						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.routerClient{
+						annotationView.glyphImage = UIImage(systemName: "flipphone")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.repeater {
+						annotationView.glyphImage = UIImage(systemName: "repeat")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.router {
+						annotationView.glyphImage = UIImage(systemName: "wifi.router.fill")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.tracker {
+						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
+					}
+					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
 					if pf.contains(.Satsinview) {
 						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
@@ -162,8 +226,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
 					}
 					if pf.contains(.Heading) {
+						
+						annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
 					}
+				} else {
+					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
@@ -173,7 +241,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "Waypoint")
+				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "waypoint") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: String(waypointAnnotation.id))
 				annotationView.tag = Int(waypointAnnotation.id)
 				annotationView.isEnabled = true
 				annotationView.canShowCallout = true
@@ -243,9 +311,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-
+			
 			if let index = self.overlays.firstIndex(where: { overlay_ in overlay_.shape.hash == overlay.hash }) {
-
+				
 				let unwrappedOverlay = self.overlays[index]
 				if let circleOverlay = unwrappedOverlay.shape as? MKCircle {
 					let renderer = MKCircleRenderer(circle: circleOverlay)

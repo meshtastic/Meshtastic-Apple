@@ -119,7 +119,18 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
 				if fetchedNode.count == 1 {
 					
+					// Unset the current latest position for this node
+					let fetchCurrentLatestPositionsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "PositionEntity")
+					fetchCurrentLatestPositionsRequest.predicate = NSPredicate(format: "nodePosition.num == %lld && latest = true", Int64(packet.from))
+					let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest) as! [PositionEntity]
+					if fetchedPositions.count > 0 {
+						for position in fetchedPositions {
+							position.latest = false
+						}
+					}
+					
 					let position = PositionEntity(context: context)
+					position.latest = true
 					position.snr = packet.rxSnr
 					position.seqNo = Int32(positionMessage.seqNumber)
 					position.latitudeI = positionMessage.latitudeI
@@ -134,12 +145,14 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
 					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
 					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
+					
 					do {
 						try context.save()
 						print("💾 Updated Node Position Coordinates, SNR and Time from Position App Packet For: \(fetchedNode[0].num)")

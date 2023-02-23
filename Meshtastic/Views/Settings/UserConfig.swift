@@ -48,8 +48,8 @@ struct UserConfig: View {
 								.onChange(of: longName, perform: { value in
 									let totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > 36 {
-										let firstNBytes = Data(longName.utf8.prefix(36))
+									if totalBytes > (isLicensed ? 8 : 36) {
+										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 8 : 36))
 										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 											// Set the longName back to the last place where it was the right size
 											longName = maxBytesString
@@ -59,7 +59,7 @@ struct UserConfig: View {
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
-					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to 36 bytes long.")
+					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.font(.caption2)
 					
 					HStack {

@@ -22,10 +22,10 @@ struct Connect: View {
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 
-    var body: some View {
+	var body: some View {
 	
 		NavigationStack {
-            VStack {
+			VStack {
 				List {
 					if bleManager.isSwitchedOn {
 					Section(header: Text("connected.radio").font(.title)) {
@@ -202,7 +202,7 @@ struct Connect: View {
 
 				HStack(alignment: .center) {
 					Spacer()
-                      
+					  
 					#if targetEnvironment(macCatalyst)
 						
 					if bleManager.connectedPeripheral != nil {
@@ -226,15 +226,15 @@ struct Connect: View {
 					}
 					#endif
 						Spacer()
-                    }
+					}
 					.padding(.bottom, 10)
-            }
-            .navigationTitle("bluetooth")
+			}
+			.navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 				 ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			 })
-        }
+		}
 		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 				.presentationDetents([.large])
@@ -267,7 +267,7 @@ struct Connect: View {
 				}
 			}
 		}
-        .onAppear(perform: {
+		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 				
@@ -285,7 +285,7 @@ struct Connect: View {
 				isPreferredRadio = false
 			}
 		})
-    }
+	}
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

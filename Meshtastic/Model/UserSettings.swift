@@ -45,6 +45,18 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
 		}
 	}
+	@Published var meshMapCenteringMode: Int {
+		didSet {
+			UserDefaults.standard.set(meshMapCenteringMode, forKey: "meshMapCenteringMode")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	@Published var meshMapRecentering: Bool {
+		didSet {
+			UserDefaults.standard.set(meshMapCenteringMode, forKey: "meshMapRecentering")
+			UserDefaults.standard.synchronize()
+		}
+	}
 	@Published var meshMapCustomTileServer: String {
 		didSet {
 			UserDefaults.standard.set(meshMapCustomTileServer, forKey: "meshMapCustomTileServer")
@@ -59,7 +71,9 @@ class UserSettings: ObservableObject {
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
-		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "hybrid"
+		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "standard"
+		self.meshMapCenteringMode = UserDefaults.standard.object(forKey: "meshMapCenteringMode") as? Int ?? 0
+		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? true
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 	}
 }

@@ -8,7 +8,7 @@ import MapKit
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
-
+	
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory,	in: .userDomainMask, appropriateFor: nil, create: true)
@@ -16,11 +16,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			fatalError("Can't find documents directory.")
 		}
 	}
-
+	
 	var context: NSManagedObjectContext?
 	var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
-
+	private let restoreKey = "Meshtastic.BLE.Manager"
+	
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
@@ -35,35 +36,36 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	public var isConnected: Bool = false
 	public var isSubscribed: Bool = false
 	private var configNonce: UInt32 = 1
-
+	
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var timeoutTimerRuns = 0
 	var positionTimer: Timer?
 	let emptyNodeNum: UInt32 = 4294967295
-
+	
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
 	var FROMNUM_characteristic: CBCharacteristic!
-
+	
 	let meshtasticServiceCBUUID = CBUUID(string: "0x6BA1B218-15A8-461F-9FA8-5DCAE273EAFD")
 	let TORADIO_UUID = CBUUID(string: "0xF75C76D2-129E-4DAD-A1DD-7866124401E7")
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
-
+	
 	//private var meshLoggingEnabled: Bool = true
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
-
+	
 	// MARK: init BLEManager
 	override init() {
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
 		centralManager = CBCentralManager(delegate: self, queue: nil)
+		//centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
-
+	
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
@@ -130,6 +132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
 		}
+		
 		centralManager?.connect(peripheral)
 		// Invalidate any existing timer
 		if timeoutTimer != nil {
@@ -495,6 +498,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						}
 					}
 				}
+				// Device Metadata
+				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
+					nowKnown = true
+					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
+				}
+			
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
 				
@@ -674,7 +683,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
 
 					let dataType = PortNum.textMessageApp
-					let payloadData: Data = message.data(using: String.Encoding.utf8)!
+					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
+					messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
+					let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
 
 					var dataMessage = DataMessage()
 					dataMessage.payload = payloadData
@@ -1999,4 +2010,39 @@ extension BLEManager: CBCentralManagerDelegate {
 		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
+	
+//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+//
+//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+//			return
+//		}
+//		print(peripherals)
+//		if peripherals.count > 0 {
+//			//connectedPeripheral.peripheral = peripherals[0]
+//			 // 5
+//			//connectedPeripheral.peripheral.delegate = self
+//
+//			for peripheral in peripherals {
+//
+//			switch peripheral.state {
+//			case .connecting: // I've only seen this happen when
+//				// re-launching attached to Xcode.
+//				print("Xcode Restore")
+//
+//			case .connected: // Store for connection / requesting
+//				// notifications when BT starts.
+//				print("Actual restore")
+//				//centralManager.connect(peripheral)
+//			default: break
+//			}
+//
+//
+//
+//			//	connectedPeripheral.peripheral
+//			//connectedPeripheral.peripheral = peripheral
+//			//connectedPeripheral.peripheral.delegate = self
+//			}
+//		}
+//		print("willRestoreState Hit!")
+//	}
 }
