@@ -80,7 +80,7 @@ struct AppSettings: View {
 					
 					Toggle(isOn: $userSettings.meshMapRecentering) {
 
-						Label("map.recentering", systemImage: "rectangle.center.inset.filled")
+						Label("map.recentering", systemImage: "camera.metering.center.weighted")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
