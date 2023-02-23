@@ -143,7 +143,7 @@ struct MQTTConfig: View {
 			isPresented: $isPresentingSaveConfirm,
 			titleVisibility: .visible
 		) {
-			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
 				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)

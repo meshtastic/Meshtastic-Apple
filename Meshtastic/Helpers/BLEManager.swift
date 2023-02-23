@@ -2021,9 +2021,9 @@ extension BLEManager: CBCentralManagerDelegate {
 			//connectedPeripheral.peripheral = peripherals[0]
 			 // 5
 			//connectedPeripheral.peripheral.delegate = self
-			
+
 			for peripheral in peripherals {
-				
+
 			switch peripheral.state {
 			case .connecting: // I've only seen this happen when
 				// re-launching attached to Xcode.
@@ -2035,9 +2035,9 @@ extension BLEManager: CBCentralManagerDelegate {
 				//centralManager.connect(peripheral)
 			default: break
 			}
-						
-				
-			
+
+
+
 			//	connectedPeripheral.peripheral
 			//connectedPeripheral.peripheral = peripheral
 			//connectedPeripheral.peripheral.delegate = self

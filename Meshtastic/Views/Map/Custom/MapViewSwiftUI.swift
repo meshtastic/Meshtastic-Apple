@@ -22,7 +22,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
-	@AppStorage("meshMapRecenter") private var recenter = false
+	@AppStorage("meshMapRecentering") private var recenter = false
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -50,12 +50,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
 			let region = MKCoordinateRegion(center: center, span: span)
 			mapView.setRegion(region, animated: true)
-			mapView.setUserTrackingMode(.followWithHeading, animated: true)
 			mapView.addAnnotations(positions)
 		}
 		
 		// Other MKMapView Settings
-		mapView.showsUserLocation = true
+		mapView.showsUserLocation = false
 		mapView.preferredConfiguration.elevationStyle = .realistic
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
@@ -130,10 +129,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 			case .clientGps:
 				mapView.addAnnotations(positions)
+				mapView.showsUserLocation = true
+				mapView.setUserTrackingMode(.followWithHeading, animated: true)
 				if recenter {
-					let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-					let region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude), span: span)
-					mapView.setRegion(region, animated: true)
+					mapView.centerCoordinate = LocationHelper.currentLocation
 				}
 			}
 		}
