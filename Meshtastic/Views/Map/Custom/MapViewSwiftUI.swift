@@ -114,7 +114,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		DispatchQueue.main.async {
-			print(recenter)
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 			switch centeringMode {
