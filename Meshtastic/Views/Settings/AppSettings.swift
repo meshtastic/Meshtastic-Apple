@@ -60,7 +60,7 @@ struct AppSettings: View {
 					}
 				}
 				
-				Section(header: Text("global map options")) {
+				Section(header: Text("map options")) {
 					
 					Picker("map.type", selection: $userSettings.meshMapType) {
 						ForEach(MeshMapType.allCases) { map in
@@ -68,9 +68,7 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-				}
-					 
-				Section(header: Text("mesh map options")) {
+					
 					Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
 						ForEach(CenteringMode.allCases) { cm in
 							Text(cm.description)

@@ -215,6 +215,11 @@ struct Config {
       /// Tracker device role
       ///   Position Mesh packets will be prioritized higher and sent more frequently by default.
       case tracker // = 5
+
+      ///
+      /// Sensor device role
+      ///   Telemetry Mesh packets will be prioritized higher and sent more frequently by default.
+      case sensor // = 6
       case UNRECOGNIZED(Int)
 
       init() {
@@ -229,6 +234,7 @@ struct Config {
         case 3: self = .routerClient
         case 4: self = .repeater
         case 5: self = .tracker
+        case 6: self = .sensor
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -241,6 +247,7 @@ struct Config {
         case .routerClient: return 3
         case .repeater: return 4
         case .tracker: return 5
+        case .sensor: return 6
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1245,6 +1252,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .routerClient,
     .repeater,
     .tracker,
+    .sensor,
   ]
 }
 
@@ -1633,6 +1641,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "ROUTER_CLIENT"),
     4: .same(proto: "REPEATER"),
     5: .same(proto: "TRACKER"),
+    6: .same(proto: "SENSOR"),
   ]
 }
 

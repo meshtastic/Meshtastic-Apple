@@ -99,11 +99,17 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case tloraT3S3 // = 16
 
   ///
+  /// B&Q Consulting Nano G1 Explorer: https://wiki.uniteng.com/en/meshtastic/nano-g1-explorer
+  case nanoG1Explorer // = 17
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
   ///
+  /// ---------------------------------------------------------------------------
   /// Less common/prototype boards listed here (needs one more byte over the air)
+  /// ---------------------------------------------------------------------------
   case loraRelayV1 // = 32
 
   ///
@@ -163,7 +169,9 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case betafpv900NanoTx // = 46
 
   ///
+  /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
+  /// ------------------------------------------------------------------------------------------------------------------------------------------
   case privateHw // = 255
   case UNRECOGNIZED(Int)
 
@@ -190,6 +198,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 14: self = .nanoG1
     case 15: self = .tloraV211P8
     case 16: self = .tloraT3S3
+    case 17: self = .nanoG1Explorer
     case 25: self = .stationG1
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
@@ -230,6 +239,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nanoG1: return 14
     case .tloraV211P8: return 15
     case .tloraT3S3: return 16
+    case .nanoG1Explorer: return 17
     case .stationG1: return 25
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
@@ -275,6 +285,7 @@ extension HardwareModel: CaseIterable {
     .nanoG1,
     .tloraV211P8,
     .tloraT3S3,
+    .nanoG1Explorer,
     .stationG1,
     .loraRelayV1,
     .nrf52840Dk,
@@ -2318,6 +2329,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     14: .same(proto: "NANO_G1"),
     15: .same(proto: "TLORA_V2_1_1P8"),
     16: .same(proto: "TLORA_T3_S3"),
+    17: .same(proto: "NANO_G1_EXPLORER"),
     25: .same(proto: "STATION_G1"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),

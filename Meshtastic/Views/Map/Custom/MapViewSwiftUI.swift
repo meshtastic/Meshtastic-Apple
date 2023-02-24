@@ -80,6 +80,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.translatesAutoresizingMaskIntoConstraints = false
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		
 #endif
 #endif
 		mapView.delegate = context.coordinator
@@ -132,6 +133,15 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.showsUserLocation = true
 				mapView.setUserTrackingMode(.followWithHeading, animated: true)
 				if recenter {
+					// create a 3D Camera
+						let mapCamera = MKMapCamera()
+					mapCamera.centerCoordinate = LocationHelper.currentLocation
+						mapCamera.pitch = 45
+						mapCamera.altitude = 500 // example altitude
+						mapCamera.heading = 45
+
+						// set the camera property
+						mapView.camera = mapCamera
 					mapView.centerCoordinate = LocationHelper.currentLocation
 				}
 			}
