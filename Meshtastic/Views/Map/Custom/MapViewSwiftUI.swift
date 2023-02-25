@@ -23,6 +23,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter = false
+	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId = 0
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -39,18 +40,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.addAnnotations(waypoints)
 		// Logic to manage the map centering options
 		switch centeringMode {
-		case .allAnnotations:
-			mapView.addAnnotations(positions)
-			mapView.fitAllAnnotations()
-		case .allPositions:
-			mapView.fit(annotations: positions, andShow: true)
-		case .clientGps:
-			
-			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-			let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-			let region = MKCoordinateRegion(center: center, span: span)
-			mapView.setRegion(region, animated: true)
-			mapView.addAnnotations(positions)
+			case .allAnnotations:
+				mapView.addAnnotations(positions)
+				mapView.fitAllAnnotations()
+			case .allPositions:
+				mapView.fit(annotations: positions, andShow: true)
+			case .phoneGps:
+				
+				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+				let region = MKCoordinateRegion(center: center, span: span)
+				mapView.setRegion(region, animated: true)
+				mapView.addAnnotations(positions)
 		}
 		
 		// Other MKMapView Settings
@@ -116,34 +117,36 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		DispatchQueue.main.async {
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
-			switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(positions)
-				if recenter {
-					mapView.fitAllAnnotations()
-				}
-			case .allPositions:
-				if recenter {
-					mapView.fit(annotations: positions, andShow: true)
-				} else {
-					mapView.addAnnotations(positions)
-				}
-			case .clientGps:
-				mapView.addAnnotations(positions)
-				mapView.showsUserLocation = true
-				mapView.setUserTrackingMode(.followWithHeading, animated: true)
-				if recenter {
-					// create a 3D Camera
-						let mapCamera = MKMapCamera()
-					mapCamera.centerCoordinate = LocationHelper.currentLocation
-						mapCamera.pitch = 45
-						mapCamera.altitude = 500 // example altitude
-						mapCamera.heading = 45
+			mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
 
-						// set the camera property
-						mapView.camera = mapCamera
-					mapView.centerCoordinate = LocationHelper.currentLocation
-				}
+			switch centeringMode {
+				case .allAnnotations:
+					mapView.addAnnotations(positions)
+					if recenter {
+						mapView.fitAllAnnotations()
+					}
+				case .allPositions:
+					if recenter {
+						mapView.fit(annotations: positions, andShow: true)
+					} else {
+						mapView.addAnnotations(positions)
+					}
+				case .phoneGps:
+					mapView.addAnnotations(positions)
+					mapView.showsUserLocation = true
+					
+					if recenter {
+						// create a 3D Camera
+//						let mapCamera = MKMapCamera()
+//						mapCamera.centerCoordinate = LocationHelper.currentLocation
+//						mapCamera.pitch = 45
+//						mapCamera.altitude = 500 // example altitude
+//						mapCamera.heading = 45
+//						// set the camera property
+//						mapView.camera = mapCamera
+						
+						mapView.centerCoordinate = LocationHelper.currentLocation
+					}
 			}
 		}
 	}
@@ -176,7 +179,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
-				annotationView.markerTintColor = .brown//.systemRed
+				annotationView.markerTintColor = .brown
 				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
@@ -220,6 +223,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						annotationView.glyphImage = UIImage(systemName: "wifi.router.fill")
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.tracker {
 						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.sensor {
+						annotationView.glyphImage = UIImage(systemName: "sensor")
+						
 					}
 					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))

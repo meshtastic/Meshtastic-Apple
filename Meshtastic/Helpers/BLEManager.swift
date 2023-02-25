@@ -62,8 +62,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
-		//centralManager = CBCentralManager(delegate: self, queue: nil)
-		centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
+		centralManager = CBCentralManager(delegate: self, queue: nil)
+		//centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
 	
 	// MARK: Scanning for BLE Devices

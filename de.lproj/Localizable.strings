@@ -140,6 +140,10 @@
 "map.centering"="Centering";
 "map.recentering"="Automatic Re-centering";
 "map.type"="kartentyp";
+"map.usertrackingmode"="User tracking mode";
+"map.usertrackingmode.none"="None";
+"map.usertrackingmode.follow"="Follow";
+"map.usertrackingmode.followwithheading"="Follow with heading";
 "mesh.log"="Mesh Log";
 "mesh.log.bluetooth.config %@"="Bluetooth Konfiguration empfangen: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";

@@ -58,6 +58,15 @@ struct AppSettings: View {
 							.font(.caption)
 							.listRowSeparator(.visible)
 					}
+					Picker("map.usertrackingmode", selection: $userSettings.meshMapUserTrackingMode) {
+						ForEach(UserTrackingModes.allCases) { utm in
+							Text(utm.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("map.usertrackingmode.description")
+						.font(.caption)
+						.listRowSeparator(.visible)
 				}
 				
 				Section(header: Text("map options")) {

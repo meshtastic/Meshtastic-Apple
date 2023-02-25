@@ -39,7 +39,7 @@ enum CenteringMode: Int, CaseIterable, Identifiable {
 
 	case allAnnotations = 0
 	case allPositions = 1
-	case clientGps = 2
+	case phoneGps = 2
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -49,8 +49,8 @@ enum CenteringMode: Int, CaseIterable, Identifiable {
 				return "All Annotations"// NSLocalizedString("default", comment: "Default Keyboard")
 			case .allPositions:
 				return "All Node Postions"// NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard")
-			case .clientGps:
-				return "Client GPS"//NSLocalizedString("email.address", comment: "Email Address Keyboard")
+			case .phoneGps:
+				return "Phone GPS"//NSLocalizedString("email.address", comment: "Email Address Keyboard")
 			}
 		}
 	}
@@ -101,6 +101,39 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 			return MKMapType.satellite
 		case .satelliteFlyover:
 			return MKMapType.satelliteFlyover
+		}
+	}
+}
+
+enum UserTrackingModes: Int, CaseIterable, Identifiable {
+
+	case none = 0
+	case follow = 1
+	case followWithHeading = 2
+
+	var id: Int { self.rawValue }
+
+	var description: String {
+		get {
+			switch self {
+			case .none:
+				return NSLocalizedString("map.usertrackingmode.none", comment: "None")
+			case .follow:
+				return NSLocalizedString("map.usertrackingmode.follow", comment: "Follow")
+			case .followWithHeading:
+				return NSLocalizedString("map.usertrackingmode.followwithheading", comment: "Follow with Heading")
+			}
+		}
+	}
+	func MKUserTrackingModeValue() -> MKUserTrackingMode {
+		
+		switch self {
+		case .none:
+			return MKUserTrackingMode.none
+		case .follow:
+			return MKUserTrackingMode.follow
+		case .followWithHeading:
+			return MKUserTrackingMode.followWithHeading
 		}
 	}
 }
