@@ -62,8 +62,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
-		centralManager = CBCentralManager(delegate: self, queue: nil)
-		//centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
+		//centralManager = CBCentralManager(delegate: self, queue: nil)
+		centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
 	
 	// MARK: Scanning for BLE Devices
@@ -2018,35 +2018,19 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 		
 		if peripherals.count > 0 {
-			//connectedPeripheral.peripheral = peripherals[0]
-			 // 5
-			//connectedPeripheral.peripheral.delegate = self
-			
+
 			for peripheral in peripherals {
 				print(peripheral)
 			switch peripheral.state {
-			case .connecting: // I've only seen this happen when
-				// re-launching attached to Xcode.
-				print("Xcode Restore")
+				case .connecting: // I've only seen this happen when
+					// re-launching attached to Xcode.
+					print("Xcode Restore")
 
-			case .connected: // Store for connection / requesting
-				// notifications when BT starts.
-				disconnectPeripheral(reconnect: true)
-				if connectedPeripheral?.peripheral != nil {
-					self.sendWantConfig()
-				} else {
-					disconnectPeripheral(reconnect: true)
+				case .connected:
+					connectTo(peripheral: peripheral)
+					print("Restore BLE State")
+				default: break
 				}
-				print("Actual restore")
-				//centralManager.connect(peripheral)
-			default: break
-			}
-
-
-
-			//	connectedPeripheral.peripheral
-			//connectedPeripheral.peripheral = peripheral
-			//connectedPeripheral.peripheral.delegate = self
 			}
 		}
 		print("willRestoreState Hit!")

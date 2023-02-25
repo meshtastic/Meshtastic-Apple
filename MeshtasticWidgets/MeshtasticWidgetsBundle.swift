@@ -11,7 +11,10 @@ import SwiftUI
 @main
 struct MeshtasticWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        MeshtasticWidgets()
-        MeshtasticWidgetsLiveActivity()
+		
+		// MARK: - Live Activity Widgets
+		#if canImport(ActivityKit)
+		//MeshActivityWidget()
+		#endif
     }
 }

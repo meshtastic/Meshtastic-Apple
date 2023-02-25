@@ -38,12 +38,13 @@
 		DD4C0EFA29A8735400D3316C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD4C0EF929A8735400D3316C /* WidgetKit.framework */; };
 		DD4C0EFC29A8735400D3316C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD4C0EFB29A8735400D3316C /* SwiftUI.framework */; };
 		DD4C0EFF29A8735400D3316C /* MeshtasticWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0EFE29A8735400D3316C /* MeshtasticWidgetsBundle.swift */; };
-		DD4C0F0129A8735400D3316C /* MeshtasticWidgetsLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F0029A8735400D3316C /* MeshtasticWidgetsLiveActivity.swift */; };
-		DD4C0F0329A8735400D3316C /* MeshtasticWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F0229A8735400D3316C /* MeshtasticWidgets.swift */; };
 		DD4C0F0629A8735500D3316C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DD4C0F0529A8735500D3316C /* Assets.xcassets */; };
 		DD4C0F0829A8735500D3316C /* MeshtasticWidgets.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F0429A8735400D3316C /* MeshtasticWidgets.intentdefinition */; };
 		DD4C0F0929A8735500D3316C /* MeshtasticWidgets.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F0429A8735400D3316C /* MeshtasticWidgets.intentdefinition */; };
 		DD4C0F0C29A8735500D3316C /* MeshtasticWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD4C0EF829A8735400D3316C /* MeshtasticWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD4C0F1329A9DDF800D3316C /* MeshActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F1229A9DDF800D3316C /* MeshActivityAttributes.swift */; };
+		DD4C0F1629A9EB5000D3316C /* MeshActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F1429A9E21A00D3316C /* MeshActivityWidget.swift */; };
+		DD4C0F1729A9EB6300D3316C /* MeshActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4C0F1429A9E21A00D3316C /* MeshActivityWidget.swift */; };
 		DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
 		DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */; };
@@ -199,12 +200,12 @@
 		DD4C0EF929A8735400D3316C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		DD4C0EFB29A8735400D3316C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		DD4C0EFE29A8735400D3316C /* MeshtasticWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWidgetsBundle.swift; sourceTree = "<group>"; };
-		DD4C0F0029A8735400D3316C /* MeshtasticWidgetsLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWidgetsLiveActivity.swift; sourceTree = "<group>"; };
-		DD4C0F0229A8735400D3316C /* MeshtasticWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticWidgets.swift; sourceTree = "<group>"; };
 		DD4C0F0429A8735400D3316C /* MeshtasticWidgets.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = MeshtasticWidgets.intentdefinition; sourceTree = "<group>"; };
 		DD4C0F0529A8735500D3316C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DD4C0F0729A8735500D3316C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DD4C0F0D29A8735500D3316C /* MeshtasticWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticWidgetsExtension.entitlements; sourceTree = "<group>"; };
+		DD4C0F1229A9DDF800D3316C /* MeshActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshActivityAttributes.swift; sourceTree = "<group>"; };
+		DD4C0F1429A9E21A00D3316C /* MeshActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshActivityWidget.swift; sourceTree = "<group>"; };
 		DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
 		DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelEntityExtension.swift; sourceTree = "<group>"; };
@@ -401,11 +402,11 @@
 			isa = PBXGroup;
 			children = (
 				DD4C0EFE29A8735400D3316C /* MeshtasticWidgetsBundle.swift */,
-				DD4C0F0029A8735400D3316C /* MeshtasticWidgetsLiveActivity.swift */,
-				DD4C0F0229A8735400D3316C /* MeshtasticWidgets.swift */,
 				DD4C0F0429A8735400D3316C /* MeshtasticWidgets.intentdefinition */,
 				DD4C0F0529A8735500D3316C /* Assets.xcassets */,
 				DD4C0F0729A8735500D3316C /* Info.plist */,
+				DD4C0F1229A9DDF800D3316C /* MeshActivityAttributes.swift */,
+				DD4C0F1429A9E21A00D3316C /* MeshActivityWidget.swift */,
 			);
 			path = MeshtasticWidgets;
 			sourceTree = "<group>";
@@ -870,9 +871,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD4C0F1629A9EB5000D3316C /* MeshActivityWidget.swift in Sources */,
 				DD4C0EFF29A8735400D3316C /* MeshtasticWidgetsBundle.swift in Sources */,
-				DD4C0F0129A8735400D3316C /* MeshtasticWidgetsLiveActivity.swift in Sources */,
-				DD4C0F0329A8735400D3316C /* MeshtasticWidgets.swift in Sources */,
 				DD4C0F0829A8735500D3316C /* MeshtasticWidgets.intentdefinition in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -946,6 +946,7 @@
 				DDB6ABE028B13AC700384BA1 /* DeviceRoles.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
+				DD4C0F1729A9EB6300D3316C /* MeshActivityWidget.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD5E5202298EE33B00D21B61 /* admin.pb.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
@@ -953,6 +954,7 @@
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
 				DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */,
+				DD4C0F1329A9DDF800D3316C /* MeshActivityAttributes.swift in Sources */,
 				DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */,
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
@@ -1237,7 +1239,7 @@
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1271,7 +1273,7 @@
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
