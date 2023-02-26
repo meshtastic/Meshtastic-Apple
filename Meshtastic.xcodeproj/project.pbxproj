@@ -31,6 +31,7 @@
 		DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582528582E9B009B0E59 /* DeviceConfig.swift */; };
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
+		DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
 		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
@@ -160,6 +161,7 @@
 		DD41582528582E9B009B0E59 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
 		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
+		DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeWeatherForecast.swift; sourceTree = "<group>"; };
 		DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
@@ -377,6 +379,7 @@
 			children = (
 				DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */,
 				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
+				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
 			);
 			path = Weather;
 			sourceTree = "<group>";
@@ -788,6 +791,7 @@
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
+				DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
 				DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */,
 				DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */,

@@ -18,6 +18,7 @@ struct NodeDetail: View {
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
 	@State private var showingDetailsPopover = false
+	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 	@State private var presentingWaypointForm = false
@@ -98,6 +99,32 @@ struct NodeDetail: View {
 										.padding(10)
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.padding(5)
+										#if targetEnvironment(macCatalyst)
+										.popover(isPresented: $showingForecast,
+												 arrowEdge: .top) {
+											Text("Today's Weather Forecast")
+												.font(.title)
+												.padding()
+											NodeWeatherCard(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+												.frame(height: 250)
+										}
+										#else
+										 .sheet(isPresented: $showingForecast) {
+											 Text("Today's Weather Forecast")
+												 .font(.title)
+												 .padding()
+											 NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+												 .frame(height: 250)
+												 .presentationDetents([.medium])
+												 .presentationDragIndicator(.automatic)
+										 }
+										#endif
+										.gesture(
+											LongPressGesture(minimumDuration: 0.5)
+												.onEnded { value in
+													showingForecast = true
+												}
+										)
 									}
 								}
 							}
