@@ -105,7 +105,7 @@ struct NodeDetail: View {
 											Text("Today's Weather Forecast")
 												.font(.title)
 												.padding()
-											NodeWeatherCard(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+											NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
 												.frame(height: 250)
 										}
 										#else
