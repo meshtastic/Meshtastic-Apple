@@ -112,6 +112,7 @@ struct NodeMap: View {
 					"????")
 		})
 		.onAppear(perform: {
+			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
@@ -138,5 +139,6 @@ struct NodeMap: View {
 					mapType = .hybridFlyover
 			}
 		})
+		.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 }
