@@ -115,36 +115,35 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		DispatchQueue.main.async {
-			mapView.removeAnnotations(mapView.annotations)
-			mapView.addAnnotations(waypoints)
-			mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
-
+			
+			let annotationCount = waypoints.count + positions.count
+			if annotationCount != mapView.annotations.count {
+				mapView.removeAnnotations(mapView.annotations)
+				mapView.addAnnotations(waypoints)
+				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
+			}
 			switch centeringMode {
 				case .allAnnotations:
-					mapView.addAnnotations(positions)
-					if recenter {
-						mapView.fitAllAnnotations()
+					if annotationCount != mapView.annotations.count {
+						mapView.addAnnotations(positions)
+						if recenter {
+							mapView.fitAllAnnotations()
+						}
 					}
 				case .allPositions:
-					if recenter {
-						mapView.fit(annotations: positions, andShow: true)
-					} else {
-						mapView.addAnnotations(positions)
+					if annotationCount != mapView.annotations.count {
+						if recenter {
+							mapView.fit(annotations: positions, andShow: true)
+						} else {
+							mapView.addAnnotations(positions)
+						}
 					}
 				case .phoneGps:
-					mapView.addAnnotations(positions)
+					if annotationCount != mapView.annotations.count {
+						mapView.addAnnotations(positions)
+					}
 					mapView.showsUserLocation = true
-					
 					if recenter {
-						// create a 3D Camera
-//						let mapCamera = MKMapCamera()
-//						mapCamera.centerCoordinate = LocationHelper.currentLocation
-//						mapCamera.pitch = 45
-//						mapCamera.altitude = 500 // example altitude
-//						mapCamera.heading = 45
-//						// set the camera property
-//						mapView.camera = mapCamera
-						
 						mapView.centerCoordinate = LocationHelper.currentLocation
 					}
 			}
@@ -240,10 +239,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						formatter.locale = Locale.current
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
 					}
-					if pf.contains(.Heading) {
+					if pf.contains(.Heading){
 						
-						annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
-						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+						if parent.userTrackingModeId != 2 {
+							annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
+							subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+						} else {
+							annotationView.glyphImage = UIImage(systemName: "flipphone")
+						}
 					}
 				} else {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
