@@ -58,9 +58,15 @@ struct AppSettings: View {
 							.font(.caption)
 							.listRowSeparator(.visible)
 					}
+					Picker("map.usertrackingmode", selection: $userSettings.meshMapUserTrackingMode) {
+						ForEach(UserTrackingModes.allCases) { utm in
+							Text(utm.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
 				}
 				
-				Section(header: Text("global map options")) {
+				Section(header: Text("map options")) {
 					
 					Picker("map.type", selection: $userSettings.meshMapType) {
 						ForEach(MeshMapType.allCases) { map in
@@ -68,9 +74,7 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-				}
-					 
-				Section(header: Text("mesh map options")) {
+					
 					Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
 						ForEach(CenteringMode.allCases) { cm in
 							Text(cm.description)
@@ -80,7 +84,7 @@ struct AppSettings: View {
 					
 					Toggle(isOn: $userSettings.meshMapRecentering) {
 
-						Label("map.recentering", systemImage: "rectangle.center.inset.filled")
+						Label("map.recentering", systemImage: "camera.metering.center.weighted")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}

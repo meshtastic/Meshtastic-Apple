@@ -669,6 +669,15 @@ struct ModuleConfig {
     /// display the results in Fahrenheit as a "user preference".
     var environmentDisplayFahrenheit: Bool = false
 
+    ///
+    /// Enable/Disable the air quality metrics
+    var airQualityEnabled: Bool = false
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// air quality metrics to the mesh
+    var airQualityInterval: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1584,6 +1593,8 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     3: .standard(proto: "environment_measurement_enabled"),
     4: .standard(proto: "environment_screen_enabled"),
     5: .standard(proto: "environment_display_fahrenheit"),
+    6: .standard(proto: "air_quality_enabled"),
+    7: .standard(proto: "air_quality_interval"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1597,6 +1608,8 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 3: try { try decoder.decodeSingularBoolField(value: &self.environmentMeasurementEnabled) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.environmentScreenEnabled) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.environmentDisplayFahrenheit) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.airQualityEnabled) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.airQualityInterval) }()
       default: break
       }
     }
@@ -1618,6 +1631,12 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.environmentDisplayFahrenheit != false {
       try visitor.visitSingularBoolField(value: self.environmentDisplayFahrenheit, fieldNumber: 5)
     }
+    if self.airQualityEnabled != false {
+      try visitor.visitSingularBoolField(value: self.airQualityEnabled, fieldNumber: 6)
+    }
+    if self.airQualityInterval != 0 {
+      try visitor.visitSingularUInt32Field(value: self.airQualityInterval, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1627,6 +1646,8 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.environmentMeasurementEnabled != rhs.environmentMeasurementEnabled {return false}
     if lhs.environmentScreenEnabled != rhs.environmentScreenEnabled {return false}
     if lhs.environmentDisplayFahrenheit != rhs.environmentDisplayFahrenheit {return false}
+    if lhs.airQualityEnabled != rhs.airQualityEnabled {return false}
+    if lhs.airQualityInterval != rhs.airQualityInterval {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

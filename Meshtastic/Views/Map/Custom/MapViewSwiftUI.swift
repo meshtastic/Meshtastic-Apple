@@ -23,6 +23,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter = false
+	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId = 0
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -39,18 +40,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.addAnnotations(waypoints)
 		// Logic to manage the map centering options
 		switch centeringMode {
-		case .allAnnotations:
-			mapView.addAnnotations(positions)
-			mapView.fitAllAnnotations()
-		case .allPositions:
-			mapView.fit(annotations: positions, andShow: true)
-		case .clientGps:
-			
-			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-			let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-			let region = MKCoordinateRegion(center: center, span: span)
-			mapView.setRegion(region, animated: true)
-			mapView.addAnnotations(positions)
+			case .allAnnotations:
+				mapView.addAnnotations(positions)
+				mapView.fitAllAnnotations()
+			case .allPositions:
+				mapView.fit(annotations: positions, andShow: true)
+			case .phoneGps:
+				
+				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+				let region = MKCoordinateRegion(center: center, span: span)
+				mapView.setRegion(region, animated: true)
+				mapView.addAnnotations(positions)
 		}
 		
 		// Other MKMapView Settings
@@ -80,6 +81,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.translatesAutoresizingMaskIntoConstraints = false
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		
 #endif
 #endif
 		mapView.delegate = context.coordinator
@@ -113,27 +115,37 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		DispatchQueue.main.async {
-			mapView.removeAnnotations(mapView.annotations)
-			mapView.addAnnotations(waypoints)
+			
+			let annotationCount = waypoints.count + positions.count
+			if annotationCount != mapView.annotations.count {
+				mapView.removeAnnotations(mapView.annotations)
+				mapView.addAnnotations(waypoints)
+				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
+			}
 			switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(positions)
-				if recenter {
-					mapView.fitAllAnnotations()
-				}
-			case .allPositions:
-				if recenter {
-					mapView.fit(annotations: positions, andShow: true)
-				} else {
-					mapView.addAnnotations(positions)
-				}
-			case .clientGps:
-				mapView.addAnnotations(positions)
-				mapView.showsUserLocation = true
-				mapView.setUserTrackingMode(.followWithHeading, animated: true)
-				if recenter {
-					mapView.centerCoordinate = LocationHelper.currentLocation
-				}
+				case .allAnnotations:
+					if annotationCount != mapView.annotations.count {
+						mapView.addAnnotations(positions)
+						if recenter {
+							mapView.fitAllAnnotations()
+						}
+					}
+				case .allPositions:
+					if annotationCount != mapView.annotations.count {
+						if recenter {
+							mapView.fit(annotations: positions, andShow: true)
+						} else {
+							mapView.addAnnotations(positions)
+						}
+					}
+				case .phoneGps:
+					if annotationCount != mapView.annotations.count {
+						mapView.addAnnotations(positions)
+					}
+					mapView.showsUserLocation = true
+					if recenter {
+						mapView.centerCoordinate = LocationHelper.currentLocation
+					}
 			}
 		}
 	}
@@ -166,7 +178,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				
 			case _ as MKClusterAnnotation:
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
-				annotationView.markerTintColor = .brown//.systemRed
+				annotationView.markerTintColor = .brown
 				annotationView.displayPriority = .defaultLow
 				annotationView.tag = -1
 				return annotationView
@@ -210,6 +222,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						annotationView.glyphImage = UIImage(systemName: "wifi.router.fill")
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.tracker {
 						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
+					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.sensor {
+						annotationView.glyphImage = UIImage(systemName: "sensor")
+						
 					}
 					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
@@ -224,10 +239,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						formatter.locale = Locale.current
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
 					}
-					if pf.contains(.Heading) {
+					if pf.contains(.Heading){
 						
-						annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
-						subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+						if parent.userTrackingModeId != 2 {
+							annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
+							subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+						} else {
+							annotationView.glyphImage = UIImage(systemName: "flipphone")
+						}
 					}
 				} else {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")

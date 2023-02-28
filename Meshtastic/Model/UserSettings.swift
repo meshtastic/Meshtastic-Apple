@@ -62,7 +62,13 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.set(meshMapCustomTileServer, forKey: "meshMapCustomTileServer")
 		}
 	}
-
+	@Published var meshMapUserTrackingMode: Int {
+		didSet {
+			UserDefaults.standard.set(meshMapUserTrackingMode, forKey: "meshMapUserTrackingMode")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	
 	init() {
 
 		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
@@ -75,5 +81,6 @@ class UserSettings: ObservableObject {
 		self.meshMapCenteringMode = UserDefaults.standard.object(forKey: "meshMapCenteringMode") as? Int ?? 0
 		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? true
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
+		self.meshMapUserTrackingMode = UserDefaults.standard.object(forKey: "meshMapUserTrackingMode") as? Int ?? 0
 	}
 }

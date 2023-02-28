@@ -55,9 +55,9 @@ struct NodeMap: View {
 		)
 	@State private var overlays: [MapViewSwiftUI.Overlay] = []
 	
-    var body: some View {
-
-        NavigationStack {
+	var body: some View {
+		
+		NavigationStack {
 			ZStack {
 				
 				MapViewSwiftUI(onLongPress: { coord in
@@ -74,12 +74,12 @@ struct NodeMap: View {
 						presentingWaypointForm = true
 					}
 				}, positions: Array(positions),
-					waypoints: Array(waypoints),
-					mapViewType: mapType,
-					centeringMode: mapCenteringMode,
-					centerOnPositionsOnly: false,
-					customMapOverlay: self.customMapOverlay,
-					overlays: self.overlays
+				   waypoints: Array(waypoints),
+				   mapViewType: mapType,
+				   centeringMode: mapCenteringMode,
+				   centerOnPositionsOnly: false,
+				   customMapOverlay: self.customMapOverlay,
+				   overlays: self.overlays
 				)
 				VStack {
 					Spacer()
@@ -101,10 +101,10 @@ struct NodeMap: View {
 					.presentationDragIndicator(.automatic)
 				
 			}
-        }
+		}
 		.navigationBarItems(leading:
-			MeshtasticLogo(), trailing:
-		ZStack {
+								MeshtasticLogo(), trailing:
+								ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,
 				deviceConnected: bleManager.connectedPeripheral != nil,
@@ -112,31 +112,35 @@ struct NodeMap: View {
 					"????")
 		})
 		.onAppear(perform: {
+			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
 			switch meshMapType {
-				case "standard":
-					mapType = .standard
-					break
-				case "mutedStandard":
-					mapType = .mutedStandard
-					break
-				case "hybrid":
-					mapType = .hybrid
-					break
-				case "hybridFlyover":
-					mapType = .hybridFlyover
-					break
-				case "satellite":
-					mapType = .satellite
-					break
-				case "satelliteFlyover":
-					mapType = .satelliteFlyover
-					break
-				default:
-					mapType = .hybridFlyover
+			case "standard":
+				mapType = .standard
+				break
+			case "mutedStandard":
+				mapType = .mutedStandard
+				break
+			case "hybrid":
+				mapType = .hybrid
+				break
+			case "hybridFlyover":
+				mapType = .hybridFlyover
+				break
+			case "satellite":
+				mapType = .satellite
+				break
+			case "satelliteFlyover":
+				mapType = .satelliteFlyover
+				break
+			default:
+				mapType = .hybridFlyover
 			}
+		})
+		.onDisappear (perform: {
+			UIApplication.shared.isIdleTimerDisabled = false
 		})
     }
 }
