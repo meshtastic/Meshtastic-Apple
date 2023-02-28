@@ -30,7 +30,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	
-	public var minimumVersion = "1.3.48"
+	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
 	public var isConnected: Bool = false
@@ -62,8 +62,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		self.lastConnectionError = ""
 		self.connectedVersion = "0.0.0"
 		super.init()
-		//centralManager = CBCentralManager(delegate: self, queue: nil)
-		centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
+		centralManager = CBCentralManager(delegate: self, queue: nil)
+		//centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
 	
 	// MARK: Scanning for BLE Devices
@@ -2011,28 +2011,28 @@ extension BLEManager: CBCentralManagerDelegate {
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
 	
-	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-
-		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
-			return
-		}
-		
-		if peripherals.count > 0 {
-
-			for peripheral in peripherals {
-				print(peripheral)
-			switch peripheral.state {
-				case .connecting: // I've only seen this happen when
-					// re-launching attached to Xcode.
-					print("Xcode Restore")
-
-				case .connected:
-					connectTo(peripheral: peripheral)
-					print("Restore BLE State")
-				default: break
-				}
-			}
-		}
-		print("willRestoreState Hit!")
-	}
+//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+//
+//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+//			return
+//		}
+//
+//		if peripherals.count > 0 {
+//
+//			for peripheral in peripherals {
+//				print(peripheral)
+//			switch peripheral.state {
+//				case .connecting: // I've only seen this happen when
+//					// re-launching attached to Xcode.
+//					print("Xcode Restore")
+//
+//				case .connected:
+//					connectTo(peripheral: peripheral)
+//					print("Restore BLE State")
+//				default: break
+//				}
+//			}
+//		}
+//		print("willRestoreState Hit!")
+//	}
 }
