@@ -64,9 +64,6 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("map.usertrackingmode.description")
-						.font(.caption)
-						.listRowSeparator(.visible)
 				}
 				
 				Section(header: Text("map options")) {
