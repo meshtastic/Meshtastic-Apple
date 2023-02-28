@@ -32,6 +32,8 @@
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
 		DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
+		DD41A61D29AE7E8F003C5A37 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
+		DD41A61F29AE7E8F003C5A37 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
@@ -162,6 +164,9 @@
 		DD415827285859C4009B0E59 /* TelemetryConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryConfig.swift; sourceTree = "<group>"; };
 		DD41582928585C32009B0E59 /* RangeTestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeTestConfig.swift; sourceTree = "<group>"; };
 		DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeWeatherForecast.swift; sourceTree = "<group>"; };
+		DD41A61B29AE7E8E003C5A37 /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
@@ -264,6 +269,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		DD41A61829AE7E8E003C5A37 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD41A61F29AE7E8F003C5A37 /* SwiftUI.framework in Frameworks */,
+				DD41A61D29AE7E8F003C5A37 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC2E15126CE248E0042C5E4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -309,6 +323,20 @@
 				C9A7BC0F27759A9600760B50 /* PositionAnnotationView.swift */,
 			);
 			path = Custom;
+			sourceTree = "<group>";
+		};
+		DD41A61629AE7DDB003C5A37 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		DD41A62029AE7E8F003C5A37 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Widgets;
 			sourceTree = "<group>";
 		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
@@ -445,6 +473,8 @@
 		DD8EDE9226F97A2B00A5A10B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */,
+				DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -463,8 +493,10 @@
 				DDCDC6CD29481FCC004C1DDA /* Localizable.strings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
 				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
+				DD41A61629AE7DDB003C5A37 /* Widget */,
 				DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */,
 				DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */,
+				DD41A62029AE7E8F003C5A37 /* Widgets */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
 			);
@@ -477,6 +509,7 @@
 				DDC2E15426CE248E0042C5E4 /* Meshtastic.app */,
 				DDC2E16A26CE248F0042C5E4 /* MeshtasticTests.xctest */,
 				DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */,
+				DD41A61B29AE7E8E003C5A37 /* WidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -484,8 +517,8 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
-				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
+				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDAF8C5626ED07740058C060 /* Protobufs */,
 				DD86D40D2881BDB300BAEB7A /* Export */,
@@ -615,6 +648,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		DD41A61A29AE7E8E003C5A37 /* WidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD41A62A29AE7E91003C5A37 /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
+			buildPhases = (
+				DD41A61729AE7E8E003C5A37 /* Sources */,
+				DD41A61829AE7E8E003C5A37 /* Frameworks */,
+				DD41A61929AE7E8E003C5A37 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WidgetsExtension;
+			productName = WidgetsExtension;
+			productReference = DD41A61B29AE7E8E003C5A37 /* WidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		DDC2E15326CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDC2E17E26CE248F0042C5E4 /* Build configuration list for PBXNativeTarget "Meshtastic" */;
@@ -679,9 +729,12 @@
 		DDC2E14C26CE248E0042C5E4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1250;
+				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
+					DD41A61A29AE7E8E003C5A37 = {
+						CreatedOnToolsVersion = 14.2;
+					};
 					DDC2E15326CE248E0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
 						LastSwiftMigration = 1340;
@@ -719,11 +772,19 @@
 				DDC2E15326CE248E0042C5E4 /* Meshtastic */,
 				DDC2E16926CE248F0042C5E4 /* MeshtasticTests */,
 				DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */,
+				DD41A61A29AE7E8E003C5A37 /* WidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		DD41A61929AE7E8E003C5A37 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC2E15226CE248E0042C5E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -771,6 +832,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DD41A61729AE7E8E003C5A37 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC2E15026CE248E0042C5E4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -926,6 +994,64 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		DD41A62B29AE7E91003C5A37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DD41A62C29AE7E91003C5A37 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		DDC2E17C26CE248F0042C5E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1203,6 +1329,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		DD41A62A29AE7E91003C5A37 /* Build configuration list for PBXNativeTarget "WidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD41A62B29AE7E91003C5A37 /* Debug */,
+				DD41A62C29AE7E91003C5A37 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		DDC2E14F26CE248E0042C5E4 /* Build configuration list for PBXProject "Meshtastic" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

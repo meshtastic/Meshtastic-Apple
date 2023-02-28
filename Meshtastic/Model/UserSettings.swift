@@ -79,7 +79,7 @@ class UserSettings: ObservableObject {
 		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "standard"
 		self.meshMapCenteringMode = UserDefaults.standard.object(forKey: "meshMapCenteringMode") as? Int ?? 0
-		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? true
+		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? false
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 		self.meshMapUserTrackingMode = UserDefaults.standard.object(forKey: "meshMapUserTrackingMode") as? Int ?? 0
 	}

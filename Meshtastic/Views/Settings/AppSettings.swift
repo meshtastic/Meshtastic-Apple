@@ -56,7 +56,7 @@ struct AppSettings: View {
 						
 						Text("phone.gps.interval.description")
 							.font(.caption)
-							.listRowSeparator(.visible)
+							.foregroundColor(.gray)
 					}
 					Picker("map.usertrackingmode", selection: $userSettings.meshMapUserTrackingMode) {
 						ForEach(UserTrackingModes.allCases) { utm in
@@ -64,6 +64,9 @@ struct AppSettings: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Text("When follow or follow with heading are selected maps will automatically center on the location of the GPS on the connected phone.")
+						.font(.caption)
+						.foregroundColor(.gray)
 				}
 				
 				Section(header: Text("map options")) {
@@ -75,18 +78,21 @@ struct AppSettings: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
-						ForEach(CenteringMode.allCases) { cm in
-							Text(cm.description)
+					if userSettings.meshMapUserTrackingMode == 0 {
+						
+						Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
+							ForEach(CenteringMode.allCases) { cm in
+								Text(cm.description)
+							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						
+						Toggle(isOn: $userSettings.meshMapRecentering) {
+							
+							Label("map.recentering", systemImage: "camera.metering.center.weighted")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Toggle(isOn: $userSettings.meshMapRecentering) {
-
-						Label("map.recentering", systemImage: "camera.metering.center.weighted")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			HStack {
@@ -127,13 +133,4 @@ struct AppSettings: View {
 			}
 		}
 	}
-}
-
-struct AppSettings_Previews: PreviewProvider {
-
-    static var previews: some View {
-        Group {
-            AppSettings()
-        }
-    }
 }

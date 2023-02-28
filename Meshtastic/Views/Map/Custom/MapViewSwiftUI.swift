@@ -22,7 +22,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
-	@AppStorage("meshMapRecentering") private var recenter = false
+	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId = 0
 	
 	// Offline Maps
@@ -35,21 +35,31 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let dynamicRegion: Bool = true
 	
 	func makeUIView(context: Context) -> MKMapView {
-		// Parameters
+		// Map View Parameters
 		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
-		// Logic to manage the map centering options
+		mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
+		if UserTrackingModes(rawValue: userTrackingModeId) != UserTrackingModes.none {
+			mapView.showsUserLocation = true
+		} else {
+			mapView.showsUserLocation = false
+		}
 		switch centeringMode {
 		case .allAnnotations:
 			mapView.addAnnotations(positions)
-			mapView.fitAllAnnotations()
+			if UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+				mapView.fitAllAnnotations()
+			}
 		case .allPositions:
-			mapView.fit(annotations: positions, andShow: true)
+			if UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+				mapView.fit(annotations: positions, andShow: true)
+			} else {
+				mapView.addAnnotations(positions)
+			}
 		}
 		
 		// Other MKMapView Settings
-		mapView.showsUserLocation = false
-		mapView.preferredConfiguration.elevationStyle = .realistic
+		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
 		mapView.isScrollEnabled = true
@@ -114,19 +124,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
 				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
-				mapView.showsUserLocation = true
-			}
-			switch centeringMode {
-			case .allAnnotations:
-				if annotationCount != mapView.annotations.count {
+				if UserTrackingModes(rawValue: userTrackingModeId) != UserTrackingModes.none {
+					mapView.showsUserLocation = true
+				} else {
+					mapView.showsUserLocation = false
+				}
+				switch centeringMode {
+				case .allAnnotations:
 					mapView.addAnnotations(positions)
-					if recenter {
+					if recenter && UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
 						mapView.fitAllAnnotations()
 					}
-				}
-			case .allPositions:
-				if annotationCount != mapView.annotations.count {
-					if recenter {
+				case .allPositions:
+					if recenter && UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
 						mapView.fit(annotations: positions, andShow: true)
 					} else {
 						mapView.addAnnotations(positions)
@@ -161,13 +171,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			
 			switch annotation {
-				
-			case _ as MKClusterAnnotation:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
-				annotationView.markerTintColor = .brown
-				annotationView.displayPriority = .defaultLow
-				annotationView.tag = -1
-				return annotationView
 			case let positionAnnotation as PositionEntity:
 				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
@@ -210,7 +213,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.sensor {
 						annotationView.glyphImage = UIImage(systemName: "sensor")
-						
 					}
 					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
@@ -254,9 +256,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				} else {
 					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "📍")
 				}
-				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.accentColor)
-				annotationView.displayPriority = .defaultHigh
+				annotationView.displayPriority = .required
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.accentColor)
