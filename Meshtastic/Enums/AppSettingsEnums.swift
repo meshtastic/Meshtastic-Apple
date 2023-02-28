@@ -36,11 +36,10 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 enum CenteringMode: Int, CaseIterable, Identifiable {
-
+	
 	case allAnnotations = 0
 	case allPositions = 1
-	case phoneGps = 2
-
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
@@ -49,8 +48,6 @@ enum CenteringMode: Int, CaseIterable, Identifiable {
 				return "All Annotations"// NSLocalizedString("default", comment: "Default Keyboard")
 			case .allPositions:
 				return "All Node Postions"// NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard")
-			case .phoneGps:
-				return "Phone GPS"//NSLocalizedString("email.address", comment: "Email Address Keyboard")
 			}
 		}
 	}

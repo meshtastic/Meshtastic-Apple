@@ -40,18 +40,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.addAnnotations(waypoints)
 		// Logic to manage the map centering options
 		switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(positions)
-				mapView.fitAllAnnotations()
-			case .allPositions:
-				mapView.fit(annotations: positions, andShow: true)
-			case .phoneGps:
-				
-				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-				let region = MKCoordinateRegion(center: center, span: span)
-				mapView.setRegion(region, animated: true)
-				mapView.addAnnotations(positions)
+		case .allAnnotations:
+			mapView.addAnnotations(positions)
+			mapView.fitAllAnnotations()
+		case .allPositions:
+			mapView.fit(annotations: positions, andShow: true)
 		}
 		
 		// Other MKMapView Settings
@@ -121,31 +114,24 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
 				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
+				mapView.showsUserLocation = true
 			}
 			switch centeringMode {
-				case .allAnnotations:
-					if annotationCount != mapView.annotations.count {
-						mapView.addAnnotations(positions)
-						if recenter {
-							mapView.fitAllAnnotations()
-						}
-					}
-				case .allPositions:
-					if annotationCount != mapView.annotations.count {
-						if recenter {
-							mapView.fit(annotations: positions, andShow: true)
-						} else {
-							mapView.addAnnotations(positions)
-						}
-					}
-				case .phoneGps:
-					if annotationCount != mapView.annotations.count {
-						mapView.addAnnotations(positions)
-					}
-					mapView.showsUserLocation = true
+			case .allAnnotations:
+				if annotationCount != mapView.annotations.count {
+					mapView.addAnnotations(positions)
 					if recenter {
-						mapView.centerCoordinate = LocationHelper.currentLocation
+						mapView.fitAllAnnotations()
 					}
+				}
+			case .allPositions:
+				if annotationCount != mapView.annotations.count {
+					if recenter {
+						mapView.fit(annotations: positions, andShow: true)
+					} else {
+						mapView.addAnnotations(positions)
+					}
+				}
 			}
 		}
 	}
