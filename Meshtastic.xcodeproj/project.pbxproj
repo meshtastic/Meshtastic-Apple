@@ -325,13 +325,6 @@
 			path = Custom;
 			sourceTree = "<group>";
 		};
-		DD41A61629AE7DDB003C5A37 /* Widget */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Widget;
-			sourceTree = "<group>";
-		};
 		DD41A62029AE7E8F003C5A37 /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
@@ -493,7 +486,6 @@
 				DDCDC6CD29481FCC004C1DDA /* Localizable.strings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
 				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
-				DD41A61629AE7DDB003C5A37 /* Widget */,
 				DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */,
 				DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */,
 				DD41A62029AE7E8F003C5A37 /* Widgets */,
