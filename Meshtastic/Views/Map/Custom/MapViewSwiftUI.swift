@@ -23,7 +23,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
-	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId = 0
+	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId: Int = 0
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -161,7 +161,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
 			self.longPressRecognizer.minimumPressDuration = 0.5
-			//self.longPressRecognizer.numberOfTouchesRequired = 1
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
