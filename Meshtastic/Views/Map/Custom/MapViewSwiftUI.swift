@@ -40,6 +40,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.addAnnotations(waypoints)
 		mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
 		if UserTrackingModes(rawValue: userTrackingModeId) != UserTrackingModes.none {
+			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+			let center = LocationHelper.currentLocation
+			let region = MKCoordinateRegion(center: center, span: span)
+			mapView.setRegion(region, animated: true)
 			mapView.showsUserLocation = true
 		} else {
 			mapView.showsUserLocation = false
