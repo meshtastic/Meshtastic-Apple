@@ -225,7 +225,7 @@ struct Connect: View {
 				HStack(alignment: .center) {
 					Spacer()
 					
-#if targetEnvironment(macCatalyst)
+					#if targetEnvironment(macCatalyst)
 					
 					if bleManager.connectedPeripheral != nil {
 						
@@ -246,7 +246,7 @@ struct Connect: View {
 						.controlSize(.large)
 						.padding()
 					}
-#endif
+					#endif
 					Spacer()
 				}
 				.padding(.bottom, 10)
@@ -336,6 +336,7 @@ func startNodeActivity() {
 }
 
 func endActivity() {
+	liveActivityStarted = false
 	Task {
 		if #available(iOS 16.2, *) {
 			for activity in Activity<MeshActivityAttributes>.activities {
