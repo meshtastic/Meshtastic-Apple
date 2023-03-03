@@ -682,7 +682,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				print("💾 Telemetry Saved for Node: \(packet.from)")
 			} else if telemetry.metricsType == 0 {
 				// Update our live activity if there is one running
+				#if !targetEnvironment(macCatalyst)
 				if #available(iOS 16.2, *) {
+
 					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
 					let date = Date.now...oneMinuteLater
 					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
@@ -699,6 +701,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						}
 					}
 				}
+				#endif
 			}
 		} catch {
 			context.rollback()
