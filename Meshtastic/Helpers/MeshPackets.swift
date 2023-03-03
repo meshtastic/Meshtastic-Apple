@@ -681,20 +681,21 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			if connectedNode != Int64(packet.from) {
 				print("💾 Telemetry Saved for Node: \(packet.from)")
 			} else if telemetry.metricsType == 0 {
+				// Update our live activity if there is one running
 				if #available(iOS 16.2, *) {
-					var future = Calendar.current.date(byAdding: .minute, value: (Int(0) ), to: Date())!
-					future = Calendar.current.date(byAdding: .second, value: (Int(60) ), to: future)!
-					let date = Date.now...future
-					let updatedMeshStatus = MeshActivityAttributes.MyActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
+					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
+					let date = Date.now...oneMinuteLater
+					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
 					
-					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Metrics Data.", sound: .default)
+					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 					print("Update live activity.")
 					
-					let stuff = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
-					if stuff != nil {
+					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
+					if meshActivity != nil {
 						Task {
-							await stuff?.update(updatedContent, alertConfiguration: alertConfiguration)
+							await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
+							//await meshActivity?.update(updatedContent)
 						}
 					}
 				}

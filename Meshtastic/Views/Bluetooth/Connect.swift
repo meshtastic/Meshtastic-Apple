@@ -311,7 +311,7 @@ struct Connect: View {
 func startNodeActivity() {
 	if #available(iOS 16.2, *) {
 		liveActivityStarted = true
-		let timerSeconds = 300
+		let timerSeconds = 60
 		
 		let mostRecent = node?.telemetries?.lastObject as! TelemetryEntity
 		

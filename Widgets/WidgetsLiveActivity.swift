@@ -14,13 +14,13 @@ struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 		
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
-			LiveActivityView(nodeName: context.attributes.name, connected: context.state.connected, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
+			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					NodeInfoView(nodeName: context.attributes.name, connected: context.state.connected, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel)
+					NodeInfoView(nodeName: context.attributes.name, timerRange: context.state.timerRange, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel)
 						.tint(Color("LightIndigo"))
 						.padding(.top)
 				}
@@ -91,7 +91,7 @@ struct LiveActivityView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 	
 	var nodeName: String
-	var connected: Bool
+	//var connected: Bool
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
@@ -102,7 +102,7 @@ struct LiveActivityView: View {
 			Image(colorScheme == .light ? "logo-black" : "logo-white")
 				.clipShape(ContainerRelativeShape())
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
-			NodeInfoView(nodeName: nodeName, connected: connected, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel)
+			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel)
 			Spacer()
 			TimerView(timerRange: timerRange)
 		}
@@ -118,7 +118,7 @@ struct NodeInfoView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
 	
 	var nodeName: String
-	var connected: Bool
+	var timerRange: ClosedRange<Date>
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
@@ -127,11 +127,6 @@ struct NodeInfoView: View {
 		VStack(alignment: .leading, spacing: 0) {
 			Text(nodeName)
 				.font(.title3)
-				.fontWeight(.semibold)
-				.foregroundStyle(.tint)
-				.fixedSize()
-			Text(connected ? "Connected" : "Not Connected")
-				.font(.callout)
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
 				.fixedSize()
@@ -153,6 +148,12 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
 				.fixedSize()
+			Text(Date().formatted())
+				.font(.subheadline)
+				.fontWeight(.medium)
+				.foregroundStyle(.secondary)
+				.opacity(isLuminanceReduced ? 0.5 : 1.0)
+				.fixedSize()
 		}
 	}
 }
@@ -163,10 +164,22 @@ struct TimerView: View {
 	var timerRange: ClosedRange<Date>
 	
 	var body: some View {
-		VStack(alignment: .trailing) {
+		VStack(alignment: .center) {
+			Text("NEXT")
+				.font(.caption)
+				.fontWeight(.medium)
+				.foregroundStyle(.secondary)
+				.opacity(isLuminanceReduced ? 0.5 : 1.0)
+				.fixedSize()
+			Text("UPDATE")
+				.font(.caption)
+				.fontWeight(.medium)
+				.foregroundStyle(.secondary)
+				.opacity(isLuminanceReduced ? 0.5 : 1.0)
+				.fixedSize()
 			Text(timerInterval: timerRange, countsDown: true)
 				.monospacedDigit()
-				.multilineTextAlignment(.trailing)
+				.multilineTextAlignment(.center)
 				.frame(width: 80)
 				.font(.callout)
 				.fontWeight(.semibold)
@@ -175,7 +188,6 @@ struct TimerView: View {
 				.resizable()
 				.foregroundStyle(.secondary)
 				.frame(width: 30, height: 30)
-				.padding(.trailing, 7)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
 		}
 	}

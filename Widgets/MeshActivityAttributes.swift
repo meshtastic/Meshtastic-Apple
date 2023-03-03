@@ -12,7 +12,7 @@ import WidgetKit
 import SwiftUI
 
 struct MeshActivityAttributes: ActivityAttributes {
-	public typealias MyActivityStatus = ContentState
+	public typealias MeshActivityStatus = ContentState
 	public struct ContentState: Codable, Hashable {
 		// Dynamic stateful properties about your activity go here!
 		var timerRange: ClosedRange<Date>
