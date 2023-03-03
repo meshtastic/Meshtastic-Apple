@@ -14,13 +14,13 @@ struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 		
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
-			LiveActivityView(nodeName: context.attributes.name, connected: context.attributes.connected, channelUtilization: context.attributes.channelUtilization, airtime: context.attributes.airtime, batteryLevel: context.attributes.batteryLevel, timerRange: context.state.timerRange)
+			LiveActivityView(nodeName: context.attributes.name, connected: context.state.connected, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					NodeInfoView(nodeName: context.attributes.name, connected: context.attributes.connected, channelUtilization: context.attributes.channelUtilization, airtime: context.attributes.airtime, batteryLevel: context.attributes.batteryLevel)
+					NodeInfoView(nodeName: context.attributes.name, connected: context.state.connected, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel)
 						.tint(Color("LightIndigo"))
 						.padding(.top)
 				}
@@ -65,9 +65,9 @@ struct WidgetsLiveActivity: Widget {
 
 @available(iOS 16.2, *)
 struct WidgetsLiveActivity_Previews: PreviewProvider {
-	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "Meshtastic 8E6G", connected: true, channelUtilization: 0.24, airtime: 0.87, batteryLevel: 39)
+	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "Meshtastic 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 3600))
+		timerRange: Date.now...Date(timeIntervalSinceNow: 3600),  connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
 
     static var previews: some View {
         attributes
@@ -168,14 +168,14 @@ struct TimerView: View {
 				.monospacedDigit()
 				.multilineTextAlignment(.trailing)
 				.frame(width: 80)
-				.font(.title3)
+				.font(.callout)
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
 			Image(systemName: "timer")
 				.resizable()
 				.foregroundStyle(.secondary)
 				.frame(width: 30, height: 30)
-				.padding(.trailing)
+				.padding(.trailing, 7)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
 		}
 	}

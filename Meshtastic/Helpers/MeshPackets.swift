@@ -8,6 +8,9 @@
 import Foundation
 import CoreData
 import SwiftUI
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
 func generateMessageMarkdown (message: String) -> String {
 	
@@ -635,6 +638,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		if connectedNode != Int64(packet.from) {
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "Telemetry received for: %@"), String(packet.from))
 			MeshLogger.log("📈 \(logString)")
+		} else {
+			// If it is the connected node
+			
 		}
 		
 		let telemetry = TelemetryEntity(context: context)
@@ -674,6 +680,24 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
 				print("💾 Telemetry Saved for Node: \(packet.from)")
+			} else if telemetry.metricsType == 0 {
+				if #available(iOS 16.2, *) {
+					var future = Calendar.current.date(byAdding: .minute, value: (Int(0) ), to: Date())!
+					future = Calendar.current.date(byAdding: .second, value: (Int(60) ), to: future)!
+					let date = Date.now...future
+					let updatedMeshStatus = MeshActivityAttributes.MyActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
+					
+					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Metrics Data.", sound: .default)
+					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
+					print("Update live activity.")
+					
+					let stuff = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
+					if stuff != nil {
+						Task {
+							await stuff?.update(updatedContent, alertConfiguration: alertConfiguration)
+						}
+					}
+				}
 			}
 		} catch {
 			context.rollback()

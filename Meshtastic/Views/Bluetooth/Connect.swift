@@ -127,7 +127,6 @@ struct Connect: View {
 										Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
 										Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
-										
 									}
 								}
 								if isUnsetRegion {
@@ -316,11 +315,11 @@ func startNodeActivity() {
 		
 		let mostRecent = node?.telemetries?.lastObject as! TelemetryEntity
 		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown", connected: true, channelUtilization: mostRecent.channelUtilization, airtime: mostRecent.airUtilTx, batteryLevel: UInt32(mostRecent.batteryLevel))
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 		
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 		
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future)
+		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent.channelUtilization, airtime: mostRecent.airUtilTx, batteryLevel: UInt32(mostRecent.batteryLevel))
 		
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
 		
@@ -328,7 +327,6 @@ func startNodeActivity() {
 			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																		  pushType: nil)
 			print(" Requested MyActivity live activity. ID: \(myActivity.id)")
-			postNotification()
 		} catch let error {
 			print("Error requesting live activity: \(error.localizedDescription)")
 		}
@@ -352,7 +350,7 @@ func endActivity() {
 
 #if os(iOS)
 func postNotification() {
-	let timerSeconds = 300
+	let timerSeconds = 60
 	let content = UNMutableNotificationContent()
 	content.title = "Mesh Live Activity Over"
 	content.body = "Your timed mesh live activity is over."
