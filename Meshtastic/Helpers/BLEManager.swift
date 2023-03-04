@@ -26,7 +26,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
 	@Published var invalidVersion = false
-	@Published var preferredPeripheral = false
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	
@@ -166,11 +165,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		isConnected = true
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
 			userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
-			preferredPeripheral = true
+		//	preferredPeripheral = true
 		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
-			preferredPeripheral = true
+		//	preferredPeripheral = true
 		} else {
-			preferredPeripheral = false
+		//	preferredPeripheral = false
 			print("Trying to connect a non prefered peripheral")
 		}
 		UserDefaults.standard.synchronize()
@@ -447,8 +446,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					} else {
 						
 						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
-						
-						userSettings?.preferredNodeNum = myInfo?.myNodeNum ?? 0
 						
 						if myInfo != nil {
 							connectedPeripheral.num = myInfo!.myNodeNum

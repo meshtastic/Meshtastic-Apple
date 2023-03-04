@@ -20,11 +20,11 @@ struct Connect: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 	@State var node: NodeInfoEntity? = nil
-	
-	@State var isPreferredRadio: Bool = false
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
+	@State var presentingSwitchPreferredPeripheral = false
+	@State var selectedPeripherialId = ""
 	
 	var body: some View {
 		
@@ -32,7 +32,6 @@ struct Connect: View {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
-						
 						Section(header: Text("connected.radio").font(.title)) {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 								HStack {
@@ -85,6 +84,28 @@ struct Connect: View {
 													}
 												}
 											}
+										.resizable()
+										.symbolRenderingMode(.hierarchical)
+										.foregroundColor(.green)
+										.frame(width: 60, height: 60)
+										.padding(.trailing)
+									VStack(alignment: .leading) {
+										if node != nil {
+											Text(bleManager.connectedPeripheral.longName).font(.title)
+										}
+										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
+											.font(.callout).foregroundColor(Color.gray)
+										if node != nil {
+											Text("firmware.version").font(.callout)+Text(": \(node?.myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown"))")
+												.font(.callout).foregroundColor(Color.gray)
+										}
+										if bleManager.isSubscribed {
+											Text("subscribed").font(.callout)
+												.foregroundColor(.green)
+										} else {
+											Text("communicating").font(.callout)
+												.foregroundColor(.orange)
+										}
 									}
 								}
 								.font(.caption).foregroundColor(Color.gray)
@@ -94,7 +115,6 @@ struct Connect: View {
 									Button(role: .destructive) {
 										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 											bleManager.disconnectPeripheral(reconnect: false)
-											isPreferredRadio = false
 										}
 									} label: {
 										Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
@@ -189,18 +209,11 @@ struct Connect: View {
 											.imageScale(.large).foregroundColor(.gray)
 											.padding(.trailing)
 										Button(action: {
-											self.bleManager.stopScanning()
-											if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-												
-												self.bleManager.disconnectPeripheral()
-											}
-											self.bleManager.connectTo(peripheral: peripheral.peripheral)
-											if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
-												
-												isPreferredRadio = true
+											if userSettings.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != userSettings.preferredPeripheralId {
+												presentingSwitchPreferredPeripheral = true
+												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
 											} else {
-												
-												isPreferredRadio = false
+												self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											}
 										}) {
 											Text(peripheral.name).font(.title3)
@@ -220,12 +233,29 @@ struct Connect: View {
 							.font(.title)
 					}
 				}
+				.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+					
+					Button("Connect to new radio?", role: .destructive) {
+						bleManager.stopScanning()
+						bleManager.connectedPeripheral = nil
+						userSettings.preferredPeripheralId = ""
+						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+							bleManager.disconnectPeripheral()
+						}
+						
+						clearCoreDataDatabase(context: context)
+						let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId} )
+						bleManager.connectTo(peripheral: radio!.peripheral)
+						presentingSwitchPreferredPeripheral = false
+						selectedPeripherialId = ""
+					}
+				}
 				
 				HStack(alignment: .center) {
 					Spacer()
 					
 					#if targetEnvironment(macCatalyst)
-					
+
 					if bleManager.connectedPeripheral != nil {
 						
 						Button(role: .destructive, action: {
@@ -266,10 +296,10 @@ struct Connect: View {
 		}
 		.onChange(of: (self.bleManager.isSubscribed)) { sub in
 			
-			if userSettings.preferredNodeNum > 0 && sub {
+			if userSettings.preferredPeripheralId.count > 0 && sub {
 				
 				let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(userSettings.preferredNodeNum))
+				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral.num))
 				
 				do {
 					
@@ -299,11 +329,6 @@ struct Connect: View {
 				} else if let error = error {
 					print(error.localizedDescription)
 				}
-			}
-			if self.bleManager.connectedPeripheral != nil && userSettings.preferredPeripheralId == self.bleManager.connectedPeripheral.id {
-				isPreferredRadio = true
-			} else {
-				isPreferredRadio = false
 			}
 		})
 	}

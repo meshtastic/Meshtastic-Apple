@@ -141,7 +141,7 @@ struct Contacts: View {
 				}
 				Section(header: Text("direct.messages")) {
 					ForEach(users) { (user: UserEntity) in
-						if  user.num != bleManager.userSettings?.preferredNodeNum ?? 0 {
+						if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
 							NavigationLink(destination: UserMessageList(user: user)) {
 								let mostRecent = user.messageList.last
 								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
@@ -254,25 +254,19 @@ struct Contacts: View {
 			.onAppear {
 				self.bleManager.userSettings = userSettings
 				self.bleManager.context = context
-				
-				if userSettings.preferredNodeNum > 0 {
-					
+				if userSettings.preferredPeripheralId.count > 0 {
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(userSettings.preferredNodeNum))
-					
+					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 					do {
-						
 						let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
 						// Found a node, check it for a region
 						if !fetchedNode.isEmpty {
 							node = fetchedNode[0]
-							
 						}
 					} catch {
 						
 					}
 				}
-				
 			}
 		}
 		detail: {

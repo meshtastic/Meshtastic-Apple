@@ -38,7 +38,7 @@ struct ChannelMessageList: View {
 				ScrollView {
 					LazyVStack {
 						ForEach( channel.allPrivateMessages ) { (message: MessageEntity) in
-							let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
+							let currentUser: Bool = (bleManager.connectedPeripheral.num == message.fromUser?.num ? true : false)
 							if message.replyID > 0 {
 								let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 								HStack {

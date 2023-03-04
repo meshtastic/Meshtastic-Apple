@@ -30,6 +30,7 @@ struct NodeMap: View {
 		}
 	}
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
+	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapCenteringMode") private var meshMapCenteringMode = 0
 	
 	//&& nodePosition != nil
@@ -44,6 +45,7 @@ struct NodeMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	@State private var mapType: MKMapType = .standard
+	@State private var userTrackingMode: MKUserTrackingMode = .none
 	@State private var mapCenteringMode: CenteringMode = .allAnnotations
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
@@ -76,6 +78,7 @@ struct NodeMap: View {
 				}, positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
+				   userTrackingMode: userTrackingMode,
 				   centeringMode: mapCenteringMode,
 				   centerOnPositionsOnly: false,
 				   customMapOverlay: self.customMapOverlay,
@@ -116,6 +119,7 @@ struct NodeMap: View {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
+			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
 			switch meshMapType {
 			case "standard":
 				mapType = .standard
