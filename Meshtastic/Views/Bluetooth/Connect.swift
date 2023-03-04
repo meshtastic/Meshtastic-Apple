@@ -75,24 +75,25 @@ struct Connect: View {
 								.contextMenu{
 									
 									if node != nil {
-										
+										#if !targetEnvironment(macCatalyst)
 										if #available(iOS 16.2, *) {
 											Button {
 												if !liveActivityStarted {
-#if canImport(ActivityKit)
+												#if canImport(ActivityKit)
 													print("Start live activity.")
 													startNodeActivity()
-#endif
+												#endif
 												} else {
-#if canImport(ActivityKit)
+													#if canImport(ActivityKit)
 													print("Stop live activity.")
 													endActivity()
-#endif
+												#endif
 												}
 											} label: {
 												Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
 											}
 										}
+										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "????")")
 										Text("Long Name: \(node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
@@ -205,29 +206,21 @@ struct Connect: View {
 				
 				HStack(alignment: .center) {
 					Spacer()
-					
-#if targetEnvironment(macCatalyst)
-					
+					#if targetEnvironment(macCatalyst)
 					if bleManager.connectedPeripheral != nil {
-						
 						Button(role: .destructive, action: {
-							
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 								bleManager.disconnectPeripheral(reconnect: false)
-								isPreferredRadio = false
 							}
-							
 						}) {
-							
 							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
-							
 						}
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.large)
 						.padding()
 					}
-#endif
+					#endif
 					Spacer()
 				}
 				.padding(.bottom, 10)
