@@ -10,6 +10,9 @@ import MapKit
 import CoreData
 import CoreLocation
 import CoreBluetooth
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
 struct Connect: View {
 	
@@ -19,6 +22,7 @@ struct Connect: View {
 	@State var node: NodeInfoEntity? = nil
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
+	@State var liveActivityStarted = false
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 	
@@ -32,6 +36,54 @@ struct Connect: View {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 								HStack {
 									Image(systemName: "antenna.radiowaves.left.and.right")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.green)
+										.padding(.trailing)
+									VStack(alignment: .leading) {
+										if node != nil {
+											Text(bleManager.connectedPeripheral.longName).font(.title2)
+										}
+										Text("ble.name").font(.caption)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
+											.font(.caption).foregroundColor(Color.gray)
+										if node != nil {
+											Text("firmware.version").font(.caption)+Text(": \(node?.myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown"))")
+												.font(.caption).foregroundColor(Color.gray)
+										}
+										if bleManager.isSubscribed {
+											Text("subscribed").font(.caption)
+												.foregroundColor(.green)
+										} else {
+											Text("communicating").font(.caption)
+												.foregroundColor(.orange)
+										}
+									}
+									Spacer()
+									VStack(alignment: .center) {
+										Text("preferred.radio").font(.caption2)
+											.multilineTextAlignment(.center)
+											.frame(width: 75)
+										Toggle("preferred.radio", isOn: $bleManager.preferredPeripheral)
+											.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+											.labelsHidden()
+											.onChange(of: bleManager.preferredPeripheral) { value in
+												if value {
+													if bleManager.connectedPeripheral != nil {
+														userSettings.preferredPeripheralId = bleManager.connectedPeripheral!.peripheral.identifier.uuidString
+														userSettings.preferredNodeNum = bleManager.connectedPeripheral!.num
+														bleManager.preferredPeripheral = true
+														isPreferredRadio = true
+													}
+												} else {
+													
+													if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.identifier.uuidString == userSettings.preferredPeripheralId {
+														
+														userSettings.preferredPeripheralId = ""
+														userSettings.preferredNodeNum = 0
+														bleManager.preferredPeripheral = false
+														isPreferredRadio = false
+													}
+												}
+											}
 										.resizable()
 										.symbolRenderingMode(.hierarchical)
 										.foregroundColor(.green)
@@ -72,13 +124,29 @@ struct Connect: View {
 									
 									if node != nil {
 										
+										if #available(iOS 16.2, *) {
+											Button {
+												if !liveActivityStarted {
+													#if canImport(ActivityKit)
+													print("Start live activity.")
+													startNodeActivity()
+													#endif
+												} else {
+													#if canImport(ActivityKit)
+													print("Stop live activity.")
+													endActivity()
+													#endif
+												}
+											} label: {
+												Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
+											}
+										}
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "????")")
 										Text("Long Name: \(node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 										Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
 										Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
-										
 									}
 								}
 								if isUnsetRegion {
@@ -187,6 +255,7 @@ struct Connect: View {
 					Spacer()
 					
 					#if targetEnvironment(macCatalyst)
+
 					if bleManager.connectedPeripheral != nil {
 						
 						Button(role: .destructive, action: {
@@ -263,6 +332,69 @@ struct Connect: View {
 			}
 		})
 	}
+#if canImport(ActivityKit)
+func startNodeActivity() {
+	if #available(iOS 16.2, *) {
+		liveActivityStarted = true
+		let timerSeconds = 60
+		
+		let mostRecent = node?.telemetries?.lastObject as! TelemetryEntity
+		
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
+		
+		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		
+		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent.channelUtilization, airtime: mostRecent.airUtilTx, batteryLevel: UInt32(mostRecent.batteryLevel))
+		
+		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
+		
+		do {
+			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
+																		  pushType: nil)
+			print(" Requested MyActivity live activity. ID: \(myActivity.id)")
+		} catch let error {
+			print("Error requesting live activity: \(error.localizedDescription)")
+		}
+	}
+}
+
+func endActivity() {
+	liveActivityStarted = false
+	Task {
+		if #available(iOS 16.2, *) {
+			for activity in Activity<MeshActivityAttributes>.activities {
+				// Check if this is the activity associated with this order.
+				if activity.attributes.nodeNum == node?.num ?? 0 {
+					await activity.end(nil, dismissalPolicy: .immediate)
+				}
+			}
+		}
+	}
+}
+#endif
+
+#if os(iOS)
+func postNotification() {
+	let timerSeconds = 60
+	let content = UNMutableNotificationContent()
+	content.title = "Mesh Live Activity Over"
+	content.body = "Your timed mesh live activity is over."
+	let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(timerSeconds), repeats: false)
+	let uuidString = UUID().uuidString
+	let request = UNNotificationRequest(identifier: uuidString,
+				content: content, trigger: trigger)
+	let notificationCenter = UNUserNotificationCenter.current()
+	notificationCenter.add(request) { (error) in
+	   if error != nil {
+		  // Handle any errors.
+		   print("Error posting local notification: \(error?.localizedDescription ?? "no description")")
+	   } else {
+		   print("Posted local notification.")
+	   }
+	}
+}
+#endif
+	
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}
