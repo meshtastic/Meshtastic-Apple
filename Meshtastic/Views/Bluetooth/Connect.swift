@@ -181,30 +181,31 @@ struct Connect: View {
 										}
 									}.padding([.bottom, .top])
 								}
-							}.textCase(nil)
+							}
+							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+								
+								Button("Connect to new radio?", role: .destructive) {
+									bleManager.stopScanning()
+									bleManager.connectedPeripheral = nil
+									userSettings.preferredPeripheralId = ""
+									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
+										bleManager.disconnectPeripheral()
+									}
+									
+									clearCoreDataDatabase(context: context)
+									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId} )
+									bleManager.connectTo(peripheral: radio!.peripheral)
+									presentingSwitchPreferredPeripheral = false
+									selectedPeripherialId = ""
+								}
+							}
+							.textCase(nil)
 						}
 						
 					} else {
 						Text("bluetooth.off")
 							.foregroundColor(.red)
 							.font(.title)
-					}
-				}
-				.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-					
-					Button("Connect to new radio?", role: .destructive) {
-						bleManager.stopScanning()
-						bleManager.connectedPeripheral = nil
-						userSettings.preferredPeripheralId = ""
-						if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
-							bleManager.disconnectPeripheral()
-						}
-						
-						clearCoreDataDatabase(context: context)
-						let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId} )
-						bleManager.connectTo(peripheral: radio!.peripheral)
-						presentingSwitchPreferredPeripheral = false
-						selectedPeripherialId = ""
 					}
 				}
 				
