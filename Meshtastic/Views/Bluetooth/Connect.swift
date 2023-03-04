@@ -43,7 +43,7 @@ struct Connect: View {
 										.padding(.trailing)
 									VStack(alignment: .leading) {
 										if node != nil {
-											Text(bleManager.connectedPeripheral.longName).font(.title)
+											Text(bleManager.connectedPeripheral.longName).font(.title2)
 										}
 										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
 											.font(.callout).foregroundColor(Color.gray)
@@ -118,12 +118,14 @@ struct Connect: View {
 								if bleManager.isConnecting {
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right")
+											.resizable()
 											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.orange)
+											.foregroundColor(.orange)
+											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										if bleManager.timeoutTimerCount == 0 {
 											Text("connecting")
-												.font(.title3)
+												.font(.title2)
 												.foregroundColor(.orange)
 										} else {
 											VStack {
@@ -143,8 +145,10 @@ struct Connect: View {
 									}
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right.slash")
+											.resizable()
 											.symbolRenderingMode(.hierarchical)
-											.imageScale(.large).foregroundColor(.red)
+											.foregroundColor(.red)
+											.frame(width: 60, height: 60)
 											.padding(.trailing)
 										Text("not.connected").font(.title3)
 									}
