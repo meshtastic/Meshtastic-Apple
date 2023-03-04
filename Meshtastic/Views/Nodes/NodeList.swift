@@ -33,7 +33,7 @@ struct NodeList: View {
 					Text("no.nodes").font(.title)
 				} else {
 					NavigationLink(value: node) {
-						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num == node.num)
+						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
 						VStack(alignment: .leading) {
 							HStack {
 								CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
@@ -49,7 +49,7 @@ struct NodeList: View {
 												.foregroundColor(.green)
 										}
 									}
-									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.num != node.num) {
+									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 != node.num) {
 										HStack(alignment: .bottom) {
 											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
 											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
