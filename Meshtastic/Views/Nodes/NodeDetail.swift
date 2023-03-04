@@ -70,6 +70,7 @@ struct NodeDetail: View {
 									}
 								}, positions: annotations, waypoints: Array(waypoints),
 									mapViewType: mapType,
+									userTrackingMode: MKUserTrackingMode.none,
 									centeringMode: .allPositions,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,

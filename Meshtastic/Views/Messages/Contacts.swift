@@ -254,25 +254,19 @@ struct Contacts: View {
 			.onAppear {
 				self.bleManager.userSettings = userSettings
 				self.bleManager.context = context
-				
 				if userSettings.preferredPeripheralId.count > 0 {
-					
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral.num))
-					
+					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 					do {
-						
 						let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
 						// Found a node, check it for a region
 						if !fetchedNode.isEmpty {
 							node = fetchedNode[0]
-							
 						}
 					} catch {
 						
 					}
 				}
-				
 			}
 		}
 		detail: {

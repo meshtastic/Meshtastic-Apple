@@ -19,11 +19,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
+	let userTrackingMode: MKUserTrackingMode
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
-	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId: Int = 0
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -38,12 +38,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Map View Parameters
 		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
-		mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
-		if UserTrackingModes(rawValue: userTrackingModeId) != UserTrackingModes.none {
-			let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-			let center = LocationHelper.currentLocation
-			let region = MKCoordinateRegion(center: center, span: span)
-			mapView.setRegion(region, animated: true)
+		mapView.setUserTrackingMode(userTrackingMode, animated: true)
+		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+		let center = LocationHelper.currentLocation
+		let region = MKCoordinateRegion(center: center, span: span)
+		mapView.setRegion(region, animated: true)
+		if userTrackingMode != MKUserTrackingMode.none {
 			mapView.showsUserLocation = true
 		} else {
 			mapView.showsUserLocation = false
@@ -51,11 +51,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		switch centeringMode {
 		case .allAnnotations:
 			mapView.addAnnotations(positions)
-			if UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+			if userTrackingMode == MKUserTrackingMode.none {
 				mapView.fitAllAnnotations()
 			}
 		case .allPositions:
-			if UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+			if userTrackingMode != MKUserTrackingMode.none {
 				mapView.fit(annotations: positions, andShow: true)
 			} else {
 				mapView.addAnnotations(positions)
@@ -72,14 +72,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsScale = true
 		mapView.showsTraffic = true
 		
-#if targetEnvironment(macCatalyst)
+		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
 		mapView.showsCompass = true
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
-#else
+		#else
 		
-#if os(iOS)
+		#if os(iOS)
 		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
 		mapView.showsCompass = false
 		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
@@ -88,9 +88,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.translatesAutoresizingMaskIntoConstraints = false
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		#endif
 		
-#endif
-#endif
+		#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -127,8 +127,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
-				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
-				if UserTrackingModes(rawValue: userTrackingModeId) != UserTrackingModes.none {
+				mapView.setUserTrackingMode(userTrackingMode, animated: true)
+				if userTrackingMode != MKUserTrackingMode.none {
 					mapView.showsUserLocation = true
 				} else {
 					mapView.showsUserLocation = false
@@ -136,11 +136,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				switch centeringMode {
 				case .allAnnotations:
 					mapView.addAnnotations(positions)
-					if recenter && UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+					if recenter && userTrackingMode == MKUserTrackingMode.none {
 						mapView.fitAllAnnotations()
 					}
 				case .allPositions:
-					if recenter && UserTrackingModes(rawValue: userTrackingModeId) == UserTrackingModes.none {
+					if recenter && userTrackingMode == MKUserTrackingMode.none {
 						mapView.fit(annotations: positions, andShow: true)
 					} else {
 						mapView.addAnnotations(positions)
@@ -232,7 +232,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					}
 					if pf.contains(.Heading){
 						
-						if parent.userTrackingModeId != 2 {
+						if parent.userTrackingMode != MKUserTrackingMode.followWithHeading {
 							annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 							subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
 						} else {
