@@ -70,6 +70,7 @@ struct NodeDetail: View {
 									}
 								}, positions: annotations, waypoints: Array(waypoints),
 									mapViewType: mapType,
+									userTrackingMode: MKUserTrackingMode.none,
 									centeringMode: .allPositions,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
@@ -389,7 +390,7 @@ struct NodeDetail: View {
 						if (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
 							
 							HStack {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {//node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
 									
 									Button(action: {

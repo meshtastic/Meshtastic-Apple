@@ -19,11 +19,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
+	let userTrackingMode: MKUserTrackingMode
 	let centeringMode: CenteringMode
 	
 	let centerOnPositionsOnly: Bool
-	@AppStorage("meshMapRecentering") private var recenter = false
-	@AppStorage("meshMapUserTrackingMode") private var userTrackingModeId = 0
+	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	
 	// Offline Maps
 	//make this view dependent on the UserDefault that is updated when importing a new map file
@@ -35,28 +35,35 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let dynamicRegion: Bool = true
 	
 	func makeUIView(context: Context) -> MKMapView {
-		// Parameters
+		// Map View Parameters
 		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
-		// Logic to manage the map centering options
+		mapView.setUserTrackingMode(userTrackingMode, animated: true)
+		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
+		let center = LocationHelper.currentLocation
+		let region = MKCoordinateRegion(center: center, span: span)
+		mapView.setRegion(region, animated: true)
+		if userTrackingMode != MKUserTrackingMode.none {
+			mapView.showsUserLocation = true
+		} else {
+			mapView.showsUserLocation = false
+		}
 		switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(positions)
+		case .allAnnotations:
+			mapView.addAnnotations(positions)
+			if userTrackingMode == MKUserTrackingMode.none {
 				mapView.fitAllAnnotations()
-			case .allPositions:
+			}
+		case .allPositions:
+			if userTrackingMode != MKUserTrackingMode.none {
 				mapView.fit(annotations: positions, andShow: true)
-			case .phoneGps:
-				
-				let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-				let center = CLLocationCoordinate2D(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-				let region = MKCoordinateRegion(center: center, span: span)
-				mapView.setRegion(region, animated: true)
+			} else {
 				mapView.addAnnotations(positions)
+			}
 		}
 		
 		// Other MKMapView Settings
-		mapView.showsUserLocation = false
-		mapView.preferredConfiguration.elevationStyle = .realistic
+		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
 		mapView.isScrollEnabled = true
@@ -65,14 +72,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsScale = true
 		mapView.showsTraffic = true
 		
-#if targetEnvironment(macCatalyst)
+		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
 		mapView.showsCompass = true
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
-#else
+		#else
 		
-#if os(iOS)
+		#if os(iOS)
 		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
 		mapView.showsCompass = false
 		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
@@ -81,9 +88,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.translatesAutoresizingMaskIntoConstraints = false
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		#endif
 		
-#endif
-#endif
+		#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -120,32 +127,25 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
-				mapView.setUserTrackingMode(UserTrackingModes(rawValue: userTrackingModeId )?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none, animated: true)
-			}
-			switch centeringMode {
+				mapView.setUserTrackingMode(userTrackingMode, animated: true)
+				if userTrackingMode != MKUserTrackingMode.none {
+					mapView.showsUserLocation = true
+				} else {
+					mapView.showsUserLocation = false
+				}
+				switch centeringMode {
 				case .allAnnotations:
-					if annotationCount != mapView.annotations.count {
-						mapView.addAnnotations(positions)
-						if recenter {
-							mapView.fitAllAnnotations()
-						}
+					mapView.addAnnotations(positions)
+					if recenter && userTrackingMode == MKUserTrackingMode.none {
+						mapView.fitAllAnnotations()
 					}
 				case .allPositions:
-					if annotationCount != mapView.annotations.count {
-						if recenter {
-							mapView.fit(annotations: positions, andShow: true)
-						} else {
-							mapView.addAnnotations(positions)
-						}
-					}
-				case .phoneGps:
-					if annotationCount != mapView.annotations.count {
+					if recenter && userTrackingMode == MKUserTrackingMode.none {
+						mapView.fit(annotations: positions, andShow: true)
+					} else {
 						mapView.addAnnotations(positions)
 					}
-					mapView.showsUserLocation = true
-					if recenter {
-						mapView.centerCoordinate = LocationHelper.currentLocation
-					}
+				}
 			}
 		}
 	}
@@ -165,7 +165,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
 			self.longPressRecognizer.minimumPressDuration = 0.5
-			//self.longPressRecognizer.numberOfTouchesRequired = 1
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
@@ -175,13 +174,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
 			
 			switch annotation {
-				
-			case _ as MKClusterAnnotation:
-				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "nodeGroup") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "WaypointGroup")
-				annotationView.markerTintColor = .brown
-				annotationView.displayPriority = .defaultLow
-				annotationView.tag = -1
-				return annotationView
 			case let positionAnnotation as PositionEntity:
 				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
@@ -224,7 +216,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						annotationView.glyphImage = UIImage(systemName: "location.viewfinder")
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.sensor {
 						annotationView.glyphImage = UIImage(systemName: "sensor")
-						
 					}
 					
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
@@ -241,7 +232,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					}
 					if pf.contains(.Heading){
 						
-						if parent.userTrackingModeId != 2 {
+						if parent.userTrackingMode != MKUserTrackingMode.followWithHeading {
 							annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 							subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
 						} else {
@@ -268,9 +259,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				} else {
 					annotationView.glyphText = String(UnicodeScalar(Int(waypointAnnotation.icon)) ?? "📍")
 				}
-				annotationView.clusteringIdentifier = "waypointGroup"
 				annotationView.markerTintColor = UIColor(.accentColor)
-				annotationView.displayPriority = .defaultHigh
+				annotationView.displayPriority = .required
 				annotationView.titleVisibility = .adaptive
 				let leftIcon = UIImageView(image: annotationView.glyphText?.image())
 				leftIcon.backgroundColor = UIColor(.accentColor)

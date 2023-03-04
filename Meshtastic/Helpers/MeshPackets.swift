@@ -8,6 +8,9 @@
 import Foundation
 import CoreData
 import SwiftUI
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
 func generateMessageMarkdown (message: String) -> String {
 	
@@ -635,6 +638,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 		if connectedNode != Int64(packet.from) {
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "Telemetry received for: %@"), String(packet.from))
 			MeshLogger.log("📈 \(logString)")
+		} else {
+			// If it is the connected node
+			
 		}
 		
 		let telemetry = TelemetryEntity(context: context)
@@ -674,6 +680,28 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			// Only log telemetry from the mesh not the connected device
 			if connectedNode != Int64(packet.from) {
 				print("💾 Telemetry Saved for Node: \(packet.from)")
+			} else if telemetry.metricsType == 0 {
+				// Update our live activity if there is one running
+				#if !targetEnvironment(macCatalyst)
+				if #available(iOS 16.2, *) {
+
+					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
+					let date = Date.now...oneMinuteLater
+					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
+					
+					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
+					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
+					print("Update live activity.")
+					
+					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
+					if meshActivity != nil {
+						Task {
+							await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
+							//await meshActivity?.update(updatedContent)
+						}
+					}
+				}
+				#endif
 			}
 		} catch {
 			context.rollback()

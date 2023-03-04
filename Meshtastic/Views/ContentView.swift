@@ -1,38 +1,33 @@
 /*
-Copyright (c) Garth Vander Houwen 2021
-*/
+ Copyright (c) Garth Vander Houwen 2021
+ */
 
 import SwiftUI
 
 struct ContentView: View {
-   
+	
 	@EnvironmentObject var userSettings: UserSettings
 	
 	@State private var selection: Tab = .ble
-
-    enum Tab {
+	
+	enum Tab {
 		case contacts
-        case messages
-        case map
-        case ble
-        case nodes
-        case settings
-    }
+		case messages
+		case map
+		case ble
+		case nodes
+		case settings
+	}
 	
-	
-
-    var body: some View {
-
-        TabView(selection: $selection) {
+	var body: some View {
+		
+		TabView(selection: $selection) {
 			
-			if userSettings.preferredPeripheralId.count > 0 {
-				
-				Contacts()
+			Contacts()
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
-			}
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
@@ -53,12 +48,12 @@ struct ContentView: View {
 					Label("settings", systemImage: "gear")
 				}
 				.tag(Tab.settings)
-        }
-    }
+		}
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+	static var previews: some View {
+		ContentView()
+	}
 }

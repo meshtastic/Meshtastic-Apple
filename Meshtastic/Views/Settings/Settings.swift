@@ -79,7 +79,7 @@ struct Settings: View {
 							if selectedNode > 0 {
 								let node = nodes.first(where: { $0.num == newValue })
 								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 								
 								if node?.metadata == nil {
 									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
@@ -275,9 +275,9 @@ struct Settings: View {
 			.onAppear {
 				self.bleManager.context = context
 				self.bleManager.userSettings = userSettings
-				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 				if initialLoad {
-					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.num : 0)
+					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 					initialLoad = false
 				}
 				

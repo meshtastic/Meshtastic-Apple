@@ -142,8 +142,8 @@ struct UserConfig: View {
 				) {
 					Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
 						
-						let connectedUser = getUser(id: bleManager.connectedPeripheral.num, context: context)
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 						if connectedNode != nil {
 							
 							if !isLicensed {

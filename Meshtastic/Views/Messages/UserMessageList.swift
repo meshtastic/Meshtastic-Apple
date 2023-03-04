@@ -37,8 +37,8 @@ struct UserMessageList: View {
 				ScrollView {
 					LazyVStack {
 						ForEach( user.messageList ) { (message: MessageEntity) in
-							if user.num != userSettings.preferredNodeNum {
-								let currentUser: Bool = (userSettings.preferredNodeNum == message.fromUser?.num ? true : false)
+							if user.num != bleManager.connectedPeripheral?.num ?? -1 {
+								let currentUser: Bool = (bleManager.connectedPeripheral?.num ?? 0 == message.fromUser?.num ?? -1 ? true : false)
 								
 								if message.replyID > 0 {
 									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
