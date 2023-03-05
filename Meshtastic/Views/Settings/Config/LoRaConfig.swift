@@ -9,6 +9,12 @@ import SwiftUI
 
 struct LoRaConfig: View {
 	
+	let formatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.numberStyle = .decimal
+		return formatter
+	}()
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
@@ -24,6 +30,9 @@ struct LoRaConfig: View {
 	@State var txEnabled = true
 	@State var usePreset = true
 	@State var channelNum  = 0
+	@State var bandwidth  = 0
+	@State var spreadFactor  = 0
+	@State var codingRate  = 0
 	
 	var body: some View {
 		
@@ -64,32 +73,21 @@ struct LoRaConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					 if !usePreset {
-						Grid {
-							GridRow {
-								Text("Bandwidth")
-									.font(.caption)
-								Text(String(node?.loRaConfig?.bandwidth ?? 0))
-									.font(.caption)
-							}
-							GridRow {
-								Text("Spread Factor")
-									.font(.caption)
-								Text(String(node?.loRaConfig?.spreadFactor ?? 0))
-									.font(.caption)
-							}
-							GridRow {
-								Text("Coding Rate")
-									.font(.caption)
-								Text(String(node?.loRaConfig?.codingRate ?? 0))
-									.font(.caption)
-							}
-							GridRow {
-								Text("Frequency Offset")
-									.font(.caption)
-								Text(String(node?.loRaConfig?.frequencyOffset ?? 0))
-									.font(.caption)
-							}
-						}
+						 HStack {
+							 Text("Bandwidth")
+							 Spacer()
+							 TextField("Bandwidth", value: $bandwidth, formatter: formatter)
+						 }
+						 HStack {
+							 Text("Spread Factor")
+							 Spacer()
+							 TextField("Spread Factor", value: $spreadFactor, formatter: formatter)
+						 }
+						 HStack {
+							 Text("Coding Rate")
+							 Spacer()
+							 TextField("Coding Rate", value: $codingRate, formatter: formatter)
+						 }
 					}
 
 					Picker("Number of hops", selection: $hopLimit) {
@@ -102,16 +100,11 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
-					Picker("Channel Number", selection: $channelNum) {
-						ForEach(0..<9) {
-							if $0 == 0 {
-								Text("Automatic")
-							} else {
-								Text("Channel \($0)")
-							}
-						}
+					HStack {
+						Text("LoRa Channel Number")
+						Spacer()
+						TextField("Channel Number", value: $channelNum, formatter: formatter)
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("A hash of the primary channel's name sets the LoRa channel number, this determines the actual frequency you are transmitting on in the band. To ensure devices with different primary channel names transmit on the same frequency, you must explicitly set the LoRa channel number.")
 						.font(.caption)
 				}
@@ -146,6 +139,9 @@ struct LoRaConfig: View {
 						lc.usePreset = usePreset
 						lc.txEnabled = txEnabled
 						lc.channelNum = UInt32(channelNum)
+						lc.bandwidth = UInt32(bandwidth)
+						lc.codingRate = UInt32(codingRate)
+						lc.spreadFactor = UInt32(spreadFactor)
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -174,6 +170,10 @@ struct LoRaConfig: View {
 			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
+			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
+			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
+			
 			self.hasChanges = false
 			
 			// Need to request a LoRaConfig from the remote node before allowing changes
@@ -208,6 +208,21 @@ struct LoRaConfig: View {
 		.onChange(of: channelNum) { newChannelNum in
 			if node != nil && node!.loRaConfig != nil {
 				if newChannelNum != node!.loRaConfig!.channelNum { hasChanges = true }
+			}
+		}
+		.onChange(of: bandwidth) { newBandwidth in
+			if node != nil && node!.loRaConfig != nil {
+				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
+			}
+		}
+		.onChange(of: codingRate) { newCodingRate in
+			if node != nil && node!.loRaConfig != nil {
+				if newCodingRate != node!.loRaConfig!.codingRate { hasChanges = true }
+			}
+		}
+		.onChange(of: spreadFactor) { newSpreadFactor in
+			if node != nil && node!.loRaConfig != nil {
+				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
 			}
 		}
 	}
