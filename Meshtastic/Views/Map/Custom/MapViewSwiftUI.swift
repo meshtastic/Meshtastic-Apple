@@ -38,11 +38,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Map View Parameters
 		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
-		mapView.setUserTrackingMode(userTrackingMode, animated: true)
+		// Do the initial map centering
 		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
 		let center = LocationHelper.currentLocation
 		let region = MKCoordinateRegion(center: center, span: span)
 		mapView.setRegion(region, animated: true)
+		// Set user (phone gps) tracking options
+		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 		if userTrackingMode != MKUserTrackingMode.none {
 			mapView.showsUserLocation = true
 		} else {
@@ -55,7 +57,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.fitAllAnnotations()
 			}
 		case .allPositions:
-			if userTrackingMode != MKUserTrackingMode.none {
+			if userTrackingMode == MKUserTrackingMode.none {
 				mapView.fit(annotations: positions, andShow: true)
 			} else {
 				mapView.addAnnotations(positions)
@@ -242,8 +244,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				} else {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
-				let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
-				subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
+				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
+					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
+					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
+				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
@@ -273,6 +277,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				else {
 					subtitle.text = ""
+				}
+				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
+					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
+					let distanceFormatter = MKDistanceFormatter()
+					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
 				if waypointAnnotation.created != nil {
 					subtitle.text! += "Created: \(waypointAnnotation.created?.formatted() ?? "Unknown") \n"
