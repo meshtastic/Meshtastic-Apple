@@ -227,11 +227,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					if pf.contains(.SeqNo) {
 						subtitle.text! += "Sequence: \(String(positionAnnotation.seqNo)) \n"
 					}
-					if pf.contains(.Speed) {
-						let formatter = MeasurementFormatter()
-						formatter.locale = Locale.current
-						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
-					}
 					if pf.contains(.Heading){
 						
 						if parent.userTrackingMode != MKUserTrackingMode.followWithHeading {
@@ -241,7 +236,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 							annotationView.glyphImage = UIImage(systemName: "flipphone")
 						}
 					}
+					if pf.contains(.Speed) {
+						let formatter = MeasurementFormatter()
+						formatter.locale = Locale.current
+						if positionAnnotation.speed <= 1 {
+							annotationView.glyphImage = UIImage(systemName: "hexagon")
+						}
+						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
+					}
+					
 				} else {
+					// node metadata is nil
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
