@@ -23,12 +23,18 @@ struct LoRaConfig: View {
 	@State var txPower  = 0
 	@State var txEnabled = true
 	@State var usePreset = true
+	@State var channelNum  = 0
 	
 	var body: some View {
 		
 		VStack {
 			Form {
-				Section(header: Text("Region")) {
+				Section(header: Text("Options")) {
+					Toggle(isOn: $txEnabled) {
+						Label("Transmit Enabled", systemImage: "waveform.path")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Picker("Region", selection: $region ) {
 						ForEach(RegionCodes.allCases) { r in
 							Text(r.description)
@@ -39,14 +45,48 @@ struct LoRaConfig: View {
 						.font(.caption)
 				}
 				Section(header: Text("Modem")) {
-					Picker("Presets", selection: $modemPreset ) {
-						ForEach(ModemPresets.allCases) { m in
-							Text(m.description)
+					Toggle(isOn: $usePreset) {
+						Label("Use Preset", systemImage: "list.bullet.rectangle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					if usePreset {
+						
+						Picker("Presets", selection: $modemPreset ) {
+							ForEach(ModemPresets.allCases) { m in
+								Text(m.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("Available modem presets, default is Long Fast.")
+							.font(.caption)
+					} else {
+						Grid {
+							GridRow {
+								Text("Bandwidth")
+									.font(.caption)
+								Text(String(node?.loRaConfig?.bandwidth ?? 0))
+									.font(.caption)
+							}
+							GridRow {
+								Text("Spread Factor")
+									.font(.caption)
+								Text(String(node?.loRaConfig?.spreadFactor ?? 0))
+									.font(.caption)
+							}
+							GridRow {
+								Text("Coding Rate")
+									.font(.caption)
+								Text(String(node?.loRaConfig?.codingRate ?? 0))
+									.font(.caption)
+							}
+							GridRow {
+								Text("Frequency Offset")
+									.font(.caption)
+								Text(String(node?.loRaConfig?.frequencyOffset ?? 0))
+									.font(.caption)
+							}
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Available modem presets, default is Long Fast.")
-						.font(.caption)
 				}
 				Section(header: Text("Mesh Options")) {
 					Picker("Number of hops", selection: $hopLimit) {
@@ -59,9 +99,23 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
+					Picker("Channel Number", selection: $channelNum) {
+						ForEach(0..<9) {
+							if $0 == 0 {
+								Text("Automatic")
+							} else {
+								Text("Channel \($0)")
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("A hash of the primary channel's name sets the LoRa channel number, this determines the actual frequency you are transmitting on in the band. To ensure devices with different primary channel names transmit on the same frequency, you must explicitly set the LoRa channel number.")
+						.font(.caption)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
+			
+			
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -86,8 +140,9 @@ struct LoRaConfig: View {
 						lc.hopLimit = UInt32(hopLimit)
 						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
 						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-						lc.usePreset = true
-						lc.txEnabled = true
+						lc.usePreset = usePreset
+						lc.txEnabled = txEnabled
+						lc.channelNum = UInt32(channelNum)
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -103,8 +158,8 @@ struct LoRaConfig: View {
 		}
 		.navigationTitle("lora.config")
 		.navigationBarItems(trailing:
-			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+								ZStack {
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 			
@@ -115,6 +170,7 @@ struct LoRaConfig: View {
 			self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)
 			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
+			self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
 			self.hasChanges = false
 			
 			// Need to request a LoRaConfig from the remote node before allowing changes
@@ -131,6 +187,11 @@ struct LoRaConfig: View {
 				if newRegion != node!.loRaConfig!.regionCode { hasChanges = true }
 			}
 		}
+		.onChange(of: usePreset) { newUsePreset in
+			if node != nil && node!.loRaConfig != nil {
+				if newUsePreset != node!.loRaConfig!.usePreset { hasChanges = true }
+			}
+		}
 		.onChange(of: modemPreset) { newModemPreset in
 			if node != nil && node!.loRaConfig != nil {
 				if newModemPreset != node!.loRaConfig!.modemPreset { hasChanges = true }
@@ -139,6 +200,11 @@ struct LoRaConfig: View {
 		.onChange(of: hopLimit) { newHopLimit in
 			if node != nil && node!.loRaConfig != nil {
 				if newHopLimit != node!.loRaConfig!.hopLimit { hasChanges = true }
+			}
+		}
+		.onChange(of: channelNum) { newChannelNum in
+			if node != nil && node!.loRaConfig != nil {
+				if newChannelNum != node!.loRaConfig!.channelNum { hasChanges = true }
 			}
 		}
 	}
