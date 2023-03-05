@@ -30,10 +30,7 @@ struct LoRaConfig: View {
 		VStack {
 			Form {
 				Section(header: Text("Options")) {
-					Toggle(isOn: $txEnabled) {
-						Label("Transmit Enabled", systemImage: "waveform.path")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
 					
 					Picker("Region", selection: $region ) {
 						ForEach(RegionCodes.allCases) { r in
@@ -43,8 +40,6 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("The region where you will be using your radios.")
 						.font(.caption)
-				}
-				Section(header: Text("Modem")) {
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
@@ -59,7 +54,16 @@ struct LoRaConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						Text("Available modem presets, default is Long Fast.")
 							.font(.caption)
-					} else {
+					}
+				}
+				Section(header: Text("Advanced")) {
+					
+					Toggle(isOn: $txEnabled) {
+						Label("Transmit Enabled", systemImage: "waveform.path")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					 if !usePreset {
 						Grid {
 							GridRow {
 								Text("Bandwidth")
@@ -87,8 +91,7 @@ struct LoRaConfig: View {
 							}
 						}
 					}
-				}
-				Section(header: Text("Mesh Options")) {
+
 					Picker("Number of hops", selection: $hopLimit) {
 						Text("Please Select")
 							.tag(0)
