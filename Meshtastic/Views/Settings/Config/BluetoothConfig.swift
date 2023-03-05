@@ -133,7 +133,7 @@ struct BluetoothConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
 				print("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

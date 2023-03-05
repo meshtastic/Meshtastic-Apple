@@ -144,7 +144,7 @@ struct UserConfig: View {
 						
 						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-						if connectedNode != nil {
+						if node != nil && connectedNode != nil {
 							
 							if !isLicensed {
 								var u = User()

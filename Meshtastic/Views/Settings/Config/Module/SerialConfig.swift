@@ -168,7 +168,7 @@ struct SerialConfig: View {
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
 					print("empty serial module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil && connectedNode!.num > 0 {
+					if node != nil && connectedNode != nil {
 						_ = bleManager.requestSerialModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}

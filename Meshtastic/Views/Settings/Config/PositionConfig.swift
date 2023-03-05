@@ -282,7 +282,7 @@ struct PositionConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil &&  connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

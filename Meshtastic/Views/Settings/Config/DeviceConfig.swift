@@ -205,7 +205,7 @@ struct DeviceConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

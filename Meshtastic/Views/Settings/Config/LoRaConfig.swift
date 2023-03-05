@@ -180,7 +180,7 @@ struct LoRaConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
 				print("empty lora config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil{
 					_ = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
