@@ -242,6 +242,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				} else {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
+				let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
+				subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
