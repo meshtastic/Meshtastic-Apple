@@ -684,10 +684,10 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 6 {
+				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 5 {
 					let content = UNMutableNotificationContent()
 					content.title = "Critically Low Battery!"
-					content.body = "Time to charge your radio, there is less than 5% battery remaining."
+					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
 					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
 					let uuidString = UUID().uuidString
 					let request = UNNotificationRequest(identifier: uuidString,	content: content, trigger: trigger)
