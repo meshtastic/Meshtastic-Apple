@@ -6,8 +6,16 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct LoRaConfig: View {
+	
+	enum Field: Hashable {
+		case bandwidth
+		case channelNum
+		case spreadFactor
+		case codingRate
+	}
 	
 	let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -18,21 +26,22 @@ struct LoRaConfig: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
+	@FocusState var focusedField: Field?
 	
 	var node: NodeInfoEntity?
 	
 	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
 	@State var region = 0
-	@State var modemPreset  = 0
-	@State var hopLimit  = 0
-	@State var txPower  = 0
+	@State var modemPreset = 0
+	@State var hopLimit = 0
+	@State var txPower = 0
 	@State var txEnabled = true
 	@State var usePreset = true
-	@State var channelNum  = 0
-	@State var bandwidth  = 0
-	@State var spreadFactor  = 0
-	@State var codingRate  = 0
+	@State var channelNum = 0
+	@State var bandwidth = 0
+	@State var spreadFactor = 0
+	@State var codingRate = 0
 	
 	var body: some View {
 		
@@ -40,27 +49,30 @@ struct LoRaConfig: View {
 			Form {
 				Section(header: Text("Options")) {
 
-					
 					Picker("Region", selection: $region ) {
 						ForEach(RegionCodes.allCases) { r in
 							Text(r.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.fixedSize()
+					
 					Text("The region where you will be using your radios.")
 						.font(.caption)
+					
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					if usePreset {
-						
 						Picker("Presets", selection: $modemPreset ) {
 							ForEach(ModemPresets.allCases) { m in
 								Text(m.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+						.fixedSize()
 						Text("Available modem presets, default is Long Fast.")
 							.font(.caption)
 					}
@@ -75,18 +87,54 @@ struct LoRaConfig: View {
 					 if !usePreset {
 						 HStack {
 							 Text("Bandwidth")
-							 Spacer()
+								 .fixedSize()
 							 TextField("Bandwidth", value: $bandwidth, formatter: formatter)
+								 .multilineTextAlignment(.trailing)
+								 .toolbar {
+									 ToolbarItemGroup(placement: .keyboard) {
+										 Button("dismiss.keyboard") {
+											 focusedField = nil
+										 }
+										 .font(.subheadline)
+									 }
+								 }
+								 .keyboardType(.decimalPad)
+								 .scrollDismissesKeyboard(.immediately)
+								 .focused($focusedField, equals: .bandwidth)
 						 }
 						 HStack {
 							 Text("Spread Factor")
-							 Spacer()
+								 .fixedSize()
 							 TextField("Spread Factor", value: $spreadFactor, formatter: formatter)
+								 .multilineTextAlignment(.trailing)
+								 .toolbar {
+									 ToolbarItemGroup(placement: .keyboard) {
+										 Button("dismiss.keyboard") {
+											 focusedField = nil
+										 }
+										 .font(.subheadline)
+									 }
+								 }
+								 .keyboardType(.decimalPad)
+								 .scrollDismissesKeyboard(.immediately)
+								 .focused($focusedField, equals: .spreadFactor)
 						 }
 						 HStack {
 							 Text("Coding Rate")
-							 Spacer()
+								 .fixedSize()
 							 TextField("Coding Rate", value: $codingRate, formatter: formatter)
+								 .multilineTextAlignment(.trailing)
+								 .toolbar {
+									 ToolbarItemGroup(placement: .keyboard) {
+										 Button("dismiss.keyboard") {
+											 focusedField = nil
+										 }
+										 .font(.subheadline)
+									 }
+								 }
+								 .keyboardType(.decimalPad)
+								 .scrollDismissesKeyboard(.immediately)
+								 .focused($focusedField, equals: .codingRate)
 						 }
 					}
 
@@ -102,8 +150,20 @@ struct LoRaConfig: View {
 						.font(.caption)
 					HStack {
 						Text("LoRa Channel Number")
-						Spacer()
+							.fixedSize()
 						TextField("Channel Number", value: $channelNum, formatter: formatter)
+							.multilineTextAlignment(.trailing)
+							.toolbar {
+								ToolbarItemGroup(placement: .keyboard) {
+									Button("dismiss.keyboard") {
+										focusedField = nil
+									}
+									.font(.subheadline)
+								}
+							}
+							.keyboardType(.decimalPad)
+							.scrollDismissesKeyboard(.immediately)
+							.focused($focusedField, equals: .channelNum)
 					}
 					Text("A hash of the primary channel's name sets the LoRa channel number, this determines the actual frequency you are transmitting on in the band. To ensure devices with different primary channel names transmit on the same frequency, you must explicitly set the LoRa channel number.")
 						.font(.caption)
