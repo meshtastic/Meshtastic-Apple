@@ -123,22 +123,16 @@ struct NodeMap: View {
 			switch meshMapType {
 			case "standard":
 				mapType = .standard
-				break
 			case "mutedStandard":
 				mapType = .mutedStandard
-				break
 			case "hybrid":
 				mapType = .hybrid
-				break
 			case "hybridFlyover":
 				mapType = .hybridFlyover
-				break
 			case "satellite":
 				mapType = .satellite
-				break
 			case "satelliteFlyover":
 				mapType = .satelliteFlyover
-				break
 			default:
 				mapType = .hybridFlyover
 			}

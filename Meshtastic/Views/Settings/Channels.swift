@@ -252,7 +252,7 @@ struct Channels: View {
 								self.isPresentingEditView = false
 								channelName = ""
 								hasChanges = false
-								bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+								_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 							}
 						} label: {
 							Label("save", systemImage: "square.and.arrow.down")

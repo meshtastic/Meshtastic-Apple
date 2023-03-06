@@ -411,8 +411,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 			switch decodedInfo.packet.decoded.portnum {
 
-				// Handle Any local only packets we get over BLE
-				case .unknownApp:
+			// Handle Any local only packets we get over BLE
+			case .unknownApp:
 				var nowKnown = false
 
 				// MyInfo from initial connection
@@ -449,7 +449,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 && !invalidVersion {
-
 					nowKnown = true
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
 
@@ -467,7 +466,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					nowKnown = true
 					channelPacket(channel: decodedInfo.channel, fromNum: connectedPeripheral.num, context: context!)
 				}
-
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion {
 
@@ -492,49 +490,48 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
 				}
-
 				// Log any other unknownApp calls
-				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \(try! decodedInfo.packet.jsonString())") }
+				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 
-				case .textMessageApp:
-					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
-				case .remoteHardwareApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .positionApp:
-					upsertPositionPacket(packet: decodedInfo.packet, context: context!)
-				case .waypointApp:
-					waypointPacket(packet: decodedInfo.packet, context: context!)
-				case .nodeinfoApp:
-					if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
-				case .routingApp:
-					if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context!) }
-				case .adminApp:
-					adminAppPacket(packet: decodedInfo.packet, context: context!)
-				case .replyApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Reply App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .ipTunnelApp:
-					MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .serialApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .storeForwardApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Store Forward App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .rangeTestApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .telemetryApp:
-				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
-				case .textMessageCompressedApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .zpsApp:
-					MeshLogger.log("🕸️ MESH PACKET received for ZPS App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .privateApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .atakForwarder:
-					MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .simulatorApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .audioApp:
-					MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .tracerouteApp:
+			case .textMessageApp:
+				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+			case .remoteHardwareApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .positionApp:
+				upsertPositionPacket(packet: decodedInfo.packet, context: context!)
+			case .waypointApp:
+				waypointPacket(packet: decodedInfo.packet, context: context!)
+			case .nodeinfoApp:
+				if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
+			case .routingApp:
+				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context!) }
+			case .adminApp:
+				adminAppPacket(packet: decodedInfo.packet, context: context!)
+			case .replyApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Reply App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .ipTunnelApp:
+				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .serialApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .storeForwardApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Store Forward App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .rangeTestApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .telemetryApp:
+			if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
+			case .textMessageCompressedApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .zpsApp:
+				MeshLogger.log("🕸️ MESH PACKET received for ZPS App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .privateApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .atakForwarder:
+				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .simulatorApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .audioApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .tracerouteApp:
 					if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 
 						if routingMessage.route.count == 0 {
@@ -553,10 +550,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							MeshLogger.log("🪧 \(logString)")
 						}
 					}
-				case .UNRECOGNIZED:
-					MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
-				case .max:
-					print("MAX PORT NUM OF 511")
+			case .UNRECOGNIZED:
+				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
+			case .max:
+				print("MAX PORT NUM OF 511")
 			}
 
 			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
@@ -1906,20 +1903,20 @@ extension BLEManager: CBCentralManagerDelegate {
 		var status = ""
 
 		switch central.state {
-			case .poweredOff:
-				status = "BLE is powered off"
-			case .poweredOn:
-				status = "BLE is poweredOn"
-			case .resetting:
-				status = "BLE is resetting"
-			case .unauthorized:
-				status = "BLE is unauthorized"
-			case .unknown:
-				status = "BLE is unknown"
-			case .unsupported:
-				status = "BLE is unsupported"
-			default:
-				status = "default"
+		case .poweredOff:
+			status = "BLE is powered off"
+		case .poweredOn:
+			status = "BLE is poweredOn"
+		case .resetting:
+			status = "BLE is resetting"
+		case .unauthorized:
+			status = "BLE is unauthorized"
+		case .unknown:
+			status = "BLE is unknown"
+		case .unsupported:
+			status = "BLE is unsupported"
+		default:
+			status = "default"
 		}
 		print("BLEManager status: \(status)")
 	}

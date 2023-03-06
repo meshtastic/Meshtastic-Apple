@@ -44,9 +44,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 	var mb: Connection!
 	private var _boundingMapRect: MKMapRect!
 	override var boundingMapRect: MKMapRect {
-		get {
-			return _boundingMapRect
-		}
+		return _boundingMapRect
 	}
 
 	init?(mbTilePath path: String) {

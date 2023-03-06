@@ -14,13 +14,11 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 
     var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .metric:
-			   return "Metric"
-			case .imperial:
-			   return "Imperial"
-			}
+		switch self {
+		case .metric:
+		   return "Metric"
+		case .imperial:
+		   return "Imperial"
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
@@ -48,27 +46,25 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .fifteenSeconds:
-				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
-			case .thirtySeconds:
-				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
-			case .oneMinute:
-				return NSLocalizedString("interval.one.minute", comment: "One Minute")
-			case .fiveMinutes:
-				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
-			case .tenMinutes:
-				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
-			case .fifteenMinutes:
-				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
-			case .thirtyMinutes:
-				return NSLocalizedString("interval.thirty.minutes", comment: "Thirty Minutes")
-			case .oneHour:
-				return NSLocalizedString("interval.one.hour", comment: "One Hour")
-			case .max:
-				return NSLocalizedString("always.on", comment: "Always On")
-			}
+		switch self {
+		case .fifteenSeconds:
+			return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+		case .thirtySeconds:
+			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+		case .oneMinute:
+			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+		case .fiveMinutes:
+			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+		case .tenMinutes:
+			return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+		case .fifteenMinutes:
+			return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
+		case .thirtyMinutes:
+			return NSLocalizedString("interval.thirty.minutes", comment: "Thirty Minutes")
+		case .oneHour:
+			return NSLocalizedString("interval.one.hour", comment: "One Hour")
+		case .max:
+			return NSLocalizedString("always.on", comment: "Always On")
 		}
 	}
 }
@@ -85,24 +81,21 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .off:
-				return NSLocalizedString("off", comment: "Off")
-			case .thirtySeconds:
-				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
-			case .oneMinute:
-				return NSLocalizedString("interval.one.minute", comment: "One Minute")
-			case .fiveMinutes:
-				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
-			case .tenMinutes:
-				return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
-			case .fifteenMinutes:
-				return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
-			}
+		switch self {
+		case .off:
+			return NSLocalizedString("off", comment: "Off")
+		case .thirtySeconds:
+			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+		case .oneMinute:
+			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+		case .fiveMinutes:
+			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+		case .tenMinutes:
+			return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+		case .fifteenMinutes:
+			return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
 		}
 	}
-
 }
 // Default of 0 is auto
 enum OledTypes: Int, CaseIterable, Identifiable {
@@ -114,17 +107,15 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .auto:
-				return NSLocalizedString("automatic.detection", comment: "Automatic Detection")
-			case .ssd1306:
-				return "SSD 1306"
-			case .sh1106:
-				return "SH 1106"
-			case .sh1107:
-				return "SH 1107"
-			}
+		switch self {
+		case .auto:
+			return NSLocalizedString("automatic.detection", comment: "Automatic Detection")
+		case .ssd1306:
+			return "SSD 1306"
+		case .sh1106:
+			return "SH 1106"
+		case .sh1107:
+			return "SH 1107"
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.OledType {
@@ -152,17 +143,15 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .defaultMode:
-				return "Default 128x64 screen layout"
-			case .twoColor:
-				return "Optimized for 2 color displays"
-			case .inverted:
-				return "Inverted top bar for 2 Color display"
-			case .color:
-				return "TFT Full Color Displays"
-			}
+		switch self {
+		case .defaultMode:
+			return "Default 128x64 screen layout"
+		case .twoColor:
+			return "Optimized for 2 color displays"
+		case .inverted:
+			return "Inverted top bar for 2 Color display"
+		case .color:
+			return "TFT Full Color Displays"
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayMode {

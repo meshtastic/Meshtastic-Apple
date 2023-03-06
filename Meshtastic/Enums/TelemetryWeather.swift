@@ -17,24 +17,22 @@ enum WeatherConditions: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var symbolName: String {
-		get {
-			switch self {
+		switch self {
 
-			case .clear:
-				return "sparkle"
-			case .cloudy:
-				return "cloud"
-			case .hot:
-				return "sun.max.trianglebadge.exclamationmark.fill"
-			case .rain:
-				return "cloud.rain"
-			case .frigid:
-				return "thermometer.snowflake"
-			case .smoky:
-				return "smoke"
-			case .snow:
-				return "cloud.snow"
-			}
+		case .clear:
+			return "sparkle"
+		case .cloudy:
+			return "cloud"
+		case .hot:
+			return "sun.max.trianglebadge.exclamationmark.fill"
+		case .rain:
+			return "cloud.rain"
+		case .frigid:
+			return "thermometer.snowflake"
+		case .smoky:
+			return "smoke"
+		case .snow:
+			return "cloud.snow"
 		}
 	}
 }

@@ -471,26 +471,20 @@ struct NodeDetail: View {
 				.onAppear {
 					self.bleManager.context = context
 					switch meshMapType {
-						case "standard":
-							mapType = .standard
-							break
-						case "mutedStandard":
-							mapType = .mutedStandard
-							break
-						case "hybrid":
-							mapType = .hybrid
-							break
-						case "hybridFlyover":
-							mapType = .hybridFlyover
-							break
-						case "satellite":
-							mapType = .satellite
-							break
-						case "satelliteFlyover":
-							mapType = .satelliteFlyover
-							break
-						default:
-							mapType = .hybridFlyover
+					case "standard":
+						mapType = .standard
+					case "mutedStandard":
+						mapType = .mutedStandard
+					case "hybrid":
+						mapType = .hybrid
+					case "hybridFlyover":
+						mapType = .hybridFlyover
+					case "satellite":
+						mapType = .satellite
+					case "satelliteFlyover":
+						mapType = .satelliteFlyover
+					default:
+						mapType = .hybridFlyover
 					}
 				}
 				.task(id: node.num) {

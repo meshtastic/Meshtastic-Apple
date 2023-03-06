@@ -262,18 +262,18 @@ struct ShareChannels: View {
 			})
 			.onAppear {
 				bleManager.context = context
-				GenerateChannelSet()
+				generateChannelSet()
 			}
-			.onChange(of: includeChannel1) { _ in GenerateChannelSet()	}
-			.onChange(of: includeChannel2) { _ in GenerateChannelSet()	}
-			.onChange(of: includeChannel3) { _ in GenerateChannelSet()	}
-			.onChange(of: includeChannel4) { _ in GenerateChannelSet()	}
-			.onChange(of: includeChannel5) { _ in GenerateChannelSet()	}
-			.onChange(of: includeChannel6) { _ in GenerateChannelSet() }
-			.onChange(of: includeChannel7) { _ in GenerateChannelSet() }
+			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel4) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel6) { _ in generateChannelSet() }
+			.onChange(of: includeChannel7) { _ in generateChannelSet() }
 		}
 	}
-	func GenerateChannelSet() {
+	func generateChannelSet() {
 		channelSet = ChannelSet()
 		var loRaConfig = Config.LoRaConfig()
 		loRaConfig.region =  RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))!.protoEnumValue()
