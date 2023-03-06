@@ -11,15 +11,13 @@ import CoreData
 struct LoRaConfig: View {
 	
 	enum Field: Hashable {
-		case bandwidth
 		case channelNum
-		case spreadFactor
-		case codingRate
 	}
 	
 	let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
+		formatter.maximumFractionDigits = 2
 		return formatter
 	}()
 	
@@ -39,7 +37,7 @@ struct LoRaConfig: View {
 	@State var txEnabled = true
 	@State var usePreset = true
 	@State var channelNum = 0
-	@State var bandwidth = 0
+	@State var bandwidth = 0.0
 	@State var spreadFactor = 0
 	@State var codingRate = 0
 	
@@ -86,55 +84,34 @@ struct LoRaConfig: View {
 					
 					 if !usePreset {
 						 HStack {
-							 Text("Bandwidth")
-								 .fixedSize()
-							 TextField("Bandwidth", value: $bandwidth, formatter: formatter)
-								 .multilineTextAlignment(.trailing)
-								 .toolbar {
-									 ToolbarItemGroup(placement: .keyboard) {
-										 Button("dismiss.keyboard") {
-											 focusedField = nil
-										 }
-										 .font(.subheadline)
-									 }
-								 }
-								 .keyboardType(.decimalPad)
-								 .scrollDismissesKeyboard(.immediately)
-								 .focused($focusedField, equals: .bandwidth)
+							 Picker("Bandwidth", selection: $spreadFactor) {
+								 Text("\(31)")
+									 .tag(31)
+								 Text("\(62)")
+									 .tag(62)
+								 Text("\(125)")
+									 .tag(125)
+								 Text("\(250)")
+									 .tag(0)
+								 Text("\(500)")
+									 .tag(500)
+							 }
 						 }
 						 HStack {
-							 Text("Spread Factor")
-								 .fixedSize()
-							 TextField("Spread Factor", value: $spreadFactor, formatter: formatter)
-								 .multilineTextAlignment(.trailing)
-								 .toolbar {
-									 ToolbarItemGroup(placement: .keyboard) {
-										 Button("dismiss.keyboard") {
-											 focusedField = nil
-										 }
-										 .font(.subheadline)
-									 }
+							 Picker("Spread Factor", selection: $spreadFactor) {
+								 ForEach(7..<13) {
+									 Text("\($0)")
+										 .tag($0 == 12 ? 0 : $0)
 								 }
-								 .keyboardType(.decimalPad)
-								 .scrollDismissesKeyboard(.immediately)
-								 .focused($focusedField, equals: .spreadFactor)
+							 }
 						 }
 						 HStack {
-							 Text("Coding Rate")
-								 .fixedSize()
-							 TextField("Coding Rate", value: $codingRate, formatter: formatter)
-								 .multilineTextAlignment(.trailing)
-								 .toolbar {
-									 ToolbarItemGroup(placement: .keyboard) {
-										 Button("dismiss.keyboard") {
-											 focusedField = nil
-										 }
-										 .font(.subheadline)
-									 }
+							 Picker("Coding Rate", selection: $codingRate) {
+								 ForEach(5..<9) {
+									 Text("\($0)")
+										 .tag($0 == 8 ? 0 : $0)
 								 }
-								 .keyboardType(.decimalPad)
-								 .scrollDismissesKeyboard(.immediately)
-								 .focused($focusedField, equals: .codingRate)
+							 }
 						 }
 					}
 
@@ -230,9 +207,10 @@ struct LoRaConfig: View {
 			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
-			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
+			self.bandwidth = Double(node?.loRaConfig?.bandwidth ?? 0)
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
+			print("Spreadum: \(self.spreadFactor)")
 			
 			self.hasChanges = false
 			
@@ -272,7 +250,8 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: bandwidth) { newBandwidth in
 			if node != nil && node!.loRaConfig != nil {
-				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
+				hasChanges = true
+				//if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
 			}
 		}
 		.onChange(of: codingRate) { newCodingRate in
