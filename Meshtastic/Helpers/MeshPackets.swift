@@ -83,7 +83,9 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
 
 	do {
-		let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+		guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
+			return nil
+		}
 		// Not Found Insert
 		if fetchedMyInfo.isEmpty {
 
@@ -151,8 +153,9 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
 
 		do {
-
-			let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as! [MyInfoEntity]
+			guard let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as? [MyInfoEntity] else {
+				return
+			}
 			if fetchedMyInfo.count == 1 {
 				let newChannel = ChannelEntity(context: context)
 				newChannel.id = Int32(channel.index)
@@ -162,7 +165,9 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
-				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
+					return
+				}
 				if mutableChannels.contains(newChannel) {
 					mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
 				} else {
@@ -199,8 +204,9 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
 
 		do {
-
-			let fetchedNode = try context.fetch(fetchedNodeRequest) as! [NodeInfoEntity]
+			guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
+				return
+			}
 			if fetchedNode.count > 0 {
 				let newMetadata = DeviceMetadataEntity(context: context)
 				newMetadata.firmwareVersion = metadata.firmwareVersion
@@ -239,8 +245,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return nil
+		}
 		// Not Found Insert
 		if fetchedNode.isEmpty && nodeInfo.hasUser {
 
@@ -293,8 +300,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
 
 			do {
-
-				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
+					return nil
+				}
 				if fetchedMyInfo.count > 0 {
 					newNode.myInfo = fetchedMyInfo[0]
 				}
@@ -359,7 +367,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
 
 			do {
-				let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
+					return nil
+				}
 				if fetchedMyInfo.count > 0 {
 					fetchedNode[0].myInfo = fetchedMyInfo[0]
 				}
@@ -456,7 +466,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
 
 					do {
-						let fetchedNode = try context.fetch(fetchNodeRequest) as! [NodeInfoEntity]
+						guard let fetchedNode = try context.fetch(fetchNodeRequest) as? [NodeInfoEntity] else {
+							return
+						}
 						if fetchedNode.count == 1 {
 							let messages =  String(cmmc.textFormatString())
 								.replacingOccurrences(of: "11: ", with: "")
@@ -541,7 +553,9 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 	let fetchedAdminMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 	fetchedAdminMessageRequest.predicate = NSPredicate(format: "messageId == %lld", packet.decoded.requestID)
 	do {
-		let fetchedMessage = try context.fetch(fetchedAdminMessageRequest) as! [MessageEntity]
+		guard let fetchedMessage = try context.fetch(fetchedAdminMessageRequest) as? [MessageEntity] else {
+			return
+		}
 		if fetchedMessage.count > 0 {
 			fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 			fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
@@ -648,7 +662,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 		do {
 
-			let fetchedNode = try context.fetch(fetchNodeTelemetryRequest) as! [NodeInfoEntity]
+			guard let fetchedNode = try context.fetch(fetchNodeTelemetryRequest) as? [NodeInfoEntity] else {
+				return
+			}
 			if fetchedNode.count == 1 {
 				if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 					// Device Metrics
@@ -738,10 +754,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
-
 		do {
-
-			let fetchedUsers = try context.fetch(messageUsers) as! [UserEntity]
+			guard let fetchedUsers = try context.fetch(messageUsers) as? [UserEntity] else {
+				return
+			}
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
@@ -794,7 +810,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
 
 						do {
-							let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+							guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
+								return
+							}
 							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)
@@ -841,8 +859,9 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 	do {
 
 		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
-
-			let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as! [WaypointEntity]
+			guard let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as? [WaypointEntity] else {
+				return
+			}
 			if fetchedWaypoint.isEmpty {
 				let waypoint = WaypointEntity(context: context)
 

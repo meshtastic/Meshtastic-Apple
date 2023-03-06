@@ -257,7 +257,9 @@ struct Contacts: View {
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 					do {
-						let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+						guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+							return
+						}
 						// Found a node, check it for a region
 						if !fetchedNode.isEmpty {
 							node = fetchedNode[0]

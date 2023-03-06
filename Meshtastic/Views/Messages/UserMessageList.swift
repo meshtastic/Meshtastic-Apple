@@ -158,7 +158,7 @@ struct UserMessageList: View {
 												}
 											}
 
-										let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+										let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
 										if tapbacks.count > 0 {
 											VStack(alignment: .trailing) {
 												HStack {

@@ -138,7 +138,7 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 			Button {
-				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
+				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as? [TelemetryEntity] ?? [], metricsType: 1)
 				isExporting = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")

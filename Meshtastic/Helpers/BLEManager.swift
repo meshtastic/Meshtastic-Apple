@@ -561,7 +561,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(emptyNodeNum))
 
 			do {
-				let fetchedUser = try context?.fetch(fetchBCUserRequest) as! [UserEntity]
+				guard let fetchedUser = try context?.fetch(fetchBCUserRequest) as? [UserEntity] else {
+					return
+				}
 				if fetchedUser.count > 0 {
 					context?.delete(fetchedUser[0])
 					print("🗑️ Deleted the All - Broadcast User")
@@ -639,8 +641,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 			do {
 
-				let fetchedUsers = try context?.fetch(messageUsers) as! [UserEntity]
-
+				guard let fetchedUsers = try context?.fetch(messageUsers) as? [UserEntity] else {
+					return false
+				}
 				if fetchedUsers.isEmpty {
 
 					print("🚫 Message Users Not Found, Fail")
@@ -980,10 +983,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
 			do {
-				let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+				guard let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
+					return false
+				}
 				if fetchedMyInfo.count == 1 {
-
-					let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+					guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
+						return false
+					}
 					mutableChannels.removeAllObjects()
 					fetchedMyInfo[0].channels = mutableChannels
 					do {

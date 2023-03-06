@@ -12,12 +12,11 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return false
+		}
 		let newPostions = [PositionEntity]()
 		fetchedNode[0].positions? = NSOrderedSet(array: newPostions)
-
 		do {
 			try context.save()
 			return true
@@ -26,7 +25,6 @@ public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> B
 			context.rollback()
 			return false
 		}
-
 	} catch {
 		print("💥 Fetch NodeInfoEntity Error")
 		return false
@@ -39,12 +37,11 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return false
+		}
 		let emptyTelemetry = [TelemetryEntity]()
 		fetchedNode[0].telemetries? = NSOrderedSet(array: emptyTelemetry)
-
 		do {
 			try context.save()
 			return true
@@ -53,7 +50,6 @@ public func clearTelemetry(destNum: Int64, metricsType: Int32, context: NSManage
 			context.rollback()
 			return false
 		}
-
 	} catch {
 		print("💥 Fetch NodeInfoEntity Error")
 		return false
@@ -115,13 +111,18 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 			// Don't save empty position packets
 			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
-				let fetchedNode = try context.fetch(fetchNodePositionRequest) as! [NodeInfoEntity]
+				guard let fetchedNode = try context.fetch(fetchNodePositionRequest) as? [NodeInfoEntity] else {
+					return
+				}
 				if fetchedNode.count == 1 {
 
 					// Unset the current latest position for this node
 					let fetchCurrentLatestPositionsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "PositionEntity")
 					fetchCurrentLatestPositionsRequest.predicate = NSPredicate(format: "nodePosition.num == %lld && latest = true", Int64(packet.from))
-					let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest) as! [PositionEntity]
+					
+					guard let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest) as? [PositionEntity] else {
+						return
+					}
 					if fetchedPositions.count > 0 {
 						for position in fetchedPositions {
 							position.latest = false
@@ -143,8 +144,9 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					} else {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					}
-					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
-
+					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+						return
+					}
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
@@ -163,7 +165,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				}
 			} else {
 				print("💥 Empty POSITION_APP Packet")
-				print(try! packet.jsonString())
+				print((try? packet.jsonString()) ?? "JSON Decode Failure")
 			}
 		}
 	} catch {
@@ -180,8 +182,9 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].bluetoothConfig == nil {
@@ -220,8 +223,9 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].deviceConfig == nil {
@@ -267,9 +271,9 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
 
 	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 
@@ -330,7 +334,9 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
 	do {
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save LoRa Config
 		if fetchedNode.count > 0 {
 			if fetchedNode[0].loRaConfig == nil {
@@ -393,7 +399,9 @@ func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum:
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save WiFi Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].networkConfig == nil {
@@ -438,7 +446,9 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save LoRa Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].positionConfig == nil {
@@ -487,8 +497,9 @@ func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.Cann
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Canned Message Config
 		if !fetchedNode.isEmpty {
 
@@ -550,7 +561,9 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save External Notificaitone Config
 		if !fetchedNode.isEmpty {
 
@@ -616,7 +629,9 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save MQTT Config
 		if !fetchedNode.isEmpty {
 
@@ -664,7 +679,9 @@ func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTest
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].rangeTestConfig == nil {
@@ -705,7 +722,9 @@ func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 
 		// Found a node, save Device Config
 		if !fetchedNode.isEmpty {
@@ -766,7 +785,9 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 
 	do {
 
-		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
 		// Found a node, save Telemetry Config
 		if !fetchedNode.isEmpty {
 

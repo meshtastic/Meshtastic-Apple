@@ -230,10 +230,11 @@ struct Channels: View {
 								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 								channel.settings.uplinkEnabled = uplink
 								channel.settings.downlinkEnabled = downlink
-
 							} else {
 								if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
-									let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as! ChannelEntity
+									guard let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as? ChannelEntity else {
+										return
+									}
 									context.delete(channelEntity)
 									do {
 										try context.save()

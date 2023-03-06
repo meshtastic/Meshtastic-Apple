@@ -55,9 +55,8 @@ struct NodeDetail: View {
 			GeometryReader { bounds in
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
-					//	let mostRecent = node.positions?.lastObject as! PositionEntity
 						ZStack {
-							let annotations = node.positions?.array as! [PositionEntity]
+							let annotations = node.positions?.array as? [PositionEntity] ?? [] 
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
 									waypointCoordinate = coord

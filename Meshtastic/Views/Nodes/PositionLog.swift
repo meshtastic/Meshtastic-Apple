@@ -134,7 +134,7 @@ struct PositionLog: View {
 
 				Button {
 
-					exportString = positionToCsvFile(positions: node.positions!.array as! [PositionEntity])
+					exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 					isExporting = true
 
 					} label: {

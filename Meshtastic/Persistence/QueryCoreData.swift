@@ -13,9 +13,11 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
 
 	do {
-		let fetchNodeInfo = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
-		if fetchNodeInfo.count == 1 {
-			return fetchNodeInfo[0]
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return nil
+		}
+		if fetchedNode.count == 1 {
+			return fetchedNode[0]
 		}
 	} catch {
 		return nil
@@ -29,7 +31,9 @@ public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 	fetchUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(id))
 
 	do {
-		let fetchedUser = try context.fetch(fetchUserRequest) as! [UserEntity]
+		guard let fetchedUser = try context.fetch(fetchUserRequest) as? [UserEntity] else {
+			return UserEntity(context: context)
+		}
 		if fetchedUser.count == 1 {
 			return fetchedUser[0]
 		}
@@ -45,7 +49,9 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
 
 	do {
-		let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as! [WaypointEntity]
+		guard let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as? [WaypointEntity] else {
+			return WaypointEntity(context: context)
+		}
 		if fetchedWaypoint.count == 1 {
 			return fetchedWaypoint[0]
 		}
