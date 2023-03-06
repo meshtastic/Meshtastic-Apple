@@ -15,7 +15,7 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
 		didSet {
 			if customTileServer == "" {
@@ -32,18 +32,18 @@ struct NodeMap: View {
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapCenteringMode") private var meshMapCenteringMode = 0
-	
-	//&& nodePosition != nil
+
+	// && nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
-	
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	
+
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
 	@State private var mapCenteringMode: CenteringMode = .allAnnotations
@@ -56,12 +56,12 @@ struct NodeMap: View {
 			canReplaceMapContent: true
 		)
 	@State private var overlays: [MapViewSwiftUI.Overlay] = []
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			ZStack {
-				
+
 				MapViewSwiftUI(onLongPress: { coord in
 					waypointCoordinate = coord
 					editingWaypoint = 0
@@ -98,11 +98,11 @@ struct NodeMap: View {
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
-			.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
+			.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
 				WaypointFormView(coordinate: waypointCoordinate, waypointId: editingWaypoint)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.automatic)
-				
+
 			}
 		}
 		.navigationBarItems(leading:
@@ -143,7 +143,7 @@ struct NodeMap: View {
 				mapType = .hybridFlyover
 			}
 		})
-		.onDisappear (perform: {
+		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})
     }

@@ -27,7 +27,7 @@ extension Data {
 	}
 	var hexDescription: String {
 		return reduce("") {$0 + String(format: "%02x", $1)}
-	}	
+	}
 }
 
 extension Date {
@@ -53,7 +53,7 @@ extension Float {
 		let locale = NSLocale.current as NSLocale
 		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 		var format: UnitTemperature = .celsius
-		
+
 		if localeUnit! as! String == "Fahrenheit" {
 			format = .fahrenheit
 		}
@@ -90,7 +90,7 @@ extension UIImage {
 }
 
 extension String {
-	
+
 	func base64urlToBase64() -> String {
 		var base64 = self
 			.replacingOccurrences(of: "-", with: "+")
@@ -100,7 +100,7 @@ extension String {
 		}
 		return base64
 	}
-	
+
 	func base64ToBase64url() -> String {
 		let base64url = self
 			.replacingOccurrences(of: "+", with: "-")
@@ -108,13 +108,12 @@ extension String {
 			.replacingOccurrences(of: "=", with: "")
 		return base64url
 	}
-	
+
 	func onlyEmojis() -> Bool {
 		return count > 0 && !contains { !$0.isEmoji }
 	}
-	
-	func image(fontSize:CGFloat = 40, bgColor:UIColor = UIColor.clear, imageSize:CGSize? = nil) -> UIImage?
-	{
+
+	func image(fontSize: CGFloat = 40, bgColor: UIColor = UIColor.clear, imageSize: CGSize? = nil) -> UIImage? {
 		let font = UIFont.systemFont(ofSize: fontSize)
 		let attributes = [NSAttributedString.Key.font: font]
 		let imageSize = imageSize ?? self.size(withAttributes: attributes)
@@ -127,7 +126,7 @@ extension String {
 		UIGraphicsEndImageContext()
 		return image
 	}
-	
+
 	func camelCaseToWords() -> String {
 		return unicodeScalars.dropFirst().reduce(String(prefix(1))) {
 			return CharacterSet.uppercaseLetters.contains($1)

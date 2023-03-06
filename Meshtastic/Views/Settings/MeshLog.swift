@@ -10,7 +10,7 @@ struct MeshLog: View {
 	@State private var document: LogDocument = LogDocument(logFile: "MESHTASTIC MESH ACTIVITY LOG\n")
 
 	var body: some View {
-		
+
 		List(logs, id: \.self, rowContent: Text.init)
 			.task {
 				do {
@@ -55,7 +55,7 @@ struct MeshLog: View {
 		)
 		.textSelection(.enabled)
 		.font(.caption)
-		
+
 		HStack(alignment: .center) {
 			Spacer()
 			Button(role: .destructive) {
@@ -74,7 +74,7 @@ struct MeshLog: View {
 			.controlSize(.large)
 			.padding()
 			Spacer()
-			
+
 			Button {
 				isExporting = true
 			} label: {

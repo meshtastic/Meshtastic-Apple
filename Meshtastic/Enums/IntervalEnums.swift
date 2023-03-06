@@ -8,7 +8,7 @@
 import Foundation
 
 enum OutputIntervals: Int, CaseIterable, Identifiable {
-	
+
 	case unset = 0
 	case oneSecond = 1000
 	case twoSeconds = 2000
@@ -19,12 +19,12 @@ enum OutputIntervals: Int, CaseIterable, Identifiable {
 	case fifteenSeconds = 15000
 	case thirtySeconds = 30000
 	case oneMinute = 60000
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-				
+
 			case .unset:
 				return NSLocalizedString("unset", comment: "Unset")
 			case .oneSecond:
@@ -62,7 +62,6 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600
-
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -118,7 +117,7 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-				
+
 			case .tenSeconds:
 				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
 			case .fifteenSeconds:

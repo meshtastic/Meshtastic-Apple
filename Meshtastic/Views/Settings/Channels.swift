@@ -16,15 +16,14 @@ func generateChannelKey(size: Int) -> String {
 }
 
 struct Channels: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 
-	
 	var node: NodeInfoEntity?
-	
+
 	@State var hasChanges = false
 	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
@@ -35,14 +34,14 @@ struct Channels: View {
 	@State private var channelRole = 0
 	@State private var uplink = false
 	@State private var downlink = false
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			List {
 				if node != nil && node?.myInfo != nil {
 					ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
-						Button(action:  {
+						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
 							channelKey = channel.psk?.base64EncodedString() ?? ""
@@ -87,7 +86,7 @@ struct Channels: View {
 				}
 			}
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
-				
+
 				Button {
 					let key = generateChannelKey(size: 32)
 					channelName = ""
@@ -98,7 +97,7 @@ struct Channels: View {
 					downlink = false
 					hasChanges = false
 					isPresentingEditView = true
-					
+
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")
 				}
@@ -107,7 +106,7 @@ struct Channels: View {
 				.controlSize(.large)
 				.padding()
 				.sheet(isPresented: $isPresentingEditView) {
-					
+
 					#if targetEnvironment(macCatalyst)
 					Text("channel")
 						.font(.largeTitle)
@@ -125,7 +124,7 @@ struct Channels: View {
 							.keyboardType(.alphabet)
 							.foregroundColor(Color.gray)
 							.disabled(channelRole == 1 && channelName.count > 0)
-							.onChange(of: channelName, perform: { value in
+							.onChange(of: channelName, perform: { _ in
 								channelName = channelName.replacing(" ", with: "")
 								let totalBytes = channelName.utf8.count
 								// Only mess with the value if it is too big
@@ -165,23 +164,23 @@ struct Channels: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
 						}
-						HStack (alignment: .top) {
+						HStack(alignment: .top) {
 							Text("Key")
 							Spacer()
-							TextField (
+							TextField(
 								"",
 								text: $channelKey,
 								axis: .vertical
 							)
 							.foregroundColor(Color.gray)
 							.disabled(true)
-					
+
 						}
 						.textSelection(.enabled)
 						Picker("Channel Role", selection: $channelRole) {
 							if channelRole == 1 {
 								Text("Primary").tag(1)
-							} else{
+							} else {
 								Text("Disabled").tag(0)
 								Text("Secondary").tag(2)
 							}
@@ -193,13 +192,13 @@ struct Channels: View {
 						Toggle("Downlink Enabled", isOn: $downlink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					//.onSubmit {
-						//validate(name: channelName)
-					//}
-					.onChange(of: channelName) { newName in
+					// .onSubmit {
+						// validate(name: channelName)
+					// }
+					.onChange(of: channelName) { _ in
 						hasChanges = true
 					}
-					.onChange(of: channelKeySize) { newKeySize in
+					.onChange(of: channelKeySize) { _ in
 						if channelKeySize == -1 {
 							channelKey = "AQ=="
 						} else {
@@ -208,16 +207,16 @@ struct Channels: View {
 						}
 						hasChanges = true
 					}
-					.onChange(of: channelKey) { newKey in
+					.onChange(of: channelKey) { _ in
 						hasChanges = true
 					}
-					.onChange(of: channelRole) { newRole in
+					.onChange(of: channelRole) { _ in
 						hasChanges = true
 					}
-					.onChange(of: uplink) { newUplink in
+					.onChange(of: uplink) { _ in
 						hasChanges = true
 					}
-					.onChange(of: downlink) { newDownlink in
+					.onChange(of: downlink) { _ in
 						hasChanges = true
 					}
 					HStack {
@@ -231,7 +230,7 @@ struct Channels: View {
 								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 								channel.settings.uplinkEnabled = uplink
 								channel.settings.downlinkEnabled = downlink
-								
+
 							} else {
 								if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
 									let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as! ChannelEntity
@@ -246,9 +245,9 @@ struct Channels: View {
 									}
 								}
 							}
-							
+
 							let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
-							
+
 							if adminMessageId > 0 {
 								self.isPresentingEditView = false
 								channelName = ""

@@ -25,7 +25,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 	var display: String {
 		get {
 			switch self {
-			
+
 			case .none:
 				return NSLocalizedString("routing.acknowledged", comment: "Acknowledged")
 			case .noRoute:
@@ -54,9 +54,9 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Routing.Error {
-		
+
 		switch self {
-			
+
 		case .none:
 			return Routing.Error.none
 		case .noRoute:
@@ -81,7 +81,7 @@ enum RoutingError: Int, CaseIterable, Identifiable {
 			return Routing.Error.badRequest
 		case .notAuthorized:
 			return Routing.Error.notAuthorized
-		
+
 		}
 	}
 }

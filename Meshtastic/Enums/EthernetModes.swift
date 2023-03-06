@@ -16,7 +16,7 @@ enum EthernetMode: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-			
+
 			case .dhcp:
 				return "DHCP"
 			case .staticip:
@@ -25,9 +25,9 @@ enum EthernetMode: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.NetworkConfig.AddressMode {
-		
+
 		switch self {
-			
+
 		case .dhcp:
 			return Config.NetworkConfig.AddressMode.dhcp
 		case .staticip:

@@ -5,12 +5,12 @@
 ////  Created by Joshua Pirihi on 24/12/21.
 ////
 //
-//import UIKit
-//import MapKit
-//import SwiftUI
+// import UIKit
+// import MapKit
+// import SwiftUI
 //
 //// a simple circle annotation, with a string in it
-//class PositionAnnotation: NSObject, MKAnnotation {
+// class PositionAnnotation: NSObject, MKAnnotation {
 //
 //	// This property must be key-value observable, which the `@objc dynamic` attributes provide.
 //	@objc dynamic var coordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
@@ -22,9 +22,9 @@
 //	// the text to appear inside the little circle
 //	var shortName: String?
 //
-//}
+// }
 //
-//class PositionAnnotationView: MKAnnotationView {
+// class PositionAnnotationView: MKAnnotationView {
 //
 //	private let annotationFrame = CGRect(x: 0, y: 0, width: 40, height: 40)
 //	private let label: UILabel
@@ -57,4 +57,4 @@
 //		context.setFillColor(Color.accentColor.cgColor ?? CGColor(red: 0, green: 0.5, blue: 1.0, alpha: 1.0))
 //		context.fillEllipse(in: circleRect)
 //	}
-//}
+// }

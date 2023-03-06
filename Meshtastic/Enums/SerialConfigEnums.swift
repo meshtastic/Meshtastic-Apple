@@ -65,11 +65,11 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 			}
 		}
 	}
-	
+
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Baud {
-		
+
 		switch self {
-			
+
 		case .baudDefault:
 			return ModuleConfig.SerialConfig.Serial_Baud.baudDefault
 		case .baud110:
@@ -113,7 +113,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	case proto = 2
 	case txtmsg = 3
 	case nmea = 4
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
@@ -132,9 +132,9 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
-		
+
 		switch self {
-			
+
 		case .default:
 			return ModuleConfig.SerialConfig.Serial_Mode.default
 		case .simple:

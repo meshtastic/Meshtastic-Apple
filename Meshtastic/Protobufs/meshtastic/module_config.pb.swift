@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -29,7 +29,7 @@ struct ModuleConfig {
 
   ///
   /// TODO: REPLACE
-  var payloadVariant: ModuleConfig.OneOf_PayloadVariant? = nil
+  var payloadVariant: ModuleConfig.OneOf_PayloadVariant?
 
   ///
   /// TODO: REPLACE
@@ -829,7 +829,7 @@ extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
     .codec21300,
     .codec21200,
     .codec2700,
-    .codec2700B,
+    .codec2700B
   ]
 }
 
@@ -851,7 +851,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
     .baud230400,
     .baud460800,
     .baud576000,
-    .baud921600,
+    .baud921600
   ]
 }
 
@@ -862,7 +862,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
     .simple,
     .proto,
     .textmsg,
-    .nmea,
+    .nmea
   ]
 }
 
@@ -876,7 +876,7 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
     .right,
     .select,
     .back,
-    .cancel,
+    .cancel
   ]
 }
 
@@ -902,7 +902,7 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: @unchecked Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+private let _protobuf_package = "meshtastic"
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
@@ -915,7 +915,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     6: .same(proto: "telemetry"),
     7: .standard(proto: "canned_message"),
     8: .same(proto: "audio"),
-    9: .standard(proto: "remote_hardware"),
+    9: .standard(proto: "remote_hardware")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1108,7 +1108,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     3: .same(proto: "username"),
     4: .same(proto: "password"),
     5: .standard(proto: "encryption_enabled"),
-    6: .standard(proto: "json_enabled"),
+    6: .standard(proto: "json_enabled")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1165,7 +1165,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
 extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "enabled"),
+    1: .same(proto: "enabled")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1203,7 +1203,7 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
     4: .standard(proto: "i2s_ws"),
     5: .standard(proto: "i2s_sd"),
     6: .standard(proto: "i2s_din"),
-    7: .standard(proto: "i2s_sck"),
+    7: .standard(proto: "i2s_sck")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1272,7 +1272,7 @@ extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding
     5: .same(proto: "CODEC2_1300"),
     6: .same(proto: "CODEC2_1200"),
     7: .same(proto: "CODEC2_700"),
-    8: .same(proto: "CODEC2_700B"),
+    8: .same(proto: "CODEC2_700B")
   ]
 }
 
@@ -1285,7 +1285,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     4: .same(proto: "txd"),
     5: .same(proto: "baud"),
     6: .same(proto: "timeout"),
-    7: .same(proto: "mode"),
+    7: .same(proto: "mode")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1361,7 +1361,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProvidi
     12: .same(proto: "BAUD_230400"),
     13: .same(proto: "BAUD_460800"),
     14: .same(proto: "BAUD_576000"),
-    15: .same(proto: "BAUD_921600"),
+    15: .same(proto: "BAUD_921600")
   ]
 }
 
@@ -1371,7 +1371,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
     1: .same(proto: "SIMPLE"),
     2: .same(proto: "PROTO"),
     3: .same(proto: "TEXTMSG"),
-    4: .same(proto: "NMEA"),
+    4: .same(proto: "NMEA")
   ]
 }
 
@@ -1391,7 +1391,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     12: .standard(proto: "alert_bell_vibra"),
     13: .standard(proto: "alert_bell_buzzer"),
     7: .standard(proto: "use_pwm"),
-    14: .standard(proto: "nag_timeout"),
+    14: .standard(proto: "nag_timeout")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1492,7 +1492,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
     2: .same(proto: "heartbeat"),
     3: .same(proto: "records"),
     4: .standard(proto: "history_return_max"),
-    5: .standard(proto: "history_return_window"),
+    5: .standard(proto: "history_return_window")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1546,7 +1546,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "sender"),
-    3: .same(proto: "save"),
+    3: .same(proto: "save")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1594,7 +1594,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     4: .standard(proto: "environment_screen_enabled"),
     5: .standard(proto: "environment_display_fahrenheit"),
     6: .standard(proto: "air_quality_enabled"),
-    7: .standard(proto: "air_quality_interval"),
+    7: .standard(proto: "air_quality_interval")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1666,7 +1666,7 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
     8: .standard(proto: "updown1_enabled"),
     9: .same(proto: "enabled"),
     10: .standard(proto: "allow_input_source"),
-    11: .standard(proto: "send_bell"),
+    11: .standard(proto: "send_bell")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1754,6 +1754,6 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoN
     19: .same(proto: "LEFT"),
     20: .same(proto: "RIGHT"),
     24: .same(proto: "CANCEL"),
-    27: .same(proto: "BACK"),
+    27: .same(proto: "BACK")
   ]
 }

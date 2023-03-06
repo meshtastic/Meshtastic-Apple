@@ -19,7 +19,7 @@ enum WeatherConditions: Int, CaseIterable, Identifiable {
 	var symbolName: String {
 		get {
 			switch self {
-			
+
 			case .clear:
 				return "sparkle"
 			case .cloudy:

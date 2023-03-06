@@ -25,7 +25,7 @@ class LocationHelper: NSObject, ObservableObject {
 		}
 		return altitude
 	}
-	
+
 	static var currentSpeed: CLLocationSpeed {
 
 		guard let speed = shared.locationManager.location?.speed else {
@@ -33,7 +33,7 @@ class LocationHelper: NSObject, ObservableObject {
 		}
 		return speed
 	}
-	
+
 	static var currentHeading: CLLocationDirection {
 
 		guard let heading = shared.locationManager.location?.course else {
@@ -41,7 +41,7 @@ class LocationHelper: NSObject, ObservableObject {
 		}
 		return heading
 	}
-	
+
 	static var currentTimestamp: Date {
 
 		guard let timestamp = shared.locationManager.location?.timestamp else {
@@ -49,21 +49,21 @@ class LocationHelper: NSObject, ObservableObject {
 		}
 		return timestamp
 	}
-	
+
 	static var satsInView: Int {
 		// If we have a position we have a sat
 		var sats = 1
 		if shared.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 			sats = 4
-			if 0...5 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			if 0...5 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 12
-			} else if 6...15 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			} else if 6...15 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 10
-			} else if 16...30 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			} else if 16...30 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 9
-			} else if 31...45 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			} else if 31...45 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 7
-			} else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0{
+			} else if 46...60 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {
 				sats = 5
 			}
 		} else if shared.locationManager.location?.verticalAccuracy ?? 0 < 0 && 60...300 ~= shared.locationManager.location?.horizontalAccuracy ?? 0 {

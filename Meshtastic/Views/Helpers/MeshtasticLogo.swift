@@ -7,11 +7,11 @@
 import SwiftUI
 
 struct MeshtasticLogo: View {
-	
+
 	@Environment(\.colorScheme) var colorScheme
-	
+
 	var body: some View {
-		
+
 		#if targetEnvironment(macCatalyst)
 			VStack {
 				Image("logo-white")

@@ -7,24 +7,24 @@
 import SwiftUI
 
 struct EnvironmentMetricsLog: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@State private var isPresentingClearLogConfirm: Bool = false
-	
+
 	@State var isExporting = false
 	@State var exportString = ""
-	
+
 	var node: NodeInfoEntity
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				//Add a table for mac and ipad
+				// Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
 					TableColumn("Temperature") { em in
 						if em.metricsType == 1 {
@@ -72,7 +72,7 @@ struct EnvironmentMetricsLog: View {
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
-					
+
 					GridRow {
 						Text("Temp")
 							.font(.caption)
@@ -91,11 +91,11 @@ struct EnvironmentMetricsLog: View {
 							.fontWeight(.bold)
 					}
 					ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (em: TelemetryEntity) in
-						
+
 						if em.metricsType == 1 {
-							
+
 							GridRow {
-								
+
 								Text(em.temperature.formattedTemperature())
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.relativeHumidity))")
@@ -116,7 +116,7 @@ struct EnvironmentMetricsLog: View {
 			}
 		}
 		HStack {
-			
+
 			Button(role: .destructive) {
 				isPresentingClearLogConfirm = true
 			} label: {
@@ -134,11 +134,11 @@ struct EnvironmentMetricsLog: View {
 				Button("Delete all environment metrics?", role: .destructive) {
 					if clearTelemetry(destNum: node.num, metricsType: 1, context: context) {
 						print("Clear Environment Metrics Log Failed")
-					} 
+					}
 				}
 			}
 			Button {
-				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
+				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 1)
 				isExporting = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")

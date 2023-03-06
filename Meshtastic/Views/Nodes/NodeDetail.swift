@@ -9,7 +9,7 @@ import MapKit
 import CoreLocation
 
 struct NodeDetail: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -29,28 +29,28 @@ struct NodeDetail: View {
 			tileType: "png",
 			canReplaceMapContent: true
 		)
-	
+
 	var node: NodeInfoEntity
-	
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	
+
 	/// The current weather condition for the city.
 	@State private var condition: WeatherCondition?
 	@State private var temperature: Measurement<UnitTemperature>?
 	@State private var humidity: Int?
 	@State private var symbolName: String = "cloud.fill"
-	
+
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-	
+
 	var body: some View {
-		
+
 		let hwModelString = node.user?.hwModel ?? "UNSET"
-		
+
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
@@ -75,12 +75,12 @@ struct NodeDetail: View {
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
-									
+
 								)
-								VStack (alignment: .leading) {
+								VStack(alignment: .leading) {
 									Spacer()
-									HStack (alignment: .bottom, spacing: 1) {
-							
+									HStack(alignment: .bottom, spacing: 1) {
+
 										Picker("Map Type", selection: $mapType) {
 											ForEach(MeshMapType.allCases) { map in
 												Text(map.description).tag(map.MKMapTypeValue())
@@ -92,8 +92,7 @@ struct NodeDetail: View {
 										VStack {
 											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
-											
-											
+
 											Label("\(humidity ?? 0)%", systemImage: "humidity")
 												.font(.caption2)
 										}
@@ -122,7 +121,7 @@ struct NodeDetail: View {
 										#endif
 										.gesture(
 											LongPressGesture(minimumDuration: 0.5)
-												.onEnded { value in
+												.onEnded { _ in
 													showingForecast = true
 												}
 										)
@@ -137,7 +136,7 @@ struct NodeDetail: View {
 						}
 						.padding([.top], 20)
 					}
-					
+
 					ScrollView {
 						Divider()
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
@@ -153,17 +152,17 @@ struct NodeDetail: View {
 											.aspectRatio(contentMode: .fill)
 											.frame(width: 100, height: 100)
 											.cornerRadius(5)
-										
+
 										Text(String(hwModelString))
 											.foregroundColor(.gray)
 											.font(.largeTitle).fixedSize()
 									}
 								}
-								
+
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-										
+
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -176,15 +175,15 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-								
+
 								if node.telemetries?.count ?? 0 >= 1 {
-									
+
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										if mostRecent.voltage > 0 {
-											
+
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
 												.font(.title)
 												.foregroundColor(.gray)
@@ -195,10 +194,10 @@ struct NodeDetail: View {
 								}
 							}
 							.padding()
-							
+
 							Divider()
 							HStack(alignment: .center) {
-								
+
 								VStack {
 									HStack {
 										Image(systemName: "person")
@@ -207,7 +206,7 @@ struct NodeDetail: View {
 											.symbolRenderingMode(.hierarchical)
 										Text("user").font(.title)+Text(":").font(.title)
 									}
-									Text("!\(String(format:"%02x", node.num))")
+									Text("!\(String(format: "%02x", node.num))")
 										.font(.title).foregroundColor(.gray)
 								}
 								Divider()
@@ -222,28 +221,28 @@ struct NodeDetail: View {
 									Text(String(node.num)).font(.title).foregroundColor(.gray)
 								}
 								Divider()
-								VStack{
+								VStack {
 									HStack {
 										Image(systemName: "globe")
 											.font(.title)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
 										Text("MAC Address: ").font(.title)
-										
+
 									}
 									Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address"))
 										.font(.title)
 										.foregroundColor(.gray)
 								}
 								Divider()
-								VStack{
+								VStack {
 									HStack {
 										Image(systemName: "clock.badge.checkmark.fill")
 											.font(.title)
 											.foregroundColor(.accentColor)
 											.symbolRenderingMode(.hierarchical)
 										Text("heard.last").font(.title)+Text(":").font(.title)
-										
+
 									}
 									DateTimeText(dateTime: node.lastHeard)
 										.font(.title3)
@@ -251,11 +250,11 @@ struct NodeDetail: View {
 								}
 							}
 							Divider()
-							
+
 						} else {
-							
+
 							HStack {
-								
+
 								VStack(alignment: .center) {
 									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
 								}
@@ -270,11 +269,11 @@ struct NodeDetail: View {
 											.font(.callout).fixedSize()
 									}
 								}
-								
+
 								if node.snr > 0 {
 									Divider()
 									VStack(alignment: .center) {
-										
+
 										Image(systemName: "waveform.path")
 											.font(.title)
 											.foregroundColor(.accentColor)
@@ -286,14 +285,14 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-								
+
 								if node.telemetries?.count ?? 0 >= 1 {
 									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
 										if mostRecent.voltage > 0 {
-											
+
 											Text(String(format: "%.2f", mostRecent.voltage) + " V")
 												.font(.callout)
 												.foregroundColor(.gray)
@@ -338,36 +337,36 @@ struct NodeDetail: View {
 							.padding([.bottom], 10)
 							Divider()
 						}
-						
+
 						VStack {
-							
+
 							if (node.positions?.count ?? 0) > 0 {
-								
+
 								NavigationLink {
 									PositionLog(node: node)
 								} label: {
-									
+
 									Image(systemName: "building.columns")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-									
+
 									Text("Position Log")
 										.font(.title3)
 								}
 								.fixedSize(horizontal: false, vertical: true)
 								Divider()
 							}
-							
+
 							if (node.telemetries?.count ?? 0) > 0 {
-								
+
 								NavigationLink {
 									DeviceMetricsLog(node: node)
 								} label: {
-									
+
 									Image(systemName: "flipphone")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-									
+
 									Text("Device Metrics Log")
 										.font(.title3)
 								}
@@ -375,28 +374,28 @@ struct NodeDetail: View {
 								NavigationLink {
 									EnvironmentMetricsLog(node: node)
 								} label: {
-									
+
 									Image(systemName: "chart.xyaxis.line")
 										.symbolRenderingMode(.hierarchical)
 										.font(.title)
-									
+
 									Text("Environment Metrics Log")
 										.font(.title3)
 								}
 								Divider()
 							}
 						}
-						
-						if (self.bleManager.connectedPeripheral != nil && node.metadata != nil) {
-							
+
+						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
+
 							HStack {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {//node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
-									
+								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {// node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
+
 									Button(action: {
 										showingShutdownConfirm = true
 									}) {
-										
+
 										Label("Power Off", systemImage: "power")
 									}
 									.buttonStyle(.bordered)
@@ -414,7 +413,7 @@ struct NodeDetail: View {
 										}
 									}
 								}
-								
+
 								Button(action: {
 									showingRebootConfirm = true
 								}) {
@@ -448,7 +447,7 @@ struct NodeDetail: View {
 										.controlSize(.mini)
 								}
 								.frame(height: 15)
-								
+
 								Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
 							}
 							.font(.footnote)
@@ -456,7 +455,7 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(isPresented: $presentingWaypointForm ) {//,  onDismiss: didDismissSheet) {
+				.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
 					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
 							.presentationDetents([.medium, .large])
 							.presentationDragIndicator(.automatic)
@@ -496,17 +495,17 @@ struct NodeDetail: View {
 				}
 				.task(id: node.num) {
 					do {
-						
+
 						if node.positions?.count ?? 0 > 0 {
-							
+
 							let mostRecent = node.positions?.lastObject as! PositionEntity
-							
+
 							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
 							condition = weather.currentWeather.condition
 							temperature = weather.currentWeather.temperature
 							humidity = Int(weather.currentWeather.humidity * 100)
 							symbolName = weather.currentWeather.symbolName
-							
+
 							let attribution = try await WeatherService.shared.attribution
 							attributionLink = attribution.legalPageURL
 							attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL

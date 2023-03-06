@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Settings: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
@@ -17,9 +17,9 @@ struct Settings: View {
 	@State private var selectedNode: Int = 0
 	@State private var connectedNodeNum: Int = 0
 	@State private var initialLoad: Bool = true
-	
+
 	@State private var selection: SettingsSidebar = .about
-	
+
 	enum SettingsSidebar {
 		case appSettings
 		case shareChannels
@@ -41,11 +41,11 @@ struct Settings: View {
 		case adminMessageLog
 		case about
 	}
-	
+
 	var body: some View {
 		NavigationSplitView {
 			List {
-				NavigationLink() {
+				NavigationLink {
 					AppSettings()
 				} label: {
 					Image(systemName: "gearshape")
@@ -80,10 +80,10 @@ struct Settings: View {
 								let node = nodes.first(where: { $0.num == newValue })
 								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-								
+
 								if node?.metadata == nil {
 									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-									
+
 									if adminMessageId > 0 {
 										print("Sent node metadata request from node details")
 									}
@@ -92,9 +92,9 @@ struct Settings: View {
 						}
 					}
 				}
-				
+
 				Section("radio.configuration") {
-					
+
 					NavigationLink {
 						ShareChannels(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
@@ -104,18 +104,18 @@ struct Settings: View {
 					}
 					.tag(SettingsSidebar.shareChannels)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
-					
+
 					NavigationLink {
 						UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
-					
+
 						Image(systemName: "person.crop.rectangle.fill")
 							.symbolRenderingMode(.hierarchical)
 						Text("user")
 					}
 					.tag(SettingsSidebar.userConfig)
-					
-					NavigationLink() {
+
+					NavigationLink {
 						LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "dot.radiowaves.left.and.right")
@@ -123,8 +123,8 @@ struct Settings: View {
 						Text("lora")
 					}
 					.tag(SettingsSidebar.loraConfig)
-					
-					NavigationLink() {
+
+					NavigationLink {
 						Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
 						Image(systemName: "fibrechannel")
@@ -133,8 +133,8 @@ struct Settings: View {
 					}
 					.tag(SettingsSidebar.channelConfig)
 					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
-					
-					NavigationLink() {
+
+					NavigationLink {
 						BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
 						Image(systemName: "antenna.radiowaves.left.and.right")
@@ -142,7 +142,7 @@ struct Settings: View {
 						Text("bluetooth")
 					}
 					.tag(SettingsSidebar.bluetoothConfig)
-					
+
 					NavigationLink {
 						DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -151,7 +151,7 @@ struct Settings: View {
 						Text("device")
 					}
 					.tag(SettingsSidebar.deviceConfig)
-					
+
 					NavigationLink {
 						DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -160,30 +160,30 @@ struct Settings: View {
 						Text("display")
 					}
 					.tag(SettingsSidebar.displayConfig)
-					
+
 					NavigationLink {
 						NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
-					
+
 						Image(systemName: "network")
 							.symbolRenderingMode(.hierarchical)
 						Text("network")
 					}
 					.tag(SettingsSidebar.networkConfig)
-				
+
 					NavigationLink {
 						PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
-					
+
 						Image(systemName: "location")
 							.symbolRenderingMode(.hierarchical)
 						Text("position")
 					}
 					.tag(SettingsSidebar.positionConfig)
-					
+
 				}
 				Section("module.configuration") {
-					
+
 					NavigationLink {
 						CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -194,7 +194,7 @@ struct Settings: View {
 						Text("canned.messages")
 					}
 					.tag(SettingsSidebar.cannedMessagesConfig)
-					
+
 					NavigationLink {
 						ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -203,7 +203,7 @@ struct Settings: View {
 						Text("external.notification")
 					}
 					.tag(SettingsSidebar.externalNotificationConfig)
-					
+
 					NavigationLink {
 						MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -212,7 +212,7 @@ struct Settings: View {
 						Text("mqtt")
 					}
 					.tag(SettingsSidebar.mqttConfig)
-					
+
 					NavigationLink {
 						RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -221,7 +221,7 @@ struct Settings: View {
 						Text("range.test")
 					}
 					.tag(SettingsSidebar.rangeTestConfig)
-					
+
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -230,7 +230,7 @@ struct Settings: View {
 						Text("serial")
 					}
 					.tag(SettingsSidebar.serialConfig)
-					
+
 					NavigationLink {
 						TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 					} label: {
@@ -249,7 +249,7 @@ struct Settings: View {
 						Text("mesh.log")
 					}
 					.tag(SettingsSidebar.meshLog)
-					
+
 					NavigationLink {
 						let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 						AdminMessageList(user: connectedNode?.user)
@@ -266,7 +266,7 @@ struct Settings: View {
 					} label: {
 						Image(systemName: "questionmark.app")
 							.symbolRenderingMode(.hierarchical)
-						
+
 						Text("about.meshtastic")
 					}
 					.tag(SettingsSidebar.about)
@@ -280,7 +280,7 @@ struct Settings: View {
 					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 					initialLoad = false
 				}
-				
+
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

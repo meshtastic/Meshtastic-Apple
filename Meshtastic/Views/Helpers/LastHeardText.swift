@@ -9,7 +9,7 @@ struct LastHeardText: View {
 	var lastHeard: Date?
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 	var body: some View {
-		if (lastHeard != nil && lastHeard! >= sixMonthsAgo!){
+		if lastHeard != nil && lastHeard! >= sixMonthsAgo! {
 			Text("heard")+Text(": \(lastHeard!, style: .relative) ")+Text("ago")
 		} else {
 			Text("unknown.age")

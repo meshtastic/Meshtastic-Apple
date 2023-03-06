@@ -7,9 +7,9 @@
 import Foundation
 
 extension ChannelEntity {
-	
+
 	var allPrivateMessages: [MessageEntity] {
-		
+
 		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
 }

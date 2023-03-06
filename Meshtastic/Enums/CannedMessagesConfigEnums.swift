@@ -7,17 +7,17 @@
 import Foundation
 
 // Default of 0 is unset
-enum ConfigPresets : Int, CaseIterable, Identifiable {
+enum ConfigPresets: Int, CaseIterable, Identifiable {
 
 	case unset = 0
 	case rakRotaryEncoder = 1
 	case cardKB = 2
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-			
+
 			case .unset:
 				return NSLocalizedString("canned.messages.preset.manual", comment: "Manual Configuration")
 			case .rakRotaryEncoder:
@@ -45,7 +45,7 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-			
+
 			case .none:
 				return NSLocalizedString("inputevent.none", comment: "None")
 			case .up:
@@ -66,7 +66,7 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.CannedMessageConfig.InputEventChar {
-		
+
 		switch self {
 
 		case .none:

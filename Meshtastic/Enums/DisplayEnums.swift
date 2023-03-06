@@ -8,10 +8,10 @@
 import Foundation
 
 enum ScreenUnits: Int, CaseIterable, Identifiable {
-	
+
 	case metric = 0
 	case imperial = 1
-   
+
     var id: Int { self.rawValue }
 	var description: String {
 		get {
@@ -24,7 +24,7 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
-		
+
 		switch self {
 		case .metric:
 			return Config.DisplayConfig.DisplayUnits.metric
@@ -128,7 +128,7 @@ enum OledTypes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.OledType {
-		
+
 		switch self {
 		case .auto:
 			return Config.DisplayConfig.OledType.oledAuto
@@ -166,7 +166,7 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayMode {
-		
+
 		switch self {
 		case .defaultMode:
 			return Config.DisplayConfig.DisplayMode.default

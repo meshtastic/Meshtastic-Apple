@@ -26,9 +26,7 @@ enum BluetoothModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.BluetoothConfig.PairingMode {
-		
 		switch self {
-			
 		case .randomPin:
 			return Config.BluetoothConfig.PairingMode.randomPin
 		case .fixedPin:

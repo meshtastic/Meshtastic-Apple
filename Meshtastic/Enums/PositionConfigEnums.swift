@@ -36,9 +36,9 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.GpsCoordinateFormat {
-		
+
 		switch self {
-			
+
 		case .gpsFormatDec:
 			return Config.DisplayConfig.GpsCoordinateFormat.dec
 		case .gpsFormatDms:
@@ -54,7 +54,6 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		}
 	}
 }
-
 
 enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 
@@ -80,7 +79,7 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-				
+
 			case .fiveSeconds:
 				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
 			case .tenSeconds:

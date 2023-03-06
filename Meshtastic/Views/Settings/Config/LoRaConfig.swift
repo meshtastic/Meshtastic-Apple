@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct LoRaConfig: View {
-	
+
 	enum Field: Hashable {
 		case channelNum
 	}
@@ -20,14 +20,14 @@ struct LoRaConfig: View {
 		formatter.groupingSeparator = ""
 		return formatter
 	}()
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
 	@FocusState var focusedField: Field?
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
 	@State var region = 0
@@ -40,9 +40,9 @@ struct LoRaConfig: View {
 	@State var bandwidth = 0
 	@State var spreadFactor = 0
 	@State var codingRate = 0
-	
+
 	var body: some View {
-		
+
 		VStack {
 			Form {
 				Section(header: Text("Options")) {
@@ -54,15 +54,15 @@ struct LoRaConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					.fixedSize()
-					
+
 					Text("The region where you will be using your radios.")
 						.font(.caption)
-					
+
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					if usePreset {
 						Picker("Presets", selection: $modemPreset ) {
 							ForEach(ModemPresets.allCases) { m in
@@ -76,12 +76,12 @@ struct LoRaConfig: View {
 					}
 				}
 				Section(header: Text("Advanced")) {
-					
+
 					Toggle(isOn: $txEnabled) {
 						Label("Transmit Enabled", systemImage: "waveform.path")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					 if !usePreset {
 						 HStack {
 							 Picker("Bandwidth", selection: $spreadFactor) {
@@ -124,7 +124,7 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
-					
+
 					HStack {
 						Text("LoRa Channel Number")
 							.fixedSize()
@@ -147,8 +147,7 @@ struct LoRaConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
-			
-			
+
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -198,7 +197,7 @@ struct LoRaConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-			
+
 			self.bleManager.context = context
 			self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
 			self.region = Int(node?.loRaConfig?.regionCode ?? 0)
@@ -211,14 +210,14 @@ struct LoRaConfig: View {
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 			print("Spreadum: \(self.spreadFactor)")
-			
+
 			self.hasChanges = false
-			
+
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
 				print("empty lora config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil{
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestLoRaConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

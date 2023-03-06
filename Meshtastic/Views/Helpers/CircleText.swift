@@ -13,9 +13,9 @@ struct CircleText: View {
 	var brightness: Double? = 0
 
     var body: some View {
-		
+
 		let font = Font.system(size: fontSize!)
-		
+
         ZStack {
             Circle()
                 .fill(color)

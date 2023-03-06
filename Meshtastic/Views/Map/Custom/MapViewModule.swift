@@ -4,12 +4,12 @@
 ////
 ////  Created by Cem Yilmaz on 05.07.21.
 ////
-//import SwiftUI
-//import MapKit
-//import CoreData
+// import SwiftUI
+// import MapKit
+// import CoreData
 //
-//#if canImport(MapKit) && canImport(UIKit)
-//public struct MapView: UIViewRepresentable {
+// #if canImport(MapKit) && canImport(UIKit)
+// public struct MapView: UIViewRepresentable {
 //
 //	@Environment(\.managedObjectContext) var context
 //	
@@ -463,7 +463,7 @@
 //		}
 //	}
 //	
-//}
+// }
 //
-//// MARK: End of implementation
-//#endif
+// MARK: End of implementation
+// #endif

@@ -5,10 +5,10 @@
 ////  Created by Garth Vander Houwen on 2/28/23.
 ////
 //
-//import WidgetKit
-//import SwiftUI
+// import WidgetKit
+// import SwiftUI
 //
-//struct Provider: TimelineProvider {
+// struct Provider: TimelineProvider {
 //    func placeholder(in context: Context) -> SimpleEntry {
 //        SimpleEntry(date: Date())
 //    }
@@ -32,21 +32,21 @@
 //        let timeline = Timeline(entries: entries, policy: .atEnd)
 //        completion(timeline)
 //    }
-//}
+// }
 //
-//struct SimpleEntry: TimelineEntry {
+// struct SimpleEntry: TimelineEntry {
 //    let date: Date
-//}
+// }
 //
-//struct WidgetsEntryView : View {
+// struct WidgetsEntryView : View {
 //    var entry: Provider.Entry
 //
 //    var body: some View {
 //        Text(entry.date, style: .time)
 //    }
-//}
+// }
 //
-//struct Widgets: Widget {
+// struct Widgets: Widget {
 //    let kind: String = "Widgets"
 //
 //    var body: some WidgetConfiguration {
@@ -56,11 +56,11 @@
 //        .configurationDisplayName("My Widget")
 //        .description("This is an example widget.")
 //    }
-//}
+// }
 //
-//struct Widgets_Previews: PreviewProvider {
+// struct Widgets_Previews: PreviewProvider {
 //    static var previews: some View {
 //        WidgetsEntryView(entry: SimpleEntry(date: Date()))
 //            .previewContext(WidgetPreviewContext(family: .systemSmall))
 //    }
-//}
+// }

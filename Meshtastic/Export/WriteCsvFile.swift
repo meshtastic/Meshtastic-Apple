@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> String {
+func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
 		csvString = "\(NSLocalizedString("battery.level", comment: "")), \(NSLocalizedString("voltage", comment: "")), \(NSLocalizedString("channel.utilization", comment: "")), \(NSLocalizedString("airtime", comment: "")), \(NSLocalizedString("timestamp", comment: ""))"
-		for dm in telemetry{
+		for dm in telemetry {
 			if dm.metricsType == 0 {
 				csvString += "\n"
 				csvString += String(dm.batteryLevel)
@@ -31,7 +31,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, \(NSLocalizedString("voltage", comment: "")), \(NSLocalizedString("current", comment: "")), \(NSLocalizedString("timestamp", comment: ""))"
-		for dm in telemetry{
+		for dm in telemetry {
 			if dm.metricsType == 1 {
 				csvString += "\n"
 				csvString += String(dm.temperature.localeTemperature())
@@ -53,7 +53,7 @@ func TelemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	return csvString
 }
 
-func PositionToCsvFile(positions: [PositionEntity]) -> String {
+func positionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")

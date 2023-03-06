@@ -8,21 +8,21 @@ import SwiftUI
 import Charts
 
 struct DeviceMetricsLog: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
 	var node: NodeInfoEntity
-	
+
 	var body: some View {
 		NavigationStack {
 			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
 			let data = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg)) ?? []
 			if data.count > 0 {
-				GroupBox(label:	Label("battery.level.trend", systemImage: "battery.100")) {
+				GroupBox(label: 	Label("battery.level.trend", systemImage: "battery.100")) {
 					Chart(data.array as! [TelemetryEntity], id: \.self) {
 						LineMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
@@ -39,15 +39,15 @@ struct DeviceMetricsLog: View {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				//Add a table for mac and ipad
+				// Add a table for mac and ipad
 				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
-					
+
 					TableColumn("battery.level") { dm in
 						if dm.metricsType == 0 {
 							if dm.batteryLevel == 0 {
 								Text("Powered")
 							} else {
-								
+
 								Text("\(String(dm.batteryLevel))%")
 							}
 						}
@@ -73,10 +73,10 @@ struct DeviceMetricsLog: View {
 						}
 					}
 				}
-				
+
 			} else {
 				ScrollView {
-					
+
 					let columns = [
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
@@ -118,7 +118,7 @@ struct DeviceMetricsLog: View {
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
 										.font(.caption)
-									
+
 									Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 										.font(.caption2)
 								}
@@ -154,7 +154,7 @@ struct DeviceMetricsLog: View {
 				}
 			}
 			Button {
-				exportString = TelemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
+				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as! [TelemetryEntity], metricsType: 0)
 				isExporting = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
@@ -182,7 +182,7 @@ struct DeviceMetricsLog: View {
 				if case .success = result {
 					print("Device metrics log download succeeded.")
 					self.isExporting = false
-					
+
 				} else {
 					print("Device metrics log download failed: \(result).")
 				}

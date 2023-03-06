@@ -14,16 +14,16 @@ import SwiftUI
 //
 struct DateTimeText: View {
 	var dateTime: Date?
-	
+
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 	var body: some View {
-		if (dateTime != nil && dateTime! >= sixMonthsAgo!){
-			
+		if dateTime != nil && dateTime! >= sixMonthsAgo! {
+
 			Text("\(dateTime!, style: .date) \(dateTime!, style: .time)")
-			
+
 		} else {
-			
+
 			Text("unknown.age")
 		}
 	}

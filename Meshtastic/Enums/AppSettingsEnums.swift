@@ -36,10 +36,10 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 enum CenteringMode: Int, CaseIterable, Identifiable {
-	
+
 	case allAnnotations = 0
 	case allPositions = 1
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
@@ -55,13 +55,12 @@ enum CenteringMode: Int, CaseIterable, Identifiable {
 
 enum MeshMapType: String, CaseIterable, Identifiable {
 
-	case standard = "standard"  
+	case standard = "standard"
 	case mutedStandard = "mutedStandard"
 	case hybrid = "hybrid"
 	case hybridFlyover = "hybridFlyover"
 	case satellite = "satellite"
 	case satelliteFlyover = "satelliteFlyover"
-	
 
 	var id: String { self.rawValue }
 
@@ -84,7 +83,7 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
-		
+
 		switch self {
 		case .standard:
 			return MKMapType.standard
@@ -123,7 +122,7 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func MKUserTrackingModeValue() -> MKUserTrackingMode {
-		
+
 		switch self {
 		case .none:
 			return MKUserTrackingMode.none

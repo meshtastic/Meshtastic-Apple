@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum RegionCodes : Int, CaseIterable, Identifiable {
+enum RegionCodes: Int, CaseIterable, Identifiable {
 
 	case unset = 0
 	case us = 1
@@ -65,11 +65,11 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 			}
 		}
 	}
-	
+
 	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
-		
+
 		switch self {
-		
+
 			case .unset:
 				return Config.LoRaConfig.RegionCode.unset
 			case .us:
@@ -106,96 +106,58 @@ enum RegionCodes : Int, CaseIterable, Identifiable {
 	}
 }
 
-enum ModemPresets : Int, CaseIterable, Identifiable {
-	
-	case LongFast = 0
-	case LongSlow = 1
-	case LongModerate = 7
-	case VLongSlow = 2
-	case MedSlow = 3
-	case MedFast = 4
-	case ShortSlow = 5
-	case ShortFast = 6
-	
+enum ModemPresets: Int, CaseIterable, Identifiable {
+
+	case longFast = 0
+	case longSlow = 1
+	case longModerate = 7
+	case vLongSlow = 2
+	case medSlow = 3
+	case medFast = 4
+	case shortSlow = 5
+	case shortFast = 6
+
 	var id: Int { self.rawValue }
 	var description: String {
 		get {
 			switch self {
-				
-			case .LongFast:
+			case .longFast:
 				return "Long Range - Fast"
-			case .LongSlow:
+			case .longSlow:
 				return "Long Range - Slow"
-			case .LongModerate:
+			case .longModerate:
 				return "Long Range - Moderate"
-			case .VLongSlow:
+			case .vLongSlow:
 				return "Very Long Range - Slow"
-			case .MedSlow:
+			case .medSlow:
 				return "Medium Range - Slow"
-			case .MedFast:
+			case .medFast:
 				return "Medium Range - Fast"
-			case .ShortSlow:
+			case .shortSlow:
 				return "Short Range - Slow"
-			case .ShortFast:
+			case .shortFast:
 				return "Short Range - Fast"
 			}
 		}
 	}
 	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
-		
 		switch self {
-
-			case .LongFast:
-				return Config.LoRaConfig.ModemPreset.longFast
-			case .LongSlow:
-				return Config.LoRaConfig.ModemPreset.longSlow
-			case .LongModerate:
-				return Config.LoRaConfig.ModemPreset.longModerate
-			case .VLongSlow:
-				return Config.LoRaConfig.ModemPreset.veryLongSlow
-			case .MedSlow:
-				return Config.LoRaConfig.ModemPreset.mediumSlow
-			case .MedFast:
-				return Config.LoRaConfig.ModemPreset.mediumFast
-			case .ShortSlow:
-				return Config.LoRaConfig.ModemPreset.shortSlow
-			case .ShortFast:
-				return Config.LoRaConfig.ModemPreset.shortFast
-			
-		}
-	}
-}
-
-enum HopValues : Int, CaseIterable, Identifiable {
-	
-	case oneHop = 1
-	case twoHops = 2
-	case threeHops = 3
-	case fourHops = 4
-	case fiveHops = 5
-	case sixHops = 6
-	case sevenHops = 7
-	
-	var id: Int { self.rawValue }
-	var description: String {
-		get {
-			switch self {
-				
-			case .oneHop:
-				return "One Hop"
-			case .twoHops:
-				return "Two Hops"
-			case .threeHops:
-				return "Three Hops"
-			case .fourHops:
-				return "Four Hops"
-			case .fiveHops:
-				return "Five Hops"
-			case .sixHops:
-				return "Six Hops"
-			case .sevenHops:
-				return "Seven Hops"
-			}
+		case .longFast:
+			return Config.LoRaConfig.ModemPreset.longFast
+		case .longSlow:
+			return Config.LoRaConfig.ModemPreset.longSlow
+		case .longModerate:
+			return Config.LoRaConfig.ModemPreset.longModerate
+		case .vLongSlow:
+			return Config.LoRaConfig.ModemPreset.veryLongSlow
+		case .medSlow:
+			return Config.LoRaConfig.ModemPreset.mediumSlow
+		case .medFast:
+			return Config.LoRaConfig.ModemPreset.mediumFast
+		case .shortSlow:
+			return Config.LoRaConfig.ModemPreset.shortSlow
+		case .shortFast:
+			return Config.LoRaConfig.ModemPreset.shortFast
 		}
 	}
 }

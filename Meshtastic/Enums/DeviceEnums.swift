@@ -22,7 +22,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var name: String {
 		get {
 			switch self {
-			
+
 			case .client:
 				return "Client"
 			case .clientMute:
@@ -43,7 +43,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
-			
+
 			case .client:
 				return NSLocalizedString("device.role.client", comment: "Client (default) - App connected client.")
 			case .clientMute:
@@ -62,9 +62,9 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
-		
+
 		switch self {
-			
+
 		case .client:
 			return Config.DeviceConfig.Role.client
 		case .clientMute:
@@ -90,11 +90,11 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	case localOnly = 2
 
 	var id: Int { self.rawValue }
-	
+
 	var name: String {
 		get {
 			switch self {
-			
+
 			case .all:
 				return "All"
 			case .allSkipDecoding:
@@ -117,7 +117,7 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {
-		
+
 		switch self {
 		case .all:
 			return Config.DeviceConfig.RebroadcastMode.all
