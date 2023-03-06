@@ -17,6 +17,7 @@ struct LoRaConfig: View {
 	let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
+		formatter.groupingSeparator = ""
 		return formatter
 	}()
 	
@@ -84,15 +85,15 @@ struct LoRaConfig: View {
 					 if !usePreset {
 						 HStack {
 							 Picker("Bandwidth", selection: $spreadFactor) {
-								 Text("\(31) kHz")
+								 Text("31 kHz")
 									 .tag(31)
-								 Text("\(62) kHz")
+								 Text("62 kHz")
 									 .tag(62)
-								 Text("\(125) kHz")
+								 Text("125 kHz")
 									 .tag(125)
-								 Text("\(250) kHz")
+								 Text("250 kHz")
 									 .tag(0)
-								 Text("\(500) kHz")
+								 Text("500 kHz")
 									 .tag(500)
 							 }
 						 }
@@ -114,11 +115,10 @@ struct LoRaConfig: View {
 						 }
 					}
 
-					Picker("Number of hops", selection: $hopLimit) {
-						Text("Please Select")
-							.tag(0)
-						ForEach(HopValues.allCases) { hop in
-							Text(hop.description)
+					Picker("Number of hops", selection: $codingRate) {
+						ForEach(1..<8) {
+							Text("\($0)")
+								.tag($0 == 3 ? 0 : $0)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
