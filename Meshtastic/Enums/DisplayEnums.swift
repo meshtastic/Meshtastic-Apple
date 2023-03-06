@@ -36,6 +36,8 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 
 enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 
+	case fifteenSeconds = 15
+	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
@@ -48,6 +50,10 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		get {
 			switch self {
+			case .fifteenSeconds:
+				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+			case .thirtySeconds:
+				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 			case .oneMinute:
 				return NSLocalizedString("interval.one.minute", comment: "One Minute")
 			case .fiveMinutes:

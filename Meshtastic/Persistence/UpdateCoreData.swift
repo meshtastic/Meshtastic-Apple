@@ -232,6 +232,8 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				newDeviceConfig.debugLogEnabled = config.debugLogEnabled
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
+				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
+				newDeviceConfig.nodeInfoBroadcastSecs = Int32(config.nodeInfoBroadcastSecs)
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
@@ -239,6 +241,8 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				fetchedNode[0].deviceConfig?.debugLogEnabled = config.debugLogEnabled
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
+				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
+				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(config.nodeInfoBroadcastSecs)
 			}
 			do {
 				try context.save()
@@ -280,7 +284,9 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 				newDisplayConfig.flipScreen = config.flipScreen
 				newDisplayConfig.oledType = Int32(config.oled.rawValue)
 				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
+				newDisplayConfig.headingBold = config.headingBold
 				fetchedNode[0].displayConfig = newDisplayConfig
+				
 				
 			} else {
 				
@@ -291,6 +297,7 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 				fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
+				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
 			
 			do {

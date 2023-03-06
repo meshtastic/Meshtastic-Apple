@@ -24,6 +24,7 @@ struct DeviceConfig: View {
 	@State var buttonGPIO = 0
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
+	@State var rebroadcastMode = 0
 	
 	var body: some View {
 			
@@ -41,6 +42,17 @@ struct DeviceConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
 					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
+						.foregroundColor(.gray)
+						.font(.caption)
+					
+					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
+						ForEach(RebroadcastModes.allCases) { rm in
+							Text(rm.name)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					.padding(.top, 10)
+					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.caption)
 				}

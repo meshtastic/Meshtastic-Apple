@@ -82,3 +82,49 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		}
 	}
 }
+
+enum RebroadcastModes: Int, CaseIterable, Identifiable {
+
+	case all = 0
+	case allSkipDecoding = 1
+	case localOnly = 2
+
+	var id: Int { self.rawValue }
+	
+	var name: String {
+		get {
+			switch self {
+			
+			case .all:
+				return "All"
+			case .allSkipDecoding:
+				return "All Skip Decoding"
+			case .localOnly:
+				return "Local Only"
+			}
+		}
+	}
+	var description: String {
+		get {
+			switch self {
+			case .all:
+				return "Rebroadcast any observed message, if it was on our private channel or from another mesh with the same lora params."
+			case .allSkipDecoding:
+				return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior."
+			case .localOnly:
+				return "Inverted top bar for 2 Color display"
+			}
+		}
+	}
+	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {
+		
+		switch self {
+		case .all:
+			return Config.DeviceConfig.RebroadcastMode.all
+		case .allSkipDecoding:
+			return Config.DeviceConfig.RebroadcastMode.allSkipDecoding
+		case .localOnly:
+			return Config.DeviceConfig.RebroadcastMode.localOnly
+		}
+	}
+}

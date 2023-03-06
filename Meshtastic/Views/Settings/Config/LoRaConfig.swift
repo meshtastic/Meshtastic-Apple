@@ -13,11 +13,10 @@ struct LoRaConfig: View {
 	enum Field: Hashable {
 		case channelNum
 	}
-	
+
 	let formatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
-		formatter.maximumFractionDigits = 2
 		return formatter
 	}()
 	
@@ -37,7 +36,7 @@ struct LoRaConfig: View {
 	@State var txEnabled = true
 	@State var usePreset = true
 	@State var channelNum = 0
-	@State var bandwidth = 0.0
+	@State var bandwidth = 0
 	@State var spreadFactor = 0
 	@State var codingRate = 0
 	
@@ -85,15 +84,15 @@ struct LoRaConfig: View {
 					 if !usePreset {
 						 HStack {
 							 Picker("Bandwidth", selection: $spreadFactor) {
-								 Text("\(31)")
+								 Text("\(31) kHz")
 									 .tag(31)
-								 Text("\(62)")
+								 Text("\(62) kHz")
 									 .tag(62)
-								 Text("\(125)")
+								 Text("\(125) kHz")
 									 .tag(125)
-								 Text("\(250)")
+								 Text("\(250) kHz")
 									 .tag(0)
-								 Text("\(500)")
+								 Text("\(500) kHz")
 									 .tag(500)
 							 }
 						 }
@@ -125,6 +124,7 @@ struct LoRaConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
 						.font(.caption)
+					
 					HStack {
 						Text("LoRa Channel Number")
 							.fixedSize()
@@ -207,7 +207,7 @@ struct LoRaConfig: View {
 			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
 			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
 			self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
-			self.bandwidth = Double(node?.loRaConfig?.bandwidth ?? 0)
+			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 			print("Spreadum: \(self.spreadFactor)")
@@ -250,8 +250,7 @@ struct LoRaConfig: View {
 		}
 		.onChange(of: bandwidth) { newBandwidth in
 			if node != nil && node!.loRaConfig != nil {
-				hasChanges = true
-				//if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
+				if newBandwidth != node!.loRaConfig!.bandwidth { hasChanges = true }
 			}
 		}
 		.onChange(of: codingRate) { newCodingRate in
