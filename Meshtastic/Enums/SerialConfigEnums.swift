@@ -27,49 +27,47 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
+		switch self {
 
-			case .baudDefault:
-				return NSLocalizedString("default", comment: "Default")
-			case .baud110:
-				return "110 Baud"
-			case .baud300:
-				return "300 Baud"
-			case .baud600:
-				return "600 Baud"
-			case .baud1200:
-				return "1200 Baud"
-			case .baud2400:
-				return "2400 Baud"
-			case .baud4800:
-				return "4800 Baud"
-			case .baud9600:
-				return "9600 Baud"
-			case .baud19200:
-				return "19200 Baud"
-			case .baud38400:
-				return "38400 Baud"
-			case .baud57600:
-				return "57600 Baud"
-			case .baud115200:
-				return "115200 Baud"
-			case .baud230400:
-				return "230400 Baud"
-			case .baud460800:
-				return "460800 Baud"
-			case .baud576000:
-				return "576000 Baud"
-			case .baud921600:
-				return "921600 Baud"
-			}
+		case .baudDefault:
+			return NSLocalizedString("default", comment: "Default")
+		case .baud110:
+			return "110 Baud"
+		case .baud300:
+			return "300 Baud"
+		case .baud600:
+			return "600 Baud"
+		case .baud1200:
+			return "1200 Baud"
+		case .baud2400:
+			return "2400 Baud"
+		case .baud4800:
+			return "4800 Baud"
+		case .baud9600:
+			return "9600 Baud"
+		case .baud19200:
+			return "19200 Baud"
+		case .baud38400:
+			return "38400 Baud"
+		case .baud57600:
+			return "57600 Baud"
+		case .baud115200:
+			return "115200 Baud"
+		case .baud230400:
+			return "230400 Baud"
+		case .baud460800:
+			return "460800 Baud"
+		case .baud576000:
+			return "576000 Baud"
+		case .baud921600:
+			return "921600 Baud"
 		}
 	}
-	
+
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Baud {
-		
+
 		switch self {
-			
+
 		case .baudDefault:
 			return ModuleConfig.SerialConfig.Serial_Baud.baudDefault
 		case .baud110:
@@ -113,28 +111,26 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	case proto = 2
 	case txtmsg = 3
 	case nmea = 4
-	
+
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .default:
-				return NSLocalizedString("serial.mode.default", comment: "Default")
-			case .simple:
-				return NSLocalizedString("serial.mode.simple", comment: "Simple")
-			case .proto:
-				return NSLocalizedString("serial.mode.proto", comment: "Protobufs")
-			case .txtmsg:
-				return NSLocalizedString("serial.mode.txtmsg", comment: "Text Message")
-			case .nmea:
-				return NSLocalizedString("serial.mode.nmea", comment: "NMEA Positions")
-			}
+		switch self {
+		case .default:
+			return NSLocalizedString("serial.mode.default", comment: "Default")
+		case .simple:
+			return NSLocalizedString("serial.mode.simple", comment: "Simple")
+		case .proto:
+			return NSLocalizedString("serial.mode.proto", comment: "Protobufs")
+		case .txtmsg:
+			return NSLocalizedString("serial.mode.txtmsg", comment: "Text Message")
+		case .nmea:
+			return NSLocalizedString("serial.mode.nmea", comment: "NMEA Positions")
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
-		
+
 		switch self {
-			
+
 		case .default:
 			return ModuleConfig.SerialConfig.Serial_Mode.default
 		case .simple:
@@ -162,25 +158,23 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			case .unset:
-				return NSLocalizedString("unset", comment: "Unset")
-			case .oneSecond:
-				return NSLocalizedString("interval.one.second", comment: "One Second")
-			case .fiveSeconds:
-				return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
-			case .tenSeconds:
-				return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
-			case .fifteenSeconds:
-				return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
-			case .thirtySeconds:
-				return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
-			case .oneMinute:
-				return NSLocalizedString("interval.one.minute", comment: "One Minute")
-			case .fiveMinutes:
-				return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
-			}
+		switch self {
+		case .unset:
+			return NSLocalizedString("unset", comment: "Unset")
+		case .oneSecond:
+			return NSLocalizedString("interval.one.second", comment: "One Second")
+		case .fiveSeconds:
+			return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
+		case .tenSeconds:
+			return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
+		case .fifteenSeconds:
+			return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+		case .thirtySeconds:
+			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+		case .oneMinute:
+			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+		case .fiveMinutes:
+			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 		}
 	}
 }

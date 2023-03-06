@@ -37,7 +37,7 @@ extension WaypointEntity {
 		   return nil
 		}
 	}
-	
+
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
 		if waypointCoordinate != nil {

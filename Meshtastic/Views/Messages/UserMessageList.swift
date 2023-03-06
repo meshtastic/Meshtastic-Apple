@@ -9,11 +9,11 @@ import SwiftUI
 import CoreData
 
 struct UserMessageList: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	enum Field: Hashable {
 		case messageText
 	}
@@ -28,7 +28,7 @@ struct UserMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-	
+
 	var body: some View {
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmss", options: 0, locale: Locale.current)
@@ -39,7 +39,7 @@ struct UserMessageList: View {
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != bleManager.connectedPeripheral?.num ?? -1 {
 								let currentUser: Bool = (bleManager.connectedPeripheral?.num ?? 0 == message.fromUser?.num ?? -1 ? true : false)
-								
+
 								if message.replyID > 0 {
 									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
 									HStack {
@@ -55,8 +55,8 @@ struct UserMessageList: View {
 											.padding(.trailing)
 									}
 								}
-								HStack (alignment: .top) {
-									if currentUser { Spacer(minLength:50) }
+								HStack(alignment: .top) {
+									if currentUser { Spacer(minLength: 50) }
 									if !currentUser {
 										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
 											.padding(.all, 5)
@@ -64,7 +64,7 @@ struct UserMessageList: View {
 									}
 									VStack(alignment: currentUser ? .trailing : .leading) {
 										let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
-										
+
 										let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
 										Text(markdownText)
 											.tint(linkBlue)
@@ -73,7 +73,7 @@ struct UserMessageList: View {
 											.background(currentUser ? .accentColor : Color(.gray))
 											.cornerRadius(15)
 											.contextMenu {
-												VStack{
+												VStack {
 													Text("channel")+Text(": \(message.channel)")
 												}
 												Menu("tapback") {
@@ -83,7 +83,7 @@ struct UserMessageList: View {
 																print("Sent \(tb.emojiString) Tapback")
 																self.context.refresh(user, mergeChanges: true)
 															} else { print("\(tb.emojiString) Tapback Failed") }
-															
+
 														}) {
 															Text(tb.description)
 															let image = tb.emojiString.image()
@@ -157,11 +157,11 @@ struct UserMessageList: View {
 													Image(systemName: "trash")
 												}
 											}
-										
-										let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+
+										let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
 										if tapbacks.count > 0 {
-											VStack (alignment: .trailing) {
-												HStack  {
+											VStack(alignment: .trailing) {
+												HStack {
 													ForEach( tapbacks ) { (tapback: MessageEntity) in
 														VStack {
 															let image = tapback.messagePayload!.image(fontSize: 20)
@@ -198,7 +198,7 @@ struct UserMessageList: View {
 									.padding(.bottom)
 									.id(user.messageList.firstIndex(of: message))
 									if !currentUser {
-										Spacer(minLength:50)
+										Spacer(minLength: 50)
 									}
 								}
 								.padding([.leading, .trailing])
@@ -231,7 +231,7 @@ struct UserMessageList: View {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
 				})
-				.onChange(of: user.messageList, perform: { messages in
+				.onChange(of: user.messageList, perform: { _ in
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
@@ -243,13 +243,13 @@ struct UserMessageList: View {
 				Button {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
-					
+
 					if userSettings.meshtasticUsername.count > 0 {
 						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
 					} else {
 						typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 					}
-					
+
 				} label: {
 					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")
@@ -264,7 +264,7 @@ struct UserMessageList: View {
 					.padding(.trailing)
 			}
 			#endif
-			
+
 			HStack(alignment: .top) {
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
@@ -293,13 +293,13 @@ struct UserMessageList: View {
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
-									
+
 									if userSettings.meshtasticUsername.count > 0 {
 										typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
 									} else {
 										typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 									}
-									
+
 								} label: {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)

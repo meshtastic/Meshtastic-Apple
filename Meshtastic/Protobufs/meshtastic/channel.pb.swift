@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -183,7 +183,7 @@ struct Channel {
 
   init() {}
 
-  fileprivate var _settings: ChannelSettings? = nil
+  fileprivate var _settings: ChannelSettings?
 }
 
 #if swift(>=4.2)
@@ -193,7 +193,7 @@ extension Channel.Role: CaseIterable {
   static var allCases: [Channel.Role] = [
     .disabled,
     .primary,
-    .secondary,
+    .secondary
   ]
 }
 
@@ -207,7 +207,7 @@ extension Channel.Role: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+private let _protobuf_package = "meshtastic"
 
 extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ChannelSettings"
@@ -217,7 +217,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     3: .same(proto: "name"),
     4: .same(proto: "id"),
     5: .standard(proto: "uplink_enabled"),
-    6: .standard(proto: "downlink_enabled"),
+    6: .standard(proto: "downlink_enabled")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -276,7 +276,7 @@ extension Channel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "index"),
     2: .same(proto: "settings"),
-    3: .same(proto: "role"),
+    3: .same(proto: "role")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -323,6 +323,6 @@ extension Channel.Role: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DISABLED"),
     1: .same(proto: "PRIMARY"),
-    2: .same(proto: "SECONDARY"),
+    2: .same(proto: "SECONDARY")
   ]
 }

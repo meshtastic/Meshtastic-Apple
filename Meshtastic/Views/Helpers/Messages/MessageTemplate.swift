@@ -7,16 +7,16 @@
 import SwiftUI
 
 struct MessageTemplate: View {
-	
+
 	var user: UserEntity
 	var message: MessageEntity
 	var messageReply: MessageEntity?
 
 	var body: some View {
-		
+
 		// Display the message being replied to and the arrow
 		if message.replyID > 0 {
-			
+
 			HStack {
 
 				Text(messageReply?.messagePayload ?? "EMPTY MESSAGE").foregroundColor(.blue).font(.caption2)
@@ -31,8 +31,8 @@ struct MessageTemplate: View {
 					.padding(.trailing)
 			}
 		}
-		
+
 		// Message
-		
+
 	}
 }

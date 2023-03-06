@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct DisplayConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 
@@ -25,12 +25,12 @@ struct DisplayConfig: View {
 	@State var flipScreen = false
 	@State var oledType = 0
 	@State var displayMode = 0
-	
+
 	var body: some View {
-		
+
 		Form {
 			Section(header: Text("Device Screen")) {
-				
+
 				Picker("Display Mode", selection: $displayMode ) {
 					ForEach(DisplayModes.allCases) { dm in
 						Text(dm.description)
@@ -39,7 +39,7 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("Override automatic OLED screen detection.")
 					.font(.caption)
-				
+
 				Toggle(isOn: $compassNorthTop) {
 
 					Label("Always point north", systemImage: "location.north.circle")
@@ -47,7 +47,7 @@ struct DisplayConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("The compass heading on the screen outside of the circle will always point north.")
 					.font(.caption)
-				
+
 				Toggle(isOn: $flipScreen) {
 
 					Label("Flip Screen", systemImage: "pip.swap")
@@ -55,7 +55,7 @@ struct DisplayConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("Flip screen vertically")
 					.font(.caption)
-				
+
 				Picker("OLED Type", selection: $oledType ) {
 					ForEach(OledTypes.allCases) { ot in
 						Text(ot.description)
@@ -64,7 +64,7 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("Override automatic OLED screen detection.")
 					.font(.caption)
-				
+
 			}
 			Section(header: Text("Timing & Format")) {
 				Picker("Screen on for", selection: $screenOnSeconds ) {
@@ -75,7 +75,7 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("How long the screen remains on after the user button is pressed or messages are received.")
 					.font(.caption)
-				
+
 				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 					ForEach(ScreenCarouselIntervals.allCases) { sci in
 						Text(sci.description)
@@ -84,27 +84,27 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 					.font(.caption)
-				
+
 				Picker("GPS Format", selection: $gpsFormat ) {
 					ForEach(GpsFormats.allCases) { lu in
 						Text(lu.description)
 					}
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
+
 				Text("The format used to display GPS coordinates on the device screen.")
 					.font(.caption)
 					.listRowSeparator(.visible)
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
-		
+
 		Button {
-						
+
 			isPresentingSaveConfirm = true
-			
+
 		} label: {
-			
+
 			Label("save", systemImage: "square.and.arrow.down")
 		}
 		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
@@ -129,10 +129,10 @@ struct DisplayConfig: View {
 					dc.flipScreen = flipScreen
 					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
-					
+
 					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
-						
+
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
@@ -159,7 +159,7 @@ struct DisplayConfig: View {
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
 			self.hasChanges = false
-			
+
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
 				print("empty display config")

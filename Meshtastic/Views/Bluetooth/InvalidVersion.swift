@@ -7,20 +7,20 @@
 import SwiftUI
 
 struct InvalidVersion: View {
-	
+
 	@Environment(\.dismiss) private var dismiss
-		
+
 	@State var minimumVersion = ""
 	@State var version = ""
 
 	var body: some View {
-		
+
 		VStack {
-			
+
 			Text("update.firmware")
 				.font(.largeTitle)
 				.foregroundColor(.orange)
-			
+
 			Divider()
 			VStack {
 				Text("The Meshtastic Apple apps support firmware version \(minimumVersion) and above.")
@@ -36,7 +36,7 @@ struct InvalidVersion: View {
 			.padding()
 			Divider()
 				.padding(.top)
-			VStack{
+			VStack {
 				Text("🦕 End of life Version 🦖 ☄️")
 					.font(.title3)
 					.foregroundColor(.orange)
@@ -46,20 +46,20 @@ struct InvalidVersion: View {
 					.padding([.leading, .trailing, .bottom])
 				Link("Version 1.2 End of life (EOL) Info", destination: URL(string: "https://meshtastic.org/docs/1.2-End-of-life/")!)
 					.font(.callout)
-				
+
 				#if targetEnvironment(macCatalyst)
 					Button {
 						dismiss()
 					} label: {
 						Label("close", systemImage: "xmark")
-						
+
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
 					.padding()
 				#endif
-				
+
 			}.padding()
 		}
 	}

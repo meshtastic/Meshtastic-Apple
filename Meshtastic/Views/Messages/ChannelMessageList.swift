@@ -9,27 +9,27 @@ import SwiftUI
 import CoreData
 
 struct ChannelMessageList: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	enum Field: Hashable {
 		case messageText
 	}
-	
+
 	// Keyboard State
 	@State var typingMessage: String = ""
 	@State private var totalBytes = 0
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
-	
+
 	@ObservedObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
-	
+
 	var body: some View {
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
@@ -54,8 +54,8 @@ struct ChannelMessageList: View {
 										.padding(.trailing)
 								}
 							}
-							HStack (alignment: .top) {
-								if currentUser { Spacer(minLength:50) }
+							HStack(alignment: .top) {
+								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
 									CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
 										.padding(.all, 5)
@@ -71,7 +71,7 @@ struct ChannelMessageList: View {
 										.background(currentUser ? .accentColor : Color(.gray))
 										.cornerRadius(15)
 										.contextMenu {
-											VStack{
+											VStack {
 												Text("channel")+Text(": \(message.channel)")
 											}
 											Menu("tapback") {
@@ -81,7 +81,7 @@ struct ChannelMessageList: View {
 															print("Sent \(tb.emojiString) Tapback")
 															self.context.refresh(channel, mergeChanges: true)
 														} else { print("\(tb.emojiString) Tapback Failed") }
-														
+
 													}) {
 														Text(tb.description)
 														let image = tb.emojiString.image()
@@ -152,11 +152,10 @@ struct ChannelMessageList: View {
 												Image(systemName: "trash")
 											}
 										}
-									
-									let tapbacks = message.value(forKey: "tapbacks") as! [MessageEntity]
+									let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
 									if tapbacks.count > 0 {
-										VStack (alignment: .trailing) {
-											HStack  {
+										VStack(alignment: .trailing) {
+											HStack {
 												ForEach( tapbacks ) { (tapback: MessageEntity) in
 													VStack {
 														let image = tapback.messagePayload!.image(fontSize: 20)
@@ -193,7 +192,7 @@ struct ChannelMessageList: View {
 								.padding(.bottom)
 								.id(channel.allPrivateMessages.firstIndex(of: message))
 								if !currentUser {
-									Spacer(minLength:50)
+									Spacer(minLength: 50)
 								}
 							}
 							.padding([.leading, .trailing])
@@ -225,7 +224,7 @@ struct ChannelMessageList: View {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
 				})
-				.onChange(of: channel.allPrivateMessages, perform: { messages in
+				.onChange(of: channel.allPrivateMessages, perform: { _ in
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
@@ -238,14 +237,14 @@ struct ChannelMessageList: View {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
 					if userSettings.meshtasticUsername.count > 0 {
-						
+
 						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
-						
+
 					} else {
-						
+
 						typingMessage =  "📍 " + userLongName + " has shared their position with you."
 					}
-					
+
 				} label: {
 					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")
@@ -261,7 +260,7 @@ struct ChannelMessageList: View {
 			}
 			#endif
 			HStack(alignment: .top) {
-				
+
 				ZStack {
 					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("message", text: $typingMessage, axis: .vertical)
@@ -290,20 +289,20 @@ struct ChannelMessageList: View {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
 									if userSettings.meshtasticUsername.count > 0 {
-										
+
 										typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
-										
+
 									} else {
-										
+
 										typingMessage =  "📍 " + userLongName + " has shared their position with you."
 									}
-									
+
 								} label: {
 									Image(systemName: "mappin.and.ellipse")
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-								
+
 								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)

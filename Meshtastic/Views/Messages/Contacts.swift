@@ -13,15 +13,15 @@ struct Contacts: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@ObservedObject private var userSettings: UserSettings = UserSettings()
-	
+
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
-	
+
 	private var users: FetchedResults<UserEntity>
-	@State var node: NodeInfoEntity? = nil
-	@State private var userSelection: UserEntity? = nil // Nothing selected by default.
-	@State private var channelSelection: ChannelEntity? = nil // Nothing selected by default.
+	@State var node: NodeInfoEntity?
+	@State private var userSelection: UserEntity? // Nothing selected by default.
+	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -38,7 +38,7 @@ struct Contacts: View {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
 								NavigationLink(destination: ChannelMessageList(channel: channel)) {
-						
+
 									let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -60,7 +60,7 @@ struct Contacts: View {
 													}
 													Spacer()
 													if channel.allPrivateMessages.count > 0 {
-														VStack (alignment: .trailing) {
+														VStack(alignment: .trailing) {
 															if lastMessageDay == currentDay {
 																Text(lastMessageTime, style: .time )
 																	.font(.subheadline)
@@ -102,7 +102,7 @@ struct Contacts: View {
 											// Would rather not do this but the merge changes on
 											// A single object is only working on mac GVH
 											context.refreshAllObjects()
-											//context.refresh(channel, mergeChanges: true)
+											// context.refresh(channel, mergeChanges: true)
 										} catch {
 											context.rollback()
 											print("💥 Save Channel Mute Error")
@@ -136,7 +136,7 @@ struct Contacts: View {
 							}
 						}
 						.padding([.top, .bottom])
-						
+
 					}
 				}
 				Section(header: Text("direct.messages")) {
@@ -157,7 +157,7 @@ struct Contacts: View {
 													Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 													Spacer()
 													if user.messageList.count > 0 {
-														VStack (alignment: .trailing) {
+														VStack(alignment: .trailing) {
 															if lastMessageDay == currentDay {
 																Text(lastMessageTime, style: .time )
 																	.font(.subheadline)
@@ -218,8 +218,7 @@ struct Contacts: View {
 											.alert(
 												"Trace Route Sent",
 												isPresented: $isPresentingTraceRouteSentAlert
-											)
-											{
+											) {
 												Button("OK", role: .cancel) { }
 											}
 											message: {
@@ -258,21 +257,23 @@ struct Contacts: View {
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 					do {
-						let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+						guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+							return
+						}
 						// Found a node, check it for a region
 						if !fetchedNode.isEmpty {
 							node = fetchedNode[0]
 						}
 					} catch {
-						
+
 					}
 				}
 			}
 		}
 		detail: {
 			if let user = userSelection {
-				UserMessageList(user:user)
-				
+				UserMessageList(user: user)
+
 			} else {
 				Text("select.contact")
 			}

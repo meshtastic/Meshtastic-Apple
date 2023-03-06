@@ -12,7 +12,7 @@ func degreesToRadians(_ number: Double) -> Double {
 }
 
 struct MapViewSwiftUI: UIViewRepresentable {
-	
+
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
@@ -21,19 +21,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
 	let centeringMode: CenteringMode
-	
+
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
-	
+
 	// Offline Maps
-	//make this view dependent on the UserDefault that is updated when importing a new map file
+	// make this view dependent on the UserDefault that is updated when importing a new map file
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	var overlays: [Overlay] = []
 	let dynamicRegion: Bool = true
-	
+
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
 		mapView.mapType = mapViewType
@@ -63,7 +63,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				mapView.addAnnotations(positions)
 			}
 		}
-		
+
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
@@ -73,14 +73,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		
+
 		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
 		mapView.showsCompass = true
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
 		#else
-		
+
 		#if os(iOS)
 		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
 		mapView.showsCompass = false
@@ -91,26 +91,26 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
 		#endif
-		
+
 		#endif
 		mapView.delegate = context.coordinator
 		return mapView
 	}
-	
+
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		mapView.mapType = mapViewType
-		
+
 		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 			mapView.removeOverlays(mapView.overlays)
 			if self.customMapOverlay != nil {
-				
+
 				let fileManager = FileManager.default
 				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
 				if fileManager.fileExists(atPath: tilePath) {
 					print("Loading local map file")
 					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
-						overlay.canReplaceMapContent = false//customMapOverlay.canReplaceMapContent
+						overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
 						mapView.addOverlay(overlay)
 					}
 				} else {
@@ -122,9 +122,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
-		
+
 		DispatchQueue.main.async {
-			
+
 			let annotationCount = waypoints.count + positions.count
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
@@ -151,17 +151,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 	}
-	
+
 	func makeCoordinator() -> MapCoordinator {
 		return Coordinator(self)
 	}
-	
+
 	final class MapCoordinator: NSObject, MKMapViewDelegate, UIGestureRecognizerDelegate {
-		
+
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
 		var overlays: [Overlay] = []
-		
+
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
 			super.init()
@@ -172,22 +172,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 			self.overlays = []
 		}
-		
+
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-			
+
 			switch annotation {
 			case let positionAnnotation as PositionEntity:
 				let reuseID = String(positionAnnotation.nodePosition?.num ?? 0) + "-" + String(positionAnnotation.time?.timeIntervalSince1970 ?? 0)
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
-				
+
 				if positionAnnotation.latest {
 					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
-				}
-				else {
+				} else {
 					annotationView.markerTintColor = UIColor(.indigo)
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
@@ -205,10 +204,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let distanceFormatter = MKDistanceFormatter()
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"
 				if positionAnnotation.nodePosition?.metadata != nil {
-					
+
 					if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.client ||
 						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.clientMute ||
-						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.routerClient{
+						DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.routerClient {
 						annotationView.glyphImage = UIImage(systemName: "flipphone")
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.repeater {
 						annotationView.glyphImage = UIImage(systemName: "repeat")
@@ -219,7 +218,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					} else if DeviceRoles(rawValue: Int(positionAnnotation.nodePosition!.metadata?.role ?? 0)) == DeviceRoles.sensor {
 						annotationView.glyphImage = UIImage(systemName: "sensor")
 					}
-					
+
 					let pf = PositionFlags(rawValue: Int(positionAnnotation.nodePosition?.metadata?.positionFlags ?? 3))
 					if pf.contains(.Satsinview) {
 						subtitle.text! += "Sats in view: \(String(positionAnnotation.satsInView)) \n"
@@ -227,8 +226,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					if pf.contains(.SeqNo) {
 						subtitle.text! += "Sequence: \(String(positionAnnotation.seqNo)) \n"
 					}
-					if pf.contains(.Heading){
-						
+					if pf.contains(.Heading) {
+
 						if parent.userTrackingMode != MKUserTrackingMode.followWithHeading {
 							annotationView.glyphImage = UIImage(systemName: "location.north.fill")?.rotate(radians: Float(degreesToRadians(Double(positionAnnotation.heading))))
 							subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
@@ -244,7 +243,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						}
 						subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
 					}
-					
+
 				} else {
 					// node metadata is nil
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
@@ -279,8 +278,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let subtitle = UILabel()
 				if waypointAnnotation.longDescription?.count ?? 0 > 0 {
 					subtitle.text = (waypointAnnotation.longDescription ?? "") + "\n"
-				}
-				else {
+				} else {
 					subtitle.text = ""
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
@@ -306,23 +304,23 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			default: return nil
 			}
 		}
-		
+
 		func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
 			// Only Allow Edit for waypoint annotations with a id
 			if view.tag > 0 {
 				parent.onWaypointEdit(view.tag)
 			}
 		}
-		
+
 		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
-			
+
 			if gesture.state != UIGestureRecognizer.State.ended {
 				return
 			} else if gesture.state != UIGestureRecognizer.State.began {
-				
+
 				// Screen Position - CGPoint
 				let location = longPressRecognizer.location(in: self.parent.mapView)
-				
+
 				// Map Coordinate - CLLocationCoordinate2D
 				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
 				let annotation = MKPointAnnotation()
@@ -333,11 +331,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				parent.onLongPress(coordinate)
 			}
 		}
-		
+
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-			
+
 			if let index = self.overlays.firstIndex(where: { overlay_ in overlay_.shape.hash == overlay.hash }) {
-				
+
 				let unwrappedOverlay = self.overlays[index]
 				if let circleOverlay = unwrappedOverlay.shape as? MKCircle {
 					let renderer = MKCircleRenderer(circle: circleOverlay)
@@ -379,18 +377,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 	}
-	
+
 	/// is supposed to be located in the folder with the map name
 	public struct DefaultTile: Hashable {
 		let tileName: String
 		let tileType: String
-		
+
 		public init(tileName: String, tileType: String) {
 			self.tileName = tileName
 			self.tileType = tileType
 		}
 	}
-	
+
 	public struct CustomMapOverlay: Equatable, Hashable {
 		let mapName: String
 		let tileType: String
@@ -398,7 +396,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		var minimumZoomLevel: Int?
 		var maximumZoomLevel: Int?
 		let defaultTile: DefaultTile?
-		
+
 		public init(
 			mapName: String,
 			tileType: String,
@@ -414,7 +412,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.maximumZoomLevel = maximumZoomLevel
 			self.defaultTile = defaultTile
 		}
-		
+
 		public init?(
 			mapName: String?,
 			tileType: String,
@@ -423,7 +421,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			maximumZoomLevel: Int? = nil,
 			defaultTile: DefaultTile? = nil
 		) {
-			if (mapName == nil || mapName! == "") {
+			if mapName == nil || mapName! == "" {
 				return nil
 			}
 			self.mapName = mapName!
@@ -434,15 +432,15 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.defaultTile = defaultTile
 		}
 	}
-	
+
 	public class CustomMapOverlaySource: MKTileOverlay {
-		
+
 		// requires folder: tiles/{mapName}/z/y/y,{tileType}
 		private var parent: MapViewSwiftUI
 		private let mapName: String
 		private let tileType: String
 		private let defaultTile: DefaultTile?
-		
+
 		public init(
 			parent: MapViewSwiftUI,
 			mapName: String,
@@ -455,7 +453,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.defaultTile = defaultTile
 			super.init(urlTemplate: "")
 		}
-		
+
 		public override func url(forTilePath path: MKTileOverlayPath) -> URL {
 			if let tileUrl = Bundle.main.url(
 				forResource: "\(path.y)",
@@ -477,21 +475,21 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 	}
-	
+
 	public struct Overlay {
-		
+
 		public static func == (lhs: MapViewSwiftUI.Overlay, rhs: MapViewSwiftUI.Overlay) -> Bool {
 			// maybe to use in the future for comparison of full array
 			lhs.shape.coordinate.latitude == rhs.shape.coordinate.latitude &&
 			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
 			lhs.fillColor == rhs.fillColor
 		}
-		
+
 		var shape: MKOverlay
 		var fillColor: UIColor?
 		var strokeColor: UIColor?
 		var lineWidth: CGFloat
-		
+
 		public init(
 			shape: MKOverlay,
 			fillColor: UIColor? = nil,

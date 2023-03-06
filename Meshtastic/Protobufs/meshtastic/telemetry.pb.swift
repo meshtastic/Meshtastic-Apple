@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -146,7 +146,7 @@ extension TelemetrySensorType: CaseIterable {
     .qmi8658,
     .qmc5883L,
     .sht31,
-    .pmsa003I,
+    .pmsa003I
   ]
 }
 
@@ -291,7 +291,7 @@ struct Telemetry {
   /// seconds since 1970
   var time: UInt32 = 0
 
-  var variant: Telemetry.OneOf_Variant? = nil
+  var variant: Telemetry.OneOf_Variant?
 
   ///
   /// Key native device metrics such as battery level
@@ -374,7 +374,7 @@ extension Telemetry.OneOf_Variant: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+private let _protobuf_package = "meshtastic"
 
 extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -391,7 +391,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     10: .same(proto: "QMI8658"),
     11: .same(proto: "QMC5883L"),
     12: .same(proto: "SHT31"),
-    13: .same(proto: "PMSA003I"),
+    13: .same(proto: "PMSA003I")
   ]
 }
 
@@ -401,7 +401,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "battery_level"),
     2: .same(proto: "voltage"),
     3: .standard(proto: "channel_utilization"),
-    4: .standard(proto: "air_util_tx"),
+    4: .standard(proto: "air_util_tx")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -453,7 +453,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     3: .standard(proto: "barometric_pressure"),
     4: .standard(proto: "gas_resistance"),
     5: .same(proto: "voltage"),
-    6: .same(proto: "current"),
+    6: .same(proto: "current")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -521,7 +521,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     9: .standard(proto: "particles_10um"),
     10: .standard(proto: "particles_25um"),
     11: .standard(proto: "particles_50um"),
-    12: .standard(proto: "particles_100um"),
+    12: .standard(proto: "particles_100um")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -611,7 +611,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     1: .same(proto: "time"),
     2: .standard(proto: "device_metrics"),
     3: .standard(proto: "environment_metrics"),
-    4: .standard(proto: "air_quality_metrics"),
+    4: .standard(proto: "air_quality_metrics")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

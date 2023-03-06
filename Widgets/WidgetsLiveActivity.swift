@@ -12,7 +12,7 @@ import SwiftUI
 @available(iOS 16.2, *)
 struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
-		
+
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
 			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
@@ -28,15 +28,15 @@ struct WidgetsLiveActivity: Widget {
                 // various regions, like leading/trailing/center/bottom
 				DynamicIslandExpandedRegion(.trailing, priority: 1) {
 					HStack(alignment: .lastTextBaseline) {
-						
+
 						Spacer()
 						TimerView(timerRange: context.state.timerRange)
 							.tint(Color("LightIndigo"))
 					}
 					.padding(.top)
-					
+
 				}
-				
+
             } compactLeading: {
 				Image("logo-black")
 					.resizable()
@@ -67,7 +67,7 @@ struct WidgetsLiveActivity: Widget {
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "Meshtastic 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 3600),  connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
+		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
 
     static var previews: some View {
         attributes
@@ -89,14 +89,14 @@ struct WidgetsLiveActivity_Previews: PreviewProvider {
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
-	
+
 	var nodeName: String
-	//var connected: Bool
+	// var connected: Bool
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
 	var timerRange: ClosedRange<Date>
-	
+
 	var body: some View {
 		HStack {
 			Image(colorScheme == .light ? "logo-black" : "logo-white")
@@ -116,13 +116,13 @@ struct LiveActivityView: View {
 
 struct NodeInfoView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
-	
+
 	var nodeName: String
 	var timerRange: ClosedRange<Date>
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
-	
+
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			Text(nodeName)
@@ -169,9 +169,9 @@ struct NodeInfoView: View {
 
 struct TimerView: View {
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
-	
+
 	var timerRange: ClosedRange<Date>
-	
+
 	var body: some View {
 		VStack(alignment: .center) {
 			Text("NEXT")
@@ -209,10 +209,10 @@ struct ExpandedTrailingView: View {
 	var airtime: Float
 	var batteryLevel: UInt32
 	var timerInterval: ClosedRange<Date>
-	
+
 	var body: some View {
 		HStack(alignment: .lastTextBaseline) {
-			
+
 			Spacer()
 			TimerView(timerRange: timerInterval)
 		}

@@ -15,19 +15,19 @@ import ActivityKit
 #endif
 
 struct Connect: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	@State var node: NodeInfoEntity? = nil
+	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
 	@State var liveActivityStarted = false
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
-	
+
 	var body: some View {
-		
+
 		NavigationStack {
 			VStack {
 				List {
@@ -63,7 +63,7 @@ struct Connect: View {
 								.font(.caption).foregroundColor(Color.gray)
 								.padding([.top, .bottom])
 								.swipeActions {
-									
+
 									Button(role: .destructive) {
 										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 											bleManager.disconnectPeripheral(reconnect: false)
@@ -72,8 +72,8 @@ struct Connect: View {
 										Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
 								}
-								.contextMenu{
-									
+								.contextMenu {
+
 									if node != nil {
 										#if !targetEnvironment(macCatalyst)
 										if #available(iOS 16.2, *) {
@@ -114,7 +114,7 @@ struct Connect: View {
 									}
 								}
 							} else {
-								
+
 								if bleManager.isConnecting {
 									HStack {
 										Image(systemName: "antenna.radiowaves.left.and.right")
@@ -129,7 +129,7 @@ struct Connect: View {
 												.foregroundColor(.orange)
 										} else {
 											VStack {
-												
+
 												Text("Connection Attempt \(bleManager.timeoutTimerCount) of 10")
 													.font(.callout)
 													.foregroundColor(.orange)
@@ -137,9 +137,9 @@ struct Connect: View {
 										}
 									}
 									.padding()
-									
+
 								} else {
-									
+
 									if bleManager.lastConnectionError.count > 0 {
 										Text(bleManager.lastConnectionError).font(.callout).foregroundColor(.red)
 									}
@@ -157,7 +157,7 @@ struct Connect: View {
 							}
 						}
 						.textCase(nil)
-						
+
 						if !self.bleManager.isConnected {
 							Section(header: Text("available.radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
@@ -183,7 +183,7 @@ struct Connect: View {
 								}
 							}
 							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
-								
+
 								Button("Connect to new radio?", role: .destructive) {
 									bleManager.stopScanning()
 									bleManager.connectedPeripheral = nil
@@ -191,9 +191,9 @@ struct Connect: View {
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-									
+
 									clearCoreDataDatabase(context: context)
-									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId} )
+									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId})
 									bleManager.connectTo(peripheral: radio!.peripheral)
 									presentingSwitchPreferredPeripheral = false
 									selectedPeripherialId = ""
@@ -201,14 +201,14 @@ struct Connect: View {
 							}
 							.textCase(nil)
 						}
-						
+
 					} else {
 						Text("bluetooth.off")
 							.foregroundColor(.red)
 							.font(.title)
 					}
 				}
-				
+
 				HStack(alignment: .center) {
 					Spacer()
 					#if targetEnvironment(macCatalyst)
@@ -236,24 +236,25 @@ struct Connect: View {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 			})
 		}
-		.sheet(isPresented: $invalidFirmwareVersion,  onDismiss: didDismissSheet) {
+		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {
 			InvalidVersion(minimumVersion: self.bleManager.minimumVersion, version: self.bleManager.connectedVersion)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: (self.bleManager.invalidVersion)) { cv in
+		.onChange(of: (self.bleManager.invalidVersion)) { _ in
 			invalidFirmwareVersion = self.bleManager.invalidVersion
 		}
 		.onChange(of: (self.bleManager.isSubscribed)) { sub in
-			
+
 			if userSettings.preferredPeripheralId.count > 0 && sub {
-				
+
 				let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
-				
+
 				do {
-					
-					let fetchedNode = try context.fetch(fetchNodeInfoRequest) as! [NodeInfoEntity]
+					guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+						return
+					}
 					// Found a node, check it for a region
 					if !fetchedNode.isEmpty {
 						node = fetchedNode[0]
@@ -264,14 +265,14 @@ struct Connect: View {
 						}
 					}
 				} catch {
-					
+
 				}
 			}
 		}
 		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-			
+
 			// Ask for notification permission
 			UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
 				if success {
@@ -287,17 +288,17 @@ struct Connect: View {
 		if #available(iOS 16.2, *) {
 			liveActivityStarted = true
 			let timerSeconds = 60
-			
+
 			let mostRecent = node?.telemetries?.lastObject as! TelemetryEntity
-			
+
 			let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
-			
+
 			let future = Date(timeIntervalSinceNow: Double(timerSeconds))
-			
+
 			let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent.channelUtilization, airtime: mostRecent.airUtilTx, batteryLevel: UInt32(mostRecent.batteryLevel))
-			
+
 			let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
-			
+
 			do {
 				let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
 																			  pushType: nil)
@@ -307,7 +308,7 @@ struct Connect: View {
 			}
 		}
 	}
-	
+
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
@@ -322,7 +323,7 @@ struct Connect: View {
 		}
 	}
 #endif
-	
+
 #if os(iOS)
 	func postNotification() {
 		let timerSeconds = 60
@@ -344,7 +345,7 @@ struct Connect: View {
 		}
 	}
 #endif
-	
+
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)
 	}

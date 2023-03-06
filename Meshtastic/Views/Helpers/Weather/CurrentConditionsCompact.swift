@@ -19,7 +19,7 @@ struct CurrentConditionsCompact: View {
 }
 struct CurrentConditionsCompact_Previews: PreviewProvider {
 	static var previews: some View {
-		
+
 		VStack {
 			CurrentConditionsCompact(temp: 22, condition: WeatherConditions.clear)
 			CurrentConditionsCompact(temp: 17, condition: WeatherConditions.cloudy)

@@ -7,18 +7,14 @@
 import SwiftUI
 
 struct CannedMessagesConfig: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
 	var node: NodeInfoEntity?
-	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasMessagesChanges = false
 	@State var configPreset = 0
-	
 	@State var enabled = false
 	/// CannedMessageModule will sends a bell character with the messages.
 	@State var sendBell: Bool = false
@@ -38,29 +34,22 @@ struct CannedMessagesConfig: View {
 	@State var inputbrokerEventCcw = 0
 	/// Generate input event on Press of this kind.
 	@State var inputbrokerEventPress = 0
-	
 	@State var messages = ""
-	
 	var body: some View {
-		
 		VStack {
 
 			Form {
-				
 				Section(header: Text("options")) {
-				
 					Toggle(isOn: $enabled) {
 
 						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $sendBell) {
 
 						Label("Send Bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Picker("Configuration Presets", selection: $configPreset ) {
 						ForEach(ConfigPresets.allCases) { cp in
 							Text(cp.description)
@@ -69,26 +58,21 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
 					.padding(.bottom, 10)
-					
 				}
-				
 				HStack {
 					Label("Messages", systemImage: "message.fill")
 					TextField("Messages separate with |", text: $messages, axis: .vertical)
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: messages, perform: { value in
+						.onChange(of: messages, perform: { _ in
 
 							let totalBytes = messages.utf8.count
-							
 							// Only mess with the value if it is too big
 							if totalBytes > 198 {
 
 								let firstNBytes = Data(messages.utf8.prefix(198))
-						
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									
 									// Set the shortName back to the last place where it was the right size
 									messages = maxBytesString
 								}
@@ -98,35 +82,27 @@ struct CannedMessagesConfig: View {
 						.foregroundColor(.gray)
 				}
 				.keyboardType(.default)
-				
 				Section(header: Text("Control Type")) {
-					
-					
 					Toggle(isOn: $rotary1Enabled) {
 
 						Label("Rotary 1", systemImage: "dial.min")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(updown1Enabled)
-					
 					Toggle(isOn: $updown1Enabled) {
 
 						Label("Up Down 1", systemImage: "arrow.up.arrow.down")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(rotary1Enabled)
-					
 				}
 				.disabled(configPreset > 0)
 				Section(header: Text("Inputs")) {
-				
 					Picker("Pin A", selection: $inputbrokerPinA) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
 								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -134,14 +110,11 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder A port.")
 						.font(.caption)
-					
 					Picker("Pin B", selection: $inputbrokerPinB) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
 								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -149,14 +122,11 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder B port.")
 						.font(.caption)
-					
 					Picker("Press Pin", selection: $inputbrokerPinPress) {
 						ForEach(0..<40) {
-							
 							if $0 == 0 {
 								Text("unset")
 							} else {
-							
 								Text("Pin \($0)")
 							}
 						}
@@ -164,12 +134,9 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("GPIO pin for rotary encoder Press port.")
 						.font(.caption)
-					
 				}
 				.disabled(configPreset > 0)
-				
 				Section(header: Text("Key Mapping")) {
-					
 					Picker("Clockwise Rotary Event", selection: $inputbrokerEventCw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
@@ -178,7 +145,6 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
 					.padding(.bottom, 10)
-					
 					Picker("Counter Clockwise Rotary Event", selection: $inputbrokerEventCcw ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
@@ -187,7 +153,6 @@ struct CannedMessagesConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					.padding(.top, 10)
 					.padding(.bottom, 10)
-					
 					Picker("Encoder Press Event", selection: $inputbrokerEventPress ) {
 						ForEach(InputEventChars.allCases) { iec in
 							Text(iec.description)
@@ -201,10 +166,8 @@ struct CannedMessagesConfig: View {
 			}
 			.scrollDismissesKeyboard(.immediately)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.cannedMessageConfig == nil)
-			
 			Button {
 				isPresentingSaveConfirm = true
-				
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
 			}
@@ -287,7 +250,7 @@ struct CannedMessagesConfig: View {
 				self.messages = node?.cannedMessageConfig?.messages ?? ""
 				self.hasChanges = false
 				self.hasMessagesChanges = false
-				
+
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
 					print("empty canned messages module config")
@@ -298,9 +261,9 @@ struct CannedMessagesConfig: View {
 				}
 			}
 			.onChange(of: configPreset) { newPreset in
-				
+
 				if newPreset == 1 {
-					
+
 					// RAK Rotary Encoder
 					updown1Enabled = true
 					rotary1Enabled = false
@@ -310,9 +273,9 @@ struct CannedMessagesConfig: View {
 					inputbrokerEventCw = InputEventChars.down.rawValue
 					inputbrokerEventCcw = InputEventChars.up.rawValue
 					inputbrokerEventPress = InputEventChars.select.rawValue
-					
+
 				} else if newPreset == 2 {
-					
+
 					// CardKB / RAK Keypad
 					updown1Enabled = false
 					rotary1Enabled = false
@@ -323,7 +286,7 @@ struct CannedMessagesConfig: View {
 					inputbrokerEventCcw = InputEventChars.none.rawValue
 					inputbrokerEventPress = InputEventChars.none.rawValue
 				}
-				
+
 				hasChanges = true
 			}
 			.onChange(of: enabled) { newEnabled in
