@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-struct PositionFlags: OptionSet
-{
+struct PositionFlags: OptionSet {
 	let rawValue: Int
-	
+
 	static let Altitude = PositionFlags(rawValue: 1)
 	static let AltitudeMsl = PositionFlags(rawValue: 2)
 	static let GeoidalSeparation = PositionFlags(rawValue: 4)
@@ -24,17 +23,17 @@ struct PositionFlags: OptionSet
 }
 
 struct PositionConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
-	
+
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
 	@State var fixedPosition = false
@@ -42,7 +41,7 @@ struct PositionConfig: View {
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	@State var positionFlags = 3
-	
+
 	/// Position Flags
 	/// Altitude value - 1
 	@State var includeAltitude = false
@@ -68,9 +67,9 @@ struct PositionConfig: View {
 	/// Intended for use with vehicle not walking speeds
 	/// walking speeds are likely to be error prone like the compass
 	@State var includeHeading = false
-	
+
 	var body: some View {
-		
+
 		VStack {
 			Form {
 				Section(header: Text("Device GPS")) {
@@ -103,36 +102,36 @@ struct PositionConfig: View {
 							.font(.caption)
 					}
 				}
-				
+
 				Section(header: Text("Position Packet")) {
-					
+
 					Toggle(isOn: $smartPositionEnabled) {
 
 						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						
+
 					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
 						ForEach(UpdateIntervals.allCases) { at in
 							Text(at.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					
+
 					Text("We should send our position this often (but only if it has changed significantly)")
 						.font(.caption)
 				}
 				Section(header: Text("Position Flags")) {
-					
+
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
 						.font(.caption)
 						.listRowSeparator(.visible)
-					
+
 					Toggle(isOn: $includeAltitude) {
 						Label("Altitude", systemImage: "arrow.up")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					if includeAltitude {
 						Toggle(isOn: $includeAltitudeMsl) {
 							Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
@@ -143,40 +142,40 @@ struct PositionConfig: View {
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					
+
 					Toggle(isOn: $includeSatsinview) {
 						Label("Number of satellites", systemImage: "skew")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $includeSeqNo) { //64
+
+					Toggle(isOn: $includeSeqNo) { // 64
 						Label("Sequence number", systemImage: "number")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $includeTimestamp) { //128
+
+					Toggle(isOn: $includeTimestamp) { // 128
 						Label("timestamp", systemImage: "clock")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $includeHeading) { //128
+
+					Toggle(isOn: $includeHeading) { // 128
 						Label("Vehicle heading", systemImage: "location.circle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $includeSpeed) { //128
+
+					Toggle(isOn: $includeSpeed) { // 128
 
 						Label("Vehicle speed", systemImage: "speedometer")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Advanced Position Flags")) {
-					
+
 					Toggle(isOn: $includeDop) {
 						Text("Dilution of precision (DOP) PDOP used by default")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
+
 					if includeDop {
 						Toggle(isOn: $includeHvdop) {
 							Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
@@ -186,7 +185,7 @@ struct PositionConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
-			
+
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
@@ -205,12 +204,12 @@ struct PositionConfig: View {
 				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
-					
+
 					if fixedPosition {
 						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true)
 					}
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					
+
 					if connectedNode != nil {
 						var pc = Config.PositionConfig()
 						pc.positionBroadcastSmartEnabled = smartPositionEnabled
@@ -219,7 +218,7 @@ struct PositionConfig: View {
 						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 						pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-						var pf : PositionFlags = []
+						var pf: PositionFlags = []
 						if includeAltitude { pf.insert(.Altitude) }
 						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
 						if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
@@ -253,7 +252,7 @@ struct PositionConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-				
+
 			self.bleManager.context = context
 			self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
 			self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
@@ -262,9 +261,9 @@ struct PositionConfig: View {
 			self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
 			self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
 			self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
-			
+
 			let pf = PositionFlags(rawValue: self.positionFlags)
-			
+
 			if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
 			if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
 			if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
@@ -275,14 +274,14 @@ struct PositionConfig: View {
 			if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
 			if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
 			if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
-			
+
 			self.hasChanges = false
-			
+
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil &&  connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

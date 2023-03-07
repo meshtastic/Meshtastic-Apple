@@ -7,25 +7,25 @@
 import SwiftUI
 
 struct PositionLog: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@State var isExporting = false
 	@State var exportString = ""
-	
+
 	var node: NodeInfoEntity
-	
+
 	@State private var isPresentingClearLogConfirm = false
 
 	var body: some View {
-		
+
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-						
+
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				//Add a table for mac and ipad
+				// Add a table for mac and ipad
 				Table(node.positions!.reversed() as! [PositionEntity]) {
 					TableColumn("SeqNo") { position in
 						Text(String(position.seqNo))
@@ -55,9 +55,9 @@ struct PositionLog: View {
 						Text(position.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
-				
+
 			} else {
-				
+
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
 					let columns = [
@@ -68,9 +68,9 @@ struct PositionLog: View {
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
-						
+
 						GridRow {
-							
+
 							Text("Latitude")
 								.font(.caption2)
 								.fontWeight(.bold)
@@ -125,20 +125,20 @@ struct PositionLog: View {
 					Button("Delete all positions?", role: .destructive) {
 						if clearPositions(destNum: node.num, context: context) {
 							print("Successfully Cleared Position Log")
-							
+
 						} else {
 							print("Clear Position Log Failed")
 						}
 					}
 				}
-				
+
 				Button {
-								
-					exportString = PositionToCsvFile(positions: node.positions!.array as! [PositionEntity])
+
+					exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 					isExporting = true
-					
+
 					} label: {
-						
+
 						Label("save", systemImage: "square.and.arrow.down")
 					}
 					.buttonStyle(.bordered)
@@ -154,12 +154,12 @@ struct PositionLog: View {
 				onCompletion: { result in
 
 					if case .success = result {
-						
+
 						print("Position log download succeeded.")
 						self.isExporting = false
-						
+
 					} else {
-						
+
 						print("Position log download failed: \(result).")
 					}
 				}

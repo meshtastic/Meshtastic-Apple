@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -31,7 +31,7 @@ struct AdminMessage {
 
   ///
   /// TODO: REPLACE
-  var payloadVariant: AdminMessage.OneOf_PayloadVariant? = nil
+  var payloadVariant: AdminMessage.OneOf_PayloadVariant?
 
   ///
   /// Send the specified channel in the response to this message
@@ -752,7 +752,7 @@ extension AdminMessage.ConfigType: CaseIterable {
     .networkConfig,
     .displayConfig,
     .loraConfig,
-    .bluetoothConfig,
+    .bluetoothConfig
   ]
 }
 
@@ -767,7 +767,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .telemetryConfig,
     .cannedmsgConfig,
     .audioConfig,
-    .remotehardwareConfig,
+    .remotehardwareConfig
   ]
 }
 
@@ -813,7 +813,7 @@ extension HamParameters: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+private let _protobuf_package = "meshtastic"
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".AdminMessage"
@@ -848,7 +848,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     97: .standard(proto: "reboot_seconds"),
     98: .standard(proto: "shutdown_seconds"),
     99: .standard(proto: "factory_reset"),
-    100: .standard(proto: "nodedb_reset"),
+    100: .standard(proto: "nodedb_reset")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1315,7 +1315,7 @@ extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "NETWORK_CONFIG"),
     4: .same(proto: "DISPLAY_CONFIG"),
     5: .same(proto: "LORA_CONFIG"),
-    6: .same(proto: "BLUETOOTH_CONFIG"),
+    6: .same(proto: "BLUETOOTH_CONFIG")
   ]
 }
 
@@ -1329,7 +1329,7 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "TELEMETRY_CONFIG"),
     6: .same(proto: "CANNEDMSG_CONFIG"),
     7: .same(proto: "AUDIO_CONFIG"),
-    8: .same(proto: "REMOTEHARDWARE_CONFIG"),
+    8: .same(proto: "REMOTEHARDWARE_CONFIG")
   ]
 }
 
@@ -1339,7 +1339,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "call_sign"),
     2: .standard(proto: "tx_power"),
     3: .same(proto: "frequency"),
-    4: .standard(proto: "short_name"),
+    4: .standard(proto: "short_name")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

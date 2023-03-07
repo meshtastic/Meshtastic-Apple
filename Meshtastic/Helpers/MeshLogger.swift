@@ -14,7 +14,7 @@ class MeshLogger {
 		}
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssSSa", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss.SS a")
-		
+
 		let formatter = DateFormatter()
 		formatter.dateFormat = dateFormatString
 		let timestamp = formatter.string(from: Date())

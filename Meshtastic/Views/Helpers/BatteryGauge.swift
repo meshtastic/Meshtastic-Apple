@@ -9,9 +9,7 @@ import SwiftUI
 import Charts
 
 struct BatteryGauge: View {
-	
 	@State var batteryLevel = 0.0
-	
 	private let minValue = 1.0
 	private let maxValue = 100.00
 
@@ -24,7 +22,6 @@ struct BatteryGauge: View {
 					.foregroundColor(.accentColor)
 					.symbolRenderingMode(.hierarchical)
 			} else {
-				
 				let gradient = Gradient(colors: [.red, .orange, .green])
 				Gauge(value: batteryLevel, in: minValue...maxValue) {
 					if batteryLevel > 1.0 && batteryLevel < 10 {
@@ -52,7 +49,6 @@ struct BatteryGauge: View {
 
 struct BatteryGauge_Previews: PreviewProvider {
 	static var previews: some View {
-		
 		VStack {
 			BatteryGauge(batteryLevel: 0.0)
 			BatteryGauge(batteryLevel: 9.0)

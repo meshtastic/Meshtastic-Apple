@@ -31,7 +31,7 @@ extension PositionEntity {
 		   return nil
 		}
 	}
-	
+
 	var nodeLocation: CLLocation? {
 		if latitudeI != 0 && longitudeI != 0 {
 			let location = CLLocation(latitude: latitude!, longitude: longitude!)
@@ -40,7 +40,7 @@ extension PositionEntity {
 		   return nil
 		}
 	}
-	
+
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
 		if nodeCoordinate != nil {

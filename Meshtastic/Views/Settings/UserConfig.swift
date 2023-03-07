@@ -8,17 +8,17 @@ import SwiftUI
 import CoreData
 
 struct UserConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	enum Field: Hashable {
 		case frequencyOverride
 	}
-	
+
 	@State private var isPresentingFactoryResetConfirm: Bool = false
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
@@ -28,24 +28,24 @@ struct UserConfig: View {
 	@State var overrideDutyCycle = false
 	@State var overrideFrequency: Float = 0.0
 	@State var txPower = 0
-	
+
 	@FocusState var focusedField: Field?
-	
+
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.numberStyle = .decimal
 		return formatter
 	}()
-	
+
 	var body: some View {
-		
+
 		VStack {
 			Form {
 				Section(header: Text("User Details")) {
 						HStack {
 							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
 							TextField("Long Name", text: $longName)
-								.onChange(of: longName, perform: { value in
+								.onChange(of: longName, perform: { _ in
 									let totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > (isLicensed ? 8 : 36) {
@@ -61,12 +61,12 @@ struct UserConfig: View {
 						.disableAutocorrection(true)
 					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.font(.caption2)
-					
+
 					HStack {
 						Label("Short Name", systemImage: "circlebadge.fill")
 						TextField("Short Name", text: $shortName)
 							.foregroundColor(.gray)
-							.onChange(of: shortName, perform: { value in
+							.onChange(of: shortName, perform: { _ in
 								let totalBytes = shortName.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 4 {
@@ -83,20 +83,20 @@ struct UserConfig: View {
 					.disableAutocorrection(true)
 					Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 						.font(.caption2)
-					
+
 					// Only manage ham mode for the locally connected node
-					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0	 {
+					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 						Toggle(isOn: $isLicensed) {
 							Label("Licensed Operator", systemImage: "person.text.rectangle")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						if isLicensed {
-							
+
 							Text("Onboarding for licensed operators requires firmware 2.0.20 or greater. Make sure to refer to your local regulations and contact the local amateur frequency coordinators with questions.")
 								.font(.caption2)
 							Text("What licensed operator mode does:\n* Sets the node name to your call sign \n* Broadcasts node info every 10 minutes \n* Overrides frequency, dutycycle and tx power \n* Disables encryption")
 								.font(.caption2)
-							
+
 							HStack {
 								Label("Frequency", systemImage: "waveform.path.ecg")
 								Spacer()
@@ -141,11 +141,11 @@ struct UserConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
-						
+
 						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-						if connectedNode != nil {
-							
+						if node != nil && connectedNode != nil {
+
 							if !isLicensed {
 								var u = User()
 								u.shortName = shortName
@@ -157,7 +157,7 @@ struct UserConfig: View {
 								}
 							} else {
 								var ham = HamParameters()
-								//ham.shortName = shortName
+								// ham.shortName = shortName
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
@@ -204,11 +204,11 @@ struct UserConfig: View {
 				if newIsLicensed != node?.user!.isLicensed { hasChanges = true }
 			}
 		}
-		.onChange(of: overrideFrequency) { newOverrideFrequency in
-			//hasChanges = true
+		.onChange(of: overrideFrequency) { _ in
+			// hasChanges = true
 		}
-		.onChange(of: txPower) { newTxPower in
-			//hasChanges = true
+		.onChange(of: txPower) { _ in
+			// hasChanges = true
 		}
 	}
 }

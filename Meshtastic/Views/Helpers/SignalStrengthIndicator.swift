@@ -33,7 +33,7 @@ import SwiftUI
 
 struct SignalStrengthIndicator: View {
 	let signalStrength: SignalStrength
-	
+
 	var body: some View {
 		HStack {
 			ForEach(0..<3) { bar in
@@ -44,7 +44,7 @@ struct SignalStrengthIndicator: View {
 			}
 		}
 	}
-	
+
 	private func getColor() -> Color {
 		switch signalStrength {
 		case .weak:
@@ -71,7 +71,7 @@ extension Shape {
 	}
 }
 
-enum SignalStrength : Int {
+enum SignalStrength: Int {
 	case weak = 0
 	case normal = 1
 	case strong = 2

@@ -9,14 +9,14 @@ import SwiftUI
 import CoreLocation
 
 struct WaypointFormView: View {
-	
+
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var coordinate: CLLocationCoordinate2D
-	@State var waypointId : Int = 0
-	
+	@State var waypointId: Int = 0
+
 	@FocusState private var iconIsFocused: Bool
-	
+
 	@State private var name: String = ""
 	@State private var description: String = ""
 	@State private var icon: String = "📍"
@@ -26,9 +26,9 @@ struct WaypointFormView: View {
 	@State private var expire: Date = Date() // = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-	
+
 	var body: some View {
-		
+
 		Form {
 			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
 			Section(header: Text((waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
@@ -52,7 +52,7 @@ struct WaypointFormView: View {
 						axis: .vertical
 					)
 					.foregroundColor(Color.gray)
-					.onChange(of: name, perform: { value in
+					.onChange(of: name, perform: { _ in
 						let totalBytes = name.utf8.count
 						// Only mess with the value if it is too big
 						if totalBytes > 30 {
@@ -73,7 +73,7 @@ struct WaypointFormView: View {
 						axis: .vertical
 					)
 					.foregroundColor(Color.gray)
-					.onChange(of: description, perform: { value in
+					.onChange(of: description, perform: { _ in
 						let totalBytes = description.utf8.count
 						// Only mess with the value if it is too big
 						if totalBytes > 100 {
@@ -92,14 +92,14 @@ struct WaypointFormView: View {
 						.font(.title)
 						.focused($iconIsFocused)
 						.onChange(of: icon) { value in
-							
+
 							// If you have anything other than emojis in your string make it empty
 							if !value.onlyEmojis() {
 								icon = ""
 							}
 							// If a second emoji is entered delete the first one
 							if value.count >= 1 {
-								
+
 								if value.count > 1 {
 									let index = value.index(value.startIndex, offsetBy: 1)
 									icon = String(value[index])
@@ -107,7 +107,7 @@ struct WaypointFormView: View {
 								iconIsFocused = false
 							}
 						}
-					
+
 				}
 				Toggle(isOn: $expires) {
 					Label("Expires", systemImage: "clock.badge.xmark")
@@ -126,9 +126,9 @@ struct WaypointFormView: View {
 		}
 		HStack {
 			Button {
-				
+
 				var newWaypoint = Waypoint()
-				
+
 				if waypointId > 0 {
 					newWaypoint.id = UInt32(waypointId)
 				} else {
@@ -144,7 +144,7 @@ struct WaypointFormView: View {
 				let unicode = unicodeScalers[unicodeScalers.startIndex].value
 				newWaypoint.icon = unicode
 				if locked {
-					
+
 					if lockedTo == 0 {
 						newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
 					} else {
@@ -172,8 +172,8 @@ struct WaypointFormView: View {
 			.controlSize(.large)
 			.disabled(bleManager.connectedPeripheral == nil)
 			.padding(.bottom)
-			
-			Button(role:.cancel) {
+
+			Button(role: .cancel) {
 				dismiss()
 			} label: {
 				Label("cancel", systemImage: "x.circle")
@@ -184,7 +184,7 @@ struct WaypointFormView: View {
 			.padding(.bottom)
 
 			if waypointId > 0 {
-				
+
 				Menu {
 					Button("For me", action: {
 					let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
@@ -197,10 +197,10 @@ struct WaypointFormView: View {
 					 dismiss() })
 					Button("For everyone", action: {
 						var newWaypoint = Waypoint()
-						
+
 						if waypointId > 0 {
 							newWaypoint.id = UInt32(waypointId)
-						} 
+						}
 						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 						newWaypoint.description_p = description
 						newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
@@ -211,7 +211,7 @@ struct WaypointFormView: View {
 						let unicode = unicodeScalers[unicodeScalers.startIndex].value
 						newWaypoint.icon = unicode
 						if locked {
-							
+
 							if lockedTo == 0 {
 								newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
 							} else {
@@ -241,7 +241,7 @@ struct WaypointFormView: View {
 		}
 		.onChange(of: waypointId) { newId in
 			print(newId)
-			
+
 		}
 		.onAppear {
 			if waypointId > 0 {

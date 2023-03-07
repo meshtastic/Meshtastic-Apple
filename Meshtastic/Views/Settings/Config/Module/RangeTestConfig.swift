@@ -7,19 +7,19 @@
 import SwiftUI
 
 struct RangeTestConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = false
 	@State var sender = 0
 	@State var save = false
-	
+
 	var body: some View {
 		VStack {
 			Form {
@@ -65,7 +65,7 @@ struct RangeTestConfig: View {
 				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
-					
+
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if connectedNode != nil {
 						var rtc = ModuleConfig.RangeTestConfig()
@@ -96,12 +96,12 @@ struct RangeTestConfig: View {
 				self.save = node?.rangeTestConfig?.save ?? false
 				self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
 				self.hasChanges = false
-				
+
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
 					print("empty range test module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil && connectedNode!.num > 0 {
+					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}

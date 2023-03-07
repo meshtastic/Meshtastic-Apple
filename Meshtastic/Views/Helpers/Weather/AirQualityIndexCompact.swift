@@ -10,14 +10,13 @@ struct AirQualityIndexCompact: View {
 	var aqi: Int
 
 	var body: some View {
-		
 
-		HStack (spacing: 0.5) {
+		HStack(spacing: 0.5) {
 			Text("AQI \(aqi)")
 				.foregroundColor(.gray)
 				.padding(.trailing, 0)
 				.font(.caption)
-			
+
 			if aqi > 0 && aqi < 51 {
 				// Good
 				Circle()
@@ -38,7 +37,7 @@ struct AirQualityIndexCompact: View {
 				Circle()
 					.fill(.orange)
 					.frame(width: 10, height: 10)
-					
+
 			} else if aqi > 300 && aqi < 401 {
 				// Very Poor
 				Circle()
@@ -55,7 +54,7 @@ struct AirQualityIndexCompact: View {
 }
 struct AQICircleDisplay_Previews: PreviewProvider {
 	static var previews: some View {
-		
+
 		VStack {
 			AirQualityIndexCompact(aqi: 5)
 			AirQualityIndexCompact(aqi: 51)

@@ -12,15 +12,15 @@ import WeatherKit
 
 struct NodeWeatherForecastView: View {
 	var location: CLLocation
-	
+
 	@State private var forecast: NodeWeatherForecast = placeholderForecast
-	
+
 	var body: some View {
 		VStack {
 			chart
 				.frame(width: 400)
 		}
-		//.frame(width: 350, height: 200)
+		// .frame(width: 350, height: 200)
 		.padding(10)
 		.background()
 		.task {
@@ -38,12 +38,12 @@ struct NodeWeatherForecastView: View {
 			}
 		}
 	}
-	
+
 	var chart: some View {
 		Chart {
 			areaMarks(seriesKey: "Temperature", value: 0)
 				.foregroundStyle(.linearGradient(colors: [.teal, .yellow], startPoint: .bottom, endPoint: .top))
-			
+
 			ForEach(forecast.nightTimeRanges, id: \.lowerBound) { range in
 				RectangleMark(
 					xStart: .value("Hour", range.lowerBound),
@@ -53,7 +53,7 @@ struct NodeWeatherForecastView: View {
 				.mask {
 					areaMarks(seriesKey: "Mask", value: range.lowerBound.timeIntervalSince1970)
 				}
-				
+
 				if range.lowerBound != forecast.entries.first!.date {
 					let date = range.lowerBound
 					RectangleMark(
@@ -71,7 +71,7 @@ struct NodeWeatherForecastView: View {
 							.foregroundStyle(.white, .indigo)
 					}
 				}
-				
+
 				if range.upperBound != forecast.entries.last!.date {
 					let date = range.upperBound
 					RectangleMark(
@@ -107,7 +107,7 @@ struct NodeWeatherForecastView: View {
 			}
 		}
 	}
-	
+
 	@ChartContentBuilder
 	func areaMarks(seriesKey: String, value: Double) -> some ChartContent {
 		ForEach(forecast.entries) { entry in
@@ -120,14 +120,14 @@ struct NodeWeatherForecastView: View {
 			.interpolationMethod(.catmullRom)
 		}
 	}
-		
+
 	static var placeholderForecast: NodeWeatherForecast {
 		func entry(hourOffset: Int, degrees: Double, isDaylight: Bool) -> NodeWeatherForecast.WeatherEntry {
 			let startDate = Calendar.current.date(from: DateComponents(year: 2022, month: 5, day: 6, hour: 9))!
 			let date = Calendar.current.date(byAdding: DateComponents(hour: hourOffset), to: startDate)!
 			return NodeWeatherForecast.WeatherEntry(date: date, degrees: degrees, isDaylight: isDaylight)
 		}
-		
+
 		return NodeWeatherForecast(entries: [
 			entry(hourOffset: 0, degrees: 63, isDaylight: true),
 			entry(hourOffset: 1, degrees: 68, isDaylight: true),
@@ -165,17 +165,17 @@ struct NodeWeatherForecast {
 		var degrees: Double
 		var isDaylight: Bool
 	}
-	
+
 	var entries: [WeatherEntry]
-	
+
 	var low: Double {
 		return entries.map(\.degrees).min()! - 2
 	}
-	
+
 	var hottestEntry: WeatherEntry {
 		return entries.sorted { $0.degrees > $1.degrees }.first!
 	}
-	
+
 	var nightTimeRanges: [Range<Date>] {
 		var currentLowerBound: Date?
 		var results: [Range<Date>] = []
@@ -192,7 +192,7 @@ struct NodeWeatherForecast {
 		}
 		return results
 	}
-	
+
 	var binRange: ClosedRange<Date> {
 		let startDate: Date = entries.map(\.date).first(where: {
 			Calendar.current.component(.hour, from: $0).isMultiple(of: 3)
@@ -202,7 +202,7 @@ struct NodeWeatherForecast {
 		})!
 		return startDate ... endDate
 	}
-	
+
 	func temperature(at date: Date) -> Double {
 		entries.first(where: { $0.date == date })!.degrees
 	}

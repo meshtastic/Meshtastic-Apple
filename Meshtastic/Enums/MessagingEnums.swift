@@ -23,43 +23,39 @@ enum Tapbacks: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var emojiString: String {
-		get {
-			switch self {
-			case .heart:
-				return "❤️"
-			case .thumbsUp:
-				return "👍"
-			case .thumbsDown:
-				return "👎"
-			case .haHa:
-				return "🤣"
-			case .exclamation:
-				return "‼️"
-			case .question:
-				return "❓"
-			case .poop:
-				return "💩"
-			}
+		switch self {
+		case .heart:
+			return "❤️"
+		case .thumbsUp:
+			return "👍"
+		case .thumbsDown:
+			return "👎"
+		case .haHa:
+			return "🤣"
+		case .exclamation:
+			return "‼️"
+		case .question:
+			return "❓"
+		case .poop:
+			return "💩"
 		}
 	}
 	var description: String {
-		get {
-			switch self {
-			case .heart:
-				return NSLocalizedString("tapback.heart", comment: "Heart")
-			case .thumbsUp:
-				return NSLocalizedString("tapback.thumbsup", comment: "Thumbs Up")
-			case .thumbsDown:
-				return NSLocalizedString("tapback.thumbsdown", comment: "Thumbs Down")
-			case .haHa:
-				return NSLocalizedString("tapback.haha", comment: "HaHa")
-			case .exclamation:
-				return NSLocalizedString("tapback.exclamation", comment: "Exclamation Mark")
-			case .question:
-				return NSLocalizedString("tapback.question", comment: "Question Mark")
-			case .poop:
-				return NSLocalizedString("tapback.poop", comment: "Poop")
-			}
+		switch self {
+		case .heart:
+			return NSLocalizedString("tapback.heart", comment: "Heart")
+		case .thumbsUp:
+			return NSLocalizedString("tapback.thumbsup", comment: "Thumbs Up")
+		case .thumbsDown:
+			return NSLocalizedString("tapback.thumbsdown", comment: "Thumbs Down")
+		case .haHa:
+			return NSLocalizedString("tapback.haha", comment: "HaHa")
+		case .exclamation:
+			return NSLocalizedString("tapback.exclamation", comment: "Exclamation Mark")
+		case .question:
+			return NSLocalizedString("tapback.question", comment: "Question Mark")
+		case .poop:
+			return NSLocalizedString("tapback.poop", comment: "Poop")
 		}
 	}
 }

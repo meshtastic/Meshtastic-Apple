@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct BluetoothConfig: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
 	var node: NodeInfoEntity?
-	
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var enabled = true
@@ -22,43 +19,35 @@ struct BluetoothConfig: View {
 	@State var fixedPin = "123456"
 	@State var shortPin = false
 	var pinLength: Int = 6
-	
 	let numberFormatter: NumberFormatter = {
-		
 		let formatter = NumberFormatter()
 			formatter.numberStyle = .none
-		
 			return formatter
 	}()
-	
 	var body: some View {
-		
 		Form {
 			Section(header: Text("options")) {
-			
 				Toggle(isOn: $enabled) {
 					Label("enabled", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
 				Picker("bluetooth.pairingmode", selection: $mode ) {
 					ForEach(BluetoothModes.allCases) { bm in
 						Text(bm.description)
 					}
 				}
 				.pickerStyle(DefaultPickerStyle())
-				
 				if mode == 1 {
 					HStack {
 						Label("bluetooth.mode.fixedpin", systemImage: "wallet.pass")
 						TextField("bluetooth.mode.fixedpin", text: $fixedPin)
 							.foregroundColor(.gray)
-							.onChange(of: fixedPin, perform: { value in
+							.onChange(of: fixedPin, perform: { _ in
 								// Don't let the first character be 0 because it will get stripped when saving a UInt32
 								if fixedPin.first == "0" {
 									fixedPin = fixedPin.replacing("0", with: "")
 								}
-								//Require that pin is no more than 6 numbers and no less than 6 numbers
+								// Require that pin is no more than 6 numbers and no less than 6 numbers
 								if fixedPin.utf8.count == pinLength {
 									shortPin = false
 								} else if fixedPin.utf8.count > pinLength {
@@ -80,7 +69,6 @@ struct BluetoothConfig: View {
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.bluetoothConfig == nil)
-		
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {
@@ -128,12 +116,11 @@ struct BluetoothConfig: View {
 			self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
 			self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
 			self.hasChanges = false
-			
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
 				print("empty bluetooth config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestBluetoothConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

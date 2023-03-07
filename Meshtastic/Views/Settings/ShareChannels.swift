@@ -10,13 +10,13 @@ import CoreImage.CIFilterBuiltins
 
 struct QrCodeImage {
 	let context = CIContext()
-	
+
 	func generateQRCode(from text: String) -> UIImage {
 		var qrImage = UIImage(systemName: "xmark.circle") ?? UIImage()
 		let data = Data(text.utf8)
 		let filter = CIFilter.qrCodeGenerator()
 		filter.setValue(data, forKey: "inputMessage")
-		
+
 		let transform = CGAffineTransform(scaleX: 20, y: 20)
 		if let outputImage = filter.outputImage?.transformed(by: transform) {
 			if let image = context.createCGImage(
@@ -30,7 +30,7 @@ struct QrCodeImage {
 }
 
 struct ShareChannels: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
@@ -47,13 +47,13 @@ struct ShareChannels: View {
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
-	
+
 	var body: some View {
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {
 					if node != nil && node?.myInfo != nil {
-						Grid() {
+						Grid {
 							GridRow {
 								Spacer()
 								Text("include")
@@ -195,7 +195,7 @@ struct ShareChannels: View {
 								.buttonBorderShape(.capsule)
 								.controlSize(.large)
 								.padding(.bottom)
-								
+
 								Image(uiImage: qrImage)
 									.resizable()
 									.scaledToFit()
@@ -227,21 +227,21 @@ struct ShareChannels: View {
 					Text("Primary Channel").font(.title2)
 					Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled.")
 						.font(.callout)
-						.padding([.leading,.trailing,.bottom])
+						.padding([.leading, .trailing, .bottom])
 					Text("Admin Channel").font(.title2)
 					Text("A channel with the name 'admin' is the Admin channel and can be used to remotely administer nodes on your mesh, text messages can not be sent over the admin channel.")
 						.font(.callout)
-						.padding([.leading,.trailing,.bottom])
+						.padding([.leading, .trailing, .bottom])
 					Text("Private Channels").font(.title2)
 					Text("The other channels can be used for private group converations. Each of these groups has its own encryption key.")
 						.font(.callout)
-						.padding([.leading,.trailing,.bottom])
+						.padding([.leading, .trailing, .bottom])
 					Divider()
 				}
 				.padding()
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
-				
+
 				#if targetEnvironment(macCatalyst)
 					Button {
 						isPresentingHelp = false
@@ -262,18 +262,18 @@ struct ShareChannels: View {
 			})
 			.onAppear {
 				bleManager.context = context
-				GenerateChannelSet()
+				generateChannelSet()
 			}
-			.onChange(of: includeChannel1) { includeCh1 in GenerateChannelSet()	}
-			.onChange(of: includeChannel2) { includeCh2 in GenerateChannelSet()	}
-			.onChange(of: includeChannel3) { includeCh3 in GenerateChannelSet()	}
-			.onChange(of: includeChannel4) { includeCh4 in GenerateChannelSet()	}
-			.onChange(of: includeChannel5) { includeCh5 in GenerateChannelSet()	}
-			.onChange(of: includeChannel6) { includeCh6 in GenerateChannelSet() }
-			.onChange(of: includeChannel7) { includeCh7 in GenerateChannelSet() }
+			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel4) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
+			.onChange(of: includeChannel6) { _ in generateChannelSet() }
+			.onChange(of: includeChannel7) { _ in generateChannelSet() }
 		}
 	}
-	func GenerateChannelSet() {
+	func generateChannelSet() {
 		channelSet = ChannelSet()
 		var loRaConfig = Config.LoRaConfig()
 		loRaConfig.region =  RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))!.protoEnumValue()
@@ -291,10 +291,10 @@ struct ShareChannels: View {
 		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
 			for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
 				if ch.role > 0 {
-					
+
 					if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||
-						ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7   {
-						
+						ch.index == 4 && includeChannel4 || ch.index == 5 && includeChannel5 || ch.index == 6 && includeChannel6 || ch.index == 7 && includeChannel7 {
+
 						var channelSettings = ChannelSettings()
 							channelSettings.name = ch.name!
 							channelSettings.psk = ch.psk!

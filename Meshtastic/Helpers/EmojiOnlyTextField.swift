@@ -7,19 +7,19 @@
 import SwiftUI
 
 class SwiftUIEmojiTextField: UITextField {
-	
+
 	override func awakeFromNib() {
 		super.awakeFromNib()
 	}
-	
+
 	func setEmoji() {
 		_ = self.textInputMode
 	}
-	
+
 	override var textInputContextIdentifier: String? {
 		return ""
 	}
-	
+
 	override var textInputMode: UITextInputMode? {
 		for mode in UITextInputMode.activeInputModes {
 			if mode.primaryLanguage == "emoji" {
@@ -34,7 +34,7 @@ class SwiftUIEmojiTextField: UITextField {
 struct EmojiOnlyTextField: UIViewRepresentable {
 	@Binding var text: String
 	var placeholder: String = ""
-	
+
 	func makeUIView(context: Context) -> SwiftUIEmojiTextField {
 		let emojiTextField = SwiftUIEmojiTextField()
 		emojiTextField.placeholder = placeholder
@@ -42,15 +42,15 @@ struct EmojiOnlyTextField: UIViewRepresentable {
 		emojiTextField.delegate = context.coordinator
 		return emojiTextField
 	}
-	
+
 	func updateUIView(_ uiView: SwiftUIEmojiTextField, context: Context) {
 		uiView.text = text
 	}
-	
+
 	func makeCoordinator() -> Coordinator {
 		Coordinator(parent: self)
 	}
-	
+
 	class Coordinator: NSObject, UITextFieldDelegate {
 		var parent: EmojiOnlyTextField
 		init(parent: EmojiOnlyTextField) {
@@ -63,12 +63,3 @@ struct EmojiOnlyTextField: UIViewRepresentable {
 		}
 	}
 }
-
-//struct EmojiContentView: View {
-//
-//	@State private var text: String = ""
-//
-//	var body: some View {
-//		EmojiTextField(text: $text, placeholder: "Enter emoji")
-//	}
-//}

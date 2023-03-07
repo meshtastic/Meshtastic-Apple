@@ -62,7 +62,7 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.synchronize()
 		}
 	}
-	
+
 	init() {
 
 		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""

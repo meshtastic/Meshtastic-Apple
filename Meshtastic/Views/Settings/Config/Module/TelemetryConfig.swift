@@ -7,13 +7,13 @@
 import SwiftUI
 
 struct TelemetryConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var deviceUpdateInterval = 0
@@ -21,9 +21,9 @@ struct TelemetryConfig: View {
 	@State var environmentMeasurementEnabled = false
 	@State var environmentScreenEnabled = false
 	@State var environmentDisplayFahrenheit = false
-	
+
 	var body: some View {
-		
+
 		VStack {
 			Form {
 				Section(header: Text("update.interval")) {
@@ -88,7 +88,7 @@ struct TelemetryConfig: View {
 						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 						tc.environmentScreenEnabled = environmentScreenEnabled
 						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-						let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser:  node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -114,12 +114,12 @@ struct TelemetryConfig: View {
 				self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 				self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 				self.hasChanges = false
-				
+
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
 					print("empty telemetry module config")
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil && connectedNode!.num > 0 {
+					if node != nil && connectedNode != nil {
 						_ = bleManager.requestTelemetryModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}

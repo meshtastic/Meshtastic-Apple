@@ -15,22 +15,20 @@ enum ChannelRoles: Int, CaseIterable, Identifiable {
 
 	var id: Int { self.rawValue }
 	var description: String {
-		get {
-			switch self {
-			
-			case .disabled:
-				return NSLocalizedString("channel.role.disabled", comment: "Disabled")
-			case .primary:
-				return NSLocalizedString("channel.role.primary", comment: "Primary")
-			case .secondary:
-				return NSLocalizedString("channel.role.secondary", comment: "Secondary")
-			}
+		switch self {
+
+		case .disabled:
+			return NSLocalizedString("channel.role.disabled", comment: "Disabled")
+		case .primary:
+			return NSLocalizedString("channel.role.primary", comment: "Primary")
+		case .secondary:
+			return NSLocalizedString("channel.role.secondary", comment: "Secondary")
 		}
 	}
 	func protoEnumValue() -> Channel.Role {
-		
+
 		switch self {
-			
+
 		case .disabled:
 			return Channel.Role.disabled
 		case .primary:

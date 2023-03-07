@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -73,10 +73,10 @@ struct DeviceConnectionStatus {
 
   init() {}
 
-  fileprivate var _wifi: WifiConnectionStatus? = nil
-  fileprivate var _ethernet: EthernetConnectionStatus? = nil
-  fileprivate var _bluetooth: BluetoothConnectionStatus? = nil
-  fileprivate var _serial: SerialConnectionStatus? = nil
+  fileprivate var _wifi: WifiConnectionStatus?
+  fileprivate var _ethernet: EthernetConnectionStatus?
+  fileprivate var _bluetooth: BluetoothConnectionStatus?
+  fileprivate var _serial: SerialConnectionStatus?
 }
 
 ///
@@ -109,7 +109,7 @@ struct WifiConnectionStatus {
 
   init() {}
 
-  fileprivate var _status: NetworkConnectionStatus? = nil
+  fileprivate var _status: NetworkConnectionStatus?
 }
 
 ///
@@ -134,7 +134,7 @@ struct EthernetConnectionStatus {
 
   init() {}
 
-  fileprivate var _status: NetworkConnectionStatus? = nil
+  fileprivate var _status: NetworkConnectionStatus?
 }
 
 ///
@@ -220,7 +220,7 @@ extension SerialConnectionStatus: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+private let _protobuf_package = "meshtastic"
 
 extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DeviceConnectionStatus"
@@ -228,7 +228,7 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     1: .same(proto: "wifi"),
     2: .same(proto: "ethernet"),
     3: .same(proto: "bluetooth"),
-    4: .same(proto: "serial"),
+    4: .same(proto: "serial")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -281,7 +281,7 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "status"),
     2: .same(proto: "ssid"),
-    3: .same(proto: "rssi"),
+    3: .same(proto: "rssi")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -327,7 +327,7 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".EthernetConnectionStatus"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "status"),
+    1: .same(proto: "status")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -366,7 +366,7 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
     1: .standard(proto: "ip_address"),
     2: .standard(proto: "is_connected"),
     3: .standard(proto: "is_mqtt_connected"),
-    4: .standard(proto: "is_syslog_connected"),
+    4: .standard(proto: "is_syslog_connected")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -415,7 +415,7 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "pin"),
     2: .same(proto: "rssi"),
-    3: .standard(proto: "is_connected"),
+    3: .standard(proto: "is_connected")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -458,7 +458,7 @@ extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   static let protoMessageName: String = _protobuf_package + ".SerialConnectionStatus"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "baud"),
-    2: .standard(proto: "is_connected"),
+    2: .standard(proto: "is_connected")
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

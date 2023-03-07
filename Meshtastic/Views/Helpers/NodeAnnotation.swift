@@ -3,13 +3,13 @@ import SwiftUI
 
 struct NodeAnnotation: View {
 	let time: Date
-	
+
 	let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 
 	var body: some View {
-		
-		if (time >= sixMonthsAgo!) {
-			
+
+		if time >= sixMonthsAgo! {
+
 			VStack(spacing: 0) {
 					Text(time, style: .offset)
 						.font(.caption2).foregroundColor(.accentColor)
@@ -17,9 +17,9 @@ struct NodeAnnotation: View {
 					.background(Color(.white))
 					.cornerRadius(10)
 			}
-			
+
 		} else {
-				
+
 			VStack(spacing: 0) {
 				Text("unknown.age")
 					.font(.caption2).foregroundColor(.accentColor)

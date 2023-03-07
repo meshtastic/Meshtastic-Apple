@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct MQTTConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
@@ -20,9 +20,9 @@ struct MQTTConfig: View {
 	@State var password = ""
 	@State var encryptionEnabled = false
 	@State var jsonEnabled = false
-	
+
 	var body: some View {
-				
+
 		Form {
 			Section(header: Text("options")) {
 				Toggle(isOn: $enabled) {
@@ -30,7 +30,7 @@ struct MQTTConfig: View {
 					Label("enabled", systemImage: "dot.radiowaves.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
+
 				Toggle(isOn: $encryptionEnabled) {
 
 					Label("Encryption Enabled", systemImage: "lock.icloud")
@@ -50,7 +50,7 @@ struct MQTTConfig: View {
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: address, perform: { value in
+						.onChange(of: address, perform: { _ in
 							let totalBytes = address.utf8.count
 							// Only mess with the value if it is too big
 							if totalBytes > 30 {
@@ -66,24 +66,24 @@ struct MQTTConfig: View {
 						.keyboardType(.default)
 				}
 				.autocorrectionDisabled()
-				
+
 				HStack {
 					Label("mqtt.username", systemImage: "person.text.rectangle")
 					TextField("mqtt.username", text: $username)
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: username, perform: { value in
+						.onChange(of: username, perform: { _ in
 
 							let totalBytes = username.utf8.count
-							
+
 							// Only mess with the value if it is too big
 							if totalBytes > 62 {
 
 								let firstNBytes = Data(username.utf8.prefix(62))
-						
+
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									
+
 									// Set the shortName back to the last place where it was the right size
 									username = maxBytesString
 								}
@@ -100,17 +100,17 @@ struct MQTTConfig: View {
 						.foregroundColor(.gray)
 						.autocapitalization(.none)
 						.disableAutocorrection(true)
-						.onChange(of: password, perform: { value in
+						.onChange(of: password, perform: { _ in
 
 							let totalBytes = password.utf8.count
-							
+
 							// Only mess with the value if it is too big
 							if totalBytes > 62 {
 
 								let firstNBytes = Data(password.utf8.prefix(62))
-						
+
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									
+
 									// Set the shortName back to the last place where it was the right size
 									password = maxBytesString
 								}
@@ -127,7 +127,7 @@ struct MQTTConfig: View {
 		}
 		.scrollDismissesKeyboard(.interactively)
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
-		
+
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {
@@ -182,12 +182,12 @@ struct MQTTConfig: View {
 			self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
 			self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
 			self.hasChanges = false
-			
+
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
 				print("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}

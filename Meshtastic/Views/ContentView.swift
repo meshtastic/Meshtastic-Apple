@@ -5,11 +5,11 @@
 import SwiftUI
 
 struct ContentView: View {
-	
+
 	@EnvironmentObject var userSettings: UserSettings
-	
+
 	@State private var selection: Tab = .ble
-	
+
 	enum Tab {
 		case contacts
 		case messages
@@ -18,11 +18,11 @@ struct ContentView: View {
 		case nodes
 		case settings
 	}
-	
+
 	var body: some View {
-		
+
 		TabView(selection: $selection) {
-			
+
 			Contacts()
 				.tabItem {
 					Label("messages", systemImage: "message")

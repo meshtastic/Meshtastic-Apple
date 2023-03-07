@@ -8,18 +8,18 @@ import SwiftUI
 import StoreKit
 
 struct AboutMeshtastic: View {
-	
+
 	let locale = Locale.current
-	
+
 	var body: some View {
-		
-		VStack{
-			
+
+		VStack {
+
 			List {
 				Section(header: Text("What is Meshtastic?")) {
 					Text("An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices.")
 						.font(.title3)
-					
+
 				}
 				Section(header: Text("Apple Apps")) {
 					Button("Review the app") {

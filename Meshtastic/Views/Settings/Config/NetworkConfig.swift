@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct NetworkConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
@@ -24,13 +24,13 @@ struct NetworkConfig: View {
 	@State var ntpServer = ""
 	@State var ethEnabled = false
 	@State var ethMode = 0
-	
+
 	var body: some View {
-		
+
 		VStack {
 			Form {
 				Section(header: Text("WiFi Options (ESP32 Only)")) {
-					
+
 					Toggle(isOn: $wifiEnabled) {
 						Label("enabled", systemImage: "wifi")
 					}
@@ -41,7 +41,7 @@ struct NetworkConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: wifiSsid, perform: { value in
+							.onChange(of: wifiSsid, perform: { _ in
 								let totalBytes = wifiSsid.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 32 {
@@ -51,7 +51,7 @@ struct NetworkConfig: View {
 										wifiSsid = maxBytesString
 									}
 								}
-								hasChanges = true 
+								hasChanges = true
 							})
 							.foregroundColor(.gray)
 					}
@@ -62,7 +62,7 @@ struct NetworkConfig: View {
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
-							.onChange(of: wifiPsk, perform: { value in
+							.onChange(of: wifiPsk, perform: { _ in
 								let totalBytes = wifiPsk.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 63 {
@@ -117,8 +117,8 @@ struct NetworkConfig: View {
 						network.wifiSsid = self.wifiSsid
 						network.wifiPsk = self.wifiPsk
 						network.ethEnabled = self.ethEnabled
-						//network.addressMode = Config.NetworkConfig.AddressMode.dhcp
-						
+						// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
+
 						let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -145,12 +145,12 @@ struct NetworkConfig: View {
 			self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
 			self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
 			self.hasChanges = false
-			
+
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil && connectedNode!.num > 0 {
+				if node != nil && connectedNode != nil {
 					_ = bleManager.requestNetworkConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
