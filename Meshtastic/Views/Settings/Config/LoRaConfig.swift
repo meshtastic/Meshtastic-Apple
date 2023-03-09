@@ -40,6 +40,7 @@ struct LoRaConfig: View {
 	@State var bandwidth = 0
 	@State var spreadFactor = 0
 	@State var codingRate = 0
+	@State var rxBoostedGain = false
 
 	var body: some View {
 
@@ -142,8 +143,13 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .channelNum)
 					}
-					Text("A hash of the primary channel's name sets the LoRa channel number, this determines the actual frequency you are transmitting on in the band. To ensure devices with different primary channel names transmit on the same frequency, you must explicitly set the LoRa channel number.")
+					Text("This determines the actual frequency you are transmitting on in the band.")
 						.font(.caption)
+					
+					Toggle(isOn: $rxBoostedGain) {
+						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
@@ -178,6 +184,7 @@ struct LoRaConfig: View {
 						lc.bandwidth = UInt32(bandwidth)
 						lc.codingRate = UInt32(codingRate)
 						lc.spreadFactor = UInt32(spreadFactor)
+						lc.sx126XRxBoostedGain = rxBoostedGain
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -209,8 +216,7 @@ struct LoRaConfig: View {
 			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
-			print("Spreadum: \(self.spreadFactor)")
-
+			self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 			self.hasChanges = false
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
@@ -260,6 +266,11 @@ struct LoRaConfig: View {
 		.onChange(of: spreadFactor) { newSpreadFactor in
 			if node != nil && node!.loRaConfig != nil {
 				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
+			}
+		}
+		.onChange(of: rxBoostedGain) { newRxBoostedGain in
+			if node != nil && node!.loRaConfig != nil {
+				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
 			}
 		}
 	}
