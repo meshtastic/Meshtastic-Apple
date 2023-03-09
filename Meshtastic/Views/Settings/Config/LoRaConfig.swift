@@ -145,7 +145,6 @@ struct LoRaConfig: View {
 					}
 					Text("This determines the actual frequency you are transmitting on in the band.")
 						.font(.caption)
-					
 					Toggle(isOn: $rxBoostedGain) {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}

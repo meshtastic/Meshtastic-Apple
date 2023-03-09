@@ -342,7 +342,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 				newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 				newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
+				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+					return nil
+				}
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 
@@ -356,7 +358,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					position.altitude = nodeInfo.position.altitude
 					position.satsInView = Int32(nodeInfo.position.satsInView)
 					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+						return nil
+					}
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 				}
 
@@ -685,7 +689,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.metricsType = 1
 				}
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
-				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
+				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+					return
+				}
 				mutableTelemetries.add(telemetry)
 				fetchedNode[0].lastHeard = telemetry.time
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
