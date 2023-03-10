@@ -446,6 +446,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							connectedPeripheral.longName = myInfo?.bleName ?? NSLocalizedString("unknown", comment: "Unknown")
 						}
 					}
+					tryClearExistingChannels()
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 && !invalidVersion {
@@ -982,25 +983,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
-			do {
-				guard let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-					return false
-				}
-				if fetchedMyInfo.count == 1 {
-					guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
-						return false
-					}
-					mutableChannels.removeAllObjects()
-					fetchedMyInfo[0].channels = mutableChannels
-					do {
-						try context!.save()
-					} catch {
-						print("Failed to clear existing channels from local app database")
-					}
-				}
-			} catch {
-				print("Failed to find a node MyInfo to save these channels to")
-			}
+			tryClearExistingChannels()
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
@@ -1890,6 +1873,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			}
 		}
 		return false
+	}
+
+	public func tryClearExistingChannels() {
+		//Before we get started delete the existing channels from the myNodeInfo
+		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+
+		do {
+			let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+			if fetchedMyInfo.count == 1 {
+				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
+				mutableChannels.removeAllObjects()
+				fetchedMyInfo[0].channels = mutableChannels
+				do {
+					try context!.save()
+				} catch {
+					print("Failed to clear existing channels from local app database")
+				}
+			}
+		} catch {
+			print("Failed to find a node MyInfo to save these channels to")
+		}
 	}
 }
 
