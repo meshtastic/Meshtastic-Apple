@@ -15,7 +15,7 @@ struct BatteryGauge: View {
 
 	var body: some View {
 		VStack {
-			if batteryLevel == 0.0 {
+			if batteryLevel > 100.0 {
 				// Plugged in
 				Image(systemName: "powerplug")
 					.font(.largeTitle)
@@ -24,7 +24,7 @@ struct BatteryGauge: View {
 			} else {
 				let gradient = Gradient(colors: [.red, .orange, .green])
 				Gauge(value: batteryLevel, in: minValue...maxValue) {
-					if batteryLevel > 1.0 && batteryLevel < 10 {
+					if batteryLevel >= 0.0 && batteryLevel < 10 {
 						Label("Battery Level %", systemImage: "battery.0")
 					} else if batteryLevel >= 10.0 && batteryLevel < 25.00 {
 						Label("Battery Level %", systemImage: "battery.25")
@@ -38,7 +38,11 @@ struct BatteryGauge: View {
 						Label("Battery Level %", systemImage: "battery.100.bolt")
 					}
 				} currentValueLabel: {
-					Text(Int(batteryLevel), format: .percent)
+					if batteryLevel == 0.0 {
+						Text("< 1%")
+					} else {
+						Text(Int(batteryLevel), format: .percent)
+					}
 				}
 				.tint(gradient)
 				.gaugeStyle(.accessoryCircular)
@@ -57,6 +61,7 @@ struct BatteryGauge_Previews: PreviewProvider {
 			BatteryGauge(batteryLevel: 74.0)
 			BatteryGauge(batteryLevel: 99.0)
 			BatteryGauge(batteryLevel: 100.0)
+			BatteryGauge(batteryLevel: 111.0)
 		}
 	}
 }
