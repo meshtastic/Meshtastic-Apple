@@ -97,6 +97,79 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 	}
 }
 
+func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(packet.from))
+	MeshLogger.log("📟 \(logString)")
+	
+	guard packet.from > 0 else { return }
+	
+	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+	
+	do {
+		
+		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as? [NodeInfoEntity] ?? []
+		if fetchedNode.count == 0 {
+			// Not Found Insert
+			let newNode = NodeInfoEntity(context: context)
+			newNode.id = Int64(packet.from)
+			newNode.num = Int64(packet.from)
+			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			newNode.snr = packet.rxSnr
+			newNode.channel = Int32(packet.channel)
+			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
+				let newUser = UserEntity(context: context)
+					newUser.userId = newUserMessage.id
+					newUser.num = Int64(packet.from)
+					newUser.longName = newUserMessage.longName
+					newUser.shortName = newUserMessage.shortName
+					newUser.macaddr = newUserMessage.macaddr
+					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
+					newNode.user = newUser
+			}
+		} else {
+			// Update an existing node
+			fetchedNode[0].id = Int64(packet.from)
+			fetchedNode[0].num = Int64(packet.from)
+			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			fetchedNode[0].snr = packet.rxSnr
+			fetchedNode[0].channel = Int32(packet.channel)
+			
+			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
+				if nodeInfoMessage.hasDeviceMetrics {
+					let telemetry = TelemetryEntity(context: context)
+					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
+					telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
+					telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
+					telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
+					var newTelemetries = [TelemetryEntity]()
+					newTelemetries.append(telemetry)
+					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
+				}
+				if nodeInfoMessage.hasUser {
+					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
+					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
+					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
+					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
+					fetchedNode[0].user!.macaddr = nodeInfoMessage.user.macaddr
+					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+				}
+			}
+			do {
+				try context.save()
+				print("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
+			}
+		}
+	} catch {
+		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
+	}
+}
+
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.received %@", comment: "Position Packet received from node: %@"), String(packet.from))

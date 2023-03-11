@@ -46,6 +46,15 @@ struct Settings: View {
 		NavigationSplitView {
 			List {
 				NavigationLink {
+					AboutMeshtastic()
+				} label: {
+					Image(systemName: "questionmark.app")
+						.symbolRenderingMode(.hierarchical)
+
+					Text("about.meshtastic")
+				}
+				.tag(SettingsSidebar.about)
+				NavigationLink {
 					AppSettings()
 				} label: {
 					Image(systemName: "gearshape")
@@ -260,16 +269,17 @@ struct Settings: View {
 					}
 					.tag(SettingsSidebar.adminMessageLog)
 				}
-				Section(header: Text("about")) {
+				Section(header: Text("Firmware")) {
 					NavigationLink {
-						AboutMeshtastic()
+						Firmware(node: nodes.first(where: { $0.num == connectedNodeNum }))
 					} label: {
-						Image(systemName: "questionmark.app")
+						Image(systemName: "arrow.up.arrow.down.square")
 							.symbolRenderingMode(.hierarchical)
 
-						Text("about.meshtastic")
+						Text("Firmware Updates")
 					}
 					.tag(SettingsSidebar.about)
+					.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
 				}
 			}
 			.onAppear {

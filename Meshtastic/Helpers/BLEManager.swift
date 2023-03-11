@@ -503,7 +503,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context!)
 			case .nodeinfoApp:
-				if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
+				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context!) }
 			case .routingApp:
 				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context!) }
 			case .adminApp:
@@ -868,6 +868,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🚀 Sent Reboot Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+	
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.rebootOtaSeconds = 5
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(adminIndex)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Reboot OTA Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}

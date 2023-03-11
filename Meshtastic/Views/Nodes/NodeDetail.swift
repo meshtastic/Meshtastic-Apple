@@ -104,7 +104,9 @@ struct NodeDetail: View {
 											Text("Today's Weather Forecast")
 												.font(.title)
 												.padding()
-											NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+											let nodeLocation = node.positions?.lastObject as! PositionEntity
+											
+											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
 												.frame(height: 250)
 										}
 										#else
@@ -112,7 +114,9 @@ struct NodeDetail: View {
 											 Text("Today's Weather Forecast")
 												 .font(.title)
 												 .padding()
-											 NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+											 
+											 let nodeLocation = node.positions?.lastObject as! PositionEntity
+											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
 												 .frame(height: 250)
 												 .presentationDetents([.medium])
 												 .presentationDragIndicator(.automatic)
