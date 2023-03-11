@@ -66,7 +66,7 @@ struct Firmware: View {
 					Spacer()
 				}
 			}
-			.padding([.leading, .trailing])
+			.padding([.leading, .trailing, .bottom])
 			.padding(.bottom, 5)
 			VStack (alignment: .leading) {
 				Text("Firmware Releases")
@@ -75,45 +75,39 @@ struct Firmware: View {
 				List {
 					Section(header: Text("Stable")) {
 						ForEach(firmwareReleaseData.releases?.stable ?? [], id: \.id) { fr in
-							HStack() {
-								Link(fr.title ?? "Unknown", destination: URL(string: fr.pageUrl ?? "")!)
-									.font(.caption)
-								Spacer()
-								Link(destination: URL(string: fr.zipUrl ?? "")!) {
-									VStack {
-										Image(systemName: "square.and.arrow.down")
-											.font(.title3)
-									}
+							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+								HStack() {
+									Text(fr.title ?? "Unknown")
+										.font(.caption)
+									Spacer()
+									Image(systemName: "square.and.arrow.down")
+										.font(.title3)
 								}
 							}
 						}
 					}
 					Section("Alpha") {
 						ForEach(firmwareReleaseData.releases?.alpha ?? [], id: \.id) { fr in
-							HStack() {
-								Link(fr.title ?? "Unknown", destination: URL(string: fr.pageUrl ?? "")!)
-									.font(.caption)
-								Spacer()
-								Link(destination: URL(string: fr.zipUrl ?? "")!) {
-									VStack {
-										Image(systemName: "square.and.arrow.down")
-											.font(.title3)
-									}
+							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+								HStack() {
+									Text(fr.title ?? "Unknown")
+										.font(.caption)
+									Spacer()
+									Image(systemName: "square.and.arrow.down")
+										.font(.title3)
 								}
 							}
 						}
 					}
 					Section("Pull Requests") {
 						ForEach(firmwareReleaseData.pullRequests ?? [], id: \.id) { fr in
-							HStack() {
-								Link(fr.title ?? "Unknown", destination: URL(string: fr.pageUrl ?? "")!)
-									.font(.caption)
-								Spacer()
-								Link(destination: URL(string: fr.zipUrl ?? "")!) {
-									VStack {
-										Image(systemName: "square.and.arrow.down")
-											.font(.title3)
-									}
+							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+								HStack() {
+									Text(fr.title ?? "Unknown")
+										.font(.caption)
+									Spacer()
+									Image(systemName: "square.and.arrow.down")
+										.font(.title3)
 								}
 							}
 						}

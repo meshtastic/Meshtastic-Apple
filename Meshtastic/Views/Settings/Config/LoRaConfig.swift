@@ -46,6 +46,24 @@ struct LoRaConfig: View {
 
 		VStack {
 			Form {
+				if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral.num {
+					// Let users know what is going on if they are using remote admin and don't have the lora config yet
+					if node?.loRaConfig == nil  {
+						Text("LoRa config data has been requested but has not yet returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral.num {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+						.font(.title3)
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
 				Section(header: Text("Options")) {
 
 					Picker("Region", selection: $region ) {
@@ -216,6 +234,7 @@ struct LoRaConfig: View {
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 			self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
+			print(rxBoostedGain)
 			self.hasChanges = false
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
