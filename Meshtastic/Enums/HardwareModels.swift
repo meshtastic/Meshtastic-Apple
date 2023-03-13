@@ -7,32 +7,55 @@
 
 import Foundation
 // Default of 0 is Client
-enum HardwareModels: Int, CaseIterable, Identifiable {
+enum HardwareModels: String, CaseIterable, Identifiable {
 
-	case UNSET = 0
-	case TLORA_V2 = 1
-	case TLORA_V1 = 2
-	case TLORA_V2_1_1P6 = 3
-	case TBEAM = 4
-	case HELTEC_V2_0 = 5
-	case TBEAM_V0P7 = 6
-	case T_ECHO = 7
-	case TLORA_V1_1P3 = 8
-	case RAK4631 = 9
-	case HELTEC_V2_1 = 10
-	case HELTEC_V1 = 11
-	case LILYGO_TBEAM_S3_CORE = 12
-	case RAK11200 = 13
-	case NANO_G1 = 14
-	case TLORA_V2_1_1P8 = 15
-	case TLORA_T3_S3 = 16
-	case NANO_G1_EXPLORER = 17
-	case STATION_G1 = 25
-	case M5STACK = 42
-	case HELTEC_V3 = 43
-	case HELTEC_WSL_V3 = 45
+	case UNSET
+	case TLORA_V2
+	case TLORA_V1
+	case TLORA_V2_1_1P6
+	case TBEAM
+	case HELTEC_V2_0
+	case TBEAM_V0P7
+	case T_ECHO
+	case TLORA_V1_1P3
+	case RAK4631
+	case HELTEC_V2_1
+	case HELTEC_V1
+	case LILYGO_TBEAM_S3_CORE
+	case RAK11200
+	case NANO_G1
+	case TLORA_V2_1_1P8
+	case TLORA_T3_S3
+	case NANO_G1_EXPLORER
+	case STATION_G1
+	case M5STACK
+	case HELTEC_V3
+	case HELTEC_WSL_V3
 	
-	var id: Int { self.rawValue }
+//	case UNSET = 0
+//	case TLORA_V2 = 1
+//	case TLORA_V1 = 2
+//	case TLORA_V2_1_1P6 = 3
+//	case TBEAM = 4
+//	case HELTEC_V2_0 = 5
+//	case TBEAM_V0P7 = 6
+//	case T_ECHO = 7
+//	case TLORA_V1_1P3 = 8
+//	case RAK4631 = 9
+//	case HELTEC_V2_1 = 10
+//	case HELTEC_V1 = 11
+//	case LILYGO_TBEAM_S3_CORE = 12
+//	case RAK11200 = 13
+//	case NANO_G1 = 14
+//	case TLORA_V2_1_1P8 = 15
+//	case TLORA_T3_S3 = 16
+//	case NANO_G1_EXPLORER = 17
+//	case STATION_G1 = 25
+//	case M5STACK = 42
+//	case HELTEC_V3 = 43
+//	case HELTEC_WSL_V3 = 45
+	
+	var id: String { self.rawValue }
 	var description: String {
 		switch self {
 

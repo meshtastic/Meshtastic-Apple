@@ -26,6 +26,10 @@ struct Firmware: View {
 	var body: some View {
 		//NavigationSplitView {
 		NavigationStack {
+			
+			let hwModel: HardwareModels = HardwareModels.allCases.first(where: { $0.rawValue == node?.user?.hwModel ?? "UNSET" } ) ?? HardwareModels.UNSET
+			Text(hwModel.firmwareStrings[0] + (node?.metadata?.firmwareVersion ?? "Unknown") )
+				.font(.title3)
 			VStack (alignment: .leading) {
 				Text("nRF Device Firmware Update App")
 					.font(.title3)
@@ -171,21 +175,17 @@ struct Releases: Codable {
 	var alpha  : [Alpha]?  = []
 	
 	enum CodingKeys: String, CodingKey {
-		
 		case stable = "stable"
 		case alpha  = "alpha"
 	}
 	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
-		
 		stable = try values.decodeIfPresent([Stable].self , forKey: .stable )
 		alpha  = try values.decodeIfPresent([Alpha].self  , forKey: .alpha  )
 	}
 	
-	init() {
-		
-	}
+	init() {}
 }
 
 struct Alpha: Codable {
@@ -196,7 +196,6 @@ struct Alpha: Codable {
 	var zipUrl  : String? = nil
 	
 	enum CodingKeys: String, CodingKey {
-		
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
@@ -205,16 +204,13 @@ struct Alpha: Codable {
 	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
-		
 		id      = try values.decodeIfPresent(String.self , forKey: .id      )
 		title   = try values.decodeIfPresent(String.self , forKey: .title   )
 		pageUrl = try values.decodeIfPresent(String.self , forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self , forKey: .zipUrl  )
 	}
 	
-	init() {
-		
-	}
+	init() {}
 }
 
 struct Stable: Codable {
@@ -225,7 +221,6 @@ struct Stable: Codable {
 	var zipUrl  : String? = nil
 	
 	enum CodingKeys: String, CodingKey {
-		
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
@@ -234,16 +229,13 @@ struct Stable: Codable {
 	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
-		
 		id      = try values.decodeIfPresent(String.self , forKey: .id      )
 		title   = try values.decodeIfPresent(String.self , forKey: .title   )
 		pageUrl = try values.decodeIfPresent(String.self , forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self , forKey: .zipUrl  )
 	}
 	
-	init() {
-		
-	}
+	init() {}
 }
 
 struct PullRequests: Codable {
@@ -254,7 +246,6 @@ struct PullRequests: Codable {
 	var zipUrl  : String? = nil
 	
 	enum CodingKeys: String, CodingKey {
-		
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
@@ -263,14 +254,11 @@ struct PullRequests: Codable {
 	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
-		
 		id      = try values.decodeIfPresent(String.self , forKey: .id      )
 		title   = try values.decodeIfPresent(String.self , forKey: .title   )
 		pageUrl = try values.decodeIfPresent(String.self , forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self , forKey: .zipUrl  )
 	}
 	
-	init() {
-		
-	}
+	init() {}
 }
