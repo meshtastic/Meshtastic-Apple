@@ -26,7 +26,7 @@ struct PositionLog: View {
 
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
-				Table(node.positions!.reversed() as! [PositionEntity]) {
+				Table(node.positions?.reversed() as? [PositionEntity] ?? []) {
 					TableColumn("SeqNo") { position in
 						Text(String(position.seqNo))
 					}

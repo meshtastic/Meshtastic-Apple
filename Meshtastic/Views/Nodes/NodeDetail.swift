@@ -104,9 +104,8 @@ struct NodeDetail: View {
 											Text("Today's Weather Forecast")
 												.font(.title)
 												.padding()
-											let nodeLocation = node.positions?.lastObject as! PositionEntity
-
-											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
+											let nodeLocation = node.positions?.lastObject as? PositionEntity
+											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) )
 												.frame(height: 250)
 										}
 										#else
@@ -114,10 +113,8 @@ struct NodeDetail: View {
 											 Text("Today's Weather Forecast")
 												 .font(.title)
 												 .padding()
-
-											 let nodeLocation = node.positions?.lastObject as! PositionEntity
-											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
-												 .frame(height: 250)
+											 let nodeLocation = node.positions?.lastObject as? PositionEntity
+											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) ).frame(height: 250)
 												 .presentationDetents([.medium])
 												 .presentationDragIndicator(.automatic)
 										 }
@@ -181,13 +178,13 @@ struct NodeDetail: View {
 
 								if node.telemetries?.count ?? 0 >= 1 {
 
-									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
+									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
-										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										if mostRecent.voltage > 0 {
+										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
+										if mostRecent?.voltage ?? 0 > 0 {
 
-											Text(String(format: "%.2f", mostRecent.voltage) + " V")
+											Text(String(format: "%.2f", mostRecent?.voltage ?? 0.0) + " V")
 												.font(.title)
 												.foregroundColor(.gray)
 												.fixedSize()
@@ -290,13 +287,13 @@ struct NodeDetail: View {
 								}
 
 								if node.telemetries?.count ?? 0 >= 1 {
-									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
+									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
-										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										if mostRecent.voltage > 0 {
+										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
+										if mostRecent?.voltage ?? 0 > 0 {
 
-											Text(String(format: "%.2f", mostRecent.voltage) + " V")
+											Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
 												.font(.callout)
 												.foregroundColor(.gray)
 												.fixedSize()
@@ -494,9 +491,9 @@ struct NodeDetail: View {
 
 						if node.positions?.count ?? 0 > 0 {
 
-							let mostRecent = node.positions?.lastObject as! PositionEntity
+							let mostRecent = node.positions?.lastObject as? PositionEntity
 
-							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
+							let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 							condition = weather.currentWeather.condition
 							temperature = weather.currentWeather.temperature
 							humidity = Int(weather.currentWeather.humidity * 100)

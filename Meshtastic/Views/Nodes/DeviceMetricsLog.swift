@@ -23,7 +23,7 @@ struct DeviceMetricsLog: View {
 			let data = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg)) ?? []
 			if data.count > 0 {
 				GroupBox(label: 	Label("battery.level.trend", systemImage: "battery.100")) {
-					Chart(data.array as! [TelemetryEntity], id: \.self) {
+					Chart(data.array as? [TelemetryEntity] ?? [], id: \.self) {
 						LineMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
@@ -40,7 +40,7 @@ struct DeviceMetricsLog: View {
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
-				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
+				Table(node.telemetries?.reversed() as? [TelemetryEntity] ?? []) {
 
 					TableColumn("battery.level") { dm in
 						if dm.metricsType == 0 {
@@ -102,7 +102,7 @@ struct DeviceMetricsLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (dm: TelemetryEntity) in
+						ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (dm: TelemetryEntity) in
 							if dm.metricsType == 0 {
 								GridRow {
 									if dm.batteryLevel == 0 {

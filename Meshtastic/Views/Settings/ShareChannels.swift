@@ -290,7 +290,7 @@ struct ShareChannels: View {
 		loRaConfig.sx126XRxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		channelSet.loraConfig = loRaConfig
 		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
-			for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
+			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] {
 				if ch.role > 0 {
 
 					if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||

@@ -90,7 +90,7 @@ struct EnvironmentMetricsLog: View {
 							.font(.caption)
 							.fontWeight(.bold)
 					}
-					ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (em: TelemetryEntity) in
+					ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (em: TelemetryEntity) in
 
 						if em.metricsType == 1 {
 
