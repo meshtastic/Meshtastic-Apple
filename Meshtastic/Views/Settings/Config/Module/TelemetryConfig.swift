@@ -84,7 +84,7 @@ struct TelemetryConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.telemetryConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
