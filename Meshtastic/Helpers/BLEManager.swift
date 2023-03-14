@@ -1902,10 +1902,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
 		do {
-			let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as! [MyInfoEntity]
+			let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
 			if fetchedMyInfo.count == 1 {
-				let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as! NSMutableOrderedSet
-				mutableChannels.removeAllObjects()
+				let mutableChannels = fetchedMyInfo[0].channels?.mutableCopy() as? NSMutableOrderedSet
+				mutableChannels?.removeAllObjects()
 				fetchedMyInfo[0].channels = mutableChannels
 				do {
 					try context!.save()

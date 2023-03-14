@@ -561,7 +561,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
 						if fetchedMyInfo?.count ?? 0 > 0 {
 
-							for ch in fetchedMyInfo![0].channels!.array as! [ChannelEntity] {
+							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
 
 								if ch.index == packet.channel {
 									ch.objectWillChange.send()

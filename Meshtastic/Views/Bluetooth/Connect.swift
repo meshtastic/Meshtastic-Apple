@@ -289,13 +289,13 @@ struct Connect: View {
 			liveActivityStarted = true
 			let timerSeconds = 60
 
-			let mostRecent = node?.telemetries?.lastObject as! TelemetryEntity
+			let mostRecent = node?.telemetries?.lastObject as? TelemetryEntity
 
 			let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
 			let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 
-			let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent.channelUtilization, airtime: mostRecent.airUtilTx, batteryLevel: UInt32(mostRecent.batteryLevel))
+			let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0))
 
 			let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
 

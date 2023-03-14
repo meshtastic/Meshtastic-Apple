@@ -40,7 +40,7 @@ struct Channels: View {
 		NavigationStack {
 			List {
 				if node != nil && node?.myInfo != nil {
-					ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
 							channelIndex = channel.index
 							channelRole = Int(channel.role)
