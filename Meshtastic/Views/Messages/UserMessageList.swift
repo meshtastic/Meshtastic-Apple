@@ -185,7 +185,11 @@ struct UserMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
 												// Ack Received
-												Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(message.realACK ? .gray : .orange)
+												if message.realACK {
+													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(.gray)
+												} else {
+													Text("Implicit ACK from Unknown Node").font(.caption2).foregroundColor(.orange)
+												}
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
 												Text("Waiting to be acknowledged. . .").font(.caption2).foregroundColor(.orange)

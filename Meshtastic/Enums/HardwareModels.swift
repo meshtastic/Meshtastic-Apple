@@ -32,29 +32,6 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 	case HELTEC_V3
 	case HELTEC_WSL_V3
 	
-//	case UNSET = 0
-//	case TLORA_V2 = 1
-//	case TLORA_V1 = 2
-//	case TLORA_V2_1_1P6 = 3
-//	case TBEAM = 4
-//	case HELTEC_V2_0 = 5
-//	case TBEAM_V0P7 = 6
-//	case T_ECHO = 7
-//	case TLORA_V1_1P3 = 8
-//	case RAK4631 = 9
-//	case HELTEC_V2_1 = 10
-//	case HELTEC_V1 = 11
-//	case LILYGO_TBEAM_S3_CORE = 12
-//	case RAK11200 = 13
-//	case NANO_G1 = 14
-//	case TLORA_V2_1_1P8 = 15
-//	case TLORA_T3_S3 = 16
-//	case NANO_G1_EXPLORER = 17
-//	case STATION_G1 = 25
-//	case M5STACK = 42
-//	case HELTEC_V3 = 43
-//	case HELTEC_WSL_V3 = 45
-	
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
