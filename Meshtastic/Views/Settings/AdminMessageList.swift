@@ -41,14 +41,21 @@ struct AdminMessageList: View {
 							let ackErrorVal = RoutingError(rawValue: Int(am.ackError))
 
 							if am.ackTimestamp > 0 {
-								Text(ackErrorVal?.display ?? "Empty Ack Error")
-									.foregroundColor(am.receivedACK ? .gray : .red)
-									.font(.caption2)
+								if am.realACK {
+									
+									Text(ackErrorVal?.display ?? "Empty Ack Error")
+										.foregroundColor(am.receivedACK ? .gray : .red)
+										.font(.caption2)
+								} else {
+									Text("Implicit ACK from Unknown Node")
+										.foregroundColor(.orange)
+										.font(.caption2)
+								}
 							}
 
-							if am.receivedACK  && am.ackTimestamp > 0 {
+							if am.receivedACK && am.ackTimestamp > 0 {
 								Text(" \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
-									.foregroundColor(.gray)
+									.foregroundColor(am.realACK ? .gray : .orange)
 									.font(.caption2)
 							}
 						}

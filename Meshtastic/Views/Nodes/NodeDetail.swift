@@ -393,12 +393,11 @@ struct NodeDetail: View {
 
 							HStack {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {// node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
+								if node.metadata?.canShutdown ?? false {
 
 									Button(action: {
 										showingShutdownConfirm = true
 									}) {
-
 										Label("Power Off", systemImage: "power")
 									}
 									.buttonStyle(.bordered)
