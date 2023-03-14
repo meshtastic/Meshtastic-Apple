@@ -13,13 +13,11 @@ import ActivityKit
 #endif
 
 func generateMessageMarkdown (message: String) -> String {
-	
 	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
 	let detector = try! NSDataDetector(types: types.rawValue)
 	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
 	var messageWithMarkdown = message
 	if matches.count > 0 {
-		
 		for match in matches {
 			guard let range = Range(match.range, in: message) else { continue }
 			if match.resultType == .address {
@@ -40,7 +38,6 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-	
 	// We don't care about any of the Power settings, config is available for everything else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
@@ -58,7 +55,7 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 }
 
 func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-	
+
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
@@ -75,20 +72,20 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 }
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
-	
+
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.myinfo %@", comment: "MyInfo received: %@"), String(myInfo.myNodeNum))
 	MeshLogger.log("ℹ️ \(logString)")
-	
+
 	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 	fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(myInfo.myNodeNum))
-	
+
 	do {
 		guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 			return nil
 		}
 		// Not Found Insert
 		if fetchedMyInfo.isEmpty {
-			
+
 			let myInfoEntity = MyInfoEntity(context: context)
 			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
@@ -113,7 +110,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 		} else {
-			
+
 			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].hasGps = myInfo.hasGps_p
@@ -125,7 +122,7 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].messageTimeoutMsec = Int32(bitPattern: myInfo.messageTimeoutMsec)
 			fetchedMyInfo[0].minAppVersion = Int32(bitPattern: myInfo.minAppVersion)
 			fetchedMyInfo[0].maxChannels = Int32(bitPattern: myInfo.maxChannels)
-			
+
 			do {
 				try context.save()
 				print("💾 Updated myInfo for node number: \(String(myInfo.myNodeNum))")
@@ -143,15 +140,15 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 }
 
 func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectContext) {
-	
+
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
-		
+
 		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.received %d %@", comment: "Channel %d received from: %@"), channel.index, String(fromNum))
 		MeshLogger.log("🎛️ \(logString)")
-		
+
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchedMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", fromNum)
-		
+
 		do {
 			guard let fetchedMyInfo = try context.fetch(fetchedMyInfoRequest) as? [MyInfoEntity] else {
 				return
@@ -195,14 +192,14 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 }
 
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
-	
+
 	if metadata.isInitialized {
 		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "Device Metadata admin message received from: %@"), String(fromNum))
 		MeshLogger.log("🏷️ \(logString)")
-		
+
 		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchedNodeRequest.predicate = NSPredicate(format: "num == %lld", fromNum)
-		
+
 		do {
 			guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
 				return
@@ -218,7 +215,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 				newMetadata.role = Int32(metadata.role.rawValue)
 				newMetadata.positionFlags = Int32(metadata.positionFlags)
 				fetchedNode[0].metadata = newMetadata
-				
+
 				do {
 					try context.save()
 				} catch {
@@ -235,27 +232,27 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 }
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
-	
+
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(nodeInfo.num))
 	MeshLogger.log("📟 \(logString)")
-	
+
 	guard nodeInfo.num > 0 else { return nil }
-	
+
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeInfo.num))
-	
+
 	do {
 		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
 			return nil
 		}
 		// Not Found Insert
 		if fetchedNode.isEmpty && nodeInfo.hasUser {
-			
+
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
 			newNode.num = Int64(nodeInfo.num)
 			newNode.channel = Int32(channel)
-			
+
 			if nodeInfo.hasDeviceMetrics {
 				let telemetry = TelemetryEntity(context: context)
 				telemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
@@ -266,7 +263,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetries.append(telemetry)
 				newNode.telemetries? = NSOrderedSet(array: newTelemetries)
 			}
-			
+
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
 			if nodeInfo.hasUser {
@@ -279,7 +276,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 				newNode.user = newUser
 			}
-			
+
 			if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
 				let position = PositionEntity(context: context)
 				position.seqNo = Int32(nodeInfo.position.seqNumber)
@@ -294,11 +291,11 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newPostions.append(position)
 				newNode.positions? = NSOrderedSet(array: newPostions)
 			}
-			
+
 			// Look for a MyInfo
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
-			
+
 			do {
 				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 					return nil
@@ -318,15 +315,15 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				print("💥 Fetch MyInfo Error")
 			}
 		} else if nodeInfo.hasUser && nodeInfo.num > 0 {
-			
+
 			fetchedNode[0].id = Int64(nodeInfo.num)
 			fetchedNode[0].num = Int64(nodeInfo.num)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(channel)
-			
+
 			if nodeInfo.hasUser {
-				
+
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
@@ -334,9 +331,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.macaddr = nodeInfo.user.macaddr
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			}
-			
+
 			if nodeInfo.hasDeviceMetrics {
-				
+
 				let newTelemetry = TelemetryEntity(context: context)
 				newTelemetry.batteryLevel = Int32(nodeInfo.deviceMetrics.batteryLevel)
 				newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
@@ -347,11 +344,11 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
-			
+
 			if nodeInfo.hasPosition {
-				
+
 				if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
-					
+
 					let position = PositionEntity(context: context)
 					position.latitudeI = nodeInfo.position.latitudeI
 					position.longitudeI = nodeInfo.position.longitudeI
@@ -363,13 +360,13 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					}
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 				}
-				
+
 			}
-			
+
 			// Look for a MyInfo
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(nodeInfo.num))
-			
+
 			do {
 				guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 					return nil
@@ -397,21 +394,21 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
+
 	if let adminMessage = try? AdminMessage(serializedData: packet.decoded.payload) {
-		
+
 		if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
-			
+
 			if let cmmc = try? CannedMessageModuleConfig(serializedData: packet.decoded.payload) {
-				
+
 				if !cmmc.messages.isEmpty {
-					
+
 					let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "Canned Messages Messages Received For: %@"), String(packet.from))
 					MeshLogger.log("🥫 \(logString)")
-					
+
 					let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-					
+
 					do {
 						guard let fetchedNode = try context.fetch(fetchNodeRequest) as? [NodeInfoEntity] else {
 							return
@@ -438,65 +435,65 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
-			
+
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
-			
+
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
-			
+
 			let config = adminMessage.getConfigResponse
-			
+
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
-				
+
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
-			
+
 			let moduleConfig = adminMessage.getModuleConfigResponse
-			
+
 			if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
 				upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
 				upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
 				upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
 				upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
 				upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from), context: context)
-				
+
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
 				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
-				
+
 			}
-			
+
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}
-		
+
 		// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 		adminResponseAck(packet: packet, context: context)
 	}
 }
 
 func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
-	
+
 	let fetchedAdminMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 	fetchedAdminMessageRequest.predicate = NSPredicate(format: "messageId == %lld", packet.decoded.requestID)
 	do {
@@ -524,22 +521,22 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 }
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-	
+
 	if let routingMessage = try? Routing(serializedData: packet.decoded.payload) {
-		
+
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
-		
+
 		let routingErrorString = routingError?.display ?? NSLocalizedString("unknown", comment: "")
 		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.routing.message %@ %@", comment: "Routing received for RequestID: %@ Ack Status: %@"), String(packet.decoded.requestID), routingErrorString)
 		MeshLogger.log("🕸️ \(logString)")
-		
+
 		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
 		fetchMessageRequest.predicate = NSPredicate(format: "messageId == %lld", Int64(packet.decoded.requestID))
-		
+
 		do {
 			let fetchedMessage = try context.fetch(fetchMessageRequest) as? [MessageEntity]
 			if fetchedMessage?.count ?? 0 > 0 {
-				
+
 				if fetchedMessage![0].toUser != nil {
 					// Real ACK from DM Recipient
 					if packet.to != packet.from {
@@ -547,14 +544,14 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					}
 				}
 				fetchedMessage![0].ackError = Int32(routingMessage.errorReason.rawValue)
-				
+
 				if routingMessage.errorReason == Routing.Error.none {
-					
+
 					fetchedMessage![0].receivedACK = true
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-				
+
 				if fetchedMessage![0].toUser != nil {
 					fetchedMessage![0].toUser?.objectWillChange.send()
 				} else {
@@ -563,19 +560,19 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					do {
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
 						if fetchedMyInfo?.count ?? 0 > 0 {
-							
+
 							for ch in fetchedMyInfo![0].channels!.array as! [ChannelEntity] {
-								
+
 								if ch.index == packet.channel {
 									ch.objectWillChange.send()
 								}
 							}
 						}
 					} catch {
-						
+
 					}
 				}
-				
+
 			} else {
 				return
 			}
@@ -590,25 +587,25 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 }
 
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
-	
+
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
-		
+
 		// Only log telemetry from the mesh not the connected device
 		if connectedNode != Int64(packet.from) {
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "Telemetry received for: %@"), String(packet.from))
 			MeshLogger.log("📈 \(logString)")
 		} else {
 			// If it is the connected node
-			
+
 		}
-		
+
 		let telemetry = TelemetryEntity(context: context)
-		
+
 		let fetchNodeTelemetryRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 		fetchNodeTelemetryRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-		
+
 		do {
-			
+
 			guard let fetchedNode = try context.fetch(fetchNodeTelemetryRequest) as? [NodeInfoEntity] else {
 				return
 			}
@@ -667,13 +664,13 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
 				if #available(iOS 16.2, *) {
-					
+
 					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
 					let date = Date.now...oneMinuteLater
 					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
 					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
-					
+
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
 					if meshActivity != nil {
 						Task {
@@ -696,11 +693,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 }
 
 func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
-	
+
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
-		
+
 		MeshLogger.log("💬 \(NSLocalizedString("mesh.log.textmessage.received", comment: "Message received from the text message app"))")
-		
+
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
 		do {
@@ -714,11 +711,11 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.snr = packet.rxSnr
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
-			
+
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
-			
+
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != 4294967295 {
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 			}
@@ -727,20 +724,20 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
-			
+
 			newMessage.fromUser?.objectWillChange.send()
 			newMessage.toUser?.objectWillChange.send()
-			
+
 			var messageSaved = false
-			
+
 			do {
-				
+
 				try context.save()
 				print("💾 Saved a new message for \(newMessage.messageId)")
 				messageSaved = true
-				
+
 				if messageSaved {
-					
+
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
@@ -754,10 +751,10 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						manager.schedule()
 						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
-						
+
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 						fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedNode))
-						
+
 						do {
 							guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 								return
@@ -766,7 +763,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								if channel.index == newMessage.channel {
 									context.refresh(channel, mergeChanges: true)
 								}
-								
+
 								if channel.index == newMessage.channel && !channel.mute {
 									// Create an iOS Notification for the received private channel message and schedule it immediately
 									let manager = LocalNotificationManager()
@@ -782,7 +779,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								}
 							}
 						} catch {
-							
+
 						}
 					}
 				}
@@ -798,22 +795,22 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 }
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
+
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "Waypoint Packet received from node: %@"), String(packet.from))
 	MeshLogger.log("📍 \(logString)")
-	
+
 	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")
 	fetchWaypointRequest.predicate = NSPredicate(format: "id == %lld", Int64(packet.id))
-	
+
 	do {
-		
+
 		if let waypointMessage = try? Waypoint(serializedData: packet.decoded.payload) {
 			guard let fetchedWaypoint = try context.fetch(fetchWaypointRequest) as? [WaypointEntity] else {
 				return
 			}
 			if fetchedWaypoint.isEmpty {
 				let waypoint = WaypointEntity(context: context)
-				
+
 				waypoint.id = Int64(packet.id)
 				waypoint.name = waypointMessage.name
 				waypoint.longDescription = waypointMessage.description_p

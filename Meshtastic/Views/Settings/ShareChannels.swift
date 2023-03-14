@@ -68,7 +68,7 @@ struct ShareChannels: View {
 									.font(.caption)
 									.fontWeight(.bold)
 							}
-							ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+							ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 								GridRow {
 									Spacer()
 									if channel.index == 0 {

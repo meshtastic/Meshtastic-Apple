@@ -56,7 +56,7 @@ struct NodeDetail: View {
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						ZStack {
-							let annotations = node.positions?.array as? [PositionEntity] ?? [] 
+							let annotations = node.positions?.array as? [PositionEntity] ?? []
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
 									waypointCoordinate = coord
@@ -105,7 +105,7 @@ struct NodeDetail: View {
 												.font(.title)
 												.padding()
 											let nodeLocation = node.positions?.lastObject as! PositionEntity
-											
+
 											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
 												.frame(height: 250)
 										}
@@ -114,7 +114,7 @@ struct NodeDetail: View {
 											 Text("Today's Weather Forecast")
 												 .font(.title)
 												 .padding()
-											 
+
 											 let nodeLocation = node.positions?.lastObject as! PositionEntity
 											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation.nodeCoordinate!.latitude, longitude: nodeLocation.nodeCoordinate!.longitude) )
 												 .frame(height: 250)

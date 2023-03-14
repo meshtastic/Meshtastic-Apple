@@ -98,17 +98,17 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 }
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-	
+
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(packet.from))
 	MeshLogger.log("📟 \(logString)")
-	
+
 	guard packet.from > 0 else { return }
-	
+
 	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-	
+
 	do {
-		
+
 		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as? [NodeInfoEntity] ?? []
 		if fetchedNode.count == 0 {
 			// Not Found Insert
@@ -135,7 +135,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].channel = Int32(packet.channel)
-			
+
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
@@ -192,7 +192,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					// Unset the current latest position for this node
 					let fetchCurrentLatestPositionsRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "PositionEntity")
 					fetchCurrentLatestPositionsRequest.predicate = NSPredicate(format: "nodePosition.num == %lld && latest = true", Int64(packet.from))
-					
+
 					guard let fetchedPositions = try context.fetch(fetchCurrentLatestPositionsRequest) as? [PositionEntity] else {
 						return
 					}
@@ -237,8 +237,13 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			} else {
-				print("💥 Empty POSITION_APP Packet")
-				print((try? packet.jsonString()) ?? "JSON Decode Failure")
+
+				if (try? NodeInfo(serializedData: packet.decoded.payload)) != nil {
+					upsertNodeInfoPacket(packet: packet, context: context)
+				} else {
+					print("💥 Empty POSITION_APP Packet")
+					print((try? packet.jsonString()) ?? "JSON Decode Failure")
+				}
 			}
 		}
 	} catch {

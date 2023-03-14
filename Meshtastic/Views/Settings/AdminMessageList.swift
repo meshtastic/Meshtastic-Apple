@@ -42,7 +42,7 @@ struct AdminMessageList: View {
 
 							if am.ackTimestamp > 0 {
 								if am.realACK {
-									
+
 									Text(ackErrorVal?.display ?? "Empty Ack Error")
 										.foregroundColor(am.receivedACK ? .gray : .red)
 										.font(.caption2)

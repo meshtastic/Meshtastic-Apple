@@ -123,7 +123,6 @@ struct Channels: View {
 							.disableAutocorrection(true)
 							.keyboardType(.alphabet)
 							.foregroundColor(Color.gray)
-							.disabled(channelRole == 1 && channelName.count > 0)
 							.onChange(of: channelName, perform: { _ in
 								channelName = channelName.replacing(" ", with: "")
 								let totalBytes = channelName.utf8.count

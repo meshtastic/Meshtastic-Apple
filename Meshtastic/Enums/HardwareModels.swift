@@ -31,7 +31,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 	case M5STACK
 	case HELTEC_V3
 	case HELTEC_WSL_V3
-	
+
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
@@ -81,7 +81,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 		case .HELTEC_WSL_V3:
 			return "Heltec wireless stick lite V3"
 		}
-		
+
 	}
 	var firmwareStrings: [String] {
 		switch self {
@@ -131,7 +131,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 		case .HELTEC_WSL_V3:
 			return ["firmware-heltec-wsl-v3-"]
 		}
-		
+
 	}
 	func protoEnumValue() -> HardwareModel {
 

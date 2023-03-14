@@ -873,7 +873,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-	
+
 	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.rebootOtaSeconds = 5
@@ -1897,7 +1897,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 
 	public func tryClearExistingChannels() {
-		//Before we get started delete the existing channels from the myNodeInfo
+		// Before we get started delete the existing channels from the myNodeInfo
 		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
