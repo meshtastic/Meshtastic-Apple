@@ -1127,7 +1127,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertBluetoothConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1152,7 +1152,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertDeviceConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1176,7 +1176,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertDisplayConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1200,7 +1200,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertLoRaConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1228,7 +1228,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertPositionConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1256,7 +1256,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Network Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertNetworkConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1283,7 +1283,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1338,7 +1338,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1365,7 +1365,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertMqttModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1391,7 +1391,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertRangeTestModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1418,7 +1418,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertSerialModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1444,7 +1444,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertTelemetryModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
