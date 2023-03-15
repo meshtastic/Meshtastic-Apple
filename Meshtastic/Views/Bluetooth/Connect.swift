@@ -162,9 +162,16 @@ struct Connect: View {
 							Section(header: Text("available.radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
 									HStack {
-										Image(systemName: "circle.fill")
-											.imageScale(.large).foregroundColor(.gray)
-											.padding(.trailing)
+										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+											Image(systemName: "star.fill")
+												.imageScale(.large).foregroundColor(.yellow)
+												.padding(.trailing)
+										} else {
+											Image(systemName: "circle.fill")
+												.imageScale(.large).foregroundColor(.gray)
+												.padding(.trailing)
+										}
+										
 										Button(action: {
 											if userSettings.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != userSettings.preferredPeripheralId {
 												presentingSwitchPreferredPeripheral = true
@@ -173,7 +180,7 @@ struct Connect: View {
 												self.bleManager.connectTo(peripheral: peripheral.peripheral)
 											}
 										}) {
-											Text(peripheral.name).font(.title3)
+											Text(peripheral.name).font(.callout)
 										}
 										Spacer()
 										VStack {

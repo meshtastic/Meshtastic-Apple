@@ -158,12 +158,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		isConnected = true
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
 			userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
-		//	preferredPeripheral = true
-		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
-		//	preferredPeripheral = true
-		} else {
-		//	preferredPeripheral = false
-			print("Trying to connect a non prefered peripheral")
 		}
 		UserDefaults.standard.synchronize()
 		// Invalidate and reset connection timer count
