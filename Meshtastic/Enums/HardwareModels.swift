@@ -6,7 +6,7 @@
 //
 
 import Foundation
-// Default of 0 is Client
+
 enum HardwareModels: String, CaseIterable, Identifiable {
 
 	case UNSET
@@ -181,6 +181,29 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return HardwareModel.heltecV3
 		case .HELTEC_WSL_V3:
 			return HardwareModel.heltecWslV3
+		}
+	}
+}
+
+
+enum HardwarePlatforms: String, CaseIterable, Identifiable {
+	
+	case ESP32
+	case NRF52
+	case STM32
+	case PIPICO
+	var id: String { self.rawValue }
+	var description: String {
+		switch self {
+			
+		case .ESP32:
+			return "Expressif ESP 32"
+		case .NRF52:
+			return "Nordic NRF52"
+		case .STM32:
+			return "ARM STM 32"
+		case .PIPICO:
+			return "Raspberrry Pi Pico"
 		}
 	}
 }
