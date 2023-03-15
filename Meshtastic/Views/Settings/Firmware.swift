@@ -33,8 +33,8 @@ struct Firmware: View {
 			let hwModel: HardwareModels = HardwareModels.allCases.first(where: { $0.rawValue == node?.user?.hwModel ?? "UNSET" }) ?? HardwareModels.UNSET
 			
 			VStack(alignment: .leading) {
-				Text("Firmware Version: \(node?.metadata?.firmwareVersion ?? "Unknown")")
-					.font(.title3)
+				Text("Current Version: \(bleManager.connectedVersion)")
+					.font(.largeTitle)
 				Text("Your device supports the following firmware: ")
 					.font(.callout)
 				HStack {
@@ -44,19 +44,23 @@ struct Firmware: View {
 				}
 				.padding(.bottom)
 
-				if hwModel == HardwareModels.RAK4631 {
+				if hwModel.platform() == HardwarePlatforms.NRF52 {
 					VStack(alignment: .leading) {
-						Text("nRF Device Firmware Update App")
-							.font(.title3)
-						Text("You can update your Meshtastic device over bluetooth using the Nordic DFU app.  This currently works for RAK NRF devices.")
-							.font(.caption)
-						Link("Get NRF DFU from the App Store", destination: URL(string: "https://apps.apple.com/us/app/nrf-device-firmware-update/id1624454660")!)
-							.font(.callout)
+						if hwModel == HardwareModels.RAK4631 {
+							Text("nRF OTA Device Firmware Update App")
+								.font(.title3)
+							Text("You can update your Meshtastic device over bluetooth using the Nordic DFU app.  This currently works for RAK NRF devices.")
+								.font(.caption)
+							Link("Get NRF DFU from the App Store", destination: URL(string: "https://apps.apple.com/us/app/nrf-device-firmware-update/id1624454660")!)
+								.font(.callout)
+						} else {
+							Text("OTA Updates are not supported on the this NRF Device.")
+								.font(.title3)
+							Link("Drag & Drop Firmware Update", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
+								.font(.callout)
+						}
 					}
-				} else if hwModel == HardwareModels.T_ECHO {
-					Text("OTA Updates are not supported on the this NRF Device.")
-						.font(.title3)
-				} else {
+				} else if hwModel.platform() == HardwarePlatforms.ESP32 {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
@@ -88,13 +92,12 @@ struct Firmware: View {
 							Spacer()
 						}
 					}
+				} else {
+					Text("OTA Updates are not supported on your platform.")
+						.font(.title3)
 				}
+				
 			}.padding()
-			
-			
-			
-			
-
 			VStack(alignment: .leading) {
 				Text("Firmware Releases")
 					.font(.title3)
@@ -141,6 +144,7 @@ struct Firmware: View {
 					}
 				}
 			}
+			.padding(.bottom, 5)
 			.onAppear(perform: loadData)
 			.navigationTitle("Firmware Updates")
 			.navigationBarTitleDisplayMode(.inline)

@@ -420,7 +420,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					} else {
 						let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						nowKnown = true
-						connectedVersion = String(version)
+						connectedVersion = String(version.dropLast())
 					}
 
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame

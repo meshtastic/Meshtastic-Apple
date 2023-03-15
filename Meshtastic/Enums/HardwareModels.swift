@@ -133,6 +133,56 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 		}
 
 	}
+	func platform() -> HardwarePlatforms {
+
+		switch self {
+
+		case .UNSET:
+			return HardwarePlatforms.NONE
+		case .TLORA_V2:
+			return HardwarePlatforms.ESP32
+		case .TLORA_V1:
+			return HardwarePlatforms.ESP32
+		case .TLORA_V2_1_1P6:
+			return HardwarePlatforms.ESP32
+		case .TBEAM:
+			return HardwarePlatforms.ESP32
+		case .HELTEC_V2_0:
+			return HardwarePlatforms.ESP32
+		case .TBEAM_V0P7:
+			return HardwarePlatforms.ESP32
+		case .T_ECHO:
+			return HardwarePlatforms.NRF52
+		case .TLORA_V1_1P3:
+			return HardwarePlatforms.ESP32
+		case .RAK4631:
+			return HardwarePlatforms.NRF52
+		case .HELTEC_V2_1:
+			return HardwarePlatforms.ESP32
+		case .HELTEC_V1:
+			return HardwarePlatforms.ESP32
+		case .LILYGO_TBEAM_S3_CORE:
+			return HardwarePlatforms.ESP32
+		case .RAK11200:
+			return HardwarePlatforms.ESP32
+		case .NANO_G1:
+			return HardwarePlatforms.ESP32
+		case .TLORA_V2_1_1P8:
+			return HardwarePlatforms.ESP32
+		case .TLORA_T3_S3:
+			return HardwarePlatforms.ESP32
+		case .NANO_G1_EXPLORER:
+			return HardwarePlatforms.ESP32
+		case .STATION_G1:
+			return HardwarePlatforms.ESP32
+		case .M5STACK:
+			return HardwarePlatforms.ESP32
+		case .HELTEC_V3:
+			return HardwarePlatforms.ESP32
+		case .HELTEC_WSL_V3:
+			return HardwarePlatforms.ESP32
+		}
+	}
 	func protoEnumValue() -> HardwareModel {
 
 		switch self {
@@ -188,6 +238,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 
 enum HardwarePlatforms: String, CaseIterable, Identifiable {
 	
+	case NONE
 	case ESP32
 	case NRF52
 	case STM32
@@ -196,6 +247,8 @@ enum HardwarePlatforms: String, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 			
+		case .NONE:
+			return "None"
 		case .ESP32:
 			return "Expressif ESP 32"
 		case .NRF52:
