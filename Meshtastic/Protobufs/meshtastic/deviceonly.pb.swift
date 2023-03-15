@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -69,7 +69,7 @@ extension ScreenFonts: CaseIterable {
   static var allCases: [ScreenFonts] = [
     .fontSmall,
     .fontMedium,
-    .fontLarge
+    .fontLarge,
   ]
 }
 
@@ -153,7 +153,7 @@ struct DeviceState {
   }
 
   ///
-  /// Some GPSes seem to have bogus settings from the factory, so we always do one factory reset.
+  /// Some GPS receivers seem to have bogus settings from the factory, so we always do one factory reset.
   var didGpsReset: Bool {
     get {return _storage._didGpsReset}
     set {_uniqueStorage()._didGpsReset = newValue}
@@ -190,7 +190,7 @@ struct ChannelFile {
 
 ///
 /// This can be used for customizing the firmware distribution. If populated,
-/// show a secondary bootup screen with cuatom logo and text for 2.5 seconds.
+/// show a secondary bootup screen with custom logo and text for 2.5 seconds.
 struct OEMStore {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -205,7 +205,7 @@ struct OEMStore {
   var oemIconHeight: UInt32 = 0
 
   ///
-  /// The Logo in xbm bytechar format
+  /// The Logo in XBM bytechar format
   var oemIconBits: Data = Data()
 
   ///
@@ -246,8 +246,8 @@ struct OEMStore {
 
   init() {}
 
-  fileprivate var _oemLocalConfig: LocalConfig?
-  fileprivate var _oemLocalModuleConfig: LocalModuleConfig?
+  fileprivate var _oemLocalConfig: LocalConfig? = nil
+  fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -259,13 +259,13 @@ extension OEMStore: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension ScreenFonts: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "FONT_SMALL"),
     1: .same(proto: "FONT_MEDIUM"),
-    2: .same(proto: "FONT_LARGE")
+    2: .same(proto: "FONT_LARGE"),
   ]
 }
 
@@ -279,16 +279,16 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     8: .same(proto: "version"),
     7: .standard(proto: "rx_text_message"),
     9: .standard(proto: "no_save"),
-    11: .standard(proto: "did_gps_reset")
+    11: .standard(proto: "did_gps_reset"),
   ]
 
   fileprivate class _StorageClass {
-    var _myNode: MyNodeInfo?
-    var _owner: User?
+    var _myNode: MyNodeInfo? = nil
+    var _owner: User? = nil
     var _nodeDb: [NodeInfo] = []
     var _receiveQueue: [MeshPacket] = []
     var _version: UInt32 = 0
-    var _rxTextMessage: MeshPacket?
+    var _rxTextMessage: MeshPacket? = nil
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
 
@@ -397,7 +397,7 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   static let protoMessageName: String = _protobuf_package + ".ChannelFile"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "channels"),
-    2: .same(proto: "version")
+    2: .same(proto: "version"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -441,7 +441,7 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     5: .standard(proto: "oem_text"),
     6: .standard(proto: "oem_aes_key"),
     7: .standard(proto: "oem_local_config"),
-    8: .standard(proto: "oem_local_module_config")
+    8: .standard(proto: "oem_local_module_config"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

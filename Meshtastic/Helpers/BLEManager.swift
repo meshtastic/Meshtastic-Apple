@@ -1176,7 +1176,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1195,11 +1194,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.setConfig.lora = config
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1226,8 +1225,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1256,8 +1253,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1286,11 +1281,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "🛟 Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
@@ -1315,12 +1308,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "🛟 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
@@ -1371,7 +1362,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1399,11 +1389,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
@@ -1428,7 +1416,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()

@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -245,7 +245,7 @@ extension LocalModuleConfig: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".LocalConfig"
@@ -257,17 +257,17 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
     7: .same(proto: "bluetooth"),
-    8: .same(proto: "version")
+    8: .same(proto: "version"),
   ]
 
   fileprivate class _StorageClass {
-    var _device: Config.DeviceConfig?
-    var _position: Config.PositionConfig?
-    var _power: Config.PowerConfig?
-    var _network: Config.NetworkConfig?
-    var _display: Config.DisplayConfig?
-    var _lora: Config.LoRaConfig?
-    var _bluetooth: Config.BluetoothConfig?
+    var _device: Config.DeviceConfig? = nil
+    var _position: Config.PositionConfig? = nil
+    var _power: Config.PowerConfig? = nil
+    var _network: Config.NetworkConfig? = nil
+    var _display: Config.DisplayConfig? = nil
+    var _lora: Config.LoRaConfig? = nil
+    var _bluetooth: Config.BluetoothConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -383,19 +383,19 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     7: .standard(proto: "canned_message"),
     9: .same(proto: "audio"),
     10: .standard(proto: "remote_hardware"),
-    8: .same(proto: "version")
+    8: .same(proto: "version"),
   ]
 
   fileprivate class _StorageClass {
-    var _mqtt: ModuleConfig.MQTTConfig?
-    var _serial: ModuleConfig.SerialConfig?
-    var _externalNotification: ModuleConfig.ExternalNotificationConfig?
-    var _storeForward: ModuleConfig.StoreForwardConfig?
-    var _rangeTest: ModuleConfig.RangeTestConfig?
-    var _telemetry: ModuleConfig.TelemetryConfig?
-    var _cannedMessage: ModuleConfig.CannedMessageConfig?
-    var _audio: ModuleConfig.AudioConfig?
-    var _remoteHardware: ModuleConfig.RemoteHardwareConfig?
+    var _mqtt: ModuleConfig.MQTTConfig? = nil
+    var _serial: ModuleConfig.SerialConfig? = nil
+    var _externalNotification: ModuleConfig.ExternalNotificationConfig? = nil
+    var _storeForward: ModuleConfig.StoreForwardConfig? = nil
+    var _rangeTest: ModuleConfig.RangeTestConfig? = nil
+    var _telemetry: ModuleConfig.TelemetryConfig? = nil
+    var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
+    var _audio: ModuleConfig.AudioConfig? = nil
+    var _remoteHardware: ModuleConfig.RemoteHardwareConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()

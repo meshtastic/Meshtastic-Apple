@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -125,7 +125,7 @@ extension HardwareMessage.TypeEnum: CaseIterable {
     .watchGpios,
     .gpiosChanged,
     .readGpios,
-    .readGpiosReply
+    .readGpiosReply,
   ]
 }
 
@@ -138,14 +138,14 @@ extension HardwareMessage.TypeEnum: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".HardwareMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "type"),
     2: .standard(proto: "gpio_mask"),
-    3: .standard(proto: "gpio_value")
+    3: .standard(proto: "gpio_value"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -191,6 +191,6 @@ extension HardwareMessage.TypeEnum: SwiftProtobuf._ProtoNameProviding {
     2: .same(proto: "WATCH_GPIOS"),
     3: .same(proto: "GPIOS_CHANGED"),
     4: .same(proto: "READ_GPIOS"),
-    5: .same(proto: "READ_GPIOS_REPLY")
+    5: .same(proto: "READ_GPIOS_REPLY"),
   ]
 }

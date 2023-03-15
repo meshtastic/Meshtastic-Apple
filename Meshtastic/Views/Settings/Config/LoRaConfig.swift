@@ -194,7 +194,7 @@ struct LoRaConfig: View {
 				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 					if connectedNode != nil {
 						var lc = Config.LoRaConfig()
 						lc.hopLimit = UInt32(hopLimit)
