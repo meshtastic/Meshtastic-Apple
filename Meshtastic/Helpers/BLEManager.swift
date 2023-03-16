@@ -158,12 +158,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		isConnected = true
 		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
 			userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
-		//	preferredPeripheral = true
-		} else if userSettings!.preferredPeripheralId ==  peripheral.identifier.uuidString {
-		//	preferredPeripheral = true
-		} else {
-		//	preferredPeripheral = false
-			print("Trying to connect a non prefered peripheral")
 		}
 		UserDefaults.standard.synchronize()
 		// Invalidate and reset connection timer count
@@ -426,7 +420,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					} else {
 						let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
 						nowKnown = true
-						connectedVersion = String(version)
+						connectedVersion = String(version.dropLast())
 					}
 
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
@@ -446,6 +440,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							connectedPeripheral.longName = myInfo?.bleName ?? NSLocalizedString("unknown", comment: "Unknown")
 						}
 					}
+					tryClearExistingChannels()
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 && !invalidVersion {
@@ -502,7 +497,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			case .waypointApp:
 				waypointPacket(packet: decodedInfo.packet, context: context!)
 			case .nodeinfoApp:
-				if !invalidVersion { nodeInfoAppPacket(packet: decodedInfo.packet, context: context!) }
+				if !invalidVersion { upsertNodeInfoPacket(packet: decodedInfo.packet, context: context!) }
 			case .routingApp:
 				if !invalidVersion { routingPacket(packet: decodedInfo.packet, connectedNodeNum: self.connectedPeripheral.num, context: context!) }
 			case .adminApp:
@@ -873,6 +868,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return false
 	}
 
+	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.rebootOtaSeconds = 5
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(adminIndex)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Reboot OTA Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+
 	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.factoryReset = 5
@@ -982,25 +998,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 
-			do {
-				guard let fetchedMyInfo = try context!.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
-					return false
-				}
-				if fetchedMyInfo.count == 1 {
-					guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
-						return false
-					}
-					mutableChannels.removeAllObjects()
-					fetchedMyInfo[0].channels = mutableChannels
-					do {
-						try context!.save()
-					} catch {
-						print("Failed to clear existing channels from local app database")
-					}
-				}
-			} catch {
-				print("Failed to find a node MyInfo to save these channels to")
-			}
+			tryClearExistingChannels()
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
@@ -1129,7 +1127,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertBluetoothConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1154,7 +1152,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertDeviceConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1172,14 +1170,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertDisplayConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1191,11 +1188,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		adminPacket.setConfig.lora = config
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
-		meshPacket.from = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(adminIndex)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1203,7 +1200,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertLoRaConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1222,8 +1219,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1233,7 +1228,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertPositionConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1252,8 +1247,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
@@ -1263,7 +1256,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "🛟 Saved Network Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertNetworkConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1282,17 +1275,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "🛟 Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1311,12 +1302,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "🛟 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
@@ -1349,7 +1338,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1367,7 +1356,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1377,7 +1365,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertMqttModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1395,17 +1383,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
 		meshPacket.decoded = dataMessage
 
 		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertRangeTestModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 
@@ -1424,7 +1410,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.hopLimit = 0
 
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
@@ -1433,7 +1418,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertSerialModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1459,7 +1444,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertTelemetryModuleConfigPacket(config: config, nodeNum: fromUser.num, context: context!)
+			upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		return 0
@@ -1890,6 +1875,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			}
 		}
 		return false
+	}
+
+	public func tryClearExistingChannels() {
+		// Before we get started delete the existing channels from the myNodeInfo
+		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+
+		do {
+			let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+			if fetchedMyInfo.count == 1 {
+				let mutableChannels = fetchedMyInfo[0].channels?.mutableCopy() as? NSMutableOrderedSet
+				mutableChannels?.removeAllObjects()
+				fetchedMyInfo[0].channels = mutableChannels
+				do {
+					try context!.save()
+				} catch {
+					print("Failed to clear existing channels from local app database")
+				}
+			}
+		} catch {
+			print("Failed to find a node MyInfo to save these channels to")
+		}
 	}
 }
 

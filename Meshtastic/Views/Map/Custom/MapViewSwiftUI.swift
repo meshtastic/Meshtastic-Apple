@@ -199,7 +199,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.leftCalloutAccessoryView = leftIcon
 				let subtitle = UILabel()
 				subtitle.text = "Long Name: \(positionAnnotation.nodePosition?.user?.longName ?? "Unknown") \n"
-				subtitle.text! += "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
+				subtitle.text? += "Latitude: \(String(format: "%.5f", positionAnnotation.coordinate.latitude)) \n"
 				subtitle.text! += "Longitude: \(String(format: "%.5f", positionAnnotation.coordinate.longitude)) \n"
 				let distanceFormatter = MKDistanceFormatter()
 				subtitle.text! += "Altitude: \(distanceFormatter.string(fromDistance: Double(positionAnnotation.altitude))) \n"

@@ -68,7 +68,7 @@ struct ShareChannels: View {
 									.font(.caption)
 									.fontWeight(.bold)
 							}
-							ForEach(node!.myInfo!.channels?.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
+							ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 								GridRow {
 									Spacer()
 									if channel.index == 0 {
@@ -287,9 +287,10 @@ struct ShareChannels: View {
 		loRaConfig.txPower = node?.loRaConfig?.txPower ?? 0
 		loRaConfig.usePreset = node?.loRaConfig?.usePreset ?? true
 		loRaConfig.channelNum = UInt32(node?.loRaConfig?.channelNum ?? 0)
+		loRaConfig.sx126XRxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		channelSet.loraConfig = loRaConfig
 		if node?.myInfo?.channels != nil && node?.myInfo?.channels?.count ?? 0 > 0 {
-			for ch in node!.myInfo!.channels!.array as! [ChannelEntity] {
+			for ch in node?.myInfo?.channels?.array as? [ChannelEntity] ?? [] {
 				if ch.role > 0 {
 
 					if ch.index == 0 && includeChannel0 || ch.index == 1 && includeChannel1 || ch.index == 2 && includeChannel2 || ch.index == 3 && includeChannel3 ||

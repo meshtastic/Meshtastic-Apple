@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -33,7 +33,7 @@ struct StoreAndForward {
 
   ///
   /// TODO: REPLACE
-  var variant: StoreAndForward.OneOf_Variant?
+  var variant: StoreAndForward.OneOf_Variant? = nil
 
   ///
   /// TODO: REPLACE
@@ -345,7 +345,7 @@ extension StoreAndForward.RequestResponse: CaseIterable {
     .clientStats,
     .clientPing,
     .clientPong,
-    .clientAbort
+    .clientAbort,
   ]
 }
 
@@ -362,7 +362,7 @@ extension StoreAndForward.Heartbeat: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".StoreAndForward"
@@ -371,7 +371,7 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     2: .same(proto: "stats"),
     3: .same(proto: "history"),
     4: .same(proto: "heartbeat"),
-    5: .same(proto: "empty")
+    5: .same(proto: "empty"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -486,7 +486,7 @@ extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
     66: .same(proto: "CLIENT_STATS"),
     67: .same(proto: "CLIENT_PING"),
     68: .same(proto: "CLIENT_PONG"),
-    106: .same(proto: "CLIENT_ABORT")
+    106: .same(proto: "CLIENT_ABORT"),
   ]
 }
 
@@ -501,7 +501,7 @@ extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._Mess
     6: .standard(proto: "requests_history"),
     7: .same(proto: "heartbeat"),
     8: .standard(proto: "return_max"),
-    9: .standard(proto: "return_window")
+    9: .standard(proto: "return_window"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -575,7 +575,7 @@ extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._Message
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "history_messages"),
     2: .same(proto: "window"),
-    3: .standard(proto: "last_request")
+    3: .standard(proto: "last_request"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -618,7 +618,7 @@ extension StoreAndForward.Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._Messa
   static let protoMessageName: String = StoreAndForward.protoMessageName + ".Heartbeat"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "period"),
-    2: .same(proto: "secondary")
+    2: .same(proto: "secondary"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {

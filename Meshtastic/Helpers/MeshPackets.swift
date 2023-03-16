@@ -13,13 +13,11 @@ import ActivityKit
 #endif
 
 func generateMessageMarkdown (message: String) -> String {
-
 	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
 	let detector = try! NSDataDetector(types: types.rawValue)
 	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
 	var messageWithMarkdown = message
 	if matches.count > 0 {
-
 		for match in matches {
 			guard let range = Range(match.range, in: message) else { continue }
 			if match.resultType == .address {
@@ -40,7 +38,6 @@ func generateMessageMarkdown (message: String) -> String {
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
-
 	// We don't care about any of the Power settings, config is available for everything else
 	if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 		upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: nodeNum, context: context)
@@ -342,7 +339,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 				newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 				newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
+				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+					return nil
+				}
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
 			}
 
@@ -356,7 +355,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 					position.altitude = nodeInfo.position.altitude
 					position.satsInView = Int32(nodeInfo.position.satsInView)
 					position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
-					let mutablePositions = fetchedNode[0].positions!.mutableCopy() as! NSMutableOrderedSet
+					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
+						return nil
+					}
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 				}
 
@@ -390,63 +391,6 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 		print("💥 Fetch NodeInfoEntity Error")
 	}
 	return nil
-}
-
-func nodeInfoAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
-
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(packet.from))
-	MeshLogger.log("📟 \(logString)")
-
-	guard packet.from > 0 else { return }
-
-	let fetchNodeInfoAppRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-	fetchNodeInfoAppRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
-
-	do {
-
-		let fetchedNode = try context.fetch(fetchNodeInfoAppRequest) as? [NodeInfoEntity] ?? []
-
-		if fetchedNode.count == 1 {
-			fetchedNode[0].id = Int64(packet.from)
-			fetchedNode[0].num = Int64(packet.from)
-			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-			fetchedNode[0].snr = packet.rxSnr
-			fetchedNode[0].channel = Int32(packet.channel)
-
-			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				if nodeInfoMessage.hasDeviceMetrics {
-					let telemetry = TelemetryEntity(context: context)
-					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
-					telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
-					telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
-					telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
-					var newTelemetries = [TelemetryEntity]()
-					newTelemetries.append(telemetry)
-					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
-				}
-				if nodeInfoMessage.hasUser {
-					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
-					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
-					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
-					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
-					fetchedNode[0].user!.macaddr = nodeInfoMessage.user.macaddr
-					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-				}
-			}
-			do {
-				try context.save()
-				print("💾 Updated NodeInfo from Node Info App Packet For: \(fetchedNode[0].num)")
-			} catch {
-				context.rollback()
-				let nsError = error as NSError
-				print("💥 Error Saving NodeInfoEntity from NODEINFO_APP \(nsError)")
-			}
-		} else {
-			// New node info not from device but potentially from another network
-		}
-	} catch {
-		print("💥 Error Fetching NodeInfoEntity for NODEINFO_APP")
-	}
 }
 
 func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
@@ -617,7 +561,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
 						if fetchedMyInfo?.count ?? 0 > 0 {
 
-							for ch in fetchedMyInfo![0].channels!.array as! [ChannelEntity] {
+							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
 
 								if ch.index == packet.channel {
 									ch.objectWillChange.send()
@@ -685,7 +629,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.metricsType = 1
 				}
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
-				let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as! NSMutableOrderedSet
+				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
+					return
+				}
 				mutableTelemetries.add(telemetry)
 				fetchedNode[0].lastHeard = telemetry.time
 				fetchedNode[0].telemetries = mutableTelemetries.copy() as? NSOrderedSet
@@ -716,7 +662,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					}
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
-				#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst)
 				if #available(iOS 16.2, *) {
 
 					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
@@ -734,7 +680,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						}
 					}
 				}
-				#endif
+#endif
 			}
 		} catch {
 			context.rollback()

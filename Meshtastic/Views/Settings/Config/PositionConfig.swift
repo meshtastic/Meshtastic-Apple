@@ -72,6 +72,29 @@ struct PositionConfig: View {
 
 		VStack {
 			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
+						.font(.callout)
+						.foregroundColor(.orange)
+
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.positionConfig == nil {
+						Text("Position config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+						.font(.title3)
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
 				Section(header: Text("Device GPS")) {
 					Toggle(isOn: $deviceGpsEnabled) {
 						Label("Device GPS Enabled", systemImage: "location")
@@ -230,7 +253,7 @@ struct PositionConfig: View {
 						if includeSpeed { pf.insert(.Speed) }
 						if includeHeading { pf.insert(.Heading) }
 						pc.positionFlags = UInt32(pf.rawValue)
-						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

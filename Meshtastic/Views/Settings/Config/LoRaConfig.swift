@@ -40,11 +40,35 @@ struct LoRaConfig: View {
 	@State var bandwidth = 0
 	@State var spreadFactor = 0
 	@State var codingRate = 0
+	@State var rxBoostedGain = false
 
 	var body: some View {
 
 		VStack {
 			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
+						.font(.callout)
+						.foregroundColor(.orange)
+
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.loRaConfig == nil {
+						Text("LoRa config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+						.font(.title3)
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
 				Section(header: Text("Options")) {
 
 					Picker("Region", selection: $region ) {
@@ -142,8 +166,12 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .channelNum)
 					}
-					Text("A hash of the primary channel's name sets the LoRa channel number, this determines the actual frequency you are transmitting on in the band. To ensure devices with different primary channel names transmit on the same frequency, you must explicitly set the LoRa channel number.")
+					Text("This determines the actual frequency you are transmitting on in the band.")
 						.font(.caption)
+					Toggle(isOn: $rxBoostedGain) {
+						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
@@ -166,7 +194,7 @@ struct LoRaConfig: View {
 				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 					if connectedNode != nil {
 						var lc = Config.LoRaConfig()
 						lc.hopLimit = UInt32(hopLimit)
@@ -178,7 +206,8 @@ struct LoRaConfig: View {
 						lc.bandwidth = UInt32(bandwidth)
 						lc.codingRate = UInt32(codingRate)
 						lc.spreadFactor = UInt32(spreadFactor)
-						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						lc.sx126XRxBoostedGain = rxBoostedGain
+						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -209,8 +238,8 @@ struct LoRaConfig: View {
 			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
 			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
-			print("Spreadum: \(self.spreadFactor)")
-
+			self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
+			print(rxBoostedGain)
 			self.hasChanges = false
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
@@ -260,6 +289,11 @@ struct LoRaConfig: View {
 		.onChange(of: spreadFactor) { newSpreadFactor in
 			if node != nil && node!.loRaConfig != nil {
 				if newSpreadFactor != node!.loRaConfig!.spreadFactor { hasChanges = true }
+			}
+		}
+		.onChange(of: rxBoostedGain) { newRxBoostedGain in
+			if node != nil && node!.loRaConfig != nil {
+				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
 			}
 		}
 	}

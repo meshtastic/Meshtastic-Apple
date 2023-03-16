@@ -39,6 +39,29 @@ struct CannedMessagesConfig: View {
 		VStack {
 
 			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
+						.font(.callout)
+						.foregroundColor(.orange)
+
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.cannedMessageConfig == nil {
+						Text("Canned messages config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+						.font(.title3)
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
 				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
 
@@ -184,37 +207,40 @@ struct CannedMessagesConfig: View {
 				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
 				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
 				Button(buttonText) {
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 					if hasChanges {
-						var cmc = ModuleConfig.CannedMessageConfig()
-						cmc.enabled = enabled
-						cmc.sendBell = sendBell
-						cmc.rotary1Enabled = rotary1Enabled
-						cmc.updown1Enabled = updown1Enabled
-						if rotary1Enabled {
-							/// Input event origin accepted by the canned messages
-							/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
-							cmc.allowInputSource = "rotEnc1"
-						} else if updown1Enabled {
-							cmc.allowInputSource = "upDown1"
-						} else {
-							cmc.allowInputSource = "_any"
-						}
-						cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
-						cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
-						cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
-						cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
-						cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
-						cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
-						let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
+						if connectedNode != nil {
+							var cmc = ModuleConfig.CannedMessageConfig()
+							cmc.enabled = enabled
+							cmc.sendBell = sendBell
+							cmc.rotary1Enabled = rotary1Enabled
+							cmc.updown1Enabled = updown1Enabled
+							if rotary1Enabled {
+								/// Input event origin accepted by the canned messages
+								/// Can be e.g. "rotEnc1", "upDownEnc1",  "cardkb",  or keyword "_any"
+								cmc.allowInputSource = "rotEnc1"
+							} else if updown1Enabled {
+								cmc.allowInputSource = "upDown1"
+							} else {
+								cmc.allowInputSource = "_any"
+							}
+							cmc.inputbrokerPinA = UInt32(inputbrokerPinA)
+							cmc.inputbrokerPinB = UInt32(inputbrokerPinB)
+							cmc.inputbrokerPinPress = UInt32(inputbrokerPinPress)
+							cmc.inputbrokerEventCw = InputEventChars(rawValue: inputbrokerEventCw)!.protoEnumValue()
+							cmc.inputbrokerEventCcw = InputEventChars(rawValue: inputbrokerEventCcw)!.protoEnumValue()
+							cmc.inputbrokerEventPress = InputEventChars(rawValue: inputbrokerEventPress)!.protoEnumValue()
+							let adminMessageId =  bleManager.saveCannedMessageModuleConfig(config: cmc, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+							if adminMessageId > 0 {
+								// Should show a saved successfully alert once I know that to be true
+								// for now just disable the button after a successful save
+								hasChanges = false
+								goBack()
+							}
 						}
 					}
 					if hasMessagesChanges {
-						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+						let adminMessageId =  bleManager.saveCannedMessageModuleMessages(messages: messages, fromUser: node!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save

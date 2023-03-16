@@ -29,8 +29,30 @@ struct DisplayConfig: View {
 	var body: some View {
 
 		Form {
-			Section(header: Text("Device Screen")) {
+			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+				Text("There has been no response to a request for device metadata over the admin channel for this node.")
+					.font(.callout)
+					.foregroundColor(.orange)
 
+			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+				// Let users know what is going on if they are using remote admin and don't have the config yet
+				if node?.displayConfig == nil {
+					Text("Display config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				} else {
+					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+						.font(.title3)
+				}
+			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
+					.font(.title3)
+			} else {
+				Text("Please connect to a radio to configure settings.")
+					.font(.callout)
+					.foregroundColor(.orange)
+			}
+			Section(header: Text("Device Screen")) {
 				Picker("Display Mode", selection: $displayMode ) {
 					ForEach(DisplayModes.allCases) { dm in
 						Text(dm.description)
@@ -130,7 +152,7 @@ struct DisplayConfig: View {
 					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
 
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: node?.myInfo?.adminIndex ?? 0)
+					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 
 						// Should show a saved successfully alert once I know that to be true
@@ -163,7 +185,7 @@ struct DisplayConfig: View {
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
 				print("empty display config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestDisplayConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}

@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -27,7 +27,7 @@ struct Config {
 
   ///
   /// Payload Variant
-  var payloadVariant: Config.OneOf_PayloadVariant?
+  var payloadVariant: Config.OneOf_PayloadVariant? = nil
 
   var device: Config.DeviceConfig {
     get {
@@ -632,7 +632,7 @@ struct Config {
 
     init() {}
 
-    fileprivate var _ipv4Config: Config.NetworkConfig.IpV4Config?
+    fileprivate var _ipv4Config: Config.NetworkConfig.IpV4Config? = nil
   }
 
   ///
@@ -891,7 +891,7 @@ struct Config {
     // methods supported on all messages.
 
     ///
-    /// When enabled, the `modem_preset` fields will be adheared to, else the `bandwidth`/`spread_factor`/`coding_rate`
+    /// When enabled, the `modem_preset` fields will be adhered to, else the `bandwidth`/`spread_factor`/`coding_rate`
     /// will be taked from their respective manually defined fields
     var usePreset: Bool = false
 
@@ -940,14 +940,14 @@ struct Config {
     var txEnabled: Bool = false
 
     ///
-    /// If zero then, use default max legal continuous power (ie. something that won't
+    /// If zero, then use default max legal continuous power (ie. something that won't
     /// burn out the radio hardware)
     /// In most cases you should use zero here.
     /// Units are in dBm.
     var txPower: Int32 = 0
 
     ///
-    /// This is controlling the actual hardware frequency the radio is transmitting on.
+    /// This controls the actual hardware frequency the radio transmits on.
     /// Most users should never need to be exposed to this field/concept.
     /// A channel number between 1 and NUM_CHANNELS (whatever the max is in the current region).
     /// If ZERO then the rule is "use the old channel name hash based
@@ -977,7 +977,7 @@ struct Config {
     ///
     /// For testing it is useful sometimes to force a node to never listen to
     /// particular other nodes (simulating radio out of range). All nodenums listed
-    /// in ignore_incoming will have packets they send droped on receive (by router.cpp)
+    /// in ignore_incoming will have packets they send dropped on receive (by router.cpp)
     var ignoreIncoming: [UInt32] = []
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -998,7 +998,7 @@ struct Config {
       case eu433 // = 2
 
       ///
-      /// European Union 433mhz
+      /// European Union 868mhz
       case eu868 // = 3
 
       ///
@@ -1190,7 +1190,7 @@ struct Config {
     var mode: Config.BluetoothConfig.PairingMode = .randomPin
 
     ///
-    /// Specified pin for PairingMode.FixedPin
+    /// Specified PIN for PairingMode.FixedPin
     var fixedPin: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1199,15 +1199,15 @@ struct Config {
       typealias RawValue = Int
 
       ///
-      /// Device generates a random pin that will be shown on the screen of the device for pairing
+      /// Device generates a random PIN that will be shown on the screen of the device for pairing
       case randomPin // = 0
 
       ///
-      /// Device requires a specified fixed pin for pairing
+      /// Device requires a specified fixed PIN for pairing
       case fixedPin // = 1
 
       ///
-      /// Device requires no pin for pairing
+      /// Device requires no PIN for pairing
       case noPin // = 2
       case UNRECOGNIZED(Int)
 
@@ -1252,7 +1252,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .routerClient,
     .repeater,
     .tracker,
-    .sensor
+    .sensor,
   ]
 }
 
@@ -1261,7 +1261,7 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
   static var allCases: [Config.DeviceConfig.RebroadcastMode] = [
     .all,
     .allSkipDecoding,
-    .localOnly
+    .localOnly,
   ]
 }
 
@@ -1278,7 +1278,7 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
     .seqNo,
     .timestamp,
     .heading,
-    .speed
+    .speed,
   ]
 }
 
@@ -1286,7 +1286,7 @@ extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.NetworkConfig.AddressMode] = [
     .dhcp,
-    .static
+    .static,
   ]
 }
 
@@ -1298,7 +1298,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
     .utm,
     .mgrs,
     .olc,
-    .osgr
+    .osgr,
   ]
 }
 
@@ -1306,7 +1306,7 @@ extension Config.DisplayConfig.DisplayUnits: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.DisplayConfig.DisplayUnits] = [
     .metric,
-    .imperial
+    .imperial,
   ]
 }
 
@@ -1316,7 +1316,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
-    .oledSh1107
+    .oledSh1107,
   ]
 }
 
@@ -1326,7 +1326,7 @@ extension Config.DisplayConfig.DisplayMode: CaseIterable {
     .default,
     .twocolor,
     .inverted,
-    .color
+    .color,
   ]
 }
 
@@ -1348,7 +1348,7 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
     .th,
     .lora24,
     .ua433,
-    .ua868
+    .ua868,
   ]
 }
 
@@ -1362,7 +1362,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
     .mediumFast,
     .shortSlow,
     .shortFast,
-    .longModerate
+    .longModerate,
   ]
 }
 
@@ -1371,7 +1371,7 @@ extension Config.BluetoothConfig.PairingMode: CaseIterable {
   static var allCases: [Config.BluetoothConfig.PairingMode] = [
     .randomPin,
     .fixedPin,
-    .noPin
+    .noPin,
   ]
 }
 
@@ -1403,7 +1403,7 @@ extension Config.BluetoothConfig.PairingMode: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".Config"
@@ -1414,7 +1414,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     4: .same(proto: "network"),
     5: .same(proto: "display"),
     6: .same(proto: "lora"),
-    7: .same(proto: "bluetooth")
+    7: .same(proto: "bluetooth"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1574,7 +1574,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     4: .standard(proto: "button_gpio"),
     5: .standard(proto: "buzzer_gpio"),
     6: .standard(proto: "rebroadcast_mode"),
-    7: .standard(proto: "node_info_broadcast_secs")
+    7: .standard(proto: "node_info_broadcast_secs"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1641,7 +1641,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "ROUTER_CLIENT"),
     4: .same(proto: "REPEATER"),
     5: .same(proto: "TRACKER"),
-    6: .same(proto: "SENSOR")
+    6: .same(proto: "SENSOR"),
   ]
 }
 
@@ -1649,7 +1649,7 @@ extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "ALL"),
     1: .same(proto: "ALL_SKIP_DECODING"),
-    2: .same(proto: "LOCAL_ONLY")
+    2: .same(proto: "LOCAL_ONLY"),
   ]
 }
 
@@ -1664,7 +1664,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     6: .standard(proto: "gps_attempt_time"),
     7: .standard(proto: "position_flags"),
     8: .standard(proto: "rx_gpio"),
-    9: .standard(proto: "tx_gpio")
+    9: .standard(proto: "tx_gpio"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1745,7 +1745,7 @@ extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding
     64: .same(proto: "SEQ_NO"),
     128: .same(proto: "TIMESTAMP"),
     256: .same(proto: "HEADING"),
-    512: .same(proto: "SPEED")
+    512: .same(proto: "SPEED"),
   ]
 }
 
@@ -1759,7 +1759,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     5: .standard(proto: "mesh_sds_timeout_secs"),
     6: .standard(proto: "sds_secs"),
     7: .standard(proto: "ls_secs"),
-    8: .standard(proto: "min_wake_secs")
+    8: .standard(proto: "min_wake_secs"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1833,7 +1833,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     6: .standard(proto: "eth_enabled"),
     7: .standard(proto: "address_mode"),
     8: .standard(proto: "ipv4_config"),
-    9: .standard(proto: "rsyslog_server")
+    9: .standard(proto: "rsyslog_server"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1904,7 +1904,7 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "DHCP"),
-    1: .same(proto: "STATIC")
+    1: .same(proto: "STATIC"),
   ]
 }
 
@@ -1914,7 +1914,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
     1: .same(proto: "ip"),
     2: .same(proto: "gateway"),
     3: .same(proto: "subnet"),
-    4: .same(proto: "dns")
+    4: .same(proto: "dns"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1969,7 +1969,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     6: .same(proto: "units"),
     7: .same(proto: "oled"),
     8: .same(proto: "displaymode"),
-    9: .standard(proto: "heading_bold")
+    9: .standard(proto: "heading_bold"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2045,14 +2045,14 @@ extension Config.DisplayConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProv
     2: .same(proto: "UTM"),
     3: .same(proto: "MGRS"),
     4: .same(proto: "OLC"),
-    5: .same(proto: "OSGR")
+    5: .same(proto: "OSGR"),
   ]
 }
 
 extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "METRIC"),
-    1: .same(proto: "IMPERIAL")
+    1: .same(proto: "IMPERIAL"),
   ]
 }
 
@@ -2061,7 +2061,7 @@ extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "OLED_AUTO"),
     1: .same(proto: "OLED_SSD1306"),
     2: .same(proto: "OLED_SH1106"),
-    3: .same(proto: "OLED_SH1107")
+    3: .same(proto: "OLED_SH1107"),
   ]
 }
 
@@ -2070,7 +2070,7 @@ extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "DEFAULT"),
     1: .same(proto: "TWOCOLOR"),
     2: .same(proto: "INVERTED"),
-    3: .same(proto: "COLOR")
+    3: .same(proto: "COLOR"),
   ]
 }
 
@@ -2091,7 +2091,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     12: .standard(proto: "override_duty_cycle"),
     13: .standard(proto: "sx126x_rx_boosted_gain"),
     14: .standard(proto: "override_frequency"),
-    103: .standard(proto: "ignore_incoming")
+    103: .standard(proto: "ignore_incoming"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2207,7 +2207,7 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     12: .same(proto: "TH"),
     13: .same(proto: "LORA_24"),
     14: .same(proto: "UA_433"),
-    15: .same(proto: "UA_868")
+    15: .same(proto: "UA_868"),
   ]
 }
 
@@ -2220,7 +2220,7 @@ extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "MEDIUM_FAST"),
     5: .same(proto: "SHORT_SLOW"),
     6: .same(proto: "SHORT_FAST"),
-    7: .same(proto: "LONG_MODERATE")
+    7: .same(proto: "LONG_MODERATE"),
   ]
 }
 
@@ -2229,7 +2229,7 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .same(proto: "mode"),
-    3: .standard(proto: "fixed_pin")
+    3: .standard(proto: "fixed_pin"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2272,6 +2272,6 @@ extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding 
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "RANDOM_PIN"),
     1: .same(proto: "FIXED_PIN"),
-    2: .same(proto: "NO_PIN")
+    2: .same(proto: "NO_PIN"),
   ]
 }

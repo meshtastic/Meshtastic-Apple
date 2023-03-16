@@ -56,7 +56,7 @@ struct NodeDetail: View {
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						ZStack {
-							let annotations = node.positions?.array as? [PositionEntity] ?? [] 
+							let annotations = node.positions?.array as? [PositionEntity] ?? []
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
 									waypointCoordinate = coord
@@ -104,7 +104,8 @@ struct NodeDetail: View {
 											Text("Today's Weather Forecast")
 												.font(.title)
 												.padding()
-											NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+											let nodeLocation = node.positions?.lastObject as? PositionEntity
+											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) )
 												.frame(height: 250)
 										}
 										#else
@@ -112,8 +113,8 @@ struct NodeDetail: View {
 											 Text("Today's Weather Forecast")
 												 .font(.title)
 												 .padding()
-											 NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
-												 .frame(height: 250)
+											 let nodeLocation = node.positions?.lastObject as? PositionEntity
+											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) ).frame(height: 250)
 												 .presentationDetents([.medium])
 												 .presentationDragIndicator(.automatic)
 										 }
@@ -177,13 +178,13 @@ struct NodeDetail: View {
 
 								if node.telemetries?.count ?? 0 >= 1 {
 
-									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
+									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
-										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										if mostRecent.voltage > 0 {
+										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
+										if mostRecent?.voltage ?? 0 > 0 {
 
-											Text(String(format: "%.2f", mostRecent.voltage) + " V")
+											Text(String(format: "%.2f", mostRecent?.voltage ?? 0.0) + " V")
 												.font(.title)
 												.foregroundColor(.gray)
 												.fixedSize()
@@ -286,13 +287,13 @@ struct NodeDetail: View {
 								}
 
 								if node.telemetries?.count ?? 0 >= 1 {
-									let mostRecent = node.telemetries?.lastObject as! TelemetryEntity
+									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
-										BatteryGauge(batteryLevel: Double(mostRecent.batteryLevel))
-										if mostRecent.voltage > 0 {
+										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
+										if mostRecent?.voltage ?? 0 > 0 {
 
-											Text(String(format: "%.2f", mostRecent.voltage) + " V")
+											Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
 												.font(.callout)
 												.foregroundColor(.gray)
 												.fixedSize()
@@ -389,12 +390,11 @@ struct NodeDetail: View {
 
 							HStack {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-								if node.metadata?.canShutdown ?? false || hwModelString == "RAK4631" {// node.metadata?.hwModel ?? "UNSET" == "RAK4631"  {
+								if node.metadata?.canShutdown ?? false {
 
 									Button(action: {
 										showingShutdownConfirm = true
 									}) {
-
 										Label("Power Off", systemImage: "power")
 									}
 									.buttonStyle(.bordered)
@@ -491,9 +491,9 @@ struct NodeDetail: View {
 
 						if node.positions?.count ?? 0 > 0 {
 
-							let mostRecent = node.positions?.lastObject as! PositionEntity
+							let mostRecent = node.positions?.lastObject as? PositionEntity
 
-							let weather = try await WeatherService.shared.weather(for: mostRecent.nodeLocation!)
+							let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 							condition = weather.currentWeather.condition
 							temperature = weather.currentWeather.temperature
 							humidity = Int(weather.currentWeather.humidity * 100)

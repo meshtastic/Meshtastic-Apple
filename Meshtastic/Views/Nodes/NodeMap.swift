@@ -57,6 +57,10 @@ struct NodeMap: View {
 		)
 	@State private var overlays: [MapViewSwiftUI.Overlay] = []
 
+//	init() {
+//		_positions = FetchRequest<PositionEntity>(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)], predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
+//	}
+
 	var body: some View {
 
 		NavigationStack {

@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-private struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -96,7 +96,7 @@ extension XModem.Control: CaseIterable {
     .ack,
     .nak,
     .can,
-    .ctrlz
+    .ctrlz,
   ]
 }
 
@@ -109,7 +109,7 @@ extension XModem.Control: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-private let _protobuf_package = "meshtastic"
+fileprivate let _protobuf_package = "meshtastic"
 
 extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".XModem"
@@ -117,7 +117,7 @@ extension XModem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     1: .same(proto: "control"),
     2: .same(proto: "seq"),
     3: .same(proto: "crc16"),
-    4: .same(proto: "buffer")
+    4: .same(proto: "buffer"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -170,6 +170,6 @@ extension XModem.Control: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "ACK"),
     21: .same(proto: "NAK"),
     24: .same(proto: "CAN"),
-    26: .same(proto: "CTRLZ")
+    26: .same(proto: "CTRLZ"),
   ]
 }

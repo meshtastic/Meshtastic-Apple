@@ -92,6 +92,7 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
+	case twoMinutes = 120
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
@@ -121,6 +122,8 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 		case .oneMinute:
 			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+		case .twoMinutes:
+			return NSLocalizedString("interval.two.minutes", comment: "Two Minutes")
 		case .fiveMinutes:
 			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
 		case .tenMinutes:

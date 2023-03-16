@@ -33,17 +33,17 @@ struct EnvironmentMetricsLog: View {
 					}
 					TableColumn("Humidity") { em in
 						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.relativeHumidity))")
+							Text("\(String(format: "%.2f", em.relativeHumidity))%")
 						}
 					}
 					TableColumn("Barometric Pressure") { em in
 						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.barometricPressure))")
+							Text("\(String(format: "%.2f", em.barometricPressure)) hPa")
 						}
 					}
 					TableColumn("gas.resistance") { em in
 						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.gasResistance))")
+							Text("\(String(format: "%.2f", em.gasResistance)) ohms")
 						}
 					}
 					TableColumn("current") { em in
@@ -90,7 +90,7 @@ struct EnvironmentMetricsLog: View {
 							.font(.caption)
 							.fontWeight(.bold)
 					}
-					ForEach(node.telemetries!.reversed() as! [TelemetryEntity], id: \.self) { (em: TelemetryEntity) in
+					ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (em: TelemetryEntity) in
 
 						if em.metricsType == 1 {
 
@@ -98,7 +98,7 @@ struct EnvironmentMetricsLog: View {
 
 								Text(em.temperature.formattedTemperature())
 									.font(.caption)
-								Text("\(String(format: "%.2f", em.relativeHumidity))")
+								Text("\(String(format: "%.2f", em.relativeHumidity))%")
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.barometricPressure))")
 									.font(.caption)
