@@ -93,6 +93,10 @@ struct Firmware: View {
 				} else {
 					Text("OTA Updates are not supported on your platform.")
 						.font(.title3)
+					Text(node?.user?.hwModel ?? "UNSET")
+						.font(.title3)
+					Text(hwModel.platform().description)
+						.font(.title3)
 				}
 				
 			}.padding()
