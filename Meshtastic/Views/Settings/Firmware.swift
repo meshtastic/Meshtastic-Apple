@@ -78,9 +78,7 @@ struct Firmware: View {
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 										print("Reboot Failed")
-									} else {
-										bleManager.disconnectPeripheral(reconnect: false)
-									}
+									} 
 								}
 							} label: {
 								Label("Send Reboot OTA", systemImage: "square.and.arrow.down")

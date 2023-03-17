@@ -160,7 +160,7 @@ struct Connect: View {
 
 						if !self.bleManager.isConnected {
 							Section(header: Text("available.radios").font(.title)) {
-								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name > $1.name })) { peripheral in
+								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
 									HStack {
 										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
 											Image(systemName: "star.fill")
