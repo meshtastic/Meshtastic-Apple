@@ -44,7 +44,7 @@ struct Firmware: View {
 				}
 				.padding(.bottom)
 
-				if hwModel.platform() == HardwarePlatforms.NRF52 {
+				if hwModel.platform() == HardwarePlatforms.nrf52 {
 					VStack(alignment: .leading) {
 						if hwModel == HardwareModels.RAK4631 {
 							Text("nRF OTA Device Firmware Update App")
@@ -60,7 +60,7 @@ struct Firmware: View {
 								.font(.callout)
 						}
 					}
-				} else if hwModel.platform() == HardwarePlatforms.ESP32 {
+				} else if hwModel.platform() == HardwarePlatforms.esp32 {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)

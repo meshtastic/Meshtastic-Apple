@@ -138,49 +138,49 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 		switch self {
 
 		case .UNSET:
-			return HardwarePlatforms.NONE
+			return HardwarePlatforms.none
 		case .TLORAV2:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TLORAV1:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TLORAV211P6:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TBEAM:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .HELTECV20:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TBEAMV0P7:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TECHO:
-			return HardwarePlatforms.NRF52
+			return HardwarePlatforms.nrf52
 		case .TLORAV11P3:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .RAK4631:
-			return HardwarePlatforms.NRF52
+			return HardwarePlatforms.nrf52
 		case .HELTECV21:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .HELTECV1:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .LILYGOTBEAMS3CORE:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .RAK11200:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .NANOG1:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TLORAV211P8:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .TLORAT3S3:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .NANOG1EXPLORER:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .STATIONG1:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .M5STACK:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .HELTECV3:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		case .HELTECWSLV3:
-			return HardwarePlatforms.ESP32
+			return HardwarePlatforms.esp32
 		}
 	}
 	func protoEnumValue() -> HardwareModel {
@@ -238,24 +238,24 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 
 enum HardwarePlatforms: String, CaseIterable, Identifiable {
 	
-	case NONE
-	case ESP32
-	case NRF52
-	case STM32
-	case PIPICO
+	case none
+	case esp32
+	case nrf52
+	case stm32
+	case piPico
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
 			
-		case .NONE:
+		case .none:
 			return "None"
-		case .ESP32:
+		case .esp32:
 			return "Expressif ESP 32"
-		case .NRF52:
+		case .nrf52:
 			return "Nordic NRF52"
-		case .STM32:
+		case .stm32:
 			return "ARM STM 32"
-		case .PIPICO:
+		case .piPico:
 			return "Raspberrry Pi Pico"
 		}
 	}
