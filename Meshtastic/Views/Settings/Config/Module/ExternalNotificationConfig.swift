@@ -190,6 +190,7 @@ struct ExternalNotificationConfig: View {
 					enc.alertMessageVibra = alertMessageVibra
 					enc.active = active
 					enc.output = UInt32(output)
+					enc.nagTimeout = UInt32(nagTimeout)
 					enc.outputBuzzer = UInt32(outputBuzzer)
 					enc.outputVibra = UInt32(outputVibra)
 					enc.outputMs = UInt32(outputMilliseconds)
