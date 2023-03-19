@@ -108,6 +108,7 @@
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
 		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
+		DDC94FBD29C6B7D40082EA6E /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FBC29C6B7D40082EA6E /* CarPlaySceneDelegate.swift */; };
 		DDCDC6CB29481FCC004C1DDA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DDCDC6CD29481FCC004C1DDA /* Localizable.strings */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
 		DDD3BBD5292D763200D609B3 /* MeshtasticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */; };
@@ -282,6 +283,7 @@
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		DDC94FBC29C6B7D40082EA6E /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		DDCDC69A29467643004C1DDA /* MeshtasticDataModelV3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV3.xcdatamodel; sourceTree = "<group>"; };
 		DDCDC6CC29481FCC004C1DDA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDCDC6CE294821AD004C1DDA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -539,6 +541,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				DDC94FBB29C6B7C00082EA6E /* CarPlay */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DDC4D5662754996200A4208E /* Persistence */,
@@ -665,6 +668,14 @@
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		DDC94FBB29C6B7C00082EA6E /* CarPlay */ = {
+			isa = PBXGroup;
+			children = (
+				DDC94FBC29C6B7D40082EA6E /* CarPlaySceneDelegate.swift */,
+			);
+			path = CarPlay;
 			sourceTree = "<group>";
 		};
 		DDDE59F729AF163D00490C6C /* Widgets */ = {
@@ -910,6 +921,7 @@
 				DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */,
 				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
+				DDC94FBD29C6B7D40082EA6E /* CarPlaySceneDelegate.swift in Sources */,
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,

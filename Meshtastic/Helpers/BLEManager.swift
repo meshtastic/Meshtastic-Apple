@@ -1164,9 +1164,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
-		if adminIndex > 0 {
-			meshPacket.channel = UInt32(adminIndex)
-		}
+		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
