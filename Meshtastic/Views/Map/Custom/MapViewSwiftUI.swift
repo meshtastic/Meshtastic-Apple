@@ -344,53 +344,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
 
-//			if let index = self.overlays.firstIndex(where: { overlay_ in overlay_.shape.hash == overlay.hash }) {
-
-//				let unwrappedOverlay = self.overlays[index]
-//				if let circleOverlay = unwrappedOverlay.shape as? MKCircle {
-//					let renderer = MKCircleRenderer(circle: circleOverlay)
-//					renderer.fillColor = unwrappedOverlay.fillColor
-//					renderer.strokeColor = unwrappedOverlay.strokeColor
-//					renderer.lineWidth = unwrappedOverlay.lineWidth
-//					return renderer
-//				} else
-//				if let polygonOverlay = unwrappedOverlay.shape as? MKPolygon {
-//					let renderer = MKPolygonRenderer(polygon: polygonOverlay)
-//					renderer.fillColor = unwrappedOverlay.fillColor
-//					renderer.strokeColor = unwrappedOverlay.strokeColor
-//					renderer.lineWidth = unwrappedOverlay.lineWidth
-//					return renderer
-//				} else if let multiPolygonOverlay = unwrappedOverlay.shape as? MKMultiPolygon {
-//					let renderer = MKMultiPolygonRenderer(multiPolygon: multiPolygonOverlay)
-//					renderer.fillColor = unwrappedOverlay.fillColor
-//					renderer.strokeColor = unwrappedOverlay.strokeColor
-//					renderer.lineWidth = unwrappedOverlay.lineWidth
-//					return renderer
-//				} else if let polyLineOverlay = unwrappedOverlay.shape as? MKPolyline {
-//					let renderer = MKPolylineRenderer(polyline: polyLineOverlay)
-//					renderer.fillColor = unwrappedOverlay.fillColor
-//					renderer.strokeColor = unwrappedOverlay.strokeColor
-//					renderer.lineWidth = unwrappedOverlay.lineWidth
-//					return renderer
-//				} else if let multiPolylineOverlay = unwrappedOverlay.shape as? MKMultiPolyline {
-//					let renderer = MKMultiPolylineRenderer(multiPolyline: multiPolylineOverlay)
-//					renderer.fillColor = unwrappedOverlay.fillColor
-//					renderer.strokeColor = unwrappedOverlay.strokeColor
-//					renderer.lineWidth = unwrappedOverlay.lineWidth
-//					return renderer
-//				}
-//				else {
-//					return MKOverlayRenderer()
-//				}
-//			} else
-				if let tileOverlay = overlay as? MKTileOverlay {
+			if let tileOverlay = overlay as? MKTileOverlay {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
 			} else {
 				if let routePolyline = overlay as? MKPolyline {
-				  let renderer = MKPolylineRenderer(polyline: routePolyline)
-				  renderer.strokeColor = UIColor.systemBlue
-				  renderer.lineWidth = 5
-				  return renderer
+					let renderer = MKPolylineRenderer(polyline: routePolyline)
+					renderer.strokeColor = UIColor.systemIndigo
+					renderer.lineWidth = 5
+					return renderer
 				}
 				return MKOverlayRenderer()
 			}
