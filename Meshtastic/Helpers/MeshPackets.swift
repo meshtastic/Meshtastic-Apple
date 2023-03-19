@@ -449,6 +449,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
 
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
 

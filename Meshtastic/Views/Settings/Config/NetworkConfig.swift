@@ -169,7 +169,7 @@ struct NetworkConfig: View {
 			self.hasChanges = false
 
 			// Need to request a NetworkConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
+			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
 				print("empty network config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {

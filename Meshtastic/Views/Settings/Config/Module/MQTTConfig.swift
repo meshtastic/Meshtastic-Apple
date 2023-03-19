@@ -207,7 +207,7 @@ struct MQTTConfig: View {
 			self.hasChanges = false
 
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
+			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
 				print("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
