@@ -122,7 +122,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 				
 				if showBreadcrumbLines {
-					let nodePositions = positions.filter { $0.time! > Calendar.current.startOfDay(for: Date()) }
+					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 					let lineCoords = nodePositions.map ({
 						(position) -> CLLocationCoordinate2D in
 						return position.nodeCoordinate!
