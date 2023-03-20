@@ -21,7 +21,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
 	let centeringMode: CenteringMode
-	let showBreadcrumbLines: Bool
+	let showRouteLines: Bool
+	let showNodeHistory: Bool
 	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 
@@ -44,26 +45,28 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		let region = MKCoordinateRegion(center: center, span: span)
 		mapView.setRegion(region, animated: true)
 		// Set user (phone gps) tracking options
+		let latest = positions.filter { $0.latest == true }
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
-		if userTrackingMode != MKUserTrackingMode.none {
-			mapView.showsUserLocation = true
-		} else {
+		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
-		}
-		switch centeringMode {
-		case .allAnnotations:
-			mapView.addAnnotations(positions)
-			if userTrackingMode == MKUserTrackingMode.none {
-				mapView.fitAllAnnotations()
+			switch centeringMode {
+			case .allAnnotations:
+				mapView.addAnnotations(showNodeHistory ? positions : latest)
+				if userTrackingMode == MKUserTrackingMode.none {
+					mapView.fitAllAnnotations()
+				}
+			case .allPositions:
+				if userTrackingMode == MKUserTrackingMode.none {
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					mapView.fit(annotations: positions, andShow: false)
+				} else {
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+				}
 			}
-		case .allPositions:
-			if userTrackingMode == MKUserTrackingMode.none {
-				mapView.fit(annotations: positions, andShow: true)
-			} else {
-				mapView.addAnnotations(positions)
-			}
+		} else {
+			mapView.addAnnotations(showNodeHistory ? positions : latest)
+			mapView.showsUserLocation = true
 		}
-
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
@@ -121,7 +124,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				self.presentCustomMapOverlayHash = self.customMapOverlay
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 				
-				if showBreadcrumbLines {
+				if showRouteLines {
 					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 					let lineCoords = nodePositions.map ({
 						(position) -> CLLocationCoordinate2D in
@@ -146,20 +149,20 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = false
 					switch centeringMode {
 					case .allAnnotations:
-						mapView.addAnnotations(positions)
+						mapView.addAnnotations(showNodeHistory ? positions : latest)
 						if recenter && userTrackingMode == MKUserTrackingMode.none {
 							mapView.fitAllAnnotations()
 						}
 					case .allPositions:
 						if recenter && userTrackingMode == MKUserTrackingMode.none {
-							mapView.fit(annotations: positions, andShow: true)
+							mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
 						} else {
-							mapView.addAnnotations(positions)
+							mapView.addAnnotations(showNodeHistory ? positions : latest)
 						}
 					}
 				} else {
 					// Centering Done by tracking mode
-					mapView.addAnnotations(positions)
+					mapView.addAnnotations(latest)
 					mapView.showsUserLocation = true
 				}
 			}

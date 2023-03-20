@@ -17,6 +17,7 @@ struct NodeDetail: View {
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
+	@State private var loadedWeather: Bool = false
 	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
@@ -71,7 +72,8 @@ struct NodeDetail: View {
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									centeringMode: .allPositions,
-									showBreadcrumbLines: false,
+									showRouteLines: false,
+									showNodeHistory: true,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
@@ -484,6 +486,32 @@ struct NodeDetail: View {
 						mapType = .satelliteFlyover
 					default:
 						mapType = .hybridFlyover
+					}
+				}
+				.task(id: node.num) {
+					if !loadedWeather {
+						do {
+							
+							if node.positions?.count ?? 0 > 0 {
+								
+								let mostRecent = node.positions?.lastObject as? PositionEntity
+								
+								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
+								condition = weather.currentWeather.condition
+								temperature = weather.currentWeather.temperature
+								humidity = Int(weather.currentWeather.humidity * 100)
+								symbolName = weather.currentWeather.symbolName
+								
+								let attribution = try await WeatherService.shared.attribution
+								attributionLink = attribution.legalPageURL
+								attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
+								loadedWeather = true
+							}
+						} catch {
+							print("Could not gather weather information...", error.localizedDescription)
+							condition = .clear
+							symbolName = "cloud.fill"
+						}
 					}
 				}
 			}
