@@ -33,7 +33,6 @@ struct NodeMap: View {
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 
-	// && nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
@@ -54,11 +53,6 @@ struct NodeMap: View {
 			tileType: "png",
 			canReplaceMapContent: true
 		)
-	@State private var overlays: [MapViewSwiftUI.Overlay] = []
-
-//	init() {
-//		_positions = FetchRequest<PositionEntity>(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)], predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
-//	}
 
 	var body: some View {
 
@@ -84,8 +78,7 @@ struct NodeMap: View {
 				   userTrackingMode: userTrackingMode,
 				   showRouteLines: false,
 				   showNodeHistory: meshMapShowNodeHistory,
-				   customMapOverlay: self.customMapOverlay,
-				   overlays: self.overlays
+				   customMapOverlay: self.customMapOverlay
 				)
 				VStack {
 					Spacer()

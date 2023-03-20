@@ -23,15 +23,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let showRouteLines: Bool
 	let showNodeHistory: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
-
 	// Offline Maps
 	// make this view dependent on the UserDefault that is updated when importing a new map file
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
-	var overlays: [Overlay] = []
-	let dynamicRegion: Bool = true
+
+	//let dynamicRegion: Bool = true
 
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
@@ -107,20 +106,26 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			DispatchQueue.main.async {
 				self.presentCustomMapOverlayHash = self.customMapOverlay
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
-				
-				if showRouteLines {
-					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
-					let lineCoords = nodePositions.map ({
-						(position) -> CLLocationCoordinate2D in
-						return position.nodeCoordinate!
-					})
-					let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-					mapView.addOverlay(polyline)
-				}
 			}
 		}
 
 		DispatchQueue.main.async {
+			
+			if showRouteLines {
+				// Remove all existing PolyLine Overlays
+				for overlay in mapView.overlays {
+					if overlay is MKPolyline {
+						mapView.removeOverlay(overlay)
+					}
+				}
+				let nodePositions = positions// positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
+				let lineCoords = nodePositions.map ({
+					(position) -> CLLocationCoordinate2D in
+					return position.nodeCoordinate!
+				})
+				let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+				mapView.addOverlay(polyline)
+			}
 
 			let annotationCount = waypoints.count + positions.count
 			if annotationCount != mapView.annotations.count {
@@ -156,7 +161,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
-		var overlays: [Overlay] = []
+		//var overlays: [Overlay] = []
 
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
@@ -166,7 +171,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
-			self.overlays = []
+			//self.overlays = []
 		}
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -443,30 +448,30 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 	}
 
-	public struct Overlay {
-
-		public static func == (lhs: MapViewSwiftUI.Overlay, rhs: MapViewSwiftUI.Overlay) -> Bool {
-			// maybe to use in the future for comparison of full array
-			lhs.shape.coordinate.latitude == rhs.shape.coordinate.latitude &&
-			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
-			lhs.fillColor == rhs.fillColor
-		}
-
-		var shape: MKOverlay
-		var fillColor: UIColor?
-		var strokeColor: UIColor?
-		var lineWidth: CGFloat
-
-		public init(
-			shape: MKOverlay,
-			fillColor: UIColor? = nil,
-			strokeColor: UIColor? = nil,
-			lineWidth: CGFloat = 0
-		) {
-			self.shape = shape
-			self.fillColor = fillColor
-			self.strokeColor = strokeColor
-			self.lineWidth = lineWidth
-		}
-	}
+//	public struct Overlay {
+//
+//		public static func == (lhs: MapViewSwiftUI.Overlay, rhs: MapViewSwiftUI.Overlay) -> Bool {
+//			// maybe to use in the future for comparison of full array
+//			lhs.shape.coordinate.latitude == rhs.shape.coordinate.latitude &&
+//			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
+//			lhs.fillColor == rhs.fillColor
+//		}
+//
+//		var shape: MKOverlay
+//		var fillColor: UIColor?
+//		var strokeColor: UIColor?
+//		var lineWidth: CGFloat
+//
+//		public init(
+//			shape: MKOverlay,
+//			fillColor: UIColor? = nil,
+//			strokeColor: UIColor? = nil,
+//			lineWidth: CGFloat = 0
+//		) {
+//			self.shape = shape
+//			self.fillColor = fillColor
+//			self.strokeColor = strokeColor
+//			self.lineWidth = lineWidth
+//		}
+//	}
 }

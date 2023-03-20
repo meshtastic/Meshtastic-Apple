@@ -26,7 +26,6 @@ struct NodeDetail: View {
 	@State private var showingRebootConfirm: Bool = false
 	@State private var presentingWaypointForm = false
 	@State private var showOverlays: Bool = true
-	@State private var overlays: [MapViewSwiftUI.Overlay] = []
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -49,7 +48,8 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-
+	
+	
 	var body: some View {
 
 		let hwModelString = node.user?.hwModel ?? "UNSET"
@@ -75,8 +75,7 @@ struct NodeDetail: View {
 									userTrackingMode: MKUserTrackingMode.none,
 									showRouteLines: meshMapShowRouteLines,
 									showNodeHistory: meshMapShowNodeHistory,
-									customMapOverlay: self.customMapOverlay,
-									overlays: self.overlays
+									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {
 									Spacer()
@@ -177,14 +176,14 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-
-								if node.telemetries?.count ?? 0 >= 1 {
-
-									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
+								let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+								if deviceMetrics?.count ?? 0 >= 1 {
+									
+									let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
-										if mostRecent?.voltage ?? 0 > 0 {
+										if mostRecent?.voltage ?? 0 > 0.0 {
 
 											Text(String(format: "%.2f", mostRecent?.voltage ?? 0.0) + " V")
 												.font(.title)
@@ -288,8 +287,10 @@ struct NodeDetail: View {
 									}
 								}
 
-								if node.telemetries?.count ?? 0 >= 1 {
-									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
+								let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+								if deviceMetrics?.count ?? 0 >= 1 {
+									
+									let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
