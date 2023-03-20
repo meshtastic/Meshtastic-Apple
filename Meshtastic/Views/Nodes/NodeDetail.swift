@@ -71,7 +71,7 @@ struct NodeDetail: View {
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									centeringMode: .allPositions,
-									showBreadcrumbLines: true,
+									showBreadcrumbLines: false,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
