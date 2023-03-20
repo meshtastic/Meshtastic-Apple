@@ -80,19 +80,22 @@ struct AppSettings: View {
 
 					if userSettings.meshMapUserTrackingMode == 0 {
 
-						Picker("map.centering", selection: $userSettings.meshMapCenteringMode) {
-							ForEach(CenteringMode.allCases) { cm in
-								Text(cm.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-
 						Toggle(isOn: $userSettings.meshMapRecentering) {
 
 							Label("map.recentering", systemImage: "camera.metering.center.weighted")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
+					Toggle(isOn: $userSettings.meshMapShowNodeHistory) {
+
+						Label("Show Node History", systemImage: "building.columns.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $userSettings.meshMapShowRouteLines) {
+
+						Label("Show Route Lines", systemImage: "road.lanes")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 			}
 			HStack {

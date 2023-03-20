@@ -20,10 +20,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
-	let centeringMode: CenteringMode
 	let showRouteLines: Bool
 	let showNodeHistory: Bool
-	let centerOnPositionsOnly: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 
 	// Offline Maps
@@ -49,24 +47,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
-			switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(showNodeHistory ? positions : latest)
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.fitAllAnnotations()
-				}
-			case .allPositions:
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					mapView.fit(annotations: positions, andShow: false)
-				} else {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-				}
-			}
 		} else {
-			mapView.addAnnotations(showNodeHistory ? positions : latest)
 			mapView.showsUserLocation = true
 		}
+		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
@@ -147,22 +131,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				
 				if userTrackingMode == MKUserTrackingMode.none {
 					mapView.showsUserLocation = false
-					switch centeringMode {
-					case .allAnnotations:
-						mapView.addAnnotations(showNodeHistory ? positions : latest)
-						if recenter && userTrackingMode == MKUserTrackingMode.none {
-							mapView.fitAllAnnotations()
-						}
-					case .allPositions:
-						if recenter && userTrackingMode == MKUserTrackingMode.none {
-							mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					if recenter {
+						if showRouteLines || showNodeHistory {
+							mapView.fit(annotations: showNodeHistory ? positions : positions, andShow: false)
 						} else {
-							mapView.addAnnotations(showNodeHistory ? positions : latest)
+							mapView.fitAllAnnotations()
 						}
 					}
 				} else {
 					// Centering Done by tracking mode
-					mapView.addAnnotations(latest)
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					mapView.showsUserLocation = true
 				}
 			}

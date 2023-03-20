@@ -31,7 +31,7 @@ struct NodeMap: View {
 	}
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
-	@AppStorage("meshMapCenteringMode") private var meshMapCenteringMode = 0
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 
 	// && nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
@@ -46,7 +46,6 @@ struct NodeMap: View {
 
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State private var mapCenteringMode: CenteringMode = .allAnnotations
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
@@ -83,10 +82,8 @@ struct NodeMap: View {
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
-				   centeringMode: mapCenteringMode,
 				   showRouteLines: false,
-				   showNodeHistory: true,
-				   centerOnPositionsOnly: false,
+				   showNodeHistory: meshMapShowNodeHistory,
 				   customMapOverlay: self.customMapOverlay,
 				   overlays: self.overlays
 				)
@@ -124,7 +121,6 @@ struct NodeMap: View {
 			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
 			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
 			switch meshMapType {
 			case "standard":

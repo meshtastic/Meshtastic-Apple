@@ -14,6 +14,8 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
@@ -71,10 +73,8 @@ struct NodeDetail: View {
 								}, positions: annotations, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
-									centeringMode: .allPositions,
-									showRouteLines: true,
-									showNodeHistory: false,
-									centerOnPositionsOnly: true,
+									showRouteLines: meshMapShowRouteLines,
+									showNodeHistory: meshMapShowNodeHistory,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
 								)
