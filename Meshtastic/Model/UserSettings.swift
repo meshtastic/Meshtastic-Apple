@@ -47,7 +47,7 @@ class UserSettings: ObservableObject {
 	}
 	@Published var meshMapRecentering: Bool {
 		didSet {
-			UserDefaults.standard.set(meshMapCenteringMode, forKey: "meshMapRecentering")
+			UserDefaults.standard.set(meshMapRecentering, forKey: "meshMapRecentering")
 			UserDefaults.standard.synchronize()
 		}
 	}

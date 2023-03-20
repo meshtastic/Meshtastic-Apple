@@ -138,25 +138,29 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let annotationCount = waypoints.count + positions.count
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
+				let latest = positions.filter { $0.latest == true }
 				mapView.addAnnotations(waypoints)
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-				if userTrackingMode != MKUserTrackingMode.none {
-					mapView.showsUserLocation = true
-				} else {
+				
+				if userTrackingMode == MKUserTrackingMode.none {
 					mapView.showsUserLocation = false
-				}
-				switch centeringMode {
-				case .allAnnotations:
-					mapView.addAnnotations(positions)
-					if recenter && userTrackingMode == MKUserTrackingMode.none {
-						mapView.fitAllAnnotations()
-					}
-				case .allPositions:
-					if recenter && userTrackingMode == MKUserTrackingMode.none {
-						mapView.fit(annotations: positions, andShow: true)
-					} else {
+					switch centeringMode {
+					case .allAnnotations:
 						mapView.addAnnotations(positions)
+						if recenter && userTrackingMode == MKUserTrackingMode.none {
+							mapView.fitAllAnnotations()
+						}
+					case .allPositions:
+						if recenter && userTrackingMode == MKUserTrackingMode.none {
+							mapView.fit(annotations: positions, andShow: true)
+						} else {
+							mapView.addAnnotations(positions)
+						}
 					}
+				} else {
+					// Centering Done by tracking mode
+					mapView.addAnnotations(positions)
+					mapView.showsUserLocation = true
 				}
 			}
 		}
