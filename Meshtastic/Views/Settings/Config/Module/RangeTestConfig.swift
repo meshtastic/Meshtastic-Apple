@@ -37,6 +37,9 @@ struct RangeTestConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setRangeTestValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -115,10 +118,7 @@ struct RangeTestConfig: View {
 			})
 			.onAppear {
 				self.bleManager.context = context
-				self.enabled = node?.rangeTestConfig?.enabled ?? false
-				self.save = node?.rangeTestConfig?.save ?? false
-				self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
-				self.hasChanges = false
+				setRangeTestValues()
 
 				// Need to request a RangeTestModule Config from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
@@ -145,5 +145,11 @@ struct RangeTestConfig: View {
 				}
 			}
 		}
+	}
+	func setRangeTestValues() {
+		self.enabled = node?.rangeTestConfig?.enabled ?? false
+		self.save = node?.rangeTestConfig?.save ?? false
+		self.sender = Int(node?.rangeTestConfig?.sender ?? 0)
+		self.hasChanges = false
 	}
 }

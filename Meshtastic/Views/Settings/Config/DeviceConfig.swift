@@ -7,35 +7,35 @@
 import SwiftUI
 
 struct DeviceConfig: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-
+	
 	var node: NodeInfoEntity?
-
+	
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
 	@State private var isPresentingSaveConfirm = false
 	@State var hasChanges = false
-
+	
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
-
+	
 	var body: some View {
-
+		
 		VStack {
-
+			
 			Form {
 				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-
+					
 				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					// Let users know what is going on if they are using remote admin and don't have the config yet
 					if node?.deviceConfig == nil {
@@ -45,6 +45,9 @@ struct DeviceConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setDeviceValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -55,7 +58,7 @@ struct DeviceConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
-
+					
 					Picker("Device Role", selection: $deviceRole ) {
 						ForEach(DeviceRoles.allCases) { dr in
 							Text(dr.name)
@@ -66,7 +69,7 @@ struct DeviceConfig: View {
 					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.caption)
-
+					
 					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
 						ForEach(RebroadcastModes.allCases) { rm in
 							Text(rm.name)
@@ -78,24 +81,24 @@ struct DeviceConfig: View {
 						.foregroundColor(.gray)
 						.font(.caption)
 				}
-
+				
 				Section(header: Text("Debug")) {
-
+					
 					Toggle(isOn: $serialEnabled) {
-
+						
 						Label("Serial Console", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+					
 					Toggle(isOn: $debugLogEnabled) {
-
+						
 						Label("Debug Log", systemImage: "ant.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-
+				
 				Section(header: Text("GPIO")) {
-
+					
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<40) {
 							if $0 == 0 {
@@ -117,14 +120,14 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 				}
-
+				
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
-
+			
 			// Only show these buttons for the BLE connected node
 			if bleManager.connectedPeripheral != nil && node?.num ?? -1  == bleManager.connectedPeripheral.num {
 				HStack {
-
+					
 					Button("Reset NodeDB", role: .destructive) {
 						isPresentingNodeDBResetConfirm = true
 					}
@@ -139,7 +142,7 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Erase all device and app data?", role: .destructive) {
-
+							
 							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								bleManager.disconnectPeripheral()
 								clearCoreDataDatabase(context: context)
@@ -162,23 +165,23 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Factory reset your device and app? ", role: .destructive) {
-
+							
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								bleManager.disconnectPeripheral()
 								clearCoreDataDatabase(context: context)
 							} else {
 								print("Factory Reset Failed")
-
+								
 							}
 						}
 					}
 				}
 			}
 			HStack {
-
+				
 				Button {
 					isPresentingSaveConfirm = true
-
+					
 				} label: {
 					Label("save", systemImage: "square.and.arrow.down")
 				}
@@ -188,7 +191,7 @@ struct DeviceConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-
+					
 					"are.you.sure",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
@@ -204,7 +207,7 @@ struct DeviceConfig: View {
 							dc.debugLogEnabled = debugLogEnabled
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
-
+							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
 								// Should show a saved successfully alert once I know that to be true
@@ -215,26 +218,21 @@ struct DeviceConfig: View {
 						}
 					}
 				}
-				message: {
-					Text("config.save.confirm")
-				}
+			message: {
+				Text("config.save.confirm")
+			}
 			}
 			Spacer()
 		}
 		.navigationTitle("device.config")
 		.navigationBarItems(trailing:
-			ZStack {
+								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
-			self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
-			self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
-			self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
-			self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
-			self.hasChanges = false
-
+			setDeviceValues()
+			
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")
@@ -245,39 +243,47 @@ struct DeviceConfig: View {
 			}
 		}
 		.onChange(of: deviceRole) { newRole in
-
+			
 			if node != nil && node!.deviceConfig != nil {
-
+				
 				if newRole != node!.deviceConfig!.role { hasChanges = true }
 			}
 		}
 		.onChange(of: serialEnabled) { newSerial in
-
+			
 			if node != nil && node!.deviceConfig != nil {
-
+				
 				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: debugLogEnabled) { newDebugLog in
-
+			
 			if node != nil && node!.deviceConfig != nil {
-
+				
 				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
 			}
 		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
-
+			
 			if node != nil && node!.deviceConfig != nil {
-
+				
 				if newButtonGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
-
+			
 			if node != nil && node!.deviceConfig != nil {
-
+				
 				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
+	}
+	func setDeviceValues() {
+		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
+		self.serialEnabled = (node?.deviceConfig?.serialEnabled ?? true)
+		self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
+		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
+		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
+		self.hasChanges = false
 	}
 }

@@ -86,6 +86,9 @@ struct PositionConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setPositionValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -277,28 +280,7 @@ struct PositionConfig: View {
 		.onAppear {
 
 			self.bleManager.context = context
-			self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
-			self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
-			self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
-			self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
-			self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
-			self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
-			self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
-
-			let pf = PositionFlags(rawValue: self.positionFlags)
-
-			if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
-			if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
-			if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
-			if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
-			if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
-			if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
-			if pf.contains(.SeqNo) { self.includeSeqNo = true } else { self.includeSeqNo = false }
-			if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
-			if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
-			if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
-
-			self.hasChanges = false
+			setPositionValues()
 
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
@@ -394,5 +376,30 @@ struct PositionConfig: View {
 			let existingValue = pf.contains(.Hvdop)
 			if existingValue != hvdopFlag { hasChanges = true }
 		}
+	}
+	
+	func setPositionValues() {
+		
+		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
+		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
+		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
+		self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
+		self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
+		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
+		self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
+
+		let pf = PositionFlags(rawValue: self.positionFlags)
+		if pf.contains(.Altitude) { self.includeAltitude = true } else { self.includeAltitude = false }
+		if pf.contains(.AltitudeMsl) { self.includeAltitudeMsl = true } else { self.includeAltitudeMsl = false }
+		if pf.contains(.GeoidalSeparation) { self.includeGeoidalSeparation = true } else { self.includeGeoidalSeparation = false }
+		if pf.contains(.Dop) { self.includeDop = true  } else { self.includeDop = false }
+		if pf.contains(.Hvdop) { self.includeHvdop = true } else { self.includeHvdop = false }
+		if pf.contains(.Satsinview) { self.includeSatsinview = true } else { self.includeSatsinview = false }
+		if pf.contains(.SeqNo) { self.includeSeqNo = true } else { self.includeSeqNo = false }
+		if pf.contains(.Timestamp) { self.includeTimestamp = true } else { self.includeTimestamp = false }
+		if pf.contains(.Speed) { self.includeSpeed = true } else { self.includeSpeed = false }
+		if pf.contains(.Heading) { self.includeHeading = true } else { self.includeHeading = false }
+
+		self.hasChanges = false
 	}
 }

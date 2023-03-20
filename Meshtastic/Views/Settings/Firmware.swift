@@ -44,7 +44,7 @@ struct Firmware: View {
 				}
 				.padding(.bottom)
 
-				if hwModel.platform() == HardwarePlatforms.NRF52 {
+				if hwModel.platform() == HardwarePlatforms.nrf52 {
 					VStack(alignment: .leading) {
 						if hwModel == HardwareModels.RAK4631 {
 							Text("nRF OTA Device Firmware Update App")
@@ -60,7 +60,7 @@ struct Firmware: View {
 								.font(.callout)
 						}
 					}
-				} else if hwModel.platform() == HardwarePlatforms.ESP32 {
+				} else if hwModel.platform() == HardwarePlatforms.esp32 {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
@@ -74,13 +74,11 @@ struct Firmware: View {
 						HStack(alignment: .center) {
 							Spacer()
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 										print("Reboot Failed")
-									} else {
-										bleManager.disconnectPeripheral(reconnect: false)
-									}
+									} 
 								}
 							} label: {
 								Label("Send Reboot OTA", systemImage: "square.and.arrow.down")
@@ -94,6 +92,10 @@ struct Firmware: View {
 					}
 				} else {
 					Text("OTA Updates are not supported on your platform.")
+						.font(.title3)
+					Text(node?.user?.hwModel ?? "UNSET")
+						.font(.title3)
+					Text(hwModel.platform().description)
 						.font(.title3)
 				}
 				

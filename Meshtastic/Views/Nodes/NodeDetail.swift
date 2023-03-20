@@ -71,10 +71,10 @@ struct NodeDetail: View {
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									centeringMode: .allPositions,
+									showBreadcrumbLines: false,
 									centerOnPositionsOnly: true,
 									customMapOverlay: self.customMapOverlay,
 									overlays: self.overlays
-
 								)
 								VStack(alignment: .leading) {
 									Spacer()
@@ -484,29 +484,6 @@ struct NodeDetail: View {
 						mapType = .satelliteFlyover
 					default:
 						mapType = .hybridFlyover
-					}
-				}
-				.task(id: node.num) {
-					do {
-
-						if node.positions?.count ?? 0 > 0 {
-
-							let mostRecent = node.positions?.lastObject as? PositionEntity
-
-							let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
-							condition = weather.currentWeather.condition
-							temperature = weather.currentWeather.temperature
-							humidity = Int(weather.currentWeather.humidity * 100)
-							symbolName = weather.currentWeather.symbolName
-
-							let attribution = try await WeatherService.shared.attribution
-							attributionLink = attribution.legalPageURL
-							attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
-						}
-					} catch {
-						print("Could not gather weather information...", error.localizedDescription)
-						condition = .clear
-						symbolName = "cloud.fill"
 					}
 				}
 			}

@@ -48,6 +48,9 @@ struct ExternalNotificationConfig: View {
 				} else {
 					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
+						.onAppear {
+							setExternalNotificationValues()
+						}
 				}
 			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -190,6 +193,7 @@ struct ExternalNotificationConfig: View {
 					enc.alertMessageVibra = alertMessageVibra
 					enc.active = active
 					enc.output = UInt32(output)
+					enc.nagTimeout = UInt32(nagTimeout)
 					enc.outputBuzzer = UInt32(outputBuzzer)
 					enc.outputVibra = UInt32(outputVibra)
 					enc.outputMs = UInt32(outputMilliseconds)
@@ -214,21 +218,7 @@ struct ExternalNotificationConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.enabled = node?.externalNotificationConfig?.enabled ?? false
-			self.alertBell = node?.externalNotificationConfig?.alertBell ?? false
-			self.alertBellBuzzer = node?.externalNotificationConfig?.alertBellBuzzer ?? false
-			self.alertBellVibra = node?.externalNotificationConfig?.alertBellVibra ?? false
-			self.alertMessage = node?.externalNotificationConfig?.alertMessage ?? false
-			self.alertMessageBuzzer = node?.externalNotificationConfig?.alertMessageBuzzer ?? false
-			self.alertMessageVibra = node?.externalNotificationConfig?.alertMessageVibra ?? false
-			self.active = node?.externalNotificationConfig?.active ?? false
-			self.output = Int(node?.externalNotificationConfig?.output ?? 0)
-			self.outputBuzzer = Int(node?.externalNotificationConfig?.outputBuzzer ?? 0)
-			self.outputVibra = Int(node?.externalNotificationConfig?.outputVibra ?? 0)
-			self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
-			self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
-			self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
-			self.hasChanges = false
+			setExternalNotificationValues()
 
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
@@ -309,5 +299,22 @@ struct ExternalNotificationConfig: View {
 				if newNagTimeout != node!.externalNotificationConfig!.nagTimeout { hasChanges = true }
 			}
 		}
+	}
+	func setExternalNotificationValues() {
+		self.enabled = node?.externalNotificationConfig?.enabled ?? false
+		self.alertBell = node?.externalNotificationConfig?.alertBell ?? false
+		self.alertBellBuzzer = node?.externalNotificationConfig?.alertBellBuzzer ?? false
+		self.alertBellVibra = node?.externalNotificationConfig?.alertBellVibra ?? false
+		self.alertMessage = node?.externalNotificationConfig?.alertMessage ?? false
+		self.alertMessageBuzzer = node?.externalNotificationConfig?.alertMessageBuzzer ?? false
+		self.alertMessageVibra = node?.externalNotificationConfig?.alertMessageVibra ?? false
+		self.active = node?.externalNotificationConfig?.active ?? false
+		self.output = Int(node?.externalNotificationConfig?.output ?? 0)
+		self.outputBuzzer = Int(node?.externalNotificationConfig?.outputBuzzer ?? 0)
+		self.outputVibra = Int(node?.externalNotificationConfig?.outputVibra ?? 0)
+		self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
+		self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
+		self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
+		self.hasChanges = false
 	}
 }

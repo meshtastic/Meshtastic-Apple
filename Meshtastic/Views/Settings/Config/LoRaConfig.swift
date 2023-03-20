@@ -30,7 +30,7 @@ struct LoRaConfig: View {
 
 	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
-	@State var region = 0
+	@State var region: Int = 0
 	@State var modemPreset = 0
 	@State var hopLimit = 0
 	@State var txPower = 0
@@ -57,9 +57,13 @@ struct LoRaConfig: View {
 						Text("LoRa config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
 							.font(.callout)
 							.foregroundColor(.orange)
+							
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setLoRaValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -228,19 +232,7 @@ struct LoRaConfig: View {
 		.onAppear {
 
 			self.bleManager.context = context
-			self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
-			self.region = Int(node?.loRaConfig?.regionCode ?? 0)
-			self.usePreset = node?.loRaConfig?.usePreset ?? true
-			self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)
-			self.txEnabled = node?.loRaConfig?.txEnabled ?? true
-			self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
-			self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
-			self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
-			self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
-			self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
-			self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
-			print(rxBoostedGain)
-			self.hasChanges = false
+			setLoRaValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.loRaConfig == nil {
@@ -296,5 +288,19 @@ struct LoRaConfig: View {
 				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
 			}
 		}
+	}
+	func setLoRaValues() {
+		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
+		self.region = Int(node?.loRaConfig?.regionCode ?? 0)
+		self.usePreset = node?.loRaConfig?.usePreset ?? true
+		self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)
+		self.txEnabled = node?.loRaConfig?.txEnabled ?? true
+		self.txPower = Int(node?.loRaConfig?.txPower ?? 0)
+		self.channelNum = Int(node?.loRaConfig?.channelNum ?? 0)
+		self.bandwidth = Int(node?.loRaConfig?.bandwidth ?? 0)
+		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
+		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
+		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
+		self.hasChanges = false
 	}
 }

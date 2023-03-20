@@ -40,6 +40,9 @@ struct BluetoothConfig: View {
 				} else {
 					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
+						.onAppear {
+							setBluetoothValues()
+						}
 				}
 			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -135,10 +138,7 @@ struct BluetoothConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.enabled = node?.bluetoothConfig?.enabled ?? true
-			self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
-			self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
-			self.hasChanges = false
+			setBluetoothValues()
 			// Need to request a BluetoothConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.bluetoothConfig == nil {
 				print("empty bluetooth config")
@@ -163,5 +163,11 @@ struct BluetoothConfig: View {
 				if newFixedPin != String(node!.bluetoothConfig!.fixedPin) { hasChanges = true }
 			}
 		}
+	}
+	func setBluetoothValues() {
+		self.enabled = node?.bluetoothConfig?.enabled ?? true
+		self.mode = Int(node?.bluetoothConfig?.mode ?? 0)
+		self.fixedPin = String(node?.bluetoothConfig?.fixedPin ?? 123456)
+		self.hasChanges = false
 	}
 }

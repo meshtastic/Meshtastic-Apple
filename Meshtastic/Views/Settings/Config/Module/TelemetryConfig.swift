@@ -40,6 +40,9 @@ struct TelemetryConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setTelemetryValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -131,12 +134,7 @@ struct TelemetryConfig: View {
 			})
 			.onAppear {
 				self.bleManager.context = context
-				self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 0)
-				self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 0)
-				self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
-				self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
-				self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
-				self.hasChanges = false
+				setTelemetryValues()
 
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
@@ -173,5 +171,13 @@ struct TelemetryConfig: View {
 				}
 			}
 		}
+	}
+	func setTelemetryValues() {
+		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 0)
+		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 0)
+		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
+		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
+		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
+		self.hasChanges = false
 	}
 }

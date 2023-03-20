@@ -84,6 +84,7 @@ struct NodeMap: View {
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
 				   centeringMode: mapCenteringMode,
+				   showBreadcrumbLines: false,
 				   centerOnPositionsOnly: false,
 				   customMapOverlay: self.customMapOverlay,
 				   overlays: self.overlays
