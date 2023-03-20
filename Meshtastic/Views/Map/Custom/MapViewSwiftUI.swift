@@ -348,6 +348,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
 			} else {
 				if let routePolyline = overlay as? MKPolyline {
+					
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
 					renderer.strokeColor = UIColor.systemIndigo
 					renderer.lineWidth = 5

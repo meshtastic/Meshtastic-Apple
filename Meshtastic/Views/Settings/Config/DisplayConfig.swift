@@ -43,6 +43,9 @@ struct DisplayConfig: View {
 				} else {
 					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
+						.onAppear {
+							setDisplayValues()
+						}
 				}
 			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -173,14 +176,7 @@ struct DisplayConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
-			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
-			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
-			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
-			self.flipScreen = node?.displayConfig?.flipScreen ?? false
-			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
-			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
-			self.hasChanges = false
+			setDisplayValues()
 
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.displayConfig == nil {
@@ -226,5 +222,16 @@ struct DisplayConfig: View {
 				if newDisplayMode != node!.displayConfig!.displayMode { hasChanges = true }
 			}
 		}
+	}
+	func setDisplayValues() {
+		
+			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
+			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
+			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
+			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+			self.flipScreen = node?.displayConfig?.flipScreen ?? false
+			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
+			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
+			self.hasChanges = false
 	}
 }

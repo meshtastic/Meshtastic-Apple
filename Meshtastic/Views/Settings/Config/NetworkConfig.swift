@@ -43,6 +43,9 @@ struct NetworkConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setNetworkValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -161,12 +164,7 @@ struct NetworkConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
-			self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
-			self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
-			self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
-			self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
-			self.hasChanges = false
+			setNetworkValues()
 
 			// Need to request a NetworkConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.networkConfig == nil {
@@ -202,5 +200,14 @@ struct NetworkConfig: View {
 				if newEthEnabled != node!.networkConfig!.ethEnabled { hasChanges = true }
 			}
 		}
+	}
+	
+	func setNetworkValues() {
+		self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
+		self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""
+		self.wifiPsk = node?.networkConfig?.wifiPsk ?? ""
+		self.wifiMode = Int(node?.networkConfig?.wifiMode ?? 0)
+		self.ethEnabled = node?.networkConfig?.ethEnabled ?? false
+		self.hasChanges = false
 	}
 }
