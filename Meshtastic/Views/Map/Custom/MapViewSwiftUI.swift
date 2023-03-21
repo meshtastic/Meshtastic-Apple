@@ -30,7 +30,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 
-	//let dynamicRegion: Bool = true
+	let colors: [UIColor] = [UIColor.systemIndigo, UIColor.blue, UIColor.purple, UIColor.green, UIColor.brown, UIColor.purple, UIColor.systemMint, UIColor.cyan, UIColor.magenta, UIColor.systemPink]
 
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
@@ -110,6 +110,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 
 		DispatchQueue.main.async {
+			var latest = positions
+				.filter { $0.latest == true }
+				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			
 			if showRouteLines {
 				// Remove all existing PolyLine Overlays
@@ -118,19 +121,28 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						mapView.removeOverlay(overlay)
 					}
 				}
-				let nodePositions = positions// positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
-				let lineCoords = nodePositions.map ({
-					(position) -> CLLocationCoordinate2D in
-					return position.nodeCoordinate!
-				})
-				let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-				mapView.addOverlay(polyline)
+				var lineIndex = 0
+				for position in latest {
+					
+					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+					let lineCoords = nodePositions.map ({
+						(position) -> CLLocationCoordinate2D in
+						return position.nodeCoordinate!
+					})
+					let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+					polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
+					mapView.addOverlay(polyline)
+					lineIndex += 1
+					// There are 10 colors for lines, start over if we are at index 11
+					if lineIndex > 9 {
+						lineIndex = 0
+					}
+				}
 			}
 
 			let annotationCount = waypoints.count + positions.count
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
-				let latest = positions.filter { $0.latest == true }
 				mapView.addAnnotations(waypoints)
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
 				
@@ -161,7 +173,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
-		//var overlays: [Overlay] = []
 
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
@@ -171,7 +182,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
-			//self.overlays = []
 		}
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -340,8 +350,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			} else {
 				if let routePolyline = overlay as? MKPolyline {
 					
+					let titleString = routePolyline.title ?? "None-0"
+					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = UIColor.systemIndigo
+					renderer.strokeColor = parent.colors[index ?? 0]
 					renderer.lineWidth = 5
 					return renderer
 				}

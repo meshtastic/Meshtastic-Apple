@@ -32,6 +32,7 @@ struct NodeMap: View {
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -76,7 +77,7 @@ struct NodeMap: View {
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
-				   showRouteLines: false,
+				   showRouteLines: meshMapShowRouteLines,
 				   showNodeHistory: meshMapShowNodeHistory,
 				   customMapOverlay: self.customMapOverlay
 				)
