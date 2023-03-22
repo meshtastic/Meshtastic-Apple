@@ -101,7 +101,7 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 		case .allSkipDecoding:
 			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior."
 		case .localOnly:
-			return "Inverted top bar for 2 Color display"
+			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {

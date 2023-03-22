@@ -681,6 +681,10 @@ struct Config {
     /// Print first line in pseudo-bold? FALSE is original style, TRUE is bold
     var headingBold: Bool = false
 
+    ///
+    /// Should we wake the screen up on accelerometer detected motion or tap
+    var wakeOnTapOrMotion: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1970,6 +1974,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     7: .same(proto: "oled"),
     8: .same(proto: "displaymode"),
     9: .standard(proto: "heading_bold"),
+    10: .standard(proto: "wake_on_tap_or_motion"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1987,6 +1992,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 7: try { try decoder.decodeSingularEnumField(value: &self.oled) }()
       case 8: try { try decoder.decodeSingularEnumField(value: &self.displaymode) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.headingBold) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.wakeOnTapOrMotion) }()
       default: break
       }
     }
@@ -2020,6 +2026,9 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.headingBold != false {
       try visitor.visitSingularBoolField(value: self.headingBold, fieldNumber: 9)
     }
+    if self.wakeOnTapOrMotion != false {
+      try visitor.visitSingularBoolField(value: self.wakeOnTapOrMotion, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2033,6 +2042,7 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.oled != rhs.oled {return false}
     if lhs.displaymode != rhs.displaymode {return false}
     if lhs.headingBold != rhs.headingBold {return false}
+    if lhs.wakeOnTapOrMotion != rhs.wakeOnTapOrMotion {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
