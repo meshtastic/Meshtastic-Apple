@@ -20,8 +20,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
-	let showRouteLines: Bool
 	let showNodeHistory: Bool
+	let showRouteLines: Bool
+	let colors: [UIColor] = [UIColor.systemIndigo, UIColor.orange, UIColor.green, UIColor.brown, UIColor.purple, UIColor.systemMint, UIColor.cyan, UIColor.magenta, UIColor.systemPink, UIColor.blue]
+
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	// Offline Maps
 	// make this view dependent on the UserDefault that is updated when importing a new map file
@@ -30,8 +32,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 
-	let colors: [UIColor] = [UIColor.systemIndigo, UIColor.blue, UIColor.purple, UIColor.green, UIColor.brown, UIColor.purple, UIColor.systemMint, UIColor.cyan, UIColor.magenta, UIColor.systemPink]
-
+	
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
 		mapView.mapType = mapViewType
@@ -110,7 +111,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 
 		DispatchQueue.main.async {
-			var latest = positions
+			let latest = positions
 				.filter { $0.latest == true }
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			
@@ -133,7 +134,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
 					mapView.addOverlay(polyline)
 					lineIndex += 1
-					// There are 10 colors for lines, start over if we are at index 11
+					// There are 10 colors for lines, start over if we are at index 10
 					if lineIndex > 9 {
 						lineIndex = 0
 					}

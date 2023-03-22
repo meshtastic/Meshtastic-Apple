@@ -73,8 +73,8 @@ struct NodeDetail: View {
 								}, positions: annotations, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
-									showRouteLines: meshMapShowRouteLines,
 									showNodeHistory: meshMapShowNodeHistory,
+									showRouteLines: meshMapShowRouteLines,
 									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {
