@@ -295,8 +295,9 @@ struct Connect: View {
 		if #available(iOS 16.2, *) {
 			liveActivityStarted = true
 			let timerSeconds = 60
-
-			let mostRecent = node?.telemetries?.lastObject as? TelemetryEntity
+			
+			let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+			let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 
 			let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
