@@ -20,21 +20,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
-	let centeringMode: CenteringMode
-	let showRouteLines: Bool
 	let showNodeHistory: Bool
-	let centerOnPositionsOnly: Bool
-	@AppStorage("meshMapRecentering") private var recenter: Bool = false
+	let showRouteLines: Bool
+	let colors: [UIColor] = [UIColor.systemIndigo, UIColor.orange, UIColor.green, UIColor.brown, UIColor.purple, UIColor.systemMint, UIColor.cyan, UIColor.magenta, UIColor.systemPink, UIColor.blue]
 
+	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	// Offline Maps
 	// make this view dependent on the UserDefault that is updated when importing a new map file
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
-	var overlays: [Overlay] = []
-	let dynamicRegion: Bool = true
 
+	
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
 		mapView.mapType = mapViewType
@@ -49,24 +47,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
-			switch centeringMode {
-			case .allAnnotations:
-				mapView.addAnnotations(showNodeHistory ? positions : latest)
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.fitAllAnnotations()
-				}
-			case .allPositions:
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					mapView.fit(annotations: positions, andShow: false)
-				} else {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-				}
-			}
 		} else {
-			mapView.addAnnotations(showNodeHistory ? positions : latest)
 			mapView.showsUserLocation = true
 		}
+		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
@@ -123,46 +107,59 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			DispatchQueue.main.async {
 				self.presentCustomMapOverlayHash = self.customMapOverlay
 				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
-				
-				if showRouteLines {
-					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
+			}
+		}
+
+		DispatchQueue.main.async {
+			let latest = positions
+				.filter { $0.latest == true }
+				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
+			
+			if showRouteLines {
+				// Remove all existing PolyLine Overlays
+				for overlay in mapView.overlays {
+					if overlay is MKPolyline {
+						mapView.removeOverlay(overlay)
+					}
+				}
+				var lineIndex = 0
+				for position in latest {
+					
+					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
 					let lineCoords = nodePositions.map ({
 						(position) -> CLLocationCoordinate2D in
 						return position.nodeCoordinate!
 					})
 					let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+					polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
 					mapView.addOverlay(polyline)
+					lineIndex += 1
+					// There are 10 colors for lines, start over if we are at index 10
+					if lineIndex > 9 {
+						lineIndex = 0
+					}
 				}
 			}
-		}
-
-		DispatchQueue.main.async {
 
 			let annotationCount = waypoints.count + positions.count
 			if annotationCount != mapView.annotations.count {
 				mapView.removeAnnotations(mapView.annotations)
-				let latest = positions.filter { $0.latest == true }
 				mapView.addAnnotations(waypoints)
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
 				
 				if userTrackingMode == MKUserTrackingMode.none {
 					mapView.showsUserLocation = false
-					switch centeringMode {
-					case .allAnnotations:
-						mapView.addAnnotations(showNodeHistory ? positions : latest)
-						if recenter && userTrackingMode == MKUserTrackingMode.none {
-							mapView.fitAllAnnotations()
-						}
-					case .allPositions:
-						if recenter && userTrackingMode == MKUserTrackingMode.none {
-							mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					if recenter {
+						if showRouteLines || showNodeHistory {
+							mapView.fit(annotations: showNodeHistory ? positions : positions, andShow: false)
 						} else {
-							mapView.addAnnotations(showNodeHistory ? positions : latest)
+							mapView.fitAllAnnotations()
 						}
 					}
 				} else {
 					// Centering Done by tracking mode
-					mapView.addAnnotations(latest)
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					mapView.showsUserLocation = true
 				}
 			}
@@ -177,7 +174,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 
 		var parent: MapViewSwiftUI
 		var longPressRecognizer = UILongPressGestureRecognizer()
-		var overlays: [Overlay] = []
 
 		init(_ parent: MapViewSwiftUI) {
 			self.parent = parent
@@ -187,7 +183,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
-			self.overlays = []
 		}
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -356,8 +351,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			} else {
 				if let routePolyline = overlay as? MKPolyline {
 					
+					let titleString = routePolyline.title ?? "None-0"
+					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = UIColor.systemIndigo
+					renderer.strokeColor = parent.colors[index ?? 0]
 					renderer.lineWidth = 5
 					return renderer
 				}
@@ -464,30 +461,30 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 	}
 
-	public struct Overlay {
-
-		public static func == (lhs: MapViewSwiftUI.Overlay, rhs: MapViewSwiftUI.Overlay) -> Bool {
-			// maybe to use in the future for comparison of full array
-			lhs.shape.coordinate.latitude == rhs.shape.coordinate.latitude &&
-			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
-			lhs.fillColor == rhs.fillColor
-		}
-
-		var shape: MKOverlay
-		var fillColor: UIColor?
-		var strokeColor: UIColor?
-		var lineWidth: CGFloat
-
-		public init(
-			shape: MKOverlay,
-			fillColor: UIColor? = nil,
-			strokeColor: UIColor? = nil,
-			lineWidth: CGFloat = 0
-		) {
-			self.shape = shape
-			self.fillColor = fillColor
-			self.strokeColor = strokeColor
-			self.lineWidth = lineWidth
-		}
-	}
+//	public struct Overlay {
+//
+//		public static func == (lhs: MapViewSwiftUI.Overlay, rhs: MapViewSwiftUI.Overlay) -> Bool {
+//			// maybe to use in the future for comparison of full array
+//			lhs.shape.coordinate.latitude == rhs.shape.coordinate.latitude &&
+//			lhs.shape.coordinate.longitude == rhs.shape.coordinate.longitude &&
+//			lhs.fillColor == rhs.fillColor
+//		}
+//
+//		var shape: MKOverlay
+//		var fillColor: UIColor?
+//		var strokeColor: UIColor?
+//		var lineWidth: CGFloat
+//
+//		public init(
+//			shape: MKOverlay,
+//			fillColor: UIColor? = nil,
+//			strokeColor: UIColor? = nil,
+//			lineWidth: CGFloat = 0
+//		) {
+//			self.shape = shape
+//			self.fillColor = fillColor
+//			self.strokeColor = strokeColor
+//			self.lineWidth = lineWidth
+//		}
+//	}
 }

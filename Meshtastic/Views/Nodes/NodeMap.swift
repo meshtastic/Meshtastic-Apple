@@ -31,9 +31,9 @@ struct NodeMap: View {
 	}
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
-	@AppStorage("meshMapCenteringMode") private var meshMapCenteringMode = 0
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 
-	// && nodePosition != nil
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
@@ -46,7 +46,6 @@ struct NodeMap: View {
 
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State private var mapCenteringMode: CenteringMode = .allAnnotations
 	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
@@ -55,11 +54,6 @@ struct NodeMap: View {
 			tileType: "png",
 			canReplaceMapContent: true
 		)
-	@State private var overlays: [MapViewSwiftUI.Overlay] = []
-
-//	init() {
-//		_positions = FetchRequest<PositionEntity>(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)], predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
-//	}
 
 	var body: some View {
 
@@ -83,12 +77,9 @@ struct NodeMap: View {
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
-				   centeringMode: mapCenteringMode,
-				   showRouteLines: false,
-				   showNodeHistory: true,
-				   centerOnPositionsOnly: false,
-				   customMapOverlay: self.customMapOverlay,
-				   overlays: self.overlays
+					showNodeHistory: meshMapShowNodeHistory,
+				   showRouteLines: meshMapShowRouteLines,
+				   customMapOverlay: self.customMapOverlay
 				)
 				VStack {
 					Spacer()
@@ -124,7 +115,6 @@ struct NodeMap: View {
 			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-			mapCenteringMode = CenteringMode(rawValue: meshMapCenteringMode) ?? CenteringMode.allAnnotations
 			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
 			switch meshMapType {
 			case "standard":

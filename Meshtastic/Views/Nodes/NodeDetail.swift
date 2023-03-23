@@ -14,6 +14,8 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
 	@State var waypointCoordinate: CLLocationCoordinate2D?
 	@State var editingWaypoint: Int = 0
@@ -24,7 +26,6 @@ struct NodeDetail: View {
 	@State private var showingRebootConfirm: Bool = false
 	@State private var presentingWaypointForm = false
 	@State private var showOverlays: Bool = true
-	@State private var overlays: [MapViewSwiftUI.Overlay] = []
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -47,7 +48,8 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-
+	
+	
 	var body: some View {
 
 		let hwModelString = node.user?.hwModel ?? "UNSET"
@@ -57,7 +59,8 @@ struct NodeDetail: View {
 				VStack {
 					if node.positions?.count ?? 0 > 0 {
 						ZStack {
-							let annotations = node.positions?.array as? [PositionEntity] ?? []
+							let positionArray = node.positions?.array as? [PositionEntity] ?? []
+							let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
 									waypointCoordinate = coord
@@ -68,15 +71,12 @@ struct NodeDetail: View {
 										editingWaypoint = wpId
 										presentingWaypointForm = true
 									}
-								}, positions: annotations, waypoints: Array(waypoints),
+								}, positions: todaysPositions, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
-									centeringMode: .allPositions,
-									showRouteLines: false,
-									showNodeHistory: true,
-									centerOnPositionsOnly: true,
-									customMapOverlay: self.customMapOverlay,
-									overlays: self.overlays
+									showNodeHistory: meshMapShowNodeHistory,
+									showRouteLines: meshMapShowRouteLines,
+									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {
 									Spacer()
@@ -177,14 +177,14 @@ struct NodeDetail: View {
 											.fixedSize()
 									}
 								}
-
-								if node.telemetries?.count ?? 0 >= 1 {
-
-									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
+								let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+								if deviceMetrics?.count ?? 0 >= 1 {
+									
+									let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
-										if mostRecent?.voltage ?? 0 > 0 {
+										if mostRecent?.voltage ?? 0 > 0.0 {
 
 											Text(String(format: "%.2f", mostRecent?.voltage ?? 0.0) + " V")
 												.font(.title)
@@ -288,8 +288,10 @@ struct NodeDetail: View {
 									}
 								}
 
-								if node.telemetries?.count ?? 0 >= 1 {
-									let mostRecent = node.telemetries?.lastObject as? TelemetryEntity
+								let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+								if deviceMetrics?.count ?? 0 >= 1 {
+									
+									let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 									Divider()
 									VStack(alignment: .center) {
 										BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))

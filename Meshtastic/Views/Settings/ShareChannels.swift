@@ -75,7 +75,6 @@ struct ShareChannels: View {
 										Toggle("Channel 0 Included", isOn: $includeChannel0)
 											.toggleStyle(.switch)
 											.labelsHidden()
-											.disabled(channel.role == 1)
 										Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 										if channel.psk?.hexDescription.count ??  0 <  3 {
 											Image(systemName: "lock.slash")
@@ -264,6 +263,7 @@ struct ShareChannels: View {
 				bleManager.context = context
 				generateChannelSet()
 			}
+			.onChange(of: includeChannel0) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel3) { _ in generateChannelSet()	}
