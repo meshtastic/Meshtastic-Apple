@@ -719,7 +719,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				let newMQTTConfig = MQTTConfigEntity(context: context)
 				newMQTTConfig.enabled = config.enabled
 				newMQTTConfig.address = config.address
-				newMQTTConfig.address = config.username
+				newMQTTConfig.username = config.username
 				newMQTTConfig.password = config.password
 				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
@@ -727,7 +727,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
 				fetchedNode[0].mqttConfig?.address = config.address
-				fetchedNode[0].mqttConfig?.address = config.username
+				fetchedNode[0].mqttConfig?.username = config.username
 				fetchedNode[0].mqttConfig?.password = config.password
 				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
 				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled

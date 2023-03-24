@@ -20,21 +20,48 @@ struct WidgetsLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
 				DynamicIslandExpandedRegion(.leading) {
-					NodeInfoView(nodeName: context.attributes.name, timerRange: context.state.timerRange, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel)
-						.tint(Color("LightIndigo"))
-						.padding(.top)
+					Text("Network")
+						.font(.headline)
+						.fontWeight(.bold)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+						.padding(.top, 10)
+					Text("\(String(format: "Ch. Util: %.2f", context.state.channelUtilization))%")
+						.font(.headline)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Text("\(String(format: "Airtime: %.2f", context.state.airtime))%")
+						.font(.headline)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.fixedSize()
+					Spacer()
 				}
-                // Expanded UI goes here.  Compose the expanded UI through
-                // various regions, like leading/trailing/center/bottom
-				DynamicIslandExpandedRegion(.trailing, priority: 1) {
-					HStack(alignment: .lastTextBaseline) {
-
-						Spacer()
-						TimerView(timerRange: context.state.timerRange)
-							.tint(Color("LightIndigo"))
+				DynamicIslandExpandedRegion(.center) {
+					VStack(alignment: .center, spacing: 0) {
+						BatteryIcon(batteryLevel: Int32(context.state.batteryLevel), font: .title, color: .accentColor)
+						Text(String(context.state.batteryLevel) + "%")
+							.font(.title3)
+							.foregroundColor(.gray)
+							.fixedSize()
 					}
-					.padding(.top)
+				}
+				DynamicIslandExpandedRegion(.trailing, priority: 1) {
+					TimerView(timerRange: context.state.timerRange)
+						.tint(Color("LightIndigo"))
 
+				}
+				DynamicIslandExpandedRegion(.bottom){
+					Text(context.attributes.name)
+						.font(context.attributes.name.count > 14 ? .callout : .title3)
+						.fontWeight(.semibold)
+						.foregroundStyle(.tint)
+					Text("Last Heard: \(Date().formatted())")
+						.font(.caption)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.fixedSize()
 				}
 
             } compactLeading: {
@@ -65,7 +92,7 @@ struct WidgetsLiveActivity: Widget {
 
 @available(iOS 16.2, *)
 struct WidgetsLiveActivity_Previews: PreviewProvider {
-	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "Meshtastic 8E6G")
+	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
 		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
 
@@ -134,34 +161,34 @@ struct NodeInfoView: View {
 				.fontWeight(.semibold)
 				.foregroundStyle(.tint)
 			Text("\(String(format: "Ch. Util: %.2f", channelUtilization))%")
-				.font(.subheadline)
+				.font(.headline)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
 			Text("\(String(format: "Airtime: %.2f", airtime))%")
-				.font(.subheadline)
+				.font(.headline)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
 			if batteryLevel < 101 {
 				Text("Battery Level: \(batteryLevel > 0 ? String(batteryLevel) : "< 1")%")
-					.font(.subheadline)
+					.font(.headline)
 					.fontWeight(.medium)
 					.foregroundStyle(.secondary)
 					.opacity(isLuminanceReduced ? 0.8 : 1.0)
 					.fixedSize()
 			} else {
 				Text("Plugged In")
-					.font(.subheadline)
+					.font(.headline)
 					.fontWeight(.medium)
 					.foregroundStyle(.secondary)
 					.opacity(isLuminanceReduced ? 0.8 : 1.0)
 					.fixedSize()
 			}
 			Text(Date().formatted())
-				.font(.subheadline)
+				.font(.headline)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
@@ -177,18 +204,11 @@ struct TimerView: View {
 
 	var body: some View {
 		VStack(alignment: .center) {
-			Text("NEXT")
+			Text("NEXT UPDATE")
 				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
-				.fixedSize()
-			Text("UPDATE")
-				.font(.caption)
-				.fontWeight(.medium)
-				.foregroundStyle(.secondary)
-				.opacity(isLuminanceReduced ? 0.5 : 1.0)
-				.fixedSize()
 			Text(timerInterval: timerRange, countsDown: true)
 				.monospacedDigit()
 				.multilineTextAlignment(.center)
@@ -215,7 +235,6 @@ struct ExpandedTrailingView: View {
 
 	var body: some View {
 		HStack(alignment: .lastTextBaseline) {
-
 			Spacer()
 			TimerView(timerRange: timerInterval)
 		}
