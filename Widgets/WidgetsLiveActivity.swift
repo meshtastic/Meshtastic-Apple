@@ -41,10 +41,21 @@ struct WidgetsLiveActivity: Widget {
 				DynamicIslandExpandedRegion(.center) {
 					VStack(alignment: .center, spacing: 0) {
 						BatteryIcon(batteryLevel: Int32(context.state.batteryLevel), font: .title, color: .accentColor)
-						Text(String(context.state.batteryLevel) + "%")
-							.font(.title3)
-							.foregroundColor(.gray)
-							.fixedSize()
+						if context.state.batteryLevel == 0 {
+							Text("< 1%")
+								.font(.title3)
+								.foregroundColor(.gray)
+								.fixedSize()
+						} else if context.state.batteryLevel < 101 {
+							Text(String(context.state.batteryLevel) + "%")
+								.font(.title3)
+								.foregroundColor(.gray)
+								.fixedSize()
+						} else {
+							Text("Plugged In")
+								.font(.title3)
+								.foregroundColor(.gray)
+						}
 					}
 				}
 				DynamicIslandExpandedRegion(.trailing, priority: 1) {
@@ -135,7 +146,31 @@ struct LiveActivityView: View {
 			Spacer()
 			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel)
 			Spacer()
-			TimerView(timerRange: timerRange)
+			VStack {
+				BatteryIcon(batteryLevel: Int32(batteryLevel), font: .title, color: .secondary)
+				if batteryLevel == 0 {
+					Text("< 1%")
+						.font(.headline)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.opacity(isLuminanceReduced ? 0.8 : 1.0)
+						.fixedSize()
+				} else if batteryLevel < 101 {
+					Text(String(batteryLevel) + "%")
+						.font(.headline)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.opacity(isLuminanceReduced ? 0.8 : 1.0)
+						.fixedSize()
+				} else {
+					Text("Plugged In")
+						.font(.headline)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.opacity(isLuminanceReduced ? 0.8 : 1.0)
+						.fixedSize()
+				}
+			}
 		}
 		.tint(.primary)
 		.padding([.leading, .top, .bottom])
@@ -172,27 +207,36 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			if batteryLevel < 101 {
-				Text("Battery Level: \(batteryLevel > 0 ? String(batteryLevel) : "< 1")%")
-					.font(.headline)
-					.fontWeight(.medium)
-					.foregroundStyle(.secondary)
-					.opacity(isLuminanceReduced ? 0.8 : 1.0)
-					.fixedSize()
-			} else {
-				Text("Plugged In")
-					.font(.headline)
-					.fontWeight(.medium)
-					.foregroundStyle(.secondary)
-					.opacity(isLuminanceReduced ? 0.8 : 1.0)
-					.fixedSize()
-			}
-			Text(Date().formatted())
-				.font(.headline)
+			let now = Date()
+			Text("Last Heard: \(now.formatted())")
+				.font(.caption)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
+			HStack {
+
+				if timerRange.upperBound >= now {
+					Text("Next Update:")
+						.font(.caption)
+						.fontWeight(.medium)
+						.foregroundStyle(.secondary)
+						.opacity(isLuminanceReduced ? 0.8 : 1.0)
+						.fixedSize()
+					Text(timerInterval: timerRange, countsDown: true)
+						.monospacedDigit()
+						.multilineTextAlignment(.leading)
+						.font(.caption)
+						.fontWeight(.medium)
+						.foregroundStyle(.tint)
+				} else {
+					Text("Not Connected")
+						.multilineTextAlignment(.leading)
+						.font(.callout)
+						.fontWeight(.semibold)
+						.foregroundStyle(.tint)
+				}
+			}
 		}
 	}
 }

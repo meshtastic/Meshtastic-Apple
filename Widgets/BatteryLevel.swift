@@ -37,8 +37,15 @@ struct BatteryIcon: View {
 				.font(font)
 				.foregroundColor(color)
 				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 15 && batteryLevel! >= 0 {
+		} else if batteryLevel! < 15 && batteryLevel! > 0 {
 
+			Image(systemName: "battery.0")
+				.font(font)
+				.foregroundColor(color)
+				.symbolRenderingMode(.hierarchical)
+			
+		} else if batteryLevel! == 0 {
+			
 			Image(systemName: "battery.0")
 				.font(font)
 				.foregroundColor(.red)
@@ -50,18 +57,13 @@ struct BatteryIcon: View {
 				.foregroundColor(color)
 				.symbolRenderingMode(.hierarchical)
 		}
-		else {
-
-			Image(systemName: "battery.0")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		}
 	}
 }
 
 struct BatteryIcon_Previews: PreviewProvider {
 	static var previews: some View {
+		BatteryIcon(batteryLevel: 111, font: .title2, color: Color.accentColor)
+			.previewLayout(.fixed(width: 75, height: 75))
 		BatteryIcon(batteryLevel: 100, font: .title2, color: Color.accentColor)
 			.previewLayout(.fixed(width: 75, height: 75))
 		BatteryIcon(batteryLevel: 99, font: .title2, color: Color.accentColor)
