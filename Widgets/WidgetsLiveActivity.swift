@@ -232,7 +232,7 @@ struct NodeInfoView: View {
 				} else {
 					Text("Not Connected")
 						.multilineTextAlignment(.leading)
-						.font(.callout)
+						.font(.caption)
 						.fontWeight(.semibold)
 						.foregroundStyle(.tint)
 				}

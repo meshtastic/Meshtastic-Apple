@@ -105,7 +105,7 @@ struct DeviceMetricsLog: View {
 						ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (dm: TelemetryEntity) in
 							if dm.metricsType == 0 {
 								GridRow {
-									if dm.batteryLevel == 0 {
+									if dm.batteryLevel == 111 {
 										Text("USB")
 											.font(.caption)
 									} else {

@@ -60,7 +60,8 @@ struct NodeDetail: View {
 					if node.positions?.count ?? 0 > 0 {
 						ZStack {
 							let positionArray = node.positions?.array as? [PositionEntity] ?? []
-							let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
+							let lastThousand = Array(positionArray.prefix(1000))
+							// let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
 									waypointCoordinate = coord
@@ -71,7 +72,7 @@ struct NodeDetail: View {
 										editingWaypoint = wpId
 										presentingWaypointForm = true
 									}
-								}, positions: todaysPositions, waypoints: Array(waypoints),
+								}, positions: lastThousand, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
