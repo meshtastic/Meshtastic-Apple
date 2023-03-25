@@ -47,7 +47,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Set user (phone gps) tracking options
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 		if userTrackingMode == MKUserTrackingMode.none {
-			mapView.fitAllAnnotations()
+			if latest.count == 1 {
+				mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+			} else {
+				mapView.fitAllAnnotations()
+			}
 			mapView.showsUserLocation = false
 		} else {
 			mapView.showsUserLocation = true
@@ -151,8 +155,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = false
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					if recenter {
-						if showRouteLines || showNodeHistory {
-							mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: false)
+						if latest.count == 1 {
+							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
 						} else {
 							mapView.fitAllAnnotations()
 						}
