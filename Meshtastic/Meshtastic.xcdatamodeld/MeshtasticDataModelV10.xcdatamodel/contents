@@ -199,6 +199,7 @@
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
         <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
+        <relationship name="rtttlConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RTTTLConfigEntity" inverseName="rtttlConfigNode" inverseEntity="RTTTLConfigEntity"/>
         <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
         <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
         <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
@@ -239,6 +240,10 @@
         <attribute name="save" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="sender" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
         <relationship name="rangeTestConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rangeTestConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="RTTTLConfigEntity" representedClassName="RTTTLConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="ringtone" optional="YES" attributeType="String" maxValueString="228" defaultValueString=""/>
+        <relationship name="rtttlConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rtttlConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="SerialConfigEntity" representedClassName="SerialConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="baudRate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

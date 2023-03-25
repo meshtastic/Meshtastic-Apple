@@ -699,6 +699,45 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	}
 }
 
+func upsertRtttlConfigPacket(config: RTTTLConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
+	MeshLogger.log("⛰️ \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save RTTTL Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].rtttlConfig == nil {
+				let newRtttlConfig = RTTTLConfigEntity(context: context)
+				newRtttlConfig.ringtone = config.ringtone
+				fetchedNode[0].rtttlConfig = newRtttlConfig
+			} else {
+				fetchedNode[0].rtttlConfig?.ringtone = config.ringtone
+			}
+			do {
+				try context.save()
+				print("💾 Updated RTTTL Ringtone Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data RtttlConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save RTTTL Ringtone Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data RtttlConfigEntity failed: \(nsError)")
+	}
+}
+
 func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))

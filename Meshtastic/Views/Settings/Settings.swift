@@ -35,6 +35,7 @@ struct Settings: View {
 		case externalNotificationConfig
 		case mqttConfig
 		case rangeTestConfig
+		case ringtoneConfig
 		case serialConfig
 		case telemetryConfig
 		case meshLog
@@ -229,7 +230,14 @@ struct Settings: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("range.test")
 					}
-					.tag(SettingsSidebar.rangeTestConfig)
+					NavigationLink {
+						RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
+					} label: {
+						Image(systemName: "music.note.list")
+							.symbolRenderingMode(.hierarchical)
+						Text("ringtone")
+					}
+					.tag(SettingsSidebar.ringtoneConfig)
 
 					NavigationLink {
 						SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
