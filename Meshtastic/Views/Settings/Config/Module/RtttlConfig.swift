@@ -126,7 +126,7 @@ struct RtttlConfig: View {
 				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
-						_ = bleManager.requestRangeTestModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						_ = bleManager.requestRtttlConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					}
 				}
 			}
