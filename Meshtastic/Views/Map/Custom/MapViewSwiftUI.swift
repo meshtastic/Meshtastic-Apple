@@ -43,13 +43,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].coordinate : LocationHelper.currentLocation
 		let region = MKCoordinateRegion(center: center, span: span)
 		mapView.setRegion(region, animated: true)
-		// Set user (phone gps) tracking options
-		mapView.setUserTrackingMode(userTrackingMode, animated: true)
-		if userTrackingMode == MKUserTrackingMode.none {
-			mapView.showsUserLocation = false
-		} else {
-			mapView.showsUserLocation = true
-		}
 		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		// Set user (phone gps) tracking options
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
@@ -59,7 +52,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		} else {
 			mapView.showsUserLocation = true
 		}
-		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
 		mapView.isPitchEnabled = true
@@ -125,6 +117,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			let annotationCount = waypoints.count + (showNodeHistory || showRouteLines ? positions.count : latest.count)
 			if annotationCount > mapView.annotations.count {
+				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				if showRouteLines {
 					// Remove all existing PolyLine Overlays
 					for overlay in mapView.overlays {
