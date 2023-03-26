@@ -29,7 +29,7 @@ struct RtttlConfig: View {
 
 				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.rangeTestConfig == nil {
+					if node?.rtttlConfig == nil {
 						Text("RTTTL Ringtone config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
 							.font(.callout)
 							.foregroundColor(.orange)
@@ -82,7 +82,7 @@ struct RtttlConfig: View {
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -111,7 +111,7 @@ struct RtttlConfig: View {
 			message: {
 				Text("config.save.confirm")
 			}
-			.navigationTitle("rtttl.config")
+			.navigationTitle("ringtone.config")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
@@ -119,9 +119,8 @@ struct RtttlConfig: View {
 			.onAppear {
 				self.bleManager.context = context
 				setRtttLConfigValue()
-
 				// Need to request a Rtttl Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.rtttlConfig == nil {
+				if bleManager.connectedPeripheral != nil && (node?.rtttlConfig == nil || node?.rtttlConfig?.ringtone?.count ?? 0 == 0) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRtttlConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

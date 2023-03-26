@@ -104,7 +104,7 @@ struct Connect: View {
 												#endif
 												}
 											} label: {
-												Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
+												Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
 											}
 										}
 										#endif

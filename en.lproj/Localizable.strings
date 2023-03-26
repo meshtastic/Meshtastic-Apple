@@ -49,8 +49,8 @@
 "clear.log"="Clear Log";
 "close"="Close";
 "config.save.confirm"="After config values save the node will reboot.";
-"connected.radio"="Connected Radio";
 "communicating"="Communicating with device. .";
+"connected.radio"="Connected Radio";
 "connected"="Currently Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
@@ -144,6 +144,7 @@
 "map.usertrackingmode.follow"="Follow";
 "map.usertrackingmode.followwithheading"="Follow with heading";
 "map.usertrackingmode.none"="None";
+"mesh.live.activity"="Mesh Live Activity";
 "mesh.log"="Mesh Log";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";
@@ -165,6 +166,7 @@
 "mesh.log.position.config %@"="Positon config received: %@";
 "mesh.log.position.received %@"="Position Packet received from node: %@";
 "mesh.log.rangetest.config %@"="Range Test module config received: %@";
+"mesh.log.ringtone.config %@"="RTTTL Ringtone config received: %@";
 "mesh.log.routing.message %@ %@"="Routing received for RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial module config received: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
@@ -212,6 +214,8 @@
 "reboot.node"="Reboot node?";
 "received.ack"="Received Ack";
 "received.ack.real"="Recipient Ack";
+"ringtone"="Ringtone";
+"ringtone.config"="Ringtone Config";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
 "routing.gotnak"="Received a negative acknowledgment";

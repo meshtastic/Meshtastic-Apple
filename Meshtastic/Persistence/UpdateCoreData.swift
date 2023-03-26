@@ -701,7 +701,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 
 func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.ringtone.config %@", comment: "RTTTL Ringtone config received: %@"), String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
