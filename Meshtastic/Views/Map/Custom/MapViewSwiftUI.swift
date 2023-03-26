@@ -43,8 +43,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
 		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].coordinate : LocationHelper.currentLocation
 		let region = MKCoordinateRegion(center: center, span: span)
-		mapView.setRegion(region, animated: true)
 		mapView.addAnnotations(showNodeHistory ? positions : latest)
+		mapView.setRegion(region, animated: true)
 		// Set user (phone gps) tracking options
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 		if userTrackingMode == MKUserTrackingMode.none {
@@ -120,7 +120,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let latest = positions
 				.filter { $0.latest == true }
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
-			let annotationCount = waypoints.count + (showNodeHistory || showRouteLines ? positions.count : latest.count)
+			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 			if annotationCount > mapView.annotations.count {
 				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				if showRouteLines {
@@ -150,23 +150,24 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
-				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-				
 				if userTrackingMode == MKUserTrackingMode.none {
 					mapView.showsUserLocation = false
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					if recenter {
 						if latest.count == 1 {
-							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: true)
 						} else {
+							mapView.addAnnotations(showNodeHistory ? positions : latest)
 							mapView.fitAllAnnotations()
 						}
+					} else {
+						mapView.addAnnotations(showNodeHistory ? positions : latest)
 					}
 				} else {
 					// Centering Done by tracking mode
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					mapView.showsUserLocation = true
 				}
+				mapView.setUserTrackingMode(userTrackingMode, animated: true)
 			}
 		}
 	}

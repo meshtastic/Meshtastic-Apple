@@ -1,6 +1,6 @@
 //
 //  UserEntityExtension.swift
-//  MeshtasticApple
+//  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 6/3/22.
 //
