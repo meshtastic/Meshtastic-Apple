@@ -98,9 +98,7 @@ struct RtttlConfig: View {
 
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if connectedNode != nil {
-						var rtttl = RTTTLConfig()
-						rtttl.ringtone = ringtone
-						let adminMessageId =  bleManager.saveRtttlConfig(config: rtttl, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
@@ -123,7 +121,7 @@ struct RtttlConfig: View {
 				setRtttLConfigValue()
 
 				// Need to request a Rtttl Config from the remote node before allowing changes
-				if bleManager.connectedPeripheral != nil && node?.rangeTestConfig == nil {
+				if bleManager.connectedPeripheral != nil && node?.rtttlConfig == nil {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if node != nil && connectedNode != nil {
 						_ = bleManager.requestRtttlConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)

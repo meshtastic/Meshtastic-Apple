@@ -1344,10 +1344,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	
-	public func saveRtttlConfig(config: RTTTLConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 
 		var adminPacket = AdminMessage()
-		adminPacket.setRingtoneMessage = config.ringtone
+		adminPacket.setRingtoneMessage = ringtone
 
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
@@ -1364,7 +1364,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		let messageDescription = "Saved RTTTL Ringtone Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-			upsertRtttlConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 

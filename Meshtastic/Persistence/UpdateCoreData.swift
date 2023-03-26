@@ -699,7 +699,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	}
 }
 
-func upsertRtttlConfigPacket(config: RTTTLConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
@@ -716,10 +716,10 @@ func upsertRtttlConfigPacket(config: RTTTLConfig, nodeNum: Int64, context: NSMan
 		if !fetchedNode.isEmpty {
 			if fetchedNode[0].rtttlConfig == nil {
 				let newRtttlConfig = RTTTLConfigEntity(context: context)
-				newRtttlConfig.ringtone = config.ringtone
+				newRtttlConfig.ringtone = ringtone
 				fetchedNode[0].rtttlConfig = newRtttlConfig
 			} else {
-				fetchedNode[0].rtttlConfig?.ringtone = config.ringtone
+				fetchedNode[0].rtttlConfig?.ringtone = ringtone
 			}
 			do {
 				try context.save()

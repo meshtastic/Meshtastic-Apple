@@ -487,6 +487,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 			}
 
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
+			let ringtone = adminMessage.getRingtoneResponse
+			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}
