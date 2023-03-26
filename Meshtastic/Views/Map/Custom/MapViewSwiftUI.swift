@@ -16,7 +16,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
-	let colors: [UIColor] = [UIColor.systemIndigo, UIColor.orange, UIColor.green, UIColor.brown, UIColor.purple, UIColor.systemMint, UIColor.cyan, UIColor.magenta, UIColor.systemPink, UIColor.blue]
+	let lineColors: [UIColor] = [UIColor.systemIndigo, UIColor.yellow, UIColor.white, UIColor.red, UIColor.purple, UIColor.orange, UIColor.magenta, UIColor.lightGray, UIColor.green, UIColor.gray, UIColor.systemMint, UIColor.darkGray, UIColor.cyan, UIColor.brown, UIColor.blue, UIColor.black, UIColor.systemPink,
+		UIColor.systemTeal]
 	// Parameters
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
@@ -141,8 +142,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
 						mapView.addOverlay(polyline)
 						lineIndex += 1
-						// There are 10 colors for lines, start over if we are at index 10
-						if lineIndex > 9 {
+						// There are 18 colors for lines, start over if we are at index 17
+						if lineIndex > 17 {
 							lineIndex = 0
 						}
 					}
@@ -358,7 +359,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let titleString = routePolyline.title ?? "None-0"
 					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = parent.colors[index ?? 0]
+					renderer.strokeColor = parent.lineColors[index ?? 0]
 					renderer.lineWidth = 5
 					return renderer
 				}
