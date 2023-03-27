@@ -211,6 +211,8 @@
         </uniquenessConstraints>
     </entity>
     <entity name="PositionConfigEntity" representedClassName="PositionConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="broadcastSmartMinimumDistance" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="broadcastSmartMinimumIntervalSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="deviceGpsEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPosition" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="gpsAttemptTime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

@@ -51,7 +51,7 @@ struct RtttlConfig: View {
 				Section(header: Text("options")) {
 					
 					HStack {
-						Label("RTTTL Ringtone", systemImage: "music.quarternote.3")
+						Label("ringtone", systemImage: "music.quarternote.3")
 						TextField("Ringtone Transfer Language", text: $ringtone, axis: .vertical)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)

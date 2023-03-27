@@ -354,6 +354,14 @@ struct Config {
     /// (Re)define GPS_TX_PIN for your board.
     var txGpio: UInt32 = 0
 
+    ///
+    /// The minimum distance in meters traveled (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
+    var broadcastSmartMinimumDistance: UInt32 = 0
+
+    ///
+    /// The minumum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
+    var broadcastSmartMinimumIntervalSecs: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1669,6 +1677,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     7: .standard(proto: "position_flags"),
     8: .standard(proto: "rx_gpio"),
     9: .standard(proto: "tx_gpio"),
+    10: .standard(proto: "broadcast_smart_minimum_distance"),
+    11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1686,6 +1696,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rxGpio) }()
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.txGpio) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumDistance) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumIntervalSecs) }()
       default: break
       }
     }
@@ -1719,6 +1731,12 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.txGpio != 0 {
       try visitor.visitSingularUInt32Field(value: self.txGpio, fieldNumber: 9)
     }
+    if self.broadcastSmartMinimumDistance != 0 {
+      try visitor.visitSingularUInt32Field(value: self.broadcastSmartMinimumDistance, fieldNumber: 10)
+    }
+    if self.broadcastSmartMinimumIntervalSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.broadcastSmartMinimumIntervalSecs, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1732,6 +1750,8 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.rxGpio != rhs.rxGpio {return false}
     if lhs.txGpio != rhs.txGpio {return false}
+    if lhs.broadcastSmartMinimumDistance != rhs.broadcastSmartMinimumDistance {return false}
+    if lhs.broadcastSmartMinimumIntervalSecs != rhs.broadcastSmartMinimumIntervalSecs {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

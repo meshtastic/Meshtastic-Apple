@@ -36,10 +36,14 @@ struct PositionConfig: View {
 
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
+	@State var rxGpio = 0
+	@State var txGpio = 0
 	@State var fixedPosition = false
 	@State var gpsUpdateInterval = 0
 	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
+	@State var broadcastSmartMinimumDistance = 0
+	@State var broadcastSmartMinimumIntervalSecs = 0
 	@State var positionFlags = 3
 
 	/// Position Flags
@@ -103,6 +107,7 @@ struct PositionConfig: View {
 						Label("Device GPS Enabled", systemImage: "location")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					if deviceGpsEnabled {
 						Picker("Update Interval", selection: $gpsUpdateInterval) {
 							ForEach(GpsUpdateIntervals.allCases) { ui in
@@ -119,6 +124,28 @@ struct PositionConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						Text("How long should we try to get our position during each GPS Update Interval attempt?")
 							.font(.caption)
+						
+						Picker("GPS Receive GPIO Override", selection: $rxGpio) {
+							ForEach(0..<40) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						
+						Picker("GPS Transmit GPIO Override", selection: $txGpio) {
+							ForEach(0..<40) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
 					} else {
 						Toggle(isOn: $fixedPosition) {
 							Label("Fixed Position", systemImage: "location.square.fill")
@@ -131,21 +158,50 @@ struct PositionConfig: View {
 
 				Section(header: Text("Position Packet")) {
 
-					Toggle(isOn: $smartPositionEnabled) {
-
-						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
 					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
 						ForEach(UpdateIntervals.allCases) { at in
 							Text(at.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-
-					Text("We should send our position this often (but only if it has changed significantly)")
+					Text("The maximum interval that can elapse without a node sending a position")
 						.font(.caption)
+					
+					Toggle(isOn: $smartPositionEnabled) {
+
+						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					if smartPositionEnabled {
+						Picker("Minimum Broadcast Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+							ForEach(UpdateIntervals.allCases) { at in
+								Text(at.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
+							.font(.caption)
+						
+						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
+							ForEach(25..<101) {
+								
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									
+									if $0.isMultiple(of: 5) {
+										Text("\($0)")
+											.tag($0)
+									}
+									
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("The minimum distance change to be considered for a smart position broadcast.")
+						.font(.caption)
+					}
 				}
 				Section(header: Text("Position Flags")) {
 
@@ -244,6 +300,8 @@ struct PositionConfig: View {
 						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 						pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
+						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
 						var pf: PositionFlags = []
 						if includeAltitude { pf.insert(.Altitude) }
 						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
@@ -296,6 +354,16 @@ struct PositionConfig: View {
 				if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: rxGpio) { newRxGpio in
+			if node != nil && node!.positionConfig != nil {
+				if newRxGpio != node!.positionConfig!.rxGpio { hasChanges = true }
+			}
+		}
+		.onChange(of: txGpio) { newTxGpio in
+			if node != nil && node!.positionConfig != nil {
+				if newTxGpio != node!.positionConfig!.txGpio { hasChanges = true }
+			}
+		}
 		.onChange(of: gpsAttemptTime) { newGpsAttemptTime in
 			if node != nil && node!.positionConfig != nil {
 				if newGpsAttemptTime != node!.positionConfig!.gpsAttemptTime { hasChanges = true }
@@ -319,6 +387,16 @@ struct PositionConfig: View {
 		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
 			if node != nil && node!.positionConfig != nil {
 				if newPositionBroadcastSeconds != node!.positionConfig!.positionBroadcastSeconds { hasChanges = true }
+			}
+		}
+		.onChange(of: broadcastSmartMinimumIntervalSecs) { newBroadcastSmartMinimumIntervalSecs in
+			if node != nil && node!.positionConfig != nil {
+				if newBroadcastSmartMinimumIntervalSecs != node!.positionConfig!.broadcastSmartMinimumIntervalSecs { hasChanges = true }
+			}
+		}
+		.onChange(of: broadcastSmartMinimumDistance) { newBroadcastSmartMinimumDistance in
+			if node != nil && node!.positionConfig != nil {
+				if newBroadcastSmartMinimumDistance != node!.positionConfig!.broadcastSmartMinimumDistance { hasChanges = true }
 			}
 		}
 		.onChange(of: includeAltitude) { altFlag in
@@ -382,10 +460,14 @@ struct PositionConfig: View {
 		
 		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
 		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
+		self.rxGpio = Int(node?.positionConfig?.rxGpio ?? 0)
+		self.txGpio = Int(node?.positionConfig?.txGpio ?? 0)
 		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
 		self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
 		self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
 		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
+		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)
+		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 40)
 		self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
 
 		let pf = PositionFlags(rawValue: self.positionFlags)

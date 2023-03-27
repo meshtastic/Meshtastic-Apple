@@ -535,19 +535,27 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				let newPositionConfig = PositionConfigEntity(context: context)
 				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
+				newPositionConfig.rxGpio = Int32(config.rxGpio)
+				newPositionConfig.txGpio = Int32(config.txGpio)
 				newPositionConfig.fixedPosition = config.fixedPosition
 				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				newPositionConfig.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				newPositionConfig.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
+				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
+				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
+				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
 				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {
