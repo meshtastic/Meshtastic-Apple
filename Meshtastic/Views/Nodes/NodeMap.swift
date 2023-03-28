@@ -77,8 +77,9 @@ struct NodeMap: View {
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
-					showNodeHistory: meshMapShowNodeHistory,
+				   showNodeHistory: meshMapShowNodeHistory,
 				   showRouteLines: meshMapShowRouteLines,
+				   showMultipleNodes: true,
 				   customMapOverlay: self.customMapOverlay
 				)
 				VStack {

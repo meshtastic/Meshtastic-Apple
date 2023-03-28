@@ -25,6 +25,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
+	let showMultipleNodes: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
@@ -91,6 +92,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	}
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
+		
+		
 		mapView.mapType = mapViewType
 		
 		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
@@ -116,60 +119,58 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
-		DispatchQueue.main.async {
+	//	DispatchQueue.main.async {
 			let latest = positions
 				.filter { $0.latest == true }
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-			if annotationCount > mapView.annotations.count {
-				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
-				if showRouteLines {
-					// Remove all existing PolyLine Overlays
-					for overlay in mapView.overlays {
-						if overlay is MKPolyline {
-							mapView.removeOverlay(overlay)
-						}
-					}
-					var lineIndex = 0
-					for position in latest {
-						
-						let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
-						let lineCoords = nodePositions.map ({
-							(position) -> CLLocationCoordinate2D in
-							return position.nodeCoordinate!
-						})
-						let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-						polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
-						mapView.addOverlay(polyline)
-						lineIndex += 1
-						// There are 18 colors for lines, start over if we are at index 17
-						if lineIndex > 17 {
-							lineIndex = 0
-						}
+			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			mapView.removeAnnotations(mapView.annotations)
+			mapView.addAnnotations(waypoints)
+			if showRouteLines {
+				// Remove all existing PolyLine Overlays
+				for overlay in mapView.overlays {
+					if overlay is MKPolyline {
+						mapView.removeOverlay(overlay)
 					}
 				}
-				mapView.removeAnnotations(mapView.annotations)
-				mapView.addAnnotations(waypoints)
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.showsUserLocation = false
-					if recenter {
-						if latest.count == 1 {
-							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: true)
-						} else {
-							mapView.addAnnotations(showNodeHistory ? positions : latest)
-							mapView.fitAllAnnotations()
-						}
+				var lineIndex = 0
+				for position in latest {
+					
+					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+					let lineCoords = nodePositions.map ({
+						(position) -> CLLocationCoordinate2D in
+						return position.nodeCoordinate!
+					})
+					let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+					polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
+					mapView.addOverlay(polyline)
+					lineIndex += 1
+					// There are 18 colors for lines, start over if we are at index 17
+					if lineIndex > 17 {
+						lineIndex = 0
+					}
+				}
+			}
+			if userTrackingMode == MKUserTrackingMode.none {
+				mapView.showsUserLocation = false
+				if recenter {
+					if !showMultipleNodes {
+						mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: true)
 					} else {
 						mapView.addAnnotations(showNodeHistory ? positions : latest)
+						mapView.fitAllAnnotations()
 					}
 				} else {
-					// Centering Done by tracking mode
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					mapView.showsUserLocation = true
 				}
-				mapView.setUserTrackingMode(userTrackingMode, animated: true)
+			} else {
+				// Centering Done by tracking mode
+				mapView.addAnnotations(showNodeHistory ? positions : latest)
+				mapView.showsUserLocation = true
 			}
-		}
+			mapView.setUserTrackingMode(userTrackingMode, animated: true)
+		//}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
@@ -361,7 +362,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
 					renderer.strokeColor = parent.lineColors[index ?? 0]
-					renderer.lineWidth = 5
+					renderer.lineWidth = 7
 					return renderer
 				}
 				return MKOverlayRenderer()

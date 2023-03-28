@@ -77,6 +77,7 @@ struct NodeDetail: View {
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
+									showMultipleNodes: false,
 									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {

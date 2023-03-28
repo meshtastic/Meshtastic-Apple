@@ -467,7 +467,7 @@ struct PositionConfig: View {
 		self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
 		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
 		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)
-		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 40)
+		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 50)
 		self.positionFlags = Int(node?.positionConfig?.positionFlags ?? 3)
 
 		let pf = PositionFlags(rawValue: self.positionFlags)
