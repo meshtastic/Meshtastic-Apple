@@ -102,59 +102,6 @@ struct PositionConfig: View {
 						.font(.callout)
 						.foregroundColor(.orange)
 				}
-				Section(header: Text("Device GPS")) {
-					Toggle(isOn: $deviceGpsEnabled) {
-						Label("Device GPS Enabled", systemImage: "location")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					if deviceGpsEnabled {
-						Picker("Update Interval", selection: $gpsUpdateInterval) {
-							ForEach(GpsUpdateIntervals.allCases) { ui in
-								Text(ui.description)
-							}
-						}
-						Text("How often should we try to get a GPS position.")
-							.font(.caption)
-						Picker("Attempt Time", selection: $gpsAttemptTime) {
-							ForEach(GpsAttemptTimes.allCases) { at in
-								Text(at.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("How long should we try to get our position during each GPS Update Interval attempt?")
-							.font(.caption)
-						
-						Picker("GPS Receive GPIO Override", selection: $rxGpio) {
-							ForEach(0..<40) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						
-						Picker("GPS Transmit GPIO Override", selection: $txGpio) {
-							ForEach(0..<40) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									Text("Pin \($0)")
-								}
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-					} else {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If enabled your current location will be set as a fixed position.")
-							.font(.caption)
-					}
-				}
 
 				Section(header: Text("Position Packet")) {
 
@@ -184,7 +131,7 @@ struct PositionConfig: View {
 							.font(.caption)
 						
 						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-							ForEach(25..<101) {
+							ForEach(10..<151) {
 								
 								if $0 == 0 {
 									Text("unset")
@@ -263,6 +210,59 @@ struct PositionConfig: View {
 							Text("If DOP is set use, HDOP / VDOP values instead of PDOP")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+				}
+				Section(header: Text("Device GPS")) {
+					Toggle(isOn: $deviceGpsEnabled) {
+						Label("Device GPS Enabled", systemImage: "location")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					if deviceGpsEnabled {
+						Picker("Update Interval", selection: $gpsUpdateInterval) {
+							ForEach(GpsUpdateIntervals.allCases) { ui in
+								Text(ui.description)
+							}
+						}
+						Text("How often should we try to get a GPS position.")
+							.font(.caption)
+						Picker("Attempt Time", selection: $gpsAttemptTime) {
+							ForEach(GpsAttemptTimes.allCases) { at in
+								Text(at.description)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("How long should we try to get our position during each GPS Update Interval attempt?")
+							.font(.caption)
+						
+						Picker("GPS Receive GPIO", selection: $rxGpio) {
+							ForEach(0..<40) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						
+						Picker("GPS Transmit GPIO", selection: $txGpio) {
+							ForEach(0..<40) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+					} else {
+						Toggle(isOn: $fixedPosition) {
+							Label("Fixed Position", systemImage: "location.square.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("If enabled your current location will be set as a fixed position.")
+							.font(.caption)
 					}
 				}
 			}
