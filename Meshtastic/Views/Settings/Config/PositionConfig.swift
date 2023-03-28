@@ -288,7 +288,7 @@ struct PositionConfig: View {
 				Button(buttonText) {
 
 					if fixedPosition {
-						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true)
+						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true, smartPosition: false)
 					}
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 

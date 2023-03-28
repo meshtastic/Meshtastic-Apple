@@ -8,7 +8,7 @@ import MapKit
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
-
+	
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -36,6 +36,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	var timeoutTimerCount = 0
 	var timeoutTimerRuns = 0
 	var positionTimer: Timer?
+	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -46,9 +47,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	let FROMRADIO_UUID = CBUUID(string: "0x2C55E69E-4993-11ED-B878-0242AC120002")
 	let EOL_FROMRADIO_UUID = CBUUID(string: "0x8BA2BCC2-EE02-4A55-A531-C525C5E454D5")
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
-
+	
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
-
+	
 	// MARK: init BLEManager
 	override init() {
 		self.lastConnectionError = ""
@@ -57,7 +58,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		centralManager = CBCentralManager(delegate: self, queue: nil)
 		// centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
-
+	
 	// MARK: Scanning for BLE Devices
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
@@ -66,7 +67,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			print("✅ Scanning Started")
 		}
 	}
-
+	
 	// Stop Scanning For BLE Devices
 	func stopScanning() {
 		if centralManager.isScanning {
@@ -74,7 +75,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			print("🛑 Stopped Scanning")
 		}
 	}
-
+	
 	// MARK: BLE Connect functions
 	/// The action after the timeout-timer has fired
 	///
@@ -84,25 +85,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	@objc func timeoutTimerFired(timer: Timer) {
 		guard let timerContext = timer.userInfo as? [String: String] else { return }
 		let name: String = timerContext["name", default: "Unknown"]
-
+		
 		self.timeoutTimerCount += 1
 		self.lastConnectionError = ""
-
+		
 		if timeoutTimerCount == 10 {
 			if connectedPeripheral != nil {
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
 			connectedPeripheral = nil
 			if self.timeoutTimer != nil {
-
+				
 				self.timeoutTimer!.invalidate()
 			}
 			self.isConnected = false
 			self.isConnecting = false
 			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat(NSLocalizedString("ble.connection.timeout %d %@",
-				comment: "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth."),
-				timeoutTimerCount, name)
-
+																								  comment: "Connection failed after %d attempts to connect to %@. You may need to forget your device under Settings > Bluetooth."),
+																				timeoutTimerCount, name)
+			
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
 			self.timeoutTimerRuns += 1
@@ -111,7 +112,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			print("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
 		}
 	}
-
+	
 	// Connect to a specific peripheral
 	func connectTo(peripheral: CBPeripheral) {
 		stopScanning()
@@ -124,7 +125,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
 		}
-
+		
 		centralManager?.connect(peripheral)
 		// Invalidate any existing timer
 		if timeoutTimer != nil {
@@ -137,10 +138,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
 		print("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
 	}
-
+	
 	// Disconnect Connected Peripheral
 	func disconnectPeripheral(reconnect: Bool = true) {
-
+		
 		guard let connectedPeripheral = connectedPeripheral else { return }
 		automaticallyReconnect = reconnect
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
@@ -151,7 +152,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		connectedVersion = "0.0.0"
 		startScanning()
 	}
-
+	
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		isConnecting = false
@@ -165,7 +166,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if timeoutTimer != nil {
 			timeoutTimer!.invalidate()
 		}
-
+		
 		// remove any connection errors
 		self.lastConnectionError = ""
 		// Map the peripheral to the connectedPeripheral ObservedObjects
@@ -182,13 +183,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		peripheral.discoverServices([meshtasticServiceCBUUID])
 		print("✅ BLE Connected: \(peripheral.name ?? "Unknown")")
 	}
-
+	
 	// Called when a Peripheral fails to connect
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
 		disconnectPeripheral()
 		print("🚫 BLE Failed to Connect: \(peripheral.name ?? "Unknown")")
 	}
-
+	
 	// Disconnect Peripheral Event
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		self.connectedPeripheral = nil
@@ -201,8 +202,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if errorCode == 6 { // CBError.Code.connectionTimeout The connection has timed out unexpectedly.
 				// Happens when device is manually reset / powered off
 				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("ble.errorcode.6 %@",
-					comment: "The app will automatically reconnect to the preferred radio if it come back in range."),
-					e.localizedDescription)
+																								comment: "The app will automatically reconnect to the preferred radio if it come back in range."),
+																			  e.localizedDescription)
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
@@ -211,8 +212,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			} else if errorCode == 14 { // Peer removed pairing information
 				// Forgetting and reconnecting seems to be necessary so we need to show the user an error telling them to do that
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat(NSLocalizedString("ble.errorcode.14 %@",
-					comment: "This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."),
-					e.localizedDescription)
+																								 comment: "This error usually cannot be fixed without forgetting the device unders Settings > Bluetooth and re-connecting to the radio."),
+																			   e.localizedDescription)
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
 			} else {
 				lastConnectionError = "🚨 \(e.localizedDescription)"
@@ -226,7 +227,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		// Start a scan so the disconnected peripheral is moved to the peripherals[] if it is awake
 		self.startScanning()
 	}
-
+	
 	// MARK: Peripheral Services functions
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 		if let e = error {
@@ -240,36 +241,36 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			}
 		}
 	}
-
+	
 	// MARK: Discover Characteristics Event
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-
+		
 		if let e = error {
 			print("🚫 BLE Discover Characteristics error for \(peripheral.name ?? "Unknown") \(e) disconnecting device")
 			// Try and stop crashes when this error occurs
 			disconnectPeripheral()
 			return
 		}
-
+		
 		guard let characteristics = service.characteristics else { return }
-
+		
 		for characteristic in characteristics {
 			switch characteristic.uuid {
-
+				
 			case TORADIO_UUID:
 				print("✅ BLE did discover TORADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				TORADIO_characteristic = characteristic
-
+				
 			case FROMRADIO_UUID:
 				print("✅ BLE did discover FROMRADIO characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMRADIO_characteristic = characteristic
 				peripheral.readValue(for: FROMRADIO_characteristic)
-
+				
 			case FROMNUM_UUID:
 				print("✅ BLE did discover FROMNUM (Notify) characteristic for Meshtastic by \(peripheral.name ?? "Unknown")")
 				FROMNUM_characteristic = characteristic
 				peripheral.setNotifyValue(true, for: characteristic)
-
+				
 			default:
 				break
 			}
@@ -278,11 +279,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			sendWantConfig()
 		}
 	}
-
+	
 	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
-
+		
 		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return 0 }
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
 		var meshPacket: MeshPacket = MeshPacket()
@@ -303,12 +304,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool) -> Bool {
-
+		
 		var success = false
 		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return success }
-
+		
 		let fromNodeNum = connectedPeripheral.num
 		let routePacket = RouteDiscovery()
 		var meshPacket = MeshPacket()
@@ -320,100 +321,100 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.tracerouteApp
 		dataMessage.wantResponse = wantResponse
 		meshPacket.decoded = dataMessage
-
+		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
-
+		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
-
+			
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.sent %@",
-				comment: "Sent a Trace Route Request to node: %@"), String(destNum))
+																			   comment: "Sent a Trace Route Request to node: %@"), String(destNum))
 			MeshLogger.log("🪧 \(logString)")
 		}
 		return success
 	}
-
+	
 	func sendWantConfig() {
 		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return }
-
+		
 		if FROMRADIO_characteristic == nil {
 			MeshLogger.log("🚨 \(NSLocalizedString("firmware.version.unsupported", comment: "Unsupported Firmware Version Detected, unable to connect to device."))")
 			invalidVersion = true
 			return
 		} else {
-
-		let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.wantconfig %@", comment: "Issuing Want Config to %@"), nodeName)
-		MeshLogger.log("🛎️ \(logString)")
-		// BLE Characteristics discovered, issue wantConfig
-		var toRadio: ToRadio = ToRadio()
-		configNonce += 1
-		toRadio.wantConfigID = configNonce
-		let binaryData: Data = try! toRadio.serializedData()
-		connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			
+			let nodeName = connectedPeripheral!.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
+			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.wantconfig %@", comment: "Issuing Want Config to %@"), nodeName)
+			MeshLogger.log("🛎️ \(logString)")
+			// BLE Characteristics discovered, issue wantConfig
+			var toRadio: ToRadio = ToRadio()
+			configNonce += 1
+			toRadio.wantConfigID = configNonce
+			let binaryData: Data = try! toRadio.serializedData()
+			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			// Either Read the config complete value or from num notify value
 			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 	}
-
+	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		if let errorText = error?.localizedDescription {
 			print("🚫 didUpdateNotificationStateFor error: \(errorText)")
 		}
 	}
-
+	
 	// MARK: Data Read / Update Characteristic Event
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-
+		
 		if let e = error {
-
+			
 			print("🚫 didUpdateValueFor Characteristic error \(e)")
-
+			
 			let errorCode = (e as NSError).code
-
+			
 			if errorCode == 5 || errorCode == 15 {
 				// BLE PIN connection errors
 				// 5 CBATTErrorDomain Code=5 "Authentication is insufficient."
 				// 15 CBATTErrorDomain Code=15 "Encryption is insufficient."
 				lastConnectionError = "🚨" + String.localizedStringWithFormat(NSLocalizedString("ble.errorcode.pin %@",
-					comment: "Please try connecting again and check the PIN carefully."),
-					e.localizedDescription)
+																								comment: "Please try connecting again and check the PIN carefully."),
+																			  e.localizedDescription)
 				print("🚨 \(e.localizedDescription) Please try connecting again and check the PIN carefully.")
 				self.disconnectPeripheral(reconnect: false)
 			}
 		}
-
+		
 		switch characteristic.uuid {
-
+			
 		case FROMRADIO_UUID:
-
+			
 			if characteristic.value == nil || characteristic.value!.isEmpty {
 				return
 			}
 			var decodedInfo = FromRadio()
-
+			
 			do {
 				decodedInfo = try FromRadio(serializedData: characteristic.value!)
-
+				
 			} catch {
 				print(characteristic.value!)
 			}
-
+			
 			switch decodedInfo.packet.decoded.portnum {
-
-			// Handle Any local only packets we get over BLE
+				
+				// Handle Any local only packets we get over BLE
 			case .unknownApp:
 				var nowKnown = false
-
+				
 				// MyInfo from initial connection
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
-
+					
 					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
-
+					
 					if lastDotIndex == nil {
 						invalidVersion = true
 						connectedVersion = "0.0.0"
@@ -422,17 +423,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
 					}
-
+					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
 						invalidVersion = true
 						lastConnectionError = "🚨" + NSLocalizedString("update.firmware", comment: "Update Your Firmware")
 						return
-
+						
 					} else {
-
+						
 						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
-
+						
 						if myInfo != nil {
 							connectedPeripheral.num = myInfo!.myNodeNum
 							connectedPeripheral.firmwareVersion = myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown")
@@ -446,7 +447,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				if decodedInfo.nodeInfo.num > 0 && !invalidVersion {
 					nowKnown = true
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
-
+					
 					if nodeInfo != nil {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 							if nodeInfo!.user != nil {
@@ -463,18 +464,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				}
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion {
-
+					
 					nowKnown = true
 					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion {
-
+					
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-
+					
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
-
+						
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 						}
@@ -487,7 +488,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
-
+				
 			case .textMessageApp:
 				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
@@ -513,7 +514,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			case .rangeTestApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .telemetryApp:
-			if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
+				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 			case .textMessageCompressedApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .zpsApp:
@@ -527,34 +528,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			case .audioApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .tracerouteApp:
-					if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
-
-						if routingMessage.route.count == 0 {
-							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.direct %@",
-								comment: "Trace Route request sent to node: %@ was recieived directly."), String(decodedInfo.packet.from))
-							MeshLogger.log("🪧 \(logString)")
-						} else {
-
-							var routeString = "\(decodedInfo.packet.to) --> "
-							for node in routingMessage.route {
-								routeString += "\(node) --> "
-							}
-							routeString += "\(decodedInfo.packet.from)"
-							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.route %@",
-								comment: "Trace Route request returned: %@"), routeString)
-							MeshLogger.log("🪧 \(logString)")
+				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
+					
+					if routingMessage.route.count == 0 {
+						let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.direct %@",
+																						   comment: "Trace Route request sent to node: %@ was recieived directly."), String(decodedInfo.packet.from))
+						MeshLogger.log("🪧 \(logString)")
+					} else {
+						
+						var routeString = "\(decodedInfo.packet.to) --> "
+						for node in routingMessage.route {
+							routeString += "\(node) --> "
 						}
+						routeString += "\(decodedInfo.packet.from)"
+						let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.traceroute.received.route %@",
+																						   comment: "Trace Route request returned: %@"), routeString)
+						MeshLogger.log("🪧 \(logString)")
 					}
+				}
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
 				print("MAX PORT NUM OF 511")
 			}
-
+			
 			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
 			let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(emptyNodeNum))
-
+			
 			do {
 				guard let fetchedUser = try context?.fetch(fetchBCUserRequest) as? [UserEntity] else {
 					return
@@ -566,7 +567,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			} catch {
 				print("💥 Error Deleting the All - Broadcast User")
 			}
-
+			
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
@@ -589,7 +590,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				}
 				return
 			}
-
+			
 		case FROMNUM_UUID:
 			print("🗞️ BLE (Notify) characteristic, value will be read next")
 		default:
@@ -600,16 +601,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 	}
-
+	
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) -> Bool {
 		var success = false
-
+		
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
 		if connectedPeripheral == nil || connectedPeripheral!.peripheral.state != CBPeripheralState.connected {
-
+			
 			self.disconnectPeripheral()
 			self.startScanning()
-
+			
 			// Try and connect to the preferredPeripherial first
 			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
@@ -617,34 +618,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			}
 			let nodeName = connectedPeripheral?.peripheral.name ?? NSLocalizedString("unknown", comment: NSLocalizedString("unknown", comment: "Unknown"))
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.textmessage.send.failed %@",
-				comment: "Message Send Failed, not properly connected to %@"), nodeName)
+																			   comment: "Message Send Failed, not properly connected to %@"), nodeName)
 			MeshLogger.log("🚫 \(logString)")
-
+			
 			success = false
 		} else if message.count < 1 {
-
+			
 			// Don't send an empty message
 			print("🚫 Don't Send an Empty Message")
 			success = false
-
+			
 		} else {
-
+			
 			let fromUserNum: Int64 = self.connectedPeripheral.num
-
+			
 			let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 			messageUsers.predicate = NSPredicate(format: "num IN %@", [fromUserNum, Int64(toUserNum)])
-
+			
 			do {
-
+				
 				guard let fetchedUsers = try context?.fetch(messageUsers) as? [UserEntity] else {
 					return false
 				}
 				if fetchedUsers.isEmpty {
-
+					
 					print("🚫 Message Users Not Found, Fail")
 					success = false
 				} else if fetchedUsers.count >= 1 {
-
+					
 					let newMessage = MessageEntity(context: context!)
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
@@ -661,16 +662,16 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					}
 					newMessage.messagePayload = message
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
-
+					
 					let dataType = PortNum.textMessageApp
 					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
 					messageQuotesReplaced = message.replacingOccurrences(of: "”", with: "\"")
 					let payloadData: Data = messageQuotesReplaced.data(using: String.Encoding.utf8)!
-
+					
 					var dataMessage = DataMessage()
 					dataMessage.payload = payloadData
 					dataMessage.portnum = dataType
-
+					
 					var meshPacket = MeshPacket()
 					meshPacket.id = UInt32(newMessage.messageId)
 					if toUserNum > 0 {
@@ -686,7 +687,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						meshPacket.decoded.replyID = UInt32(replyID)
 					}
 					meshPacket.wantAck = true
-
+					
 					var toRadio: ToRadio!
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
@@ -699,7 +700,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							try context!.save()
 							print("💾 Saved a new sent message from \(connectedPeripheral.num) to \(toUserNum)")
 							success = true
-
+							
 						} catch {
 							context!.rollback()
 							let nsError = error as NSError
@@ -707,14 +708,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						}
 					}
 				}
-
+				
 			} catch {
-
+				
 			}
 		}
 		return success
 	}
-
+	
 	public func sendWaypoint(waypoint: Waypoint) -> Bool {
 		if waypoint.latitudeI == 373346000 && waypoint.longitudeI == -1220090000 {
 			return false
@@ -771,14 +772,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return success
 	}
-
-	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
+	
+	public func sendPosition(destNum: Int64, wantResponse: Bool, smartPosition: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
-
+		
+		if smartPosition {
+			if lastPosition != nil {
+				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
+				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
+					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
+						return false
+					}
+				}
+			}
+		}
+		lastPosition = LocationHelper.currentLocation
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -800,7 +812,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.positionApp
 		dataMessage.wantResponse = wantResponse
 		meshPacket.decoded = dataMessage
-
+		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
@@ -818,14 +830,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if userSettings!.provideLocation {
-				let success = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
-				if !success {
-					print("Failed to send position to device")
-				}
+				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false, smartPosition: true)
 			}
 		}
 	}
-
+	
 	public func sendShutdown(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.shutdownSeconds = 5
@@ -846,7 +855,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func sendReboot(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.rebootSeconds = 5
@@ -867,7 +876,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func sendRebootOta(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.rebootOtaSeconds = 5
@@ -888,7 +897,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func sendFactoryReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.factoryReset = 5
@@ -902,14 +911,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🚀 Sent Factory Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func sendNodeDBReset(fromUser: UserEntity, toUser: UserEntity) -> Bool {
 		var adminPacket = AdminMessage()
 		adminPacket.nodedbReset = 5
@@ -922,7 +931,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
+		
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🚀 Sent NodeDB Reset Admin Message to: \(toUser.longName ?? NSLocalizedString("unknown", comment: "")) from: \(fromUser.longName ?? NSLocalizedString("unknown", comment: ""))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
@@ -930,7 +939,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func connectToPreferredPeripheral() -> Bool {
 		var success = false
 		// Return false if we are not properly connected to a device, handle retry logic in the view for now
@@ -948,9 +957,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return success
 	}
-
+	
 	public func getChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = UInt32(channel.index + 1)
 		var meshPacket: MeshPacket = MeshPacket()
@@ -963,7 +972,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🎛️ Requested Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
@@ -971,7 +980,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		return 0
 	}
 	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setChannel = channel
 		var meshPacket: MeshPacket = MeshPacket()
@@ -984,20 +993,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return Int64(meshPacket.id)
 		}
 		return 0
 	}
-
+	
 	public func saveChannelSet(base64UrlString: String) -> Bool {
 		if isConnected {
 			// Before we get started delete the existing channels from the myNodeInfo
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
-
+			
 			tryClearExistingChannels()
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
@@ -1057,8 +1066,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					let binaryData: Data = try! toRadio.serializedData()
 					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
-							let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config.sent %@", comment: "Sent a LoRaConfig for: %@"), String(connectedPeripheral.num))
-							MeshLogger.log("📻 \(logString)")
+						let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config.sent %@", comment: "Sent a LoRaConfig for: %@"), String(connectedPeripheral.num))
+						MeshLogger.log("📻 \(logString)")
 					}
 					return true
 				} catch {
@@ -1068,7 +1077,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func saveUser(config: User, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setOwner = config
@@ -1089,7 +1098,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setHamMode = ham
@@ -1125,20 +1134,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved Bluetooth Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveDeviceConfig(config: Config.DeviceConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.device = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1157,7 +1166,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func saveDisplayConfig(config: Config.DisplayConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.display = config
@@ -1181,9 +1190,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func saveLoRaConfig(config: Config.LoRaConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.lora = config
 		var meshPacket: MeshPacket = MeshPacket()
@@ -1198,20 +1207,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
 		let messageDescription = "🛟 Saved LoRa Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func savePositionConfig(config: Config.PositionConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.position = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1222,24 +1231,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛟 Saved Position Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertPositionConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.network = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1250,24 +1259,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛟 Saved Network Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveCannedMessageModuleConfig(config: ModuleConfig.CannedMessageConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.cannedMessage = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1279,22 +1288,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛟 Saved Canned Message Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertCannedMessagesModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveCannedMessageModuleMessages(messages: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setCannedMessageModuleMessages = messages
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1307,22 +1316,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛟 Saved Canned Message Module Messages for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-
+			
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveExternalNotificationModuleConfig(config: ModuleConfig.ExternalNotificationConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.externalNotification = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1330,12 +1339,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved External Notification Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertExternalNotificationModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
@@ -1345,10 +1354,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 	
 	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setRingtoneMessage = ringtone
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1360,22 +1369,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved RTTTL Ringtone Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveMQTTConfig(config: ModuleConfig.MQTTConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.mqtt = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1383,13 +1392,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved WiFi Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertMqttModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
@@ -1397,12 +1406,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func saveRangeTestModuleConfig(config: ModuleConfig.RangeTestConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.rangeTest = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1414,22 +1423,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved Range Test Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertRangeTestModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
-
+		
 		return 0
 	}
-
+	
 	public func saveSerialModuleConfig(config: ModuleConfig.SerialConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.serial = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1437,12 +1446,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved Serial Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertSerialModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
@@ -1450,12 +1459,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func saveTelemetryModuleConfig(config: ModuleConfig.TelemetryConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.setModuleConfig.telemetry = config
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(toUser.num)
@@ -1463,12 +1472,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? NSLocalizedString("unknown", comment: "Unknown"))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertTelemetryModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
@@ -1476,41 +1485,41 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return 0
 	}
-
+	
 	public func getChannel(channelIndex: UInt32, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getChannelRequest = channelIndex
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = wantResponse
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Sent a Get Channel \(channelIndex) Request Admin Message for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-
+			
 			return true
 		}
-
+		
 		return false
 	}
-
+	
 	public func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getCannedMessageModuleMessagesRequest = true
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(connectedPeripheral.num)
@@ -1518,35 +1527,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
 		meshPacket.decoded.wantResponse = wantResponse
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = wantResponse
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
-
+		
 		let binaryData: Data = try! toRadio.serializedData()
-
+		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.get %@", comment: "Requested Canned Messages Module Messages for node: %@"), String(connectedPeripheral.num))
 			MeshLogger.log("🥫 \(logString)")
 			return true
 		}
-
+		
 		return false
 	}
-
+	
 	public func requestBluetoothConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.bluetoothConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1554,27 +1563,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Bluetooth Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestDeviceConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.deviceConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1582,27 +1591,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Device Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestDisplayConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.displayConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1610,27 +1619,27 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Display Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestLoRaConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.loraConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1638,29 +1647,29 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
-
+			
 			return true
 		}
-
+		
 		return false
 	}
-
+	
 	public func requestNetworkConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.networkConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1668,26 +1677,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Network Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
-
+		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestPositionConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getConfigRequest = AdminMessage.ConfigType.positionConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1695,26 +1704,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Position Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestCannedMessagesModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.cannedmsgConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1722,26 +1731,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Canned Messages Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestExternalNotificationModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.extnotifConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1749,14 +1758,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested External Notificaiton Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1765,10 +1774,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	}
 	
 	public func requestRtttlConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getRingtoneRequest = true
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1776,26 +1785,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested RTTTL Ringtone Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestRangeTestModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.rangetestConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1803,26 +1812,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Range Test Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestMqttModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.mqttConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1830,26 +1839,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested MQTT Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestSerialModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.serialConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1857,26 +1866,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Serial Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	public func requestTelemetryModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
-
+		
 		var adminPacket = AdminMessage()
 		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.telemetryConfig
-
+		
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -1884,29 +1893,29 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		meshPacket.priority =  MeshPacket.Priority.reliable
 		meshPacket.channel = UInt32(adminIndex)
 		meshPacket.wantAck = true
-
+		
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! adminPacket.serializedData()
 		dataMessage.portnum = PortNum.adminApp
 		dataMessage.wantResponse = true
-
+		
 		meshPacket.decoded = dataMessage
-
+		
 		let messageDescription = "🛎️ Requested Telemetry Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
 		return false
 	}
-
+	
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String, fromUser: UserEntity, toUser: UserEntity) -> Bool {
-
+		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
-
+		
 		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
 			let newMessage = MessageEntity(context: context!)
 			newMessage.messageId =  Int64(meshPacket.id)
@@ -1916,7 +1925,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			newMessage.adminDescription = adminDescription
 			newMessage.fromUser = fromUser
 			newMessage.toUser = toUser
-
+			
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
@@ -1930,12 +1939,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 		return false
 	}
-
+	
 	public func tryClearExistingChannels() {
 		// Before we get started delete the existing channels from the myNodeInfo
 		let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 		fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
-
+		
 		do {
 			let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
 			if fetchedMyInfo.count == 1 {
@@ -1956,7 +1965,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 
 // MARK: - CB Central Manager implmentation
 extension BLEManager: CBCentralManagerDelegate {
-
+	
 	// MARK: Bluetooth enabled/disabled
 	func centralManagerDidUpdateState(_ central: CBCentralManager) {
 		if central.state == CBManagerState.poweredOn {
@@ -1966,9 +1975,9 @@ extension BLEManager: CBCentralManagerDelegate {
 		} else {
 			isSwitchedOn = false
 		}
-
+		
 		var status = ""
-
+		
 		switch central.state {
 		case .poweredOff:
 			status = "BLE is powered off"
@@ -1987,10 +1996,10 @@ extension BLEManager: CBCentralManagerDelegate {
 		}
 		print("BLEManager status: \(status)")
 	}
-
+	
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-
+		
 		if self.automaticallyReconnect && timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
@@ -1998,7 +2007,7 @@ extension BLEManager: CBCentralManagerDelegate {
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
 		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
-
+		
 		if let peripheralIndex = index {
 			peripherals[peripheralIndex] = device
 		} else {
@@ -2008,29 +2017,29 @@ extension BLEManager: CBCentralManagerDelegate {
 		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
-
-//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-//
-//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
-//			return
-//		}
-//
-//		if peripherals.count > 0 {
-//
-//			for peripheral in peripherals {
-//				print(peripheral)
-//			switch peripheral.state {
-//				case .connecting: // I've only seen this happen when
-//					// re-launching attached to Xcode.
-//					print("Xcode Restore")
-//
-//				case .connected:
-//					connectTo(peripheral: peripheral)
-//					print("Restore BLE State")
-//				default: break
-//				}
-//			}
-//		}
-//		print("willRestoreState Hit!")
-//	}
+	
+	//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+	//
+	//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+	//			return
+	//		}
+	//
+	//		if peripherals.count > 0 {
+	//
+	//			for peripheral in peripherals {
+	//				print(peripheral)
+	//			switch peripheral.state {
+	//				case .connecting: // I've only seen this happen when
+	//					// re-launching attached to Xcode.
+	//					print("Xcode Restore")
+	//
+	//				case .connected:
+	//					connectTo(peripheral: peripheral)
+	//					print("Restore BLE State")
+	//				default: break
+	//				}
+	//			}
+	//		}
+	//		print("willRestoreState Hit!")
+	//	}
 }
