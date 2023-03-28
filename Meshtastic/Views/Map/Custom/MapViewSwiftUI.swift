@@ -25,7 +25,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
-	let showMultipleNodes: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
@@ -137,7 +136,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				var lineIndex = 0
 				for position in latest {
 					
-					let nodePositions = positions.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+					let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
 					let lineCoords = nodePositions.map ({
 						(position) -> CLLocationCoordinate2D in
 						return position.nodeCoordinate!
@@ -154,15 +153,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 			if userTrackingMode == MKUserTrackingMode.none {
 				mapView.showsUserLocation = false
+				mapView.addAnnotations(showNodeHistory ? positions : latest)
 				if recenter {
-					if !showMultipleNodes {
-						mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: true)
-					} else {
-						mapView.addAnnotations(showNodeHistory ? positions : latest)
-						mapView.fitAllAnnotations()
-					}
-				} else {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					mapView.fit(annotations:showNodeHistory || showRouteLines ? positions : latest, andShow: false)
 				}
 			} else {
 				// Centering Done by tracking mode
@@ -362,7 +355,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
 					renderer.strokeColor = parent.lineColors[index ?? 0]
-					renderer.lineWidth = 7
+					renderer.lineWidth = 8
 					return renderer
 				}
 				return MKOverlayRenderer()

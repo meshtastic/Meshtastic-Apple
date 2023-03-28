@@ -146,7 +146,7 @@ struct PositionConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Text("The minimum distance change to be considered for a smart position broadcast.")
+						Text("The minimum distance change in meters to be considered for a smart position broadcast.")
 						.font(.caption)
 					}
 				}

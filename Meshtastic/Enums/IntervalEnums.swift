@@ -88,6 +88,7 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 
 enum UpdateIntervals: Int, CaseIterable, Identifiable {
 
+	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
