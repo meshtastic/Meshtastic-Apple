@@ -322,7 +322,7 @@ struct ChannelMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false) {
+									if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false, smartPosition: false) {
 										print("Location Sent")
 									}
 								}

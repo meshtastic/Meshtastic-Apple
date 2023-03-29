@@ -328,7 +328,7 @@ struct UserMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
+									if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
 										print("Location Sent")
 									}
 								}
