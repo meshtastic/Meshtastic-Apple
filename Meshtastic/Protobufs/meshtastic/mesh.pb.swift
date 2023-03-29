@@ -1587,6 +1587,10 @@ struct NodeInfo {
   /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
   mutating func clearDeviceMetrics() {self._deviceMetrics = nil}
 
+  ///
+  /// local channel index we heard that node on. Only populated if its not the default channel.
+  var channel: UInt32 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -3181,6 +3185,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     4: .same(proto: "snr"),
     5: .standard(proto: "last_heard"),
     6: .standard(proto: "device_metrics"),
+    7: .same(proto: "channel"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3195,6 +3200,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       case 4: try { try decoder.decodeSingularFloatField(value: &self.snr) }()
       case 5: try { try decoder.decodeSingularFixed32Field(value: &self.lastHeard) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._deviceMetrics) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.channel) }()
       default: break
       }
     }
@@ -3223,6 +3229,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try { if let v = self._deviceMetrics {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     } }()
+    if self.channel != 0 {
+      try visitor.visitSingularUInt32Field(value: self.channel, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3233,6 +3242,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.snr != rhs.snr {return false}
     if lhs.lastHeard != rhs.lastHeard {return false}
     if lhs._deviceMetrics != rhs._deviceMetrics {return false}
+    if lhs.channel != rhs.channel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

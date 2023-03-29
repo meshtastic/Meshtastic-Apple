@@ -22,6 +22,7 @@ struct DisplayConfig: View {
 	@State var screenCarouselInterval = 0
 	@State var gpsFormat = 0
 	@State var compassNorthTop = false
+	@State var wakeOnTapOrMotion = false
 	@State var flipScreen = false
 	@State var oledType = 0
 	@State var displayMode = 0
@@ -72,7 +73,14 @@ struct DisplayConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("The compass heading on the screen outside of the circle will always point north.")
 					.font(.caption)
-
+				
+				Toggle(isOn: $wakeOnTapOrMotion) {
+					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("Requires that there be an accelerometer on your device.")
+					.font(.caption)
+				
 				Toggle(isOn: $flipScreen) {
 
 					Label("Flip Screen", systemImage: "pip.swap")
@@ -151,6 +159,7 @@ struct DisplayConfig: View {
 					dc.screenOnSecs = UInt32(screenOnSeconds)
 					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
 					dc.compassNorthTop = compassNorthTop
+					dc.wakeOnTapOrMotion = wakeOnTapOrMotion
 					dc.flipScreen = flipScreen
 					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
@@ -202,6 +211,11 @@ struct DisplayConfig: View {
 				if newCompassNorthTop != node!.displayConfig!.compassNorthTop { hasChanges = true }
 			}
 		}
+		.onChange(of: wakeOnTapOrMotion) { newWakeOnTapOrMotion in
+			if node != nil && node!.displayConfig != nil {
+				if newWakeOnTapOrMotion != node!.displayConfig!.wakeOnTapOrMotion { hasChanges = true }
+			}
+		}
 		.onChange(of: gpsFormat) { newGpsFormat in
 			if node != nil && node!.displayConfig != nil {
 				if newGpsFormat != node!.displayConfig!.gpsFormat { hasChanges = true }
@@ -229,6 +243,7 @@ struct DisplayConfig: View {
 			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
 			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)
 			self.compassNorthTop = node?.displayConfig?.compassNorthTop ?? false
+			self.wakeOnTapOrMotion = node?.displayConfig?.wakeOnTapOrMotion ?? false
 			self.flipScreen = node?.displayConfig?.flipScreen ?? false
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)

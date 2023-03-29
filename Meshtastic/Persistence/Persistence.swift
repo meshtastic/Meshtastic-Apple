@@ -1,8 +1,8 @@
 //
 //  Persistence.swift
-//  CoreDataSample
+//  Meshtastic
 //
-//  Created by Garth Vander Houwen on 11/28/21.
+//  Copyright(c) Garth Vander Houwen 11/28/21.
 //
 
 import CoreData
