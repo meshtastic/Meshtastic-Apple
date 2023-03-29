@@ -47,7 +47,7 @@ class UserSettings: ObservableObject {
 	}
 	@Published var meshMapRecentering: Bool {
 		didSet {
-			UserDefaults.standard.set(meshMapCenteringMode, forKey: "meshMapRecentering")
+			UserDefaults.standard.set(meshMapRecentering, forKey: "meshMapRecentering")
 			UserDefaults.standard.synchronize()
 		}
 	}
@@ -59,6 +59,18 @@ class UserSettings: ObservableObject {
 	@Published var meshMapUserTrackingMode: Int {
 		didSet {
 			UserDefaults.standard.set(meshMapUserTrackingMode, forKey: "meshMapUserTrackingMode")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	@Published var meshMapShowNodeHistory: Bool {
+		didSet {
+			UserDefaults.standard.set(meshMapShowNodeHistory, forKey: "meshMapShowNodeHistory")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	@Published var meshMapShowRouteLines: Bool {
+		didSet {
+			UserDefaults.standard.set(meshMapShowRouteLines, forKey: "meshMapShowRouteLines")
 			UserDefaults.standard.synchronize()
 		}
 	}
@@ -75,5 +87,7 @@ class UserSettings: ObservableObject {
 		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? false
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 		self.meshMapUserTrackingMode = UserDefaults.standard.object(forKey: "meshMapUserTrackingMode") as? Int ?? 0
+		self.meshMapShowNodeHistory = UserDefaults.standard.object(forKey: "meshMapShowNodeHistory") as? Bool ?? true
+		self.meshMapShowRouteLines = UserDefaults.standard.object(forKey: "meshMapShowRouteLines") as? Bool ?? false
 	}
 }

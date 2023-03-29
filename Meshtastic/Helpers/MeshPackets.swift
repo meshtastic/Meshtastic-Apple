@@ -279,6 +279,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 
 			if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
 				let position = PositionEntity(context: context)
+				position.latest = true
 				position.seqNo = Int32(nodeInfo.position.seqNumber)
 				position.latitudeI = nodeInfo.position.latitudeI
 				position.longitudeI = nodeInfo.position.longitudeI
@@ -449,6 +450,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
 
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
+				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
+
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
 
@@ -483,6 +487,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 			}
 
+		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
+			let ringtone = adminMessage.getRingtoneResponse
+			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}

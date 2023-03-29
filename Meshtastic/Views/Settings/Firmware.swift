@@ -74,7 +74,7 @@ struct Firmware: View {
 						HStack(alignment: .center) {
 							Spacer()
 							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 										print("Reboot Failed")

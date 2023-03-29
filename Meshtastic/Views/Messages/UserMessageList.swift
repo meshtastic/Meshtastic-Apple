@@ -133,7 +133,7 @@ struct UserMessageList: View {
 															let ackDate = Date(timeIntervalSince1970: TimeInterval(message.ackTimestamp))
 															let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 															if ackDate >= sixMonthsAgo! {
-																Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss a"))").foregroundColor(.gray)
+																Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss.SSSS  a"))").foregroundColor(.gray)
 															} else {
 																Text("unknown.age").font(.caption2).foregroundColor(.gray)
 															}
@@ -328,7 +328,7 @@ struct UserMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
+									if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
 										print("Location Sent")
 									}
 								}
@@ -345,7 +345,7 @@ struct UserMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
+							if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
 								print("Location Sent")
 							}
 						}

@@ -26,6 +26,20 @@ struct Connect: View {
 	@State var presentingSwitchPreferredPeripheral = false
 	@State var selectedPeripherialId = ""
 
+	init () {
+		let notificationCenter = UNUserNotificationCenter.current()
+		notificationCenter.getNotificationSettings(completionHandler: { (settings) in
+		   if settings.authorizationStatus == .notDetermined {
+			   UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+				   if success {
+					   print("Notifications are all set!")
+				   } else if let error = error {
+					   print(error.localizedDescription)
+				   }
+			   }
+		   }
+		})
+	}
 	var body: some View {
 
 		NavigationStack {
@@ -90,7 +104,7 @@ struct Connect: View {
 												#endif
 												}
 											} label: {
-												Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
+												Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
 											}
 										}
 										#endif
@@ -279,24 +293,16 @@ struct Connect: View {
 		.onAppear(perform: {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-
-			// Ask for notification permission
-			UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-				if success {
-					print("Notifications are all set!")
-				} else if let error = error {
-					print(error.localizedDescription)
-				}
-			}
 		})
 	}
-#if canImport(ActivityKit)
+	#if canImport(ActivityKit)
 	func startNodeActivity() {
 		if #available(iOS 16.2, *) {
 			liveActivityStarted = true
 			let timerSeconds = 60
-
-			let mostRecent = node?.telemetries?.lastObject as? TelemetryEntity
+			
+			let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+			let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 
 			let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
@@ -329,29 +335,7 @@ struct Connect: View {
 			}
 		}
 	}
-#endif
-
-#if os(iOS)
-	func postNotification() {
-		let timerSeconds = 60
-		let content = UNMutableNotificationContent()
-		content.title = "Mesh Live Activity Over"
-		content.body = "Your timed mesh live activity is over."
-		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(timerSeconds), repeats: false)
-		let uuidString = UUID().uuidString
-		let request = UNNotificationRequest(identifier: uuidString,
-											content: content, trigger: trigger)
-		let notificationCenter = UNUserNotificationCenter.current()
-		notificationCenter.add(request) { (error) in
-			if error != nil {
-				// Handle any errors.
-				print("Error posting local notification: \(error?.localizedDescription ?? "no description")")
-			} else {
-				print("Posted local notification.")
-			}
-		}
-	}
-#endif
+	#endif
 
 	func didDismissSheet() {
 		bleManager.disconnectPeripheral(reconnect: false)

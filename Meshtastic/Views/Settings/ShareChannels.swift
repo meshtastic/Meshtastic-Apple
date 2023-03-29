@@ -75,7 +75,6 @@ struct ShareChannels: View {
 										Toggle("Channel 0 Included", isOn: $includeChannel0)
 											.toggleStyle(.switch)
 											.labelsHidden()
-											.disabled(channel.role == 1)
 										Text(((channel.name!.isEmpty ? "Primary" : channel.name) ?? "Primary").camelCaseToWords())
 										if channel.psk?.hexDescription.count ??  0 <  3 {
 											Image(systemName: "lock.slash")
@@ -225,7 +224,7 @@ struct ShareChannels: View {
 						.font(.headline)
 						.padding(.bottom)
 					Text("Primary Channel").font(.title2)
-					Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled.")
+					Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled. If you don't share your primary channel, the first channel will become the primary channel on the other network and will allow communication with your mesh on the group channel.")
 						.font(.callout)
 						.padding([.leading, .trailing, .bottom])
 					Text("Admin Channel").font(.title2)
@@ -264,6 +263,7 @@ struct ShareChannels: View {
 				bleManager.context = context
 				generateChannelSet()
 			}
+			.onChange(of: includeChannel0) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel1) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel2) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel3) { _ in generateChannelSet()	}

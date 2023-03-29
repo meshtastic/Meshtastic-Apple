@@ -1,3 +1,10 @@
+//
+//  PersistenceEntityExtenstion.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 11/28/21.
+//
+
 import CoreData
 import CoreLocation
 import MapKit

@@ -44,6 +44,9 @@ struct SerialConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setSerialValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -177,15 +180,7 @@ struct SerialConfig: View {
 			.onAppear {
 
 				self.bleManager.context = context
-				self.enabled = node?.serialConfig?.enabled ?? false
-				self.echo = node?.serialConfig?.echo ?? false
-				self.rxd = Int(node?.serialConfig?.rxd ?? 0)
-				self.txd = Int(node?.serialConfig?.txd ?? 0)
-				self.baudRate = Int(node?.serialConfig?.baudRate ?? 0)
-				self.timeout = Int(node?.serialConfig?.timeout ?? 0)
-				self.mode = Int(node?.serialConfig?.mode ?? 0)
-				self.hasChanges = false
-
+				setSerialValues()
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
 					print("empty serial module config")
@@ -246,5 +241,15 @@ struct SerialConfig: View {
 				}
 			}
 		}
+	}
+	func setSerialValues() {
+		self.enabled = node?.serialConfig?.enabled ?? false
+		self.echo = node?.serialConfig?.echo ?? false
+		self.rxd = Int(node?.serialConfig?.rxd ?? 0)
+		self.txd = Int(node?.serialConfig?.txd ?? 0)
+		self.baudRate = Int(node?.serialConfig?.baudRate ?? 0)
+		self.timeout = Int(node?.serialConfig?.timeout ?? 0)
+		self.mode = Int(node?.serialConfig?.mode ?? 0)
+		self.hasChanges = false
 	}
 }

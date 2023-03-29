@@ -53,6 +53,9 @@ struct CannedMessagesConfig: View {
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
+							.onAppear {
+								setCannedMessagesValues()
+							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -263,19 +266,7 @@ struct CannedMessagesConfig: View {
 			})
 			.onAppear {
 				self.bleManager.context = context
-				self.enabled = node?.cannedMessageConfig?.enabled ?? false
-				self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
-				self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
-				self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false
-				self.inputbrokerPinA = Int(node?.cannedMessageConfig?.inputbrokerPinA ?? 0)
-				self.inputbrokerPinB = Int(node?.cannedMessageConfig?.inputbrokerPinB ?? 0)
-				self.inputbrokerPinPress = Int(node?.cannedMessageConfig?.inputbrokerPinPress ?? 0)
-				self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
-				self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
-				self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
-				self.messages = node?.cannedMessageConfig?.messages ?? ""
-				self.hasChanges = false
-				self.hasMessagesChanges = false
+				setCannedMessagesValues()
 
 				// Need to request a CannedMessagesModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.cannedMessageConfig == nil {
@@ -366,5 +357,20 @@ struct CannedMessagesConfig: View {
 				}
 			}
 		}
+	}
+	func setCannedMessagesValues() {
+		self.enabled = node?.cannedMessageConfig?.enabled ?? false
+		self.sendBell = node?.cannedMessageConfig?.sendBell ?? false
+		self.rotary1Enabled = node?.cannedMessageConfig?.rotary1Enabled ?? false
+		self.updown1Enabled = node?.cannedMessageConfig?.updown1Enabled ?? false
+		self.inputbrokerPinA = Int(node?.cannedMessageConfig?.inputbrokerPinA ?? 0)
+		self.inputbrokerPinB = Int(node?.cannedMessageConfig?.inputbrokerPinB ?? 0)
+		self.inputbrokerPinPress = Int(node?.cannedMessageConfig?.inputbrokerPinPress ?? 0)
+		self.inputbrokerEventCw = Int(node?.cannedMessageConfig?.inputbrokerEventCw ?? 0)
+		self.inputbrokerEventCcw = Int(node?.cannedMessageConfig?.inputbrokerEventCcw ?? 0)
+		self.inputbrokerEventPress = Int(node?.cannedMessageConfig?.inputbrokerEventPress ?? 0)
+		self.messages = node?.cannedMessageConfig?.messages ?? ""
+		self.hasChanges = false
+		self.hasMessagesChanges = false
 	}
 }

@@ -535,19 +535,27 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				let newPositionConfig = PositionConfigEntity(context: context)
 				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
+				newPositionConfig.rxGpio = Int32(config.rxGpio)
+				newPositionConfig.txGpio = Int32(config.txGpio)
 				newPositionConfig.fixedPosition = config.fixedPosition
 				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				newPositionConfig.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				newPositionConfig.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
+				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
+				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
+				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
 				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
+				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {
@@ -699,6 +707,45 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	}
 }
 
+func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.ringtone.config %@", comment: "RTTTL Ringtone config received: %@"), String(nodeNum))
+	MeshLogger.log("⛰️ \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save RTTTL Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].rtttlConfig == nil {
+				let newRtttlConfig = RTTTLConfigEntity(context: context)
+				newRtttlConfig.ringtone = ringtone
+				fetchedNode[0].rtttlConfig = newRtttlConfig
+			} else {
+				fetchedNode[0].rtttlConfig?.ringtone = ringtone
+			}
+			do {
+				try context.save()
+				print("💾 Updated RTTTL Ringtone Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data RtttlConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save RTTTL Ringtone Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data RtttlConfigEntity failed: \(nsError)")
+	}
+}
+
 func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))
@@ -719,7 +766,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				let newMQTTConfig = MQTTConfigEntity(context: context)
 				newMQTTConfig.enabled = config.enabled
 				newMQTTConfig.address = config.address
-				newMQTTConfig.address = config.username
+				newMQTTConfig.username = config.username
 				newMQTTConfig.password = config.password
 				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
@@ -727,7 +774,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
 				fetchedNode[0].mqttConfig?.address = config.address
-				fetchedNode[0].mqttConfig?.address = config.username
+				fetchedNode[0].mqttConfig?.username = config.username
 				fetchedNode[0].mqttConfig?.password = config.password
 				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
 				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled

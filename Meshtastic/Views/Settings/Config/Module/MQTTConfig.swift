@@ -38,6 +38,9 @@ struct MQTTConfig: View {
 				} else {
 					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
+						.onAppear {
+							setMqttValues()
+						}
 				}
 			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
@@ -76,8 +79,8 @@ struct MQTTConfig: View {
 						.onChange(of: address, perform: { _ in
 							let totalBytes = address.utf8.count
 							// Only mess with the value if it is too big
-							if totalBytes > 30 {
-								let firstNBytes = Data(username.utf8.prefix(30))
+							if totalBytes > 62 {
+								let firstNBytes = Data(username.utf8.prefix(62))
 								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 									// Set the shortName back to the last place where it was the right size
 									address = maxBytesString
@@ -198,16 +201,10 @@ struct MQTTConfig: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
-			self.enabled = (node?.mqttConfig?.enabled ?? false)
-			self.address = node?.mqttConfig?.address ?? ""
-			self.username = node?.mqttConfig?.username ?? ""
-			self.password = node?.mqttConfig?.password ?? ""
-			self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
-			self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
-			self.hasChanges = false
+			setMqttValues()
 
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
+			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
 				print("empty mqtt module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
@@ -230,5 +227,15 @@ struct MQTTConfig: View {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}
+	}
+	
+	func setMqttValues() {
+		self.enabled = (node?.mqttConfig?.enabled ?? false)
+		self.address = node?.mqttConfig?.address ?? ""
+		self.username = node?.mqttConfig?.username ?? ""
+		self.password = node?.mqttConfig?.password ?? ""
+		self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
+		self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
+		self.hasChanges = false
 	}
 }
