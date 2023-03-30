@@ -67,18 +67,18 @@ struct RangeTestConfig: View {
 						Label("save", systemImage: "square.and.arrow.down.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.disabled(!(node != nil && node!.myInfo?.hasWifi ?? false))
+					.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
 					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 						.font(.caption)
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil || !(node != nil && node!.myInfo?.hasWifi ?? false))
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil || !(node != nil && node?.metadata?.hasWifi ?? false))
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.myInfo?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.metadata?.hasWifi ?? false))
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
