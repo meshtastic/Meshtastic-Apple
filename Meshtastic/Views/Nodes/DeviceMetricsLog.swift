@@ -18,7 +18,10 @@ struct DeviceMetricsLog: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
+		
+
 		NavigationStack {
+
 			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
 			let data = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg)) ?? []
 			if data.count > 0 {
@@ -38,39 +41,32 @@ struct DeviceMetricsLog: View {
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+			let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
+			Text("\(deviceMetrics.count) Readings")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+				
 				// Add a table for mac and ipad
-				Table(node.telemetries?.reversed() as? [TelemetryEntity] ?? []) {
+				//Table(Array(deviceMetrics),id: \.self) {
+				Table(deviceMetrics) {
 
 					TableColumn("battery.level") { dm in
-						if dm.metricsType == 0 {
-							if dm.batteryLevel == 0 {
-								Text("Powered")
-							} else {
-
-								Text("\(String(dm.batteryLevel))%")
-							}
+						if dm.batteryLevel > 100 {
+							Text("Powered")
+						} else {
+							Text("\(String(dm.batteryLevel))%")
 						}
 					}
 					TableColumn("voltage") { dm in
-						if dm.metricsType == 0 {
-							Text("\(String(format: "%.2f", dm.voltage))")
-						}
+						Text("\(String(format: "%.2f", dm.voltage))")
 					}
 					TableColumn("channel.utilization") { dm in
-						if dm.metricsType == 0 {
-							Text(String(format: "%.2f", dm.channelUtilization))
-						}
+						Text(String(format: "%.2f", dm.channelUtilization))
 					}
 					TableColumn("airtime") { dm in
-						if dm.metricsType == 0 {
-							Text("\(String(format: "%.2f", dm.airUtilTx))%")
-						}
+						Text("\(String(format: "%.2f", dm.airUtilTx))%")
 					}
 					TableColumn("timestamp") { dm in
-						if dm.metricsType == 0 {
-							Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
-						}
+						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
 
@@ -102,26 +98,25 @@ struct DeviceMetricsLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (dm: TelemetryEntity) in
-							if dm.metricsType == 0 {
-								GridRow {
-									if dm.batteryLevel == 111 {
-										Text("USB")
-											.font(.caption)
-									} else {
-										Text("\(String(dm.batteryLevel))%")
-											.font(.caption)
-									}
-									Text(String(dm.voltage))
-										.font(.caption)
-									Text("\(String(format: "%.2f", dm.channelUtilization))%")
-										.font(.caption)
-									Text("\(String(format: "%.2f", dm.airUtilTx))%")
-										.font(.caption)
 
-									Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
-										.font(.caption2)
+						ForEach(deviceMetrics) { dm in
+							GridRow {
+								if dm.batteryLevel > 100 {
+									Text("USB")
+										.font(.caption)
+								} else {
+									Text("\(String(dm.batteryLevel))%")
+										.font(.caption)
 								}
+								Text(String(dm.voltage))
+									.font(.caption)
+								Text("\(String(format: "%.2f", dm.channelUtilization))%")
+									.font(.caption)
+								Text("\(String(format: "%.2f", dm.airUtilTx))%")
+									.font(.caption)
+
+								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
+									.font(.caption2)
 							}
 						}
 					}
