@@ -19,14 +19,17 @@ struct DeviceMetricsLog: View {
 
 	var body: some View {
 		
+		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
+		let batteryChartData = deviceMetrics
+			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
+			.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
-
-			let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
-			let data = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0 && time !=nil && time >= %@", oneDayAgo! as CVarArg)) ?? []
-			if data.count > 0 {
+			
+				if batteryChartData.count > 0 {
 				GroupBox(label: 	Label("battery.level.trend", systemImage: "battery.100")) {
-					Chart(data.array as? [TelemetryEntity] ?? [], id: \.self) {
+					Chart(batteryChartData, id: \.self) {
 						LineMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
@@ -41,7 +44,7 @@ struct DeviceMetricsLog: View {
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-			let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
+			//let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 			Text("\(deviceMetrics.count) Readings")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				
@@ -102,7 +105,7 @@ struct DeviceMetricsLog: View {
 						ForEach(deviceMetrics) { dm in
 							GridRow {
 								if dm.batteryLevel > 100 {
-									Text("USB")
+									Text("PWD")
 										.font(.caption)
 								} else {
 									Text("\(String(dm.batteryLevel))%")
