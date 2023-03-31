@@ -766,23 +766,25 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 							guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 								return
 							}
-							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-								if channel.index == newMessage.channel {
-									context.refresh(channel, mergeChanges: true)
-								}
-
-								if channel.index == newMessage.channel && !channel.mute {
-									// Create an iOS Notification for the received private channel message and schedule it immediately
-									let manager = LocalNotificationManager()
-									manager.notifications = [
-										Notification(
-											id: ("notification.id.\(newMessage.messageId)"),
-											title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
-											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-											content: messageText)
-									]
-									manager.schedule()
-									print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+							if !fetchedMyInfo.isEmpty {
+								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+									if channel.index == newMessage.channel {
+										context.refresh(channel, mergeChanges: true)
+									}
+									
+									if channel.index == newMessage.channel && !channel.mute {
+										// Create an iOS Notification for the received private channel message and schedule it immediately
+										let manager = LocalNotificationManager()
+										manager.notifications = [
+											Notification(
+												id: ("notification.id.\(newMessage.messageId)"),
+												title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+												content: messageText)
+										]
+										manager.schedule()
+										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									}
 								}
 							}
 						} catch {

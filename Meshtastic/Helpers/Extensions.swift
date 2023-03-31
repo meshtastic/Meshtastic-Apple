@@ -20,6 +20,22 @@ extension CLLocationCoordinate2D {
 	}
 }
 
+extension Color {
+	func isLight() -> Bool {
+		guard let components = cgColor?.components, components.count > 2 else {return false}
+		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+		return (brightness > 0.5)
+	}
+}
+
+extension UIColor {
+	func isLight() -> Bool {
+		guard let components = cgColor.components, components.count > 2 else {return false}
+		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+		return (brightness > 0.5)
+	}
+}
+
 extension Data {
 	var macAddressString: String {
 		let mac: String = reduce("") {$0 + String(format: "%02x:", $1)}
@@ -69,6 +85,21 @@ extension Int {
 		} else {
 			return 1 + (self/10).numberOfDigits()
 		}
+	}
+}
+
+
+
+extension Int64 {
+
+	func uiColor() -> UIColor {
+		let color = UIColor(
+			red: CGFloat((self & 0xFF0000) >> 16) / 255.0,
+			green: CGFloat((self & 0x00FF00) >> 8) / 255.0,
+			blue: CGFloat(self & 0x0000FF) / 255.0,
+			alpha: CGFloat(1.0))
+	
+		return color
 	}
 }
 

@@ -72,7 +72,7 @@ struct RangeTestConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil || !(node != nil && node?.metadata?.hasWifi ?? false))
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil || !(node != nil && node?.metadata?.hasWifi ?? false))
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {

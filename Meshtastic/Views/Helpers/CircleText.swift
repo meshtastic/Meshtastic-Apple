@@ -11,6 +11,7 @@ struct CircleText: View {
 	var circleSize: CGFloat? = 60
 	var fontSize: CGFloat? = 20
 	var brightness: Double? = 0
+	var textColor: Color? = .white
 
     var body: some View {
 
@@ -21,7 +22,7 @@ struct CircleText: View {
                 .fill(color)
 				.brightness(brightness ?? 0)
                 .frame(width: circleSize, height: circleSize)
-			Text(text).textCase(.uppercase).font(font).foregroundColor(.white).fixedSize()
+			Text(text).textCase(.uppercase).font(font).foregroundColor(textColor).fixedSize()
                 .frame(width: circleSize, height: circleSize, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).offset(x: 0, y: 0)
         }
     }

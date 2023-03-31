@@ -145,7 +145,7 @@ struct NodeDetail: View {
 						if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 							HStack {
 								VStack(alignment: .center) {
-									CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 75, fontSize: 26)
+									CircleText(text: node.user?.shortName ?? "???", color: Color(node.num.uiColor()), circleSize: 75, fontSize: 26, textColor: node.num.uiColor().isLight() ? .black : .white )
 								}
 								Divider()
 								VStack {

@@ -150,7 +150,7 @@ struct Contacts: View {
 								HStack {
 									VStack {
 										HStack {
-											CircleText(text: user.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
+											CircleText(text: user.shortName ?? "???", color: Color(user.num.uiColor()), circleSize: 52, fontSize: 16, textColor: user.num.uiColor().isLight() ? .black : .white)
 												.padding(.trailing, 5)
 											VStack {
 												HStack {

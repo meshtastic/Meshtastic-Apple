@@ -21,25 +21,67 @@ struct DeviceMetricsLog: View {
 		
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
-		let batteryChartData = deviceMetrics
+		let chartData = deviceMetrics
 			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
 			.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
 			
-				if batteryChartData.count > 0 {
+				if chartData.count > 0 {
+					
 				GroupBox(label: 	Label("battery.level.trend", systemImage: "battery.100")) {
-					Chart(batteryChartData, id: \.self) {
-						LineMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.batteryLevel)
-						)
+
+					Chart(chartData, id: \.self) {
+												
 						PointMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							x: .value("Time", $0.time!, unit: .hour),
+							y: .value("Value", $0.channelUtilization)
+						)
+						.foregroundStyle(.green)
+						
+						LineMark(
+							x: .value("Time", $0.time!, unit: .hour),
+							y: .value("Value", $0.channelUtilization)
+						)
+						.foregroundStyle(.green)
+						.interpolationMethod(.catmullRom)
+						
+						PointMark(
+							x: .value("Time", $0.time!, unit: .hour),
 							y: .value("Value", $0.batteryLevel)
 						)
+						.foregroundStyle(.blue)
+
+						LineMark(
+							x: .value("Time", $0.time!, unit: .hour),
+							y: .value("Value", $0.batteryLevel)
+						)
+						.foregroundStyle(.blue)
+						
+						PointMark(
+							//x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							x: .value("Time", $0.time!, unit: .hour),
+							y: .value("Value", $0.airUtilTx)
+						)
+						.foregroundStyle(.red)
+						
+						LineMark(
+							x: .value("Time", $0.time!, unit: .hour),
+							y: .value("Value", $0.airUtilTx)
+						)
+						.foregroundStyle(.red)
 					}
-					.frame(height: 150)
+					// Set color for each data in the chart
+				   .chartForegroundStyleScale([
+						"Battery Level" : .blue,
+						"Channel Utilization": .green,
+						"Airtime": .red
+				   ])
+				   .chartLegend(position: .automatic, alignment: .bottom)
+				   .chartXAxis {
+					   AxisMarks(values: .stride(by: .hour))
+				   }
+				   //.frame(height: 200)
 				}
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
