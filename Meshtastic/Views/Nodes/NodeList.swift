@@ -26,8 +26,6 @@ struct NodeList: View {
 	@State private var selection: NodeInfoEntity? // Nothing selected by default.
 
     var body: some View {
-		
-
 
 		NavigationSplitView {
 			List(nodes, id: \.self, selection: $selection) { node in				
@@ -38,7 +36,7 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: Color(node.num.uiColor()), circleSize: 52, fontSize: 16, brightness: 0.0, textColor: node.num.uiColor().isLight() ? .black : .white)
+								CircleText(text: node.user?.shortName ?? "???", color: Color(node.num.uiColor()), circleSize: 65, fontSize: 20, brightness: 0.0, textColor: node.num.uiColor().isLight() ? .black : .white)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)

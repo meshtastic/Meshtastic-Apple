@@ -51,7 +51,7 @@
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";
 "connected.radio"="Connected Radio";
-"connected"="Currently Connected";
+"connected"="Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
 "copy"="Copy";

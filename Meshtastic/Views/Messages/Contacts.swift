@@ -45,7 +45,7 @@ struct Contacts: View {
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 									VStack(alignment: .leading) {
 										HStack {
-											CircleText(text: String(channel.index), color: .accentColor, circleSize: 52, fontSize: 40, brightness: 0.1)
+											CircleText(text: String(channel.index), color: .accentColor, circleSize: 60, fontSize: 42, brightness: 0.1)
 												.padding(.trailing, 5)
 											VStack {
 												HStack {
@@ -150,7 +150,7 @@ struct Contacts: View {
 								HStack {
 									VStack {
 										HStack {
-											CircleText(text: user.shortName ?? "???", color: Color(user.num.uiColor()), circleSize: 52, fontSize: 16, textColor: user.num.uiColor().isLight() ? .black : .white)
+											CircleText(text: user.shortName ?? "???", color: Color(user.num.uiColor()), circleSize: 60, fontSize: 18, textColor: user.num.uiColor().isLight() ? .black : .white)
 												.padding(.trailing, 5)
 											VStack {
 												HStack {

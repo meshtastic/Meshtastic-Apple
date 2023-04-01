@@ -88,20 +88,37 @@ extension Int {
 	}
 }
 
-
-
 extension Int64 {
 
 	func uiColor() -> UIColor {
 		let color = UIColor(
-			red: CGFloat((self & 0xFF0000) >> 16) / 255.0,
-			green: CGFloat((self & 0x00FF00) >> 8) / 255.0,
-			blue: CGFloat(self & 0x0000FF) / 255.0,
+			red: CGFloat((UInt32(self) & 0xFF0000) >> 16) / 255.0,
+			green: CGFloat((UInt32(self) & 0x00FF00) >> 8) / 255.0,
+			blue: CGFloat(UInt32(self) & 0x0000FF) / 255.0,
 			alpha: CGFloat(1.0))
-	
+
 		return color
 	}
 }
+
+//extension Int64 {
+//
+//	func uiColor() -> UIColor {
+//
+//		let bytes = withUnsafeBytes(of: UInt32(self).littleEndian, Array.init)
+//		let redBytes = bytes[0]
+//		let greenBytes = bytes[1]
+//		let blueBytes = bytes[2]
+//		let color = UIColor(
+//
+//			red: CGFloat(redBytes),
+//			green: CGFloat(greenBytes),
+//			blue: CGFloat(blueBytes),
+//			alpha: CGFloat(1.0))
+//
+//		return color
+//	}
+//}
 
 extension UIImage {
 	func rotate(radians: Float) -> UIImage? {

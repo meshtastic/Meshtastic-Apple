@@ -259,7 +259,7 @@ struct NodeDetail: View {
 							HStack {
 
 								VStack(alignment: .center) {
-									CircleText(text: node.user?.shortName ?? "???", color: .accentColor)
+									CircleText(text: node.user?.shortName ?? "???", color: Color(node.num.uiColor()), textColor: node.num.uiColor().isLight() ? .black : .white )
 								}
 								Divider()
 								VStack {
