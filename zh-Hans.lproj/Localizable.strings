@@ -18,7 +18,6 @@
 "available.radios"="可用的电台";
 "automatic.detection"="自动识别";
 "battery.level"="电池电量";
-"battery.level.trend"="电池电量趋势";
 "ble.name"="蓝牙名称";
 "ble.connection.timeout %d %@"="尝试连接%@失败，你可能需要在系统设置的蓝牙选项中忽略该电台。";
 "ble.errorcode.6 %@"="%@ 如果在首选电台的旁边，App 将会自动重连。";

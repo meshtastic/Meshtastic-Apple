@@ -19,7 +19,7 @@ struct DeviceMetricsLog: View {
 
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -6, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
 			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
@@ -29,47 +29,45 @@ struct DeviceMetricsLog: View {
 			
 				if chartData.count > 0 {
 					
-				GroupBox(label: 	Label("battery.level.trend", systemImage: "battery.100")) {
+					GroupBox() {//label: 	Label("battery.level.trend", systemImage: "battery.100")) {
 
 					Chart(chartData, id: \.self) {
-												
-						PointMark(
-							x: .value("Time", $0.time!, unit: .hour),
-							y: .value("Value", $0.channelUtilization)
-						)
-						.foregroundStyle(.green)
 						
 						LineMark(
-							x: .value("Time", $0.time!, unit: .hour),
-							y: .value("Value", $0.channelUtilization)
-						)
-						.foregroundStyle(.green)
-						.interpolationMethod(.catmullRom)
-						
-						PointMark(
-							x: .value("Time", $0.time!, unit: .hour),
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
 						)
 						.foregroundStyle(.blue)
-
-						LineMark(
-							x: .value("Time", $0.time!, unit: .hour),
+						PointMark(
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
 						)
 						.foregroundStyle(.blue)
 						
+//						LineMark(
+//							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+//							y: .value("Value", $0.channelUtilization)
+//						)
+//						.foregroundStyle(.green)
+//						.interpolationMethod(.catmullRom)
 						PointMark(
-							//x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							x: .value("Time", $0.time!, unit: .hour),
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							y: .value("Value", $0.channelUtilization)
+						)
+						.foregroundStyle(.green)
+						
+//						LineMark(
+//							x: .value("Time", $0.time!, unit: .hour),
+//							y: .value("Value", $0.airUtilTx)
+//						)
+//						.foregroundStyle(.red)
+						PointMark(
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							//x: .value("Time", $0.time!, unit: .hour),
 							y: .value("Value", $0.airUtilTx)
 						)
 						.foregroundStyle(.red)
 						
-						LineMark(
-							x: .value("Time", $0.time!, unit: .hour),
-							y: .value("Value", $0.airUtilTx)
-						)
-						.foregroundStyle(.red)
 					}
 					// Set color for each data in the chart
 				   .chartForegroundStyleScale([
@@ -78,9 +76,9 @@ struct DeviceMetricsLog: View {
 						"Airtime": .red
 				   ])
 				   .chartLegend(position: .automatic, alignment: .bottom)
-				   .chartXAxis {
-					   AxisMarks(values: .stride(by: .hour))
-				   }
+//				   .chartXAxis {
+//					   AxisMarks(values: .stride(by: .hour))
+//				   }
 				   //.frame(height: 200)
 				}
 			}
