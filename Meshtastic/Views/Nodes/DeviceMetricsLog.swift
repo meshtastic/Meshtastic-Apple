@@ -19,7 +19,7 @@ struct DeviceMetricsLog: View {
 
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -6, to: Date())
+		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -8, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
 			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
@@ -28,8 +28,7 @@ struct DeviceMetricsLog: View {
 		NavigationStack {
 			
 				if chartData.count > 0 {
-					
-					GroupBox() {//label: 	Label("battery.level.trend", systemImage: "battery.100")) {
+					GroupBox(label: Label("8 Hour Trend - \(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
 					Chart(chartData, id: \.self) {
 						
@@ -37,55 +36,33 @@ struct DeviceMetricsLog: View {
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
 						)
-						.foregroundStyle(.blue)
-						PointMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.batteryLevel)
-						)
-						.foregroundStyle(.blue)
-						
-//						LineMark(
-//							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-//							y: .value("Value", $0.channelUtilization)
-//						)
-//						.foregroundStyle(.green)
-//						.interpolationMethod(.catmullRom)
+						.interpolationMethod(.linear)
+						.foregroundStyle(.indigo)
+
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.channelUtilization)
 						)
 						.foregroundStyle(.green)
 						
-//						LineMark(
-//							x: .value("Time", $0.time!, unit: .hour),
-//							y: .value("Value", $0.airUtilTx)
-//						)
-//						.foregroundStyle(.red)
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							//x: .value("Time", $0.time!, unit: .hour),
 							y: .value("Value", $0.airUtilTx)
 						)
-						.foregroundStyle(.red)
+						.foregroundStyle(.orange)
 						
 					}
 					// Set color for each data in the chart
 				   .chartForegroundStyleScale([
 						"Battery Level" : .blue,
-						"Channel Utilization": .green,
-						"Airtime": .red
+						"Channel Utilization": .mint,
+						"Airtime": .orange
 				   ])
 				   .chartLegend(position: .automatic, alignment: .bottom)
-//				   .chartXAxis {
-//					   AxisMarks(values: .stride(by: .hour))
-//				   }
-				   //.frame(height: 200)
 				}
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-			//let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
-			Text("\(deviceMetrics.count) Readings")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				
 				// Add a table for mac and ipad
