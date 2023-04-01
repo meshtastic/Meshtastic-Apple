@@ -58,7 +58,7 @@ struct UserMessageList: View {
 								HStack(alignment: .top) {
 									if currentUser { Spacer(minLength: 50) }
 									if !currentUser {
-										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray))
+										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
 											.padding(.all, 5)
 											.offset(y: -5)
 									}
