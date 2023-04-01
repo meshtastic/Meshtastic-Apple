@@ -197,7 +197,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = positionAnnotation.nodePosition?.num.uiColor()
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)) 
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}
@@ -352,7 +352,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					let titleString = routePolyline.title ?? "0"
 					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = Int64(titleString)?.uiColor()
+					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
 					renderer.lineWidth = 8
 					return renderer
 				}

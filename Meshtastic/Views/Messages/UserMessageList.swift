@@ -58,7 +58,7 @@ struct UserMessageList: View {
 								HStack(alignment: .top) {
 									if currentUser { Spacer(minLength: 50) }
 									if !currentUser {
-										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
+										CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray))
 											.padding(.all, 5)
 											.offset(y: -5)
 									}
@@ -360,7 +360,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: Color(user.num.uiColor()), circleSize: 44, fontSize: 14, textColor: user.num.uiColor().isLight() ? .black : .white ).fixedSize()
+					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white ).fixedSize()
 					Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
 				}
 			}

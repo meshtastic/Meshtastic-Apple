@@ -12,7 +12,7 @@ extension Character {
 extension CLLocationCoordinate2D {
 	/// Returns distance from coordianate in meters.
 	/// - Parameter from: coordinate which will be used as end point.
-	/// - Returns: Returns distance in meters.
+	/// - Returns: distance in meters.
 	func distance(from: CLLocationCoordinate2D) -> CLLocationDistance {
 		let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
 		let to = CLLocation(latitude: self.latitude, longitude: self.longitude)
@@ -21,6 +21,8 @@ extension CLLocationCoordinate2D {
 }
 
 extension Color {
+	///  Returns a boolean for a SwiftUI Color to determine what color of text to use
+	/// - Returns: true if the color is light
 	func isLight() -> Bool {
 		guard let components = cgColor?.components, components.count > 2 else {return false}
 		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
@@ -29,10 +31,21 @@ extension Color {
 }
 
 extension UIColor {
+	///  Returns a boolean for a UIColor to determine what color of text to use
+	/// - Returns: true if the color is light
 	func isLight() -> Bool {
 		guard let components = cgColor.components, components.count > 2 else {return false}
 		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
 		return (brightness > 0.5)
+	}
+	///  Returns a UIColor from a UInt32 value
+	/// - Parameter hex: UInt32 value  to convert to a color
+	/// - Returns: UIColor
+	convenience init(hex: UInt32) {
+		let red = CGFloat((hex & 0xFF0000) >> 16)
+		let green = CGFloat((hex & 0x00FF00) >> 8)
+		let blue = CGFloat((hex & 0x0000FF))
+		self.init(red: red/255.0, green: green/255.0, blue: blue/255.0, alpha: 1.0)
 	}
 }
 
@@ -87,38 +100,6 @@ extension Int {
 		}
 	}
 }
-
-extension Int64 {
-
-	func uiColor() -> UIColor {
-		let color = UIColor(
-			red: CGFloat((UInt32(self) & 0xFF0000) >> 16) / 255.0,
-			green: CGFloat((UInt32(self) & 0x00FF00) >> 8) / 255.0,
-			blue: CGFloat(UInt32(self) & 0x0000FF) / 255.0,
-			alpha: CGFloat(1.0))
-
-		return color
-	}
-}
-
-//extension Int64 {
-//
-//	func uiColor() -> UIColor {
-//
-//		let bytes = withUnsafeBytes(of: UInt32(self).littleEndian, Array.init)
-//		let redBytes = bytes[0]
-//		let greenBytes = bytes[1]
-//		let blueBytes = bytes[2]
-//		let color = UIColor(
-//
-//			red: CGFloat(redBytes),
-//			green: CGFloat(greenBytes),
-//			blue: CGFloat(blueBytes),
-//			alpha: CGFloat(1.0))
-//
-//		return color
-//	}
-//}
 
 extension UIImage {
 	func rotate(radians: Float) -> UIImage? {
