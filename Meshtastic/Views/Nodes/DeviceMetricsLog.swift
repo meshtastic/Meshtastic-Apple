@@ -37,7 +37,7 @@ struct DeviceMetricsLog: View {
 							y: .value("Value", $0.batteryLevel)
 						)
 						.interpolationMethod(.linear)
-						.foregroundStyle(.indigo)
+						.foregroundStyle(.blue)
 
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
@@ -55,7 +55,7 @@ struct DeviceMetricsLog: View {
 					// Set color for each data in the chart
 				   .chartForegroundStyleScale([
 						"Battery Level" : .blue,
-						"Channel Utilization": .mint,
+						"Channel Utilization": .green,
 						"Airtime": .orange
 				   ])
 				   .chartLegend(position: .automatic, alignment: .bottom)
