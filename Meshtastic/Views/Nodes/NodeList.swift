@@ -71,6 +71,15 @@ struct NodeList: View {
 										LastHeardText(lastHeard: node.lastHeard)
 											.font(.subheadline)
 									}
+									if node.channel > 0 {
+										HStack(alignment: .bottom) {
+											Image(systemName: "fibrechannel")
+												.font(.title3)
+												.symbolRenderingMode(.hierarchical)
+											Text("Channel: \(node.channel)")
+												.font(.subheadline)
+										}
+									}
 								}
 								.frame(maxWidth: .infinity, alignment: .leading)
 							}
