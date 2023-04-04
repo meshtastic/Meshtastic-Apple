@@ -125,7 +125,7 @@ struct CannedMessagesConfig: View {
 				.disabled(configPreset > 0)
 				Section(header: Text("Inputs")) {
 					Picker("Pin A", selection: $inputbrokerPinA) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -137,7 +137,7 @@ struct CannedMessagesConfig: View {
 					Text("GPIO pin for rotary encoder A port.")
 						.font(.caption)
 					Picker("Pin B", selection: $inputbrokerPinB) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -149,7 +149,7 @@ struct CannedMessagesConfig: View {
 					Text("GPIO pin for rotary encoder B port.")
 						.font(.caption)
 					Picker("Press Pin", selection: $inputbrokerPinPress) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {

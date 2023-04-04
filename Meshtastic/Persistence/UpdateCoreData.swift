@@ -138,7 +138,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].num = Int64(packet.from)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			fetchedNode[0].snr = packet.rxSnr
-			//fetchedNode[0].channel = Int32(packet.channel)
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				

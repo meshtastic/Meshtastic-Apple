@@ -64,13 +64,6 @@ struct NodeList: View {
 											}
 										}
 									}
-									HStack(alignment: .bottom) {
-										Image(systemName: "clock.badge.checkmark.fill")
-											.font(.title3)
-											.symbolRenderingMode(.hierarchical)
-										LastHeardText(lastHeard: node.lastHeard)
-											.font(.subheadline)
-									}
 									if node.channel > 0 {
 										HStack(alignment: .bottom) {
 											Image(systemName: "fibrechannel")
@@ -79,6 +72,13 @@ struct NodeList: View {
 											Text("Channel: \(node.channel)")
 												.font(.subheadline)
 										}
+									}
+									HStack(alignment: .bottom) {
+										Image(systemName: "clock.badge.checkmark.fill")
+											.font(.title3)
+											.symbolRenderingMode(.hierarchical)
+										LastHeardText(lastHeard: node.lastHeard)
+											.font(.subheadline)
 									}
 								}
 								.frame(maxWidth: .infinity, alignment: .leading)

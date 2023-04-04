@@ -100,7 +100,7 @@ struct DeviceConfig: View {
 				Section(header: Text("GPIO")) {
 					
 					Picker("Button GPIO", selection: $buttonGPIO) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -110,7 +110,7 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
