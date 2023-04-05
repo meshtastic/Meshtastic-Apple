@@ -43,6 +43,7 @@
         <attribute name="buttonGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="buzzerGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="doubleTapAsButtonPress" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="nodeInfoBroadcastSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="rebroadcastMode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="role" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -149,6 +150,7 @@
         <attribute name="encryptionEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="jsonEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="password" optional="YES" attributeType="String" maxValueString="30"/>
+        <attribute name="tlsEnabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="username" optional="YES" attributeType="String" maxValueString="30"/>
         <relationship name="mqttConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="mqttConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
@@ -253,6 +255,7 @@
         <relationship name="rangeTestConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="rangeTestConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="RouteEntity" representedClassName="RouteEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="color" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
