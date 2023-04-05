@@ -16,8 +16,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
-	let lineColors: [UIColor] = [UIColor.systemIndigo, UIColor.yellow, UIColor.white, UIColor.red, UIColor.purple, UIColor.orange, UIColor.magenta, UIColor.lightGray, UIColor.green, UIColor.gray, UIColor.systemMint, UIColor.darkGray, UIColor.cyan, UIColor.brown, UIColor.blue, UIColor.black, UIColor.systemPink,
-		UIColor.systemTeal]
 	// Parameters
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
@@ -142,7 +140,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						return position.nodeCoordinate!
 					})
 					let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-					polyline.title = "\(String(position.nodePosition?.num ?? 0))-\(String(lineIndex))"
+					polyline.title = "\(String(position.nodePosition?.num ?? 0))"
 					mapView.addOverlay(polyline)
 					lineIndex += 1
 					// There are 18 colors for lines, start over if we are at index 17
@@ -199,7 +197,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = UIColor(.indigo)
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)) 
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}
@@ -351,10 +349,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			} else {
 				if let routePolyline = overlay as? MKPolyline {
 					
-					let titleString = routePolyline.title ?? "None-0"
+					let titleString = routePolyline.title ?? "0"
 					let index = Int(titleString.components(separatedBy: "-").last ?? "0")
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = parent.lineColors[index ?? 0]
+					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
 					renderer.lineWidth = 8
 					return renderer
 				}
