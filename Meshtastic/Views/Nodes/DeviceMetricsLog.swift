@@ -15,45 +15,71 @@ struct DeviceMetricsLog: View {
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
+	
+	@State private var batteryChartColor: Color = .blue
+	@State private var airtimeChartColor: Color = .orange
+	@State private var channelUtilizationChartColor: Color = .green
 	var node: NodeInfoEntity
 	
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -12, to: Date())
+		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
-			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
-			.sorted { $0.time! < $1.time! }
-		
+				.filter { $0.time != nil && $0.time! >= oneDayAgo! }
+				.sorted { $0.time! < $1.time! }
+
 		NavigationStack {
 			
 			if chartData.count > 0 {
-				GroupBox(label: Label("8 Hour Trend - \(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+				GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 					
-					Chart(chartData, id: \.self) {
+					Chart {
 						
-						LineMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.batteryLevel)
-						)
-						.interpolationMethod(.linear)
-						.foregroundStyle(.blue)
-						PointMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.batteryLevel)
-						)
-						.foregroundStyle(.blue)
-						PointMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.channelUtilization)
-						)
-						.foregroundStyle(.green)
-						PointMark(
-							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
-							y: .value("Value", $0.airUtilTx)
-						)
-						.foregroundStyle(.orange)
+						ForEach(chartData, id: \.self) { point in
+							
+							Plot {
+								LineMark(
+									x: .value("x", point.time!),
+									y: .value("y", point.batteryLevel)
+								)
+							}
+							.accessibilityLabel("Line Series")
+							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
+							.foregroundStyle(batteryChartColor)
+							
+							Plot {
+								PointMark(
+									x: .value("x", point.time!),
+									y: .value("y", point.channelUtilization)
+								)
+							}
+							.accessibilityLabel("Line Series")
+							.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
+							.foregroundStyle(channelUtilizationChartColor)
+							
+							RuleMark(y: .value("Limit", 10))
+								.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
+								.foregroundStyle(airtimeChartColor)
+							
+							Plot {
+								PointMark(
+									x: .value("x", point.time!),
+									y: .value("y", point.airUtilTx)
+								)
+							}
+							.accessibilityLabel("Line Series")
+							.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
+							.foregroundStyle(airtimeChartColor)
+						}
 					}
+					.chartXAxis(content: {
+						AxisMarks(position: .top)
+					})
+					//.chartYAxis(.hidden)
+					//.frame(height: 400)
+					//.padding()
+					.chartXAxis(.automatic)
 					.chartForegroundStyleScale([
 						"Battery Level" : .blue,
 						"Channel Utilization": .green,
@@ -61,7 +87,7 @@ struct DeviceMetricsLog: View {
 					])
 					.chartLegend(position: .automatic, alignment: .bottom)
 				}
-				.frame(height: 225)
+				.frame(minHeight: 250)
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
