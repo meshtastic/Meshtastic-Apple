@@ -31,13 +31,28 @@ extension Color {
 }
 
 extension UIColor {
-	///  Returns a boolean for a UIColor to determine what color of text to use
+	
+	///  Returns a boolean indicating if a color is light
 	/// - Returns: true if the color is light
 	func isLight() -> Bool {
 		guard let components = cgColor.components, components.count > 2 else {return false}
 		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
 		return (brightness > 0.5)
 	}
+	
+	///  Returns a UInt32 from a UIColor
+	/// - Returns: UInt32
+	var hex: UInt32 {
+		   var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+		   getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+		   var value: UInt32 = 0
+		   value += UInt32(1.0 * 255) << 24
+		   value += UInt32(red   * 255) << 16
+		   value += UInt32(green * 255) << 8
+		   value += UInt32(blue  * 255)
+		   return value
+	}
+	
 	///  Returns a UIColor from a UInt32 value
 	/// - Parameter hex: UInt32 value  to convert to a color
 	/// - Returns: UIColor
