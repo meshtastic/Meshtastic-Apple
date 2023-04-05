@@ -76,9 +76,6 @@ struct DeviceMetricsLog: View {
 					.chartXAxis(content: {
 						AxisMarks(position: .top)
 					})
-					//.chartYAxis(.hidden)
-					//.frame(height: 400)
-					//.padding()
 					.chartXAxis(.automatic)
 					.chartForegroundStyleScale([
 						"Battery Level" : .blue,
