@@ -36,7 +36,7 @@ struct DeviceMetricsLog: View {
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
 						)
-						.interpolationMethod(.cardinal)
+						.interpolationMethod(.linear)
 						.foregroundStyle(.blue)
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),

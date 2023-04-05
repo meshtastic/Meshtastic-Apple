@@ -165,3 +165,25 @@ extension String {
 		}
 	}
 }
+
+extension UserDefaults {
+
+	enum Keys: String, CaseIterable {
+		case meshtasticUsername
+		case preferredPeripheralId
+		case provideLocation
+		case provideLocationInterval
+		case keyboardType
+		case meshMapType
+		case meshMapCenteringMode
+		case meshMapRecentering
+		case meshMapCustomTileServer
+		case meshMapUserTrackingMode
+		case meshMapShowNodeHistory
+		case meshMapShowRouteLines
+	}
+
+	func reset() {
+		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
+	}
+}
