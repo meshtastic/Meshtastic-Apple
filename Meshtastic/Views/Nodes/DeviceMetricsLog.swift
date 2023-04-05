@@ -8,58 +8,60 @@ import SwiftUI
 import Charts
 
 struct DeviceMetricsLog: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-
+	
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
 	var node: NodeInfoEntity
-
+	
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -8, to: Date())
+		let oneDayAgo = Calendar.current.date(byAdding: .hour, value: -12, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
 			.filter { $0.time != nil && $0.time! >= oneDayAgo! }
 			.sorted { $0.time! < $1.time! }
-
+		
 		NavigationStack {
 			
-				if chartData.count > 0 {
-					GroupBox(label: Label("8 Hour Trend - \(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-
+			if chartData.count > 0 {
+				GroupBox(label: Label("8 Hour Trend - \(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					
 					Chart(chartData, id: \.self) {
 						
 						LineMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.batteryLevel)
 						)
-						.interpolationMethod(.linear)
+						.interpolationMethod(.cardinal)
 						.foregroundStyle(.blue)
-
+						PointMark(
+							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
+							y: .value("Value", $0.batteryLevel)
+						)
+						.foregroundStyle(.blue)
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.channelUtilization)
 						)
 						.foregroundStyle(.green)
-						
 						PointMark(
 							x: .value("Hour", $0.time!.formattedDate(format: "ha")),
 							y: .value("Value", $0.airUtilTx)
 						)
 						.foregroundStyle(.orange)
-						
 					}
-					// Set color for each data in the chart
-				   .chartForegroundStyleScale([
+					.chartForegroundStyleScale([
 						"Battery Level" : .blue,
 						"Channel Utilization": .green,
 						"Airtime": .orange
-				   ])
-				   .chartLegend(position: .automatic, alignment: .bottom)
+					])
+					.chartLegend(position: .automatic, alignment: .bottom)
 				}
+				.frame(height: 225)
 			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
@@ -68,7 +70,6 @@ struct DeviceMetricsLog: View {
 				// Add a table for mac and ipad
 				//Table(Array(deviceMetrics),id: \.self) {
 				Table(deviceMetrics) {
-
 					TableColumn("battery.level") { dm in
 						if dm.batteryLevel > 100 {
 							Text("Powered")
@@ -89,10 +90,8 @@ struct DeviceMetricsLog: View {
 						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
-
 			} else {
 				ScrollView {
-
 					let columns = [
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
@@ -118,7 +117,6 @@ struct DeviceMetricsLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-
 						ForEach(deviceMetrics) { dm in
 							GridRow {
 								if dm.batteryLevel > 100 {
@@ -134,7 +132,6 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.caption)
-
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 									.font(.caption2)
 							}
@@ -197,7 +194,6 @@ struct DeviceMetricsLog: View {
 				if case .success = result {
 					print("Device metrics log download succeeded.")
 					self.isExporting = false
-
 				} else {
 					print("Device metrics log download failed: \(result).")
 				}
