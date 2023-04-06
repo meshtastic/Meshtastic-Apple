@@ -121,9 +121,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				.filter { $0.latest == true }
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			
 			
 			if annotationCount != mapView.annotations.count {
+				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
 				if showRouteLines {
