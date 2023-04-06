@@ -33,6 +33,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>INIntentsSupported</key>
+	<array>
+		<string>Intent</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
@@ -48,7 +52,7 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used to connect an iPhone to a user&apos;s meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<string>Bluetooth is used to connect an iPhone to a user's meshtastic device to allow text messaging and location data for the mesh network.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to share channels using a QR Code</string>
 	<key>NSLocationUsageDescription</key>
@@ -70,10 +74,10 @@
 				<dict>
 					<key>UISceneClassName</key>
 					<string>CPTemplateApplicationScene</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(SWIFT_MODULE_NAME).ExampleCarPlaySceneDelegate</string>
 					<key>UISceneConfigurationName</key>
 					<string>CarPlay scene</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(SWIFT_MODULE_NAME).ExampleCarPlaySceneDelegate</string>
 				</dict>
 			</array>
 		</dict>

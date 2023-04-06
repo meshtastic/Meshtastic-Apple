@@ -114,6 +114,13 @@
 		DDC94FCE29CF55310082EA6E /* RtttlConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */; };
 		DDCDC6CB29481FCC004C1DDA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DDCDC6CD29481FCC004C1DDA /* Localizable.strings */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
+		DDCEBFD329DE921000E4ACF2 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDCEBFD229DE921000E4ACF2 /* Intents.framework */; };
+		DDCEBFD629DE921000E4ACF2 /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCEBFD529DE921000E4ACF2 /* IntentHandler.swift */; };
+		DDCEBFDE29DE921000E4ACF2 /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDCEBFDD29DE921000E4ACF2 /* IntentsUI.framework */; };
+		DDCEBFE129DE921000E4ACF2 /* IntentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCEBFE029DE921000E4ACF2 /* IntentViewController.swift */; };
+		DDCEBFE429DE921000E4ACF2 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DDCEBFE229DE921000E4ACF2 /* MainInterface.storyboard */; };
+		DDCEBFE829DE921000E4ACF2 /* MeshtasticIntentsUI.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DDCEBFDC29DE921000E4ACF2 /* MeshtasticIntentsUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DDCEBFEC29DE921100E4ACF2 /* MeshtasticIntents.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DDCEBFD129DE921000E4ACF2 /* MeshtasticIntents.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DDD3BBD5292D763200D609B3 /* MeshtasticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */; };
 		DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD6EEAE29BC024700383354 /* Firmware.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
@@ -149,6 +156,20 @@
 			remoteGlobalIDString = DDC2E15326CE248E0042C5E4;
 			remoteInfo = MeshtasticClient;
 		};
+		DDCEBFE629DE921000E4ACF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDCEBFDB29DE921000E4ACF2;
+			remoteInfo = MeshtasticIntentsUI;
+		};
+		DDCEBFEA29DE921100E4ACF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDCEBFD029DE921000E4ACF2;
+			remoteInfo = MeshtasticIntents;
+		};
 		DDDE5A0129AF163E00490C6C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DDC2E14C26CE248E0042C5E4 /* Project object */;
@@ -166,6 +187,8 @@
 			dstSubfolderSpec = 13;
 			files = (
 				DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */,
+				DDCEBFEC29DE921100E4ACF2 /* MeshtasticIntents.appex in Embed Foundation Extensions */,
+				DDCEBFE829DE921000E4ACF2 /* MeshtasticIntentsUI.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -295,6 +318,17 @@
 		DDCDC6CC29481FCC004C1DDA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDCDC6CE294821AD004C1DDA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
+		DDCEBFD129DE921000E4ACF2 /* MeshtasticIntents.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MeshtasticIntents.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDCEBFD229DE921000E4ACF2 /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
+		DDCEBFD529DE921000E4ACF2 /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
+		DDCEBFD729DE921000E4ACF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DDCEBFDC29DE921000E4ACF2 /* MeshtasticIntentsUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MeshtasticIntentsUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDCEBFDD29DE921000E4ACF2 /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
+		DDCEBFE029DE921000E4ACF2 /* IntentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentViewController.swift; sourceTree = "<group>"; };
+		DDCEBFE329DE921000E4ACF2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
+		DDCEBFE529DE921000E4ACF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DDCEBFE929DE921100E4ACF2 /* MeshtasticIntentsUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticIntentsUI.entitlements; sourceTree = "<group>"; };
+		DDCEBFED29DE921100E4ACF2 /* MeshtasticIntents.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeshtasticIntents.entitlements; sourceTree = "<group>"; };
 		DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshtasticTests.swift; sourceTree = "<group>"; };
 		DDD6EEAE29BC024700383354 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
@@ -337,6 +371,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDCEBFCE29DE921000E4ACF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDCEBFD329DE921000E4ACF2 /* Intents.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDCEBFD929DE921000E4ACF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDCEBFDE29DE921000E4ACF2 /* IntentsUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +560,8 @@
 			children = (
 				DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */,
 				DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */,
+				DDCEBFD229DE921000E4ACF2 /* Intents.framework */,
+				DDCEBFDD29DE921000E4ACF2 /* IntentsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -531,6 +583,8 @@
 				DDC2E16D26CE248F0042C5E4 /* MeshtasticTests */,
 				DDC2E17826CE248F0042C5E4 /* MeshtasticUITests */,
 				DDDE59F729AF163D00490C6C /* Widgets */,
+				DDCEBFD429DE921000E4ACF2 /* MeshtasticIntents */,
+				DDCEBFDF29DE921000E4ACF2 /* MeshtasticIntentsUI */,
 				DDC2E15526CE248E0042C5E4 /* Products */,
 				DD8EDE9226F97A2B00A5A10B /* Frameworks */,
 			);
@@ -544,6 +598,8 @@
 				DDC2E16A26CE248F0042C5E4 /* MeshtasticTests.xctest */,
 				DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */,
 				DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */,
+				DDCEBFD129DE921000E4ACF2 /* MeshtasticIntents.appex */,
+				DDCEBFDC29DE921000E4ACF2 /* MeshtasticIntentsUI.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -689,6 +745,27 @@
 			path = CarPlay;
 			sourceTree = "<group>";
 		};
+		DDCEBFD429DE921000E4ACF2 /* MeshtasticIntents */ = {
+			isa = PBXGroup;
+			children = (
+				DDCEBFED29DE921100E4ACF2 /* MeshtasticIntents.entitlements */,
+				DDCEBFD529DE921000E4ACF2 /* IntentHandler.swift */,
+				DDCEBFD729DE921000E4ACF2 /* Info.plist */,
+			);
+			path = MeshtasticIntents;
+			sourceTree = "<group>";
+		};
+		DDCEBFDF29DE921000E4ACF2 /* MeshtasticIntentsUI */ = {
+			isa = PBXGroup;
+			children = (
+				DDCEBFE929DE921100E4ACF2 /* MeshtasticIntentsUI.entitlements */,
+				DDCEBFE029DE921000E4ACF2 /* IntentViewController.swift */,
+				DDCEBFE229DE921000E4ACF2 /* MainInterface.storyboard */,
+				DDCEBFE529DE921000E4ACF2 /* Info.plist */,
+			);
+			path = MeshtasticIntentsUI;
+			sourceTree = "<group>";
+		};
 		DDDE59F729AF163D00490C6C /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
@@ -729,6 +806,8 @@
 			);
 			dependencies = (
 				DDDE5A0229AF163E00490C6C /* PBXTargetDependency */,
+				DDCEBFE729DE921000E4ACF2 /* PBXTargetDependency */,
+				DDCEBFEB29DE921100E4ACF2 /* PBXTargetDependency */,
 			);
 			name = Meshtastic;
 			packageProductDependencies = (
@@ -775,6 +854,40 @@
 			productReference = DDC2E17526CE248F0042C5E4 /* MeshtasticUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		DDCEBFD029DE921000E4ACF2 /* MeshtasticIntents */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDCEBFF129DE921100E4ACF2 /* Build configuration list for PBXNativeTarget "MeshtasticIntents" */;
+			buildPhases = (
+				DDCEBFCD29DE921000E4ACF2 /* Sources */,
+				DDCEBFCE29DE921000E4ACF2 /* Frameworks */,
+				DDCEBFCF29DE921000E4ACF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshtasticIntents;
+			productName = MeshtasticIntents;
+			productReference = DDCEBFD129DE921000E4ACF2 /* MeshtasticIntents.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		DDCEBFDB29DE921000E4ACF2 /* MeshtasticIntentsUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDCEBFEE29DE921100E4ACF2 /* Build configuration list for PBXNativeTarget "MeshtasticIntentsUI" */;
+			buildPhases = (
+				DDCEBFD829DE921000E4ACF2 /* Sources */,
+				DDCEBFD929DE921000E4ACF2 /* Frameworks */,
+				DDCEBFDA29DE921000E4ACF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshtasticIntentsUI;
+			productName = MeshtasticIntentsUI;
+			productReference = DDCEBFDC29DE921000E4ACF2 /* MeshtasticIntentsUI.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		DDDE59F329AF163D00490C6C /* WidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DDDE5A0529AF163F00490C6C /* Build configuration list for PBXNativeTarget "WidgetsExtension" */;
@@ -798,7 +911,7 @@
 		DDC2E14C26CE248E0042C5E4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1420;
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					DDC2E15326CE248E0042C5E4 = {
@@ -813,6 +926,12 @@
 					DDC2E17426CE248F0042C5E4 = {
 						CreatedOnToolsVersion = 12.5.1;
 						TestTargetID = DDC2E15326CE248E0042C5E4;
+					};
+					DDCEBFD029DE921000E4ACF2 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					DDCEBFDB29DE921000E4ACF2 = {
+						CreatedOnToolsVersion = 14.3;
 					};
 					DDDE59F329AF163D00490C6C = {
 						CreatedOnToolsVersion = 14.2;
@@ -842,6 +961,8 @@
 				DDC2E16926CE248F0042C5E4 /* MeshtasticTests */,
 				DDC2E17426CE248F0042C5E4 /* MeshtasticUITests */,
 				DDDE59F329AF163D00490C6C /* WidgetsExtension */,
+				DDCEBFD029DE921000E4ACF2 /* MeshtasticIntents */,
+				DDCEBFDB29DE921000E4ACF2 /* MeshtasticIntentsUI */,
 			);
 		};
 /* End PBXProject section */
@@ -869,6 +990,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDCEBFCF29DE921000E4ACF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDCEBFDA29DE921000E4ACF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDCEBFE429DE921000E4ACF2 /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1034,6 +1170,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DDCEBFCD29DE921000E4ACF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDCEBFD629DE921000E4ACF2 /* IntentHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDCEBFD829DE921000E4ACF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDCEBFE129DE921000E4ACF2 /* IntentViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDDE59F029AF163D00490C6C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1059,6 +1211,16 @@
 			target = DDC2E15326CE248E0042C5E4 /* Meshtastic */;
 			targetProxy = DDC2E17626CE248F0042C5E4 /* PBXContainerItemProxy */;
 		};
+		DDCEBFE729DE921000E4ACF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DDCEBFDB29DE921000E4ACF2 /* MeshtasticIntentsUI */;
+			targetProxy = DDCEBFE629DE921000E4ACF2 /* PBXContainerItemProxy */;
+		};
+		DDCEBFEB29DE921100E4ACF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DDCEBFD029DE921000E4ACF2 /* MeshtasticIntents */;
+			targetProxy = DDCEBFEA29DE921100E4ACF2 /* PBXContainerItemProxy */;
+		};
 		DDDE5A0229AF163E00490C6C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilter = ios;
@@ -1076,6 +1238,14 @@
 				A65FA974296876BF00A97686 /* zh-Hans */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		DDCEBFE229DE921000E4ACF2 /* MainInterface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DDCEBFE329DE921000E4ACF2 /* Base */,
+			);
+			name = MainInterface.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -1357,6 +1527,122 @@
 			};
 			name = Release;
 		};
+		DDCEBFEF29DE921100E4ACF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = MeshtasticIntentsUI/MeshtasticIntentsUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeshtasticIntentsUI/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MeshtasticIntentsUI;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticIntentsUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DDCEBFF029DE921100E4ACF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = MeshtasticIntentsUI/MeshtasticIntentsUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeshtasticIntentsUI/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MeshtasticIntentsUI;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticIntentsUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DDCEBFF229DE921100E4ACF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = MeshtasticIntents/MeshtasticIntents.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeshtasticIntents/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MeshtasticIntents;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticIntents;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DDCEBFF329DE921100E4ACF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = MeshtasticIntents/MeshtasticIntents.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeshtasticIntents/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MeshtasticIntents;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticIntents;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		DDDE5A0629AF163F00490C6C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1454,6 +1740,24 @@
 			buildConfigurations = (
 				DDC2E18526CE248F0042C5E4 /* Debug */,
 				DDC2E18626CE248F0042C5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDCEBFEE29DE921100E4ACF2 /* Build configuration list for PBXNativeTarget "MeshtasticIntentsUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDCEBFEF29DE921100E4ACF2 /* Debug */,
+				DDCEBFF029DE921100E4ACF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDCEBFF129DE921100E4ACF2 /* Build configuration list for PBXNativeTarget "MeshtasticIntents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDCEBFF229DE921100E4ACF2 /* Debug */,
+				DDCEBFF329DE921100E4ACF2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
