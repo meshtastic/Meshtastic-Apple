@@ -79,7 +79,7 @@ struct EnvironmentMetricsLog: View {
 							.font(.caption)
 							.fontWeight(.bold)
 					}
-					ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (em: TelemetryEntity) in
+					ForEach(environmentMetrics, id: \.self) { em  in
 
 						GridRow {
 
@@ -124,7 +124,7 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 			Button {
-				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as? [TelemetryEntity] ?? [], metricsType: 1)
+				exportString = telemetryToCsvFile(telemetry: environmentMetrics, metricsType: 1)
 				isExporting = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
