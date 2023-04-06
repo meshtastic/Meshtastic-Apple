@@ -242,6 +242,10 @@ struct ModuleConfig {
     /// Whether to send / consume json packets on MQTT
     var jsonEnabled: Bool = false
 
+    ///
+    /// If true, we attempt to establish a secure connection using TLS
+    var tlsEnabled: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1109,6 +1113,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     4: .same(proto: "password"),
     5: .standard(proto: "encryption_enabled"),
     6: .standard(proto: "json_enabled"),
+    7: .standard(proto: "tls_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1123,6 +1128,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 4: try { try decoder.decodeSingularStringField(value: &self.password) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.encryptionEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.jsonEnabled) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.tlsEnabled) }()
       default: break
       }
     }
@@ -1147,6 +1153,9 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.jsonEnabled != false {
       try visitor.visitSingularBoolField(value: self.jsonEnabled, fieldNumber: 6)
     }
+    if self.tlsEnabled != false {
+      try visitor.visitSingularBoolField(value: self.tlsEnabled, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1157,6 +1166,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.password != rhs.password {return false}
     if lhs.encryptionEnabled != rhs.encryptionEnabled {return false}
     if lhs.jsonEnabled != rhs.jsonEnabled {return false}
+    if lhs.tlsEnabled != rhs.tlsEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

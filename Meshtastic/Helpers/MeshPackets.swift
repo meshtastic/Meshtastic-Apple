@@ -251,7 +251,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
 			newNode.num = Int64(nodeInfo.num)
-			newNode.channel = Int32(channel)
+			newNode.channel = Int32(nodeInfo.channel)
 
 			if nodeInfo.hasDeviceMetrics {
 				let telemetry = TelemetryEntity(context: context)
@@ -321,7 +321,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].num = Int64(nodeInfo.num)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			fetchedNode[0].snr = nodeInfo.snr
-			fetchedNode[0].channel = Int32(channel)
+			fetchedNode[0].channel = Int32(nodeInfo.channel)
 
 			if nodeInfo.hasUser {
 
@@ -766,23 +766,25 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 							guard let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity] else {
 								return
 							}
-							for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
-								if channel.index == newMessage.channel {
-									context.refresh(channel, mergeChanges: true)
-								}
-
-								if channel.index == newMessage.channel && !channel.mute {
-									// Create an iOS Notification for the received private channel message and schedule it immediately
-									let manager = LocalNotificationManager()
-									manager.notifications = [
-										Notification(
-											id: ("notification.id.\(newMessage.messageId)"),
-											title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
-											subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-											content: messageText)
-									]
-									manager.schedule()
-									print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+							if !fetchedMyInfo.isEmpty {
+								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
+									if channel.index == newMessage.channel {
+										context.refresh(channel, mergeChanges: true)
+									}
+									
+									if channel.index == newMessage.channel && !channel.mute {
+										// Create an iOS Notification for the received private channel message and schedule it immediately
+										let manager = LocalNotificationManager()
+										manager.notifications = [
+											Notification(
+												id: ("notification.id.\(newMessage.messageId)"),
+												title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+												content: messageText)
+										]
+										manager.schedule()
+										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									}
 								}
 							}
 						} catch {

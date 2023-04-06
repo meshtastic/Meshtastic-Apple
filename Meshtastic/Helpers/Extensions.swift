@@ -12,11 +12,56 @@ extension Character {
 extension CLLocationCoordinate2D {
 	/// Returns distance from coordianate in meters.
 	/// - Parameter from: coordinate which will be used as end point.
-	/// - Returns: Returns distance in meters.
+	/// - Returns: distance in meters.
 	func distance(from: CLLocationCoordinate2D) -> CLLocationDistance {
 		let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
 		let to = CLLocation(latitude: self.latitude, longitude: self.longitude)
 		return from.distance(from: to)
+	}
+}
+
+extension Color {
+	///  Returns a boolean for a SwiftUI Color to determine what color of text to use
+	/// - Returns: true if the color is light
+	func isLight() -> Bool {
+		guard let components = cgColor?.components, components.count > 2 else {return false}
+		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+		return (brightness > 0.5)
+	}
+}
+
+extension UIColor {
+	
+	///  Returns a boolean indicating if a color is light
+	/// - Returns: true if the color is light
+	func isLight() -> Bool {
+		guard let components = cgColor.components, components.count > 2 else {return false}
+		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+		return (brightness > 0.5)
+	}
+	
+	///  Returns a UInt32 from a UIColor
+	/// - Returns: UInt32
+	var hex: UInt32 {
+		   var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+		   getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+		   var value: UInt32 = 0
+		   value += UInt32(1.0 * 255) << 24
+		   value += UInt32(red   * 255) << 16
+		   value += UInt32(green * 255) << 8
+		   value += UInt32(blue  * 255)
+		   return value
+	}
+	
+	///  Returns a UIColor from a UInt32 value
+	/// - Parameter hex: UInt32 value  to convert to a color
+	/// - Returns: UIColor
+	convenience init(hex: UInt32) {
+		let red = CGFloat((hex & 0xFF0000) >> 16)
+		let green = CGFloat((hex & 0x00FF00) >> 8)
+		let blue = CGFloat((hex & 0x0000FF))
+		//print("\(red) - \(green) - \(blue)")
+		self.init(red: red/255.0, green: green/255.0, blue: blue/255.0, alpha: 1.0)
 	}
 }
 
@@ -133,5 +178,27 @@ extension String {
 				? $0 + " " + String($1)
 				: $0 + String($1)
 		}
+	}
+}
+
+extension UserDefaults {
+
+	enum Keys: String, CaseIterable {
+		case meshtasticUsername
+		case preferredPeripheralId
+		case provideLocation
+		case provideLocationInterval
+		case keyboardType
+		case meshMapType
+		case meshMapCenteringMode
+		case meshMapRecentering
+		case meshMapCustomTileServer
+		case meshMapUserTrackingMode
+		case meshMapShowNodeHistory
+		case meshMapShowRouteLines
+	}
+
+	func reset() {
+		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
 	}
 }

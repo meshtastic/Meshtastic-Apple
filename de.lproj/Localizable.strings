@@ -18,7 +18,6 @@
 "available.radios"="Geräte in der Nähe";
 "automatic.detection"="Automatische erkennung";
 "battery.level"="Batterie Ladung";
-"battery.level.trend"="Batterie Ladungstrend";
 "ble.name"="BLE Name";"ble.connection.timeout %d %@"="Verbindung nach %d Versuchen zu %@ fehlgeschlagen. Evtl. hilft es, die Verbindung unter Einstellungen > Bluetooth manuell zu löschen.";
 "ble.connection.timeout %d %@"="Verbindung nach %d Versuchen zu %@ fehlgeschlagen. Evtl. hilft es, die Verbindung unter Einstellungen > Bluetooth manuell zu löschen.";
 "ble.errorcode.6 %@"="%@ Die App wird automatisch zum präferierten Gerät wiederverbinden, sobald es in Reichweite kommt.";

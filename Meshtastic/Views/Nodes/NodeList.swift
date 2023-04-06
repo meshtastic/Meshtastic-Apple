@@ -28,7 +28,7 @@ struct NodeList: View {
     var body: some View {
 
 		NavigationSplitView {
-			List(nodes, id: \.self, selection: $selection) { node in
+			List(nodes, id: \.self, selection: $selection) { node in				
 				if nodes.count == 0 {
 					Text("no.nodes").font(.title)
 				} else {
@@ -36,7 +36,7 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: .accentColor, circleSize: 52, fontSize: 16, brightness: 0.1)
+								CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: 20, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
@@ -62,6 +62,15 @@ struct NodeList: View {
 
 												DistanceText(meters: metersAway).font(.subheadline)
 											}
+										}
+									}
+									if node.channel > 0 {
+										HStack(alignment: .bottom) {
+											Image(systemName: "fibrechannel")
+												.font(.title3)
+												.symbolRenderingMode(.hierarchical)
+											Text("Channel: \(node.channel)")
+												.font(.subheadline)
 										}
 									}
 									HStack(alignment: .bottom) {

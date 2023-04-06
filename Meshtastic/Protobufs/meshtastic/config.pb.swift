@@ -177,6 +177,10 @@ struct Config {
     /// Defaults to 900 Seconds (15 minutes)
     var nodeInfoBroadcastSecs: UInt32 = 0
 
+    ///
+    /// Treat double tap interrupt on supported accelerometers as a button press if set to true
+    var doubleTapAsButtonPress: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1587,6 +1591,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     5: .standard(proto: "buzzer_gpio"),
     6: .standard(proto: "rebroadcast_mode"),
     7: .standard(proto: "node_info_broadcast_secs"),
+    8: .standard(proto: "double_tap_as_button_press"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1602,6 +1607,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.buzzerGpio) }()
       case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.nodeInfoBroadcastSecs) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.doubleTapAsButtonPress) }()
       default: break
       }
     }
@@ -1629,6 +1635,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.nodeInfoBroadcastSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.nodeInfoBroadcastSecs, fieldNumber: 7)
     }
+    if self.doubleTapAsButtonPress != false {
+      try visitor.visitSingularBoolField(value: self.doubleTapAsButtonPress, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1640,6 +1649,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.buzzerGpio != rhs.buzzerGpio {return false}
     if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
     if lhs.nodeInfoBroadcastSecs != rhs.nodeInfoBroadcastSecs {return false}
+    if lhs.doubleTapAsButtonPress != rhs.doubleTapAsButtonPress {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

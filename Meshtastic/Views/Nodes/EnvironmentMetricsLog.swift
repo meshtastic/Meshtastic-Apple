@@ -19,47 +19,36 @@ struct EnvironmentMetricsLog: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
+		
+		let environmentMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).reversed() as? [TelemetryEntity] ?? []
 
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+			Text("\(environmentMetrics.count) Readings")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
-				Table(node.telemetries!.reversed() as! [TelemetryEntity]) {
+				Table(environmentMetrics) {
 					TableColumn("Temperature") { em in
-						if em.metricsType == 1 {
-							Text(em.temperature.formattedTemperature())
-						}
+						Text(em.temperature.formattedTemperature())
 					}
 					TableColumn("Humidity") { em in
-						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.relativeHumidity))%")
-						}
+						Text("\(String(format: "%.2f", em.relativeHumidity))%")
 					}
 					TableColumn("Barometric Pressure") { em in
-						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.barometricPressure)) hPa")
-						}
+						Text("\(String(format: "%.2f", em.barometricPressure)) hPa")
 					}
 					TableColumn("gas.resistance") { em in
-						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.gasResistance)) ohms")
-						}
+						Text("\(String(format: "%.2f", em.gasResistance)) ohms")
 					}
 					TableColumn("current") { em in
-						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.current))")
-						}
+						Text("\(String(format: "%.2f", em.current))")
 					}
 					TableColumn("voltage") { em in
-						if em.metricsType == 1 {
-							Text("\(String(format: "%.2f", em.voltage))")
-						}
+						Text("\(String(format: "%.2f", em.voltage))")
 					}
 					TableColumn("timestamp") { em in
-						if em.metricsType == 1 {
-							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
-						}
+						Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
 				}
 			} else {
@@ -90,23 +79,20 @@ struct EnvironmentMetricsLog: View {
 							.font(.caption)
 							.fontWeight(.bold)
 					}
-					ForEach(node.telemetries?.reversed() as? [TelemetryEntity] ?? [], id: \.self) { (em: TelemetryEntity) in
+					ForEach(environmentMetrics, id: \.self) { em  in
 
-						if em.metricsType == 1 {
+						GridRow {
 
-							GridRow {
-
-								Text(em.temperature.formattedTemperature())
-									.font(.caption)
-								Text("\(String(format: "%.2f", em.relativeHumidity))%")
-									.font(.caption)
-								Text("\(String(format: "%.2f", em.barometricPressure))")
-									.font(.caption)
-								Text("\(String(format: "%.2f", em.gasResistance))")
-									.font(.caption)
-								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
-									.font(.caption2)
-							}
+							Text(em.temperature.formattedTemperature())
+								.font(.caption)
+							Text("\(String(format: "%.2f", em.relativeHumidity))%")
+								.font(.caption)
+							Text("\(String(format: "%.2f", em.barometricPressure))")
+								.font(.caption)
+							Text("\(String(format: "%.2f", em.gasResistance))")
+								.font(.caption)
+							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+								.font(.caption2)
 						}
 					}
 				}
@@ -138,7 +124,7 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 			Button {
-				exportString = telemetryToCsvFile(telemetry: node.telemetries!.array as? [TelemetryEntity] ?? [], metricsType: 1)
+				exportString = telemetryToCsvFile(telemetry: environmentMetrics, metricsType: 1)
 				isExporting = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")

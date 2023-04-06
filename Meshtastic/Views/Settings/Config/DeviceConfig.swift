@@ -100,7 +100,7 @@ struct DeviceConfig: View {
 				Section(header: Text("GPIO")) {
 					
 					Picker("Button GPIO", selection: $buttonGPIO) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -110,7 +110,7 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
-						ForEach(0..<40) {
+						ForEach(0..<46) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -207,6 +207,7 @@ struct DeviceConfig: View {
 							dc.debugLogEnabled = debugLogEnabled
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
+							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
@@ -277,6 +278,13 @@ struct DeviceConfig: View {
 				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
+		.onChange(of: rebroadcastMode) { newRebroadcastMode in
+			
+			if node != nil && node!.deviceConfig != nil {
+				
+				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
+			}
+		}
 	}
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
@@ -284,6 +292,7 @@ struct DeviceConfig: View {
 		self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
+		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.hasChanges = false
 	}
 }

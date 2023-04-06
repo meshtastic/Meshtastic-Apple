@@ -57,7 +57,7 @@ struct ChannelMessageList: View {
 							HStack(alignment: .top) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "????", color: currentUser ? .accentColor : Color(.gray), circleSize: 44, fontSize: 14)
+									CircleText(text: message.fromUser?.shortName ?? "????", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(message.fromUser?.num ?? 0)).isLight() ? .black : .white)
 										.padding(.all, 5)
 										.offset(y: -5)
 								}
@@ -233,16 +233,29 @@ struct ChannelMessageList: View {
 			#if targetEnvironment(macCatalyst)
 			HStack {
 				Spacer()
+				
+				Button {
+					let bell = "🔔 Alert Bell Character! \u{7}"
+					print(bell)
+					typingMessage += bell
+
+				} label: {
+					Text("Alert Bell")
+					Image(systemName: "bell.fill")
+						.symbolRenderingMode(.hierarchical)
+						.imageScale(.large).foregroundColor(.accentColor)
+				}
+				Spacer()
 				Button {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
 					if userSettings.meshtasticUsername.count > 0 {
 
-						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+						typingMessage +=  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
 
 					} else {
 
-						typingMessage =  "📍 " + userLongName + " has shared their position with you."
+						typingMessage +=  "📍 " + userLongName + " has shared their position with you."
 					}
 
 				} label: {
@@ -284,6 +297,18 @@ struct ChannelMessageList: View {
 									focusedField = nil
 								}
 								.font(.subheadline)
+								Spacer()
+								Button {
+									let bell = "🔔 Alert Bell Character! \u{7}"
+									print(bell)
+									typingMessage += bell
+
+								} label: {
+									Text("Alert")
+									Image(systemName: "bell.fill")
+										.symbolRenderingMode(.hierarchical)
+										.imageScale(.large).foregroundColor(.accentColor)
+								}
 								Spacer()
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
