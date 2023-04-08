@@ -210,7 +210,7 @@ struct NodeWeatherForecast {
 
 struct NodeWeatherForecastView_Previews: PreviewProvider {
 	static var previews: some View {
-		NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude) )
+		NodeWeatherForecastView(location: CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude) )
 			.aspectRatio(2, contentMode: .fit)
 			.padding()
 			.previewLayout(.sizeThatFits)

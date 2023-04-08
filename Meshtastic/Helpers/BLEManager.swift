@@ -784,25 +784,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if lastPosition != nil {
 				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
 				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
+					if lastPosition!.distance(from: LocationHelper.currentLocation.coordinate) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
 						return false
 					}
 				}
 			}
 		}
-		lastPosition = LocationHelper.currentLocation
+		lastPosition = LocationHelper.currentLocation.coordinate
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.coordinate.latitude * 1e7)
+		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.coordinate.longitude * 1e7)
+		positionPacket.time = UInt32(LocationHelper.currentLocation.timestamp.timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(LocationHelper.currentLocation.timestamp.timeIntervalSince1970)
+		positionPacket.altitude = Int32(LocationHelper.currentLocation.altitude)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		if LocationHelper.currentSpeed >= 0 {
-			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed * 3.6)
+		if LocationHelper.currentLocation.speed >= 0 {
+			positionPacket.groundSpeed = UInt32(LocationHelper.currentLocation.speed * 3.6)
 		}
-		if LocationHelper.currentHeading >= 0 {
-			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+		if LocationHelper.currentLocation.course >= 0 {
+			positionPacket.groundTrack = UInt32(LocationHelper.currentLocation.course)
 		}
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)

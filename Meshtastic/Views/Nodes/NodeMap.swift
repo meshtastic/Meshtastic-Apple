@@ -46,7 +46,7 @@ struct NodeMap: View {
 
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
+	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation.coordinate
 	@State var editingWaypoint: Int = 0
 	@State private var presentingWaypointForm = false
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
@@ -63,7 +63,7 @@ struct NodeMap: View {
 				MapViewSwiftUI(onLongPress: { coord in
 					waypointCoordinate = coord
 					editingWaypoint = 0
-					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation.coordinate) == 0.0 {
 						print("Apple Park")
 					} else {
 						presentingWaypointForm = true

@@ -30,14 +30,14 @@ struct WaypointFormView: View {
 	var body: some View {
 
 		Form {
-			let distance = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
+			let distance = CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
 			Section(header: Text((waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
 				HStack {
 					Text("Location: \(String(format: "%.5f", latitude) + "," + String(format: "%.5f", longitude))")
 						.textSelection(.enabled)
 						.foregroundColor(Color.gray)
 						.font(.caption2)
-					if coordinate.latitude != LocationHelper.DefaultLocation.latitude && coordinate.longitude != LocationHelper.DefaultLocation.longitude {
+					if coordinate.latitude != LocationHelper.DefaultLocation.coordinate.latitude && coordinate.longitude != LocationHelper.DefaultLocation.coordinate.longitude {
 						DistanceText(meters: distance)
 							.foregroundColor(Color.gray)
 							.font(.caption2)
