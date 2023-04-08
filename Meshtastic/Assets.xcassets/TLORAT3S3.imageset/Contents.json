@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "LILYGO-TTGO-LoRa32-V2-1-1-6-Version-433-868-915Mhz-ESP32-LoRa-OLED-0-96.jpg_Q90.jpg_.webp.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "LILYGO-TTGO-LoRa32-V2-1-1-6-Version-433-868-915Mhz-ESP32-LoRa-OLED-0-96.jpg_Q90.jpg_.webp 1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "LILYGO-TTGO-LoRa32-V2-1-1-6-Version-433-868-915Mhz-ESP32-LoRa-OLED-0-96.jpg_Q90.jpg_.webp 2.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
