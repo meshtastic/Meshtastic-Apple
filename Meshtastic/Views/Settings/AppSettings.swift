@@ -57,7 +57,7 @@ struct AppSettings: View {
 					if locationHelper.lastLocation?.courseAccuracy ?? 0 > 0 || locationHelper.lastLocation?.speedAccuracy ?? 0 > 0 {
 						HStack {
 							if locationHelper.lastLocation?.courseAccuracy ?? 0 > 0 {
-								Label("Bearing \(String(format: "%.2f", locationHelper.lastLocation?.course ?? 0))°", systemImage: "location.circle")
+								Label("Heading \(String(format: "%.2f", locationHelper.lastLocation?.course ?? 0))°", systemImage: "location.circle")
 									.font(.caption)
 							}
 							if locationHelper.lastLocation?.speedAccuracy ?? 0 > 0 {

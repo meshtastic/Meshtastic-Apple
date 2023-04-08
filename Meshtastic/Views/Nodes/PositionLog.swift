@@ -23,7 +23,6 @@ struct PositionLog: View {
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				Table(node.positions?.reversed() as? [PositionEntity] ?? []) {
@@ -37,16 +36,18 @@ struct PositionLog: View {
 						Text(String(format: "%.5f", position.longitude ?? 0))
 					}
 					TableColumn("Altitude") { position in
-						Text(String(position.altitude))
+						let altitude = Measurement(value: Double(position.altitude), unit: UnitLength.meters)
+						Text(String(altitude.formatted()))
 					}
 					TableColumn("Sats") { position in
 						Text(String(position.satsInView))
 					}
 					TableColumn("Speed") { position in
-						Text(String(position.speed))
+						let speed = Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)
+						Text(speed.formatted())
 					}
 					TableColumn("Heading") { position in
-						Text(String(position.heading))
+						Text("\(position.heading)°")
 					}
 					TableColumn("SNR") { position in
 						Text("\(String(format: "%.2f", position.snr)) dB")
@@ -64,7 +65,7 @@ struct PositionLog: View {
 						GridItem(spacing: 0.1),
 						GridItem(spacing: 0.1),
 						GridItem(.flexible(minimum: 35, maximum: 40), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 35), spacing: 0.1),
+						GridItem(.flexible(minimum: 45, maximum: 50), spacing: 0.1),
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
@@ -88,6 +89,7 @@ struct PositionLog: View {
 								.fontWeight(.bold)
 						}
 						ForEach(node.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+							let altitude = Measurement(value: Double(mappin.altitude), unit: UnitLength.meters)
 							GridRow {
 								Text(String(format: "%.5f", mappin.latitude ?? 0))
 									.font(.caption2)
@@ -95,7 +97,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(String(mappin.satsInView))
 									.font(.caption2)
-								Text(String(mappin.altitude))
+								Text(altitude.formatted())
 									.font(.caption2)
 								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
 									.font(.caption2)
