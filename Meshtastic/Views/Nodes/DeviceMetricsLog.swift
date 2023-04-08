@@ -78,6 +78,7 @@ struct DeviceMetricsLog: View {
 						AxisMarks(position: .top)
 					})
 					.chartXAxis(.automatic)
+					.chartYScale(domain: 0...100)
 					.chartForegroundStyleScale([
 						"Battery Level" : .blue,
 						"Channel Utilization": .green,
