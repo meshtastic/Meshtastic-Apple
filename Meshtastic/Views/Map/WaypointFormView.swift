@@ -12,8 +12,7 @@ struct WaypointFormView: View {
 
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
-	@State var coordinate: CLLocationCoordinate2D
-	@State var waypointId: Int = 0
+	@State var coordinate: WaypointCoordinate
 
 	@FocusState private var iconIsFocused: Bool
 
@@ -23,21 +22,21 @@ struct WaypointFormView: View {
 	@State private var latitude: Double = 0
 	@State private var longitude: Double = 0
 	@State private var expires: Bool = false
-	@State private var expire: Date = Date() // = Date.now.addingTimeInterval(60 * 120) // 1 minute * 120 = 2 Hours
+	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
 
 	var body: some View {
 
 		Form {
-			let distance = CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude).distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
-			Section(header: Text((waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
+			let distance = CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude).distance(from: CLLocation(latitude: coordinate.coordinate?.latitude ?? 0, longitude: coordinate.coordinate?.longitude ?? 0))
+			Section(header: Text((coordinate.waypointId > 0) ? "Editing Waypoint" : "Create Waypoint")) {
 				HStack {
 					Text("Location: \(String(format: "%.5f", latitude) + "," + String(format: "%.5f", longitude))")
 						.textSelection(.enabled)
 						.foregroundColor(Color.gray)
 						.font(.caption2)
-					if coordinate.latitude != LocationHelper.DefaultLocation.coordinate.latitude && coordinate.longitude != LocationHelper.DefaultLocation.coordinate.longitude {
+					if coordinate.coordinate?.latitude ?? -1 != LocationHelper.DefaultLocation.coordinate.latitude && coordinate.coordinate?.longitude ?? 0 != LocationHelper.DefaultLocation.coordinate.longitude {
 						DistanceText(meters: distance)
 							.foregroundColor(Color.gray)
 							.font(.caption2)
@@ -128,16 +127,20 @@ struct WaypointFormView: View {
 			Button {
 
 				var newWaypoint = Waypoint()
-
-				if waypointId > 0 {
-					newWaypoint.id = UInt32(waypointId)
+				
+				if coordinate.waypointId > 0 {
+					newWaypoint.id = UInt32(coordinate.waypointId)
+					let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
+					newWaypoint.latitudeI = waypoint.latitudeI
+					newWaypoint.longitudeI = waypoint.longitudeI
 				} else {
 					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+					newWaypoint.latitudeI = Int32(Double(coordinate.coordinate?.latitude ?? 0) * 1e7)
+					newWaypoint.longitudeI = Int32(Double(coordinate.coordinate?.longitude ?? 0) * 1e7)
 				}
 				newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 				newWaypoint.description_p = description
-				newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
-				newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+		
 				// Unicode scalar value for the icon emoji string
 				let unicodeScalers = icon.unicodeScalars
 				// First element as an UInt32
@@ -157,10 +160,8 @@ struct WaypointFormView: View {
 					newWaypoint.expire = 0
 				}
 				if bleManager.sendWaypoint(waypoint: newWaypoint) {
-					waypointId = 0
 					dismiss()
 				} else {
-					waypointId = 0
 					dismiss()
 					print("Send waypoint failed")
 				}
@@ -183,11 +184,11 @@ struct WaypointFormView: View {
 			.controlSize(.large)
 			.padding(.bottom)
 
-			if waypointId > 0 {
+			if coordinate.waypointId > 0 {
 
 				Menu {
 					Button("For me", action: {
-					let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
+						let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
 						bleManager.context!.delete(waypoint)
 					 do {
 						 try bleManager.context!.save()
@@ -198,13 +199,13 @@ struct WaypointFormView: View {
 					Button("For everyone", action: {
 						var newWaypoint = Waypoint()
 
-						if waypointId > 0 {
-							newWaypoint.id = UInt32(waypointId)
+						if coordinate.waypointId > 0 {
+							newWaypoint.id = UInt32(coordinate.waypointId)
 						}
 						newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 						newWaypoint.description_p = description
-						newWaypoint.latitudeI = Int32(coordinate.latitude * 1e7)
-						newWaypoint.longitudeI = Int32(coordinate.longitude * 1e7)
+						newWaypoint.latitudeI = Int32(coordinate.coordinate?.latitude ?? 0 * 1e7)
+						newWaypoint.longitudeI = Int32(coordinate.coordinate?.longitude ?? 0 * 1e7)
 						// Unicode scalar value for the icon emoji string
 						let unicodeScalers = icon.unicodeScalars
 						// First element as an UInt32
@@ -220,10 +221,8 @@ struct WaypointFormView: View {
 						}
 						newWaypoint.expire = 1
 						if bleManager.sendWaypoint(waypoint: newWaypoint) {
-							waypointId = 0
 							dismiss()
 						} else {
-							waypointId = 0
 							dismiss()
 							print("Send waypoint failed")
 						}
@@ -239,14 +238,9 @@ struct WaypointFormView: View {
 				.padding(.bottom)
 			}
 		}
-		.onChange(of: waypointId) { newId in
-			print(newId)
-
-		}
 		.onAppear {
-			if waypointId > 0 {
-				let waypoint  = getWaypoint(id: Int64(waypointId), context: bleManager.context!)
-				waypointId = Int(waypoint.id)
+			if coordinate.waypointId > 0 {
+				let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
 				name = waypoint.name ?? "Dropped Pin"
 				description = waypoint.longDescription ?? ""
 				icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
@@ -269,8 +263,8 @@ struct WaypointFormView: View {
 				expires = false
 				expire = Date.now.addingTimeInterval(60 * 120)
 				icon = "📍"
-				latitude = coordinate.latitude
-				longitude = coordinate.longitude
+				latitude = coordinate.coordinate?.latitude ?? 0
+				longitude = coordinate.coordinate?.longitude ?? 0
 			}
 		}
 	}

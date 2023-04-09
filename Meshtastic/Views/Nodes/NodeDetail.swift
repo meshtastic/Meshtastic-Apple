@@ -14,11 +14,8 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = "standard"
-	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
-	@State var waypointCoordinate: CLLocationCoordinate2D?
-	@State var editingWaypoint: Int = 0
+	@State var waypointCoordinate: WaypointCoordinate? 
 	@State private var loadedWeather: Bool = false
 	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
@@ -64,19 +61,14 @@ struct NodeDetail: View {
 							// let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
-									waypointCoordinate = coord
-									editingWaypoint = 0
-									presentingWaypointForm = true
+									waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
 								}, onWaypointEdit: { wpId in
 									if wpId > 0 {
-										editingWaypoint = wpId
-										presentingWaypointForm = true
+										waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 									}
 								}, positions: lastTenThousand, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
-									showNodeHistory: meshMapShowNodeHistory,
-									showRouteLines: meshMapShowRouteLines,
 									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {
@@ -210,11 +202,11 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
-					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation.coordinate, waypointId: editingWaypoint)
-							.presentationDetents([.medium, .large])
-							.presentationDragIndicator(.automatic)
-				}
+				.sheet(item: $waypointCoordinate, content: { wpc in
+					WaypointFormView(coordinate: wpc)
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
+				})
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {

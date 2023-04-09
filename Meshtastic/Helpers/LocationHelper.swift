@@ -21,9 +21,6 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     // Apple Park
     static let DefaultLocation = CLLocation(latitude: 37.3346, longitude: -122.0090)
-	//static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
-	//static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
-	//static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
 
     static var currentLocation: CLLocation {
 
@@ -72,12 +69,12 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 		// Extra Smart positioning logic throwing out bad readings from the phone GPS
 		let age = -mostRecentLocation.timestamp.timeIntervalSinceNow
-		print("Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
 		manager.stopUpdatingLocation()
 		if age > 10 || mostRecentLocation.horizontalAccuracy < 0 || mostRecentLocation.horizontalAccuracy > 100 {
 			print("Bad Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
 			manager.startUpdatingLocation()
 		} else {
+			print("Good Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
 			lastLocation = mostRecentLocation
 		}
 	}

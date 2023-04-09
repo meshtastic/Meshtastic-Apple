@@ -43,28 +43,26 @@ struct AppSettings: View {
 					let accuracy = Measurement(value: locationHelper.lastLocation?.horizontalAccuracy ?? 300, unit: UnitLength.meters)
 					let altitiude = Measurement(value: locationHelper.lastLocation?.altitude ?? 0, unit: UnitLength.meters)
 					let speed = Measurement(value: locationHelper.lastLocation?.speed ?? 0, unit: UnitSpeed.kilometersPerHour)
-					Label("Coordinates \(String(format: "%.5f", locationHelper.lastLocation?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.lastLocation?.coordinate.longitude ?? 0))", systemImage: "mappin")
-						.textSelection(.enabled)
 					HStack {
-						Label("GPS Accuracy \(accuracy.formatted())", systemImage: "scope")
-							.font(.caption)
-						
-						if LocationHelper.currentLocation.verticalAccuracy > 0 {
-							Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-								.font(.caption)
-						}
+						Label("Accuracy \(accuracy.formatted())", systemImage: "scope")
+							.font(.callout)
+						Label("Sats \(LocationHelper.satsInView)", systemImage: "sparkles")
+							.font(.callout)
 					}
-					if locationHelper.lastLocation?.courseAccuracy ?? 0 > 0 || locationHelper.lastLocation?.speedAccuracy ?? 0 > 0 {
-						HStack {
-							if locationHelper.lastLocation?.courseAccuracy ?? 0 > 0 {
-								Label("Heading \(String(format: "%.2f", locationHelper.lastLocation?.course ?? 0))°", systemImage: "location.circle")
-									.font(.caption)
-							}
-							if locationHelper.lastLocation?.speedAccuracy ?? 0 > 0 {
-								Label("Speed \(speed.formatted())", systemImage: "speedometer")
-									.font(.caption)
-							}
-						}
+					Label("Coordinates \(String(format: "%.5f", locationHelper.lastLocation?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.lastLocation?.coordinate.longitude ?? 0))", systemImage: "mappin")
+							.font(.callout)
+							.textSelection(.enabled)
+					if LocationHelper.currentLocation.verticalAccuracy > 0 {
+						Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
+							.font(.callout)
+					}
+					if locationHelper.lastLocation?.courseAccuracy ?? 0 > 0 {
+						Label("Heading \(String(format: "%.2f", locationHelper.lastLocation?.course ?? 0))°", systemImage: "location.circle")
+							.font(.callout)
+					}
+					if locationHelper.lastLocation?.speedAccuracy ?? 0 > 0 {
+						Label("Speed \(speed.formatted())", systemImage: "speedometer")
+							.font(.callout)
 					}
 					Toggle(isOn: $userSettings.provideLocation) {
 
