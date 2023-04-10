@@ -36,7 +36,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	var timeoutTimerCount = 0
 	var timeoutTimerRuns = 0
 	var positionTimer: Timer?
-	var lastPosition: CLLocationCoordinate2D?
+	var lastPosition: CLLocation?
 	let emptyNodeNum: UInt32 = 4294967295
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -784,25 +784,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if lastPosition != nil {
 				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
 				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-					if lastPosition!.distance(from: LocationHelper.currentLocation.coordinate) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
+					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
 						return false
 					}
 				}
 			}
 		}
-		lastPosition = LocationHelper.currentLocation.coordinate
+		let locationHelper = LocationHelper()
+		lastPosition = locationHelper.lastLocation
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.coordinate.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.coordinate.longitude * 1e7)
-		positionPacket.time = UInt32(LocationHelper.currentLocation.timestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(LocationHelper.currentLocation.timestamp.timeIntervalSince1970)
-		positionPacket.altitude = Int32(LocationHelper.currentLocation.altitude)
+		positionPacket.latitudeI = Int32(locationHelper.lastLocation?.coordinate.latitude ?? 0 * 1e7)
+		positionPacket.longitudeI = Int32(locationHelper.lastLocation?.coordinate.longitude ?? 0 * 1e7)
+		positionPacket.time = UInt32(locationHelper.lastLocation?.timestamp.timeIntervalSince1970 ?? 0)
+		positionPacket.timestamp = UInt32(locationHelper.lastLocation?.timestamp.timeIntervalSince1970 ?? 0)
+		positionPacket.altitude = Int32(locationHelper.lastLocation?.altitude ?? 0)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
 		if LocationHelper.currentLocation.speed >= 0 {
-			positionPacket.groundSpeed = UInt32(LocationHelper.currentLocation.speed * 3.6)
+			positionPacket.groundSpeed = UInt32(locationHelper.lastLocation?.speed ?? 0 * 3.6)
 		}
 		if LocationHelper.currentLocation.course >= 0 {
-			positionPacket.groundTrack = UInt32(LocationHelper.currentLocation.course)
+			positionPacket.groundTrack = UInt32(locationHelper.lastLocation?.course ?? 0)
 		}
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)

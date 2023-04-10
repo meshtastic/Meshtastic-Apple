@@ -13,9 +13,7 @@ struct WaypointFormView: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var coordinate: WaypointCoordinate
-
 	@FocusState private var iconIsFocused: Bool
-
 	@State private var name: String = ""
 	@State private var description: String = ""
 	@State private var icon: String = "📍"
@@ -36,7 +34,7 @@ struct WaypointFormView: View {
 						.textSelection(.enabled)
 						.foregroundColor(Color.gray)
 						.font(.caption2)
-					if coordinate.coordinate?.latitude ?? -1 != LocationHelper.DefaultLocation.coordinate.latitude && coordinate.coordinate?.longitude ?? 0 != LocationHelper.DefaultLocation.coordinate.longitude {
+					if coordinate.coordinate?.latitude ?? 0 != 0 && coordinate.coordinate?.longitude ?? 0 != 0 {
 						DistanceText(meters: distance)
 							.foregroundColor(Color.gray)
 							.font(.caption2)
@@ -127,27 +125,26 @@ struct WaypointFormView: View {
 			Button {
 
 				var newWaypoint = Waypoint()
-				
+				// Loading a waypoint from edit
 				if coordinate.waypointId > 0 {
 					newWaypoint.id = UInt32(coordinate.waypointId)
 					let waypoint  = getWaypoint(id: Int64(coordinate.waypointId), context: bleManager.context!)
 					newWaypoint.latitudeI = waypoint.latitudeI
 					newWaypoint.longitudeI = waypoint.longitudeI
 				} else {
+					// New waypoint
 					newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 					newWaypoint.latitudeI = Int32(Double(coordinate.coordinate?.latitude ?? 0) * 1e7)
 					newWaypoint.longitudeI = Int32(Double(coordinate.coordinate?.longitude ?? 0) * 1e7)
 				}
 				newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 				newWaypoint.description_p = description
-		
 				// Unicode scalar value for the icon emoji string
 				let unicodeScalers = icon.unicodeScalars
 				// First element as an UInt32
 				let unicode = unicodeScalers[unicodeScalers.startIndex].value
 				newWaypoint.icon = unicode
 				if locked {
-
 					if lockedTo == 0 {
 						newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
 					} else {
@@ -212,7 +209,6 @@ struct WaypointFormView: View {
 						let unicode = unicodeScalers[unicodeScalers.startIndex].value
 						newWaypoint.icon = unicode
 						if locked {
-
 							if lockedTo == 0 {
 								newWaypoint.lockedTo = UInt32(bleManager.connectedPeripheral!.num)
 							} else {
@@ -261,7 +257,7 @@ struct WaypointFormView: View {
 				description = ""
 				locked = false
 				expires = false
-				expire = Date.now.addingTimeInterval(60 * 120)
+				expire = Date.now.addingTimeInterval(60 * 480)
 				icon = "📍"
 				latitude = coordinate.coordinate?.latitude ?? 0
 				longitude = coordinate.coordinate?.longitude ?? 0
