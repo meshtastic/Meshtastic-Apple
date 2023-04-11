@@ -217,22 +217,8 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					switch meshMapType {
-					case "standard":
-						mapType = .standard
-					case "mutedStandard":
-						mapType = .mutedStandard
-					case "hybrid":
-						mapType = .hybrid
-					case "hybridFlyover":
-						mapType = .hybridFlyover
-					case "satellite":
-						mapType = .satellite
-					case "satelliteFlyover":
-						mapType = .satelliteFlyover
-					default:
-						mapType = .hybridFlyover
-					}
+					let currentMapType = MeshMapType(rawValue: meshMapType)
+					mapType = currentMapType?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {

@@ -31,6 +31,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	
+	// Custom Tile Server
+	@AppStorage("meshMapCustomTileServer") private var tileServerUrl = ""
+	var tileRenderer: MKTileOverlayRenderer?
+	let tileServer: MapTileServerLinks = .openStreetMaps
+	
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
 		mapView.mapType = mapViewType
@@ -85,6 +90,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#endif
 		
 		#endif
+		
+		if tileServerUrl.count > 0 {
+			context.coordinator.setupTileServerRenderer()
+		}
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -162,6 +171,29 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			mapView.showsUserLocation = true
 		}
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
+		
+		if tileServerUrl.count > 0 {
+			
+			tileRenderer?.alpha = 0.0
+			let overlays = mapView.overlays
+			if mapView.mapType == .standard {
+				let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
+				if overlays.contains(where: {$0 is MKPolyline}) {
+					mapView.addOverlay(overlay, level: .aboveLabels)
+					if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
+						mapView.addOverlay(poly_overlay, level: .aboveLabels)
+					}
+				} else {
+					mapView.addOverlay(overlay, level: .aboveLabels)
+				}
+			} else {
+				for overlay in overlays {
+					if let ove = overlay as? MKTileOverlay {
+						mapView.removeOverlay(ove)
+					}
+				}
+			}
+		}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
@@ -351,6 +383,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				return MKOverlayRenderer()
 			}
+		}
+		
+		func setupTileServerRenderer() {
+			//let template = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.jpg"
+			//let template = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.jpg"
+			let overlay = MKTileOverlay(urlTemplate: parent.tileServerUrl)
+			parent.mapView.addOverlay(overlay, level: .aboveLabels)
+			parent.tileRenderer = MKTileOverlayRenderer(tileOverlay: overlay)
 		}
 	}
 	

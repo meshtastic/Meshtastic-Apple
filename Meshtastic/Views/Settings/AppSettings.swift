@@ -26,7 +26,6 @@ struct AppSettings: View {
 					}
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
-					.listRowSeparator(.visible)
 				}
 				Section(header: Text("options")) {
 
@@ -120,6 +119,19 @@ struct AppSettings: View {
 						Label("Show Route Lines", systemImage: "road.lanes")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					HStack {
+						
+						Label("Tile Server", systemImage: "square.grid.3x2")
+						TextField(
+							"Tile Server",
+							text: $userSettings.meshMapCustomTileServer,
+							axis: .vertical
+						)
+						.foregroundColor(.gray)
+					}
+					.keyboardType(.asciiCapable)
+					.disableAutocorrection(true)
 				}
 			}
 			HStack {

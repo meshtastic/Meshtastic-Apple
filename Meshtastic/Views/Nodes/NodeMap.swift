@@ -37,7 +37,7 @@ struct NodeMap: View {
 			}
 		}
 	}
-	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
+	@AppStorage("meshMapType") private var meshMapType = "standard"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
@@ -111,22 +111,8 @@ struct NodeMap: View {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
-			switch meshMapType {
-			case "standard":
-				mapType = .standard
-			case "mutedStandard":
-				mapType = .mutedStandard
-			case "hybrid":
-				mapType = .hybrid
-			case "hybridFlyover":
-				mapType = .hybridFlyover
-			case "satellite":
-				mapType = .satellite
-			case "satelliteFlyover":
-				mapType = .satelliteFlyover
-			default:
-				mapType = .hybridFlyover
-			}
+			let currentMapType = MeshMapType(rawValue: meshMapType)
+			mapType = currentMapType?.MKMapTypeValue() ?? .standard
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
