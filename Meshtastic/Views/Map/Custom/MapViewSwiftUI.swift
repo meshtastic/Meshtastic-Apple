@@ -181,10 +181,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				if overlays.contains(where: {$0 is MKPolyline}) {
 					mapView.addOverlay(overlay, level: .aboveLabels)
 					if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
-						mapView.addOverlay(poly_overlay, level: .aboveLabels)
+						mapView.addOverlay(poly_overlay, level: .aboveRoads)
 					}
 				} else {
-					mapView.addOverlay(overlay, level: .aboveLabels)
+					mapView.addOverlay(overlay, level: .aboveRoads)
 				}
 			} else {
 				for overlay in overlays {
