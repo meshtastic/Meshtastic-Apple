@@ -25,10 +25,10 @@ struct NodeList: View {
 
 	@State private var selection: NodeInfoEntity? // Nothing selected by default.
 
-    var body: some View {
+	var body: some View {
 
 		NavigationSplitView {
-			List(nodes, id: \.self, selection: $selection) { node in				
+			List(nodes, id: \.self, selection: $selection) { node in
 				if nodes.count == 0 {
 					Text("no.nodes").font(.title)
 				} else {

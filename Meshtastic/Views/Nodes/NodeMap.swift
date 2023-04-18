@@ -136,5 +136,5 @@ struct NodeMap: View {
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})
-    }
+	}
 }

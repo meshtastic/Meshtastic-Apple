@@ -11,6 +11,7 @@ class UserSettings: ObservableObject {
 	@Published var meshtasticUsername: String {
 		didSet {
 			UserDefaults.standard.set(meshtasticUsername, forKey: "meshtasticusername")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var preferredPeripheralId: String {
@@ -27,16 +28,19 @@ class UserSettings: ObservableObject {
 	@Published var provideLocationInterval: Int {
 		didSet {
 			UserDefaults.standard.set(provideLocationInterval, forKey: "provideLocationInterval")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var keyboardType: Int {
 		didSet {
 			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var meshMapType: String {
 		didSet {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var meshMapCenteringMode: Int {
@@ -54,6 +58,7 @@ class UserSettings: ObservableObject {
 	@Published var meshMapCustomTileServer: String {
 		didSet {
 			UserDefaults.standard.set(meshMapCustomTileServer, forKey: "meshMapCustomTileServer")
+			UserDefaults.standard.synchronize()
 		}
 	}
 	@Published var meshMapUserTrackingMode: Int {

@@ -9,13 +9,13 @@ import Foundation
 import MapKit
 
 enum KeyboardType: Int, CaseIterable, Identifiable {
-
+	
 	case defaultKeyboard = 0
 	case asciiCapable = 1
 	case twitter = 9
 	case emailAddress = 7
 	case numbersAndPunctuation = 2
-
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -34,16 +34,16 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 }
 
 enum MeshMapType: String, CaseIterable, Identifiable {
-
+	
 	case standard
 	case mutedStandard
 	case hybrid
 	case hybridFlyover
 	case satellite
 	case satelliteFlyover
-
+	
 	var id: String { self.rawValue }
-
+	
 	var description: String {
 		switch self {
 		case .standard:
@@ -61,7 +61,7 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
-
+		
 		switch self {
 		case .standard:
 			return MKMapType.standard
@@ -80,13 +80,13 @@ enum MeshMapType: String, CaseIterable, Identifiable {
 }
 
 enum UserTrackingModes: Int, CaseIterable, Identifiable {
-
+	
 	case none = 0
 	case follow = 1
 	case followWithHeading = 2
-
+	
 	var id: Int { self.rawValue }
-
+	
 	var description: String {
 		switch self {
 		case .none:
@@ -98,7 +98,7 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func MKUserTrackingModeValue() -> MKUserTrackingMode {
-
+		
 		switch self {
 		case .none:
 			return MKUserTrackingMode.none
@@ -111,7 +111,7 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 }
 
 enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
-
+	
 	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
@@ -120,7 +120,7 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
-
+	
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
@@ -140,6 +140,33 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
 		case .fifteenMinutes:
 			return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
+		}
+	}
+}
+enum MapTileServerLinks: Int, CaseIterable, Identifiable {
+	
+	case openStreetMaps
+	case wikimedia
+	case nationalMap
+	var id: Int { self.rawValue }
+	var tileUrl: String {
+		switch self {
+		case .wikimedia:
+			return "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+		case .openStreetMaps:
+			return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+		case .nationalMap:
+			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+		}
+	}
+	var zoomRange: [Int] {
+		switch self {
+		case .wikimedia:
+			return [Int](0...24)
+		case .openStreetMaps:
+			return [Int](0...24)
+		case .nationalMap:
+			return [Int](0...24)
 		}
 	}
 }

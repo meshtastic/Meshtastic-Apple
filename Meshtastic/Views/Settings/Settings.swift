@@ -64,7 +64,7 @@ struct Settings: View {
 				}
 				.tag(SettingsSidebar.appSettings)
 				let node = nodes.first(where: { $0.num == connectedNodeNum })
-				if node?.myInfo?.adminIndex ?? 0 > 0 {
+				//if node?.myInfo?.adminIndex ?? 0 > 0 {
 					Section("Configure") {
 						Picker("Configuring Node", selection: $selectedNode) {
 							if selectedNode == 0 {
@@ -83,7 +83,7 @@ struct Settings: View {
 								}
 							}
 						}
-						.pickerStyle(.menu)
+						.pickerStyle(.automatic)
 						.labelsHidden()
 						.onChange(of: selectedNode) { newValue in
 							if selectedNode > 0 {
@@ -101,7 +101,7 @@ struct Settings: View {
 							}
 						}
 					}
-				}
+				//}
 
 				Section("radio.configuration") {
 

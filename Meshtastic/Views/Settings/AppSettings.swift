@@ -5,19 +5,19 @@ import SwiftProtobuf
 import MapKit
 
 struct AppSettings: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-
+	
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var preferredDeviceConnected = false
-
-    var body: some View {
+	
+	var body: some View {
 		VStack {
 			Form {
 				Section(header: Text("user.details")) {
-
+					
 					HStack {
 						Label("Name", systemImage: "person.crop.rectangle.fill")
 						TextField("Username", text: $userSettings.meshtasticUsername)
@@ -28,32 +28,32 @@ struct AppSettings: View {
 					.listRowSeparator(.visible)
 				}
 				Section(header: Text("options")) {
-
+					
 					Picker("keyboard.type", selection: $userSettings.keyboardType) {
 						ForEach(KeyboardType.allCases) { kb in
 							Text(kb.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-
+					
 				}
-
+				
 				Section(header: Text("phone.gps")) {
-
+					
 					Toggle(isOn: $userSettings.provideLocation) {
-
+						
 						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if userSettings.provideLocation {
-
+						
 						Picker("update.interval", selection: $userSettings.provideLocationInterval) {
 							ForEach(LocationUpdateInterval.allCases) { lu in
 								Text(lu.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-
+						
 						Text("phone.gps.interval.description")
 							.font(.caption)
 							.foregroundColor(.gray)
@@ -68,31 +68,31 @@ struct AppSettings: View {
 						.font(.caption)
 						.foregroundColor(.gray)
 				}
-
+				
 				Section(header: Text("map options")) {
-
+					
 					Picker("map.type", selection: $userSettings.meshMapType) {
 						ForEach(MeshMapType.allCases) { map in
 							Text(map.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-
+					
 					if userSettings.meshMapUserTrackingMode == 0 {
-
+						
 						Toggle(isOn: $userSettings.meshMapRecentering) {
-
+							
 							Label("map.recentering", systemImage: "camera.metering.center.weighted")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 					Toggle(isOn: $userSettings.meshMapShowNodeHistory) {
-
+						
 						Label("Show Node History", systemImage: "building.columns.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $userSettings.meshMapShowRouteLines) {
-
+						
 						Label("Show Route Lines", systemImage: "road.lanes")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -125,14 +125,14 @@ struct AppSettings: View {
 		}
 		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:
-			ZStack {
+								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
 			self.bleManager.context = context
 		}
 		.onChange(of: userSettings.provideLocation) { _ in
-
+			
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}

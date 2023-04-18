@@ -112,17 +112,11 @@ struct LoRaConfig: View {
 
 					 if !usePreset {
 						 HStack {
-							 Picker("Bandwidth", selection: $spreadFactor) {
-								 Text("31 kHz")
-									 .tag(31)
-								 Text("62 kHz")
-									 .tag(62)
-								 Text("125 kHz")
-									 .tag(125)
-								 Text("250 kHz")
-									 .tag(0)
-								 Text("500 kHz")
-									 .tag(500)
+							 Picker("Bandwidth", selection: $bandwidth) {
+								 ForEach(Bandwidths.allCases) { bw in
+									 Text(bw.description)
+										 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
+								 }
 							 }
 						 }
 						 HStack {
@@ -143,7 +137,7 @@ struct LoRaConfig: View {
 						 }
 					}
 
-					Picker("Number of hops", selection: $codingRate) {
+					Picker("Number of hops", selection: $hopLimit) {
 						ForEach(1..<8) {
 							Text("\($0)")
 								.tag($0 == 3 ? 0 : $0)
@@ -290,7 +284,7 @@ struct LoRaConfig: View {
 		}
 	}
 	func setLoRaValues() {
-		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
+		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 0)
 		self.region = Int(node?.loRaConfig?.regionCode ?? 0)
 		self.usePreset = node?.loRaConfig?.usePreset ?? true
 		self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)

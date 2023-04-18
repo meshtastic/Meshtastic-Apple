@@ -201,7 +201,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)) 
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0))
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}

@@ -2,21 +2,21 @@ import CoreLocation
 
 class LocationHelper: NSObject, ObservableObject {
 
-    static let shared = LocationHelper()
+	static let shared = LocationHelper()
 
-    // Apple Park
-    static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	// Apple Park
+	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
 	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
 
-    static var currentLocation: CLLocationCoordinate2D {
+	static var currentLocation: CLLocationCoordinate2D {
 
 		guard let location = shared.locationManager.location else {
-            return DefaultLocation
-        }
-        return location.coordinate
-    }
+			return DefaultLocation
+		}
+		return location.coordinate
+	}
 
 	static var currentAltitude: CLLocationDistance {
 
@@ -74,29 +74,29 @@ class LocationHelper: NSObject, ObservableObject {
 		return sats
 	}
 
-    private let locationManager = CLLocationManager()
+	private let locationManager = CLLocationManager()
 
-    private override init() {
+	private override init() {
 
-        super.init()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+		super.init()
+		locationManager.delegate = self
+		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
 		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .otherNavigation
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-    }
+		locationManager.requestWhenInUseAuthorization()
+		locationManager.startUpdatingLocation()
+	}
 }
 
 extension LocationHelper: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
 
-    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location manager failed with error: \(error.localizedDescription)")
-    }
+	public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+		print("Location manager failed with error: \(error.localizedDescription)")
+	}
 
-    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("Location manager changed the status: \(status)")
-    }
+	public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+		print("Location manager changed the status: \(status)")
+	}
 }
