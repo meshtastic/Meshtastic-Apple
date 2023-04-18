@@ -14,7 +14,7 @@ struct AppSettings: View {
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var preferredDeviceConnected = false
 
-    var body: some View {
+	var body: some View {
 		VStack {
 			Form {
 				Section(header: Text("user.details")) {
