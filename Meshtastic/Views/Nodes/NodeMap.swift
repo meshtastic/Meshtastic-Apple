@@ -10,14 +10,6 @@ import MapKit
 import CoreLocation
 import CoreData
 
-// A simple struct with waypoint data
-struct WaypointCoordinate: Identifiable {
-
-	let id: UUID
-	let coordinate: CLLocationCoordinate2D?
-	let waypointId: Int64
-}
-
 struct NodeMap: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -37,8 +29,10 @@ struct NodeMap: View {
 			}
 		}
 	}
-	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -52,7 +46,9 @@ struct NodeMap: View {
 
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State var waypointCoordinate: WaypointCoordinate?
+	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
+	@State var editingWaypoint: Int = 0
+	@State private var presentingWaypointForm = false
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -64,17 +60,25 @@ struct NodeMap: View {
 		NavigationStack {
 			ZStack {
 
-				MapViewSwiftUI(
-					onLongPress: { coord in
-						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+				MapViewSwiftUI(onLongPress: { coord in
+					waypointCoordinate = coord
+					editingWaypoint = 0
+					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+						print("Apple Park")
+					} else {
+						presentingWaypointForm = true
+					}
 				}, onWaypointEdit: { wpId in
 					if wpId > 0 {
-						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+						editingWaypoint = wpId
+						presentingWaypointForm = true
 					}
 				}, positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
+				   showNodeHistory: meshMapShowNodeHistory,
+				   showRouteLines: meshMapShowRouteLines,
 				   customMapOverlay: self.customMapOverlay
 				)
 				VStack {
@@ -91,11 +95,12 @@ struct NodeMap: View {
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
-			.sheet(item: $waypointCoordinate, content: { wpc in
-				WaypointFormView(coordinate: wpc)
+			.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
+				WaypointFormView(coordinate: waypointCoordinate, waypointId: editingWaypoint)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.automatic)
-			})
+
+			}
 		}
 		.navigationBarItems(leading:
 								MeshtasticLogo(), trailing:
@@ -111,11 +116,25 @@ struct NodeMap: View {
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
 			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
-			let currentMapType = MeshMapType(rawValue: meshMapType)
-			mapType = currentMapType?.MKMapTypeValue() ?? .standard
+			switch meshMapType {
+			case "standard":
+				mapType = .standard
+			case "mutedStandard":
+				mapType = .mutedStandard
+			case "hybrid":
+				mapType = .hybrid
+			case "hybridFlyover":
+				mapType = .hybridFlyover
+			case "satellite":
+				mapType = .satellite
+			case "satelliteFlyover":
+				mapType = .satelliteFlyover
+			default:
+				mapType = .hybridFlyover
+			}
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})
-    }
+	}
 }

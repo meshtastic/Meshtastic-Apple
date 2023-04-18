@@ -58,7 +58,7 @@ extension PositionEntity {
 }
 
 extension PositionEntity: MKAnnotation {
-	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationHelper.DefaultLocation.coordinate }
+	public var coordinate: CLLocationCoordinate2D { nodeCoordinate ?? LocationHelper.DefaultLocation }
 	public var title: String? {  nodePosition?.user?.shortName ?? NSLocalizedString("unknown", comment: "Unknown") }
 	public var subtitle: String? {  time?.formatted() }
 }
