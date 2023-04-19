@@ -55,3 +55,9 @@ extension WaypointEntity: MKAnnotation {
 		String(expire != nil ? "\n⌛ Expires \(String(describing: expire?.formatted()))" : "") +
 		String(locked > 0 ? "\n🔒 Locked" : "") }
 }
+struct WaypointCoordinate: Identifiable {
+
+	let id: UUID
+	let coordinate: CLLocationCoordinate2D?
+	let waypointId: Int64
+}
