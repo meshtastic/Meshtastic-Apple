@@ -10,14 +10,6 @@ import MapKit
 import CoreLocation
 import CoreData
 
-// A simple struct with waypoint data
-struct WaypointCoordinate: Identifiable {
-
-	let id: UUID
-	let coordinate: CLLocationCoordinate2D?
-	let waypointId: Int64
-}
-
 struct NodeMap: View {
 
 	@Environment(\.managedObjectContext) var context

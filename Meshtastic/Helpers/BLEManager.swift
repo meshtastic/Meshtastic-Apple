@@ -784,14 +784,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if lastPosition != nil {
 				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
 				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
+					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50 ) {
 						return false
 					}
 				}
 			}
 		}
 		let locationHelper = LocationHelper()
-		lastPosition = locationHelper.lastLocation
+		locationHelper.lastLocation = LocationHelper.currentLocation
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(locationHelper.lastLocation?.coordinate.latitude ?? 0 * 1e7)
 		positionPacket.longitudeI = Int32(locationHelper.lastLocation?.coordinate.longitude ?? 0 * 1e7)
