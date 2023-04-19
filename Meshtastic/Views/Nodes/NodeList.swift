@@ -52,8 +52,8 @@ struct NodeList: View {
 									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 != node.num) {
 										HStack(alignment: .bottom) {
 											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude)
+											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.coordinate.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.coordinate.latitude {
 												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 												let metersAway = nodeCoord.distance(from: myCoord)
 												Image(systemName: "lines.measurement.horizontal")
