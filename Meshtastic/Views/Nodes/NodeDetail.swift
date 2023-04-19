@@ -14,8 +14,11 @@ struct NodeDetail: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
-	@State var waypointCoordinate: WaypointCoordinate? 
+	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
 	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
@@ -61,14 +64,19 @@ struct NodeDetail: View {
 							// let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
-									waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+									waypointCoordinate = coord
+									editingWaypoint = 0
+									presentingWaypointForm = true
 								}, onWaypointEdit: { wpId in
 									if wpId > 0 {
-										waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+										editingWaypoint = wpId
+										presentingWaypointForm = true
 									}
 								}, positions: lastTenThousand, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
+									showNodeHistory: meshMapShowNodeHistory,
+									showRouteLines: meshMapShowRouteLines,
 									customMapOverlay: self.customMapOverlay
 								)
 								VStack(alignment: .leading) {
@@ -100,7 +108,7 @@ struct NodeDetail: View {
 												.font(.title)
 												.padding()
 											let nodeLocation = node.positions?.lastObject as? PositionEntity
-											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.coordinate.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.coordinate.longitude) )
+											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) )
 												.frame(height: 250)
 										}
 										#else
@@ -109,7 +117,7 @@ struct NodeDetail: View {
 												 .font(.title)
 												 .padding()
 											 let nodeLocation = node.positions?.lastObject as? PositionEntity
-											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.coordinate.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.coordinate.longitude) ).frame(height: 250)
+											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) ).frame(height: 250)
 												 .presentationDetents([.medium])
 												 .presentationDragIndicator(.automatic)
 										 }
@@ -202,11 +210,11 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(item: $waypointCoordinate, content: { wpc in
-					WaypointFormView(coordinate: wpc)
-						.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.automatic)
-				})
+				.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
+					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
+							.presentationDetents([.medium, .large])
+							.presentationDragIndicator(.automatic)
+				}
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
@@ -217,8 +225,22 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					let currentMapType = MeshMapType(rawValue: meshMapType)
-					mapType = currentMapType?.MKMapTypeValue() ?? .standard
+					switch meshMapType {
+					case "standard":
+						mapType = .standard
+					case "mutedStandard":
+						mapType = .mutedStandard
+					case "hybrid":
+						mapType = .hybrid
+					case "hybridFlyover":
+						mapType = .hybridFlyover
+					case "satellite":
+						mapType = .satellite
+					case "satelliteFlyover":
+						mapType = .satelliteFlyover
+					default:
+						mapType = .hybridFlyover
+					}
 				}
 				.task(id: node.num) {
 					if !loadedWeather {
@@ -228,7 +250,7 @@ struct NodeDetail: View {
 								
 								let mostRecent = node.positions?.lastObject as? PositionEntity
 								
-								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude))
+								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 								condition = weather.currentWeather.condition
 								temperature = weather.currentWeather.temperature
 								humidity = Int(weather.currentWeather.humidity * 100)

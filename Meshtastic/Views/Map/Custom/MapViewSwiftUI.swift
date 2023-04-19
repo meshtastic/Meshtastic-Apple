@@ -13,28 +13,22 @@ func degreesToRadians(_ number: Double) -> Double {
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
-	var onLongPress: ((CLLocationCoordinate2D) -> Void)
-	var onWaypointEdit: ((Int) -> Void)
+	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
+	var onWaypointEdit: (_ waypointId: Int ) -> Void
 	let mapView = MKMapView()
 	// Parameters
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	let mapViewType: MKMapType
 	let userTrackingMode: MKUserTrackingMode
-	// User Defaults Values
+	let showNodeHistory: Bool
+	let showRouteLines: Bool
 	@AppStorage("meshMapRecentering") private var recenter: Bool = false
-	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
-	
-	// Custom Tile Server
-	@AppStorage("meshMapCustomTileServer") private var tileServerUrl = ""
-	var tileRenderer: MKTileOverlayRenderer?
-	let tileServer: MapTileServerLinks = .openStreetMaps
 	
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
@@ -45,7 +39,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			.filter { $0.latest == true }
 			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].coordinate : LocationHelper.currentLocation.coordinate
+		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].coordinate : LocationHelper.currentLocation
 		let region = MKCoordinateRegion(center: center, span: span)
 		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		mapView.setRegion(region, animated: true)
@@ -90,10 +84,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#endif
 		
 		#endif
-		
-		if tileServerUrl.count > 0 {
-			context.coordinator.setupTileServerRenderer()
-		}
 		mapView.delegate = context.coordinator
 		return mapView
 	}
@@ -126,72 +116,54 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
-		let latest = positions
-			.filter { $0.latest == true }
-			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
-		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-		print("Waypoint Count: \(waypoints.count)")
-		print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
-		mapView.removeAnnotations(mapView.annotations)
-		mapView.addAnnotations(waypoints)
-		mapView.addAnnotations(showNodeHistory ? positions : latest)
-		// Remove all existing PolyLine Overlays
-		for overlay in mapView.overlays {
-			if overlay is MKPolyline {
-				mapView.removeOverlay(overlay)
-			}
-		}
-		if showRouteLines {
+		DispatchQueue.main.async {
+			let latest = positions
+				.filter { $0.latest == true }
+				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
+			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 			
-			var lineIndex = 0
-			for position in latest {
-				
-				let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
-				let lineCoords = nodePositions.map ({
-					(position) -> CLLocationCoordinate2D in
-					return position.nodeCoordinate!
-				})
-				let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-				polyline.title = "\(String(position.nodePosition?.num ?? 0))"
-				mapView.addOverlay(polyline)
-				lineIndex += 1
-				// There are 18 colors for lines, start over if we are at index 17
-				if lineIndex > 17 {
-					lineIndex = 0
+			
+			if annotationCount != mapView.annotations.count {
+				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+				mapView.removeAnnotations(mapView.annotations)
+				mapView.addAnnotations(waypoints)
+				if showRouteLines {
+					// Remove all existing PolyLine Overlays
+					for overlay in mapView.overlays {
+						if overlay is MKPolyline {
+							mapView.removeOverlay(overlay)
+						}
+					}
+					var lineIndex = 0
+					for position in latest {
+						
+						let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+						let lineCoords = nodePositions.map ({
+							(position) -> CLLocationCoordinate2D in
+							return position.nodeCoordinate!
+						})
+						let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+						polyline.title = "\(String(position.nodePosition?.num ?? 0))"
+						mapView.addOverlay(polyline)
+						lineIndex += 1
+						// There are 18 colors for lines, start over if we are at index 17
+						if lineIndex > 17 {
+							lineIndex = 0
+						}
+					}
 				}
-			}
-		}
-		if userTrackingMode == MKUserTrackingMode.none {
-			mapView.showsUserLocation = false
-			if recenter {
-				mapView.fit(annotations:showNodeHistory || showRouteLines ? positions : latest, andShow: false)
-			}
-		} else {
-			// Centering Done by tracking mode
-			mapView.showsUserLocation = true
-		}
-		mapView.setUserTrackingMode(userTrackingMode, animated: true)
-		
-		if tileServerUrl.count > 0 {
-			
-			tileRenderer?.alpha = 0.0
-			let overlays = mapView.overlays
-			if mapView.mapType == .standard {
-				let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
-				if overlays.contains(where: {$0 is MKPolyline}) {
-					mapView.addOverlay(overlay, level: .aboveLabels)
-					if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
-						mapView.addOverlay(poly_overlay, level: .aboveRoads)
+				if userTrackingMode == MKUserTrackingMode.none {
+					mapView.showsUserLocation = false
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					if recenter {
+						mapView.fit(annotations:showNodeHistory || showRouteLines ? positions : latest, andShow: false)
 					}
 				} else {
-					mapView.addOverlay(overlay, level: .aboveRoads)
+					// Centering Done by tracking mode
+					mapView.addAnnotations(showNodeHistory ? positions : latest)
+					mapView.showsUserLocation = true
 				}
-			} else {
-				for overlay in overlays {
-					if let ove = overlay as? MKTileOverlay {
-						mapView.removeOverlay(ove)
-					}
-				}
+				mapView.setUserTrackingMode(userTrackingMode, animated: true)
 			}
 		}
 	}
@@ -209,6 +181,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.parent = parent
 			super.init()
 			self.longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressHandler))
+			self.longPressRecognizer.minimumPressDuration = 0.5
+			self.longPressRecognizer.cancelsTouchesInView = true
+			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
 		}
 		
@@ -226,7 +201,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)) 
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0))
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}
@@ -288,7 +263,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation.coordinate)
+					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
 					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
@@ -321,7 +296,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					subtitle.text = ""
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation.coordinate)
+					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
 					let distanceFormatter = MKDistanceFormatter()
 					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
@@ -351,20 +326,23 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
-		@objc func longPressHandler(_ sender: UILongPressGestureRecognizer) {
+		@objc func longPressHandler(_ gesture: UILongPressGestureRecognizer) {
 			
-			if sender.state == .began {
-				let point = sender.location(in: sender.view)
-				if let mapView = sender.view as? MKMapView {
-					let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
-					let annotation = MKPointAnnotation()
-					print("Handler Coord - \(coordinate)")
-					annotation.title = "Dropped Pin"
-					annotation.coordinate = coordinate
-					parent.mapView.addAnnotation(annotation)
-					UINotificationFeedbackGenerator().notificationOccurred(.success)
-					parent.onLongPress(coordinate)
-				}
+			if gesture.state != UIGestureRecognizer.State.ended {
+				return
+			} else if gesture.state != UIGestureRecognizer.State.began {
+				
+				// Screen Position - CGPoint
+				let location = longPressRecognizer.location(in: self.parent.mapView)
+				
+				// Map Coordinate - CLLocationCoordinate2D
+				let coordinate = self.parent.mapView.convert(location, toCoordinateFrom: self.parent.mapView)
+				let annotation = MKPointAnnotation()
+				annotation.title = "Dropped Pin"
+				annotation.coordinate = coordinate
+				parent.mapView.addAnnotation(annotation)
+				UINotificationFeedbackGenerator().notificationOccurred(.success)
+				parent.onLongPress(coordinate)
 			}
 		}
 		
@@ -383,14 +361,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				return MKOverlayRenderer()
 			}
-		}
-		
-		func setupTileServerRenderer() {
-			//let template = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}.jpg"
-			//let template = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.jpg"
-			let overlay = MKTileOverlay(urlTemplate: parent.tileServerUrl)
-			parent.mapView.addOverlay(overlay, level: .aboveLabels)
-			parent.tileRenderer = MKTileOverlayRenderer(tileOverlay: overlay)
 		}
 	}
 	
