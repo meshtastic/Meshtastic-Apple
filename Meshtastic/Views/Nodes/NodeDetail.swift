@@ -17,14 +17,13 @@ struct NodeDetail: View {
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
-	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
 	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var presentingWaypointForm = false
 	@State private var showOverlays: Bool = true
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
@@ -64,15 +63,12 @@ struct NodeDetail: View {
 							// let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
-									waypointCoordinate = coord
-									editingWaypoint = 0
-									presentingWaypointForm = true
-								}, onWaypointEdit: { wpId in
-									if wpId > 0 {
-										editingWaypoint = wpId
-										presentingWaypointForm = true
-									}
-								}, positions: lastTenThousand, waypoints: Array(waypoints),
+										waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+									}, onWaypointEdit: { wpId in
+										if wpId > 0 {
+											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+										}
+									}, positions: lastTenThousand, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
@@ -210,11 +206,11 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
-					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
-							.presentationDetents([.medium, .large])
-							.presentationDragIndicator(.automatic)
-				}
+				.sheet(item: $waypointCoordinate, content: { wpc in
+					WaypointFormView(coordinate: wpc)
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
+				})
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
@@ -269,6 +265,7 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			.padding(.bottom, 2)
 		}
 	}
 }

@@ -46,9 +46,7 @@ struct NodeMap: View {
 
 	@State private var mapType: MKMapType = .standard
 	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
-	@State var editingWaypoint: Int = 0
-	@State private var presentingWaypointForm = false
+	@State var waypointCoordinate: WaypointCoordinate?
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -60,20 +58,15 @@ struct NodeMap: View {
 		NavigationStack {
 			ZStack {
 
-				MapViewSwiftUI(onLongPress: { coord in
-					waypointCoordinate = coord
-					editingWaypoint = 0
-					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-						print("Apple Park")
-					} else {
-						presentingWaypointForm = true
-					}
-				}, onWaypointEdit: { wpId in
-					if wpId > 0 {
-						editingWaypoint = wpId
-						presentingWaypointForm = true
-					}
-				}, positions: Array(positions),
+				MapViewSwiftUI(
+						onLongPress: { coord in
+						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+					}, onWaypointEdit: { wpId in
+						if wpId > 0 {
+							waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+						}
+					},
+				   positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
 				   userTrackingMode: userTrackingMode,
@@ -95,12 +88,11 @@ struct NodeMap: View {
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
-			.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
-				WaypointFormView(coordinate: waypointCoordinate, waypointId: editingWaypoint)
-					.presentationDetents([.medium, .large])
-					.presentationDragIndicator(.automatic)
-
-			}
+			.sheet(item: $waypointCoordinate, content: { wpc in
+							WaypointFormView(coordinate: wpc)
+								.presentationDetents([.medium, .large])
+								.presentationDragIndicator(.automatic)
+			})
 		}
 		.navigationBarItems(leading:
 								MeshtasticLogo(), trailing:

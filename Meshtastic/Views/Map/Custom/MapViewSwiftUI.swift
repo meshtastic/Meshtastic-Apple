@@ -123,7 +123,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 			
 			
-			if annotationCount != mapView.annotations.count {
+//			if annotationCount != mapView.annotations.count {
 				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
@@ -156,7 +156,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = false
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					if recenter {
-						mapView.fit(annotations:showNodeHistory || showRouteLines ? positions : latest, andShow: false)
+						if latest.count > 1 {
+							mapView.fitAllAnnotations()
+						} else {
+							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+						}
 					}
 				} else {
 					// Centering Done by tracking mode
@@ -164,7 +168,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = true
 				}
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-			}
+		//	}
 		}
 	}
 	

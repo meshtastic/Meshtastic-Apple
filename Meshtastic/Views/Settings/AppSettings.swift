@@ -9,7 +9,7 @@ struct AppSettings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
-	
+	@StateObject var locationHelper = LocationHelper()
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var preferredDeviceConnected = false
 	
