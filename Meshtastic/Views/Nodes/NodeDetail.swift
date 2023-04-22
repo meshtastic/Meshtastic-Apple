@@ -100,7 +100,7 @@ struct NodeDetail: View {
 												.font(.title)
 												.padding()
 											let nodeLocation = node.positions?.lastObject as? PositionEntity
-											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.coordinate.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.coordinate.longitude) )
+											NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) )
 												.frame(height: 250)
 										}
 										#else
@@ -109,7 +109,7 @@ struct NodeDetail: View {
 												 .font(.title)
 												 .padding()
 											 let nodeLocation = node.positions?.lastObject as? PositionEntity
-											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.coordinate.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.coordinate.longitude) ).frame(height: 250)
+											 NodeWeatherForecastView(location: CLLocation(latitude: nodeLocation?.nodeCoordinate!.latitude ?? LocationHelper.currentLocation.latitude, longitude: nodeLocation?.nodeCoordinate!.longitude ?? LocationHelper.currentLocation.longitude) ).frame(height: 250)
 												 .presentationDetents([.medium])
 												 .presentationDragIndicator(.automatic)
 										 }
@@ -228,7 +228,7 @@ struct NodeDetail: View {
 								
 								let mostRecent = node.positions?.lastObject as? PositionEntity
 								
-								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.coordinate.latitude, longitude: LocationHelper.currentLocation.coordinate.longitude))
+								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 								condition = weather.currentWeather.condition
 								temperature = weather.currentWeather.temperature
 								humidity = Int(weather.currentWeather.humidity * 100)

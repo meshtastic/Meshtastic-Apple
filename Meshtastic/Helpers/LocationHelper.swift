@@ -1,39 +1,46 @@
 import CoreLocation
 
-class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
+class LocationHelper: NSObject, CLLocationManagerDelegate {
 
 	private let locationManager = CLLocationManager()
 	static let shared = LocationHelper()
-	@Published var lastLocation: CLLocation?
+	//@Published var lastLocation: CLLocation?
 	
 	override init() {
 
 		super.init()
-		locationManager.delegate = self
-		locationManager.desiredAccuracy = kCLLocationAccuracyBest
+		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters//kCLLocationAccuracyBest
 		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .otherNavigation
 		locationManager.requestWhenInUseAuthorization()
-		locationManager.distanceFilter = 5
+		//locationManager.distanceFilter = 5
 		locationManager.startUpdatingLocation()
 	}
 
 	// Apple Park
-	static let DefaultLocation = CLLocation(latitude: 37.3346, longitude: -122.0090)
-	//static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	//static let DefaultLocation = CLLocation(latitude: 37.3346, longitude: -122.0090)
+	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
 	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
 
-	static var currentLocation: CLLocation {
-
-		 guard let location = shared.locationManager.location else {
-			 return DefaultLocation
-		 }
-		 return location
-	 }
+//	static var currentLocation: CLLocation {
+//
+//		 guard let location = shared.locationManager.location else {
+//			 return DefaultLocation
+//		 }
+//		 return location
+//	 }
 	
+	static var currentLocation: CLLocationCoordinate2D {
+
+		guard let location = shared.locationManager.location else {
+			return DefaultLocation
+		}
+		return location.coordinate
+	}
+
 	static var currentAltitude: CLLocationDistance {
 
 		guard let altitude = shared.locationManager.location?.altitude else {
@@ -97,23 +104,25 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 		return sats
 	}
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
 	
-	public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-
-		guard let mostRecentLocation = locations.last else {
-			return
-		}
-		// Extra Smart positioning logic throwing out bad readings from the phone GPS
-		let age = -mostRecentLocation.timestamp.timeIntervalSinceNow
-		manager.stopUpdatingLocation()
-		if age > 10 || mostRecentLocation.horizontalAccuracy < 0 || mostRecentLocation.horizontalAccuracy > 100 {
-			print("Bad Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
-			manager.startUpdatingLocation()
-		} else {
-			print("Good Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
-			lastLocation = mostRecentLocation
-		}
-	}
+//	public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//
+//		guard let mostRecentLocation = locations.last else {
+//			return
+//		}
+//		// Extra Smart positioning logic throwing out bad readings from the phone GPS
+//		let age = -mostRecentLocation.timestamp.timeIntervalSinceNow
+//		//manager.stopUpdatingLocation()
+//		if age > 10 || mostRecentLocation.horizontalAccuracy < 0 || mostRecentLocation.horizontalAccuracy > 100 {
+//			print("Bad Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
+//			//manager.startUpdatingLocation()
+//		} else {
+//			print("Good Location: HA-\(mostRecentLocation.horizontalAccuracy) VA-\(mostRecentLocation.verticalAccuracy) AGE-\(age)")
+//			lastLocation = mostRecentLocation
+//		}
+//		//lastLocation = mostRecentLocation
+//	}
 	
 	public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
 		print("Location manager failed with error: \(error.localizedDescription)")

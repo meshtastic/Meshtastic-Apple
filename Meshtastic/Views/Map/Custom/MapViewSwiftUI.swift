@@ -45,8 +45,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			.filter { $0.latest == true }
 			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 		let span =  MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].coordinate : LocationHelper.currentLocation.coordinate
-		let region = MKCoordinateRegion(center: center, span: span)
+		let center = (latest.count > 0 && userTrackingMode == MKUserTrackingMode.none) ? latest[0].nodeCoordinate : LocationHelper.currentLocation
+		let region = MKCoordinateRegion(center: center ?? LocationHelper.currentLocation, span: span)
 		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		mapView.setRegion(region, animated: true)
 		// Set user (phone gps) tracking options
@@ -288,7 +288,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					annotationView.glyphImage = UIImage(systemName: "flipphone")
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation.coordinate)
+					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
 					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
@@ -321,7 +321,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					subtitle.text = ""
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation.coordinate)
+					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
 					let distanceFormatter = MKDistanceFormatter()
 					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}

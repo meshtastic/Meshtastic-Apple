@@ -83,8 +83,9 @@ struct Settings: View {
 								}
 							}
 						}
-						.pickerStyle(.automatic)
+						.scaledToFit()
 						.labelsHidden()
+						.padding(.leading, -8)
 						.onChange(of: selectedNode) { newValue in
 							if selectedNode > 0 {
 								let node = nodes.first(where: { $0.num == newValue })
@@ -100,6 +101,7 @@ struct Settings: View {
 								}
 							}
 						}
+						
 					}
 				//}
 
