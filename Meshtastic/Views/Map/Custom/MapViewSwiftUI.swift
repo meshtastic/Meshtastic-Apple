@@ -30,6 +30,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	
+	// Custom Tile Server
+	@AppStorage("meshMapCustomTileServer") private var tileServerUrl = ""
+	var tileRenderer: MKTileOverlayRenderer?
+	let tileServer: MapTileServerLinks = .openStreetMaps
+	
 	func makeUIView(context: Context) -> MKMapView {
 		// Map View Parameters
 		mapView.mapType = mapViewType
@@ -64,6 +69,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
+		
+		let overlay = TileServerOverlay() // Offline-Map-Tiles
+			   overlay.canReplaceMapContent = true
+			   mapView.addOverlay(overlay, level: .aboveLabels)
 		
 		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
@@ -167,6 +176,29 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = true
 				}
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
+				
+				if tileServerUrl.count > 0 {
+					tileRenderer?.alpha = 0.0
+					let overlays = mapView.overlays
+					if mapView.mapType == .standard {
+						let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
+						if overlays.contains(where: {$0 is MKPolyline}) {
+							mapView.addOverlay(overlay, level: .aboveLabels)
+							if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
+								mapView.addOverlay(poly_overlay, level: .aboveRoads)
+							}
+						} else {
+							mapView.addOverlay(overlay, level: .aboveRoads)
+							
+						}
+					} else {
+						for overlay in overlays {
+							if let ove = overlay as? MKTileOverlay {
+								mapView.removeOverlay(ove)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -462,6 +494,46 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let urlstring = self.mapName+"\(path.z)/\(path.x)/\(path.y).png"
 				return URL(string: urlstring)!
 			}
+		}
+	}
+}
+
+class TileServerOverlay: MKTileOverlay {
+	
+	override func url(forTilePath path: MKTileOverlayPath) -> URL { // lädt die Map-Tiles
+		
+		if path.z <= 5 { // Es wurden nur Map-Tiles für z <= 5 geladen.
+			
+			let fileManager = FileManager.default // Objekt zum Verwalten des Dateisystems
+			
+			if var url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first { // Url vom Cache-Verzeichnis
+				
+				// Pfad wird erstellt
+				
+				url.appendPathComponent("map")
+				url.appendPathComponent("\(path.z)")
+				url.appendPathComponent("\(path.x)")
+				url.appendPathComponent("\(path.y).png")
+				
+				if fileManager.fileExists(atPath: url.path) { // Wenn das Map-Tile existiert...
+					
+					return url
+				}
+				else {
+					
+					//logger.info("OSMTileOverlay: MapTiles have not been downloaded yet.")
+					return Bundle.main.url(forResource: "default", withExtension: "png")!
+				}
+			}
+			else {
+				
+				//logger.error("OSMTileOverlay: Could not find cache url.")
+				return Bundle.main.url(forResource: "default", withExtension: "png")!
+			}
+		}
+		else {
+			
+			return Bundle.main.url(forResource: "default", withExtension: "png")!
 		}
 	}
 }
