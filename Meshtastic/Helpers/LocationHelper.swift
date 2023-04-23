@@ -16,8 +16,6 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
 		locationManager.activityType = .otherNavigation
-		//locationManager.requestWhenInUseAuthorization()
-		//locationManager.startUpdatingLocation()
 	}
 
 	// Apple Park
@@ -89,10 +87,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 		return sats
 	}
-//}
 
-//extension LocationHelper: CLLocationManagerDelegate {
-	
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
 		switch manager.authorizationStatus {
 		case .authorizedWhenInUse:
@@ -114,11 +109,11 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 	}
 	
-	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-		print("Location manager error: \(error.localizedDescription)")
-	}
-	
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		
+	}
+	
+	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+		print("Location manager error: \(error.localizedDescription)")
 	}
 }

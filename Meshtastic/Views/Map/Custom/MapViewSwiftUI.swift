@@ -120,10 +120,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			let latest = positions
 				.filter { $0.latest == true }
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
+			
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-			
-			
-//			if annotationCount != mapView.annotations.count {
+			if annotationCount != mapView.annotations.count {
 				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
@@ -168,7 +167,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = true
 				}
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-		//	}
+			}
 		}
 	}
 	

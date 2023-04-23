@@ -114,6 +114,7 @@ struct DeviceMetricsLog: View {
 					TableColumn("timestamp") { dm in
 						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
+					.width(min: 180)
 				}
 			} else {
 				ScrollView {
