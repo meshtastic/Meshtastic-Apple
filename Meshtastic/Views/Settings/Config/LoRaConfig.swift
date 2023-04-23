@@ -32,7 +32,7 @@ struct LoRaConfig: View {
 	@State var hasChanges = false
 	@State var region: Int = 0
 	@State var modemPreset = 0
-	@State var hopLimit = 0
+	@State var hopLimit = 3
 	@State var txPower = 0
 	@State var txEnabled = true
 	@State var usePreset = true
@@ -140,7 +140,7 @@ struct LoRaConfig: View {
 					Picker("Number of hops", selection: $hopLimit) {
 						ForEach(1..<8) {
 							Text("\($0)")
-								.tag($0 == 3 ? 0 : $0)
+								.tag($0 == 0 ? 3 : $0)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
@@ -284,7 +284,7 @@ struct LoRaConfig: View {
 		}
 	}
 	func setLoRaValues() {
-		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 0)
+		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
 		self.region = Int(node?.loRaConfig?.regionCode ?? 0)
 		self.usePreset = node?.loRaConfig?.usePreset ?? true
 		self.modemPreset = Int(node?.loRaConfig?.modemPreset ?? 0)

@@ -106,7 +106,7 @@ struct DeviceMetricsLog: View {
 						Text("\(String(format: "%.2f", dm.voltage))")
 					}
 					TableColumn("channel.utilization") { dm in
-						Text(String(format: "%.2f", dm.channelUtilization))
+						Text("\(String(format: "%.2f", dm.channelUtilization))%")
 					}
 					TableColumn("airtime") { dm in
 						Text("\(String(format: "%.2f", dm.airUtilTx))%")
