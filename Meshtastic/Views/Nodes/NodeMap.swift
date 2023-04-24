@@ -16,19 +16,6 @@ struct NodeMap: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@EnvironmentObject var userSettings: UserSettings
 
-	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
-		didSet {
-			if customTileServer == "" {
-				self.customMapOverlay = nil
-			} else {
-				self.customMapOverlay = MapViewSwiftUI.CustomMapOverlay(
-					mapName: customTileServer,
-					tileType: "png",
-					canReplaceMapContent: true
-				)
-			}
-		}
-	}
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
 	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
