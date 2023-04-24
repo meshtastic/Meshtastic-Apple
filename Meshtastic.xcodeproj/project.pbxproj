@@ -117,6 +117,7 @@
 		DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD6EEAE29BC024700383354 /* Firmware.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
+		DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443529F6287000EE2349 /* MapButtons.swift */; };
 		DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
@@ -297,6 +298,7 @@
 		DDD6EEAE29BC024700383354 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
+		DDDB443529F6287000EE2349 /* MapButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtons.swift; sourceTree = "<group>"; };
 		DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */,
 				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
+				DDDB443529F6287000EE2349 /* MapButtons.swift */,
 			);
 			path = Custom;
 			sourceTree = "<group>";
@@ -904,6 +907,7 @@
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormView.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
+				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				DD5E5203298EE33B00D21B61 /* config.pb.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,

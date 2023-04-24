@@ -193,7 +193,6 @@ extension UserDefaults {
 		case meshMapCenteringMode
 		case meshMapRecentering
 		case meshMapCustomTileServer
-		case meshMapUserTrackingMode
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
 	}

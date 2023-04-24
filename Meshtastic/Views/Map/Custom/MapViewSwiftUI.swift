@@ -29,7 +29,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
-	
 	// Custom Tile Server
 	@AppStorage("meshMapCustomTileServer") private var tileServerUrl = ""
 	var tileRenderer: MKTileOverlayRenderer?
@@ -70,10 +69,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsScale = true
 		mapView.showsTraffic = true
 		
-		let overlay = TileServerOverlay() // Offline-Map-Tiles
-			   overlay.canReplaceMapContent = true
-			   mapView.addOverlay(overlay, level: .aboveLabels)
-		
 		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
 		mapView.showsCompass = true
@@ -99,10 +94,29 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		
-		
 		mapView.mapType = mapViewType
-		
-		if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
+		if tileServerUrl.count > 0 {
+			tileRenderer?.alpha = 0.0
+			let overlays = mapView.overlays
+			if mapView.mapType == .standard {
+				let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
+				if overlays.contains(where: {$0 is MKPolyline}) {
+					mapView.addOverlay(overlay, level: .aboveLabels)
+					if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
+						mapView.addOverlay(poly_overlay, level: .aboveLabels)
+					}
+				} else {
+					mapView.addOverlay(overlay, level: .aboveLabels)
+					
+				}
+			} else {
+				for overlay in overlays {
+					if let ove = overlay as? MKTileOverlay {
+						mapView.removeOverlay(ove)
+					}
+				}
+			}
+		} else if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 			mapView.removeOverlays(mapView.overlays)
 			if self.customMapOverlay != nil {
 				
@@ -131,7 +145,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 			
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-			if annotationCount != mapView.annotations.count {
+		//	if annotationCount != mapView.annotations.count {
 				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
@@ -152,7 +166,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 						})
 						let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
 						polyline.title = "\(String(position.nodePosition?.num ?? 0))"
-						mapView.addOverlay(polyline)
+						mapView.addOverlay(polyline, level: .aboveLabels)
 						lineIndex += 1
 						// There are 18 colors for lines, start over if we are at index 17
 						if lineIndex > 17 {
@@ -176,30 +190,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					mapView.showsUserLocation = true
 				}
 				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-				
-				if tileServerUrl.count > 0 {
-					tileRenderer?.alpha = 0.0
-					let overlays = mapView.overlays
-					if mapView.mapType == .standard {
-						let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
-						if overlays.contains(where: {$0 is MKPolyline}) {
-							mapView.addOverlay(overlay, level: .aboveLabels)
-							if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
-								mapView.addOverlay(poly_overlay, level: .aboveRoads)
-							}
-						} else {
-							mapView.addOverlay(overlay, level: .aboveRoads)
-							
-						}
-					} else {
-						for overlay in overlays {
-							if let ove = overlay as? MKTileOverlay {
-								mapView.removeOverlay(ove)
-							}
-						}
-					}
-				}
-			}
+			//}
 		}
 	}
 	

@@ -82,15 +82,6 @@ struct AppSettings: View {
 							.font(.caption)
 							.foregroundColor(.gray)
 					}
-					Picker("map.usertrackingmode", selection: $userSettings.meshMapUserTrackingMode) {
-						ForEach(UserTrackingModes.allCases) { utm in
-							Text(utm.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("When follow or follow with heading are selected maps will automatically center on the location of the GPS on the connected phone.")
-						.font(.caption)
-						.foregroundColor(.gray)
 				}
 				
 				Section(header: Text("map options")) {
@@ -102,14 +93,11 @@ struct AppSettings: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
-					if userSettings.meshMapUserTrackingMode == 0 {
+					Toggle(isOn: $userSettings.meshMapRecentering) {
 						
-						Toggle(isOn: $userSettings.meshMapRecentering) {
-							
-							Label("map.recentering", systemImage: "camera.metering.center.weighted")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Label("map.recentering", systemImage: "camera.metering.center.weighted")
 					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Toggle(isOn: $userSettings.meshMapShowNodeHistory) {
 						
 						Label("Show Node History", systemImage: "building.columns.fill")

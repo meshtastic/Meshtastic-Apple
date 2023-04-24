@@ -97,6 +97,13 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("map.usertrackingmode.followwithheading", comment: "Follow with Heading")
 		}
 	}
+	var icon: String {
+		switch self {
+		case .none: return "location"
+		case .follow: return "location.fill"
+		case .followWithHeading: return "location.north.line.fill"
+		}
+	}
 	func MKUserTrackingModeValue() -> MKUserTrackingMode {
 		
 		switch self {

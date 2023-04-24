@@ -17,7 +17,6 @@ struct NodeMap: View {
 	@EnvironmentObject var userSettings: UserSettings
 
 	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
-	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 
@@ -32,7 +31,9 @@ struct NodeMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 
 	@State private var mapType: MKMapType = .standard
-	@State private var userTrackingMode: MKUserTrackingMode = .none
+	@State var selectedTracking: UserTrackingModes = .none
+	@State var isPresentingInfoSheet: Bool = false
+	
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
@@ -56,11 +57,23 @@ struct NodeMap: View {
 				   positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
-				   userTrackingMode: userTrackingMode,
+				   userTrackingMode: selectedTracking.MKUserTrackingModeValue(),
 				   showNodeHistory: meshMapShowNodeHistory,
 				   showRouteLines: meshMapShowRouteLines,
 				   customMapOverlay: self.customMapOverlay
 				)
+				VStack(alignment: .trailing) {
+					
+					HStack(alignment: .top) {
+						Spacer()
+						MapButtons(tracking: $selectedTracking, isPresentingInfoSheet: $isPresentingInfoSheet)
+							.padding(.trailing, 8)
+							.padding(.top, 16)
+					}
+					
+					Spacer()
+					
+				}
 				VStack {
 					Spacer()
 					Picker("Map Type", selection: $mapType) {
@@ -94,7 +107,6 @@ struct NodeMap: View {
 			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
 			self.bleManager.userSettings = userSettings
-			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
 			switch meshMapType {
 			case "standard":
 				mapType = .standard
