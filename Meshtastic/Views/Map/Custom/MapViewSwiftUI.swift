@@ -197,6 +197,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					lineIndex = 0
 				}
 			}
+		} else {
+			// Remove all existing PolyLine Overlays
+			for overlay in mapView.overlays {
+				if overlay is MKPolyline {
+					mapView.removeOverlay(overlay)
+				}
+			}
 		}
 		
 		//DispatchQueue.main.async {
