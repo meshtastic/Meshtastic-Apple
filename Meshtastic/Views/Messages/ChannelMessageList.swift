@@ -12,7 +12,6 @@ struct ChannelMessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 
 	enum Field: Hashable {
 		case messageText
@@ -312,12 +311,11 @@ struct ChannelMessageList: View {
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
-									if userSettings.meshtasticUsername.count > 0 {
+									if UserDefaults.meshtasticUsername.count > 0 {
 
-										typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+										typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName
 
 									} else {
-
 										typingMessage =  "📍 " + userLongName + " has shared their position with you."
 									}
 

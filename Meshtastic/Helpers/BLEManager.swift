@@ -17,7 +17,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		}
 	}
 	var context: NSManagedObjectContext?
-	var userSettings: UserSettings?
+	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
 	private let restoreKey = "Meshtastic.BLE.Manager"
 	@Published var peripherals: [Peripheral] = []
@@ -157,10 +157,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
 		isConnecting = false
 		isConnected = true
-		if userSettings?.preferredPeripheralId.count ?? 0 < 1 {
-			userSettings?.preferredPeripheralId = peripheral.identifier.uuidString
+		if UserDefaults.preferredPeripheralId.count < 1 {
+			UserDefaults.preferredPeripheralId = peripheral.identifier.uuidString
 		}
-		UserDefaults.standard.synchronize()
 		// Invalidate and reset connection timer count
 		timeoutTimerCount = 0
 		if timeoutTimer != nil {
@@ -579,11 +578,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
-				if userSettings?.provideLocation ?? false {
+				if UserDefaults.provideLocation ?? false {
 					if positionTimer != nil {
 						positionTimer!.invalidate()
 					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((userSettings?.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
@@ -612,7 +611,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			self.startScanning()
 			
 			// Try and connect to the preferredPeripherial first
-			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" }).first
+			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.preferredPeripheralId as? String ?? "" }).first
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
@@ -829,7 +828,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		// Check for connected node
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
-			if userSettings!.provideLocation {
+			if UserDefaults.provideLocation {
 				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false, smartPosition: true)
 			}
 		}

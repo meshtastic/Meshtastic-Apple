@@ -18,7 +18,7 @@ struct Connect: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
+	//@EnvironmentObject var userSettings: UserSettings
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
@@ -176,7 +176,7 @@ struct Connect: View {
 							Section(header: Text("available.radios").font(.title)) {
 								ForEach(bleManager.peripherals.filter({ $0.peripheral.state == CBPeripheralState.disconnected }).sorted(by: { $0.name < $1.name })) { peripheral in
 									HStack {
-										if userSettings.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
+										if UserDefaults.preferredPeripheralId == peripheral.peripheral.identifier.uuidString {
 											Image(systemName: "star.fill")
 												.imageScale(.large).foregroundColor(.yellow)
 												.padding(.trailing)
@@ -187,7 +187,7 @@ struct Connect: View {
 										}
 										
 										Button(action: {
-											if userSettings.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != userSettings.preferredPeripheralId {
+											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
 												presentingSwitchPreferredPeripheral = true
 												selectedPeripherialId = peripheral.peripheral.identifier.uuidString
 											} else {
@@ -208,7 +208,7 @@ struct Connect: View {
 								Button("Connect to new radio?", role: .destructive) {
 									bleManager.stopScanning()
 									bleManager.connectedPeripheral = nil
-									userSettings.preferredPeripheralId = ""
+									UserDefaults.preferredPeripheralId = ""
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
@@ -267,7 +267,7 @@ struct Connect: View {
 		}
 		.onChange(of: (self.bleManager.isSubscribed)) { sub in
 
-			if userSettings.preferredPeripheralId.count > 0 && sub {
+			if UserDefaults.preferredPeripheralId.count > 0 && sub {
 
 				let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
@@ -292,7 +292,6 @@ struct Connect: View {
 		}
 		.onAppear(perform: {
 			self.bleManager.context = context
-			self.bleManager.userSettings = userSettings
 		})
 	}
 	#if canImport(ActivityKit)

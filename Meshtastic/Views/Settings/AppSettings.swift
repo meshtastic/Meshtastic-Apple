@@ -8,10 +8,11 @@ struct AppSettings: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 	@StateObject var locationHelper = LocationHelper()
+	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
+	@State var provideLocation: Bool = UserDefaults.provideLocation
+	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
-	@State private var preferredDeviceConnected = false
 	
 	var body: some View {
 		VStack {
@@ -20,7 +21,7 @@ struct AppSettings: View {
 					
 					HStack {
 						Label("Name", systemImage: "person.crop.rectangle.fill")
-						TextField("Username", text: $userSettings.meshtasticUsername)
+						TextField("Username", text: $meshtasticUsername)
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.asciiCapable)
@@ -54,19 +55,27 @@ struct AppSettings: View {
 							.font(.callout)
 					}
 					
-					Toggle(isOn: $userSettings.provideLocation) {
+					Toggle(isOn: $provideLocation) {
 						
 						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if userSettings.provideLocation {
+					.onTapGesture {
+						self.provideLocation.toggle()
+						UserDefaults.provideLocation = self.provideLocation
+					}
+					
+					if UserDefaults.provideLocation {
 						
-						Picker("update.interval", selection: $userSettings.provideLocationInterval) {
+						Picker("update.interval", selection: $provideLocationInterval) {
 							ForEach(LocationUpdateInterval.allCases) { lu in
 								Text(lu.description)
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+						.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
+							UserDefaults.provideLocationInterval = newProvideLocationInterval
+						}
 						
 						Text("phone.gps.interval.description")
 							.font(.caption)
@@ -107,7 +116,10 @@ struct AppSettings: View {
 		.onAppear {
 			self.bleManager.context = context
 		}
-		.onChange(of: userSettings.provideLocation) { _ in
+		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
+			UserDefaults.meshtasticUsername = newMeshtasticUsername
+		}
+		.onChange(of: provideLocation) { _ in
 			
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()

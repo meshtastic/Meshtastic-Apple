@@ -21,7 +21,6 @@
 		DD2DC2C029BCD8AB003B383C /* HardwareModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2DC2BF29BCD8AB003B383C /* HardwareModels.swift */; };
 		DD2E65262767A01F00E45FC5 /* NodeDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2E65252767A01F00E45FC5 /* NodeDetail.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
-		DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD35018A2852FC79000FC853 /* UserSettings.swift */; };
 		DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */; };
 		DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */; };
 		DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */; };
@@ -198,7 +197,6 @@
 		DD2DC2BF29BCD8AB003B383C /* HardwareModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareModels.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetail.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
-		DD35018A2852FC79000FC853 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareChannels.swift; sourceTree = "<group>"; };
 		DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryGauge.swift; sourceTree = "<group>"; };
@@ -635,7 +633,6 @@
 			isa = PBXGroup;
 			children = (
 				DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */,
-				DD35018A2852FC79000FC853 /* UserSettings.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -978,7 +975,6 @@
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */,
-				DD35018B2852FC79000FC853 /* UserSettings.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,

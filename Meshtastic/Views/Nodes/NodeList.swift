@@ -15,7 +15,6 @@ struct NodeList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
@@ -93,7 +92,6 @@ struct NodeList: View {
 				MeshtasticLogo()
 			)
 			.onAppear {
-				self.bleManager.userSettings = userSettings
 				self.bleManager.context = context
 			}
 	   } detail: {
