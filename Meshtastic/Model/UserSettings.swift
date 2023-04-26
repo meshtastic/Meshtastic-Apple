@@ -31,12 +31,6 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.synchronize()
 		}
 	}
-	@Published var keyboardType: Int {
-		didSet {
-			UserDefaults.standard.set(keyboardType, forKey: "keyboardType")
-			UserDefaults.standard.synchronize()
-		}
-	}
 	@Published var meshMapType: String {
 		didSet {
 			UserDefaults.standard.set(meshMapType, forKey: "meshMapType")
@@ -86,7 +80,6 @@ class UserSettings: ObservableObject {
 		self.preferredPeripheralId = UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? ""
 		self.provideLocation = UserDefaults.standard.object(forKey: "provideLocation") as? Bool ?? false
 		self.provideLocationInterval = UserDefaults.standard.object(forKey: "provideLocationInterval") as? Int ?? 900
-		self.keyboardType = UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0
 		self.meshMapType = UserDefaults.standard.string(forKey: "meshMapType") ?? "standard"
 		self.meshMapCenteringMode = UserDefaults.standard.object(forKey: "meshMapCenteringMode") as? Int ?? 0
 		self.meshMapRecentering = UserDefaults.standard.object(forKey: "meshMapRecentering") as? Bool ?? false

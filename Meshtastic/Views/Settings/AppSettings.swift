@@ -27,16 +27,6 @@ struct AppSettings: View {
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 				}
-				Section(header: Text("options")) {
-					
-					Picker("keyboard.type", selection: $userSettings.keyboardType) {
-						ForEach(KeyboardType.allCases) { kb in
-							Text(kb.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-				}
 				
 				Section(header: Text("phone.gps")) {
 					let accuracy = Measurement(value: locationHelper.locationManager.location?.horizontalAccuracy ?? 300, unit: UnitLength.meters)

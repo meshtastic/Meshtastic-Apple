@@ -266,7 +266,6 @@ struct UserMessageList: View {
 
 			HStack(alignment: .top) {
 				ZStack {
-					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 							totalBytes = value.utf8.count
@@ -281,7 +280,7 @@ struct UserMessageList: View {
 								}
 							}
 						})
-						.keyboardType(kbType!)
+						.keyboardType(.default)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
 								Button("dismiss.keyboard") {

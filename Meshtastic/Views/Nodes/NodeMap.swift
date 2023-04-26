@@ -103,19 +103,29 @@ struct NodeMap: View {
 								Label("map.recentering", systemImage: "camera.metering.center.weighted")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableMapRecentering.toggle()
+								UserDefaults.enableMapRecentering = self.enableMapRecentering
+							}
+							
 							Toggle(isOn: $enableMapNodeHistoryPins) {
 								
 								Label("Show Node History", systemImage: "building.columns.fill")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableMapNodeHistoryPins.toggle()
+								UserDefaults.enableMapNodeHistoryPins = self.enableMapNodeHistoryPins
+							}
 							
 							Toggle(isOn: $enableMapRouteLines) {
 								
 								Label("Show Route Lines", systemImage: "road.lanes")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.onChange(of: (enableMapRouteLines)) { newEnableMapRouteLines in
-								UserDefaults.enableMapRouteLines = newEnableMapRouteLines
+							.onTapGesture {
+								self.enableMapRouteLines.toggle()
+								UserDefaults.enableMapRouteLines = self.enableMapRouteLines
 							}
 						}
 						Section(header: Text("Offline Maps")) {

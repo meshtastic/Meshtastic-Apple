@@ -23,7 +23,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
-	@AppStorage("meshMapRecentering") private var recenter: Bool = false
+	// User Defaults
+	//@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
@@ -119,6 +120,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		
 		mapView.mapType = mapViewType
 		
+		// Offline maps and tile server settings
 		if UserDefaults.enableOfflineMaps {
 			
 			if tileServerUrl.count > 0 {
@@ -166,60 +168,69 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
+		let latest = positions
+			.filter { $0.latest == true }
+			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
 		
-		DispatchQueue.main.async {
-			let latest = positions
-				.filter { $0.latest == true }
-				.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
+		// Node Route Lines
+		if showRouteLines {
+			// Remove all existing PolyLine Overlays
+			for overlay in mapView.overlays {
+				if overlay is MKPolyline {
+					mapView.removeOverlay(overlay)
+				}
+			}
+			var lineIndex = 0
+			for position in latest {
+				
+				let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+				let lineCoords = nodePositions.map ({
+					(position) -> CLLocationCoordinate2D in
+					return position.nodeCoordinate!
+				})
+				let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
+				polyline.title = "\(String(position.nodePosition?.num ?? 0))"
+				mapView.addOverlay(polyline, level: .aboveLabels)
+				lineIndex += 1
+				// There are 18 colors for lines, start over if we are at index 17
+				if lineIndex > 17 {
+					lineIndex = 0
+				}
+			}
+		}
+		
+		//DispatchQueue.main.async {
+			
+			
+			
 			
 			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-		//	if annotationCount != mapView.annotations.count {
+			if annotationCount != mapView.annotations.count {
 				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 				mapView.removeAnnotations(mapView.annotations)
 				mapView.addAnnotations(waypoints)
-				if showRouteLines {
-					// Remove all existing PolyLine Overlays
-					for overlay in mapView.overlays {
-						if overlay is MKPolyline {
-							mapView.removeOverlay(overlay)
-						}
-					}
-					var lineIndex = 0
-					for position in latest {
-						
-						let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
-						let lineCoords = nodePositions.map ({
-							(position) -> CLLocationCoordinate2D in
-							return position.nodeCoordinate!
-						})
-						let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
-						polyline.title = "\(String(position.nodePosition?.num ?? 0))"
-						mapView.addOverlay(polyline, level: .aboveLabels)
-						lineIndex += 1
-						// There are 18 colors for lines, start over if we are at index 17
-						if lineIndex > 17 {
-							lineIndex = 0
-						}
-					}
-				}
-				if userTrackingMode == MKUserTrackingMode.none {
-					mapView.showsUserLocation = false
+				
+			}
+			if userTrackingMode == MKUserTrackingMode.none {
+				mapView.showsUserLocation = false
+				
+				if UserDefaults.enableMapRecentering {
+					
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					if recenter {
-						if latest.count > 1 {
-							mapView.fitAllAnnotations()
-						} else {
-							mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
-						}
-					}
-				} else {
-					// Centering Done by tracking mode
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					mapView.showsUserLocation = true
+					mapView.fitAllAnnotations()
+//					if latest.count > 1 {
+//						mapView.fitAllAnnotations()
+//					} else {
+//						mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+//					}
 				}
-				mapView.setUserTrackingMode(userTrackingMode, animated: true)
-			//}
-		}
+			} else {
+				// Centering Done by tracking mode
+				mapView.addAnnotations(showNodeHistory ? positions : latest)
+				mapView.showsUserLocation = true
+			}
+			mapView.setUserTrackingMode(userTrackingMode, animated: true)
+	//	}
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
