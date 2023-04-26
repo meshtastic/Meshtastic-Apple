@@ -23,15 +23,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
-	// User Defaults
-	//@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
 	// Custom Tile Server
-	@AppStorage("meshMapCustomTileServer") private var tileServerUrl = ""
 	var tileRenderer: MKTileOverlayRenderer?
 	let tileServer: MapTileServerLinks = .openStreetMaps
 	
@@ -103,11 +100,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		// Offline maps and tile server settings
 		if UserDefaults.enableOfflineMaps {
 			
-			if tileServerUrl.count > 0 {
+			if UserDefaults.mapTileServer.count > 0 {
 				tileRenderer?.alpha = 0.0
 				let overlays = mapView.overlays
 				if mapView.mapType == .standard {
-					let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
+					let overlay = MKTileOverlay(urlTemplate: UserDefaults.mapTileServer)
 					if overlays.contains(where: {$0 is MKPolyline}) {
 						mapView.addOverlay(overlay, level: .aboveLabels)
 						if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {

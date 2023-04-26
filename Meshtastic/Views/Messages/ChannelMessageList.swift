@@ -248,9 +248,9 @@ struct ChannelMessageList: View {
 				Button {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
-					if userSettings.meshtasticUsername.count > 0 {
+					if UserDefaults.meshtasticUsername.count > 0 {
 
-						typingMessage +=  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+						typingMessage +=  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName
 
 					} else {
 

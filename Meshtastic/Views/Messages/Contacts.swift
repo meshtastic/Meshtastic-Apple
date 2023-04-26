@@ -135,7 +135,6 @@ struct Contacts: View {
 							}
 						}
 						.padding([.top, .bottom])
-
 					}
 				}
 				Section(header: Text("direct.messages")) {

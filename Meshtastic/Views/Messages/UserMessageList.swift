@@ -242,8 +242,8 @@ struct UserMessageList: View {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
 
-					if userSettings.meshtasticUsername.count > 0 {
-						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
+					if UserDefaults.meshtasticUsername.count > 0 {
+						typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
 					} else {
 						typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 					}
