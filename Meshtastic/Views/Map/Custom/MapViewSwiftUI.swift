@@ -206,38 +206,34 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
-		//DispatchQueue.main.async {
+		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
+		if annotationCount != mapView.annotations.count {
+			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
+			mapView.removeAnnotations(mapView.annotations)
+			mapView.addAnnotations(waypoints)
 			
+		}
+		if userTrackingMode == MKUserTrackingMode.none {
+			mapView.showsUserLocation = false
 			
-			
-			
-			let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
-			if annotationCount != mapView.annotations.count {
-				print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
-				mapView.removeAnnotations(mapView.annotations)
-				mapView.addAnnotations(waypoints)
-				
-			}
-			if userTrackingMode == MKUserTrackingMode.none {
-				mapView.showsUserLocation = false
-				
-				if UserDefaults.enableMapRecentering {
-					
+			if UserDefaults.enableMapRecentering {
+				if annotationCount != mapView.annotations.count {
 					mapView.addAnnotations(showNodeHistory ? positions : latest)
-					mapView.fitAllAnnotations()
-//					if latest.count > 1 {
-//						mapView.fitAllAnnotations()
-//					} else {
-//						mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
-//					}
 				}
-			} else {
-				// Centering Done by tracking mode
-				mapView.addAnnotations(showNodeHistory ? positions : latest)
-				mapView.showsUserLocation = true
+				if latest.count > 1 {
+					mapView.fitAllAnnotations()
+				} else {
+					mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+				}
 			}
-			mapView.setUserTrackingMode(userTrackingMode, animated: true)
-	//	}
+		} else {
+			// Centering Done by tracking mode
+			if annotationCount != mapView.annotations.count {
+				mapView.addAnnotations(showNodeHistory ? positions : latest)
+			}
+			mapView.showsUserLocation = true
+		}
+		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
