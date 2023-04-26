@@ -73,7 +73,13 @@ class UserSettings: ObservableObject {
 			UserDefaults.standard.synchronize()
 		}
 	}
-
+	@Published var meshMapEnableOfflineMaps: Bool {
+		didSet {
+			UserDefaults.standard.set(meshMapEnableOfflineMaps, forKey: "meshMapEnableOfflineMaps")
+			UserDefaults.standard.synchronize()
+		}
+	}
+	
 	init() {
 
 		self.meshtasticUsername = UserDefaults.standard.object(forKey: "meshtasticusername") as? String ?? ""
@@ -87,5 +93,7 @@ class UserSettings: ObservableObject {
 		self.meshMapCustomTileServer = UserDefaults.standard.string(forKey: "meshMapCustomTileServer") ?? ""
 		self.meshMapShowNodeHistory = UserDefaults.standard.object(forKey: "meshMapShowNodeHistory") as? Bool ?? true
 		self.meshMapShowRouteLines = UserDefaults.standard.object(forKey: "meshMapShowRouteLines") as? Bool ?? false
+		self.meshMapEnableOfflineMaps = UserDefaults.standard.object(forKey: "meshMapEnableOfflineMaps") as? Bool ?? false
+		
 	}
 }

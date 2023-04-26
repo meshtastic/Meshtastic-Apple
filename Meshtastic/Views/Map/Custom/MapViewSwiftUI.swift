@@ -34,7 +34,9 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	var tileRenderer: MKTileOverlayRenderer?
 	let tileServer: MapTileServerLinks = .openStreetMaps
 	
-	func makeUIView(context: Context) -> MKMapView {
+	// MARK: Private methods
+	
+	private func configureMap(mapView: MKMapView) {
 		// Map View Parameters
 		mapView.mapType = mapViewType
 		mapView.addAnnotations(waypoints)
@@ -68,15 +70,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		
 		#if targetEnvironment(macCatalyst)
 		// Show the default always visible compass and the mac only controls
 		mapView.showsCompass = true
 		mapView.showsZoomControls = true
 		mapView.showsPitchControl = true
 		#else
-		
 		#if os(iOS)
+		
 		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
 		mapView.showsCompass = false
 		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
@@ -85,59 +86,86 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		compassButton.translatesAutoresizingMaskIntoConstraints = false
 		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
-		#endif
 		
+		
+		// Hide the default compass that only appears when you are not going north and instead always show the compass
+//		mapView.showsCompass = false
+//		let compass = MKCompassButton(mapView: mapView)
+//		compass.compassVisibility = .visible
+		// If we are a details map show the compass in the bottom left
+		//if latest.count == 1 {
+			// If we are a details map show the compass in the bottom left
+			// Add it to the view
+//			compass.translatesAutoresizingMaskIntoConstraints = false
+//			compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
+//			compass.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		//} else {
+			//compass.frame = CGRect(origin: CGPoint(x: UIScreen.main.bounds.width - 53, y: 135), size: CGSize(width: 45, height: 45))
+			//mapView.addSubview(compass)
+		//}
+		//mapView.addSubview(compass)
 		#endif
+
+		#endif
+	}
+	
+	func makeUIView(context: Context) -> MKMapView {
 		mapView.delegate = context.coordinator
+		self.configureMap(mapView: mapView)
 		return mapView
 	}
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		
 		mapView.mapType = mapViewType
-		if tileServerUrl.count > 0 {
-			tileRenderer?.alpha = 0.0
-			let overlays = mapView.overlays
-			if mapView.mapType == .standard {
-				let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
-				if overlays.contains(where: {$0 is MKPolyline}) {
-					mapView.addOverlay(overlay, level: .aboveLabels)
-					if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
-						mapView.addOverlay(poly_overlay, level: .aboveLabels)
+		
+		if UserDefaults.enableOfflineMaps {
+			
+			if tileServerUrl.count > 0 {
+				tileRenderer?.alpha = 0.0
+				let overlays = mapView.overlays
+				if mapView.mapType == .standard {
+					let overlay = MKTileOverlay(urlTemplate: tileServerUrl)
+					if overlays.contains(where: {$0 is MKPolyline}) {
+						mapView.addOverlay(overlay, level: .aboveLabels)
+						if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
+							mapView.addOverlay(poly_overlay, level: .aboveLabels)
+						}
+					} else {
+						mapView.addOverlay(overlay, level: .aboveLabels)
+						
 					}
 				} else {
-					mapView.addOverlay(overlay, level: .aboveLabels)
+					for overlay in overlays {
+						if let ove = overlay as? MKTileOverlay {
+							mapView.removeOverlay(ove)
+						}
+					}
+				}
+			} else if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
+				mapView.removeOverlays(mapView.overlays)
+				if self.customMapOverlay != nil {
 					
-				}
-			} else {
-				for overlay in overlays {
-					if let ove = overlay as? MKTileOverlay {
-						mapView.removeOverlay(ove)
+					let fileManager = FileManager.default
+					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
+					if fileManager.fileExists(atPath: tilePath) {
+						print("Loading local map file")
+						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
+							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
+							mapView.addOverlay(overlay)
+						}
+					} else {
+						print("Couldn't find a local map file to load")
 					}
 				}
-			}
-		} else if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
-			mapView.removeOverlays(mapView.overlays)
-			if self.customMapOverlay != nil {
-				
-				let fileManager = FileManager.default
-				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-				let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
-				if fileManager.fileExists(atPath: tilePath) {
-					print("Loading local map file")
-					if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
-						overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
-						mapView.addOverlay(overlay)
-					}
-				} else {
-					print("Couldn't find a local map file to load")
+				DispatchQueue.main.async {
+					self.presentCustomMapOverlayHash = self.customMapOverlay
+					self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 				}
-			}
-			DispatchQueue.main.async {
-				self.presentCustomMapOverlayHash = self.customMapOverlay
-				self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
 			}
 		}
+		
 		
 		DispatchQueue.main.async {
 			let latest = positions
@@ -442,49 +470,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.minimumZoomLevel = minimumZoomLevel
 			self.maximumZoomLevel = maximumZoomLevel
 			self.defaultTile = defaultTile
-		}
-	}
-	
-	public class CustomMapOverlaySource: MKTileOverlay {
-		
-		// requires folder: tiles/{mapName}/z/y/y,{tileType}
-		private var parent: MapViewSwiftUI
-		private let mapName: String
-		private let tileType: String
-		private let defaultTile: DefaultTile?
-		
-		public init(
-			parent: MapViewSwiftUI,
-			mapName: String,
-			tileType: String,
-			defaultTile: DefaultTile?
-		) {
-			self.parent = parent
-			self.mapName = mapName
-			self.tileType = tileType
-			self.defaultTile = defaultTile
-			super.init(urlTemplate: "")
-		}
-		
-		public override func url(forTilePath path: MKTileOverlayPath) -> URL {
-			if let tileUrl = Bundle.main.url(
-				forResource: "\(path.y)",
-				withExtension: self.tileType,
-				subdirectory: "tiles/\(self.mapName)/\(path.z)/\(path.x)",
-				localization: nil
-			) {
-				return tileUrl
-			} else if let defaultTile = self.defaultTile, let defaultTileUrl = Bundle.main.url(
-				forResource: defaultTile.tileName,
-				withExtension: defaultTile.tileType,
-				subdirectory: "tiles/\(self.mapName)",
-				localization: nil
-			) {
-				return defaultTileUrl
-			} else {
-				let urlstring = self.mapName+"\(path.z)/\(path.x)/\(path.y).png"
-				return URL(string: urlstring)!
-			}
 		}
 	}
 }

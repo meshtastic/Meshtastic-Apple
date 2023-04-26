@@ -13,7 +13,7 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
@@ -80,9 +80,13 @@ struct NodeDetail: View {
 									HStack(alignment: .bottom, spacing: 1) {
 
 										Picker("Map Type", selection: $mapType) {
-											ForEach(MeshMapType.allCases) { map in
-												Text(map.description).tag(map.MKMapTypeValue())
+											ForEach(MeshMapTypes.allCases) { map in
+												Text(map.description)
+													.tag(map.MKMapTypeValue())
 											}
+										}
+										.onChange(of: (mapType)) { newMapType in
+											UserDefaults.mapType = Int(newMapType.rawValue)
 										}
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.pickerStyle(.menu)
@@ -221,22 +225,7 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					switch meshMapType {
-					case "standard":
-						mapType = .standard
-					case "mutedStandard":
-						mapType = .mutedStandard
-					case "hybrid":
-						mapType = .hybrid
-					case "hybridFlyover":
-						mapType = .hybridFlyover
-					case "satellite":
-						mapType = .satellite
-					case "satelliteFlyover":
-						mapType = .satelliteFlyover
-					default:
-						mapType = .hybridFlyover
-					}
+					mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {

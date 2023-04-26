@@ -83,45 +83,6 @@ struct AppSettings: View {
 							.foregroundColor(.gray)
 					}
 				}
-				
-				Section(header: Text("map options")) {
-					
-					Picker("map.type", selection: $userSettings.meshMapType) {
-						ForEach(MeshMapType.allCases) { map in
-							Text(map.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Toggle(isOn: $userSettings.meshMapRecentering) {
-						
-						Label("map.recentering", systemImage: "camera.metering.center.weighted")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $userSettings.meshMapShowNodeHistory) {
-						
-						Label("Show Node History", systemImage: "building.columns.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $userSettings.meshMapShowRouteLines) {
-						
-						Label("Show Route Lines", systemImage: "road.lanes")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					HStack {
-											
-						Label("Tile Server", systemImage: "square.grid.3x2")
-						TextField(
-							"Tile Server",
-							text: $userSettings.meshMapCustomTileServer,
-							axis: .vertical
-						)
-						.foregroundColor(.gray)
-					}
-					.keyboardType(.asciiCapable)
-					.disableAutocorrection(true)
-				}
 			}
 			HStack {
 				Button {
