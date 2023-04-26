@@ -78,14 +78,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsPitchControl = true
 		#else
 		#if os(iOS)
-		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner
-		mapView.showsCompass = true
-//		let compassButton = MKCompassButton(mapView: mapView)
-//		compassButton.compassVisibility = .adaptive
-//		mapView.addSubview(compassButton)
-//		compassButton.translatesAutoresizingMaskIntoConstraints = false
-//		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
-//		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
+		// Move the default compass under the mapbuttons control
+		mapView.showsCompass = false
+		let compass = MKCompassButton(mapView: mapView)
+		compass.translatesAutoresizingMaskIntoConstraints = false
+		compass.compassVisibility = .adaptive
+		mapView.addSubview(compass)
+		compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
+		compass.topAnchor.constraint(equalTo: mapView.topAnchor, constant: 145).isActive = true
 		#endif
 		#endif
 	}
