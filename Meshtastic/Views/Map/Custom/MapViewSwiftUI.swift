@@ -78,35 +78,15 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsPitchControl = true
 		#else
 		#if os(iOS)
-		
-		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner of the map
-		mapView.showsCompass = false
-		let compassButton = MKCompassButton(mapView: mapView)   // Make a new compass
-		compassButton.compassVisibility = .visible          // Make it visible
-		mapView.addSubview(compassButton) // Add it to the view
-		compassButton.translatesAutoresizingMaskIntoConstraints = false
-		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
-		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
-		
-		
-		// Hide the default compass that only appears when you are not going north and instead always show the compass
-//		mapView.showsCompass = false
-//		let compass = MKCompassButton(mapView: mapView)
-//		compass.compassVisibility = .visible
-		// If we are a details map show the compass in the bottom left
-		//if latest.count == 1 {
-			// If we are a details map show the compass in the bottom left
-			// Add it to the view
-//			compass.translatesAutoresizingMaskIntoConstraints = false
-//			compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
-//			compass.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
-		//} else {
-			//compass.frame = CGRect(origin: CGPoint(x: UIScreen.main.bounds.width - 53, y: 135), size: CGSize(width: 45, height: 45))
-			//mapView.addSubview(compass)
-		//}
-		//mapView.addSubview(compass)
+		// Hide the default compass that only appears when you are not going north and instead always show the compass in the bottom right corner
+		mapView.showsCompass = true
+//		let compassButton = MKCompassButton(mapView: mapView)
+//		compassButton.compassVisibility = .adaptive
+//		mapView.addSubview(compassButton)
+//		compassButton.translatesAutoresizingMaskIntoConstraints = false
+//		compassButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
+//		compassButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -25).isActive = true
 		#endif
-
 		#endif
 	}
 	

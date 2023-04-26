@@ -45,7 +45,7 @@ struct MapButtons: View {
 		.background(Color(UIColor.systemBackground))
 		.cornerRadius(8)
 		.shadow(radius: 1)
-		.offset(y: 25)
+		.offset(x: 2, y: self.tracking == .followWithHeading ? 90 : 25)
 	}
 }
 
