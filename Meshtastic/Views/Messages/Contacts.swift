@@ -12,7 +12,6 @@ struct Contacts: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject private var userSettings: UserSettings = UserSettings()
 
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
@@ -136,7 +135,6 @@ struct Contacts: View {
 							}
 						}
 						.padding([.top, .bottom])
-
 					}
 				}
 				Section(header: Text("direct.messages")) {
@@ -251,9 +249,8 @@ struct Contacts: View {
 				MeshtasticLogo()
 			)
 			.onAppear {
-				self.bleManager.userSettings = userSettings
 				self.bleManager.context = context
-				if userSettings.preferredPeripheralId.count > 0 {
+				if UserDefaults.preferredPeripheralId.count > 0 {
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
 					do {

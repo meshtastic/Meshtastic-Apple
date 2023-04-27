@@ -33,16 +33,16 @@ enum KeyboardType: Int, CaseIterable, Identifiable {
 	}
 }
 
-enum MeshMapType: String, CaseIterable, Identifiable {
+enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	
-	case standard
-	case mutedStandard
-	case hybrid
-	case hybridFlyover
-	case satellite
-	case satelliteFlyover
+	case standard = 0
+	case mutedStandard = 5
+	case hybrid = 2
+	case hybridFlyover = 4
+	case satellite = 1
+	case satelliteFlyover = 3
 	
-	var id: String { self.rawValue }
+	var id: Int { self.rawValue }
 	
 	var description: String {
 		switch self {
@@ -95,6 +95,13 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("map.usertrackingmode.follow", comment: "Follow")
 		case .followWithHeading:
 			return NSLocalizedString("map.usertrackingmode.followwithheading", comment: "Follow with Heading")
+		}
+	}
+	var icon: String {
+		switch self {
+		case .none: return "location"
+		case .follow: return "location.fill"
+		case .followWithHeading: return "location.north.line.fill"
 		}
 	}
 	func MKUserTrackingModeValue() -> MKUserTrackingMode {

@@ -11,7 +11,6 @@ struct Settings: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
 	@State private var selectedNode: Int = 0
@@ -64,45 +63,42 @@ struct Settings: View {
 				}
 				.tag(SettingsSidebar.appSettings)
 				let node = nodes.first(where: { $0.num == connectedNodeNum })
-				//if node?.myInfo?.adminIndex ?? 0 > 0 {
-					Section("Configure") {
-						Picker("Configuring Node", selection: $selectedNode) {
-							if selectedNode == 0 {
-								Text("Connect to a Node").tag(0)
-							}
-							ForEach(nodes) { node in
-								if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-									Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-										.tag(Int(node.num))
-								} else if node.metadata != nil {
-									Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-										.tag(Int(node.num))
-								} else {
-									Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-										.tag(Int(node.num))
-								}
+				Section("Configure") {
+					Picker("Configuring Node", selection: $selectedNode) {
+						if selectedNode == 0 {
+							Text("Connect to a Node").tag(0)
+						}
+						ForEach(nodes) { node in
+							if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+								Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									.tag(Int(node.num))
+							} else if node.metadata != nil {
+								Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									.tag(Int(node.num))
+							} else {
+								Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+									.tag(Int(node.num))
 							}
 						}
-						.pickerStyle(.automatic)
-						.labelsHidden()
-						.onChange(of: selectedNode) { newValue in
-							if selectedNode > 0 {
-								let node = nodes.first(where: { $0.num == newValue })
-								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+					}
+					.pickerStyle(.automatic)
+					.labelsHidden()
+					.onChange(of: selectedNode) { newValue in
+						if selectedNode > 0 {
+							let node = nodes.first(where: { $0.num == newValue })
+							let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+							connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 
-								if node?.metadata == nil {
-									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+							if node?.metadata == nil {
+								let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 
-									if adminMessageId > 0 {
-										print("Sent node metadata request from node details")
-									}
+								if adminMessageId > 0 {
+									print("Sent node metadata request from node details")
 								}
 							}
 						}
 					}
-				//}
-
+				}
 				Section("radio.configuration") {
 
 					NavigationLink {
@@ -292,13 +288,11 @@ struct Settings: View {
 			}
 			.onAppear {
 				self.bleManager.context = context
-				self.bleManager.userSettings = userSettings
 				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 				if initialLoad {
 					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 					initialLoad = false
 				}
-
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")
