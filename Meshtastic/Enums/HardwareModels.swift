@@ -21,6 +21,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 	case RAK4631
 	case HELTECV21
 	case HELTECV1
+	case DIYV1
 	case LILYGOTBEAMS3CORE
 	case RAK11200
 	case NANOG1
@@ -60,6 +61,8 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return "HELTEC V2.1"
 		case .HELTECV1:
 			return "HELTEC V1"
+		case .DIYV1:
+			return "Hydra 1W DIY"
 		case .LILYGOTBEAMS3CORE:
 			return "TBEAM S3"
 		case .RAK11200:
@@ -110,6 +113,8 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return ["firmware-heltec-v2.1-"]
 		case .HELTECV1:
 			return ["firmware-heltec-v1-"]
+		case .DIYV1:
+			return ["firmware-meshtastic-diy-v1"]
 		case .LILYGOTBEAMS3CORE:
 			return ["firmware-tbeam-s3-core-"]
 		case .RAK11200:
@@ -161,6 +166,8 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return HardwarePlatforms.esp32
 		case .HELTECV1:
 			return HardwarePlatforms.esp32
+		case .DIYV1:
+			return HardwarePlatforms.esp32
 		case .LILYGOTBEAMS3CORE:
 			return HardwarePlatforms.esp32
 		case .RAK11200:
@@ -211,6 +218,8 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return HardwareModel.heltecV21
 		case .HELTECV1:
 			return HardwareModel.heltecV1
+		case .DIYV1:
+			return HardwareModel.diyV1
 		case .LILYGOTBEAMS3CORE:
 			return HardwareModel.lilygoTbeamS3Core
 		case .RAK11200:
@@ -243,6 +252,7 @@ enum HardwarePlatforms: String, CaseIterable, Identifiable {
 	case nrf52
 	case stm32
 	case piPico
+	case linux
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
@@ -257,6 +267,8 @@ enum HardwarePlatforms: String, CaseIterable, Identifiable {
 			return "ARM STM 32"
 		case .piPico:
 			return "Raspberrry Pi Pico"
+		case .linux:
+			return "Linux"
 		}
 	}
 }

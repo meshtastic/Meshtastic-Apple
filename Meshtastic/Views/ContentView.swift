@@ -6,8 +6,6 @@ import SwiftUI
 
 struct ContentView: View {
 
-	@EnvironmentObject var userSettings: UserSettings
-
 	@State private var selection: Tab = .ble
 
 	enum Tab {

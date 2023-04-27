@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 7/7/22.
 //
 import SwiftUI
+import Charts
 
 struct EnvironmentMetricsLog: View {
 
@@ -20,12 +21,64 @@ struct EnvironmentMetricsLog: View {
 
 	var body: some View {
 		
+		
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		let environmentMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).reversed() as? [TelemetryEntity] ?? []
+		let chartData = environmentMetrics
+				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
+				.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
+			
+			if chartData.count > 0 {
+				GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					
+					Chart {
+						ForEach(chartData, id: \.time) { dataPoint in
+							AreaMark(
+								x: .value("Time", dataPoint.time!),
+								y: .value("Temperature", dataPoint.temperature.localeTemperature()),
+								stacking: .unstacked
+							)
+							.interpolationMethod(.cardinal)
+							.foregroundStyle(
+								.linearGradient(
+									colors: [.blue, .yellow, .orange, .red, .red],
+									startPoint: .bottom, endPoint: .top
+								)
+								.opacity(0.6)
+							)
+							.alignsMarkStylesWithPlotArea()
+							.accessibilityHidden(true)
+							
+							LineMark(
+								x: .value("Time", dataPoint.time!),
+								y: .value("Temperature", dataPoint.temperature.localeTemperature())
+							)
+							.interpolationMethod(.cardinal)
+							.foregroundStyle(
+								.linearGradient(
+									colors: [.blue, .yellow, .orange, .red, .red],
+									startPoint: .bottom, endPoint: .top
+								)
+							)
+							.lineStyle(StrokeStyle(lineWidth: 4))
+							.alignsMarkStylesWithPlotArea()
+						}
+					}
+					.chartXAxis(content: {
+						AxisMarks(position: .top)
+					})
+					.chartYScale(domain: 0...125)
+					.chartForegroundStyleScale([
+						"Temperature" : .clear
+					])
+					.chartLegend(position: .automatic, alignment: .bottom)
+				}
+			}
+			
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-			Text("\(environmentMetrics.count) Readings")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				Table(environmentMetrics) {
@@ -50,6 +103,7 @@ struct EnvironmentMetricsLog: View {
 					TableColumn("timestamp") { em in
 						Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
+					.width(min: 180)
 				}
 			} else {
 				ScrollView {
@@ -60,45 +114,45 @@ struct EnvironmentMetricsLog: View {
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(spacing: 0)
 					]
-					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
-
-					GridRow {
-						Text("Temp")
-							.font(.caption)
-							.fontWeight(.bold)
-						Text("Hum")
-							.font(.caption)
-							.fontWeight(.bold)
-						Text("Bar")
-							.font(.caption)
-							.fontWeight(.bold)
-						Text("gas")
-							.font(.caption)
-							.fontWeight(.bold)
-						Text("timestamp")
-							.font(.caption)
-							.fontWeight(.bold)
-					}
-					ForEach(environmentMetrics, id: \.self) { em  in
+					LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
 
 						GridRow {
+							Text("Temp")
+								.font(.caption)
+								.fontWeight(.bold)
+							Text("Hum")
+								.font(.caption)
+								.fontWeight(.bold)
+							Text("Bar")
+								.font(.caption)
+								.fontWeight(.bold)
+							Text("gas")
+								.font(.caption)
+								.fontWeight(.bold)
+							Text("timestamp")
+								.font(.caption)
+								.fontWeight(.bold)
+						}
+						ForEach(environmentMetrics, id: \.self) { em  in
 
-							Text(em.temperature.formattedTemperature())
-								.font(.caption)
-							Text("\(String(format: "%.2f", em.relativeHumidity))%")
-								.font(.caption)
-							Text("\(String(format: "%.2f", em.barometricPressure))")
-								.font(.caption)
-							Text("\(String(format: "%.2f", em.gasResistance))")
-								.font(.caption)
-							Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
-								.font(.caption2)
+							GridRow {
+
+								Text(em.temperature.formattedTemperature())
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.relativeHumidity))%")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.barometricPressure))")
+									.font(.caption)
+								Text("\(String(format: "%.2f", em.gasResistance))")
+									.font(.caption)
+								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+									.font(.caption2)
+							}
 						}
 					}
+					.padding(.leading, 15)
+					.padding(.trailing, 5)
 				}
-				.padding(.leading, 15)
-				.padding(.trailing, 5)
-			}
 			}
 		}
 		HStack {

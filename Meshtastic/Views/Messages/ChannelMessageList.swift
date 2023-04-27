@@ -12,7 +12,6 @@ struct ChannelMessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 
 	enum Field: Hashable {
 		case messageText
@@ -249,9 +248,9 @@ struct ChannelMessageList: View {
 				Button {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
-					if userSettings.meshtasticUsername.count > 0 {
+					if UserDefaults.meshtasticUsername.count > 0 {
 
-						typingMessage +=  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+						typingMessage +=  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName
 
 					} else {
 
@@ -275,7 +274,6 @@ struct ChannelMessageList: View {
 			HStack(alignment: .top) {
 
 				ZStack {
-					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 							totalBytes = value.utf8.count
@@ -290,7 +288,7 @@ struct ChannelMessageList: View {
 								}
 							}
 						})
-						.keyboardType(kbType!)
+						.keyboardType(.default)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
 								Button("dismiss.keyboard") {
@@ -313,12 +311,11 @@ struct ChannelMessageList: View {
 								Button {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
-									if userSettings.meshtasticUsername.count > 0 {
+									if UserDefaults.meshtasticUsername.count > 0 {
 
-										typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName
+										typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName
 
 									} else {
-
 										typingMessage =  "📍 " + userLongName + " has shared their position with you."
 									}
 

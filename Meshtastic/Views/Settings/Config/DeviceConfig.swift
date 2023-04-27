@@ -25,6 +25,7 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
+	@State var doubleTapAsButtonPress = false
 	
 	var body: some View {
 		
@@ -79,6 +80,13 @@ struct DeviceConfig: View {
 					.padding(.top, 10)
 					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
 						.foregroundColor(.gray)
+						.font(.caption)
+					
+					Toggle(isOn: $doubleTapAsButtonPress) {
+						Label("Double Tap as Button", systemImage: "hand.tap")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Treat double tap on supported accelerometers as a user button press.")
 						.font(.caption)
 				}
 				
@@ -208,6 +216,7 @@ struct DeviceConfig: View {
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
@@ -285,6 +294,13 @@ struct DeviceConfig: View {
 				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
 			}
 		}
+		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
+			
+			if node != nil && node!.deviceConfig != nil {
+				
+				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
+			}
+		}
 	}
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
@@ -293,6 +309,7 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
+		self.doubleTapAsButtonPress = node!.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.hasChanges = false
 	}
 }

@@ -12,7 +12,6 @@ struct UserMessageList: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 
 	enum Field: Hashable {
 		case messageText
@@ -243,8 +242,8 @@ struct UserMessageList: View {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
 
-					if userSettings.meshtasticUsername.count > 0 {
-						typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
+					if UserDefaults.meshtasticUsername.count > 0 {
+						typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
 					} else {
 						typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 					}
@@ -266,7 +265,6 @@ struct UserMessageList: View {
 
 			HStack(alignment: .top) {
 				ZStack {
-					let kbType = UIKeyboardType(rawValue: UserDefaults.standard.object(forKey: "keyboardType") as? Int ?? 0)
 					TextField("message", text: $typingMessage, axis: .vertical)
 						.onChange(of: typingMessage, perform: { value in
 							totalBytes = value.utf8.count
@@ -281,7 +279,7 @@ struct UserMessageList: View {
 								}
 							}
 						})
-						.keyboardType(kbType!)
+						.keyboardType(.default)
 						.toolbar {
 							ToolbarItemGroup(placement: .keyboard) {
 								Button("dismiss.keyboard") {
@@ -293,8 +291,8 @@ struct UserMessageList: View {
 									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 									sendPositionWithMessage = true
 
-									if userSettings.meshtasticUsername.count > 0 {
-										typingMessage =  "📍 " + userSettings.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
+									if UserDefaults.meshtasticUsername.count > 0 {
+										typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
 									} else {
 										typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 									}

@@ -1,55 +1,69 @@
+import Foundation
 import CoreLocation
 
-class LocationHelper: NSObject, ObservableObject {
+class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
+	
+	static let shared = LocationHelper()
+	var locationManager = CLLocationManager()
+	
+	@Published var authorizationStatus: CLAuthorizationStatus?
+	
+	override init() {
+		
+		super.init()
+		locationManager.delegate = self
+		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+		locationManager.pausesLocationUpdatesAutomatically = true
+		locationManager.allowsBackgroundLocationUpdates = true
+		locationManager.activityType = .otherNavigation
+	}
 
-    static let shared = LocationHelper()
-
-    // Apple Park
-    static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
+	// Apple Park
+	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
 	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
 	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
-
-    static var currentLocation: CLLocationCoordinate2D {
-
+	
+	static var currentLocation: CLLocationCoordinate2D {
+		
 		guard let location = shared.locationManager.location else {
-            return DefaultLocation
-        }
-        return location.coordinate
-    }
-
+			return DefaultLocation
+		}
+		return location.coordinate
+	}
+	
 	static var currentAltitude: CLLocationDistance {
-
+		
 		guard let altitude = shared.locationManager.location?.altitude else {
 			return DefaultAltitude
 		}
 		return altitude
 	}
-
+	
 	static var currentSpeed: CLLocationSpeed {
-
+		
 		guard let speed = shared.locationManager.location?.speed else {
 			return DefaultSpeed
 		}
 		return speed
 	}
-
+	
 	static var currentHeading: CLLocationDirection {
-
+		
 		guard let heading = shared.locationManager.location?.course else {
 			return DefaultHeading
 		}
 		return heading
 	}
-
+	
 	static var currentTimestamp: Date {
-
+		
 		guard let timestamp = shared.locationManager.location?.timestamp else {
 			return Date.now
 		}
 		return timestamp
 	}
-
+	
 	static var satsInView: Int {
 		// If we have a position we have a sat
 		var sats = 1
@@ -74,29 +88,32 @@ class LocationHelper: NSObject, ObservableObject {
 		return sats
 	}
 
-    private let locationManager = CLLocationManager()
-
-    private override init() {
-
-        super.init()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-		locationManager.pausesLocationUpdatesAutomatically = true
-		locationManager.allowsBackgroundLocationUpdates = true
-		locationManager.activityType = .otherNavigation
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-    }
-}
-
-extension LocationHelper: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) { }
-
-    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location manager failed with error: \(error.localizedDescription)")
-    }
-
-    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("Location manager changed the status: \(status)")
-    }
+	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+		switch manager.authorizationStatus {
+		case .authorizedWhenInUse:
+			authorizationStatus = .authorizedWhenInUse
+			locationManager.requestLocation()
+			break
+		case .restricted:
+			authorizationStatus = .restricted
+			break
+		case .denied:
+			authorizationStatus = .denied
+			break
+		case .notDetermined:
+			authorizationStatus = .notDetermined
+			locationManager.requestWhenInUseAuthorization()
+			break
+		default:
+			break
+		}
+	}
+	
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+		
+	}
+	
+	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+		print("Location manager error: \(error.localizedDescription)")
+	}
 }

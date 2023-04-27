@@ -14,25 +14,13 @@ struct NodeMap: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@EnvironmentObject var userSettings: UserSettings
 
-	@AppStorage("meshMapCustomTileServer") var customTileServer: String = "" {
-		didSet {
-			if customTileServer == "" {
-				self.customMapOverlay = nil
-			} else {
-				self.customMapOverlay = MapViewSwiftUI.CustomMapOverlay(
-					mapName: customTileServer,
-					tileType: "png",
-					canReplaceMapContent: true
-				)
-			}
-		}
-	}
-	@AppStorage("meshMapType") private var meshMapType = "hybridFlyover"
-	@AppStorage("meshMapUserTrackingMode") private var meshMapUserTrackingMode = 0
-	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
+	@AppStorage("meshMapType") private var meshMapType = 0
+	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
+	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
+	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
+	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
+	@State var mapTileServer: String = UserDefaults.mapTileServer
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -45,10 +33,10 @@ struct NodeMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 
 	@State private var mapType: MKMapType = .standard
-	@State private var userTrackingMode: MKUserTrackingMode = .none
-	@State var waypointCoordinate: CLLocationCoordinate2D = LocationHelper.DefaultLocation
-	@State var editingWaypoint: Int = 0
-	@State private var presentingWaypointForm = false
+	@State var selectedTracking: UserTrackingModes = .none
+	@State var isPresentingInfoSheet: Bool = false
+	
+	@State var waypointCoordinate: WaypointCoordinate?
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -60,46 +48,129 @@ struct NodeMap: View {
 		NavigationStack {
 			ZStack {
 
-				MapViewSwiftUI(onLongPress: { coord in
-					waypointCoordinate = coord
-					editingWaypoint = 0
-					if waypointCoordinate.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-						print("Apple Park")
-					} else {
-						presentingWaypointForm = true
-					}
-				}, onWaypointEdit: { wpId in
-					if wpId > 0 {
-						editingWaypoint = wpId
-						presentingWaypointForm = true
-					}
-				}, positions: Array(positions),
+				MapViewSwiftUI(
+						onLongPress: { coord in
+						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+					}, onWaypointEdit: { wpId in
+						if wpId > 0 {
+							waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+						}
+					},
+				   positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
-				   userTrackingMode: userTrackingMode,
-				   showNodeHistory: meshMapShowNodeHistory,
-				   showRouteLines: meshMapShowRouteLines,
+				   userTrackingMode: selectedTracking.MKUserTrackingModeValue(),
+				   showNodeHistory: enableMapNodeHistoryPins,
+				   showRouteLines: enableMapRouteLines,
 				   customMapOverlay: self.customMapOverlay
 				)
-				VStack {
-					Spacer()
-					Picker("Map Type", selection: $mapType) {
-						ForEach(MeshMapType.allCases) { map in
-							Text(map.description).tag(map.MKMapTypeValue())
-						}
+				VStack(alignment: .trailing) {
+					
+					HStack(alignment: .top) {
+						Spacer()
+						MapButtons(tracking: $selectedTracking, isPresentingInfoSheet: $isPresentingInfoSheet)
+							.padding(.trailing, 8)
+							.padding(.top, 16)
 					}
-					.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-					.pickerStyle(.menu)
-					.padding(.bottom, 5)
+					
+					Spacer()
+					
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
-			.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
-				WaypointFormView(coordinate: waypointCoordinate, waypointId: editingWaypoint)
-					.presentationDetents([.medium, .large])
-					.presentationDragIndicator(.automatic)
-
+			.sheet(item: $waypointCoordinate, content: { wpc in
+							WaypointFormView(coordinate: wpc)
+								.presentationDetents([.medium, .large])
+								.presentationDragIndicator(.automatic)
+			})
+			.sheet(isPresented: $isPresentingInfoSheet) {
+				VStack {
+					Form {
+						Section(header: Text("Map Options")) {
+							Picker("Map Type", selection: $mapType) {
+								ForEach(MeshMapTypes.allCases) { map in
+									Text(map.description).tag(map.MKMapTypeValue())
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							.onChange(of: (mapType)) { newMapType in
+								UserDefaults.mapType = Int(newMapType.rawValue)
+							}
+							
+							Toggle(isOn: $enableMapRecentering) {
+								
+								Label("map.recentering", systemImage: "camera.metering.center.weighted")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableMapRecentering.toggle()
+								UserDefaults.enableMapRecentering = self.enableMapRecentering
+							}
+							
+							Toggle(isOn: $enableMapNodeHistoryPins) {
+								
+								Label("Show Node History", systemImage: "building.columns.fill")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableMapNodeHistoryPins.toggle()
+								UserDefaults.enableMapNodeHistoryPins = self.enableMapNodeHistoryPins
+							}
+							
+							Toggle(isOn: $enableMapRouteLines) {
+								
+								Label("Show Route Lines", systemImage: "road.lanes")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableMapRouteLines.toggle()
+								UserDefaults.enableMapRouteLines = self.enableMapRouteLines
+							}
+						}
+						Section(header: Text("Offline Maps")) {
+							Toggle(isOn: $enableOfflineMaps) {
+								Text("Enable Offline Maps")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.onTapGesture {
+								self.enableOfflineMaps.toggle()
+								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
+							}
+							if UserDefaults.enableOfflineMaps {
+								HStack {
+									
+									Label("Tile Server", systemImage: "square.grid.3x2")
+									TextField(
+										"Tile Server",
+										text: $mapTileServer,
+										axis: .vertical
+									)
+									.foregroundColor(.gray)
+									.font(.caption2)
+									.onChange(of: (mapTileServer)) { newMapTileServer in
+										UserDefaults.mapTileServer = newMapTileServer
+									}
+								}
+								.keyboardType(.asciiCapable)
+								.disableAutocorrection(true)
+							}
+						}
+					}
+					#if targetEnvironment(macCatalyst)
+					Button {
+						isPresentingInfoSheet = false
+					} label: {
+						Label("close", systemImage: "xmark")
+					}
+					.buttonStyle(.bordered)
+					.buttonBorderShape(.capsule)
+					.controlSize(.large)
+					.padding(.bottom)
+					#endif
+				}
+				.presentationDetents([.medium, .large])
+				.presentationDragIndicator(.visible)
 			}
 		}
 		.navigationBarItems(leading:
@@ -114,27 +185,11 @@ struct NodeMap: View {
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
-			self.bleManager.userSettings = userSettings
-			userTrackingMode = UserTrackingModes(rawValue: meshMapUserTrackingMode)?.MKUserTrackingModeValue() ?? MKUserTrackingMode.none
-			switch meshMapType {
-			case "standard":
-				mapType = .standard
-			case "mutedStandard":
-				mapType = .mutedStandard
-			case "hybrid":
-				mapType = .hybrid
-			case "hybridFlyover":
-				mapType = .hybridFlyover
-			case "satellite":
-				mapType = .satellite
-			case "satelliteFlyover":
-				mapType = .satelliteFlyover
-			default:
-				mapType = .hybridFlyover
-			}
+			mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
+		
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})
-    }
+	}
 }

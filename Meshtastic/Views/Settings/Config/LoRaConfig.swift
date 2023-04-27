@@ -32,7 +32,7 @@ struct LoRaConfig: View {
 	@State var hasChanges = false
 	@State var region: Int = 0
 	@State var modemPreset = 0
-	@State var hopLimit = 0
+	@State var hopLimit = 3
 	@State var txPower = 0
 	@State var txEnabled = true
 	@State var usePreset = true
@@ -112,17 +112,11 @@ struct LoRaConfig: View {
 
 					 if !usePreset {
 						 HStack {
-							 Picker("Bandwidth", selection: $spreadFactor) {
-								 Text("31 kHz")
-									 .tag(31)
-								 Text("62 kHz")
-									 .tag(62)
-								 Text("125 kHz")
-									 .tag(125)
-								 Text("250 kHz")
-									 .tag(0)
-								 Text("500 kHz")
-									 .tag(500)
+							 Picker("Bandwidth", selection: $bandwidth) {
+								 ForEach(Bandwidths.allCases) { bw in
+									 Text(bw.description)
+										 .tag(bw.rawValue == 250 ? 0 : bw.rawValue)
+								 }
 							 }
 						 }
 						 HStack {
@@ -143,10 +137,10 @@ struct LoRaConfig: View {
 						 }
 					}
 
-					Picker("Number of hops", selection: $codingRate) {
+					Picker("Number of hops", selection: $hopLimit) {
 						ForEach(1..<8) {
 							Text("\($0)")
-								.tag($0 == 3 ? 0 : $0)
+								.tag($0 == 0 ? 3 : $0)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())

@@ -108,3 +108,46 @@ class LocalMBTileOverlay: MKTileOverlay {
 		}
 	}
 }
+
+//public class CustomMapOverlaySource: MKTileOverlay {
+//
+//	// requires folder: tiles/{mapName}/z/y/y,{tileType}
+//	private var parent: MapViewSwiftUI
+//	private let mapName: String
+//	private let tileType: String
+//	private let defaultTile: DefaultTile?
+//
+//	public init(
+//		parent: MapViewSwiftUI,
+//		mapName: String,
+//		tileType: String,
+//		defaultTile: DefaultTile?
+//	) {
+//		self.parent = parent
+//		self.mapName = mapName
+//		self.tileType = tileType
+//		self.defaultTile = defaultTile
+//		super.init(urlTemplate: "")
+//	}
+//
+//	public override func url(forTilePath path: MKTileOverlayPath) -> URL {
+//		if let tileUrl = Bundle.main.url(
+//			forResource: "\(path.y)",
+//			withExtension: self.tileType,
+//			subdirectory: "tiles/\(self.mapName)/\(path.z)/\(path.x)",
+//			localization: nil
+//		) {
+//			return tileUrl
+//		} else if let defaultTile = self.defaultTile, let defaultTileUrl = Bundle.main.url(
+//			forResource: defaultTile.tileName,
+//			withExtension: defaultTile.tileType,
+//			subdirectory: "tiles/\(self.mapName)",
+//			localization: nil
+//		) {
+//			return defaultTileUrl
+//		} else {
+//			let urlstring = self.mapName+"\(path.z)/\(path.x)/\(path.y).png"
+//			return URL(string: urlstring)!
+//		}
+//	}
+//}

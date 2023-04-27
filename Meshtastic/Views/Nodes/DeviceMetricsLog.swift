@@ -78,6 +78,7 @@ struct DeviceMetricsLog: View {
 						AxisMarks(position: .top)
 					})
 					.chartXAxis(.automatic)
+					.chartYScale(domain: 0...100)
 					.chartForegroundStyleScale([
 						"Battery Level" : .blue,
 						"Channel Utilization": .green,
@@ -105,7 +106,7 @@ struct DeviceMetricsLog: View {
 						Text("\(String(format: "%.2f", dm.voltage))")
 					}
 					TableColumn("channel.utilization") { dm in
-						Text(String(format: "%.2f", dm.channelUtilization))
+						Text("\(String(format: "%.2f", dm.channelUtilization))%")
 					}
 					TableColumn("airtime") { dm in
 						Text("\(String(format: "%.2f", dm.airUtilTx))%")
@@ -113,6 +114,7 @@ struct DeviceMetricsLog: View {
 					TableColumn("timestamp") { dm in
 						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
 					}
+					.width(min: 180)
 				}
 			} else {
 				ScrollView {

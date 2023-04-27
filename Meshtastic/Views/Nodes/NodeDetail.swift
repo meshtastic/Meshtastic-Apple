@@ -13,18 +13,17 @@ struct NodeDetail: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@AppStorage("meshMapType") private var meshMapType = "standard"
+	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
-	@State var waypointCoordinate: CLLocationCoordinate2D?
+	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
 	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var presentingWaypointForm = false
 	@State private var showOverlays: Bool = true
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
@@ -64,15 +63,12 @@ struct NodeDetail: View {
 							// let todaysPositions = positionArray.filter { $0.time! >= Calendar.current.startOfDay(for: Date()) }
 							ZStack {
 								MapViewSwiftUI(onLongPress: { coord in
-									waypointCoordinate = coord
-									editingWaypoint = 0
-									presentingWaypointForm = true
-								}, onWaypointEdit: { wpId in
-									if wpId > 0 {
-										editingWaypoint = wpId
-										presentingWaypointForm = true
-									}
-								}, positions: lastTenThousand, waypoints: Array(waypoints),
+										waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
+									}, onWaypointEdit: { wpId in
+										if wpId > 0 {
+											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
+										}
+									}, positions: lastTenThousand, waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
@@ -84,9 +80,13 @@ struct NodeDetail: View {
 									HStack(alignment: .bottom, spacing: 1) {
 
 										Picker("Map Type", selection: $mapType) {
-											ForEach(MeshMapType.allCases) { map in
-												Text(map.description).tag(map.MKMapTypeValue())
+											ForEach(MeshMapTypes.allCases) { map in
+												Text(map.description)
+													.tag(map.MKMapTypeValue())
 											}
+										}
+										.onChange(of: (mapType)) { newMapType in
+											UserDefaults.mapType = Int(newMapType.rawValue)
 										}
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.pickerStyle(.menu)
@@ -210,11 +210,11 @@ struct NodeDetail: View {
 					}
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(isPresented: $presentingWaypointForm ) {// ,  onDismiss: didDismissSheet) {
-					WaypointFormView(coordinate: waypointCoordinate ?? LocationHelper.DefaultLocation, waypointId: editingWaypoint)
-							.presentationDetents([.medium, .large])
-							.presentationDragIndicator(.automatic)
-				}
+				.sheet(item: $waypointCoordinate, content: { wpc in
+					WaypointFormView(coordinate: wpc)
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
+				})
 				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
@@ -225,22 +225,7 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					switch meshMapType {
-					case "standard":
-						mapType = .standard
-					case "mutedStandard":
-						mapType = .mutedStandard
-					case "hybrid":
-						mapType = .hybrid
-					case "hybridFlyover":
-						mapType = .hybridFlyover
-					case "satellite":
-						mapType = .satellite
-					case "satelliteFlyover":
-						mapType = .satelliteFlyover
-					default:
-						mapType = .hybridFlyover
-					}
+					mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {
@@ -269,6 +254,7 @@ struct NodeDetail: View {
 					}
 				}
 			}
+			.padding(.bottom, 2)
 		}
 	}
 }
