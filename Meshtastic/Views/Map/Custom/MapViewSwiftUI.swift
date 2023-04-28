@@ -160,10 +160,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			var lineIndex = 0
 			for position in latest {
 				
-				let nodePositions = positions.filter { $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
-				let lineCoords = nodePositions.map ({
+				let nodePositions = positions.filter { $0.nodeCoordinate != nil && $0.nodePosition?.num ?? 0 == position.nodePosition?.num ?? -1 }
+				let lineCoords = nodePositions.compactMap ({
 					(position) -> CLLocationCoordinate2D in
-					return position.nodeCoordinate!
+					return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 				})
 				let polyline = MKPolyline(coordinates: lineCoords, count: nodePositions.count)
 				polyline.title = "\(String(position.nodePosition?.num ?? 0))"

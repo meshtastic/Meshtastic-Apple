@@ -152,12 +152,27 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 }
 enum MapTileServerLinks: Int, CaseIterable, Identifiable {
 	
-	case openStreetMaps
-	case wikimedia
-	case nationalMap
+	case none = 0
+	case openStreetMaps = 1
+	case wikimedia = 2
+	case nationalMap = 3
 	var id: Int { self.rawValue }
+	var description: String {
+		switch self {
+		case .none:
+			return "Please Select"
+		case .wikimedia:
+			return "Wikimedia"
+		case .openStreetMaps:
+			return "Open Street Maps"
+		case .nationalMap:
+			return "US National Map"
+		}
+	}
 	var tileUrl: String {
 		switch self {
+		case .none:
+			return ""
 		case .wikimedia:
 			return "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
 		case .openStreetMaps:
@@ -168,6 +183,8 @@ enum MapTileServerLinks: Int, CaseIterable, Identifiable {
 	}
 	var zoomRange: [Int] {
 		switch self {
+		case .none:
+			return [Int](0...1)
 		case .wikimedia:
 			return [Int](0...24)
 		case .openStreetMaps:

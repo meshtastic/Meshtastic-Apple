@@ -15,7 +15,7 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	@AppStorage("meshMapType") private var meshMapType = 0
+	@State var meshMapType: Int = UserDefaults.mapType
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
@@ -32,8 +32,9 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 
-	@State private var mapType: MKMapType = .standard
+	@State var mapType: MKMapType = .standard
 	@State var selectedTracking: UserTrackingModes = .none
+	@State var selectedTileServer: MapTileServerLinks = .wikimedia
 	@State var isPresentingInfoSheet: Bool = false
 	
 	@State var waypointCoordinate: WaypointCoordinate?
@@ -137,8 +138,23 @@ struct NodeMap: View {
 								self.enableOfflineMaps.toggle()
 								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
 							}
+							Text("If you have shared a MBTiles file with meshtastic it will be loaded.")
+								.font(.caption)
+								.foregroundColor(.gray)
+							
 							if UserDefaults.enableOfflineMaps {
 								HStack {
+//									Picker("Tile Servers", selection: $selectedTileServer) {
+//										ForEach(MapTileServerLinks.allCases) { ts in
+//											Text(ts.description)
+//												.tag(ts.id)
+//										}
+//									}
+//									.pickerStyle(.menu)
+//									.onChange(of: (selectedTileServer)) { newTileServer in
+//									
+//										mapTileServer = selectedTileServer.tileUrl
+//									}
 									
 									Label("Tile Server", systemImage: "square.grid.3x2")
 									TextField(
@@ -147,7 +163,7 @@ struct NodeMap: View {
 										axis: .vertical
 									)
 									.foregroundColor(.gray)
-									.font(.caption2)
+									.font(.caption)
 									.onChange(of: (mapTileServer)) { newMapTileServer in
 										UserDefaults.mapTileServer = newMapTileServer
 									}

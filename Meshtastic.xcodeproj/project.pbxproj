@@ -128,6 +128,7 @@
 		DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444F29F8AC9C00EE2349 /* UIImage.swift */; };
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
+		DDDB445629FB4BFD00EE2349 /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445529FB4BFD00EE2349 /* Array.swift */; };
 		DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
@@ -319,6 +320,7 @@
 		DDDB444F29F8AC9C00EE2349 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		DDDB445329F8AD1600EE2349 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		DDDB445529FB4BFD00EE2349 /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
@@ -715,6 +717,7 @@
 				DDDB444729F8A9C900EE2349 /* String.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
+				DDDB445529FB4BFD00EE2349 /* Array.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -974,6 +977,7 @@
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
+				DDDB445629FB4BFD00EE2349 /* Array.swift in Sources */,
 				DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
