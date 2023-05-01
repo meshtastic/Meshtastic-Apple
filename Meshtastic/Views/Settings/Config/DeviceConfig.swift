@@ -309,7 +309,7 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
-		self.doubleTapAsButtonPress = node!.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.hasChanges = false
 	}
 }

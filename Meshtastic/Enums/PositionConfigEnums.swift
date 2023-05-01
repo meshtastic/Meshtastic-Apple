@@ -61,6 +61,7 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	case twentySeconds = 20
 	case twentyFiveSeconds = 25
 	case thirtySeconds = 30
+	case fortyFiveSeconds = 45
 	case oneMinute = 60
 	case twoMinutes = 120
 	case fiveMinutes = 300
@@ -90,6 +91,8 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
 		case .oneMinute:
 			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+		case .fortyFiveSeconds:
+			return NSLocalizedString("interval.fortyfive.seconds", comment: "Forty Five Seconds")
 		case .twoMinutes:
 			return NSLocalizedString("interval.two.minutes", comment: "Two Minutes")
 		case .fiveMinutes:
@@ -123,6 +126,7 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 	case twentySeconds = 20
 	case twentyFiveSeconds = 25
 	case thirtySeconds = 30
+	case fortyFiveSeconds = 45
 	case oneMinute = 60
 	case twoMinutes = 120
 	case fiveMinutes = 300
@@ -146,6 +150,8 @@ enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 			return NSLocalizedString("interval.twentyfive.seconds", comment: "Twenty Five Seconds")
 		case .thirtySeconds:
 			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+		case .fortyFiveSeconds:
+			return NSLocalizedString("interval.fortyfive.seconds", comment: "Forty Five Seconds")
 		case .oneMinute:
 			return NSLocalizedString("interval.one.minute", comment: "One Minute")
 		case .twoMinutes:

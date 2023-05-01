@@ -246,6 +246,11 @@ struct ModuleConfig {
     /// If true, we attempt to establish a secure connection using TLS
     var tlsEnabled: Bool = false
 
+    ///
+    /// The root topic to use for MQTT messages. Default is "msh".
+    /// This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs
+    var root: String = String()
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1114,6 +1119,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     5: .standard(proto: "encryption_enabled"),
     6: .standard(proto: "json_enabled"),
     7: .standard(proto: "tls_enabled"),
+    8: .same(proto: "root"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1129,6 +1135,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 5: try { try decoder.decodeSingularBoolField(value: &self.encryptionEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.jsonEnabled) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.tlsEnabled) }()
+      case 8: try { try decoder.decodeSingularStringField(value: &self.root) }()
       default: break
       }
     }
@@ -1156,6 +1163,9 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.tlsEnabled != false {
       try visitor.visitSingularBoolField(value: self.tlsEnabled, fieldNumber: 7)
     }
+    if !self.root.isEmpty {
+      try visitor.visitSingularStringField(value: self.root, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1167,6 +1177,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.encryptionEnabled != rhs.encryptionEnabled {return false}
     if lhs.jsonEnabled != rhs.jsonEnabled {return false}
     if lhs.tlsEnabled != rhs.tlsEnabled {return false}
+    if lhs.root != rhs.root {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

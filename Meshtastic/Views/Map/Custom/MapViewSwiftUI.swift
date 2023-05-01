@@ -315,7 +315,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				subtitle.numberOfLines = 0
 				annotationView.detailCalloutAccessoryView = subtitle
 				let detailsIcon = UIButton(type: .detailDisclosure)
-				detailsIcon.setImage(UIImage(systemName: "info.square"), for: .normal)
+				detailsIcon.setImage(UIImage(systemName: "trash"), for: .normal)
 				annotationView.rightCalloutAccessoryView = detailsIcon
 				return annotationView
 			case let waypointAnnotation as WaypointEntity:
@@ -365,9 +365,18 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-			// Only Allow Edit for waypoint annotations with a id
-			if view.tag > 0 {
-				parent.onWaypointEdit(view.tag)
+			
+			switch view.annotation {
+			case let positionAnnotation as PositionEntity:
+				print(positionAnnotation)
+			case let waypointAnnotation as WaypointEntity:
+				// Only Allow Edit for waypoint annotations with a id
+				if view.tag > 0 {
+					parent.onWaypointEdit(view.tag)
+				}
+				print(waypointAnnotation)
+				
+			default: break
 			}
 		}
 		

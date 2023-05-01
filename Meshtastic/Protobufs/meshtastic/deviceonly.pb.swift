@@ -159,6 +159,19 @@ struct DeviceState {
     set {_uniqueStorage()._didGpsReset = newValue}
   }
 
+  ///
+  /// We keep the last received waypoint stored in the device flash,
+  /// so we can show it on the screen.
+  /// Might be null
+  var rxWaypoint: MeshPacket {
+    get {return _storage._rxWaypoint ?? MeshPacket()}
+    set {_uniqueStorage()._rxWaypoint = newValue}
+  }
+  /// Returns true if `rxWaypoint` has been explicitly set.
+  var hasRxWaypoint: Bool {return _storage._rxWaypoint != nil}
+  /// Clears the value of `rxWaypoint`. Subsequent reads from it will return its default value.
+  mutating func clearRxWaypoint() {_uniqueStorage()._rxWaypoint = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -280,6 +293,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     7: .standard(proto: "rx_text_message"),
     9: .standard(proto: "no_save"),
     11: .standard(proto: "did_gps_reset"),
+    12: .standard(proto: "rx_waypoint"),
   ]
 
   fileprivate class _StorageClass {
@@ -291,6 +305,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _rxTextMessage: MeshPacket? = nil
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
+    var _rxWaypoint: MeshPacket? = nil
 
     static let defaultInstance = _StorageClass()
 
@@ -305,6 +320,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _rxTextMessage = source._rxTextMessage
       _noSave = source._noSave
       _didGpsReset = source._didGpsReset
+      _rxWaypoint = source._rxWaypoint
     }
   }
 
@@ -331,6 +347,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._rxWaypoint) }()
         default: break
         }
       }
@@ -367,6 +384,9 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       if _storage._didGpsReset != false {
         try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
       }
+      try { if let v = _storage._rxWaypoint {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -384,6 +404,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
         if _storage._noSave != rhs_storage._noSave {return false}
         if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
+        if _storage._rxWaypoint != rhs_storage._rxWaypoint {return false}
         return true
       }
       if !storagesAreEqual {return false}

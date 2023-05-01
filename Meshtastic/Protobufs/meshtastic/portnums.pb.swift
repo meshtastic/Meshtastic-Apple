@@ -136,6 +136,10 @@ enum PortNum: SwiftProtobuf.Enum {
   case tracerouteApp // = 70
 
   ///
+  /// Aggregates edge info for the network by sending out a list of each node's neighbors
+  case neighborinfoApp // = 71
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
@@ -175,6 +179,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 68: self = .zpsApp
     case 69: self = .simulatorApp
     case 70: self = .tracerouteApp
+    case 71: self = .neighborinfoApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -203,6 +208,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .zpsApp: return 68
     case .simulatorApp: return 69
     case .tracerouteApp: return 70
+    case .neighborinfoApp: return 71
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -236,6 +242,7 @@ extension PortNum: CaseIterable {
     .zpsApp,
     .simulatorApp,
     .tracerouteApp,
+    .neighborinfoApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -271,6 +278,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     68: .same(proto: "ZPS_APP"),
     69: .same(proto: "SIMULATOR_APP"),
     70: .same(proto: "TRACEROUTE_APP"),
+    71: .same(proto: "NEIGHBORINFO_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),
