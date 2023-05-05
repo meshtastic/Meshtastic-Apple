@@ -30,7 +30,7 @@ enum SerialBaudRates: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .baudDefault:
-			return NSLocalizedString("default", comment: "Default")
+			return "default".localized
 		case .baud110:
 			return "110 Baud"
 		case .baud300:
@@ -116,15 +116,15 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .default:
-			return NSLocalizedString("serial.mode.default", comment: "Default")
+			return "serial.mode.default".localized
 		case .simple:
-			return NSLocalizedString("serial.mode.simple", comment: "Simple")
+			return "serial.mode.simple".localized
 		case .proto:
-			return NSLocalizedString("serial.mode.proto", comment: "Protobufs")
+			return "serial.mode.proto".localized
 		case .txtmsg:
-			return NSLocalizedString("serial.mode.txtmsg", comment: "Text Message")
+			return "serial.mode.txtmsg".localized
 		case .nmea:
-			return NSLocalizedString("serial.mode.nmea", comment: "NMEA Positions")
+			return "serial.mode.nmea".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
@@ -160,21 +160,21 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return NSLocalizedString("unset", comment: "Unset")
+			return "unset".localized
 		case .oneSecond:
-			return NSLocalizedString("interval.one.second", comment: "One Second")
+			return "interval.one.second".localized
 		case .fiveSeconds:
-			return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
+			return "interval.five.seconds".localized
 		case .tenSeconds:
-			return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
+			return "interval.ten.seconds".localized
 		case .fifteenSeconds:
-			return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
-			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+			return "interval.thirty.seconds".localized
 		case .oneMinute:
-			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+			return "interval.one.minute".localized
 		case .fiveMinutes:
-			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+			return "interval.five.minutes".localized
 		}
 	}
 }

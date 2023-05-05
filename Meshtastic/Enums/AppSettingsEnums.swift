@@ -8,31 +8,6 @@
 import Foundation
 import MapKit
 
-enum KeyboardType: Int, CaseIterable, Identifiable {
-	
-	case defaultKeyboard = 0
-	case asciiCapable = 1
-	case twitter = 9
-	case emailAddress = 7
-	case numbersAndPunctuation = 2
-	
-	var id: Int { self.rawValue }
-	var description: String {
-		switch self {
-		case .defaultKeyboard:
-			return NSLocalizedString("default", comment: "Default Keyboard")
-		case .asciiCapable:
-			return NSLocalizedString("ascii.capable", comment: "ASCII Capable Keyboard")
-		case .twitter:
-			return NSLocalizedString("twitter", comment: "Twitter Keyboard")
-		case .emailAddress:
-			return NSLocalizedString("email.address", comment: "Email Address Keyboard")
-		case .numbersAndPunctuation:
-			return NSLocalizedString("numbers.punctuation", comment: "Numbers and Punctuation Keyboard")
-		}
-	}
-}
-
 enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	
 	case standard = 0
@@ -47,17 +22,17 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .standard:
-			return NSLocalizedString("standard", comment: "Standard")
+			return "standard".localized
 		case .mutedStandard:
-			return NSLocalizedString("standard.muted", comment: "Standard Muted")
+			return "standard.muted".localized
 		case .hybrid:
-			return NSLocalizedString("hybrid", comment: "Hybrid")
+			return "hybrid".localized
 		case .hybridFlyover:
-			return NSLocalizedString("hybrid.flyover", comment: "Hybrid Flyover")
+			return "hybrid.flyover".localized
 		case .satellite:
-			return NSLocalizedString("satellite", comment: "Satellite")
+			return "satellite".localized
 		case .satelliteFlyover:
-			return NSLocalizedString("satellite.flyover", comment: "Satellite Flyover")
+			return "satellite.flyover".localized
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
@@ -90,11 +65,11 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .none:
-			return NSLocalizedString("map.usertrackingmode.none", comment: "None")
+			return "map.usertrackingmode.none".localized
 		case .follow:
-			return NSLocalizedString("map.usertrackingmode.follow", comment: "Follow")
+			return "map.usertrackingmode.follow".localized
 		case .followWithHeading:
-			return NSLocalizedString("map.usertrackingmode.followwithheading", comment: "Follow with Heading")
+			return "map.usertrackingmode.followwithheading".localized
 		}
 	}
 	var icon: String {
@@ -123,6 +98,7 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
+	case fortyFiveSeconds = 45
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
@@ -132,21 +108,23 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .fiveSeconds:
-			return NSLocalizedString("interval.five.seconds", comment: "Five Seconds")
+			return "interval.five.seconds".localized
 		case .tenSeconds:
-			return NSLocalizedString("interval.ten.seconds", comment: "Ten Seconds")
+			return "interval.ten.seconds".localized
 		case .fifteenSeconds:
-			return NSLocalizedString("interval.fifteen.seconds", comment: "Fifteen Seconds")
+			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
-			return NSLocalizedString("interval.thirty.seconds", comment: "Thirty Seconds")
+			return "interval.thirty.seconds".localized
+		case .fortyFiveSeconds:
+			return "interval.fortyfive.seconds".localized
 		case .oneMinute:
-			return NSLocalizedString("interval.one.minute", comment: "One Minute")
+			return "interval.one.minute".localized
 		case .fiveMinutes:
-			return NSLocalizedString("interval.five.minutes", comment: "Five Minutes")
+			return "interval.five.minutes".localized
 		case .tenMinutes:
-			return NSLocalizedString("interval.ten.minutes", comment: "Ten Minutes")
+			return "interval.ten.minutes".localized
 		case .fifteenMinutes:
-			return NSLocalizedString("interval.fifteen.minutes", comment: "Fifteen Minutes")
+			return "interval.fifteen.minutes".localized
 		}
 	}
 }

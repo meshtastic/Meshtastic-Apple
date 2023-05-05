@@ -207,8 +207,8 @@ struct CannedMessagesConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : NSLocalizedString("unknown", comment: "Unknown")
-				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				let nodeName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "unknown".localized
+				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 				Button(buttonText) {
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 					if hasChanges {

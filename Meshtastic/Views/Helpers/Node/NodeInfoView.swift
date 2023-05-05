@@ -147,11 +147,11 @@ struct NodeInfoView: View {
 				Divider()
 				VStack {
 					if node.user != nil {
-						Image(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset"))
+						Image(node.user!.hwModel ?? "unset".localized)
 							.resizable()
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
-						Text(String(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset")))
+						Text(String(node.user!.hwModel ?? "unset".localized))
 							.font(.callout).fixedSize()
 					}
 				}

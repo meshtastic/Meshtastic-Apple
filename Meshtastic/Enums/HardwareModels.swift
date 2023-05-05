@@ -38,7 +38,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 		switch self {
 
 		case .UNSET:
-			return NSLocalizedString("unset", comment: "UNSET")
+			return "unset".localized
 		case .TLORAV2:
 			return "TLoRa V2"
 		case .TLORAV1:

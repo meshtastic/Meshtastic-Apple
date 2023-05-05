@@ -215,7 +215,7 @@ struct NodeDetail: View {
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				})
-				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
+				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
 					ConnectedDevice(

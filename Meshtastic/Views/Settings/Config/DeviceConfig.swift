@@ -204,8 +204,8 @@ struct DeviceConfig: View {
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+					let nodeName = node?.user?.longName ?? "unknown".localized
+					let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 					Button(buttonText) {
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 						if connectedNode != nil {
@@ -309,7 +309,7 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
-		self.doubleTapAsButtonPress = node!.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.hasChanges = false
 	}
 }

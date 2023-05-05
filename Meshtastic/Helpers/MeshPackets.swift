@@ -73,7 +73,7 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 
 func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedObjectContext) -> MyInfoEntity? {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.myinfo %@", comment: "MyInfo received: %@"), String(myInfo.myNodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.myinfo %@".localized, String(myInfo.myNodeNum))
 	MeshLogger.log("ℹ️ \(logString)")
 
 	let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -143,7 +143,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.channel.received %d %@", comment: "Channel %d received from: %@"), channel.index, String(fromNum))
+		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@", channel.index, String(fromNum))
 		MeshLogger.log("🎛️ \(logString)")
 
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -194,7 +194,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NSManagedObjectContext) {
 
 	if metadata.isInitialized {
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.metadata.received %@", comment: "Device Metadata admin message received from: %@"), String(fromNum))
+		let logString = String.localizedStringWithFormat("mesh.log.device.metadata.received %@".localized, String(fromNum))
 		MeshLogger.log("🏷️ \(logString)")
 
 		let fetchedNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -233,7 +233,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 
 func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObjectContext) -> NodeInfoEntity? {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(nodeInfo.num))
+	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(nodeInfo.num))
 	MeshLogger.log("📟 \(logString)")
 
 	guard nodeInfo.num > 0 else { return nil }
@@ -404,7 +404,7 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
 				if !cmmc.messages.isEmpty {
 
-					let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessages.messages.received %@", comment: "Canned Messages Messages Received For: %@"), String(packet.from))
+					let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.received %@".localized, String(packet.from))
 					MeshLogger.log("🥫 \(logString)")
 
 					let fetchNodeRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -533,8 +533,8 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 
 		let routingError = RoutingError(rawValue: routingMessage.errorReason.rawValue)
 
-		let routingErrorString = routingError?.display ?? NSLocalizedString("unknown", comment: "")
-		let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.routing.message %@ %@", comment: "Routing received for RequestID: %@ Ack Status: %@"), String(packet.decoded.requestID), routingErrorString)
+		let routingErrorString = routingError?.display ?? "unknown".localized
+		let logString = String.localizedStringWithFormat("mesh.log.routing.message %@ %@".localized, String(packet.decoded.requestID), routingErrorString)
 		MeshLogger.log("🕸️ \(logString)")
 
 		let fetchMessageRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
@@ -599,7 +599,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 		// Only log telemetry from the mesh not the connected device
 		if connectedNode != Int64(packet.from) {
-			let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.received %@", comment: "Telemetry received for: %@"), String(packet.from))
+			let logString = String.localizedStringWithFormat("mesh.log.telemetry.received %@".localized, String(packet.from))
 			MeshLogger.log("📈 \(logString)")
 		} else {
 			// If it is the connected node
@@ -635,6 +635,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
 					telemetry.metricsType = 1
 				}
+				telemetry.snr = packet.rxSnr
+				telemetry.rssi = packet.rxRssi
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
 				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
 					return
@@ -703,7 +705,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
-		MeshLogger.log("💬 \(NSLocalizedString("mesh.log.textmessage.received", comment: "Message received from the text message app"))")
+		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
 
 		let messageUsers: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
 		messageUsers.predicate = NSPredicate(format: "num IN %@", [packet.to, packet.from])
@@ -716,6 +718,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
+			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 
@@ -751,12 +754,12 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 						manager.notifications = [
 							Notification(
 								id: ("notification.id.\(newMessage.messageId)"),
-								title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
+								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 								content: messageText)
 						]
 						manager.schedule()
-						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
@@ -778,12 +781,12 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 										manager.notifications = [
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
-												title: "\(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))",
+												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
 												content: messageText)
 										]
 										manager.schedule()
-										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
 									}
 								}
 							}
@@ -805,7 +808,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 
 func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.waypoint.received %@", comment: "Waypoint Packet received from node: %@"), String(packet.from))
+	let logString = String.localizedStringWithFormat("mesh.log.waypoint.received %@".localized, String(packet.from))
 	MeshLogger.log("📍 \(logString)")
 
 	let fetchWaypointRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "WaypointEntity")

@@ -254,7 +254,7 @@ struct UserMessageList: View {
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
 				}
-				ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+				ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 					.frame(width: 130)
 					.padding(5)
 					.font(.subheadline)
@@ -302,7 +302,7 @@ struct UserMessageList: View {
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+								ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
 									.font(.subheadline)
@@ -354,7 +354,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white ).fixedSize()
-					Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
+					Text(user.longName ?? "unknown".localized).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

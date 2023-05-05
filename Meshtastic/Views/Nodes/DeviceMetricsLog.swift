@@ -112,7 +112,7 @@ struct DeviceMetricsLog: View {
 						Text("\(String(format: "%.2f", dm.airUtilTx))%")
 					}
 					TableColumn("timestamp") { dm in
-						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+						Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 					}
 					.width(min: 180)
 				}
@@ -215,7 +215,7 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \(NSLocalizedString("device.metrics.log", comment: "Device Metrics Log"))"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
 			onCompletion: { result in
 				if case .success = result {
 					print("Device metrics log download succeeded.")

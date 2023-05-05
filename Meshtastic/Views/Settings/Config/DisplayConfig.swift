@@ -149,8 +149,8 @@ struct DisplayConfig: View {
 			"are.you.sure",
 			isPresented: $isPresentingSaveConfirm
 		) {
-			let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-			let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+			let nodeName = node?.user?.longName ?? "unknown".localized
+			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 			Button(buttonText) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if connectedNode != nil {

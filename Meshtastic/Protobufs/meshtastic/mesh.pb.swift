@@ -2232,6 +2232,50 @@ struct Compressed {
 }
 
 ///
+/// Full info on edges for a single node
+struct NeighborInfo {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The node ID of the node sending info on its neighbors
+  var nodeID: UInt32 = 0
+
+  ///
+  /// Field to pass neighbor info for the next sending cycle
+  var lastSentByID: UInt32 = 0
+
+  ///
+  /// The list of out edges from this node
+  var neighbors: [Neighbor] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
+/// A single edge in the mesh
+struct Neighbor {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Node ID of neighbor
+  var nodeID: UInt32 = 0
+
+  ///
+  /// SNR of last heard message
+  var snr: Float = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
 /// Device metadata response
 struct DeviceMetadata {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -2307,6 +2351,8 @@ extension FromRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ToRadio: @unchecked Sendable {}
 extension ToRadio.OneOf_PayloadVariant: @unchecked Sendable {}
 extension Compressed: @unchecked Sendable {}
+extension NeighborInfo: @unchecked Sendable {}
+extension Neighbor: @unchecked Sendable {}
 extension DeviceMetadata: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -3891,6 +3937,88 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   static func ==(lhs: Compressed, rhs: Compressed) -> Bool {
     if lhs.portnum != rhs.portnum {return false}
     if lhs.data != rhs.data {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".NeighborInfo"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_id"),
+    2: .standard(proto: "last_sent_by_id"),
+    3: .same(proto: "neighbors"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeID) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.lastSentByID) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.neighbors) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nodeID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeID, fieldNumber: 1)
+    }
+    if self.lastSentByID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.lastSentByID, fieldNumber: 2)
+    }
+    if !self.neighbors.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.neighbors, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: NeighborInfo, rhs: NeighborInfo) -> Bool {
+    if lhs.nodeID != rhs.nodeID {return false}
+    if lhs.lastSentByID != rhs.lastSentByID {return false}
+    if lhs.neighbors != rhs.neighbors {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Neighbor"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_id"),
+    2: .same(proto: "snr"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeID) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.snr) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nodeID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeID, fieldNumber: 1)
+    }
+    if self.snr != 0 {
+      try visitor.visitSingularFloatField(value: self.snr, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Neighbor, rhs: Neighbor) -> Bool {
+    if lhs.nodeID != rhs.nodeID {return false}
+    if lhs.snr != rhs.snr {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
