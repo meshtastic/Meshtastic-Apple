@@ -20,6 +20,9 @@ struct MQTTConfig: View {
 	@State var password = ""
 	@State var encryptionEnabled = false
 	@State var jsonEnabled = false
+	@State var tlsEnabled = true
+	@State var root = "msh"
+	
 
 	var body: some View {
 
@@ -63,11 +66,18 @@ struct MQTTConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
+				Toggle(isOn: $tlsEnabled) {
+
+					Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Toggle(isOn: $jsonEnabled) {
 
 					Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("JSON mode is not reccomended it is incomplete and unstable.")
+					.font(.caption2)
 			}
 			Section(header: Text("Custom Server")) {
 				HStack {
@@ -147,6 +157,29 @@ struct MQTTConfig: View {
 				}
 				.keyboardType(.default)
 				.scrollDismissesKeyboard(.interactively)
+				
+				HStack {
+					Label("Root Topic", systemImage: "tree")
+					TextField("Root Topic", text: $root)
+						.foregroundColor(.gray)
+						.onChange(of: root, perform: { _ in
+							let totalBytes = root.utf8.count
+							// Only mess with the value if it is too big
+							if totalBytes > 14 {
+								let firstNBytes = Data(root.utf8.prefix(14))
+								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+									// Set the shortName back to the last place where it was the right size
+									root = maxBytesString
+								}
+							}
+						})
+						.foregroundColor(.gray)
+				}
+				.keyboardType(.asciiCapable)
+				.scrollDismissesKeyboard(.interactively)
+				.disableAutocorrection(true)
+				Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
+					.font(.caption2)
 			}
 			Text("WiFi or Ethernet must also be enabled for MQTT to work. You can set uplink and downlink for each channel.")
 				.font(.callout)
@@ -179,8 +212,10 @@ struct MQTTConfig: View {
 					mqtt.address = self.address
 					mqtt.username = self.username
 					mqtt.password = self.password
+					mqtt.root = self.root
 					mqtt.encryptionEnabled = self.encryptionEnabled
 					mqtt.jsonEnabled = self.jsonEnabled
+					mqtt.tlsEnabled = self.tlsEnabled
 					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -212,6 +247,26 @@ struct MQTTConfig: View {
 				}
 			}
 		}
+		.onChange(of: address) { newAddress in
+			if node != nil && node?.mqttConfig != nil {
+				if newAddress != node!.mqttConfig!.address { hasChanges = true }
+			}
+		}
+		.onChange(of: username) { newUsername in
+			if node != nil && node?.mqttConfig != nil {
+				if newUsername != node!.mqttConfig!.username { hasChanges = true }
+			}
+		}
+		.onChange(of: password) { newPassword in
+			if node != nil && node?.mqttConfig != nil {
+				if newPassword != node!.mqttConfig!.password { hasChanges = true }
+			}
+		}
+		.onChange(of: root) { newRoot in
+			if node != nil && node?.mqttConfig != nil {
+				if newRoot != node!.mqttConfig!.root { hasChanges = true }
+			}
+		}
 		.onChange(of: enabled) { newEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
@@ -227,6 +282,11 @@ struct MQTTConfig: View {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: tlsEnabled) { newTlsEnabled in
+			if node != nil && node?.mqttConfig != nil {
+				if newTlsEnabled != node!.mqttConfig!.tlsEnabled { hasChanges = true }
+			}
+		}
 	}
 	
 	func setMqttValues() {
@@ -234,8 +294,10 @@ struct MQTTConfig: View {
 		self.address = node?.mqttConfig?.address ?? ""
 		self.username = node?.mqttConfig?.username ?? ""
 		self.password = node?.mqttConfig?.password ?? ""
+		self.root = node?.mqttConfig?.root ?? "msh"
 		self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
 		self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
+		self.tlsEnabled = (node?.mqttConfig?.tlsEnabled ?? false)
 		self.hasChanges = false
 	}
 }

@@ -775,16 +775,20 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				newMQTTConfig.address = config.address
 				newMQTTConfig.username = config.username
 				newMQTTConfig.password = config.password
+				newMQTTConfig.root = config.root
 				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
+				newMQTTConfig.tlsEnabled = config.tlsEnabled
 				fetchedNode[0].mqttConfig = newMQTTConfig
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
 				fetchedNode[0].mqttConfig?.address = config.address
 				fetchedNode[0].mqttConfig?.username = config.username
 				fetchedNode[0].mqttConfig?.password = config.password
+				fetchedNode[0].mqttConfig?.root = config.root
 				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
 				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
+				fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
 			}
 			do {
 				try context.save()
