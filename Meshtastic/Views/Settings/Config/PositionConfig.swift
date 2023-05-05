@@ -283,8 +283,8 @@ struct PositionConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				let nodeName = node?.user?.longName ?? "unknown".localized
+				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 				Button(buttonText) {
 
 					if fixedPosition {

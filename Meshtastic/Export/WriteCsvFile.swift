@@ -13,7 +13,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\(NSLocalizedString("battery.level", comment: "")), \(NSLocalizedString("voltage", comment: "")), \(NSLocalizedString("channel.utilization", comment: "")), \(NSLocalizedString("airtime", comment: "")), \(NSLocalizedString("timestamp", comment: ""))"
+		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 0 {
 				csvString += "\n"
@@ -25,12 +25,12 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.airUtilTx)
 				csvString += ", "
-				csvString += dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "")
+				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 			}
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, \(NSLocalizedString("voltage", comment: "")), \(NSLocalizedString("current", comment: "")), \(NSLocalizedString("timestamp", comment: ""))"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, \("voltage".localized), \("current".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 1 {
 				csvString += "\n"
@@ -46,7 +46,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.current)
 				csvString += ", "
-				csvString += dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "")
+				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 			}
 		}
 	}
@@ -58,7 +58,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	// Create Position Header
-	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \(NSLocalizedString("timestamp", comment: ""))"
+	csvString = "SeqNo, Latitude, Longitude, Altitude, Sats, Speed, Heading, SNR, \("timestamp".localized)"
 	for pos in positions {
 		csvString += "\n"
 		csvString += String(pos.seqNo)
@@ -77,7 +77,7 @@ func positionToCsvFile(positions: [PositionEntity]) -> String {
 		csvString += ", "
 		csvString += String(pos.snr)
 		csvString += ", "
-		csvString += pos.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: "")
+		csvString += pos.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 	}
 	return csvString
 }

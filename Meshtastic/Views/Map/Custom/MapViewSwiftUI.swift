@@ -309,7 +309,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
 					let metersAway = positionAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
-					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
+					subtitle.text! += "distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
 				subtitle.text! += positionAnnotation.time?.formatted() ?? "Unknown \n"
 				subtitle.numberOfLines = 0
@@ -343,7 +343,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
 					let metersAway = waypointAnnotation.coordinate.distance(from: LocationHelper.currentLocation)
 					let distanceFormatter = MKDistanceFormatter()
-					subtitle.text! += NSLocalizedString("distance", comment: "") + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
+					subtitle.text! += "distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway))) \n"
 				}
 				if waypointAnnotation.created != nil {
 					subtitle.text! += "Created: \(waypointAnnotation.created?.formatted() ?? "Unknown") \n"

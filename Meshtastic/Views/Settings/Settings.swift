@@ -70,13 +70,13 @@ struct Settings: View {
 						}
 						ForEach(nodes) { node in
 							if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-								Text("BLE Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+								Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
 									.tag(Int(node.num))
 							} else if node.metadata != nil {
-								Text("Remote Config: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+								Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
 									.tag(Int(node.num))
 							} else {
-								Text("Request Admin: \(node.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
+								Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
 									.tag(Int(node.num))
 							}
 						}

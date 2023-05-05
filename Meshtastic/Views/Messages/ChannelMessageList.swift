@@ -263,7 +263,7 @@ struct ChannelMessageList: View {
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
 				}
-				ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+				ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 					.frame(width: 130)
 					.padding(5)
 					.font(.subheadline)
@@ -325,7 +325,7 @@ struct ChannelMessageList: View {
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
 
-								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+								ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
 									.font(.subheadline)
@@ -377,7 +377,7 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44, fontSize: 30).fixedSize()
-					Text(String(channel.name ?? NSLocalizedString("unknown", comment: "Unknown")).camelCaseToWords()).font(.headline)
+					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

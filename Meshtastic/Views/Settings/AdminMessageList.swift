@@ -30,7 +30,7 @@ struct AdminMessageList: View {
 
 					VStack(alignment: .leading) {
 
-						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown"))")
+						Text("\(am.adminDescription ?? "unknown".localized)")
 							.font(.caption)
 
 						Text("Sent \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")

@@ -99,7 +99,7 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext) {
 
 func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.nodeinfo.received %@", comment: "Node info received for: %@"), String(packet.from))
+	let logString = String.localizedStringWithFormat("mesh.log.nodeinfo.received %@".localized, String(packet.from))
 	MeshLogger.log("📟 \(logString)")
 
 	guard packet.from > 0 else { return }
@@ -179,7 +179,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.received %@", comment: "Position Packet received from node: %@"), String(packet.from))
+	let logString = String.localizedStringWithFormat("mesh.log.position.received %@".localized, String(packet.from))
 	MeshLogger.log("📍 \(logString)")
 
 	let fetchNodePositionRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -262,7 +262,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.bluetooth.config %@", comment: "Bluetooth config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.bluetooth.config %@".localized, String(nodeNum))
 	MeshLogger.log("📶 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -304,7 +304,7 @@ func upsertBluetoothConfigPacket(config: Meshtastic.Config.BluetoothConfig, node
 
 func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.device.config %@", comment: "Device config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.device.config %@".localized, String(nodeNum))
 	MeshLogger.log("📟 \(logString)")
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
@@ -353,7 +353,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 
 func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.display.config %@", comment: "Display config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.display.config %@".localized, String(nodeNum))
 	MeshLogger.log("🖥️ \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -417,7 +417,7 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 
 func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.lora.config %@", comment: "LoRa config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.lora.config %@".localized, String(nodeNum))
 	MeshLogger.log("📻 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -482,7 +482,7 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 
 func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.network.config %@", comment: "Network config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.network.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌐 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -529,7 +529,7 @@ func upsertNetworkConfigPacket(config: Meshtastic.Config.NetworkConfig, nodeNum:
 
 func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.position.config %@", comment: "Positon config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.position.config %@".localized, String(nodeNum))
 	MeshLogger.log("🗺️ \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -588,7 +588,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 
 func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.cannedmessage.config %@", comment: "Canned Message module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))
 	MeshLogger.log("🥫 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -652,7 +652,7 @@ func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.Cann
 
 func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfig.ExternalNotificationConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.externalnotification.config %@", comment: "External Notifiation module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.externalnotification.config %@".localized, String(nodeNum))
 	MeshLogger.log("📣 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -720,7 +720,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 
 func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.ringtone.config %@", comment: "RTTTL Ringtone config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.ringtone.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -759,7 +759,7 @@ func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManage
 
 func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.mqtt.config %@", comment: "MQTT module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.mqtt.config %@".localized, String(nodeNum))
 	MeshLogger.log("🌉 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -813,7 +813,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 
 func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTestConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.rangetest.config %@", comment: "Range Test module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.rangetest.config %@".localized, String(nodeNum))
 	MeshLogger.log("⛰️ \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -856,7 +856,7 @@ func upsertRangeTestModuleConfigPacket(config: Meshtastic.ModuleConfig.RangeTest
 
 func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.serial.config %@", comment: "Serial module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.serial.config %@".localized, String(nodeNum))
 	MeshLogger.log("🤖 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -919,7 +919,7 @@ func upsertSerialModuleConfigPacket(config: Meshtastic.ModuleConfig.SerialConfig
 
 func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.TelemetryConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
-	let logString = String.localizedStringWithFormat(NSLocalizedString("mesh.log.telemetry.config %@", comment: "Telemetry module config received: %@"), String(nodeNum))
+	let logString = String.localizedStringWithFormat("mesh.log.telemetry.config %@".localized, String(nodeNum))
 	MeshLogger.log("📈 \(logString)")
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -936,17 +936,14 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 			if fetchedNode[0].telemetryConfig == nil {
 
 				let newTelemetryConfig = TelemetryConfigEntity(context: context)
-
 				newTelemetryConfig.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
 				newTelemetryConfig.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
-
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 
 			} else {
-
 				fetchedNode[0].telemetryConfig?.deviceUpdateInterval = Int32(config.deviceUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentUpdateInterval = Int32(config.environmentUpdateInterval)
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled

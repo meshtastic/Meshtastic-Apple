@@ -61,7 +61,7 @@ struct PositionLog: View {
 						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
-						Text(position.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+						Text(position.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 					}
 					.width(min: 180)
 				}

@@ -204,8 +204,8 @@ struct MQTTConfig: View {
 		) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				let nodeName = node?.user?.longName ?? "unknown".localized
+				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 				Button(buttonText) {
 					var mqtt = ModuleConfig.MQTTConfig()
 					mqtt.enabled = self.enabled

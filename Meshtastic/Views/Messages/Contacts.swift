@@ -152,7 +152,7 @@ struct Contacts: View {
 												.padding(.trailing, 5)
 											VStack {
 												HStack {
-													Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
+													Text(user.longName ?? "unknown".localized).font(.headline)
 													Spacer()
 													if user.messageList.count > 0 {
 														VStack(alignment: .trailing) {

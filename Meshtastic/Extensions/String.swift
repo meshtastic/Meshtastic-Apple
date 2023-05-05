@@ -28,6 +28,8 @@ extension String {
 		return base64url
 	}
 
+	var localized: String { NSLocalizedString(self, comment: self) }
+	
 	func onlyEmojis() -> Bool {
 		return count > 0 && !contains { !$0.isEmoji }
 	}
