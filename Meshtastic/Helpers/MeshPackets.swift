@@ -635,6 +635,8 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.voltage = telemetryMessage.environmentMetrics.voltage
 					telemetry.metricsType = 1
 				}
+				telemetry.snr = packet.rxSnr
+				telemetry.rssi = packet.rxRssi
 				telemetry.time = Date(timeIntervalSince1970: TimeInterval(Int64(telemetryMessage.time)))
 				guard let mutableTelemetries = fetchedNode[0].telemetries!.mutableCopy() as? NSMutableOrderedSet else {
 					return
@@ -716,6 +718,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
+			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 

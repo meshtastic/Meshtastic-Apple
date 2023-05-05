@@ -117,6 +117,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.num = Int64(packet.from)
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.snr = packet.rxSnr
+			newNode.rssi = packet.rxRssi
 			
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
@@ -138,6 +139,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].num = Int64(packet.from)
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			fetchedNode[0].snr = packet.rxSnr
+			fetchedNode[0].rssi = packet.rxRssi
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				
@@ -210,6 +212,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					let position = PositionEntity(context: context)
 					position.latest = true
 					position.snr = packet.rxSnr
+					position.rssi = packet.rxRssi
 					position.seqNo = Int32(positionMessage.seqNumber)
 					position.latitudeI = positionMessage.latitudeI
 					position.longitudeI = positionMessage.longitudeI
@@ -230,6 +233,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].num = Int64(packet.from)
 					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
 					fetchedNode[0].snr = packet.rxSnr
+					fetchedNode[0].rssi = packet.rxRssi
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 					do {
