@@ -34,7 +34,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	private var configNonce: UInt32 = 1
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
-	var timeoutTimerRuns = 0
 	var positionTimer: Timer?
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
@@ -106,7 +105,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
-			self.timeoutTimerRuns += 1
 			self.startScanning()
 		} else {
 			print("🚨 BLE Connecting 2 Second Timeout Timer Fired \(timeoutTimerCount) Time(s): \(name)")
@@ -545,6 +543,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						MeshLogger.log("🪧 \(logString)")
 					}
 				}
+			case .neighborinfoApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
@@ -570,7 +570,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
-				timeoutTimerRuns = 0
 				isSubscribed = true
 				print("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
@@ -578,11 +577,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				// MARK: Share Location Position Update Timer
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
-				if UserDefaults.provideLocation ?? false {
+				if UserDefaults.provideLocation {
 					if positionTimer != nil {
 						positionTimer!.invalidate()
 					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval ?? 900)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
@@ -1999,7 +1998,7 @@ extension BLEManager: CBCentralManagerDelegate {
 	// Called each time a peripheral is discovered
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
 		
-		if self.automaticallyReconnect && timeoutTimerRuns < 2 && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
+		if self.automaticallyReconnect && peripheral.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
 			self.connectTo(peripheral: peripheral)
 			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
