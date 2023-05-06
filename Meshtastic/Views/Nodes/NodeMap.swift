@@ -21,6 +21,7 @@ struct NodeMap: View {
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
 	@State var mapTileServer: String = UserDefaults.mapTileServer
+	@State var mapRect: MKMapRect = MKMapRect()
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -32,6 +33,7 @@ struct NodeMap: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 
+	
 	@State var mapType: MKMapType = .standard
 	@State var selectedTracking: UserTrackingModes = .none
 	@State var selectedTileServer: MapTileServerLinks = .wikimedia
@@ -57,6 +59,7 @@ struct NodeMap: View {
 							waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 						}
 					},
+				   visibleMapRect: $mapRect,
 				   positions: Array(positions),
 				   waypoints: Array(waypoints),
 				   mapViewType: mapType,
@@ -143,7 +146,7 @@ struct NodeMap: View {
 								.foregroundColor(.gray)
 							
 							if UserDefaults.enableOfflineMaps {
-								HStack {
+								VStack {
 //									Picker("Tile Servers", selection: $selectedTileServer) {
 //										ForEach(MapTileServerLinks.allCases) { ts in
 //											Text(ts.description)
@@ -156,16 +159,19 @@ struct NodeMap: View {
 //										mapTileServer = selectedTileServer.tileUrl
 //									}
 									
-									Label("Tile Server", systemImage: "square.grid.3x2")
-									TextField(
-										"Tile Server",
-										text: $mapTileServer,
-										axis: .vertical
-									)
-									.foregroundColor(.gray)
-									.font(.caption)
-									.onChange(of: (mapTileServer)) { newMapTileServer in
-										UserDefaults.mapTileServer = newMapTileServer
+									TilesDownloadView(boundingBox: mapRect, name: "All tiles")
+									HStack {
+										Label("Tile Server", systemImage: "square.grid.3x2")
+										TextField(
+											"Tile Server",
+											text: $mapTileServer,
+											axis: .vertical
+										)
+										.foregroundColor(.gray)
+										.font(.caption)
+										.onChange(of: (mapTileServer)) { newMapTileServer in
+											UserDefaults.mapTileServer = newMapTileServer
+										}
 									}
 								}
 								.keyboardType(.asciiCapable)

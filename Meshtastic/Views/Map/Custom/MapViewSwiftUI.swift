@@ -15,6 +15,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
+	@Binding var visibleMapRect: MKMapRect
 	let mapView = MKMapView()
 	// Parameters
 	let positions: [PositionEntity]
@@ -23,6 +24,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
+
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
@@ -96,9 +98,12 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		
 		mapView.mapType = mapViewType
-		
+		//visibleMapRect = mapView.visibleMapRect
+
 		// Offline maps and tile server settings
-		if UserDefaults.enableOfflineMaps {
+		if false {// UserDefaults.enableOfflineMaps {
+			
+			visibleMapRect = mapView.visibleMapRect
 			
 			if UserDefaults.mapTileServer.count > 0 {
 				tileRenderer?.alpha = 0.0
@@ -214,6 +219,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
+		//return Coordinator(self)
 		return Coordinator(self)
 	}
 	
@@ -230,6 +236,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
+		}
+		
+		func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+
+			print (mapView.visibleMapRect)
 		}
 		
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -402,18 +413,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
 			
-			if let tileOverlay = overlay as? MKTileOverlay {
-				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
-			} else {
-				if let routePolyline = overlay as? MKPolyline {
-					
-					let titleString = routePolyline.title ?? "0"
-					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
-					renderer.lineWidth = 8
-					return renderer
-				}
-				return MKOverlayRenderer()
+			switch overlay {
+			case let overlay as MKTileOverlay:
+				return MKTileOverlayRenderer(tileOverlay: overlay)
+			case let polyline as MKPolyline:
+				let polylineRenderer = MKPolylineRenderer(overlay: overlay)
+				let titleString = polyline.title ?? "0"
+				let renderer = MKPolylineRenderer(polyline: polyline)
+				renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
+				renderer.lineWidth = 8
+				return polylineRenderer
+			default: return MKOverlayRenderer()
 			}
 		}
 	}

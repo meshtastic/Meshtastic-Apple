@@ -138,6 +138,9 @@
 "lora.config"="LoRa 配置";
 "map"="Mesh 地图";
 "map.centering"="Centering";
+"map.tiles.download"="Download Tiles";
+"map.tiles.delete"="Delete Tiles";
+"map.tiles.downloading"="Downloading Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="地图类型";
 "map.usertrackingmode"="User tracking mode";

@@ -79,7 +79,7 @@ struct UserConfig: View {
 							})
 							.foregroundColor(.gray)
 					}
-					.keyboardType(.asciiCapable)
+					.keyboardType(.default)
 					.disableAutocorrection(true)
 					Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 						.font(.caption2)

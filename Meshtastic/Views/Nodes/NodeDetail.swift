@@ -17,6 +17,7 @@ struct NodeDetail: View {
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
 	@State private var mapType: MKMapType = .standard
+	@State var mapRect: MKMapRect = MKMapRect()
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
@@ -68,7 +69,10 @@ struct NodeDetail: View {
 										if wpId > 0 {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
-									}, positions: lastTenThousand, waypoints: Array(waypoints),
+									},
+									visibleMapRect: $mapRect,
+									positions: lastTenThousand,
+									waypoints: Array(waypoints),
 									mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
