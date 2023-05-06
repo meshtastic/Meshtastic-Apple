@@ -222,7 +222,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		/// Set selected map layer
-	//	setOverlays(mapView: mapView)
+		setOverlays(mapView: mapView)
 		
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 		if annotationCount != mapView.annotations.count {
@@ -272,11 +272,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			self.longPressRecognizer.cancelsTouchesInView = true
 			self.longPressRecognizer.delegate = self
 			self.parent.mapView.addGestureRecognizer(longPressRecognizer)
-		}
-		
-		func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-
-			//print (mapView.visibleMapRect)
 		}
 		
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -448,7 +443,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-			
+
 			switch overlay {
 			case let overlay as MKTileOverlay:
 				return MKTileOverlayRenderer(tileOverlay: overlay)

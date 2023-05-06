@@ -60,10 +60,6 @@ struct AppSettings: View {
 						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.provideLocation.toggle()
-						UserDefaults.provideLocation = self.provideLocation
-					}
 					
 					if UserDefaults.provideLocation {
 						
@@ -119,8 +115,8 @@ struct AppSettings: View {
 		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
 			UserDefaults.meshtasticUsername = newMeshtasticUsername
 		}
-		.onChange(of: provideLocation) { _ in
-			
+		.onChange(of: provideLocation) { newProvideLocation in
+			UserDefaults.provideLocation = newProvideLocation
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}

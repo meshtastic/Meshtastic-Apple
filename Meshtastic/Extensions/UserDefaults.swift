@@ -10,12 +10,10 @@ import Foundation
 extension UserDefaults {
 	
 	enum Keys: String, CaseIterable {
-		case hasBeenLaunched
 		case meshtasticUsername
 		case preferredPeripheralId
 		case provideLocation
 		case provideLocationInterval
-		//case meshMapType
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
@@ -25,16 +23,6 @@ extension UserDefaults {
 
 	func reset() {
 		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
-	}
-	
-	static var hasBeenLaunched: Bool {
-		get {
-			let result = UserDefaults.standard.bool(forKey: "hasBeenLaunched")
-			UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
-			return result
-		} set {
-			UserDefaults.standard.set(newValue, forKey: "hasBeenLaunched")
-		}
 	}
 	
 	static var meshtasticUsername: String {
@@ -57,9 +45,7 @@ extension UserDefaults {
 	
 	static var provideLocation: Bool {
 		get {
-			let result = UserDefaults.standard.bool(forKey: "provideLocation")
-			UserDefaults.standard.set(true, forKey: "provideLocation")
-			return result
+			UserDefaults.standard.bool(forKey: "provideLocation")
 		} set {
 			UserDefaults.standard.set(newValue, forKey: "provideLocation")
 		}
@@ -73,15 +59,6 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "provideLocationInterval")
 		}
 	}
-	
-//	static var mapType: Int {
-//		get {
-//			UserDefaults.standard.integer(forKey: "meshMapType")
-//		}
-//		set {
-//			UserDefaults.standard.set(newValue, forKey: "meshMapType")
-//		}
-//	}
 	
 	static var mapLayer: MapLayer {
 		get {
