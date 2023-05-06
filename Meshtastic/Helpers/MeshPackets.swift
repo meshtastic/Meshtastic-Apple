@@ -143,7 +143,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 
 	if channel.isInitialized && channel.hasSettings && channel.role != Channel.Role.disabled {
 
-		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@", channel.index, String(fromNum))
+		let logString = String.localizedStringWithFormat("mesh.log.channel.received %d %@".localized, channel.index, String(fromNum))
 		MeshLogger.log("🎛️ \(logString)")
 
 		let fetchedMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
