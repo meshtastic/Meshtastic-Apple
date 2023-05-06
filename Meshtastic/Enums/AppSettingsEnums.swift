@@ -128,6 +128,27 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 		}
 	}
 }
+
+enum MapLayer: String, CaseIterable, Equatable {
+	case standard
+	case hybrid
+	case satellite
+	case offline
+	var localized: String { self.rawValue.localized }
+	var zoomRange: [Int] {
+		switch self {
+		case .standard:
+			return [Int](0...24)
+		case .hybrid:
+			return [Int](0...24)
+		case .satellite:
+			return [Int](0...24)
+		case .offline:
+			return [Int](0...17)
+		}
+	}
+}
+
 enum MapTileServerLinks: Int, CaseIterable, Identifiable {
 	
 	case none = 0
@@ -157,18 +178,6 @@ enum MapTileServerLinks: Int, CaseIterable, Identifiable {
 			return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 		case .nationalMap:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-		}
-	}
-	var zoomRange: [Int] {
-		switch self {
-		case .none:
-			return [Int](0...1)
-		case .wikimedia:
-			return [Int](0...24)
-		case .openStreetMaps:
-			return [Int](0...24)
-		case .nationalMap:
-			return [Int](0...24)
 		}
 	}
 }

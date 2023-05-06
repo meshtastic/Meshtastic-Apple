@@ -15,13 +15,12 @@ struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	@State var meshMapType: Int = UserDefaults.mapType
+	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
 	@State var mapTileServer: String = UserDefaults.mapTileServer
-	@State var mapRect: MKMapRect = MKMapRect()
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -32,14 +31,12 @@ struct NodeMap: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
+	@State var waypointCoordinate: WaypointCoordinate?
 
-	
-	@State var mapType: MKMapType = .standard
 	@State var selectedTracking: UserTrackingModes = .none
 	@State var selectedTileServer: MapTileServerLinks = .wikimedia
 	@State var isPresentingInfoSheet: Bool = false
 	
-	@State var waypointCoordinate: WaypointCoordinate?
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 			mapName: "offlinemap",
 			tileType: "png",
@@ -59,10 +56,9 @@ struct NodeMap: View {
 							waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 						}
 					},
-				   visibleMapRect: $mapRect,
+				   selectedMapLayer: selectedMapLayer,
 				   positions: Array(positions),
 				   waypoints: Array(waypoints),
-				   mapViewType: mapType,
 				   userTrackingMode: selectedTracking.MKUserTrackingModeValue(),
 				   showNodeHistory: enableMapNodeHistoryPins,
 				   showRouteLines: enableMapRouteLines,
@@ -92,15 +88,21 @@ struct NodeMap: View {
 				VStack {
 					Form {
 						Section(header: Text("Map Options")) {
-							Picker("Map Type", selection: $mapType) {
-								ForEach(MeshMapTypes.allCases) { map in
-									Text(map.description).tag(map.MKMapTypeValue())
+							Picker(selection: $selectedMapLayer, label: Text("")) {
+								ForEach(MapLayer.allCases, id: \.self) { layer in
+									if layer == MapLayer.offline && UserDefaults.enableOfflineMaps {
+										Text(layer.localized)
+									} else if layer != MapLayer.offline {
+										Text(layer.localized)
+									}
 								}
 							}
-							.pickerStyle(DefaultPickerStyle())
-							.onChange(of: (mapType)) { newMapType in
-								UserDefaults.mapType = Int(newMapType.rawValue)
+							.pickerStyle(SegmentedPickerStyle())
+							.onChange(of: (selectedMapLayer)) { newMapLayer in
+								UserDefaults.mapLayer = newMapLayer
 							}
+							.padding(.top, 5)
+							.padding(.bottom, 5)
 							
 							Toggle(isOn: $enableMapRecentering) {
 								
@@ -141,16 +143,16 @@ struct NodeMap: View {
 								self.enableOfflineMaps.toggle()
 								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
 							}
-							Text("If you have shared a MBTiles file with meshtastic it will be loaded.")
-								.font(.caption)
-								.foregroundColor(.gray)
+//							Text("If you have shared a MBTiles file with meshtastic it will be loaded.")
+//								.font(.caption)
+//								.foregroundColor(.gray)
 							
 							if UserDefaults.enableOfflineMaps {
 								VStack {
 //									Picker("Tile Servers", selection: $selectedTileServer) {
 //										ForEach(MapTileServerLinks.allCases) { ts in
 //											Text(ts.description)
-//												.tag(ts.id)
+//											//	.tag(ts.id)
 //										}
 //									}
 //									.pickerStyle(.menu)
@@ -159,7 +161,7 @@ struct NodeMap: View {
 //										mapTileServer = selectedTileServer.tileUrl
 //									}
 									
-									TilesDownloadView(boundingBox: mapRect, name: "All tiles")
+//									TilesDownloadView(boundingBox: mapRect, name: "All tiles")
 									HStack {
 										Label("Tile Server", systemImage: "square.grid.3x2")
 										TextField(
@@ -207,8 +209,6 @@ struct NodeMap: View {
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
 			self.bleManager.context = context
-			mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
-		
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false

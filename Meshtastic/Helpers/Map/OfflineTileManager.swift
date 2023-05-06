@@ -22,15 +22,15 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	// MARK: -  Private properties
-	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer) }
+	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.count > 1 ? UserDefaults.mapTileServer : "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png") }
 	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
 	
 	private let fileManager = FileManager.default
 	
 	// MARK: -  Public property
-	@Published var progress: Float = 0
-	@Published var status: DownloadStatus = .download
+	var progress: Float = 0
+	var status: DownloadStatus = .download
 	
 	// MARK: -  Public methods
 	func getAllDownloadedSize() -> String {
@@ -100,7 +100,7 @@ class OfflineTileManager: ObservableObject {
 		if fileManager.fileExists(atPath: tilesUrl.path){
 			return tilesUrl
 		} else {
-			if !UserDefaults.enableOfflineMaps { // Get and persist newTile
+			if UserDefaults.enableOfflineMaps { // Get and persist newTile
 				return persistLocally(path: path)
 			} else { // Else display empty tile (transparent over Maps tiles)
 				return Bundle.main.url(forResource: "alpha", withExtension: "png")!
@@ -140,7 +140,7 @@ class OfflineTileManager: ObservableObject {
 			let data = try Data(contentsOf: url)
 			try data.write(to: filename)
 		} catch {
-			print("❤️ PersistLocallyError = \(error)")
+			print("💀 Save Tile Error = \(error)")
 		}
 		return url
 	}

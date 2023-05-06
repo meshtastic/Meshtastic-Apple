@@ -15,12 +15,12 @@ extension UserDefaults {
 		case preferredPeripheralId
 		case provideLocation
 		case provideLocationInterval
-		case meshMapType
-		case meshMapCenteringMode
+		//case meshMapType
 		case meshMapRecentering
-		case meshMapCustomTileServer
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case enableOfflineMaps
+		case mapTileServer
 	}
 
 	func reset() {
@@ -74,12 +74,21 @@ extension UserDefaults {
 		}
 	}
 	
-	static var mapType: Int {
+//	static var mapType: Int {
+//		get {
+//			UserDefaults.standard.integer(forKey: "meshMapType")
+//		}
+//		set {
+//			UserDefaults.standard.set(newValue, forKey: "meshMapType")
+//		}
+//	}
+	
+	static var mapLayer: MapLayer {
 		get {
-			UserDefaults.standard.integer(forKey: "meshMapType")
+			MapLayer(rawValue: UserDefaults.standard.string(forKey: "mapLayer") ?? MapLayer.standard.rawValue) ?? MapLayer.standard
 		}
 		set {
-			UserDefaults.standard.set(newValue, forKey: "meshMapType")
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapLayer")
 		}
 	}
 	

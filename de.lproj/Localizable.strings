@@ -200,6 +200,7 @@
 "not.connected"="Kein Gerät verbunden";
 "numbers.punctuation"="Ziffern und Interpunktion";
 "off"="Aus";
+"offline"="Offline";
 "on.boot"="Nur beim Starten";
 "options"="Optionen";
 "password"="Passwort";

@@ -200,6 +200,7 @@
 "not.connected"="未连接到电台";
 "numbers.punctuation"="数字和标点符号";
 "off"="关闭";
+"offline"="Offline";
 "on.boot"="仅在启动时";
 "options"="选项";
 "password"="密码";
