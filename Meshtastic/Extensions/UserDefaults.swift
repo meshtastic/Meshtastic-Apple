@@ -104,6 +104,14 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "enableOfflineMaps")
 		}
 	}
+	static var enableOfflineMapsMBTiles: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableOfflineMapsMBTiles")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableOfflineMapsMBTiles")
+		}
+	}
 	
 	static var mapTileServer: String {
 		get {

@@ -21,6 +21,7 @@ struct NodeMap: View {
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
 	@State var mapTileServer: String = UserDefaults.mapTileServer
+	@State var enableOfflineMapsMBTiles: Bool = UserDefaults.enableOfflineMapsMBTiles
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -149,35 +150,34 @@ struct NodeMap: View {
 							
 							if UserDefaults.enableOfflineMaps {
 								VStack {
-//									Picker("Tile Servers", selection: $selectedTileServer) {
-//										ForEach(MapTileServerLinks.allCases) { ts in
-//											Text(ts.description)
-//											//	.tag(ts.id)
-//										}
-//									}
-//									.pickerStyle(.menu)
-//									.onChange(of: (selectedTileServer)) { newTileServer in
-//									
-//										mapTileServer = selectedTileServer.tileUrl
-//									}
 									
-//									TilesDownloadView(boundingBox: mapRect, name: "All tiles")
-									HStack {
-										Label("Tile Server", systemImage: "square.grid.3x2")
-										TextField(
-											"Tile Server",
-											text: $mapTileServer,
-											axis: .vertical
-										)
-										.foregroundColor(.gray)
-										.font(.caption)
-										.onChange(of: (mapTileServer)) { newMapTileServer in
-											UserDefaults.mapTileServer = newMapTileServer
+									if !enableOfflineMapsMBTiles {
+										
+										HStack {
+											Label("Tile Server", systemImage: "square.grid.3x2")
+											TextField(
+												"Tile Server",
+												text: $mapTileServer,
+												axis: .vertical
+											)
+											.keyboardType(.asciiCapable)
+											.disableAutocorrection(true)
+											.foregroundColor(.gray)
+											.font(.caption)
+											.onChange(of: (mapTileServer)) { newMapTileServer in
+												UserDefaults.mapTileServer = newMapTileServer
+											}
 										}
 									}
+									Toggle(isOn: $enableOfflineMapsMBTiles) {
+										Text("Enable MB Tiles")
+									}
+									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+									.onTapGesture {
+										self.enableOfflineMapsMBTiles.toggle()
+										UserDefaults.enableOfflineMapsMBTiles = self.enableOfflineMapsMBTiles
+									}
 								}
-								.keyboardType(.asciiCapable)
-								.disableAutocorrection(true)
 							}
 						}
 					}

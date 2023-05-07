@@ -90,21 +90,23 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#endif
 	}
 	
-	private func setOverlays(mapView: MKMapView) {
+	private func setMapLayer(mapView: MKMapView) {
 		// Avoid refreshing UI if selectedLayer has not changed
 		guard currentMapLayer != selectedMapLayer else { return }
 		currentMapLayer = selectedMapLayer
 		for overlay in mapView.overlays {
-			if overlay is TileOverlay {
+			if overlay is MKTileOverlay {
 				mapView.removeOverlay(overlay)
 			}
 		}
 		switch selectedMapLayer {
 		case .offline:
-			let overlay = TileOverlay()
-			overlay.canReplaceMapContent = false
 			mapView.mapType = .standard
-			mapView.addOverlay(overlay, level: .aboveRoads)
+			if !UserDefaults.enableOfflineMapsMBTiles {
+				let overlay = TileOverlay()
+				overlay.canReplaceMapContent = false
+				mapView.addOverlay(overlay, level: .aboveLabels)
+			}
 		case .satellite:
 			mapView.mapType = .satellite
 		case .hybrid:
@@ -112,39 +114,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		default:
 			mapView.mapType = .standard
 		}
-	}
-	
-	private func setUserTracking(mapView: MKMapView, headingView: UIImageView?) {
-//		switch selectedTracking {
-//		case .bounding:
-//			guard let firstBoundingBox = trails.first?.polyline.boundingMapRect else {
-//				self.selectedTracking = .enabled
-//				return
-//			}
-//			let boundingBox = trails
-//				.map { $0.polyline.boundingMapRect }
-//				.reduce(firstBoundingBox) { (boundingBox, nextResult) -> MKMapRect in
-//					let minX = nextResult.minX < boundingBox.minX ? nextResult.minX : boundingBox.minX
-//					let maxX = nextResult.maxX > boundingBox.maxX ? nextResult.maxX : boundingBox.maxX
-//					let minY = nextResult.minY < boundingBox.minY ? nextResult.minY : boundingBox.minY
-//					let maxY = nextResult.maxY > boundingBox.maxY ? nextResult.maxY : boundingBox.maxY
-//					return MKMapRect(origin: MKMapPoint(x: minX, y: minY), size: MKMapSize(width: maxX-minX, height: maxY-minY))
-//			}
-//			var region = MKCoordinateRegion(boundingBox)
-//			region.span.latitudeDelta += 0.01
-//			region.span.longitudeDelta += 0.01
-//			mapView.setRegion(region, animated: false)
-//		case .disabled:
-//			mapView.setUserTrackingMode(.none, animated: true)
-//			locationManager.updateHeading = false
-//			headingView?.isHidden = true
-//		case .enabled:
-//			mapView.setUserTrackingMode(.follow, animated: true)
-//			locationManager.updateHeading = true
-//		case .heading:
-//			mapView.setUserTrackingMode(.followWithHeading, animated: true)
-//			headingView?.isHidden = true
-//		}
 	}
 	
 	func makeUIView(context: Context) -> MKMapView {
@@ -156,39 +125,41 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		
-
-		// MBTiles Offline maps and tile server settings
-//		if UserDefaults.enableOfflineMaps && UserDefaults.mapTileServer == "" {
+		// MBTiles Offline
+		if UserDefaults.enableOfflineMaps && UserDefaults.enableOfflineMapsMBTiles {
 			
-//			if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
-//				mapView.removeOverlays(mapView.overlays)
-//				if self.customMapOverlay != nil {
-//
-//					let fileManager = FileManager.default
-//					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-//					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
-//					if fileManager.fileExists(atPath: tilePath) {
-//						print("Loading local map file")
-//						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
-//							overlay.canReplaceMapContent = true// customMapOverlay.canReplaceMapContent
-//							mapView.addOverlay(overlay)
-//						}
-//					} else {
-//						print("Couldn't find a local map file to load")
-//					}
-//				}
-//				DispatchQueue.main.async {
-//					self.presentCustomMapOverlayHash = self.customMapOverlay
-//					self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
-//				}
-//			}
-//		}
+			if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
+				mapView.removeOverlays(mapView.overlays)
+				if self.customMapOverlay != nil {
+
+					let fileManager = FileManager.default
+					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
+					if fileManager.fileExists(atPath: tilePath) {
+						print("Loading local map file")
+						if let overlay = LocalMBTileOverlay(mbTilePath: tilePath) {
+							overlay.canReplaceMapContent = false// customMapOverlay.canReplaceMapContent
+							mapView.addOverlay(overlay)
+						}
+					} else {
+						print("Couldn't find a local map file to load")
+					}
+				}
+				DispatchQueue.main.async {
+					self.presentCustomMapOverlayHash = self.customMapOverlay
+					self.loadedLastUpdatedLocalMapFile = self.lastUpdatedLocalMapFile
+				}
+			}
+		}
+		// Set selected map layer
+		setMapLayer(mapView: mapView)
 		
 		let latest = positions
 			.filter { $0.latest == true }
 			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
+
 		// Node Route Lines
-		if true {//showRouteLines {
+		if showRouteLines {
 			// Remove all existing PolyLine Overlays
 			for overlay in mapView.overlays {
 				if overlay is MKPolyline {
@@ -221,9 +192,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 		
-		/// Set selected map layer
-		setOverlays(mapView: mapView)
-		
 		let annotationCount = waypoints.count + (showNodeHistory ? positions.count : latest.count)
 		if annotationCount != mapView.annotations.count {
 			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
@@ -255,7 +223,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	}
 	
 	func makeCoordinator() -> MapCoordinator {
-		//return Coordinator(self)
 		return Coordinator(self)
 	}
 	
@@ -443,18 +410,19 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		
 		public func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-
-			switch overlay {
-			case let overlay as MKTileOverlay:
-				return MKTileOverlayRenderer(tileOverlay: overlay)
-			case let polyline as MKPolyline:
-				let polylineRenderer = MKPolylineRenderer(overlay: overlay)
-				let titleString = polyline.title ?? "0"
-				let renderer = MKPolylineRenderer(polyline: polyline)
-				renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
-				renderer.lineWidth = 8
-				return polylineRenderer
-			default: return MKOverlayRenderer()
+			
+			if let tileOverlay = overlay as? MKTileOverlay {
+				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+			} else {
+				if let routePolyline = overlay as? MKPolyline {
+					
+					let titleString = routePolyline.title ?? "0"
+					let renderer = MKPolylineRenderer(polyline: routePolyline)
+					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
+					renderer.lineWidth = 8
+					return renderer
+				}
+				return MKOverlayRenderer()
 			}
 		}
 	}
