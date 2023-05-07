@@ -193,7 +193,7 @@ struct NodeMap: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([.medium, .large])
+				.presentationDetents([UserDefaults.enableOfflineMaps ? .large : .medium])
 				.presentationDragIndicator(.visible)
 			}
 		}

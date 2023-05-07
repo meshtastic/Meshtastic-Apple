@@ -28,7 +28,7 @@ struct NodeInfoView: View {
 		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 75, fontSize: 24, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 75, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 48 : 24, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				Divider()
 				VStack {
@@ -142,7 +142,7 @@ struct NodeInfoView: View {
 			HStack {
 
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 40 : 24, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				Divider()
 				VStack {

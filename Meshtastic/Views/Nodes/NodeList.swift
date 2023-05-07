@@ -35,9 +35,7 @@ struct NodeList: View {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
 						VStack(alignment: .leading) {
 							HStack {
-								let characters = Array(node.user?.shortName ?? "??")
-								
-								CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: characters.count == 1 ? 40 : 20, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
+								CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 40 : 20, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? "unknown".localized).font(.headline)
