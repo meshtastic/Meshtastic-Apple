@@ -14,11 +14,13 @@ extension UserDefaults {
 		case preferredPeripheralId
 		case provideLocation
 		case provideLocationInterval
+		case mapLayer
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
 		case enableOfflineMaps
 		case mapTileServer
+		case mapTilesAboveLabels
 	}
 
 	func reset() {
@@ -119,6 +121,15 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "mapTileServer")
+		}
+	}
+	
+	static var mapTilesAboveLabels: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "mapTilesAboveLabels")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "mapTilesAboveLabels")
 		}
 	}
 }

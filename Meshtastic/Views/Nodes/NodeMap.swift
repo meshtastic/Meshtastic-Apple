@@ -22,6 +22,7 @@ struct NodeMap: View {
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
 	@State var mapTileServer: String = UserDefaults.mapTileServer
 	@State var enableOfflineMapsMBTiles: Bool = UserDefaults.enableOfflineMapsMBTiles
+	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
@@ -143,11 +144,12 @@ struct NodeMap: View {
 							.onTapGesture {
 								self.enableOfflineMaps.toggle()
 								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
+								if !self.enableOfflineMaps {
+									if self.selectedMapLayer == .offline {
+										self.selectedMapLayer = .standard
+									}
+								}
 							}
-//							Text("If you have shared a MBTiles file with meshtastic it will be loaded.")
-//								.font(.caption)
-//								.foregroundColor(.gray)
-							
 							if UserDefaults.enableOfflineMaps {
 								VStack {
 									
@@ -168,6 +170,20 @@ struct NodeMap: View {
 												UserDefaults.mapTileServer = newMapTileServer
 											}
 										}
+										Text("A tile server will be used (defaults to wikimedia OSM) to load and cache map tiles as you browse the Offline map type.")
+											.font(.caption)
+											.foregroundColor(.gray)
+										Divider()
+										Toggle(isOn: $mapTilesAboveLabels) {
+											Text("Tiles above Labels")
+										}
+										.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+										.onTapGesture {
+											self.mapTilesAboveLabels.toggle()
+											UserDefaults.mapTilesAboveLabels = self.mapTilesAboveLabels
+										}
+										Divider()
+										TilesView()
 									}
 									Toggle(isOn: $enableOfflineMapsMBTiles) {
 										Text("Enable MB Tiles")
@@ -177,6 +193,9 @@ struct NodeMap: View {
 										self.enableOfflineMapsMBTiles.toggle()
 										UserDefaults.enableOfflineMapsMBTiles = self.enableOfflineMapsMBTiles
 									}
+									Text("The latest MBTiles file shared with meshtastic will be loaded into the map.")
+										.font(.caption)
+										.foregroundColor(.gray)
 								}
 							}
 						}

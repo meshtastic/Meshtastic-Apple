@@ -138,9 +138,7 @@
 "lora.config"="LoRa Einstellungen";
 "map"="Mesh Karte";
 "map.centering"="Centering";
-"map.tiles.download"="Download Tiles";
-"map.tiles.delete"="Delete Tiles";
-"map.tiles.downloading"="Downloading Tiles";
+"map.tiles.delete"="Delete Cached Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="kartentyp";
 "map.usertrackingmode"="User tracking mode";

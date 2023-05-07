@@ -105,7 +105,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			if !UserDefaults.enableOfflineMapsMBTiles {
 				let overlay = TileOverlay()
 				overlay.canReplaceMapContent = false
-				mapView.addOverlay(overlay, level: .aboveLabels)
+				mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
 			}
 		case .satellite:
 			mapView.mapType = .satellite

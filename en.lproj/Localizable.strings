@@ -139,9 +139,7 @@
 "map"="Mesh Map";
 "map.type"="Default Type";
 "map.centering"="Centering Mode";
-"map.tiles.download"="Download Tiles";
-"map.tiles.delete"="Delete Tiles";
-"map.tiles.downloading"="Downloading Tiles";
+"map.tiles.delete"="Delete Cached Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.follow"="Follow";
