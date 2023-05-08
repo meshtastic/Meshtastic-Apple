@@ -135,49 +135,72 @@ enum MapLayer: String, CaseIterable, Equatable {
 	case satellite
 	case offline
 	var localized: String { self.rawValue.localized }
-	var zoomRange: [Int] {
-		switch self {
-		case .standard:
-			return [Int](0...24)
-		case .hybrid:
-			return [Int](0...24)
-		case .satellite:
-			return [Int](0...24)
-		case .offline:
-			return [Int](0...17)
-		}
-	}
 }
 
-enum MapTileServerLinks: Int, CaseIterable, Identifiable {
+enum MapTileServerLinks: String, CaseIterable, Identifiable {
 	
-	case none = 0
-	case openStreetMaps = 1
-	case wikimedia = 2
-	case nationalMap = 3
-	var id: Int { self.rawValue }
+	case openStreetMaps
+	case usgsTopo
+	case usgsImageryTopo
+	case usgsImageryOnly
+	case watercolor
+	var id: String { self.rawValue }
+	var attribution: String {
+		switch self {
+			
+		case .openStreetMaps:
+			return "OpenStreetMap is a map of the world, created by people like you and free to use under an open license. &copy; [OpenStreetMap](http://osm.org/copyright) contributors"
+		case .usgsTopo:
+			return "[USGS Topo](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer) is a tile cache base map service that combines the most current data in The National Map (TNM), and other public-domain data, into a multi-scale topographic reference map."
+		case .usgsImageryTopo:
+			return "[USGS Imagery Topo](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer) is a tile cache base map of orthoimagery in The National Map and US Topo vector data."
+		case .usgsImageryOnly:
+			return "[USGS Imagery Only](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer) is a tile cache base map service of orthoimagery in The National Map."
+		case .watercolor:
+			return "Cooper Hewitt, Smithsonian Design Museum's [Watercolor Maptiles](https://watercolormaps.collection.cooperhewitt.org/) is a open-source mapping tool created by Stamen Design and built on OpenStreetMap data."
+		}
+	}
 	var description: String {
 		switch self {
-		case .none:
-			return "Please Select"
-		case .wikimedia:
-			return "Wikimedia"
 		case .openStreetMaps:
 			return "Open Street Maps"
-		case .nationalMap:
-			return "US National Map"
+		case .usgsTopo:
+			return "USGS Topographic"
+		case .usgsImageryTopo:
+			return "USGS Topo Imagery"
+		case .usgsImageryOnly:
+			return "USGS Imagery Only"
+		case .watercolor:
+			return "Watercolor Maptiles"
 		}
 	}
 	var tileUrl: String {
 		switch self {
-		case .none:
-			return ""
-		case .wikimedia:
-			return "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
 		case .openStreetMaps:
 			return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-		case .nationalMap:
+		case .usgsTopo:
+			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"
+		case .usgsImageryTopo:
+			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}"
+		case .usgsImageryOnly:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+		case .watercolor:
+			return "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg"
+
+		}
+	}
+	var zoomRange: [Int] {
+		switch self {
+		case .openStreetMaps:
+			return [Int](0...17)
+		case .usgsTopo:
+			return [Int](0...17)
+		case .usgsImageryTopo:
+			return [Int](0...17)
+		case .usgsImageryOnly:
+			return [Int](0...17)
+		case .watercolor:
+			return [Int](0...17)
 		}
 	}
 }

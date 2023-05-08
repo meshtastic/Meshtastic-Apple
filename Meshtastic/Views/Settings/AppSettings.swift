@@ -77,7 +77,9 @@ struct AppSettings: View {
 							.font(.caption)
 							.foregroundColor(.gray)
 					}
+					
 				}
+				TilesView()
 			}
 			HStack {
 				Button {

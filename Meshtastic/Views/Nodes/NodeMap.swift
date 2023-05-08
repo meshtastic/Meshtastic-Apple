@@ -14,13 +14,15 @@ struct NodeMap: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	
+	@ObservedObject var tileManager = OfflineTileManager.shared
 
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
-	@State var mapTileServer: String = UserDefaults.mapTileServer
+	@State var selectedTileServer: MapTileServerLinks = UserDefaults.mapTileServer
 	@State var enableOfflineMapsMBTiles: Bool = UserDefaults.enableOfflineMapsMBTiles
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
 
@@ -36,7 +38,7 @@ struct NodeMap: View {
 	@State var waypointCoordinate: WaypointCoordinate?
 
 	@State var selectedTracking: UserTrackingModes = .none
-	@State var selectedTileServer: MapTileServerLinks = .wikimedia
+	
 	@State var isPresentingInfoSheet: Bool = false
 	
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
@@ -155,22 +157,19 @@ struct NodeMap: View {
 									
 									if !enableOfflineMapsMBTiles {
 										
-										HStack {
-											Label("Tile Server", systemImage: "square.grid.3x2")
-											TextField(
-												"Tile Server",
-												text: $mapTileServer,
-												axis: .vertical
-											)
-											.keyboardType(.asciiCapable)
-											.disableAutocorrection(true)
-											.foregroundColor(.gray)
-											.font(.caption)
-											.onChange(of: (mapTileServer)) { newMapTileServer in
-												UserDefaults.mapTileServer = newMapTileServer
+										Picker(selection: $selectedTileServer,
+											   label: Text("Tile Server")) {
+											ForEach(MapTileServerLinks.allCases, id: \.self) { tsl in
+												Text(tsl.description)
 											}
 										}
-										Text("A tile server will be used (defaults to wikimedia OSM) to load and cache map tiles as you browse the Offline map type.")
+										.pickerStyle(DefaultPickerStyle())
+										.onChange(of: (selectedTileServer)) { newSelectedTileServer in
+											UserDefaults.mapTileServer = newSelectedTileServer
+											tileManager.removeAll()
+											selectedMapLayer = .standard
+										}
+										Text(LocalizedStringKey(selectedTileServer.attribution))
 											.font(.caption)
 											.foregroundColor(.gray)
 										Divider()
@@ -182,9 +181,9 @@ struct NodeMap: View {
 											self.mapTilesAboveLabels.toggle()
 											UserDefaults.mapTilesAboveLabels = self.mapTilesAboveLabels
 										}
-										Divider()
-										TilesView()
+										
 									}
+									Divider()
 									Toggle(isOn: $enableOfflineMapsMBTiles) {
 										Text("Enable MB Tiles")
 									}

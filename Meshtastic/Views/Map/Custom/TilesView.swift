@@ -23,8 +23,10 @@ struct TilesView: View {
 			
 			HStack {
 				Image(systemName: "trash")
+					.font(.callout)
 					.foregroundColor(.red)
 				Text("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))")
+					.font(.callout)
 					.foregroundColor(.red)
 				Spacer()
 			}
@@ -32,7 +34,6 @@ struct TilesView: View {
 		.onAppear(perform: {
 			totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 		})
-		Divider()
 	}
 }
 

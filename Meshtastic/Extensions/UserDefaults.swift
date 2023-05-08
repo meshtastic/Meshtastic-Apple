@@ -115,12 +115,13 @@ extension UserDefaults {
 		}
 	}
 	
-	static var mapTileServer: String {
+	static var mapTileServer: MapTileServerLinks {
 		get {
-			UserDefaults.standard.string(forKey: "mapTileServer") ?? ""
+			
+			MapTileServerLinks(rawValue: UserDefaults.standard.string(forKey: "mapTileServer") ?? MapTileServerLinks.openStreetMaps.rawValue) ?? MapTileServerLinks.openStreetMaps
 		}
 		set {
-			UserDefaults.standard.set(newValue, forKey: "mapTileServer")
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapTileServer")
 		}
 	}
 	

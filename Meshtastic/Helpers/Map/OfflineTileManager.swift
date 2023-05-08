@@ -22,7 +22,7 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	// MARK: -  Private properties
-	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.count > 1 ? UserDefaults.mapTileServer : "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png") }
+	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServerLinks.openStreetMaps.tileUrl) }
 	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
 	
