@@ -54,6 +54,7 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 	case off = 0
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
+	case fortyFiveSeconds = 45
 	case oneMinute = 60
 	case fiveMinutes = 300
 	case tenMinutes = 600
@@ -70,6 +71,8 @@ enum SenderIntervals: Int, CaseIterable, Identifiable {
 			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
 			return "interval.thirty.seconds".localized
+		case .fortyFiveSeconds:
+			return "interval.fortyfive.seconds".localized
 		case .oneMinute:
 			return "interval.one.minute".localized
 		case .fiveMinutes:
@@ -91,6 +94,7 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
+	case fortyFiveSeconds = 45
 	case oneMinute = 60
 	case twoMinutes = 120
 	case fiveMinutes = 300
@@ -120,6 +124,8 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
 			return "interval.thirty.seconds".localized
+		case .fortyFiveSeconds:
+			return "interval.fortyfive.seconds".localized
 		case .oneMinute:
 			return "interval.one.minute".localized
 		case .twoMinutes:

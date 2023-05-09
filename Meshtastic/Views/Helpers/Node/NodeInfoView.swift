@@ -41,7 +41,7 @@ struct NodeInfoView: View {
 
 						Text(String(hwModelString))
 							.foregroundColor(.gray)
-							.font(.largeTitle).fixedSize()
+							.font(.title).fixedSize()
 					}
 				}
 
@@ -59,7 +59,19 @@ struct NodeInfoView: View {
 							.font(.largeTitle)
 							.foregroundColor(.gray)
 							.fixedSize()
+						
+						if (node.rssi > -115) && (node.snr <= -13) {
+							Image(systemName: "waveform.slash")
+								.font(.title)
+								.foregroundColor(.orange)
+								.symbolRenderingMode(.hierarchical)
+							Text("Noisy Environment")
+								.font(.title3)
+								.foregroundColor(.orange)
+								.multilineTextAlignment(.center)
+						}
 					}
+					
 				}
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
@@ -152,7 +164,7 @@ struct NodeInfoView: View {
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
 						Text(String(node.user!.hwModel ?? "unset".localized))
-							.font(.callout).fixedSize()
+							.font(.caption).fixedSize()
 					}
 				}
 
@@ -169,6 +181,17 @@ struct NodeInfoView: View {
 							.font(.title2)
 							.foregroundColor(.gray)
 							.fixedSize()
+						
+						if (node.rssi > -115) && (node.snr <= -13) {
+							Image(systemName: "waveform.slash")
+								.font(.callout)
+								.foregroundColor(.orange)
+								.symbolRenderingMode(.hierarchical)
+							Text("Noisy Environment")
+								.font(.caption2)
+								.multilineTextAlignment(.center)
+								.foregroundColor(.orange)
+						}
 					}
 				}
 
