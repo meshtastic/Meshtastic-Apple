@@ -65,8 +65,8 @@ struct NodeInfoView: View {
 								.font(.title)
 								.foregroundColor(.orange)
 								.symbolRenderingMode(.hierarchical)
-							Text("Noisy Environment")
-								.font(.title3)
+							Text("Noisy")
+								.font(.title2)
 								.foregroundColor(.orange)
 								.multilineTextAlignment(.center)
 						}
@@ -187,8 +187,8 @@ struct NodeInfoView: View {
 								.font(.callout)
 								.foregroundColor(.orange)
 								.symbolRenderingMode(.hierarchical)
-							Text("Noisy Environment")
-								.font(.caption2)
+							Text("Noisy")
+								.font(.caption)
 								.multilineTextAlignment(.center)
 								.foregroundColor(.orange)
 						}
