@@ -105,6 +105,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			if !UserDefaults.enableOfflineMapsMBTiles {
 				let overlay = TileOverlay()
 				overlay.canReplaceMapContent = false
+				//overlay.minimumZ = 0
+				//overlay.maximumZ = 17
 				mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
 			}
 		case .satellite:
@@ -197,28 +199,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
-			
+			mapView.addAnnotations(showNodeHistory ? positions : latest)
 		}
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
-			
-			if UserDefaults.enableMapRecentering {
-				if annotationCount != mapView.annotations.count {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-				}
-				if latest.count > 1 {
-					mapView.fitAllAnnotations()
-				} else {
-					mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
-				}
-			}
 		} else {
-			// Centering Done by tracking mode
-			if annotationCount != mapView.annotations.count {
-				mapView.addAnnotations(showNodeHistory ? positions : latest)
-			}
 			mapView.showsUserLocation = true
 		}
+		mapView.fitAllAnnotations()
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 	}
 	
