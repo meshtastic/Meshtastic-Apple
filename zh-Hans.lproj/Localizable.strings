@@ -138,6 +138,7 @@
 "lora.config"="LoRa 配置";
 "map"="Mesh 地图";
 "map.centering"="Centering";
+"map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="地图类型";
 "map.usertrackingmode"="User tracking mode";
@@ -197,6 +198,7 @@
 "not.connected"="未连接到电台";
 "numbers.punctuation"="数字和标点符号";
 "off"="关闭";
+"offline"="Offline";
 "on.boot"="仅在启动时";
 "options"="选项";
 "password"="密码";

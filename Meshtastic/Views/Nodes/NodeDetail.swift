@@ -16,7 +16,9 @@ struct NodeDetail: View {
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
-	@State private var mapType: MKMapType = .standard
+	//@State private var mapType: MKMapType = .standard
+	@State private var selectedMapLayer: MapLayer = .standard
+	@State var mapRect: MKMapRect = MKMapRect()
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
@@ -68,8 +70,12 @@ struct NodeDetail: View {
 										if wpId > 0 {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
-									}, positions: lastTenThousand, waypoints: Array(waypoints),
-									mapViewType: mapType,
+									},
+									//visibleMapRect: $mapRect,
+									selectedMapLayer: selectedMapLayer,
+									positions: lastTenThousand,
+									waypoints: Array(waypoints),
+									//mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
@@ -79,18 +85,18 @@ struct NodeDetail: View {
 									Spacer()
 									HStack(alignment: .bottom, spacing: 1) {
 
-										Picker("Map Type", selection: $mapType) {
-											ForEach(MeshMapTypes.allCases) { map in
-												Text(map.description)
-													.tag(map.MKMapTypeValue())
-											}
-										}
-										.onChange(of: (mapType)) { newMapType in
-											UserDefaults.mapType = Int(newMapType.rawValue)
-										}
-										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-										.pickerStyle(.menu)
-										.padding(5)
+//										Picker("Map Type", selection: $mapType) {
+//											ForEach(MeshMapTypes.allCases) { map in
+//												Text(map.description)
+//													.tag(map.MKMapTypeValue())
+//											}
+//										}
+//										.onChange(of: (mapType)) { newMapType in
+//											UserDefaults.mapType = Int(newMapType.rawValue)
+//										}
+//										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+//										.pickerStyle(.menu)
+//										.padding(5)
 										VStack {
 											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
@@ -225,7 +231,7 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
+					//mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {

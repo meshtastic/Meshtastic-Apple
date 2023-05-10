@@ -28,7 +28,7 @@ struct NodeInfoView: View {
 		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 75, fontSize: 24, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 105 : 55, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				Divider()
 				VStack {
@@ -41,31 +41,28 @@ struct NodeInfoView: View {
 
 						Text(String(hwModelString))
 							.foregroundColor(.gray)
-							.font(.largeTitle).fixedSize()
+							.font(.title).fixedSize()
 					}
 				}
-
-				if node.snr > 0 {
-					Divider()
+				Divider()
+				if node.snr != 0 {
 					VStack(alignment: .center) {
-
-						Image(systemName: "waveform.path")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-							.padding(.bottom, 10)
-						Text("SNR").font(.largeTitle).fixedSize()
-						Text("\(String(format: "%.2f", node.snr)) dB")
-							.font(.largeTitle)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi)
+						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+						Text("Signal \(signalStrength.description)").font(.title)
+						Text("SNR \(String(format: "%.2f", node.snr))dB")
 							.foregroundColor(.gray)
-							.fixedSize()
+							.font(.title3)
+						Text("RSSI \(node.rssi)dB")
+							.foregroundColor(.gray)
+							.font(.title3)
 					}
+					Divider()
 				}
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
 					
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-					Divider()
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 						if mostRecent?.voltage ?? 0 > 0.0 {
@@ -142,7 +139,7 @@ struct NodeInfoView: View {
 			HStack {
 
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				Divider()
 				VStack {
@@ -152,31 +149,28 @@ struct NodeInfoView: View {
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
 						Text(String(node.user!.hwModel ?? "unset".localized))
-							.font(.callout).fixedSize()
+							.font(.caption).fixedSize()
 					}
 				}
-
-				if node.snr > 0 {
-					Divider()
+				Divider()
+				if node.snr != 0 {
 					VStack(alignment: .center) {
-
-						Image(systemName: "waveform.path")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-						Text("SNR").font(.title2).fixedSize()
-						Text("\(String(format: "%.2f", node.snr)) dB")
-							.font(.title2)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi)
+						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+						Text("Signal \(signalStrength.description)").font(.footnote)
+						Text("SNR \(String(format: "%.2f", node.snr))dB")
 							.foregroundColor(.gray)
-							.fixedSize()
+							.font(.caption2)
+						Text("RSSI \(node.rssi)dB")
+							.foregroundColor(.gray)
+							.font(.caption2)
 					}
+					Divider()
 				}
-
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
 					
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-					Divider()
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 						if mostRecent?.voltage ?? 0 > 0 {

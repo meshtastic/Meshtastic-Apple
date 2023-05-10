@@ -138,6 +138,7 @@
 "lora.config"="LoRa Einstellungen";
 "map"="Mesh Karte";
 "map.centering"="Centering";
+"map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="kartentyp";
 "map.usertrackingmode"="User tracking mode";
@@ -197,6 +198,7 @@
 "not.connected"="Kein Gerät verbunden";
 "numbers.punctuation"="Ziffern und Interpunktion";
 "off"="Aus";
+"offline"="Offline";
 "on.boot"="Nur beim Starten";
 "options"="Optionen";
 "password"="Passwort";

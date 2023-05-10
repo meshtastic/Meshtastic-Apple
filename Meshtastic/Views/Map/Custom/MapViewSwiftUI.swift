@@ -10,27 +10,30 @@ import MapKit
 func degreesToRadians(_ number: Double) -> Double {
 	return number * .pi / 180
 }
+var currentMapLayer: MapLayer?
 
 struct MapViewSwiftUI: UIViewRepresentable {
 	
 	var onLongPress: (_ waypointCoordinate: CLLocationCoordinate2D) -> Void
 	var onWaypointEdit: (_ waypointId: Int ) -> Void
+	
 	let mapView = MKMapView()
 	// Parameters
+	var selectedMapLayer: MapLayer
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
-	let mapViewType: MKMapType
+	
 	let userTrackingMode: MKUserTrackingMode
 	let showNodeHistory: Bool
 	let showRouteLines: Bool
+	
+	let mapViewType: MKMapType = MKMapType.standard
+
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
 	var customMapOverlay: CustomMapOverlay?
 	@State private var presentCustomMapOverlayHash: CustomMapOverlay?
-	// Custom Tile Server
-	var tileRenderer: MKTileOverlayRenderer?
-	let tileServer: MapTileServerLinks = .openStreetMaps
 	
 	// MARK: Private methods
 	
@@ -87,7 +90,36 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#endif
 	}
 	
+	private func setMapLayer(mapView: MKMapView) {
+		// Avoid refreshing UI if selectedLayer has not changed
+		guard currentMapLayer != selectedMapLayer else { return }
+		currentMapLayer = selectedMapLayer
+		for overlay in mapView.overlays {
+			if overlay is MKTileOverlay {
+				mapView.removeOverlay(overlay)
+			}
+		}
+		switch selectedMapLayer {
+		case .offline:
+			mapView.mapType = .standard
+			if !UserDefaults.enableOfflineMapsMBTiles {
+				let overlay = TileOverlay()
+				overlay.canReplaceMapContent = false
+				//overlay.minimumZ = 0
+				//overlay.maximumZ = 17
+				mapView.addOverlay(overlay, level: UserDefaults.mapTilesAboveLabels ? .aboveLabels : .aboveRoads)
+			}
+		case .satellite:
+			mapView.mapType = .satellite
+		case .hybrid:
+			mapView.mapType = .hybrid
+		default:
+			mapView.mapType = .standard
+		}
+	}
+	
 	func makeUIView(context: Context) -> MKMapView {
+		currentMapLayer = nil
 		mapView.delegate = context.coordinator
 		self.configureMap(mapView: mapView)
 		return mapView
@@ -95,36 +127,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	func updateUIView(_ mapView: MKMapView, context: Context) {
 		
-		mapView.mapType = mapViewType
-		
-		// Offline maps and tile server settings
-		if UserDefaults.enableOfflineMaps {
+		// MBTiles Offline
+		if UserDefaults.enableOfflineMaps && UserDefaults.enableOfflineMapsMBTiles {
 			
-			if UserDefaults.mapTileServer.count > 0 {
-				tileRenderer?.alpha = 0.0
-				let overlays = mapView.overlays
-				if mapView.mapType == .standard {
-					let overlay = MKTileOverlay(urlTemplate: UserDefaults.mapTileServer)
-					if overlays.contains(where: {$0 is MKPolyline}) {
-						mapView.addOverlay(overlay, level: .aboveLabels)
-						if let poly_overlay = overlays.filter({$0 is MKPolyline}).first {
-							mapView.addOverlay(poly_overlay, level: .aboveLabels)
-						}
-					} else {
-						mapView.addOverlay(overlay, level: .aboveLabels)
-						
-					}
-				} else {
-					for overlay in overlays {
-						if let ove = overlay as? MKTileOverlay {
-							mapView.removeOverlay(ove)
-						}
-					}
-				}
-			} else if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
+			if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 				mapView.removeOverlays(mapView.overlays)
 				if self.customMapOverlay != nil {
-					
+
 					let fileManager = FileManager.default
 					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
@@ -144,11 +153,13 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 			}
 		}
+		// Set selected map layer
+		setMapLayer(mapView: mapView)
 		
 		let latest = positions
 			.filter { $0.latest == true }
 			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
-		
+
 		// Node Route Lines
 		if showRouteLines {
 			// Remove all existing PolyLine Overlays
@@ -188,28 +199,24 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			print("Annotation Count: \(annotationCount) Map Annotations: \(mapView.annotations.count)")
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
-			
+			mapView.addAnnotations(showNodeHistory ? positions : latest)
 		}
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
 			
 			if UserDefaults.enableMapRecentering {
-				if annotationCount != mapView.annotations.count {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
-				}
-				if latest.count > 1 {
-					mapView.fitAllAnnotations()
+				
+				if latest.count == 1 {
+					mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
 				} else {
-					mapView.fit(annotations:showNodeHistory ? positions : latest, andShow: false)
+					mapView.fitAllAnnotations()
 				}
 			}
+			
 		} else {
-			// Centering Done by tracking mode
-			if annotationCount != mapView.annotations.count {
-				mapView.addAnnotations(showNodeHistory ? positions : latest)
-			}
 			mapView.showsUserLocation = true
 		}
+		
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 	}
 	

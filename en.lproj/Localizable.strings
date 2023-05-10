@@ -139,6 +139,7 @@
 "map"="Mesh Map";
 "map.type"="Default Type";
 "map.centering"="Centering Mode";
+"map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.follow"="Follow";
@@ -197,6 +198,7 @@
 "not.connected"="No device connected";
 "numbers.punctuation"="Numbers and Punctuation";
 "off"="Off";
+"offline"="Offline";
 "on.boot"="On Boot Only";
 "options"="Options";
 "password"="Password";

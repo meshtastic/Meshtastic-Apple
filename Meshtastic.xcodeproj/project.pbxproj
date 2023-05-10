@@ -30,7 +30,7 @@
 		DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD415827285859C4009B0E59 /* TelemetryConfig.swift */; };
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
 		DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
-		DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */; };
+		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
 		DD47E3CE26F103C600029299 /* NodeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeList.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
@@ -98,6 +98,13 @@
 		DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */; };
 		DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */; };
 		DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */; };
+		DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A0E2A05920E006ED576 /* FileManager.swift */; };
+		DDB75A112A059258006ED576 /* Url.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A102A059258006ED576 /* Url.swift */; };
+		DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */; };
+		DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A152A0594AD006ED576 /* TileOverlay.swift */; };
+		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
+		DDB75A1C2A076DFA006ED576 /* TilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1B2A076DFA006ED576 /* TilesView.swift */; };
+		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -208,7 +215,7 @@
 		DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeWeatherForecast.swift; sourceTree = "<group>"; };
 		DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalStrengthIndicator.swift; sourceTree = "<group>"; };
+		DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLESignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD47E3CD26F103C600029299 /* NodeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeList.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
@@ -281,6 +288,13 @@
 		DDB6ABE328B13FFF00384BA1 /* DisplayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayEnums.swift; sourceTree = "<group>"; };
 		DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoraConfigEnums.swift; sourceTree = "<group>"; };
 		DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV12.xcdatamodel; sourceTree = "<group>"; };
+		DDB75A0E2A05920E006ED576 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
+		DDB75A102A059258006ED576 /* Url.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url.swift; sourceTree = "<group>"; };
+		DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTileManager.swift; sourceTree = "<group>"; };
+		DDB75A152A0594AD006ED576 /* TileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileOverlay.swift; sourceTree = "<group>"; };
+		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
+		DDB75A1B2A076DFA006ED576 /* TilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesView.swift; sourceTree = "<group>"; };
+		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
@@ -389,6 +403,7 @@
 				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
 				DDDB443529F6287000EE2349 /* MapButtons.swift */,
+				DDB75A1B2A076DFA006ED576 /* TilesView.swift */,
 			);
 			path = Custom;
 			sourceTree = "<group>";
@@ -544,6 +559,15 @@
 			path = Protobufs;
 			sourceTree = "<group>";
 		};
+		DDB75A122A0593CD006ED576 /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */,
+				DDB75A152A0594AD006ED576 /* TileOverlay.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -641,6 +665,7 @@
 		DDC2E18926CE24F70042C5E4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -669,7 +694,8 @@
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
 				DD97E96528EFD9820056DDA4 /* MeshtasticLogo.swift */,
-				DD457187293C7E63000C49FB /* SignalStrengthIndicator.swift */,
+				DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */,
+				DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -677,6 +703,7 @@
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DDB75A122A0593CD006ED576 /* Map */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
 				DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */,
@@ -716,6 +743,8 @@
 				DDDB444729F8A9C900EE2349 /* String.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
+				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
+				DDB75A102A059258006ED576 /* Url.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -885,6 +914,7 @@
 				DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */,
 				DDCDC6CB29481FCC004C1DDA /* Localizable.strings in Resources */,
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
+				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -940,7 +970,7 @@
 			files = (
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
 				DD5E520C298EE33B00D21B61 /* portnums.pb.swift in Sources */,
-				DD457188293C7E63000C49FB /* SignalStrengthIndicator.swift in Sources */,
+				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
@@ -955,6 +985,7 @@
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */,
 				DDDB444C29F8AAA600EE2349 /* Color.swift in Sources */,
+				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
 				DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
@@ -979,6 +1010,8 @@
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,
+				DDB75A1C2A076DFA006ED576 /* TilesView.swift in Sources */,
+				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
@@ -1016,6 +1049,7 @@
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD5E5202298EE33B00D21B61 /* admin.pb.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
+				DDB75A112A059258006ED576 /* Url.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
@@ -1025,6 +1059,8 @@
 				DD86D4112881D16900BAEB7A /* WriteCsvFile.swift in Sources */,
 				DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */,
 				DD86D40F2881BE4C00BAEB7A /* CsvDocument.swift in Sources */,
+				DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */,
+				DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */,
 				DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */,
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
@@ -1265,7 +1301,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.8;
+				MARKETING_VERSION = 2.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1299,7 +1335,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.8;
+				MARKETING_VERSION = 2.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1418,7 +1454,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.8;
+				MARKETING_VERSION = 2.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1449,7 +1485,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.8;
+				MARKETING_VERSION = 2.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

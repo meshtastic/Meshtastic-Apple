@@ -128,47 +128,134 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 		}
 	}
 }
-enum MapTileServerLinks: Int, CaseIterable, Identifiable {
+
+enum MapLayer: String, CaseIterable, Equatable {
+	case standard
+	case hybrid
+	case satellite
+	case offline
+	var localized: String { self.rawValue.localized }
+}
+
+enum MapTileServerLinks: String, CaseIterable, Identifiable {
 	
-	case none = 0
-	case openStreetMaps = 1
-	case wikimedia = 2
-	case nationalMap = 3
-	var id: Int { self.rawValue }
+	case openStreetMap
+	case openStreetMapDE
+	case openStreetMapFR
+	case openCycleMap
+	case openStreetMapHot
+	case openTopoMap
+	case usgsTopo
+	case usgsImageryTopo
+	case usgsImageryOnly
+	case toner
+	case watercolor
+	var id: String { self.rawValue }
+	var attribution: String {
+		switch self {
+			
+		
+		case .openStreetMap:
+			return "Map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapDE:
+			return "[OpenStreetMap DE](https://openstreetmap.de) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapFR:
+			return "[OpenStreetMap FR](https://www.openstreetmap.fr) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openCycleMap:
+			return "[OpenCycleMap](https://www.cyclosm.org) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openTopoMap:
+			return "[OpenTopoMap](https://opentopomap.org) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapHot:
+			return "[OpenStreetMap FR](https://www.openstreetmap.fr) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .usgsTopo:
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer) [National Map](http://nationalmap.gov/) topographic overlay."
+		case .usgsImageryTopo:
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer) [National Map](http://nationalmap.gov/) imagery and topographic overlay."
+		case .usgsImageryOnly:
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer) [National Map](http://nationalmap.gov/) imagery only overlay."
+		case .toner:
+			return "[Stamen Design's](https://github.com/stamen/toner-carto) black and white map tiles."
+		case .watercolor:
+			return "Cooper Hewitt, Smithsonian Design Museum's [Watercolor Maptiles](https://watercolormaps.collection.cooperhewitt.org/) is a open-source mapping tool created by Stamen Design and built on [OpenStreetMap](http://www.openstreetmap.org) data."
+		}
+	}
 	var description: String {
 		switch self {
-		case .none:
-			return "Please Select"
-		case .wikimedia:
-			return "Wikimedia"
-		case .openStreetMaps:
-			return "Open Street Maps"
-		case .nationalMap:
-			return "US National Map"
+		case .openStreetMap:
+			return "Open Street Map"
+		case .openStreetMapDE:
+			return "Open Street Map DE"
+		case .openStreetMapFR:
+			return "Open Street Map FR"
+		case .openCycleMap:
+			return "Open Cycle Map"
+		case .openStreetMapHot:
+			return "Humanitarian (OSM)"
+		case.openTopoMap:
+			return "Open Topo Map"
+		case .usgsTopo:
+			return "USGS Topographic"
+		case .usgsImageryTopo:
+			return "USGS Topo Imagery"
+		case .usgsImageryOnly:
+			return "USGS Imagery Only"
+		case .toner:
+			return "Toner"
+		case .watercolor:
+			return "Watercolor Maptiles"
 		}
 	}
 	var tileUrl: String {
 		switch self {
-		case .none:
-			return ""
-		case .wikimedia:
-			return "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
-		case .openStreetMaps:
+		case .openStreetMap:
 			return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-		case .nationalMap:
+		case .openStreetMapDE:
+			return "https://tile.openstreetmap.de/{z}/{x}/{y}.png"
+		case .openStreetMapFR:
+			return "https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"
+		case .openCycleMap:
+			return "https://c.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+		case .openStreetMapHot:
+			return "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+		case .openTopoMap:
+			return "https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
+		case .usgsTopo:
+			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"
+		case .usgsImageryTopo:
+			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}"
+		case .usgsImageryOnly:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+		case .toner:
+			return "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png"
+		case .watercolor:
+			return "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg"
+
 		}
 	}
 	var zoomRange: [Int] {
 		switch self {
-		case .none:
-			return [Int](0...1)
-		case .wikimedia:
-			return [Int](0...24)
-		case .openStreetMaps:
-			return [Int](0...24)
-		case .nationalMap:
-			return [Int](0...24)
+		case .openStreetMap:
+			return [Int](0...18)
+		case .openStreetMapDE:
+			return [Int](0...18)
+		case .openStreetMapFR:
+			return [Int](0...18)
+		case .openCycleMap:
+			return [Int](0...18)
+		case .openTopoMap:
+			return [Int](0...18)
+		case .openStreetMapHot:
+			return [Int](0...18)
+		case .usgsTopo:
+			return [Int](6...15)
+		case .usgsImageryTopo:
+			return [Int](6...15)
+		case .usgsImageryOnly:
+			return [Int](6...15)
+		case .toner:
+			return [Int](0...18)
+		case .watercolor:
+			return [Int](0...18)
 		}
 	}
 }
