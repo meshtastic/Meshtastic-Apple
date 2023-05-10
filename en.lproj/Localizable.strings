@@ -45,7 +45,7 @@
 "channel.utilization"="Channel Utilization";
 "channels"="Channels";
 "clear.app.data"="Clear App Data";
-"clear.log"="Clear Log";
+"clear.log"="Clear";
 "close"="Close";
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";

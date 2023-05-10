@@ -35,29 +35,30 @@ struct AppSettings: View {
 					let speed = Measurement(value: locationHelper.locationManager.location?.speed ?? 0, unit: UnitSpeed.kilometersPerHour)
 					HStack {
 						Label("Accuracy \(accuracy.formatted())", systemImage: "scope")
-							.font(.callout)
+							.font(.footnote)
 						Label("Sats \(LocationHelper.satsInView)", systemImage: "sparkles")
-							.font(.callout)
+							.font(.footnote)
 					}
-					Label("Coordinates \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.longitude ?? 0))", systemImage: "mappin")
-							.font(.callout)
+					Label("Coordinate \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.longitude ?? 0))", systemImage: "mappin")
+							.font(.footnote)
 							.textSelection(.enabled)
 					if locationHelper.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 						Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-							.font(.callout)
+							.font(.footnote)
 					}
 					if locationHelper.locationManager.location?.courseAccuracy ?? 0 > 0 {
 						Label("Heading \(String(format: "%.2f", locationHelper.locationManager.location?.course ?? 0))°", systemImage: "location.circle")
-							.font(.callout)
+							.font(.footnote)
 					}
 					if locationHelper.locationManager.location?.speedAccuracy ?? 0 > 0 {
 						Label("Speed \(speed.formatted())", systemImage: "speedometer")
-							.font(.callout)
+							.font(.footnote)
 					}
 					
 					Toggle(isOn: $provideLocation) {
 						
 						Label("provide.location", systemImage: "location.circle.fill")
+							.font(.footnote)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
@@ -74,10 +75,9 @@ struct AppSettings: View {
 						}
 						
 						Text("phone.gps.interval.description")
-							.font(.caption)
+							.font(.caption2)
 							.foregroundColor(.gray)
 					}
-					
 				}
 				TilesView()
 			}

@@ -38,13 +38,15 @@ struct NodeList: View {
 								CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : 22, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
 									.padding(.trailing, 5)
 								VStack(alignment: .leading) {
-									Text(node.user?.longName ?? "unknown".localized).font(.headline)
+									Text(node.user?.longName ?? "unknown".localized)
+										.fontWeight(.medium)
+										.font(.callout)
 									if connected {
-										HStack(alignment: .bottom) {
+										HStack {
 											Image(systemName: "repeat.circle.fill")
-												.font(.title3)
+												.font(.callout)
 												.symbolRenderingMode(.hierarchical)
-											Text("connected").font(.subheadline)
+											Text("connected").font(.callout)
 												.foregroundColor(.green)
 										}
 									}
@@ -56,28 +58,27 @@ struct NodeList: View {
 												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 												let metersAway = nodeCoord.distance(from: myCoord)
 												Image(systemName: "lines.measurement.horizontal")
-													.font(.title3)
+													.font(.footnote)
 													.symbolRenderingMode(.hierarchical)
-
-												DistanceText(meters: metersAway).font(.subheadline)
+												DistanceText(meters: metersAway).font(.footnote)
 											}
 										}
 									}
 									if node.channel > 0 {
 										HStack(alignment: .bottom) {
 											Image(systemName: "fibrechannel")
-												.font(.title3)
+												.font(.footnote)
 												.symbolRenderingMode(.hierarchical)
 											Text("Channel: \(node.channel)")
-												.font(.subheadline)
+												.font(.footnote)
 										}
 									}
 									HStack(alignment: .bottom) {
 										Image(systemName: "clock.badge.checkmark.fill")
-											.font(.title3)
+											.font(.caption)
 											.symbolRenderingMode(.hierarchical)
 										LastHeardText(lastHeard: node.lastHeard)
-											.font(.subheadline)
+											.font(.caption)
 									}
 								}
 								.frame(maxWidth: .infinity, alignment: .leading)

@@ -8,7 +8,7 @@ import SwiftUI
 struct ConnectedDevice: View {
     var bluetoothOn: Bool
     var deviceConnected: Bool
-    var name: String?
+    var name: String
 
     var body: some View {
 
@@ -20,7 +20,7 @@ struct ConnectedDevice: View {
 						.imageScale(.large)
                         .foregroundColor(.green)
                         .symbolRenderingMode(.hierarchical)
-					Text(name!).font(.callout).foregroundColor(.gray)
+					Text(name).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
                 } else {
 
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")

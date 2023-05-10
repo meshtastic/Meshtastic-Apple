@@ -52,11 +52,11 @@ public extension FileManager {
 	  do {
 		accumulatedSize += try contentItemURL.regularFileAllocatedSize()
 	  } catch {
-		print("❤️ \(error.localizedDescription)")
+		print("💥 File Manager Error: \(error.localizedDescription)")
 	  }
 
 	}
-	if let error = enumeratorError { print("❤️ AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription)") }
+	if let error = enumeratorError { print("💥 AllocatedSizeOfDirectory enumeratorError = \(error.localizedDescription)") }
 
 	return Double(accumulatedSize).toBytes
 
