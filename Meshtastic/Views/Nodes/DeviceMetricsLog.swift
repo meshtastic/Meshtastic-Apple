@@ -119,11 +119,13 @@ struct DeviceMetricsLog: View {
 			} else {
 				ScrollView {
 					let columns = [
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						//GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 45), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
-						GridItem(spacing: 0)
+						GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
+						
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
@@ -159,7 +161,7 @@ struct DeviceMetricsLog: View {
 								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.caption)
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
-									.font(.caption2)
+									.font(.caption)
 							}
 						}
 					}
@@ -177,7 +179,8 @@ struct DeviceMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -200,7 +203,8 @@ struct DeviceMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 		}
 		.navigationTitle("device.metrics.log")
 		.navigationBarTitleDisplayMode(.inline)

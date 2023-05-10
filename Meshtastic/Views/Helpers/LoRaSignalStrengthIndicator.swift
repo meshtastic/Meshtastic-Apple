@@ -69,3 +69,34 @@ func getLoRaSignalStrength(snr: Float, rssi: Int32) -> LoRaSignalStrength {
 		return .fair
 	}
 }
+
+func getRssiColor(rssi: Int32) -> Color {
+	if rssi > -115 {
+		/// Good
+		return .green
+	} else if rssi > -115 && rssi < -120 {
+		/// Fair
+		return .yellow
+	} else if rssi > -126 {
+		/// Bad
+		return .orange
+	} else  {
+		// None
+		return .red
+	}
+}
+
+func getSnrColor(snr: Float) -> Color {
+	if snr > -7 {
+		/// Good
+		return .green
+	} else if snr < -7 && snr > -13 {
+		/// Fair
+		return .yellow
+	} else if snr >= -14 {
+		/// Bad
+		return .orange
+	} else  {
+		return .red
+	}
+}

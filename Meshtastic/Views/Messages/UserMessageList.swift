@@ -204,7 +204,6 @@ struct UserMessageList: View {
 								.id(message.messageId)
 								.alert(isPresented: $showDeleteMessageAlert) {
 									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."), primaryButton: .destructive(Text("Delete")) {
-										print("OK button tapped")
 										if deleteMessageId > 0 {
 											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
 											context.delete(message!)

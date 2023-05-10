@@ -108,10 +108,10 @@ struct EnvironmentMetricsLog: View {
 			} else {
 				ScrollView {
 					let columns = [
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
@@ -146,7 +146,7 @@ struct EnvironmentMetricsLog: View {
 								Text("\(String(format: "%.2f", em.gasResistance))")
 									.font(.caption)
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-									.font(.caption2)
+									.font(.caption)
 							}
 						}
 					}
@@ -160,12 +160,13 @@ struct EnvironmentMetricsLog: View {
 			Button(role: .destructive) {
 				isPresentingClearLogConfirm = true
 			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
+				Label("clear.log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -186,7 +187,8 @@ struct EnvironmentMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.leading)
 		}
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)

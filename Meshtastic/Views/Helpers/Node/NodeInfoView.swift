@@ -51,10 +51,10 @@ struct NodeInfoView: View {
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.title)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(.gray)
+							.foregroundColor(getSnrColor(snr: node.snr))
 							.font(.title3)
 						Text("RSSI \(node.rssi)dB")
-							.foregroundColor(.gray)
+							.foregroundColor(getRssiColor(rssi: node.rssi))
 							.font(.title3)
 					}
 					Divider()
@@ -141,35 +141,35 @@ struct NodeInfoView: View {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
-				Divider()
-				VStack {
-					if node.user != nil {
+				
+				if node.user != nil {
+					Divider()
+					VStack {
 						Image(node.user!.hwModel ?? "unset".localized)
 							.resizable()
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
 						Text(String(node.user!.hwModel ?? "unset".localized))
-							.font(.caption).fixedSize()
+							.font(.caption2).fixedSize()
 					}
 				}
-				Divider()
 				if node.snr != 0 {
+					Divider()
 					VStack(alignment: .center) {
 						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi)
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.footnote)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(.gray)
+							.foregroundColor(getSnrColor(snr: node.snr))
 							.font(.caption2)
 						Text("RSSI \(node.rssi)dB")
-							.foregroundColor(.gray)
+							.foregroundColor(getRssiColor(rssi: node.rssi))
 							.font(.caption2)
 					}
-					Divider()
 				}
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
-					
+					Divider()
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))

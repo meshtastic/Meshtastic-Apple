@@ -166,7 +166,6 @@ struct NodeMap: View {
 										.pickerStyle(DefaultPickerStyle())
 										.onChange(of: (selectedTileServer)) { newSelectedTileServer in
 											UserDefaults.mapTileServer = newSelectedTileServer
-											//tileManager.removeAll()
 											selectedMapLayer = .standard
 										}
 										Text("Attribution:")

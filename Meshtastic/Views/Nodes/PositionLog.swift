@@ -121,12 +121,13 @@ struct PositionLog: View {
 				Button(role: .destructive) {
 					isPresentingClearLogConfirm = true
 				} label: {
-					Label("Clear Log", systemImage: "trash.fill")
+					Label("clear.log", systemImage: "trash.fill")
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
-				.padding()
+				.padding(.bottom)
+				.padding(.trailing)
 				.confirmationDialog(
 					"are.you.sure",
 					isPresented: $isPresentingClearLogConfirm,
@@ -143,10 +144,8 @@ struct PositionLog: View {
 				}
 				
 				Button {
-					
 					exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 					isExporting = true
-					
 				} label: {
 					
 					Label("save", systemImage: "square.and.arrow.down")
@@ -154,7 +153,8 @@ struct PositionLog: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
-				.padding()
+				.padding(.bottom)
+				.padding(.leading)
 			}
 			.fileExporter(
 				isPresented: $isExporting,
