@@ -32,7 +32,7 @@ import Foundation
 import SwiftUI
 
 struct SignalStrengthIndicator: View {
-	let signalStrength: SignalStrength
+	let signalStrength: BLESignalStrength
 
 	var body: some View {
 		HStack {
@@ -40,7 +40,7 @@ struct SignalStrengthIndicator: View {
 				RoundedRectangle(cornerRadius: 3)
 					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
 					.fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
-					.frame(width: 8, height: 30)
+					.frame(width: 8, height: 40)
 			}
 		}
 	}
@@ -71,7 +71,7 @@ extension Shape {
 	}
 }
 
-enum SignalStrength: Int {
+enum BLESignalStrength: Int {
 	case weak = 0
 	case normal = 1
 	case strong = 2

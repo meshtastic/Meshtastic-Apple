@@ -203,10 +203,20 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
+			
+			if UserDefaults.enableMapRecentering {
+				
+				if latest.count == 1 {
+					mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
+				} else {
+					mapView.fitAllAnnotations()
+				}
+			}
+			
 		} else {
 			mapView.showsUserLocation = true
 		}
-		mapView.fitAllAnnotations()
+		
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
 	}
 	

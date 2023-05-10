@@ -153,7 +153,7 @@ struct NodeMap: View {
 								}
 							}
 							if UserDefaults.enableOfflineMaps {
-								VStack {
+								VStack (alignment: .leading) {
 									
 									if !enableOfflineMapsMBTiles {
 										
@@ -166,12 +166,16 @@ struct NodeMap: View {
 										.pickerStyle(DefaultPickerStyle())
 										.onChange(of: (selectedTileServer)) { newSelectedTileServer in
 											UserDefaults.mapTileServer = newSelectedTileServer
-											tileManager.removeAll()
+											//tileManager.removeAll()
 											selectedMapLayer = .standard
 										}
+										Text("Attribution:")
+											.fontWeight(.semibold)
+											.font(.footnote)
 										Text(LocalizedStringKey(selectedTileServer.attribution))
-											.font(.caption)
+											.font(.footnote)
 											.foregroundColor(.gray)
+											.padding(0)
 										Divider()
 										Toggle(isOn: $mapTilesAboveLabels) {
 											Text("Tiles above Labels")
@@ -193,7 +197,7 @@ struct NodeMap: View {
 										UserDefaults.enableOfflineMapsMBTiles = self.enableOfflineMapsMBTiles
 									}
 									Text("The latest MBTiles file shared with meshtastic will be loaded into the map.")
-										.font(.caption)
+										.font(.footnote)
 										.foregroundColor(.gray)
 								}
 							}

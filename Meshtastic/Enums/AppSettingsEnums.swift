@@ -139,51 +139,94 @@ enum MapLayer: String, CaseIterable, Equatable {
 
 enum MapTileServerLinks: String, CaseIterable, Identifiable {
 	
-	case openStreetMaps
+	case openStreetMap
+	case openStreetMapDE
+	case openStreetMapFR
+	case openCycleMap
+	case openStreetMapHot
+	case openTopoMap
 	case usgsTopo
 	case usgsImageryTopo
 	case usgsImageryOnly
+	case toner
 	case watercolor
 	var id: String { self.rawValue }
 	var attribution: String {
 		switch self {
 			
-		case .openStreetMaps:
-			return "OpenStreetMap is a map of the world, created by people like you and free to use under an open license. &copy; [OpenStreetMap](http://osm.org/copyright) contributors"
+		
+		case .openStreetMap:
+			return "Map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapDE:
+			return "[OpenStreetMap DE](https://openstreetmap.de) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapFR:
+			return "[OpenStreetMap FR](https://www.openstreetmap.fr) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openCycleMap:
+			return "[OpenCycleMap](https://www.cyclosm.org) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openTopoMap:
+			return "[OpenTopoMap](https://opentopomap.org) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
+		case .openStreetMapHot:
+			return "[OpenStreetMap FR](https://www.openstreetmap.fr) map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
 		case .usgsTopo:
-			return "[USGS Topo](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer) is a tile cache base map service that combines the most current data in The National Map (TNM), and other public-domain data, into a multi-scale topographic reference map."
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer) [National Map](http://nationalmap.gov/) topographic overlay."
 		case .usgsImageryTopo:
-			return "[USGS Imagery Topo](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer) is a tile cache base map of orthoimagery in The National Map and US Topo vector data."
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer) [National Map](http://nationalmap.gov/) imagery and topographic overlay."
 		case .usgsImageryOnly:
-			return "[USGS Imagery Only](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer) is a tile cache base map service of orthoimagery in The National Map."
+			return "[USGS](https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer) [National Map](http://nationalmap.gov/) imagery only overlay."
+		case .toner:
+			return "[Stamen Design's](https://github.com/stamen/toner-carto) black and white map tiles."
 		case .watercolor:
-			return "Cooper Hewitt, Smithsonian Design Museum's [Watercolor Maptiles](https://watercolormaps.collection.cooperhewitt.org/) is a open-source mapping tool created by Stamen Design and built on OpenStreetMap data."
+			return "Cooper Hewitt, Smithsonian Design Museum's [Watercolor Maptiles](https://watercolormaps.collection.cooperhewitt.org/) is a open-source mapping tool created by Stamen Design and built on [OpenStreetMap](http://www.openstreetmap.org) data."
 		}
 	}
 	var description: String {
 		switch self {
-		case .openStreetMaps:
-			return "Open Street Maps"
+		case .openStreetMap:
+			return "Open Street Map"
+		case .openStreetMapDE:
+			return "Open Street Map DE"
+		case .openStreetMapFR:
+			return "Open Street Map FR"
+		case .openCycleMap:
+			return "Open Cycle Map"
+		case .openStreetMapHot:
+			return "Humanitarian (OSM)"
+		case.openTopoMap:
+			return "Open Topo Map"
 		case .usgsTopo:
 			return "USGS Topographic"
 		case .usgsImageryTopo:
 			return "USGS Topo Imagery"
 		case .usgsImageryOnly:
 			return "USGS Imagery Only"
+		case .toner:
+			return "Toner"
 		case .watercolor:
 			return "Watercolor Maptiles"
 		}
 	}
 	var tileUrl: String {
 		switch self {
-		case .openStreetMaps:
+		case .openStreetMap:
 			return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+		case .openStreetMapDE:
+			return "https://tile.openstreetmap.de/{z}/{x}/{y}.png"
+		case .openStreetMapFR:
+			return "https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"
+		case .openCycleMap:
+			return "https://c.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+		case .openStreetMapHot:
+			return "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+		case .openTopoMap:
+			return "https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
 		case .usgsTopo:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}"
 		case .usgsImageryTopo:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}"
 		case .usgsImageryOnly:
 			return "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+		case .toner:
+			return "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png"
 		case .watercolor:
 			return "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg"
 
@@ -191,16 +234,28 @@ enum MapTileServerLinks: String, CaseIterable, Identifiable {
 	}
 	var zoomRange: [Int] {
 		switch self {
-		case .openStreetMaps:
-			return [Int](0...17)
+		case .openStreetMap:
+			return [Int](0...18)
+		case .openStreetMapDE:
+			return [Int](0...18)
+		case .openStreetMapFR:
+			return [Int](0...18)
+		case .openCycleMap:
+			return [Int](0...18)
+		case .openTopoMap:
+			return [Int](0...18)
+		case .openStreetMapHot:
+			return [Int](0...18)
 		case .usgsTopo:
-			return [Int](0...17)
+			return [Int](6...15)
 		case .usgsImageryTopo:
-			return [Int](0...17)
+			return [Int](6...15)
 		case .usgsImageryOnly:
-			return [Int](0...17)
+			return [Int](6...15)
+		case .toner:
+			return [Int](0...18)
 		case .watercolor:
-			return [Int](0...17)
+			return [Int](0...18)
 		}
 	}
 }

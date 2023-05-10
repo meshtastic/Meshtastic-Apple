@@ -22,7 +22,7 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	// MARK: -  Private properties
-	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServerLinks.openStreetMaps.tileUrl) }
+	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServerLinks.openStreetMap.tileUrl) }
 	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
 	
@@ -52,7 +52,7 @@ class OfflineTileManager: ObservableObject {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		var accumulatedSize: UInt64 = 0
 		for path in paths {
-			let file = "tiles/z\(path.z)x\(path.x)y\(path.y).png"
+			let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
 			let url = documentsDirectory.appendingPathComponent(file)
 			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
 		}
@@ -67,7 +67,7 @@ class OfflineTileManager: ObservableObject {
 	func remove(for boundingBox: MKMapRect) {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		for path in paths {
-			let file = "tiles/z\(path.z)x\(path.x)y\(path.y).png"
+			let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
 			let url = documentsDirectory.appendingPathComponent(file)
 			try? fileManager.removeItem(at: url)
 		}
@@ -94,7 +94,7 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	func getTileOverlay(for path: MKTileOverlayPath) -> URL {
-		let file = "z\(path.z)x\(path.x)y\(path.y).png"
+		let file = "\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
 		// Check is tile is already available
 		let tilesUrl = documentsDirectory.appendingPathComponent("tiles").appendingPathComponent(file)
 		if fileManager.fileExists(atPath: tilesUrl.path){
@@ -134,7 +134,7 @@ class OfflineTileManager: ObservableObject {
 	
 	@discardableResult private func persistLocally(path: MKTileOverlayPath) -> URL {
 		let url = overlay.url(forTilePath: path)
-		let file = "tiles/z\(path.z)x\(path.x)y\(path.y).png"
+		let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
 		let filename = documentsDirectory.appendingPathComponent(file)
 		do {
 			let data = try Data(contentsOf: url)
@@ -147,7 +147,7 @@ class OfflineTileManager: ObservableObject {
 	
 	private func filterTilesAlreadyExisting(paths: [MKTileOverlayPath]) -> [MKTileOverlayPath] {
 		paths.filter {
-			let file = "z\($0.z)x\($0.x)y\($0.y).png"
+			let file = "\(UserDefaults.mapTileServer.id)-z\($0.z)x\($0.x)y\($0.y).png"
 			let tilesPath = documentsDirectory.appendingPathComponent("tiles").appendingPathComponent(file).path
 			return !fileManager.fileExists(atPath: tilesPath)
 		}
