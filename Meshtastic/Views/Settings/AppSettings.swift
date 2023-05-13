@@ -8,11 +8,14 @@ struct AppSettings: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@ObservedObject var tileManager = OfflineTileManager.shared
+	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
 	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
+	@State private var isPresentingDeleteMapTilesConfirm = false
 	
 	var body: some View {
 		VStack {
@@ -40,8 +43,8 @@ struct AppSettings: View {
 							.font(.footnote)
 					}
 					Label("Coordinate \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.longitude ?? 0))", systemImage: "mappin")
-							.font(.footnote)
-							.textSelection(.enabled)
+						.font(.footnote)
+						.textSelection(.enabled)
 					if locationHelper.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 						Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
 							.font(.footnote)
@@ -55,56 +58,74 @@ struct AppSettings: View {
 							.font(.footnote)
 					}
 					
+				}
+				Section(header: Text("Location Settings")) {
+					
 					Toggle(isOn: $provideLocation) {
-						
 						Label("provide.location", systemImage: "location.circle.fill")
-							.font(.footnote)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					if UserDefaults.provideLocation {
-						
-						Picker("update.interval", selection: $provideLocationInterval) {
-							ForEach(LocationUpdateInterval.allCases) { lu in
-								Text(lu.description)
+						VStack {
+							Picker("update.interval", selection: $provideLocationInterval) {
+								ForEach(LocationUpdateInterval.allCases) { lu in
+									Text(lu.description)
+								}
 							}
+							.pickerStyle(DefaultPickerStyle())
+							.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
+								UserDefaults.provideLocationInterval = newProvideLocationInterval
+							}
+							Text("phone.gps.interval.description")
+								.font(.caption2)
+								.foregroundColor(.gray)
 						}
-						.pickerStyle(DefaultPickerStyle())
-						.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
-							UserDefaults.provideLocationInterval = newProvideLocationInterval
+					}
+					
+				}
+				Section(header: Text("App Data")) {
+					Button {
+						isPresentingDeleteMapTilesConfirm = true
+					} label: {
+						Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
+							.foregroundColor(.red)
+					}
+					.confirmationDialog(
+						"are.you.sure",
+						isPresented: $isPresentingDeleteMapTilesConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Delete all map tiles?", role: .destructive) {
+							tileManager.removeAll()
+							totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+							print("delete all tiles")
 						}
-						
-						Text("phone.gps.interval.description")
-							.font(.caption2)
-							.foregroundColor(.gray)
+					}
+
+					Button {
+						isPresentingCoreDataResetConfirm = true
+					} label: {
+						Label("clear.app.data", systemImage: "trash")
+							.foregroundColor(.red)
+					}
+					.confirmationDialog(
+						"are.you.sure",
+						isPresented: $isPresentingCoreDataResetConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Erase all app data?", role: .destructive) {
+							bleManager.disconnectPeripheral()
+							clearCoreDataDatabase(context: context)
+							UserDefaults.standard.reset()
+							UserDefaults.standard.synchronize()
+						}
 					}
 				}
-				TilesView()
 			}
-			HStack {
-				Button {
-					isPresentingCoreDataResetConfirm = true
-				} label: {
-					Label("clear.app.data", systemImage: "trash")
-						.foregroundColor(.red)
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"are.you.sure",
-					isPresented: $isPresentingCoreDataResetConfirm,
-					titleVisibility: .visible
-				) {
-					Button("Erase all app data?", role: .destructive) {
-						bleManager.disconnectPeripheral()
-						clearCoreDataDatabase(context: context)
-						UserDefaults.standard.reset()
-						UserDefaults.standard.synchronize()
-					}
-				}
-			}
+			.onAppear(perform: {
+				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+			})
 		}
 		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:

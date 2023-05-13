@@ -139,7 +139,7 @@
 "map"="Mesh Map";
 "map.type"="Default Type";
 "map.centering"="Centering Mode";
-"map.tiles.delete"="Delete Cached Map Tiles";
+"map.tiles.delete"="Delete Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.follow"="Follow";
@@ -207,7 +207,7 @@
 "position"="Position";
 "position.config"="Position Config";
 "preferred.radio"="Preferred Radio";
-"provide.location"="Provide location to mesh";
+"provide.location"="Share location";
 "radio.configuration"="Radio Configuration";
 "range.test"="Range Test";
 "range.test.config"="Range Test Config";

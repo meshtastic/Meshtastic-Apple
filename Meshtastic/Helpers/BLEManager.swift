@@ -787,9 +787,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		if LocationHelper.currentSpeed >= 0 {
 			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed * 3.6)
 		}
-		if LocationHelper.currentHeading >= 0 {
+		if (!LocationHelper.currentHeading.isNaN || !LocationHelper.currentHeading.isInfinite) {
 			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
 		}
+		
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
