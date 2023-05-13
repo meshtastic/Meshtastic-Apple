@@ -143,10 +143,9 @@ struct NodeMap: View {
 								Text("Enable Offline Maps")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.onTapGesture {
-								self.enableOfflineMaps.toggle()
-								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
-								if !self.enableOfflineMaps {
+							.onChange(of: (enableOfflineMaps)) { newEnableOfflineMaps in
+								UserDefaults.enableOfflineMaps = newEnableOfflineMaps
+								if !newEnableOfflineMaps {
 									if self.selectedMapLayer == .offline {
 										self.selectedMapLayer = .standard
 									}
@@ -166,7 +165,6 @@ struct NodeMap: View {
 										.pickerStyle(DefaultPickerStyle())
 										.onChange(of: (selectedTileServer)) { newSelectedTileServer in
 											UserDefaults.mapTileServer = newSelectedTileServer
-											selectedMapLayer = .standard
 										}
 										Text("Attribution:")
 											.fontWeight(.semibold)

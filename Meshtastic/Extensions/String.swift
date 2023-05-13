@@ -38,7 +38,11 @@ extension String {
 			return false
 		} else {
 			let characters = Array(self)
-			return characters[0].isEmoji
+			if characters.count <= 0 {
+				return false
+			} else {
+				return characters[0].isEmoji
+			}
 		}
 	}
 	
