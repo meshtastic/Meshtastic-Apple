@@ -63,15 +63,6 @@ class OfflineTileManager: ObservableObject {
 		}
 		
 		return Double(accumulatedSize)
-		
-//		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
-//
-//		for path in paths {
-//			let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
-//			let url = documentsDirectory.appendingPathComponent(file)
-//			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
-//		}
-//		return Double(accumulatedSize)
 	}
 	
 	func getDownloadedSize(for boundingBox: MKMapRect) -> Double {
