@@ -115,13 +115,32 @@ extension UserDefaults {
 		}
 	}
 	
-	static var mapTileServer: MapTileServerLinks {
+	static var mapTileServer: MapTileServer {
 		get {
 			
-			MapTileServerLinks(rawValue: UserDefaults.standard.string(forKey: "mapTileServer") ?? MapTileServerLinks.openStreetMap.rawValue) ?? MapTileServerLinks.openStreetMap
+			MapTileServer(rawValue: UserDefaults.standard.string(forKey: "mapTileServer") ?? MapTileServer.openStreetMap.rawValue) ?? MapTileServer.openStreetMap
 		}
 		set {
 			UserDefaults.standard.set(newValue.rawValue, forKey: "mapTileServer")
+		}
+	}
+	
+	static var enableOverlayServer: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableOverlayServer")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableOverlayServer")
+		}
+	}
+	
+	static var mapOverlayServer: MapOverlayServer {
+		get {
+			
+			MapOverlayServer(rawValue: UserDefaults.standard.string(forKey: "mapOverlayServer") ?? MapOverlayServer.baseReReflectivityCurrent.rawValue) ?? MapOverlayServer.baseReReflectivityCurrent
+		}
+		set {
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapOverlayServer")
 		}
 	}
 	

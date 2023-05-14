@@ -22,7 +22,7 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	// MARK: -  Private properties
-	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServerLinks.openStreetMap.tileUrl) }
+	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServer.openStreetMap.tileUrl) }
 	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
 	
@@ -48,7 +48,7 @@ class OfflineTileManager: ObservableObject {
 		return Double(count) * size
 	}
 	
-	func getDownloadedSize(for mapTileLink: MapTileServerLinks) -> Double {
+	func getDownloadedSize(for mapTileLink: MapTileServer) -> Double {
 		
 		var accumulatedSize: UInt64 = 0
 		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
@@ -90,7 +90,7 @@ class OfflineTileManager: ObservableObject {
 		createDirectoriesIfNecessary()
 	}
 	
-	func remove(for mapTileLink: MapTileServerLinks) {
+	func remove(for mapTileLink: MapTileServer) {
 		
 		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
 		let matchingTiles = mapTiles.filter { fileName in

@@ -137,7 +137,7 @@ enum MapLayer: String, CaseIterable, Equatable {
 	var localized: String { self.rawValue.localized }
 }
 
-enum MapTileServerLinks: String, CaseIterable, Identifiable {
+enum MapTileServer: String, CaseIterable, Identifiable {
 	
 	case openStreetMap
 	case openStreetMapDE
@@ -269,7 +269,86 @@ enum MapTileServerLinks: String, CaseIterable, Identifiable {
 	}
 }
 
-//enum MapOverlayServerLinks: String, CaseIterable, Identifiable {
-//	
-//	
-//}
+enum MapOverlayServer: String, CaseIterable, Identifiable {
+	
+	case baseReReflectivityCurrent
+	case baseReReflectivityOneHourAgo
+	case echoTopsEetCurrent
+	case echoTopsEetOneHourAgo
+	case q2OneHourPrecipitation
+	case q2TwentyFourHourPrecipitation
+	case q2FortyEightHourPrecipitation
+	case q2SeventyTwoHourPrecipitation
+	case mrmsHybridScanReflectivityComposite
+
+	var id: String { self.rawValue }
+	var attribution: String {
+		return "Weather layers via Iowa State University Iowa Environmental Mesonet [OGC Web Services](https://mesonet.agron.iastate.edu/ogc/)"
+	}
+	var description: String {
+		switch self {
+		case .baseReReflectivityCurrent:
+			return "NEXRAD Base Reflectivity current"
+		case .baseReReflectivityOneHourAgo:
+			return "NEXRAD Base Reflectivity one hour ago"
+		case .echoTopsEetCurrent:
+			return "NEXRAD Echo Tops EET current"
+		case .echoTopsEetOneHourAgo:
+			return "NEXRAD Echo Tops EET one hour ago"
+		case .q2OneHourPrecipitation:
+			return "Q2 1 Hour Precipitation"
+		case .q2TwentyFourHourPrecipitation:
+			return "Q2 24 Hour Precipitation"
+		case .q2FortyEightHourPrecipitation:
+			return "Q2 48 Hour Precipitation"
+		case .q2SeventyTwoHourPrecipitation:
+			return "Q2 72 Hour Precipitation"
+		case .mrmsHybridScanReflectivityComposite:
+			return "MRMS Hybrid-Scan Reflectivity Composite"
+		}
+	}
+	var tileUrl: String {
+		switch self {
+		case .baseReReflectivityCurrent:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}"
+		case .baseReReflectivityOneHourAgo:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913-m55m/{z}/{x}/{y}"
+		case .echoTopsEetCurrent:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-eet-900913/{z}/{x}/{y}"
+		case .echoTopsEetOneHourAgo:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-eet-900913-m55m/{z}/{x}/{y}"
+		case .q2OneHourPrecipitation:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-n1p-900913/{z}/{x}/{y}"
+		case .q2TwentyFourHourPrecipitation:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-p24h-900913/{z}/{x}/{y}"
+		case .q2FortyEightHourPrecipitation:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-p48h-900913/{z}/{x}/{y}"
+		case .q2SeventyTwoHourPrecipitation:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-p72h-900913/{z}/{x}/{y}"
+		case .mrmsHybridScanReflectivityComposite:
+			return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-hsr-900913/{z}/{x}/{y}"
+		}
+	}
+	var zoomRange: [Int] {
+		switch self {
+		case .baseReReflectivityCurrent:
+			return [Int](0...18)
+		case .baseReReflectivityOneHourAgo:
+			return [Int](0...18)
+		case .echoTopsEetCurrent:
+			return [Int](0...18)
+		case .echoTopsEetOneHourAgo:
+			return [Int](0...18)
+		case .q2OneHourPrecipitation:
+			return [Int](0...18)
+		case .q2TwentyFourHourPrecipitation:
+			return [Int](0...18)
+		case .q2FortyEightHourPrecipitation:
+			return [Int](0...18)
+		case .q2SeventyTwoHourPrecipitation:
+			return [Int](0...18)
+		case .mrmsHybridScanReflectivityComposite:
+			return [Int](0...18)
+		}
+	}
+}

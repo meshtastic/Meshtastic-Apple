@@ -16,7 +16,6 @@ struct AppSettings: View {
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
-	@State var selectedTileServer: MapTileServerLinks? = nil
 	
 	var body: some View {
 		VStack {
@@ -106,33 +105,36 @@ struct AppSettings: View {
 						}
 					}
 				}
-				Section(header: Text("Map Tile Data")) {
-					Button {
-						isPresentingDeleteMapTilesConfirm = true
-					} label: {
-						Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
-							.foregroundColor(.red)
-					}
-					.confirmationDialog(
-						"are.you.sure",
-						isPresented: $isPresentingDeleteMapTilesConfirm,
-						titleVisibility: .visible
-					) {
-						Button("Delete all map tiles?", role: .destructive) {
-							tileManager.removeAll()
-							totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-							print("delete all tiles")
-						}
-					}
-					ForEach(MapTileServerLinks.allCases, id: \.self) { tsl in
-						
+				if totalDownloadedTileSize != "0MB" {
+					Section(header: Text("Map Tile Data")) {
 						Button {
-							tileManager.remove(for: tsl)
-							totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+							isPresentingDeleteMapTilesConfirm = true
 						} label: {
-							Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+							Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
 								.foregroundColor(.red)
-								.font(.footnote)
+						}
+						.confirmationDialog(
+							"are.you.sure",
+							isPresented: $isPresentingDeleteMapTilesConfirm,
+							titleVisibility: .visible
+						) {
+							Button("Delete all map tiles?", role: .destructive) {
+								tileManager.removeAll()
+								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+								print("delete all tiles")
+							}
+						}
+						
+						ForEach(MapTileServer.allCases, id: \.self) { tsl in
+							
+							Button {
+								tileManager.remove(for: tsl)
+								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+							} label: {
+								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+									.foregroundColor(.red)
+									.font(.footnote)
+							}
 						}
 					}
 				}
