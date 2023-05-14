@@ -91,7 +91,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		#endif
 	}
 	
-	private func setMapLayer(mapView: MKMapView) {
+	private func setMapBaseLayer(mapView: MKMapView) {
 		// Avoid refreshing UI if selectedLayer has not changed
 		guard currentMapLayer != selectedMapLayer else { return }
 		currentMapLayer = selectedMapLayer
@@ -117,6 +117,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		default:
 			mapView.mapType = .standard
 		}
+	}
+	
+	private func setMapOverlays(mapView: MKMapView) {
+		
 		// Weather radar
 		if UserDefaults.enableOverlayServer {
 			let locale = Locale.current
@@ -165,8 +169,10 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 			}
 		}
-		// Set selected map layer
-		setMapLayer(mapView: mapView)
+		// Set selected map base layer
+		setMapBaseLayer(mapView: mapView)
+		// Set map overlay layer
+		setMapOverlays(mapView: mapView)
 		
 		let latest = positions
 			.filter { $0.latest == true }
