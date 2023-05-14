@@ -283,18 +283,18 @@ enum MapOverlayServer: String, CaseIterable, Identifiable {
 
 	var id: String { self.rawValue }
 	var attribution: String {
-		return "Weather layers via Iowa State University Iowa Environmental Mesonet [OGC Web Services](https://mesonet.agron.iastate.edu/ogc/)"
+		return "NEXRAD Weather tiles from Iowa State University Environmental Mesonet [OGC Web Services](https://mesonet.agron.iastate.edu/ogc/)."
 	}
 	var description: String {
 		switch self {
 		case .baseReReflectivityCurrent:
-			return "NEXRAD Base Reflectivity current"
+			return "Base Reflectivity current"
 		case .baseReReflectivityOneHourAgo:
-			return "NEXRAD Base Reflectivity one hour ago"
+			return "Base Reflectivity one hour ago"
 		case .echoTopsEetCurrent:
-			return "NEXRAD Echo Tops EET current"
+			return "Echo Tops EET current"
 		case .echoTopsEetOneHourAgo:
-			return "NEXRAD Echo Tops EET one hour ago"
+			return "Echo Tops EET one hour ago"
 		case .q2OneHourPrecipitation:
 			return "Q2 1 Hour Precipitation"
 		case .q2TwentyFourHourPrecipitation:
