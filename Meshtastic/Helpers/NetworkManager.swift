@@ -18,6 +18,7 @@ class NetworkManager {
 		pathMonitor.pathUpdateHandler = {
 			guard $0.status == .satisfied else {
 				// No network available
+				print("Network Not available")
 				return pathMonitor.cancel()
 			}
 			pathMonitor.cancel()

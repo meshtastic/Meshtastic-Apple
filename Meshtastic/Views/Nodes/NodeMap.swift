@@ -11,62 +11,64 @@ import CoreLocation
 import CoreData
 
 struct NodeMap: View {
-
+	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	
 	@ObservedObject var tileManager = OfflineTileManager.shared
-
+	
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
 	@State var enableMapNodeHistoryPins: Bool = UserDefaults.enableMapNodeHistoryPins
 	@State var enableOfflineMaps: Bool = UserDefaults.enableOfflineMaps
-	@State var selectedTileServer: MapTileServerLinks = UserDefaults.mapTileServer
+	@State var selectedTileServer: MapTileServer = UserDefaults.mapTileServer
 	@State var enableOfflineMapsMBTiles: Bool = UserDefaults.enableOfflineMapsMBTiles
+	@State var enableOverlayServer: Bool = UserDefaults.enableOverlayServer
+	@State var selectedOverlayServer: MapOverlayServer = UserDefaults.mapOverlayServer
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
-
+	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.startOfDay(for: Date()) as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
-
+	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	@State var waypointCoordinate: WaypointCoordinate?
-
+	
 	@State var selectedTracking: UserTrackingModes = .none
 	
 	@State var isPresentingInfoSheet: Bool = false
 	
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-			mapName: "offlinemap",
-			tileType: "png",
-			canReplaceMapContent: true
-		)
-
+		mapName: "offlinemap",
+		tileType: "png",
+		canReplaceMapContent: true
+	)
+	
 	var body: some View {
-
+		
 		NavigationStack {
 			ZStack {
-
+				
 				MapViewSwiftUI(
-						onLongPress: { coord in
+					onLongPress: { coord in
 						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
 					}, onWaypointEdit: { wpId in
 						if wpId > 0 {
 							waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 						}
 					},
-				   selectedMapLayer: selectedMapLayer,
-				   positions: Array(positions),
-				   waypoints: Array(waypoints),
-				   userTrackingMode: selectedTracking.MKUserTrackingModeValue(),
-				   showNodeHistory: enableMapNodeHistoryPins,
-				   showRouteLines: enableMapRouteLines,
-				   customMapOverlay: self.customMapOverlay
+					selectedMapLayer: selectedMapLayer,
+					positions: Array(positions),
+					waypoints: Array(waypoints),
+					userTrackingMode: selectedTracking.MKUserTrackingModeValue(),
+					showNodeHistory: enableMapNodeHistoryPins,
+					showRouteLines: enableMapRouteLines,
+					customMapOverlay: self.customMapOverlay
 				)
 				VStack(alignment: .trailing) {
 					
@@ -84,9 +86,9 @@ struct NodeMap: View {
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
 			.sheet(item: $waypointCoordinate, content: { wpc in
-							WaypointFormView(coordinate: wpc)
-								.presentationDetents([.medium, .large])
-								.presentationDragIndicator(.automatic)
+				WaypointFormView(coordinate: wpc)
+					.presentationDetents([.medium, .large])
+					.presentationDragIndicator(.automatic)
 			})
 			.sheet(isPresented: $isPresentingInfoSheet) {
 				VStack {
@@ -137,16 +139,47 @@ struct NodeMap: View {
 								self.enableMapRouteLines.toggle()
 								UserDefaults.enableMapRouteLines = self.enableMapRouteLines
 							}
+							
+							let locale = Locale.current
+							if locale.region?.identifier ?? "no locale" == "US" {
+								
+								Toggle(isOn: $enableOverlayServer) {
+									
+									Label("Show Weather", systemImage: "cloud.fill")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.enableOverlayServer.toggle()
+									UserDefaults.enableOverlayServer = self.enableOverlayServer
+								}
+								
+								if enableOverlayServer {
+									Picker(selection: $selectedOverlayServer,
+										   label: Text("Radar")) {
+										ForEach(MapOverlayServer.allCases, id: \.self) { mos in
+											Text(mos.description)
+												.font(.footnote)
+										}
+									}
+										   .pickerStyle(DefaultPickerStyle())
+										   .onChange(of: (selectedOverlayServer)) { newSelectedOverlayServer in
+											   UserDefaults.mapOverlayServer = newSelectedOverlayServer
+										   }
+									Text(LocalizedStringKey(selectedOverlayServer.attribution))
+										.font(.footnote)
+										.foregroundColor(.gray)
+										.padding(0)
+								}
+							}
 						}
 						Section(header: Text("Offline Maps")) {
 							Toggle(isOn: $enableOfflineMaps) {
 								Text("Enable Offline Maps")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.onTapGesture {
-								self.enableOfflineMaps.toggle()
-								UserDefaults.enableOfflineMaps = self.enableOfflineMaps
-								if !self.enableOfflineMaps {
+							.onChange(of: (enableOfflineMaps)) { newEnableOfflineMaps in
+								UserDefaults.enableOfflineMaps = newEnableOfflineMaps
+								if !newEnableOfflineMaps {
 									if self.selectedMapLayer == .offline {
 										self.selectedMapLayer = .standard
 									}
@@ -159,15 +192,14 @@ struct NodeMap: View {
 										
 										Picker(selection: $selectedTileServer,
 											   label: Text("Tile Server")) {
-											ForEach(MapTileServerLinks.allCases, id: \.self) { tsl in
+											ForEach(MapTileServer.allCases, id: \.self) { tsl in
 												Text(tsl.description)
 											}
 										}
-										.pickerStyle(DefaultPickerStyle())
-										.onChange(of: (selectedTileServer)) { newSelectedTileServer in
-											UserDefaults.mapTileServer = newSelectedTileServer
-											selectedMapLayer = .standard
-										}
+											   .pickerStyle(DefaultPickerStyle())
+											   .onChange(of: (selectedTileServer)) { newSelectedTileServer in
+												   UserDefaults.mapTileServer = newSelectedTileServer
+											   }
 										Text("Attribution:")
 											.fontWeight(.semibold)
 											.font(.footnote)
@@ -214,7 +246,7 @@ struct NodeMap: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([UserDefaults.enableOfflineMaps ? .large : .medium])
+				.presentationDetents([UserDefaults.enableOfflineMaps || UserDefaults.enableOverlayServer ? .large : .medium])
 				.presentationDragIndicator(.visible)
 			}
 		}

@@ -167,7 +167,7 @@ struct WaypointFormView: View {
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
-			.controlSize(.large)
+			.controlSize(.regular)
 			.disabled(bleManager.connectedPeripheral == nil)
 			.padding(.bottom)
 
@@ -178,7 +178,7 @@ struct WaypointFormView: View {
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
-			.controlSize(.large)
+			.controlSize(.regular)
 			.padding(.bottom)
 
 			if coordinate.waypointId > 0 {
@@ -230,7 +230,7 @@ struct WaypointFormView: View {
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
-				.controlSize(.large)
+				.controlSize(.regular)
 				.padding(.bottom)
 			}
 		}

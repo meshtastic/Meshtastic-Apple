@@ -181,6 +181,11 @@ struct Config {
     /// Treat double tap interrupt on supported accelerometers as a button press if set to true
     var doubleTapAsButtonPress: Bool = false
 
+    ///
+    /// If true, device is considered to be "managed" by a mesh administrator
+    /// Clients should then limit available configuration and administrative options inside the user interface
+    var isManaged: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1592,6 +1597,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     6: .standard(proto: "rebroadcast_mode"),
     7: .standard(proto: "node_info_broadcast_secs"),
     8: .standard(proto: "double_tap_as_button_press"),
+    9: .standard(proto: "is_managed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1608,6 +1614,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.nodeInfoBroadcastSecs) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.doubleTapAsButtonPress) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       default: break
       }
     }
@@ -1638,6 +1645,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.doubleTapAsButtonPress != false {
       try visitor.visitSingularBoolField(value: self.doubleTapAsButtonPress, fieldNumber: 8)
     }
+    if self.isManaged != false {
+      try visitor.visitSingularBoolField(value: self.isManaged, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1650,6 +1660,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
     if lhs.nodeInfoBroadcastSecs != rhs.nodeInfoBroadcastSecs {return false}
     if lhs.doubleTapAsButtonPress != rhs.doubleTapAsButtonPress {return false}
+    if lhs.isManaged != rhs.isManaged {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

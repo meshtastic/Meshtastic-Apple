@@ -22,7 +22,7 @@ class OfflineTileManager: ObservableObject {
 	}
 	
 	// MARK: -  Private properties
-	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServerLinks.openStreetMap.tileUrl) }
+	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServer.openStreetMap.tileUrl) }
 	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
 	
@@ -48,6 +48,23 @@ class OfflineTileManager: ObservableObject {
 		return Double(count) * size
 	}
 	
+	func getDownloadedSize(for mapTileLink: MapTileServer) -> Double {
+		
+		var accumulatedSize: UInt64 = 0
+		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
+		let matchingTiles = mapTiles.filter { fileName in
+			let fileNameLower = fileName.absoluteString
+			return fileNameLower.contains(mapTileLink.id)
+		}
+		print("Deleting \(matchingTiles.count) tiles for \(mapTileLink.id)")
+		for tile in matchingTiles {
+			let url = documentsDirectory.appendingPathComponent(tile.absoluteString)
+			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
+		}
+		
+		return Double(accumulatedSize)
+	}
+	
 	func getDownloadedSize(for boundingBox: MKMapRect) -> Double {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		var accumulatedSize: UInt64 = 0
@@ -62,6 +79,19 @@ class OfflineTileManager: ObservableObject {
 	func removeAll() {
 		try? fileManager.removeItem(at: documentsDirectory.appendingPathComponent("tiles"))
 		createDirectoriesIfNecessary()
+	}
+	
+	func remove(for mapTileLink: MapTileServer) {
+		
+		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
+		let matchingTiles = mapTiles.filter { fileName in
+			let fileNameLower = fileName.absoluteString
+			return fileNameLower.contains(mapTileLink.id)
+		}
+		print("Deleting \(matchingTiles.count) tiles for \(mapTileLink.id)")
+		for tile in matchingTiles {
+			try? fileManager.removeItem(at: tile.absoluteURL)
+		}
 	}
 	
 	func remove(for boundingBox: MKMapRect) {

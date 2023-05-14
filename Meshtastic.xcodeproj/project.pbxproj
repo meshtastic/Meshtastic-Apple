@@ -103,7 +103,6 @@
 		DDB75A142A0593E2006ED576 /* OfflineTileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */; };
 		DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A152A0594AD006ED576 /* TileOverlay.swift */; };
 		DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = DDB75A192A05EB67006ED576 /* alpha.png */; };
-		DDB75A1C2A076DFA006ED576 /* TilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1B2A076DFA006ED576 /* TilesView.swift */; };
 		DDB75A1E2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
@@ -293,8 +292,8 @@
 		DDB75A132A0593E2006ED576 /* OfflineTileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTileManager.swift; sourceTree = "<group>"; };
 		DDB75A152A0594AD006ED576 /* TileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileOverlay.swift; sourceTree = "<group>"; };
 		DDB75A192A05EB67006ED576 /* alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = alpha.png; sourceTree = "<group>"; };
-		DDB75A1B2A076DFA006ED576 /* TilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesView.swift; sourceTree = "<group>"; };
 		DDB75A1D2A0B0CD0006ED576 /* LoRaSignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaSignalStrengthIndicator.swift; sourceTree = "<group>"; };
+		DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV13.xcdatamodel; sourceTree = "<group>"; };
 		DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
@@ -403,7 +402,6 @@
 				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
 				DDDB443529F6287000EE2349 /* MapButtons.swift */,
-				DDB75A1B2A076DFA006ED576 /* TilesView.swift */,
 			);
 			path = Custom;
 			sourceTree = "<group>";
@@ -1010,7 +1008,6 @@
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,
-				DDB75A1C2A076DFA006ED576 /* TilesView.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
@@ -1301,7 +1298,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.9;
+				MARKETING_VERSION = 2.1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1335,7 +1332,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.9;
+				MARKETING_VERSION = 2.1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1454,7 +1451,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.9;
+				MARKETING_VERSION = 2.1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1485,7 +1482,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.9;
+				MARKETING_VERSION = 2.1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1582,6 +1579,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */,
 				DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */,
 				DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */,
 				DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */,
@@ -1595,7 +1593,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDB759E12A04B264006ED576 /* MeshtasticDataModelV12.xcdatamodel */;
+			currentVersion = DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

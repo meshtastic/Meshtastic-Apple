@@ -19,7 +19,8 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	
 	let mapView = MKMapView()
 	// Parameters
-	var selectedMapLayer: MapLayer
+	let selectedMapLayer: MapLayer
+	let selectedWeatherLayer: MapOverlayServer = UserDefaults.mapOverlayServer
 	let positions: [PositionEntity]
 	let waypoints: [WaypointEntity]
 	
@@ -115,6 +116,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			mapView.mapType = .hybrid
 		default:
 			mapView.mapType = .standard
+		}
+		// Weather radar
+		if UserDefaults.enableOverlayServer {
+			let locale = Locale.current
+			if locale.region?.identifier ?? "no locale" == "US" {
+				let overlay = MKTileOverlay(urlTemplate: selectedWeatherLayer.tileUrl)
+				overlay.canReplaceMapContent = false
+				overlay.minimumZ = selectedWeatherLayer.zoomRange.startIndex
+				overlay.maximumZ = selectedWeatherLayer.zoomRange.endIndex
+				mapView.addOverlay(overlay, level: .aboveLabels)
+			}
 		}
 	}
 	

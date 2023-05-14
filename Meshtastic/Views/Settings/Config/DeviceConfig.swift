@@ -26,6 +26,7 @@ struct DeviceConfig: View {
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
 	@State var doubleTapAsButtonPress = false
+	@State var isManaged = false
 	
 	var body: some View {
 		
@@ -87,6 +88,13 @@ struct DeviceConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Treat double tap on supported accelerometers as a user button press.")
+						.font(.caption)
+					
+					Toggle(isOn: $isManaged) {
+						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
 						.font(.caption)
 				}
 				
@@ -217,6 +225,7 @@ struct DeviceConfig: View {
 							dc.buzzerGpio = UInt32(buzzerGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+							dc.isManaged = isManaged
 							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
@@ -247,7 +256,7 @@ struct DeviceConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-				if node != nil && connectedNode != nil {
+				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
@@ -295,10 +304,13 @@ struct DeviceConfig: View {
 			}
 		}
 		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
-			
 			if node != nil && node!.deviceConfig != nil {
-				
 				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
+			}
+		}
+		.onChange(of: isManaged) { newIsManaged in
+			if node != nil && node!.deviceConfig != nil {
+				if newIsManaged != node!.deviceConfig!.isManaged { hasChanges = true }
 			}
 		}
 	}
@@ -310,6 +322,7 @@ struct DeviceConfig: View {
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false
 	}
 }
