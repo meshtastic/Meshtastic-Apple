@@ -254,11 +254,11 @@ enum MapTileServerLinks: String, CaseIterable, Identifiable {
 		case .openStreetMapHot:
 			return [Int](0...18)
 		case .usgsTopo:
-			return [Int](6...15)
+			return [Int](6...16)
 		case .usgsImageryTopo:
-			return [Int](6...15)
+			return [Int](6...16)
 		case .usgsImageryOnly:
-			return [Int](6...15)
+			return [Int](6...16)
 		case .terrain:
 			return [Int](0...15)
 		case .toner:
@@ -268,3 +268,8 @@ enum MapTileServerLinks: String, CaseIterable, Identifiable {
 		}
 	}
 }
+
+//enum MapOverlayServerLinks: String, CaseIterable, Identifiable {
+//	
+//	
+//}

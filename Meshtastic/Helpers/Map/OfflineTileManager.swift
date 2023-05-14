@@ -48,6 +48,32 @@ class OfflineTileManager: ObservableObject {
 		return Double(count) * size
 	}
 	
+	func getDownloadedSize(for mapTileLink: MapTileServerLinks) -> Double {
+		
+		var accumulatedSize: UInt64 = 0
+		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
+		let matchingTiles = mapTiles.filter { fileName in
+			let fileNameLower = fileName.absoluteString
+			return fileNameLower.contains(mapTileLink.id)
+		}
+		print("Deleting \(matchingTiles.count) tiles for \(mapTileLink.id)")
+		for tile in matchingTiles {
+			let url = documentsDirectory.appendingPathComponent(tile.absoluteString)
+			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
+		}
+		
+		return Double(accumulatedSize)
+		
+//		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
+//
+//		for path in paths {
+//			let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
+//			let url = documentsDirectory.appendingPathComponent(file)
+//			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
+//		}
+//		return Double(accumulatedSize)
+	}
+	
 	func getDownloadedSize(for boundingBox: MKMapRect) -> Double {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		var accumulatedSize: UInt64 = 0
@@ -62,6 +88,19 @@ class OfflineTileManager: ObservableObject {
 	func removeAll() {
 		try? fileManager.removeItem(at: documentsDirectory.appendingPathComponent("tiles"))
 		createDirectoriesIfNecessary()
+	}
+	
+	func remove(for mapTileLink: MapTileServerLinks) {
+		
+		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
+		let matchingTiles = mapTiles.filter { fileName in
+			let fileNameLower = fileName.absoluteString
+			return fileNameLower.contains(mapTileLink.id)
+		}
+		print("Deleting \(matchingTiles.count) tiles for \(mapTileLink.id)")
+		for tile in matchingTiles {
+			try? fileManager.removeItem(at: tile.absoluteURL)
+		}
 	}
 	
 	func remove(for boundingBox: MKMapRect) {

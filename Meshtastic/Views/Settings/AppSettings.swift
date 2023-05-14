@@ -16,6 +16,7 @@ struct AppSettings: View {
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
+	@State var selectedTileServer: MapTileServerLinks? = nil
 	
 	var body: some View {
 		VStack {
@@ -85,6 +86,27 @@ struct AppSettings: View {
 					
 				}
 				Section(header: Text("App Data")) {
+					
+					Button {
+						isPresentingCoreDataResetConfirm = true
+					} label: {
+						Label("clear.app.data", systemImage: "trash")
+							.foregroundColor(.red)
+					}
+					.confirmationDialog(
+						"are.you.sure",
+						isPresented: $isPresentingCoreDataResetConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Erase all app data?", role: .destructive) {
+							bleManager.disconnectPeripheral()
+							clearCoreDataDatabase(context: context)
+							UserDefaults.standard.reset()
+							UserDefaults.standard.synchronize()
+						}
+					}
+				}
+				Section(header: Text("Map Tile Data")) {
 					Button {
 						isPresentingDeleteMapTilesConfirm = true
 					} label: {
@@ -102,23 +124,15 @@ struct AppSettings: View {
 							print("delete all tiles")
 						}
 					}
-
-					Button {
-						isPresentingCoreDataResetConfirm = true
-					} label: {
-						Label("clear.app.data", systemImage: "trash")
-							.foregroundColor(.red)
-					}
-					.confirmationDialog(
-						"are.you.sure",
-						isPresented: $isPresentingCoreDataResetConfirm,
-						titleVisibility: .visible
-					) {
-						Button("Erase all app data?", role: .destructive) {
-							bleManager.disconnectPeripheral()
-							clearCoreDataDatabase(context: context)
-							UserDefaults.standard.reset()
-							UserDefaults.standard.synchronize()
+					ForEach(MapTileServerLinks.allCases, id: \.self) { tsl in
+						
+						Button {
+							tileManager.remove(for: tsl)
+							totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+						} label: {
+							Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+								.foregroundColor(.red)
+								.font(.footnote)
 						}
 					}
 				}
