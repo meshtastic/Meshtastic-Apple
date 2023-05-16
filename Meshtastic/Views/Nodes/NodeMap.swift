@@ -178,14 +178,14 @@ struct NodeMap: View {
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 							.onChange(of: (enableOfflineMaps)) { newEnableOfflineMaps in
-								UserDefaults.enableOfflineMaps = newEnableOfflineMaps
-								if !newEnableOfflineMaps {
+								UserDefaults.enableOfflineMaps = enableOfflineMaps
+								if !enableOfflineMaps {
 									if self.selectedMapLayer == .offline {
 										self.selectedMapLayer = .standard
 									}
 								}
 							}
-							if UserDefaults.enableOfflineMaps {
+							if enableOfflineMaps {
 								VStack (alignment: .leading) {
 									
 									if !enableOfflineMapsMBTiles {

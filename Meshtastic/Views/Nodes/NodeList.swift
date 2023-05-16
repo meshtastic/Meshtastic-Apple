@@ -27,6 +27,8 @@ struct NodeList: View {
 	var body: some View {
 
 		NavigationSplitView {
+			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selection) { node in
 				if nodes.count == 0 {
 					Text("no.nodes").font(.title)
@@ -42,7 +44,7 @@ struct NodeList: View {
 										.fontWeight(.medium)
 										.font(.callout)
 									if connected {
-										HStack {
+										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")
 												.font(.callout)
 												.symbolRenderingMode(.hierarchical)
@@ -79,6 +81,11 @@ struct NodeList: View {
 											.symbolRenderingMode(.hierarchical)
 										LastHeardText(lastHeard: node.lastHeard)
 											.font(.caption)
+									}
+									if !connected {
+										HStack(alignment: .bottom) {										let preset = ModemPresets(rawValue: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+											LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
+										}
 									}
 								}
 								.frame(maxWidth: .infinity, alignment: .leading)

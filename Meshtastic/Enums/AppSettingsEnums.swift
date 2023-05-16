@@ -269,6 +269,12 @@ enum MapTileServer: String, CaseIterable, Identifiable {
 	}
 }
 
+enum OverlayType: String, CaseIterable, Equatable {
+	case tileServer
+	case geoJson
+	var localized: String { self.rawValue.localized }
+}
+
 enum MapOverlayServer: String, CaseIterable, Identifiable {
 	
 	case baseReReflectivityCurrent
@@ -282,6 +288,29 @@ enum MapOverlayServer: String, CaseIterable, Identifiable {
 	case mrmsHybridScanReflectivityComposite
 
 	var id: String { self.rawValue }
+	var overlayType: OverlayType {
+		switch self {
+			
+		case .baseReReflectivityCurrent:
+			return .tileServer
+		case .baseReReflectivityOneHourAgo:
+			return .tileServer
+		case .echoTopsEetCurrent:
+			return .tileServer
+		case .echoTopsEetOneHourAgo:
+			return .tileServer
+		case .q2OneHourPrecipitation:
+			return .tileServer
+		case .q2TwentyFourHourPrecipitation:
+			return .tileServer
+		case .q2FortyEightHourPrecipitation:
+			return .tileServer
+		case .q2SeventyTwoHourPrecipitation:
+			return .tileServer
+		case .mrmsHybridScanReflectivityComposite:
+			return .tileServer
+		}
+	}
 	var attribution: String {
 		return "NEXRAD Weather tiles from Iowa State University Environmental Mesonet [OGC Web Services](https://mesonet.agron.iastate.edu/ogc/)."
 	}

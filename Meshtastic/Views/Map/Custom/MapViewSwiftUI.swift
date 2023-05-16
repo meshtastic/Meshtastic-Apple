@@ -4,8 +4,23 @@
 //
 //  Copyright(c) Josh Pirihi & Garth Vander Houwen 1/16/22.
 
+import Foundation
 import SwiftUI
 import MapKit
+
+struct PolygonInfo: Codable {
+	let stroke: String?
+	let strokeWidth, strokeOpacity: Int?
+	let fill: String?
+	let fillOpacity: Double?
+	let title, subtitle: String?
+}
+
+struct PolylineInfo: Codable {
+	let stroke: String?
+	let strokeWidth, strokeOpacity: Int?
+	let title, subtitle: String?
+}
 
 func degreesToRadians(_ number: Double) -> Double {
 	return number * .pi / 180
@@ -29,7 +44,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 	let showRouteLines: Bool
 	
 	let mapViewType: MKMapType = MKMapType.standard
-
+	
 	// Offline Map Tiles
 	@AppStorage("lastUpdatedLocalMapFile") private var lastUpdatedLocalMapFile = 0
 	@State private var loadedLastUpdatedLocalMapFile = 0
@@ -65,6 +80,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		// Other MKMapView Settings
 		mapView.preferredConfiguration.elevationStyle = .realistic// .flat
+		mapView.pointOfInterestFilter = MKPointOfInterestFilter.excludingAll
 		mapView.isPitchEnabled = true
 		mapView.isRotateEnabled = true
 		mapView.isScrollEnabled = true
@@ -134,14 +150,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 	}
 	
-	func makeUIView(context: Context) -> MKMapView {
-		currentMapLayer = nil
-		mapView.delegate = context.coordinator
-		self.configureMap(mapView: mapView)
-		return mapView
-	}
-	
-	func updateUIView(_ mapView: MKMapView, context: Context) {
+	private func setMbtilesOverlay(mapView: MKMapView) {
 		
 		// MBTiles Offline
 		if UserDefaults.enableOfflineMaps && UserDefaults.enableOfflineMapsMBTiles {
@@ -149,7 +158,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			if self.customMapOverlay != self.presentCustomMapOverlayHash || self.loadedLastUpdatedLocalMapFile != self.lastUpdatedLocalMapFile {
 				mapView.removeOverlays(mapView.overlays)
 				if self.customMapOverlay != nil {
-
+					
 					let fileManager = FileManager.default
 					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
 					let tilePath = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false).path
@@ -169,15 +178,69 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				}
 			}
 		}
+	}
+	
+	private func setGeoJsonOverlay(mapView: MKMapView) {
+		
+		guard let geoJsonFileUrl = URL(string: "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json"), // Bundle.main.url(forResource: "location", withExtension: "geojson"),
+			  //guard let geoJsonFileUrl = URL(string: "https://hrbrmstr.github.io/noaa-alerts-sp-to-geojson/current-all.geojson"),
+				let geoJsonData = try? Data.init(contentsOf: geoJsonFileUrl) else {
+			fatalError("Failure to fetch the file.")
+		}
+		guard let objs = try? MKGeoJSONDecoder().decode(geoJsonData) as? [MKGeoJSONFeature] else {
+			fatalError("Wrong format")
+		}
+		// Parse the objects
+		objs.forEach { (feature) in
+			guard let geometry = feature.geometry.first,
+				  let propData = feature.properties else {
+				return;
+			}
+			// Check if it is MKPolygon
+			if let polygon = geometry as? MKPolygon {
+				let polygonInfo = try? JSONDecoder.init().decode(PolygonInfo.self, from: propData)
+				mapView.addOverlay(polygon)
+				//self.view?.render(overlay: polygon, info: polygonInfo)
+			}
+			// Check if it is MKPolyline
+			if let polyline = geometry as? MKPolyline {
+				mapView.addOverlay(polyline, level: .aboveLabels)
+				//let polylineInfo = try? JSONDecoder.init().decode(PolylineInfo.self, from: propData)
+				//self.view?.render(overlay: polyline,  info: polylineInfo)
+			}
+			
+			// Check if it is MKPointAnnotation
+			//				if let annotation = geometry as? MKPointAnnotation {
+			//					let info = try? JSONDecoder.init().decode(Info.self, from: propData)
+			//					let storeAnnotation = StoreAnnotation.init(title: info?.name,
+			//															   subtitle: info?.subTitle,
+			//															   website: info?.website,
+			//															   coordinate: annotation.coordinate)
+			//					self.view?.setAnnotations(annotations: [storeAnnotation])
+			//				}
+		}
+	}
+	
+	func makeUIView(context: Context) -> MKMapView {
+		currentMapLayer = nil
+		mapView.delegate = context.coordinator
+		self.configureMap(mapView: mapView)
+		return mapView
+	}
+	
+	func updateUIView(_ mapView: MKMapView, context: Context) {
+		
+		// Set MBTiles overlay layer
+		setMbtilesOverlay(mapView: mapView)
 		// Set selected map base layer
 		setMapBaseLayer(mapView: mapView)
-		// Set map overlay layer
+		// Set map tile server and weather overlay layers
 		setMapOverlays(mapView: mapView)
 		
 		let latest = positions
 			.filter { $0.latest == true }
 			.sorted { $0.nodePosition?.num ?? 0 > $1.nodePosition?.num ?? -1 }
-
+		
 		// Node Route Lines
 		if showRouteLines {
 			// Remove all existing PolyLine Overlays
@@ -437,7 +500,14 @@ struct MapViewSwiftUI: UIViewRepresentable {
 					renderer.lineWidth = 8
 					return renderer
 				}
-				return MKOverlayRenderer()
+				if let polygon = overlay as? MKPolygon {
+					let renderer = MKPolygonRenderer(polygon: polygon)
+					renderer.fillColor = UIColor.purple.withAlphaComponent(0.2)
+					renderer.strokeColor = .purple.withAlphaComponent(0.7)
+					
+					return renderer
+				}
+				return MKOverlayRenderer(overlay: overlay)
 			}
 		}
 	}

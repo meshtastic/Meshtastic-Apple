@@ -47,11 +47,11 @@ struct NodeInfoView: View {
 				Divider()
 				if node.snr != 0 {
 					VStack(alignment: .center) {
-						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.title)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(getSnrColor(snr: node.snr))
+							.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
 							.font(.title3)
 						Text("RSSI \(node.rssi)dB")
 							.foregroundColor(getRssiColor(rssi: node.rssi))
@@ -156,11 +156,11 @@ struct NodeInfoView: View {
 				if node.snr != 0 {
 					Divider()
 					VStack(alignment: .center) {
-						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi)
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
 						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 						Text("Signal \(signalStrength.description)").font(.footnote)
 						Text("SNR \(String(format: "%.2f", node.snr))dB")
-							.foregroundColor(getSnrColor(snr: node.snr))
+							.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
 							.font(.caption2)
 						Text("RSSI \(node.rssi)dB")
 							.foregroundColor(getRssiColor(rssi: node.rssi))
