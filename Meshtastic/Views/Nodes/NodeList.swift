@@ -35,7 +35,7 @@ struct NodeList: View {
 				} else {
 					NavigationLink(value: node) {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
-						VStack(alignment: .leading) {
+						LazyVStack(alignment: .leading) {
 							HStack {
 								VStack(alignment: .leading) {
 									CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : 22, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
