@@ -20,6 +20,59 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+enum RemoteHardwarePinType: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+
+  ///
+  /// Unset/unused
+  case unknown // = 0
+
+  ///
+  /// GPIO pin can be read (if it is high / low)
+  case digitalRead // = 1
+
+  ///
+  /// GPIO pin can be written to (high / low)
+  case digitalWrite // = 2
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .unknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unknown
+    case 1: self = .digitalRead
+    case 2: self = .digitalWrite
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .unknown: return 0
+    case .digitalRead: return 1
+    case .digitalWrite: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension RemoteHardwarePinType: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [RemoteHardwarePinType] = [
+    .unknown,
+    .digitalRead,
+    .digitalWrite,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 ///
 /// Module Config
 struct ModuleConfig {
@@ -266,6 +319,14 @@ struct ModuleConfig {
     ///
     /// Whether the Module is enabled
     var enabled: Bool = false
+
+    ///
+    /// Whether the Module allows consumers to read / write to pins not defined in available_pins
+    var allowUndefinedPinAccess: Bool = false
+
+    ///
+    /// Exposes the available pins to the mesh for reading and writing
+    var availablePins: [RemoteHardwarePin] = []
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -641,7 +702,7 @@ struct ModuleConfig {
     var sender: UInt32 = 0
 
     ///
-    /// Bool value indicating that this node should save a RangeTest.csv file. 
+    /// Bool value indicating that this node should save a RangeTest.csv file.
     /// ESP32 Only
     var save: Bool = false
 
@@ -891,7 +952,32 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+///
+/// A GPIO pin definition for remote hardware module
+struct RemoteHardwarePin {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// GPIO Pin number (must match Arduino)
+  var gpioPin: UInt32 = 0
+
+  ///
+  /// Name for the GPIO pin (i.e. Front gate, mailbox, etc)
+  var name: String = String()
+
+  ///
+  /// Type of GPIO access available to consumers on the mesh
+  var type: RemoteHardwarePinType = .unknown
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
+extension RemoteHardwarePinType: @unchecked Sendable {}
 extension ModuleConfig: @unchecked Sendable {}
 extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
@@ -907,11 +993,20 @@ extension ModuleConfig.RangeTestConfig: @unchecked Sendable {}
 extension ModuleConfig.TelemetryConfig: @unchecked Sendable {}
 extension ModuleConfig.CannedMessageConfig: @unchecked Sendable {}
 extension ModuleConfig.CannedMessageConfig.InputEventChar: @unchecked Sendable {}
+extension RemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "meshtastic"
+
+extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNKNOWN"),
+    1: .same(proto: "DIGITAL_READ"),
+    2: .same(proto: "DIGITAL_WRITE"),
+  ]
+}
 
 extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
@@ -1187,6 +1282,8 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
+    2: .standard(proto: "allow_undefined_pin_access"),
+    3: .standard(proto: "available_pins"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1196,6 +1293,8 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.allowUndefinedPinAccess) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.availablePins) }()
       default: break
       }
     }
@@ -1205,11 +1304,19 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
+    if self.allowUndefinedPinAccess != false {
+      try visitor.visitSingularBoolField(value: self.allowUndefinedPinAccess, fieldNumber: 2)
+    }
+    if !self.availablePins.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.availablePins, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.RemoteHardwareConfig, rhs: ModuleConfig.RemoteHardwareConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
+    if lhs.allowUndefinedPinAccess != rhs.allowUndefinedPinAccess {return false}
+    if lhs.availablePins != rhs.availablePins {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1777,4 +1884,48 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoN
     24: .same(proto: "CANCEL"),
     27: .same(proto: "BACK"),
   ]
+}
+
+extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".RemoteHardwarePin"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "gpio_pin"),
+    2: .same(proto: "name"),
+    3: .same(proto: "type"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.gpioPin) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.gpioPin != 0 {
+      try visitor.visitSingularUInt32Field(value: self.gpioPin, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    if self.type != .unknown {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: RemoteHardwarePin, rhs: RemoteHardwarePin) -> Bool {
+    if lhs.gpioPin != rhs.gpioPin {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.type != rhs.type {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }

@@ -2318,6 +2318,10 @@ struct DeviceMetadata {
   /// Device hardware model
   var hwModel: HardwareModel = .unset
 
+  ///
+  /// Has Remote Hardware enabled
+  var hasRemoteHardware_p: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -4036,6 +4040,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     7: .same(proto: "role"),
     8: .standard(proto: "position_flags"),
     9: .standard(proto: "hw_model"),
+    10: .same(proto: "hasRemoteHardware"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4053,6 +4058,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
       case 9: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
       default: break
       }
     }
@@ -4086,6 +4092,9 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.hwModel != .unset {
       try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 9)
     }
+    if self.hasRemoteHardware_p != false {
+      try visitor.visitSingularBoolField(value: self.hasRemoteHardware_p, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -4099,6 +4108,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.role != rhs.role {return false}
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.hwModel != rhs.hwModel {return false}
+    if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

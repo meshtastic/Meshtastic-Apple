@@ -124,10 +124,10 @@ enum PortNum: SwiftProtobuf.Enum {
   case zpsApp // = 68
 
   ///
-  /// Used to let multiple instances of Linux native applications communicate 
+  /// Used to let multiple instances of Linux native applications communicate
   /// as if they did using their LoRa chip.
-  /// Maintained by GitHub user GUVWAF. 
-  /// Project files at https://github.com/GUVWAF/Meshtasticator 
+  /// Maintained by GitHub user GUVWAF.
+  /// Project files at https://github.com/GUVWAF/Meshtasticator
   case simulatorApp // = 69
 
   ///
