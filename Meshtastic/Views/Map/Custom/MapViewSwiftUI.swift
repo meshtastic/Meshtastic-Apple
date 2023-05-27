@@ -16,12 +16,6 @@ struct PolygonInfo: Codable {
 	let title, subtitle: String?
 }
 
-struct PolylineInfo: Codable {
-	let stroke: String?
-	let strokeWidth, strokeOpacity: Int?
-	let title, subtitle: String?
-}
-
 func degreesToRadians(_ number: Double) -> Double {
 	return number * .pi / 180
 }
