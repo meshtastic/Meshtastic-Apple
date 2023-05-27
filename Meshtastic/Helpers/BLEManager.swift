@@ -785,7 +785,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
 		if LocationHelper.currentSpeed > 0 && (!LocationHelper.currentSpeed.isNaN || !LocationHelper.currentSpeed.isInfinite)  {
-			positionPacket.groundSpeed = UInt32(UInt64(LocationHelper.currentSpeed * 3.6))
+			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed * 3.6)
 		}
 		if LocationHelper.currentHeading > 0 && (!LocationHelper.currentHeading.isNaN || !LocationHelper.currentHeading.isInfinite) {
 			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
