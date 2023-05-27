@@ -204,7 +204,7 @@ struct Config {
 
       ///
       /// Router device role.
-      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps. 
+      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps.
       ///   The wifi/ble radios and the oled screen will be put to sleep.
       ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
@@ -217,7 +217,7 @@ struct Config {
       ///
       /// Repeater device role
       ///   Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
-      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate. 
+      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate.
       case repeater // = 4
 
       ///
@@ -508,7 +508,7 @@ struct Config {
 
     ///
     /// Mesh Super Deep Sleep Timeout Seconds
-    /// While in Light Sleep if this value is exceeded we will lower into super deep sleep 
+    /// While in Light Sleep if this value is exceeded we will lower into super deep sleep
     /// for sds_secs (default 1 year) or a button press
     /// 0 for default of two hours, MAXUINT for disabled
     var meshSdsTimeoutSecs: UInt32 = 0
@@ -674,7 +674,7 @@ struct Config {
     var autoScreenCarouselSecs: UInt32 = 0
 
     ///
-    /// If this is set, the displayed compass will always point north. if unset, the old behaviour 
+    /// If this is set, the displayed compass will always point north. if unset, the old behaviour
     /// (top of display is heading direction) is used.
     var compassNorthTop: Bool = false
 
@@ -978,9 +978,9 @@ struct Config {
     var channelNum: UInt32 = 0
 
     ///
-    /// If true, duty cycle limits will be exceeded and thus you're possibly not following 
+    /// If true, duty cycle limits will be exceeded and thus you're possibly not following
     /// the local regulations if you're not a HAM.
-    /// Has no effect if the duty cycle of the used region is 100%. 
+    /// Has no effect if the duty cycle of the used region is 100%.
     var overrideDutyCycle: Bool = false
 
     ///

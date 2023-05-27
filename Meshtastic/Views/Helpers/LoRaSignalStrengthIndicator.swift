@@ -6,8 +6,6 @@
 //
 
 import Foundation
-
-import Foundation
 import SwiftUI
 
 struct LoRaSignalStrengthIndicator: View {
@@ -18,22 +16,25 @@ struct LoRaSignalStrengthIndicator: View {
 			ForEach(0..<3) { bar in
 				RoundedRectangle(cornerRadius: 3)
 					.divided(amount: (CGFloat(bar) + 1) / CGFloat(3))
-					.fill(getColor().opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
+					.fill(getColor(signalStrength: signalStrength).opacity(bar <= signalStrength.rawValue ? 1 : 0.3))
 					.frame(width: 8, height: 40)
 			}
 		}
 	}
+}
 
-	private func getColor() -> Color {
-		switch signalStrength {
-		case .none:
-			return Color.red
-		case .bad:
-			return Color.orange
-		case .fair:
-			return Color.yellow
-		case .good:
-			return Color.green
+struct LoRaSignalStrengthIndicator_Previews: PreviewProvider {
+	static var previews: some View {
+		VStack {
+			let signalStrength = getLoRaSignalStrength(snr: -12.75, rssi: -139, preset: ModemPresets.longFast)
+			LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+			Text("Signal \(signalStrength.description)").font(.footnote)
+			Text("SNR \(String(format: "%.2f", -12.75))dB")
+				.foregroundColor(getSnrColor(snr: -12.75, preset: ModemPresets.longFast))
+				.font(.caption2)
+			Text("RSSI \(-139)dB")
+				.foregroundColor(getRssiColor(rssi: -139))
+				.font(.caption2)
 		}
 	}
 }
@@ -57,13 +58,26 @@ enum LoRaSignalStrength: Int {
 	}
 }
 
-func getLoRaSignalStrength(snr: Float, rssi: Int32) -> LoRaSignalStrength {
+private func getColor(signalStrength: LoRaSignalStrength) -> Color {
+	switch signalStrength {
+	case .none:
+		return Color.red
+	case .bad:
+		return Color.orange
+	case .fair:
+		return Color.yellow
+	case .good:
+		return Color.green
+	}
+}
+
+func getLoRaSignalStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
 	
-	if rssi > -115 && snr > -7 {
+	if rssi > -115 && snr > (preset.snrLimit()) {
 		return .good
-	} else if rssi < -126 && snr < -15 {
+	} else if rssi < -126 && snr < (preset.snrLimit() - 7.5) {
 		return .none
-	} else if rssi <= -120 || snr <= -13 {
+	} else if rssi <= -120 || snr <= (preset.snrLimit() - 5.5) {
 		return .bad
 	} else  {
 		return .fair
@@ -86,14 +100,14 @@ func getRssiColor(rssi: Int32) -> Color {
 	}
 }
 
-func getSnrColor(snr: Float) -> Color {
-	if snr > -7 {
+func getSnrColor(snr: Float, preset: ModemPresets) -> Color {
+	if snr > preset.snrLimit() {
 		/// Good
 		return .green
-	} else if snr < -7 && snr > -13 {
+	} else if snr < preset.snrLimit() && snr > (preset.snrLimit() - 5.5) {
 		/// Fair
 		return .yellow
-	} else if snr >= -14 {
+	} else if snr >= (preset.snrLimit() - 7.5) {
 		/// Bad
 		return .orange
 	} else  {

@@ -172,6 +172,13 @@ struct DeviceState {
   /// Clears the value of `rxWaypoint`. Subsequent reads from it will return its default value.
   mutating func clearRxWaypoint() {_uniqueStorage()._rxWaypoint = nil}
 
+  ///
+  /// The mesh's nodes with their available gpio pins for RemoteHardware module
+  var nodeRemoteHardwarePins: [NodeRemoteHardwarePin] {
+    get {return _storage._nodeRemoteHardwarePins}
+    set {_uniqueStorage()._nodeRemoteHardwarePins = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -263,11 +270,41 @@ struct OEMStore {
   fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
 
+///
+/// RemoteHardwarePins associated with a node
+struct NodeRemoteHardwarePin {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The node_num exposing the available gpio pin
+  var nodeNum: UInt32 = 0
+
+  ///
+  /// The the available gpio pin for usage with RemoteHardware module
+  var pin: RemoteHardwarePin {
+    get {return _pin ?? RemoteHardwarePin()}
+    set {_pin = newValue}
+  }
+  /// Returns true if `pin` has been explicitly set.
+  var hasPin: Bool {return self._pin != nil}
+  /// Clears the value of `pin`. Subsequent reads from it will return its default value.
+  mutating func clearPin() {self._pin = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _pin: RemoteHardwarePin? = nil
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ScreenFonts: @unchecked Sendable {}
 extension DeviceState: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
 extension OEMStore: @unchecked Sendable {}
+extension NodeRemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -294,6 +331,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     9: .standard(proto: "no_save"),
     11: .standard(proto: "did_gps_reset"),
     12: .standard(proto: "rx_waypoint"),
+    13: .standard(proto: "node_remote_hardware_pins"),
   ]
 
   fileprivate class _StorageClass {
@@ -306,6 +344,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _noSave: Bool = false
     var _didGpsReset: Bool = false
     var _rxWaypoint: MeshPacket? = nil
+    var _nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
 
     static let defaultInstance = _StorageClass()
 
@@ -321,6 +360,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _noSave = source._noSave
       _didGpsReset = source._didGpsReset
       _rxWaypoint = source._rxWaypoint
+      _nodeRemoteHardwarePins = source._nodeRemoteHardwarePins
     }
   }
 
@@ -348,6 +388,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._rxWaypoint) }()
+        case 13: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeRemoteHardwarePins) }()
         default: break
         }
       }
@@ -387,6 +428,9 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._rxWaypoint {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
       } }()
+      if !_storage._nodeRemoteHardwarePins.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._nodeRemoteHardwarePins, fieldNumber: 13)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -405,6 +449,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._noSave != rhs_storage._noSave {return false}
         if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
         if _storage._rxWaypoint != rhs_storage._rxWaypoint {return false}
+        if _storage._nodeRemoteHardwarePins != rhs_storage._nodeRemoteHardwarePins {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -525,6 +570,48 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.oemAesKey != rhs.oemAesKey {return false}
     if lhs._oemLocalConfig != rhs._oemLocalConfig {return false}
     if lhs._oemLocalModuleConfig != rhs._oemLocalModuleConfig {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_num"),
+    2: .same(proto: "pin"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._pin) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.nodeNum != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeNum, fieldNumber: 1)
+    }
+    try { if let v = self._pin {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
+    if lhs.nodeNum != rhs.nodeNum {return false}
+    if lhs._pin != rhs._pin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

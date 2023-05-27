@@ -27,22 +27,31 @@ struct NodeList: View {
 	var body: some View {
 
 		NavigationSplitView {
+			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selection) { node in
 				if nodes.count == 0 {
 					Text("no.nodes").font(.title)
 				} else {
 					NavigationLink(value: node) {
 						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
-						VStack(alignment: .leading) {
+						LazyVStack(alignment: .leading) {
 							HStack {
-								CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : 22, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
-									.padding(.trailing, 5)
+								VStack(alignment: .leading) {
+									CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : 22, brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
+										.padding(.trailing, 5)
+									let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+									if deviceMetrics?.count ?? 0 >= 1 {
+										let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+										BatteryLevelCompact(batteryLevel: mostRecent?.batteryLevel, font: .caption2, iconFont: .callout, color: .accentColor)
+									}
+								}
 								VStack(alignment: .leading) {
 									Text(node.user?.longName ?? "unknown".localized)
 										.fontWeight(.medium)
 										.font(.callout)
 									if connected {
-										HStack {
+										HStack(alignment: .bottom) {
 											Image(systemName: "repeat.circle.fill")
 												.font(.callout)
 												.symbolRenderingMode(.hierarchical)
@@ -79,6 +88,11 @@ struct NodeList: View {
 											.symbolRenderingMode(.hierarchical)
 										LastHeardText(lastHeard: node.lastHeard)
 											.font(.caption)
+									}
+									if !connected {
+										HStack(alignment: .bottom) {										let preset = ModemPresets(rawValue: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+											LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
+										}
 									}
 								}
 								.frame(maxWidth: .infinity, alignment: .leading)

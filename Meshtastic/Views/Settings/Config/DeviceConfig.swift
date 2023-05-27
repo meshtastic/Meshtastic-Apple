@@ -262,54 +262,42 @@ struct DeviceConfig: View {
 			}
 		}
 		.onChange(of: deviceRole) { newRole in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newRole != node!.deviceConfig!.role { hasChanges = true }
 			}
 		}
 		.onChange(of: serialEnabled) { newSerial in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: debugLogEnabled) { newDebugLog in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
 			}
 		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newButtonGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: rebroadcastMode) { newRebroadcastMode in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
 			}
 		}
 		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
-			if node != nil && node!.deviceConfig != nil {
+			if node != nil && node?.deviceConfig != nil {
 				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
 			}
 		}
 		.onChange(of: isManaged) { newIsManaged in
-			if node != nil && node!.deviceConfig != nil {
+			if node != nil && node?.deviceConfig != nil {
 				if newIsManaged != node!.deviceConfig!.isManaged { hasChanges = true }
 			}
 		}

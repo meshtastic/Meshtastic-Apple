@@ -54,7 +54,7 @@ struct NodeDetail: View {
 	var body: some View {
 
 		let hwModelString = node.user?.hwModel ?? "UNSET"
-
+		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
@@ -84,19 +84,21 @@ struct NodeDetail: View {
 								VStack(alignment: .leading) {
 									Spacer()
 									HStack(alignment: .bottom, spacing: 1) {
-
-//										Picker("Map Type", selection: $mapType) {
-//											ForEach(MeshMapTypes.allCases) { map in
-//												Text(map.description)
-//													.tag(map.MKMapTypeValue())
-//											}
-//										}
-//										.onChange(of: (mapType)) { newMapType in
-//											UserDefaults.mapType = Int(newMapType.rawValue)
-//										}
-//										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-//										.pickerStyle(.menu)
-//										.padding(5)
+										Picker("Map Type", selection: $selectedMapLayer) {
+											ForEach(MapLayer.allCases, id: \.self) { layer in
+												if layer == MapLayer.offline && UserDefaults.enableOfflineMaps {
+													Text(layer.localized)
+												} else if layer != MapLayer.offline {
+													Text(layer.localized)
+												}
+											}
+										}
+										.onChange(of: (selectedMapLayer)) { newMapLayer in
+											UserDefaults.mapLayer = newMapLayer
+										}
+										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+										.pickerStyle(.menu)
+										.padding(5)
 										VStack {
 											Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
 												.font(.caption)
@@ -151,7 +153,7 @@ struct NodeDetail: View {
 						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
 
 							HStack {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+								
 								if node.metadata?.canShutdown ?? false {
 
 									Button(action: {
