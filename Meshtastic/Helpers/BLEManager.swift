@@ -445,12 +445,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					}
 				}
 				// Channels
-				if decodedInfo.channel.isInitialized {
+				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
 					nowKnown = true
 					channelPacket(channel: decodedInfo.channel, fromNum: connectedPeripheral.num, context: context!)
 				}
 				// Config
-				if decodedInfo.config.isInitialized && !invalidVersion {
+				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
 					
 					nowKnown = true
 					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
