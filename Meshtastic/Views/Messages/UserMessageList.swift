@@ -182,7 +182,7 @@ struct UserMessageList: View {
 												if message.realACK {
 													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(.gray)
 												} else {
-													Text("Implicit ACK from Unknown Node").font(.caption2).foregroundColor(.orange)
+													Text("Implicit ACK from another node").font(.caption2).foregroundColor(.orange)
 												}
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
