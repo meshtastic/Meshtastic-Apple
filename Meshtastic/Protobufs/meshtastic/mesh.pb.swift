@@ -107,6 +107,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case stationG1 // = 25
 
   ///
+  /// RAK11310 (RP2040 + SX1262)
+  case rak11310 // = 26
+
+  ///
   /// ---------------------------------------------------------------------------
   /// Less common/prototype boards listed here (needs one more byte over the air)
   /// ---------------------------------------------------------------------------
@@ -169,6 +173,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case betafpv900NanoTx // = 46
 
   ///
+  /// Raspberry Pi Pico (W) with Waveshare SX1262 LoRa Node Module
+  case rpiPico // = 47
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -200,6 +208,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 16: self = .tloraT3S3
     case 17: self = .nanoG1Explorer
     case 25: self = .stationG1
+    case 26: self = .rak11310
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -215,6 +224,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 44: self = .heltecWslV3
     case 45: self = .betafpv2400Tx
     case 46: self = .betafpv900NanoTx
+    case 47: self = .rpiPico
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -241,6 +251,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tloraT3S3: return 16
     case .nanoG1Explorer: return 17
     case .stationG1: return 25
+    case .rak11310: return 26
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -256,6 +267,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .heltecWslV3: return 44
     case .betafpv2400Tx: return 45
     case .betafpv900NanoTx: return 46
+    case .rpiPico: return 47
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -287,6 +299,7 @@ extension HardwareModel: CaseIterable {
     .tloraT3S3,
     .nanoG1Explorer,
     .stationG1,
+    .rak11310,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -302,6 +315,7 @@ extension HardwareModel: CaseIterable {
     .heltecWslV3,
     .betafpv2400Tx,
     .betafpv900NanoTx,
+    .rpiPico,
     .privateHw,
   ]
 }
@@ -2385,6 +2399,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     16: .same(proto: "TLORA_T3_S3"),
     17: .same(proto: "NANO_G1_EXPLORER"),
     25: .same(proto: "STATION_G1"),
+    26: .same(proto: "RAK11310"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
@@ -2400,6 +2415,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     44: .same(proto: "HELTEC_WSL_V3"),
     45: .same(proto: "BETAFPV_2400_TX"),
     46: .same(proto: "BETAFPV_900_NANO_TX"),
+    47: .same(proto: "RPI_PICO"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

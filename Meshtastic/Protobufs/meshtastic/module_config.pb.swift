@@ -174,6 +174,16 @@ struct ModuleConfig {
     set {payloadVariant = .remoteHardware(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  var neighborInfo: ModuleConfig.NeighborInfoConfig {
+    get {
+      if case .neighborInfo(let v)? = payloadVariant {return v}
+      return ModuleConfig.NeighborInfoConfig()
+    }
+    set {payloadVariant = .neighborInfo(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -206,6 +216,9 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     case remoteHardware(ModuleConfig.RemoteHardwareConfig)
+    ///
+    /// TODO: REPLACE
+    case neighborInfo(ModuleConfig.NeighborInfoConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -247,6 +260,10 @@ struct ModuleConfig {
       }()
       case (.remoteHardware, .remoteHardware): return {
         guard case .remoteHardware(let l) = lhs, case .remoteHardware(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.neighborInfo, .neighborInfo): return {
+        guard case .neighborInfo(let l) = lhs, case .neighborInfo(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -327,6 +344,27 @@ struct ModuleConfig {
     ///
     /// Exposes the available pins to the mesh for reading and writing
     var availablePins: [RemoteHardwarePin] = []
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+  }
+
+  ///
+  /// NeighborInfoModule Config
+  struct NeighborInfoConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Whether the Module is enabled
+    var enabled: Bool = false
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// Neighbor Info to the mesh
+    var updateInterval: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -433,7 +471,6 @@ struct ModuleConfig {
 
     ///
     /// Preferences for the SerialModule
-    /// FIXME - Move this out of UserPreferences and into a section for module configuration.
     var enabled: Bool = false
 
     ///
@@ -441,15 +478,15 @@ struct ModuleConfig {
     var echo: Bool = false
 
     ///
-    /// TODO: REPLACE
+    /// RX pin (should match Arduino gpio pin number)
     var rxd: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// TX pin (should match Arduino gpio pin number)
     var txd: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// Serial baud rate
     var baud: ModuleConfig.SerialConfig.Serial_Baud = .baudDefault
 
     ///
@@ -457,8 +494,14 @@ struct ModuleConfig {
     var timeout: UInt32 = 0
 
     ///
-    /// TODO: REPLACE
+    /// Mode for serial module operation
     var mode: ModuleConfig.SerialConfig.Serial_Mode = .default
+
+    ///
+    /// Overrides the platform's defacto Serial port instance to use with Serial module config settings
+    /// This is currently only usable in output modes like NMEA / CalTopo and may behave strangely or not work at all in other modes
+    /// Existing logging over the Serial Console will still be present
+    var overrideConsoleSerialPort: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -543,6 +586,9 @@ struct ModuleConfig {
       case proto // = 2
       case textmsg // = 3
       case nmea // = 4
+
+      /// NMEA messages specifically tailored for CalTopo
+      case caltopo // = 5
       case UNRECOGNIZED(Int)
 
       init() {
@@ -556,6 +602,7 @@ struct ModuleConfig {
         case 2: self = .proto
         case 3: self = .textmsg
         case 4: self = .nmea
+        case 5: self = .caltopo
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -567,6 +614,7 @@ struct ModuleConfig {
         case .proto: return 2
         case .textmsg: return 3
         case .nmea: return 4
+        case .caltopo: return 5
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -933,6 +981,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
     .proto,
     .textmsg,
     .nmea,
+    .caltopo,
   ]
 }
 
@@ -982,6 +1031,7 @@ extension ModuleConfig: @unchecked Sendable {}
 extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
 extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
+extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig: @unchecked Sendable {}
@@ -1020,6 +1070,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     7: .standard(proto: "canned_message"),
     8: .same(proto: "audio"),
     9: .standard(proto: "remote_hardware"),
+    10: .standard(proto: "neighbor_info"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1145,6 +1196,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .remoteHardware(v)
         }
       }()
+      case 10: try {
+        var v: ModuleConfig.NeighborInfoConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .neighborInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .neighborInfo(v)
+        }
+      }()
       default: break
       }
     }
@@ -1191,6 +1255,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .remoteHardware?: try {
       guard case .remoteHardware(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .neighborInfo?: try {
+      guard case .neighborInfo(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
     }()
     case nil: break
     }
@@ -1322,6 +1390,44 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
+extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".NeighborInfoConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "update_interval"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.updateInterval) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.updateInterval != 0 {
+      try visitor.visitSingularUInt32Field(value: self.updateInterval, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.NeighborInfoConfig, rhs: ModuleConfig.NeighborInfoConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.updateInterval != rhs.updateInterval {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1414,6 +1520,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     5: .same(proto: "baud"),
     6: .same(proto: "timeout"),
     7: .same(proto: "mode"),
+    8: .standard(proto: "override_console_serial_port"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1429,6 +1536,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
       case 5: try { try decoder.decodeSingularEnumField(value: &self.baud) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.timeout) }()
       case 7: try { try decoder.decodeSingularEnumField(value: &self.mode) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.overrideConsoleSerialPort) }()
       default: break
       }
     }
@@ -1456,6 +1564,9 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     if self.mode != .default {
       try visitor.visitSingularEnumField(value: self.mode, fieldNumber: 7)
     }
+    if self.overrideConsoleSerialPort != false {
+      try visitor.visitSingularBoolField(value: self.overrideConsoleSerialPort, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1467,6 +1578,7 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
     if lhs.baud != rhs.baud {return false}
     if lhs.timeout != rhs.timeout {return false}
     if lhs.mode != rhs.mode {return false}
+    if lhs.overrideConsoleSerialPort != rhs.overrideConsoleSerialPort {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1500,6 +1612,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProvidi
     2: .same(proto: "PROTO"),
     3: .same(proto: "TEXTMSG"),
     4: .same(proto: "NMEA"),
+    5: .same(proto: "CALTOPO"),
   ]
 }
 
