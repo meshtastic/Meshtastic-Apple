@@ -91,7 +91,7 @@ struct Settings: View {
 								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 								
-								if connectedNode != nil && node?.metadata == nil {
+								if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
 									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 									
 									if adminMessageId > 0 {

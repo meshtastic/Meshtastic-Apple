@@ -72,7 +72,7 @@ struct EnvironmentMetricsLog: View {
 					.chartXAxis(content: {
 						AxisMarks(position: .top)
 					})
-					.chartYScale(domain: format == .celsius ? -20...50 : 0...125)
+					.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
 					.chartForegroundStyleScale([
 						"Temperature" : .clear
 					])

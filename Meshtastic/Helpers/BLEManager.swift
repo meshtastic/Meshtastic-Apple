@@ -423,7 +423,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						
 						if myInfo != nil {
 							connectedPeripheral.num = myInfo!.myNodeNum
-							connectedPeripheral.firmwareVersion = myInfo?.firmwareVersion ?? "unknown".localized
 							connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 							connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 						}
@@ -472,6 +471,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
+					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion ?? "unknown".localized
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }

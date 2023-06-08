@@ -106,20 +106,6 @@ struct NodeInfoView: View {
 				Divider()
 				VStack {
 					HStack {
-						Image(systemName: "globe")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-						Text("MAC Address: ").font(.title)
-
-					}
-					Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address"))
-						.font(.title)
-						.foregroundColor(.gray)
-				}
-				Divider()
-				VStack {
-					HStack {
 						Image(systemName: "clock.badge.checkmark.fill")
 							.font(.title)
 							.foregroundColor(.accentColor)
@@ -207,16 +193,6 @@ struct NodeInfoView: View {
 					Text(String(node.num)).font(.title3).foregroundColor(.gray)
 				}
 			}
-			Divider()
-			HStack {
-				Image(systemName: "globe")
-					.font(.headline)
-					.foregroundColor(.accentColor)
-					.symbolRenderingMode(.hierarchical)
-				Text("MAC Address: ")
-				Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
-			}
-			.padding([.bottom], 10)
 			Divider()
 		}
 
