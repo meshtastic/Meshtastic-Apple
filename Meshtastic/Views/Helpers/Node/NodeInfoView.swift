@@ -35,7 +35,7 @@ struct NodeInfoView: View {
 					if node.user != nil {
 						Image(hwModelString)
 							.resizable()
-							.aspectRatio(contentMode: .fill)
+							.aspectRatio(contentMode: .fit)
 							.frame(width: 100, height: 100)
 							.cornerRadius(5)
 
@@ -133,6 +133,7 @@ struct NodeInfoView: View {
 					VStack {
 						Image(node.user!.hwModel ?? "unset".localized)
 							.resizable()
+							.aspectRatio(contentMode: .fit)
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
 						Text(String(node.user!.hwModel ?? "unset".localized))
