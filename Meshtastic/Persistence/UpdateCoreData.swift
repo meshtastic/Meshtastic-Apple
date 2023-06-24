@@ -129,7 +129,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
 					newUser.shortName = newUserMessage.shortName
-					newUser.macaddr = newUserMessage.macaddr
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
 			}
@@ -159,7 +158,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
-					fetchedNode[0].user!.macaddr = nodeInfoMessage.user.macaddr
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				}
 			}

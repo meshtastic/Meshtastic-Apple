@@ -27,7 +27,10 @@ struct EnvironmentMetricsLog: View {
 		let chartData = environmentMetrics
 				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 				.sorted { $0.time! < $1.time! }
-
+		let locale = NSLocale.current as NSLocale
+		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+		var format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+		
 		NavigationStack {
 			
 			if chartData.count > 0 {
@@ -69,7 +72,7 @@ struct EnvironmentMetricsLog: View {
 					.chartXAxis(content: {
 						AxisMarks(position: .top)
 					})
-					.chartYScale(domain: 0...125)
+					.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
 					.chartForegroundStyleScale([
 						"Temperature" : .clear
 					])

@@ -223,6 +223,17 @@ struct LocalModuleConfig {
   mutating func clearRemoteHardware() {_uniqueStorage()._remoteHardware = nil}
 
   ///
+  /// The part of the config that is specific to the Neighbor Info module
+  var neighborInfo: ModuleConfig.NeighborInfoConfig {
+    get {return _storage._neighborInfo ?? ModuleConfig.NeighborInfoConfig()}
+    set {_uniqueStorage()._neighborInfo = newValue}
+  }
+  /// Returns true if `neighborInfo` has been explicitly set.
+  var hasNeighborInfo: Bool {return _storage._neighborInfo != nil}
+  /// Clears the value of `neighborInfo`. Subsequent reads from it will return its default value.
+  mutating func clearNeighborInfo() {_uniqueStorage()._neighborInfo = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -383,6 +394,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     7: .standard(proto: "canned_message"),
     9: .same(proto: "audio"),
     10: .standard(proto: "remote_hardware"),
+    11: .standard(proto: "neighbor_info"),
     8: .same(proto: "version"),
   ]
 
@@ -396,6 +408,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _cannedMessage: ModuleConfig.CannedMessageConfig? = nil
     var _audio: ModuleConfig.AudioConfig? = nil
     var _remoteHardware: ModuleConfig.RemoteHardwareConfig? = nil
+    var _neighborInfo: ModuleConfig.NeighborInfoConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -412,6 +425,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _cannedMessage = source._cannedMessage
       _audio = source._audio
       _remoteHardware = source._remoteHardware
+      _neighborInfo = source._neighborInfo
       _version = source._version
     }
   }
@@ -441,6 +455,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
         case 9: try { try decoder.decodeSingularMessageField(value: &_storage._audio) }()
         case 10: try { try decoder.decodeSingularMessageField(value: &_storage._remoteHardware) }()
+        case 11: try { try decoder.decodeSingularMessageField(value: &_storage._neighborInfo) }()
         default: break
         }
       }
@@ -483,6 +498,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._remoteHardware {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
       } }()
+      try { if let v = _storage._neighborInfo {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -501,6 +519,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._cannedMessage != rhs_storage._cannedMessage {return false}
         if _storage._audio != rhs_storage._audio {return false}
         if _storage._remoteHardware != rhs_storage._remoteHardware {return false}
+        if _storage._neighborInfo != rhs_storage._neighborInfo {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

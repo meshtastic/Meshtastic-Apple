@@ -533,6 +533,10 @@ struct Config {
     /// 0 for default of 10 seconds
     var minWakeSecs: UInt32 = 0
 
+    ///
+    /// I2C address of INA_2XX to use for reading device battery voltage
+    var deviceBatteryInaAddress: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1805,6 +1809,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     6: .standard(proto: "sds_secs"),
     7: .standard(proto: "ls_secs"),
     8: .standard(proto: "min_wake_secs"),
+    9: .standard(proto: "device_battery_ina_address"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1821,6 +1826,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.sdsSecs) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.lsSecs) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.minWakeSecs) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.deviceBatteryInaAddress) }()
       default: break
       }
     }
@@ -1851,6 +1857,9 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.minWakeSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.minWakeSecs, fieldNumber: 8)
     }
+    if self.deviceBatteryInaAddress != 0 {
+      try visitor.visitSingularUInt32Field(value: self.deviceBatteryInaAddress, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1863,6 +1872,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.sdsSecs != rhs.sdsSecs {return false}
     if lhs.lsSecs != rhs.lsSecs {return false}
     if lhs.minWakeSecs != rhs.minWakeSecs {return false}
+    if lhs.deviceBatteryInaAddress != rhs.deviceBatteryInaAddress {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
