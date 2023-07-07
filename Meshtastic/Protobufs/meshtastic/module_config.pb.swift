@@ -184,6 +184,16 @@ struct ModuleConfig {
     set {payloadVariant = .neighborInfo(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  var ambientLighting: ModuleConfig.AmbientLightingConfig {
+    get {
+      if case .ambientLighting(let v)? = payloadVariant {return v}
+      return ModuleConfig.AmbientLightingConfig()
+    }
+    set {payloadVariant = .ambientLighting(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -219,6 +229,9 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     case neighborInfo(ModuleConfig.NeighborInfoConfig)
+    ///
+    /// TODO: REPLACE
+    case ambientLighting(ModuleConfig.AmbientLightingConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -264,6 +277,10 @@ struct ModuleConfig {
       }()
       case (.neighborInfo, .neighborInfo): return {
         guard case .neighborInfo(let l) = lhs, case .neighborInfo(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.ambientLighting, .ambientLighting): return {
+        guard case .ambientLighting(let l) = lhs, case .ambientLighting(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -320,6 +337,10 @@ struct ModuleConfig {
     /// The root topic to use for MQTT messages. Default is "msh".
     /// This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs
     var root: String = String()
+
+    ///
+    /// If true, we can use the connected phone / client to proxy messages to MQTT instead of a direct connection
+    var proxyToClientEnabled: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -931,6 +952,33 @@ struct ModuleConfig {
     init() {}
   }
 
+  ///Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
+  ///Initially created for the RAK14001 RGB LED module.
+  struct AmbientLightingConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///Sets LED to on or off.  
+    var ledState: Bool = false
+
+    ///Sets the overall current for the LED, firmware side range for the RAK14001 is 1-31, but users should be given a range of 0-100%  
+    var current: UInt32 = 0
+
+    /// Red level
+    var red: UInt32 = 0
+
+    ///Sets the green level of the LED, firmware side values are 0-255, but users should be given a range of 0-100%   
+    var green: UInt32 = 0
+
+    ///Sets the blue level of the LED, firmware side values are 0-255, but users should be given a range of 0-100%   
+    var blue: UInt32 = 0
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+  }
+
   init() {}
 }
 
@@ -1043,6 +1091,7 @@ extension ModuleConfig.RangeTestConfig: @unchecked Sendable {}
 extension ModuleConfig.TelemetryConfig: @unchecked Sendable {}
 extension ModuleConfig.CannedMessageConfig: @unchecked Sendable {}
 extension ModuleConfig.CannedMessageConfig.InputEventChar: @unchecked Sendable {}
+extension ModuleConfig.AmbientLightingConfig: @unchecked Sendable {}
 extension RemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -1071,6 +1120,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     8: .same(proto: "audio"),
     9: .standard(proto: "remote_hardware"),
     10: .standard(proto: "neighbor_info"),
+    11: .standard(proto: "ambient_lighting"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1209,6 +1259,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .neighborInfo(v)
         }
       }()
+      case 11: try {
+        var v: ModuleConfig.AmbientLightingConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .ambientLighting(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .ambientLighting(v)
+        }
+      }()
       default: break
       }
     }
@@ -1260,6 +1323,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .neighborInfo(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
     }()
+    case .ambientLighting?: try {
+      guard case .ambientLighting(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -1283,6 +1350,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     6: .standard(proto: "json_enabled"),
     7: .standard(proto: "tls_enabled"),
     8: .same(proto: "root"),
+    9: .standard(proto: "proxy_to_client_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1299,6 +1367,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 6: try { try decoder.decodeSingularBoolField(value: &self.jsonEnabled) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self.tlsEnabled) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.root) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.proxyToClientEnabled) }()
       default: break
       }
     }
@@ -1329,6 +1398,9 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if !self.root.isEmpty {
       try visitor.visitSingularStringField(value: self.root, fieldNumber: 8)
     }
+    if self.proxyToClientEnabled != false {
+      try visitor.visitSingularBoolField(value: self.proxyToClientEnabled, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1341,6 +1413,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.jsonEnabled != rhs.jsonEnabled {return false}
     if lhs.tlsEnabled != rhs.tlsEnabled {return false}
     if lhs.root != rhs.root {return false}
+    if lhs.proxyToClientEnabled != rhs.proxyToClientEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1997,6 +2070,62 @@ extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoN
     24: .same(proto: "CANCEL"),
     27: .same(proto: "BACK"),
   ]
+}
+
+extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".AmbientLightingConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "led_state"),
+    2: .same(proto: "current"),
+    3: .same(proto: "red"),
+    4: .same(proto: "green"),
+    5: .same(proto: "blue"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.ledState) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.current) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.red) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.green) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.blue) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.ledState != false {
+      try visitor.visitSingularBoolField(value: self.ledState, fieldNumber: 1)
+    }
+    if self.current != 0 {
+      try visitor.visitSingularUInt32Field(value: self.current, fieldNumber: 2)
+    }
+    if self.red != 0 {
+      try visitor.visitSingularUInt32Field(value: self.red, fieldNumber: 3)
+    }
+    if self.green != 0 {
+      try visitor.visitSingularUInt32Field(value: self.green, fieldNumber: 4)
+    }
+    if self.blue != 0 {
+      try visitor.visitSingularUInt32Field(value: self.blue, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.AmbientLightingConfig, rhs: ModuleConfig.AmbientLightingConfig) -> Bool {
+    if lhs.ledState != rhs.ledState {return false}
+    if lhs.current != rhs.current {return false}
+    if lhs.red != rhs.red {return false}
+    if lhs.green != rhs.green {return false}
+    if lhs.blue != rhs.blue {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

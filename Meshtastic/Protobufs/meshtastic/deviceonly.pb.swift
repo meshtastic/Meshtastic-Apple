@@ -181,7 +181,7 @@ struct DeviceState {
   }
 
   ///
-  /// New lite version of NodeDB to decrease
+  /// New lite version of NodeDB to decrease memory footprint
   var nodeDbLite: [NodeInfoLite] {
     get {return _storage._nodeDbLite}
     set {_uniqueStorage()._nodeDbLite = newValue}

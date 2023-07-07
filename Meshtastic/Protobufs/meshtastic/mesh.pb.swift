@@ -1198,6 +1198,80 @@ struct Waypoint {
 }
 
 ///
+/// This message will be proxied over the PhoneAPI for the client to deliver to the MQTT server
+struct MqttClientProxyMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The MQTT topic this message will be sent /received on
+  var topic: String = String()
+
+  ///
+  /// The actual service envelope payload or text for mqtt pub / sub
+  var payloadVariant: MqttClientProxyMessage.OneOf_PayloadVariant? = nil
+
+  ///
+  /// Bytes
+  var data: Data {
+    get {
+      if case .data(let v)? = payloadVariant {return v}
+      return Data()
+    }
+    set {payloadVariant = .data(newValue)}
+  }
+
+  ///
+  /// Text
+  var text: String {
+    get {
+      if case .text(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .text(newValue)}
+  }
+
+  ///
+  /// Whether the message should be retained (or not)
+  var retained: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// The actual service envelope payload or text for mqtt pub / sub
+  enum OneOf_PayloadVariant: Equatable {
+    ///
+    /// Bytes
+    case data(Data)
+    ///
+    /// Text
+    case text(String)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: MqttClientProxyMessage.OneOf_PayloadVariant, rhs: MqttClientProxyMessage.OneOf_PayloadVariant) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.data, .data): return {
+        guard case .data(let l) = lhs, case .data(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.text, .text): return {
+        guard case .text(let l) = lhs, case .text(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  init() {}
+}
+
+///
 /// A packet envelope sent/received over the mesh
 /// only payload_variant is sent in the payload portion of the LORA packet.
 /// The other fields are either not sent at all, or sent in the special 16 byte LORA header.
@@ -2006,6 +2080,16 @@ struct FromRadio {
     set {_uniqueStorage()._payloadVariant = .metadata(newValue)}
   }
 
+  ///
+  /// MQTT Client Proxy Message
+  var mqttClientProxyMessage: MqttClientProxyMessage {
+    get {
+      if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
+      return MqttClientProxyMessage()
+    }
+    set {_uniqueStorage()._payloadVariant = .mqttClientProxyMessage(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2055,6 +2139,9 @@ struct FromRadio {
     ///
     /// Device metadata message
     case metadata(DeviceMetadata)
+    ///
+    /// MQTT Client Proxy Message
+    case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
     static func ==(lhs: FromRadio.OneOf_PayloadVariant, rhs: FromRadio.OneOf_PayloadVariant) -> Bool {
@@ -2108,6 +2195,10 @@ struct FromRadio {
       }()
       case (.metadata, .metadata): return {
         guard case .metadata(let l) = lhs, case .metadata(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
+        guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2180,6 +2271,16 @@ struct ToRadio {
     set {payloadVariant = .xmodemPacket(newValue)}
   }
 
+  ///
+  /// MQTT Client Proxy Message
+  var mqttClientProxyMessage: MqttClientProxyMessage {
+    get {
+      if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
+      return MqttClientProxyMessage()
+    }
+    set {payloadVariant = .mqttClientProxyMessage(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2204,6 +2305,9 @@ struct ToRadio {
     /// (Sending this message is optional for clients)
     case disconnect(Bool)
     case xmodemPacket(XModem)
+    ///
+    /// MQTT Client Proxy Message
+    case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
     static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
@@ -2225,6 +2329,10 @@ struct ToRadio {
       }()
       case (.xmodemPacket, .xmodemPacket): return {
         guard case .xmodemPacket(let l) = lhs, case .xmodemPacket(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
+        guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2366,6 +2474,8 @@ extension Routing.OneOf_Variant: @unchecked Sendable {}
 extension Routing.Error: @unchecked Sendable {}
 extension DataMessage: @unchecked Sendable {}
 extension Waypoint: @unchecked Sendable {}
+extension MqttClientProxyMessage: @unchecked Sendable {}
+extension MqttClientProxyMessage.OneOf_PayloadVariant: @unchecked Sendable {}
 extension MeshPacket: @unchecked Sendable {}
 extension MeshPacket.OneOf_PayloadVariant: @unchecked Sendable {}
 extension MeshPacket.Priority: @unchecked Sendable {}
@@ -3048,6 +3158,78 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
+extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".MqttClientProxyMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "topic"),
+    2: .same(proto: "data"),
+    3: .same(proto: "text"),
+    4: .same(proto: "retained"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.topic) }()
+      case 2: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .data(v)
+        }
+      }()
+      case 3: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .text(v)
+        }
+      }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.retained) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.topic.isEmpty {
+      try visitor.visitSingularStringField(value: self.topic, fieldNumber: 1)
+    }
+    switch self.payloadVariant {
+    case .data?: try {
+      guard case .data(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 2)
+    }()
+    case .text?: try {
+      guard case .text(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    }()
+    case nil: break
+    }
+    if self.retained != false {
+      try visitor.visitSingularBoolField(value: self.retained, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: MqttClientProxyMessage, rhs: MqttClientProxyMessage) -> Bool {
+    if lhs.topic != rhs.topic {return false}
+    if lhs.payloadVariant != rhs.payloadVariant {return false}
+    if lhs.retained != rhs.retained {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".MeshPacket"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -3575,6 +3757,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     11: .same(proto: "queueStatus"),
     12: .same(proto: "xmodemPacket"),
     13: .same(proto: "metadata"),
+    14: .same(proto: "mqttClientProxyMessage"),
   ]
 
   fileprivate class _StorageClass {
@@ -3753,6 +3936,19 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .metadata(v)
           }
         }()
+        case 14: try {
+          var v: MqttClientProxyMessage?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .mqttClientProxyMessage(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .mqttClientProxyMessage(v)
+          }
+        }()
         default: break
         }
       }
@@ -3817,6 +4013,10 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         guard case .metadata(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       }()
+      case .mqttClientProxyMessage?: try {
+        guard case .mqttClientProxyMessage(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      }()
       case nil: break
       }
     }
@@ -3846,6 +4046,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     3: .standard(proto: "want_config_id"),
     4: .same(proto: "disconnect"),
     5: .same(proto: "xmodemPacket"),
+    6: .same(proto: "mqttClientProxyMessage"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3896,6 +4097,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .xmodemPacket(v)
         }
       }()
+      case 6: try {
+        var v: MqttClientProxyMessage?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .mqttClientProxyMessage(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .mqttClientProxyMessage(v)
+        }
+      }()
       default: break
       }
     }
@@ -3922,6 +4136,10 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     case .xmodemPacket?: try {
       guard case .xmodemPacket(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .mqttClientProxyMessage?: try {
+      guard case .mqttClientProxyMessage(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
     case nil: break
     }
