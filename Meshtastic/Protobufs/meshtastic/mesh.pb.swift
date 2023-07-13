@@ -177,6 +177,22 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case rpiPico // = 47
 
   ///
+  /// Heltec Wireless Tracker with ESP32-S3 CPU, built-in GPS, and TFT
+  case heltecWirelessTracker // = 48
+
+  ///
+  /// Heltec Wireless Paper with ESP32-S3 CPU and E-Ink display
+  case heltecWirelessPaper // = 49
+
+  ///
+  /// LilyGo T-Deck with ESP32-S3 CPU, Keyboard, and IPS display
+  case tDeck // = 50
+
+  ///
+  /// LilyGo T-Watch S3 with ESP32-S3 CPU and IPS display
+  case tWatchS3 // = 51
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -225,6 +241,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 45: self = .betafpv2400Tx
     case 46: self = .betafpv900NanoTx
     case 47: self = .rpiPico
+    case 48: self = .heltecWirelessTracker
+    case 49: self = .heltecWirelessPaper
+    case 50: self = .tDeck
+    case 51: self = .tWatchS3
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -268,6 +288,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .betafpv2400Tx: return 45
     case .betafpv900NanoTx: return 46
     case .rpiPico: return 47
+    case .heltecWirelessTracker: return 48
+    case .heltecWirelessPaper: return 49
+    case .tDeck: return 50
+    case .tWatchS3: return 51
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -316,6 +340,10 @@ extension HardwareModel: CaseIterable {
     .betafpv2400Tx,
     .betafpv900NanoTx,
     .rpiPico,
+    .heltecWirelessTracker,
+    .heltecWirelessPaper,
+    .tDeck,
+    .tWatchS3,
     .privateHw,
   ]
 }
@@ -2537,6 +2565,10 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     45: .same(proto: "BETAFPV_2400_TX"),
     46: .same(proto: "BETAFPV_900_NANO_TX"),
     47: .same(proto: "RPI_PICO"),
+    48: .same(proto: "HELTEC_WIRELESS_TRACKER"),
+    49: .same(proto: "HELTEC_WIRELESS_PAPER"),
+    50: .same(proto: "T_DECK"),
+    51: .same(proto: "T_WATCH_S3"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
