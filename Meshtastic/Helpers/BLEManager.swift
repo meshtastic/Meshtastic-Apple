@@ -532,11 +532,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					}
 				}
 			case .neighborinfoApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+			case .mqttClientProxyApp:
+				MeshLogger.log("🕸️ MESH PACKET received for MQTT Client Proxy App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
 				print("MAX PORT NUM OF 511")
+
 			}
 			
 			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
