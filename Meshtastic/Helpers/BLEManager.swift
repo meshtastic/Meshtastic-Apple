@@ -534,7 +534,32 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			case .neighborinfoApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .mqttClientProxyApp:
-				MeshLogger.log("🕸️ MESH PACKET received for MQTT Client Proxy App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				if let mqttClientProxyMessage = try? MqttClientProxyMessage(serializedData: decodedInfo.packet.decoded.payload) {
+					MeshLogger.log("🕸️ MESH PACKET received for MQTT Client Proxy App on topic " + mqttClientProxyMessage.topic + " \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+					print("Received MQTT message from device to proxy on topic: " + mqttClientProxyMessage.topic);
+
+					if (mqttClientProxyMessage.text.count > 0) {
+						print(mqttClientProxyMessage.text)
+						
+					//	Logger.LogDebug(ServiceEnvelope.Parser.ParseFrom(mqttClientProxyMessage.Data).ToString());
+				   //				   await mqttClient.PublishAsync(new MqttApplicationMessageBuilder()
+				   //					   .WithTopic(message.Topic)
+				   //					   .WithPayload(message.Data.ToByteArray())
+				   //					   .WithRetainFlag(message.Retained)
+				   //					   .Build());
+				   }
+					else {
+						print(mqttClientProxyMessage.data)
+				   //				   Logger.LogDebug(message.Text);
+				   //				   await mqttClient.PublishAsync(new MqttApplicationMessageBuilder()
+				   //					   .WithTopic(message.Topic)
+				   //					   .WithPayload(message.Text)
+				   //					   .WithRetainFlag(message.Retained)
+				   //					   .Build());
+					}
+				}
+				
+
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
