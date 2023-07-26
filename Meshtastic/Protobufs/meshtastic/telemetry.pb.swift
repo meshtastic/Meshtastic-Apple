@@ -200,7 +200,7 @@ struct EnvironmentMetrics {
   var barometricPressure: Float = 0
 
   ///
-  /// Gas resistance in mOhm measured
+  /// Gas resistance in MOhm measured
   var gasResistance: Float = 0
 
   ///

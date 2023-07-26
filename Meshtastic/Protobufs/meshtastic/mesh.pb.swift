@@ -2109,7 +2109,7 @@ struct FromRadio {
   }
 
   ///
-  /// MQTT Client Proxy Message
+  /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
   var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
@@ -2168,7 +2168,7 @@ struct FromRadio {
     /// Device metadata message
     case metadata(DeviceMetadata)
     ///
-    /// MQTT Client Proxy Message
+    /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
     case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
@@ -2300,7 +2300,7 @@ struct ToRadio {
   }
 
   ///
-  /// MQTT Client Proxy Message
+  /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
   var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
@@ -2334,7 +2334,7 @@ struct ToRadio {
     case disconnect(Bool)
     case xmodemPacket(XModem)
     ///
-    /// MQTT Client Proxy Message
+    /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
     case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
