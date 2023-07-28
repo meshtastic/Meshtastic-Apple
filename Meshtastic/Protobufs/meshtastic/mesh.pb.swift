@@ -103,6 +103,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case nanoG1Explorer // = 17
 
   ///
+  /// B&Q Consulting Nano G2 Ultra: https://wiki.uniteng.com/en/meshtastic/nano-g2-ultra
+  case nanoG2Ultra // = 18
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -223,6 +227,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 15: self = .tloraV211P8
     case 16: self = .tloraT3S3
     case 17: self = .nanoG1Explorer
+    case 18: self = .nanoG2Ultra
     case 25: self = .stationG1
     case 26: self = .rak11310
     case 32: self = .loraRelayV1
@@ -270,6 +275,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tloraV211P8: return 15
     case .tloraT3S3: return 16
     case .nanoG1Explorer: return 17
+    case .nanoG2Ultra: return 18
     case .stationG1: return 25
     case .rak11310: return 26
     case .loraRelayV1: return 32
@@ -322,6 +328,7 @@ extension HardwareModel: CaseIterable {
     .tloraV211P8,
     .tloraT3S3,
     .nanoG1Explorer,
+    .nanoG2Ultra,
     .stationG1,
     .rak11310,
     .loraRelayV1,
@@ -2109,7 +2116,7 @@ struct FromRadio {
   }
 
   ///
-  /// MQTT Client Proxy Message
+  /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
   var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = _storage._payloadVariant {return v}
@@ -2168,7 +2175,7 @@ struct FromRadio {
     /// Device metadata message
     case metadata(DeviceMetadata)
     ///
-    /// MQTT Client Proxy Message
+    /// MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
     case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
@@ -2300,7 +2307,7 @@ struct ToRadio {
   }
 
   ///
-  /// MQTT Client Proxy Message
+  /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
   var mqttClientProxyMessage: MqttClientProxyMessage {
     get {
       if case .mqttClientProxyMessage(let v)? = payloadVariant {return v}
@@ -2334,7 +2341,7 @@ struct ToRadio {
     case disconnect(Bool)
     case xmodemPacket(XModem)
     ///
-    /// MQTT Client Proxy Message
+    /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
     case mqttClientProxyMessage(MqttClientProxyMessage)
 
   #if !swift(>=4.1)
@@ -2547,6 +2554,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     15: .same(proto: "TLORA_V2_1_1P8"),
     16: .same(proto: "TLORA_T3_S3"),
     17: .same(proto: "NANO_G1_EXPLORER"),
+    18: .same(proto: "NANO_G2_ULTRA"),
     25: .same(proto: "STATION_G1"),
     26: .same(proto: "RAK11310"),
     32: .same(proto: "LORA_RELAY_V1"),

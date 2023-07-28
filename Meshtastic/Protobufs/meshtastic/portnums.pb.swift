@@ -88,10 +88,6 @@ enum PortNum: SwiftProtobuf.Enum {
   case audioApp // = 9
 
   ///
-  /// Payloads for clients with a network connection proxying MQTT pub/sub to the device
-  case mqttClientProxyApp // = 10
-
-  ///
   /// Provides a 'ping' service that replies to any packet it receives.
   /// Also serves as a small example module.
   case replyApp // = 32
@@ -175,7 +171,6 @@ enum PortNum: SwiftProtobuf.Enum {
     case 7: self = .textMessageCompressedApp
     case 8: self = .waypointApp
     case 9: self = .audioApp
-    case 10: self = .mqttClientProxyApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
     case 64: self = .serialApp
@@ -205,7 +200,6 @@ enum PortNum: SwiftProtobuf.Enum {
     case .textMessageCompressedApp: return 7
     case .waypointApp: return 8
     case .audioApp: return 9
-    case .mqttClientProxyApp: return 10
     case .replyApp: return 32
     case .ipTunnelApp: return 33
     case .serialApp: return 64
@@ -240,7 +234,6 @@ extension PortNum: CaseIterable {
     .textMessageCompressedApp,
     .waypointApp,
     .audioApp,
-    .mqttClientProxyApp,
     .replyApp,
     .ipTunnelApp,
     .serialApp,
@@ -277,7 +270,6 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     7: .same(proto: "TEXT_MESSAGE_COMPRESSED_APP"),
     8: .same(proto: "WAYPOINT_APP"),
     9: .same(proto: "AUDIO_APP"),
-    10: .same(proto: "MQTT_CLIENT_PROXY_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
     64: .same(proto: "SERIAL_APP"),
