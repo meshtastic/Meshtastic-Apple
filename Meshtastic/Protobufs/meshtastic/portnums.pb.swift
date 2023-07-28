@@ -82,6 +82,7 @@ enum PortNum: SwiftProtobuf.Enum {
   /// Payload is a [Waypoint](/docs/developers/protobufs/api#waypoint) message
   case waypointApp // = 8
 
+  ///
   /// Audio Payloads.
   /// Encapsulated codec2 packets. On 2.4 GHZ Bandwidths only for now
   case audioApp // = 9
