@@ -399,33 +399,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				
 				// MyInfo from initial connection
 				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
-					let lastDotIndex = decodedInfo.myInfo.firmwareVersion.lastIndex(of: ".")
-					
-					if lastDotIndex == nil {
-						invalidVersion = true
-						connectedVersion = "0.0.0"
-					} else {
-						let version = decodedInfo.myInfo.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.myInfo.firmwareVersion))]
-						nowKnown = true
-						connectedVersion = String(version.dropLast())
-					}
-					
-					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
-					if !supportedVersion {
-						invalidVersion = true
-						lastConnectionError = "🚨" + "update.firmware".localized
-						return
-						
-					} else {
-						
-						let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
-						
-						if myInfo != nil {
-							connectedPeripheral.num = myInfo!.myNodeNum
-							connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
-							connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
-						}
+					if myInfo != nil {
+						connectedPeripheral.num = myInfo!.myNodeNum
+						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
+						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 					}
 					tryClearExistingChannels()
 				}
@@ -472,6 +451,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion ?? "unknown".localized
+					
+					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
+					
+					if lastDotIndex == nil {
+						invalidVersion = true
+						connectedVersion = "0.0.0"
+					} else {
+						let version = decodedInfo.metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))]
+						nowKnown = true
+						connectedVersion = String(version.dropLast())
+					}
+					
+					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
+					
+					if !supportedVersion {
+						invalidVersion = true
+						lastConnectionError = "🚨" + "update.firmware".localized
+						return
+						
+					}
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
