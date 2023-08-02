@@ -121,6 +121,7 @@
 		DDCDC6CB29481FCC004C1DDA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DDCDC6CD29481FCC004C1DDA /* Localizable.strings */; };
 		DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */; };
 		DDD3BBD5292D763200D609B3 /* MeshtasticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */; };
+		DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */; };
 		DDD6EEAF29BC024700383354 /* Firmware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD6EEAE29BC024700383354 /* Firmware.swift */; };
 		DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */; };
 		DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */; };
@@ -323,6 +324,7 @@
 		DDCDC6CE294821AD004C1DDA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfig.swift; sourceTree = "<group>"; };
 		DDD3BBD4292D763200D609B3 /* MeshtasticTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeshtasticTests.swift; sourceTree = "<group>"; };
+		DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MqttClientProxyManager.swift; sourceTree = "<group>"; };
 		DDD6EEAE29BC024700383354 /* Firmware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firmware.swift; sourceTree = "<group>"; };
 		DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateTimeText.swift; sourceTree = "<group>"; };
 		DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEntityExtension.swift; sourceTree = "<group>"; };
@@ -710,6 +712,7 @@
 		DDC2E1A526CEB32B0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DDD43FE12A78C86B0083A3E9 /* Mqtt */,
 				DDB75A122A0593CD006ED576 /* Map */,
 				DDAF8C5226EB1DF10058C060 /* BLEManager.swift */,
 				DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */,
@@ -734,6 +737,14 @@
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		DDD43FE12A78C86B0083A3E9 /* Mqtt */ = {
+			isa = PBXGroup;
+			children = (
+				DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */,
+			);
+			path = Mqtt;
 			sourceTree = "<group>";
 		};
 		DDDB443E29F79A9400EE2349 /* Extensions */ = {
@@ -1032,6 +1043,7 @@
 				DD3CC6C228EB9D4900FA9159 /* UpdateCoreData.swift in Sources */,
 				DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */,
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
+				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,

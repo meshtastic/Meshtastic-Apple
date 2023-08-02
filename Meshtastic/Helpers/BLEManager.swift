@@ -3,6 +3,7 @@ import CoreData
 import CoreBluetooth
 import SwiftUI
 import MapKit
+import CocoaMQTT
 
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
@@ -37,6 +38,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 	var positionTimer: Timer?
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
+	let mqttManager = MqttClientProxyManager.shared
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
@@ -571,6 +573,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
+					}
+				}
+				/// MQTT Client Proxy
+				if true {
+					
+					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
+					do {
+						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
+						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
+							//Subscribe to Mqtt Client Proxy if enabled
+							mqttManager.connectFromConfigSettings(config: fetchedNodeInfo[0].mqttConfig!)
+
+						}
+					} catch {
+						print("Failed to find a node info for the connected node")
 					}
 				}
 				return
