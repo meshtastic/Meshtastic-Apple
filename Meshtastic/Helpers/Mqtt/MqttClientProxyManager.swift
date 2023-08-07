@@ -35,7 +35,7 @@ class MqttClientProxyManager {
 		
 	}
 	
-	func connectFromConfigSettings(config: MQTTConfigEntity) {
+	func connectFromConfigSettings(config: MQTTConfigEntity, metadata: DeviceMetadataEntity) {
 		
 		let defaultServerAddress = "mqtt.meshtastic.org"
 		let defaultServerPort = 1883
@@ -49,11 +49,18 @@ class MqttClientProxyManager {
 			let port = defaultServerPort
 			let username = config.username
 			let password = config.password
-			connect(host: host, port: port, username: username, password: password, cleanSession: true)
+			
+			var root = config.root?.count ?? 0 > 0 ? config.root : "msh"
+			var prefix = root! + "/" + metadata.firmwareVersion!
+			var topic = prefix + "/#"
+			let qos = CocoaMQTTQoS(rawValue :UInt8(2))!
+			connect(host: host, port: port, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
+			
+			
 		}
 	}
 	
-	func connect(host: String, port: Int, username: String?, password: String?, cleanSession: Bool) {
+	func connect(host: String, port: Int, username: String?, password: String?, topic: String?, qos: CocoaMQTTQoS, cleanSession: Bool) {
 		
 		let clientId = "MeshtasticAppleMqttProxy-" + String(ProcessInfo().processIdentifier)
 		status = .connecting
@@ -73,8 +80,9 @@ class MqttClientProxyManager {
 			let success = mqttClient.connect()
 			if !success {
 				status = .error
+			} else {
+				mqttClient.subscribe(topic!, qos: qos)
 			}
-			
 		} else {
 			status = .error
 		}

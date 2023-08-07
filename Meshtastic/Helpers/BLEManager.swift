@@ -576,16 +576,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 					}
 				}
 				/// MQTT Client Proxy
-				if true {
+				if connectedPeripheral.num > 0 {
 					
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
 						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
+							
 							//Subscribe to Mqtt Client Proxy if enabled
-							mqttManager.connectFromConfigSettings(config: fetchedNodeInfo[0].mqttConfig!)
-
+							if fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
+								mqttManager.connectFromConfigSettings(config: fetchedNodeInfo[0].mqttConfig!, metadata: fetchedNodeInfo[0].metadata!)
+							}
 						}
 					} catch {
 						print("Failed to find a node info for the connected node")
