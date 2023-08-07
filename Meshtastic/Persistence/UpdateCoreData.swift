@@ -776,6 +776,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 			if fetchedNode[0].mqttConfig == nil {
 				let newMQTTConfig = MQTTConfigEntity(context: context)
 				newMQTTConfig.enabled = config.enabled
+				newMQTTConfig.proxyToClientEnabled = config.proxyToClientEnabled
 				newMQTTConfig.address = config.address
 				newMQTTConfig.username = config.username
 				newMQTTConfig.password = config.password
@@ -786,6 +787,7 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				fetchedNode[0].mqttConfig = newMQTTConfig
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
+				fetchedNode[0].mqttConfig?.proxyToClientEnabled = config.proxyToClientEnabled
 				fetchedNode[0].mqttConfig?.address = config.address
 				fetchedNode[0].mqttConfig?.username = config.username
 				fetchedNode[0].mqttConfig?.password = config.password

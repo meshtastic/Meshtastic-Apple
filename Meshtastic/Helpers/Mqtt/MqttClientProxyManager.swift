@@ -37,7 +37,7 @@ class MqttClientProxyManager {
 	
 	func connectFromConfigSettings(config: MQTTConfigEntity) {
 		
-		let defaultServerAddress = "mqtt.meshtastic.org"
+		let defaultServerAddress = "devmqtt.meshtastic.org"
 		let defaultServerPort = 1883
 		//let
 		var host = config.address
