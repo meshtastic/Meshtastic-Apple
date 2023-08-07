@@ -30,6 +30,7 @@ class MqttClientProxyManager {
 	weak var delegate: CocoaMQTTDelegate?
 	var status = ConnectionStatus.none
 	var mqttClient: CocoaMQTT?
+	var topic = "msh/2/c"
 	
 	private init() {
 		
@@ -39,7 +40,6 @@ class MqttClientProxyManager {
 		
 		let defaultServerAddress = "mqtt.meshtastic.org"
 		let defaultServerPort = 1883
-		//let
 		var host = node.mqttConfig?.address
 		if host == nil || host!.isEmpty {
 			host = defaultServerAddress
@@ -50,11 +50,11 @@ class MqttClientProxyManager {
 			let username = node.mqttConfig?.username
 			let password = node.mqttConfig?.password
 			
-			var root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
-			let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0))
-			var prefix = root! + "/c/\(preset?.name ?? "LongFast")"
-			var topic = prefix + "/#"
-			let qos = CocoaMQTTQoS(rawValue :UInt8(2))!
+			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
+			let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) ?? ModemPresets.longFast
+			let prefix = root! + "/2/c"
+			topic = prefix + "/#"
+			let qos = CocoaMQTTQoS(rawValue :UInt8(1))!
 			connect(host: host, port: port, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
 		}
 	}
@@ -80,9 +80,6 @@ class MqttClientProxyManager {
 			let success = mqttClient.connect()
 			if !success {
 				status = .error
-			} else {
-				//mqttClient.subscribe(topic!, qos: qos)
-				subscribe(topic: topic!, qos: MqttQos.atLeastOnce)
 			}
 		} else {
 			status = .error
@@ -129,11 +126,10 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		
 		print("📲 MQTT Client Proxy didConnectAck: \(ack)")
 		if ack == .accept {
-			//delegate?.onMqttConnected()
+			let qos = CocoaMQTTQoS.qos1
+			mqttClient!.subscribe(topic, qos: qos)
+			print("📲 MQTT Client Proxy subscribed to: " + topic)
 			
-			//			if let topic = mqttSettings.subscribeTopic, mqttSettings.isSubscribeEnabled {
-			//				self.subscribe(topic: topic, qos: mqttSettings.subscribeQos)
-			//			}
 		} else {
 			// Connection error
 			var errorDescription = "Unknown Error"
@@ -154,7 +150,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 				errorDescription = "Unknown Error"
 			}
 			print(errorDescription)
-			//delegate?.onMqttError(message: errorDescription)
+		//	mqttClient!.delegate.onMqttError(message: errorDescription)
 			
 			//self.disconnect()                       // Stop reconnecting
 			//mqttSettings.isConnected = false        // Disable automatic connect on start
@@ -164,14 +160,30 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-		print("didPublishMessage")
+		print("📲 MQTT Client Proxy didPublishMessage: \(message)")
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
+		print("📲 MQTT Client Proxy didPublishAck: \(id)")
 		print("didPublishAck")
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
+		
+		print("📲 MQTT Client Proxy message received on topic: \(message.topic)")
+		
+		if message.topic.contains("/stat/") {
+			return
+		}
+		
+//				   // Get bytes from utf8 string
+//				   var toRadio = new ToRadioMessageFactory()
+//					   .CreateMqttClientProxyMessage(e.ApplicationMessage.Topic, e.ApplicationMessage.PayloadSegment.ToArray(), e.ApplicationMessage.Retain);
+//				   Logger.LogDebug(toRadio.ToString());
+//				   await Connection.WriteToRadio(toRadio);
+		
+		
+		
 		if let string = message.string {
 			print("didReceiveMessage: \(string) from topic: \(message.topic)")
 		} else {
