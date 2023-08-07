@@ -169,26 +169,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
-		
 		print("📲 MQTT Client Proxy message received on topic: \(message.topic)")
-		
-		if message.topic.contains("/stat/") {
-			return
-		}
-		
-//				   // Get bytes from utf8 string
-//				   var toRadio = new ToRadioMessageFactory()
-//					   .CreateMqttClientProxyMessage(e.ApplicationMessage.Topic, e.ApplicationMessage.PayloadSegment.ToArray(), e.ApplicationMessage.Retain);
-//				   Logger.LogDebug(toRadio.ToString());
-//				   await Connection.WriteToRadio(toRadio);
-		
-		
-		
-		if let string = message.string {
-			print("didReceiveMessage: \(string) from topic: \(message.topic)")
-		} else {
-			print("didReceiveMessage but message is not defined")
-		}
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {

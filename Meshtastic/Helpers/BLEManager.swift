@@ -393,6 +393,31 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				print(characteristic.value!)
 			}
 			
+			// Send a packet from mqtt to the radio
+			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage) {
+				var message = CocoaMQTTMessage (
+					topic: decodedInfo.mqttClientProxyMessage.topic,
+					payload:  [UInt8](decodedInfo.mqttClientProxyMessage.data),
+					retained: decodedInfo.mqttClientProxyMessage.retained
+				)
+				print("📲 Publish Mqtt client proxy message received on FromRadio \(message)")
+				mqttManager.mqttClient?.publish(message)
+			}
+			
+			//To Radio
+//			if decodedInfo.mqttClientProxyMessage.topic.contains("/stat/") {
+//				return
+//			}
+//
+//			var toRadio: ToRadio!
+//			toRadio = ToRadio()
+//			toRadio.mqttClientProxyMessage = decodedInfo.mqttClientProxyMessage
+//			let binaryData: Data = try! toRadio.serializedData()
+//			if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+//				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+//				print("📲 Sent Mqtt client proxy message to the connected device.")
+//			}
+
 			switch decodedInfo.packet.decoded.portnum {
 				
 				// Handle Any local only packets we get over BLE
@@ -540,22 +565,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				print("MAX PORT NUM OF 511")
 			}
 			
-			// MARK: Check for an All / Broadcast User and delete it as a transition to multi channel
-			let fetchBCUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
-			fetchBCUserRequest.predicate = NSPredicate(format: "num == %lld", Int64(emptyNodeNum))
-			
-			do {
-				guard let fetchedUser = try context?.fetch(fetchBCUserRequest) as? [UserEntity] else {
-					return
-				}
-				if fetchedUser.count > 0 {
-					context?.delete(fetchedUser[0])
-					print("🗑️ Deleted the All - Broadcast User")
-				}
-			} catch {
-				print("💥 Error Deleting the All - Broadcast User")
-			}
-			
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
 				invalidVersion = false
 				lastConnectionError = ""
@@ -563,18 +572,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				print("🤜 Want Config Complete. ID:\(decodedInfo.configCompleteID)")
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
-				// MARK: Share Location Position Update Timer
-				// Use context to pass the radio name with the timer
-				// Use a RunLoop to prevent the timer from running on the main UI thread
-				if UserDefaults.provideLocation {
-					if positionTimer != nil {
-						positionTimer!.invalidate()
-					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
-					if positionTimer != nil {
-						RunLoop.current.add(positionTimer!, forMode: .common)
-					}
-				}
+				
 				/// MQTT Client Proxy
 				if connectedPeripheral.num > 0 {
 					
@@ -593,8 +591,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 						print("Failed to find a node info for the connected node")
 					}
 				}
+				
+				// MARK: Share Location Position Update Timer
+				// Use context to pass the radio name with the timer
+				// Use a RunLoop to prevent the timer from running on the main UI thread
+				if UserDefaults.provideLocation {
+					if positionTimer != nil {
+						positionTimer!.invalidate()
+					}
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					if positionTimer != nil {
+						RunLoop.current.add(positionTimer!, forMode: .common)
+					}
+				}
+
 				return
 			}
+
 			
 		case FROMNUM_UUID:
 			print("🗞️ BLE (Notify) characteristic, value will be read next")
