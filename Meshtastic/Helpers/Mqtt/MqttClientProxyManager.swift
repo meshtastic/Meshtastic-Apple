@@ -51,12 +51,10 @@ class MqttClientProxyManager {
 			let password = config.password
 			
 			var root = config.root?.count ?? 0 > 0 ? config.root : "msh"
-			var prefix = root! + "/" + metadata.firmwareVersion!
+			var prefix = root! + "/2" //+ metadata.firmwareVersion!
 			var topic = prefix + "/#"
 			let qos = CocoaMQTTQoS(rawValue :UInt8(2))!
 			connect(host: host, port: port, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
-			
-			
 		}
 	}
 	
@@ -75,13 +73,13 @@ class MqttClientProxyManager {
 			mqttClient.logLevel = .debug
 			mqttClient.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
 			mqttClient.autoReconnect = true
-
 			mqttClient.delegate = self
 			let success = mqttClient.connect()
 			if !success {
 				status = .error
 			} else {
-				mqttClient.subscribe(topic!, qos: qos)
+				//mqttClient.subscribe(topic!, qos: qos)
+				subscribe(topic: topic!, qos: MqttQos.atLeastOnce)
 			}
 		} else {
 			status = .error
@@ -91,6 +89,7 @@ class MqttClientProxyManager {
 	func subscribe(topic: String, qos: MqttQos) {
 		let qos = CocoaMQTTQoS(rawValue :UInt8(qos.rawValue))!
 		mqttClient?.subscribe(topic, qos: qos)
+		print("MQTT Client Proxy subscribed to: " + topic)
 	}
 	
 	func unsubscribe(topic: String) {
@@ -156,8 +155,6 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		}
 		
 		self.status = ack == .accept ? ConnectionStatus.connected : ConnectionStatus.error      // Set AFTER sending onMqttError (so the delegate can detect that was an error while stablishing connection)
-		
-		
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
