@@ -35,23 +35,24 @@ class MqttClientProxyManager {
 		
 	}
 	
-	func connectFromConfigSettings(config: MQTTConfigEntity, metadata: DeviceMetadataEntity) {
+	func connectFromConfigSettings(node: NodeInfoEntity) {
 		
 		let defaultServerAddress = "mqtt.meshtastic.org"
 		let defaultServerPort = 1883
 		//let
-		var host = config.address
+		var host = node.mqttConfig?.address
 		if host == nil || host!.isEmpty {
 			host = defaultServerAddress
 		}
 		
 		if let host = host {
 			let port = defaultServerPort
-			let username = config.username
-			let password = config.password
+			let username = node.mqttConfig?.username
+			let password = node.mqttConfig?.password
 			
-			var root = config.root?.count ?? 0 > 0 ? config.root : "msh"
-			var prefix = root! + "/2" //+ metadata.firmwareVersion!
+			var root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
+			let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0))
+			var prefix = root! + "/c/\(preset?.name ?? "LongFast")"
 			var topic = prefix + "/#"
 			let qos = CocoaMQTTQoS(rawValue :UInt8(2))!
 			connect(host: host, port: port, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
@@ -70,7 +71,9 @@ class MqttClientProxyManager {
 			mqttClient.password = password
 			mqttClient.keepAlive = 60
 			mqttClient.cleanSession = cleanSession
+#if DEBUG
 			mqttClient.logLevel = .debug
+#endif
 			mqttClient.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
 			mqttClient.autoReconnect = true
 			mqttClient.delegate = self
@@ -89,16 +92,18 @@ class MqttClientProxyManager {
 	func subscribe(topic: String, qos: MqttQos) {
 		let qos = CocoaMQTTQoS(rawValue :UInt8(qos.rawValue))!
 		mqttClient?.subscribe(topic, qos: qos)
-		print("MQTT Client Proxy subscribed to: " + topic)
+		print("📲 MQTT Client Proxy subscribed to: " + topic)
 	}
 	
 	func unsubscribe(topic: String) {
 		mqttClient?.unsubscribe(topic)
+		print("📲 MQTT Client Proxy unsubscribe for: " + topic)
 	}
 	
 	func publish(message: String, topic: String, qos: MqttQos) {
 		let qos = CocoaMQTTQoS(rawValue :UInt8(qos.rawValue))!
 		mqttClient?.publish(topic, withString: message, qos: qos)
+		print("📲 MQTT Client Proxy publish for: " + topic)
 	}
 	
 	func disconnect() {
@@ -107,6 +112,7 @@ class MqttClientProxyManager {
 		if let client = mqttClient {
 			status = .disconnecting
 			client.disconnect()
+			print("📲 MQTT Client Proxy Disconnected")
 		} else {
 			status = .disconnected
 		}
@@ -121,7 +127,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	
 	func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
 		
-		print("didConnectAck: \(ack)")
+		print("📲 MQTT Client Proxy didConnectAck: \(ack)")
 		if ack == .accept {
 			//delegate?.onMqttConnected()
 			

@@ -135,6 +135,26 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Short Range - Fast"
 		}
 	}
+	var name: String {
+		switch self {
+		case .longFast:
+			return "LongFast"
+		case .longSlow:
+			return "LongSlow"
+		case .longModerate:
+			return "LongModerate"
+		case .vLongSlow:
+			return "VLongFast"
+		case .medSlow:
+			return "MediumSlow"
+		case .medFast:
+			return "MediumFast"
+		case .shortSlow:
+			return "ShortSlow"
+		case .shortFast:
+			return "ShortFast"
+		}
+	}
 	func snrLimit() -> Float {
 		switch self {
 		case .longFast:

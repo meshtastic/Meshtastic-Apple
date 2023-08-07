@@ -586,7 +586,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 							
 							//Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
-								mqttManager.connectFromConfigSettings(config: fetchedNodeInfo[0].mqttConfig!, metadata: fetchedNodeInfo[0].metadata!)
+								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
 							}
 						}
 					} catch {
