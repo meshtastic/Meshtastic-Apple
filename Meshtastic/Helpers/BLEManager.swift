@@ -8,8 +8,47 @@ import CocoaMQTT
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
-class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
+class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 	
+	// MqttClientProxyManagerDelegate
+	func onMqttConnected() {
+		mqttManager.status = .connected
+		print("MQTT Connected")
+	}
+	
+	func onMqttDisconnected() {
+		mqttManager.status = .disconnected
+		print("MQTT Disconnected")
+	}
+	
+	func onMqttMessageReceived(message: CocoaMQTTMessage) {
+
+		print("onMqttMessageReceived")
+		if message.topic.contains("/stat/") {
+		//	return
+		}
+		var proxyMessage = MqttClientProxyMessage()
+		proxyMessage.topic = message.topic
+		proxyMessage.data = Data(message.payload)
+		proxyMessage.retained = message.retained
+		
+		
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.mqttClientProxyMessage = proxyMessage
+		let binaryData: Data = try! toRadio.serializedData()
+		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			print("📲 Sent Mqtt client proxy message to the connected device.")
+		}
+
+	}
+	
+	func onMqttError(message: String) {
+		print("MQTT Error")
+	}
+	
+
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -57,6 +96,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 		self.connectedVersion = "0.0.0"
 		super.init()
 		centralManager = CBCentralManager(delegate: self, queue: nil)
+		mqttManager.delegate = self
 		// centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreKey])
 	}
 	
@@ -393,31 +433,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 				print(characteristic.value!)
 			}
 			
-			// Send a packet from mqtt to the radio
+			// Publish mqttClientProxyMessages received on the from radio
 			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage) {
 				var message = CocoaMQTTMessage (
 					topic: decodedInfo.mqttClientProxyMessage.topic,
 					payload:  [UInt8](decodedInfo.mqttClientProxyMessage.data),
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
-				print("📲 Publish Mqtt client proxy message received on FromRadio \(message)")
+				print("📲 Publish Mqtt client proxy message received on FromRadio to the Mqtt server \(message)")
 				mqttManager.mqttClient?.publish(message)
 			}
 			
-			//To Radio
-//			if decodedInfo.mqttClientProxyMessage.topic.contains("/stat/") {
-//				return
-//			}
-//
-//			var toRadio: ToRadio!
-//			toRadio = ToRadio()
-//			toRadio.mqttClientProxyMessage = decodedInfo.mqttClientProxyMessage
-//			let binaryData: Data = try! toRadio.serializedData()
-//			if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
-//				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-//				print("📲 Sent Mqtt client proxy message to the connected device.")
-//			}
-
 			switch decodedInfo.packet.decoded.portnum {
 				
 				// Handle Any local only packets we get over BLE
@@ -619,6 +645,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, ObservableObject {
 			peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 	}
+	
+
 	
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) -> Bool {
 		var success = false

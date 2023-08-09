@@ -8,8 +8,14 @@
 import Foundation
 import CocoaMQTT
 
+protocol MqttClientProxyManagerDelegate: AnyObject {
+	func onMqttConnected()
+	func onMqttDisconnected()
+	func onMqttMessageReceived(message: CocoaMQTTMessage)
+	func onMqttError(message: String)
+}
+
 class MqttClientProxyManager {
-	
 	enum ConnectionStatus {
 		case connecting
 		case connected
@@ -25,11 +31,16 @@ class MqttClientProxyManager {
 		case exactlyOnce = 2
 	}
 	
+	// Singleton Instance
 	static let shared = MqttClientProxyManager()
+	
 	private static let defaultKeepAliveInterval: Int32 = 60
-	weak var delegate: CocoaMQTTDelegate?
+
+	weak var delegate: MqttClientProxyManagerDelegate?
 	var status = ConnectionStatus.none
+	
 	var mqttClient: CocoaMQTT?
+	
 	var topic = "msh/2/c"
 	
 	private init() {
@@ -51,7 +62,6 @@ class MqttClientProxyManager {
 			let password = node.mqttConfig?.password
 			
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
-			let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) ?? ModemPresets.longFast
 			let prefix = root! + "/2/c"
 			topic = prefix + "/#"
 			let qos = CocoaMQTTQoS(rawValue :UInt8(1))!
@@ -61,10 +71,16 @@ class MqttClientProxyManager {
 	
 	func connect(host: String, port: Int, username: String?, password: String?, topic: String?, qos: CocoaMQTTQoS, cleanSession: Bool) {
 		
-		let clientId = "MeshtasticAppleMqttProxy-" + String(ProcessInfo().processIdentifier)
-		status = .connecting
-		mqttClient = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
+		guard !host.isEmpty else {
+			delegate?.onMqttDisconnected()
+			return
+		}
 		
+		status = .connecting
+		
+		let clientId = "MeshtasticAppleMqttProxy-" + String(ProcessInfo().processIdentifier)
+		
+		mqttClient = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
 		if let mqttClient = mqttClient {
 			
 			mqttClient.username = username
@@ -79,9 +95,11 @@ class MqttClientProxyManager {
 			mqttClient.delegate = self
 			let success = mqttClient.connect()
 			if !success {
+				delegate?.onMqttError(message: "Mqtt connect error")
 				status = .error
 			}
 		} else {
+			delegate?.onMqttError(message: "Mqtt initialization error")
 			status = .error
 		}
 	}
@@ -118,16 +136,11 @@ class MqttClientProxyManager {
 
 extension MqttClientProxyManager: CocoaMQTTDelegate {
 	
-	func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-		completionHandler(true)
-	}
-	
 	func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
 		
 		print("📲 MQTT Client Proxy didConnectAck: \(ack)")
 		if ack == .accept {
-			let qos = CocoaMQTTQoS.qos1
-			mqttClient!.subscribe(topic, qos: qos)
+			delegate?.onMqttConnected()
 			print("📲 MQTT Client Proxy subscribed to: " + topic)
 			
 		} else {
@@ -150,25 +163,38 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 				errorDescription = "Unknown Error"
 			}
 			print(errorDescription)
-		//	mqttClient!.delegate.onMqttError(message: errorDescription)
+			delegate?.onMqttError(message: errorDescription)
 			
-			//self.disconnect()                       // Stop reconnecting
+			self.disconnect()                       // Stop reconnecting
 			//mqttSettings.isConnected = false        // Disable automatic connect on start
 		}
 		
-		self.status = ack == .accept ? ConnectionStatus.connected : ConnectionStatus.error      // Set AFTER sending onMqttError (so the delegate can detect that was an error while stablishing connection)
+		self.status = ack == .accept ? ConnectionStatus.connected : ConnectionStatus.error      // Set AFTER sending onMqttError (so the delegate can detect that was an error while establishing connection)
+	}
+	
+	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
+		print("mqttDidDisconnect: \(err?.localizedDescription ?? "")")
+
+		if let error = err, status == .connecting {
+			delegate?.onMqttError(message: error.localizedDescription)
+		}
+
+		status = err == nil ? .disconnected : .error
+		delegate?.onMqttDisconnected()
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-		print("📲 MQTT Client Proxy didPublishMessage: \(message)")
+		print("📲 MQTT Client Proxy didPublishMessage from MqttClientProxyManager: \(message)")
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
-		print("📲 MQTT Client Proxy didPublishAck: \(id)")
-		print("didPublishAck")
+		print("📲 MQTT Client Proxy didPublishAck from MqttClientProxyManager: \(id)")
 	}
 	
+
+	
 	func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
+		delegate?.onMqttMessageReceived(message: message)
 		print("📲 MQTT Client Proxy message received on topic: \(message.topic)")
 	}
 	
@@ -181,14 +207,10 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	}
 	
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
-		print("mqttDidPing")
+		//print("mqttDidPing")
 	}
 	
 	func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
-		print("mqttDidReceivePong")
-	}
-	
-	func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-		print("mqttDidDisconnect")
+		//print("mqttDidReceivePong")
 	}
 }
