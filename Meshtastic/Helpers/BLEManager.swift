@@ -37,7 +37,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio = ToRadio()
 		toRadio.mqttClientProxyMessage = proxyMessage
 		let binaryData: Data = try! toRadio.serializedData()
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			print("📲 Sent Mqtt client proxy message to the connected device.")
 		}
@@ -314,7 +314,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
 		
-		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return 0 }
+		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return 0 }
 		
 		var adminPacket = AdminMessage()
 		adminPacket.getDeviceMetadataRequest = true
@@ -340,7 +340,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool) -> Bool {
 		
 		var success = false
-		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return success }
+		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return success }
 		
 		let fromNodeNum = connectedPeripheral.num
 		let routePacket = RouteDiscovery()
@@ -359,7 +359,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			
@@ -370,7 +370,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	}
 	
 	func sendWantConfig() {
-		guard connectedPeripheral!.peripheral.state == CBPeripheralState.connected else { return }
+		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return }
 		
 		if FROMRADIO_characteristic == nil {
 			MeshLogger.log("🚨 \("firmware.version.unsupported".localized)")
@@ -737,7 +737,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
-					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.textmessage.sent %@ %@ %@".localized, String(newMessage.messageId), String(fromUserNum), String(toUserNum))
 												
@@ -782,7 +782,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let binaryData: Data = try! toRadio.serializedData()
 		let logString = String.localizedStringWithFormat("mesh.log.waypoint.sent %@".localized, String(fromNodeNum))
 		MeshLogger.log("📍 \(logString)")
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context!)
@@ -864,7 +864,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
@@ -1087,7 +1087,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						toRadio = ToRadio()
 						toRadio.packet = meshPacket
 						let binaryData: Data = try! toRadio.serializedData()
-						if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+						if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 							self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 							let logString = String.localizedStringWithFormat("mesh.log.channel.sent %@ %d".localized, String(connectedPeripheral.num), chan.index)
 							MeshLogger.log("🎛️ \(logString)")
@@ -1111,7 +1111,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					toRadio = ToRadio()
 					toRadio.packet = meshPacket
 					let binaryData: Data = try! toRadio.serializedData()
-					if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 						self.connectedPeripheral.peripheral.writeValue(binaryData, for: self.TORADIO_characteristic, type: .withResponse)
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
 						MeshLogger.log("📻 \(logString)")
@@ -1588,7 +1588,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			let logString = String.localizedStringWithFormat("mesh.log.cannedmessages.messages.get %@".localized, String(connectedPeripheral.num))
 			MeshLogger.log("🥫 \(logString)")
@@ -1963,7 +1963,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		toRadio.packet = meshPacket
 		let binaryData: Data = try! toRadio.serializedData()
 		
-		if connectedPeripheral!.peripheral.state == CBPeripheralState.connected {
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected{
 			let newMessage = MessageEntity(context: context!)
 			newMessage.messageId =  Int64(meshPacket.id)
 			newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
