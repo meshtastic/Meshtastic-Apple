@@ -62,7 +62,7 @@ struct MQTTConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Toggle(isOn: $proxyToClientEnabled) {
 
-					Label("proxyToClientEnabled", systemImage: "iphone.radiowaves.left.and.right")
+					Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 

@@ -189,11 +189,12 @@
 "module.configuration"="模块配置";
 "mqtt"="MQTT";
 "mqtt.config"="MQTT 配置";
+"mqtt.clientproxy"="MQTT Client Proxy";
 "mqtt.username"="用户名称";
 "name"="名称";
 "network"="网络";
 "network.config"="网络配置";
-"nodes"="节点";
+"nodes %@"="节点 (%@)";
 "no.nodes"="未找到 Meshtastic 节点";
 "not.connected"="未连接到电台";
 "numbers.punctuation"="数字和标点符号";
