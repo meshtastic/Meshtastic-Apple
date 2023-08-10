@@ -195,7 +195,7 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
-		print("didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
+		print("📲 MQTT Client Proxy didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
 	}
 	
 	func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {
@@ -203,10 +203,10 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 	}
 	
 	func mqttDidPing(_ mqtt: CocoaMQTT) {
-		//print("mqttDidPing")
+		print("📲 MQTT Client Proxy mqttDidPing")
 	}
 	
 	func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
-		//print("mqttDidReceivePong")
+		print("📲 MQTT Client Proxy mqttDidReceivePong")
 	}
 }

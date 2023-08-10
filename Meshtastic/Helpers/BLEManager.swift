@@ -24,7 +24,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
 
-		print("onMqttMessageReceived")
+		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
 		if message.topic.contains("/stat/") {
 			return
 		}
