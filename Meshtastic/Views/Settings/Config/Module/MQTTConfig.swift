@@ -15,6 +15,7 @@ struct MQTTConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var enabled = false
+	@State var proxyToClientEnabled = false
 	@State var address = ""
 	@State var username = ""
 	@State var password = ""
@@ -57,6 +58,11 @@ struct MQTTConfig: View {
 				Toggle(isOn: $enabled) {
 
 					Label("enabled", systemImage: "dot.radiowaves.right")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Toggle(isOn: $proxyToClientEnabled) {
+
+					Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -209,6 +215,7 @@ struct MQTTConfig: View {
 				Button(buttonText) {
 					var mqtt = ModuleConfig.MQTTConfig()
 					mqtt.enabled = self.enabled
+					mqtt.proxyToClientEnabled = self.proxyToClientEnabled
 					mqtt.address = self.address
 					mqtt.username = self.username
 					mqtt.password = self.password
@@ -272,6 +279,11 @@ struct MQTTConfig: View {
 				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
 			}
 		}
+		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+			if node != nil && node?.mqttConfig != nil {
+				if newProxyToClientEnabled != node!.mqttConfig!.proxyToClientEnabled { hasChanges = true }
+			}
+		}
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
@@ -291,6 +303,7 @@ struct MQTTConfig: View {
 	
 	func setMqttValues() {
 		self.enabled = (node?.mqttConfig?.enabled ?? false)
+		self.proxyToClientEnabled = (node?.mqttConfig?.proxyToClientEnabled ?? false)
 		self.address = node?.mqttConfig?.address ?? ""
 		self.username = node?.mqttConfig?.username ?? ""
 		self.password = node?.mqttConfig?.password ?? ""

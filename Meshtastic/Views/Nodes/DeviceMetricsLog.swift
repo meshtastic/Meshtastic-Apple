@@ -23,10 +23,10 @@ struct DeviceMetricsLog: View {
 	
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
-				.filter { $0.time != nil && $0.time! >= oneDayAgo! }
+				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 				.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
@@ -48,6 +48,7 @@ struct DeviceMetricsLog: View {
 							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 							.foregroundStyle(batteryChartColor)
 							.interpolationMethod(.cardinal)
+							//.interpolationMethod(.catmullRom(alpha: 1.0))
 							
 							Plot {
 								PointMark(

@@ -189,11 +189,12 @@
 "module.configuration"="Module Configuration";
 "mqtt"="MQTT";
 "mqtt.config"="MQTT Config";
+"mqtt.clientproxy"="MQTT Client Proxy";
 "mqtt.username"="Username";
 "name"="Name";
 "network"="Network";
 "network.config"="Network Config";
-"nodes"="Nodes";
+"nodes %@"="Nodes (%@)";
 "no.nodes"="No Meshtastic Nodes Found";
 "not.connected"="No device connected";
 "numbers.punctuation"="Numbers and Punctuation";

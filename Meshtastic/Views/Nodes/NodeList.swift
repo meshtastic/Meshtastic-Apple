@@ -102,7 +102,7 @@ struct NodeList: View {
 					.padding([.top, .bottom])
 				}
 			 }
-			.navigationTitle("nodes")
+			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)

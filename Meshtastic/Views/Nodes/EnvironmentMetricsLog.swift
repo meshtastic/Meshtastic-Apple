@@ -206,7 +206,7 @@ struct EnvironmentMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user!.longName ?? "Node") Environment Metrics Log"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
 				if case .success = result {
 					print("Environment metrics log download succeeded.")
