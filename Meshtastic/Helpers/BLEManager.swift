@@ -13,7 +13,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MqttClientProxyManagerDelegate
 	func onMqttConnected() {
 		mqttManager.status = .connected
-		print("MQTT Connected")
+		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
+		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
 	
 	func onMqttDisconnected() {
@@ -25,13 +26,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		print("onMqttMessageReceived")
 		if message.topic.contains("/stat/") {
-		//	return
+			return
 		}
 		var proxyMessage = MqttClientProxyMessage()
 		proxyMessage.topic = message.topic
 		proxyMessage.data = Data(message.payload)
 		proxyMessage.retained = message.retained
-		
 		
 		var toRadio: ToRadio!
 		toRadio = ToRadio()
@@ -435,13 +435,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			
 			// Publish mqttClientProxyMessages received on the from radio
 			if decodedInfo.payloadVariant == FromRadio.OneOf_PayloadVariant.mqttClientProxyMessage(decodedInfo.mqttClientProxyMessage) {
-				var message = CocoaMQTTMessage (
+				let message = CocoaMQTTMessage (
 					topic: decodedInfo.mqttClientProxyMessage.topic,
 					payload:  [UInt8](decodedInfo.mqttClientProxyMessage.data),
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
 				print("📲 Publish Mqtt client proxy message received on FromRadio to the Mqtt server \(message)")
-				mqttManager.mqttClient?.publish(message)
+				mqttManager.mqttClientProxy?.publish(message)
 			}
 			
 			switch decodedInfo.packet.decoded.portnum {
