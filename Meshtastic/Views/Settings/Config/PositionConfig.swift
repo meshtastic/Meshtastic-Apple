@@ -302,6 +302,8 @@ struct PositionConfig: View {
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
 						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
+						pc.rxGpio = UInt32(rxGpio)
+						pc.txGpio = UInt32(txGpio)
 						var pf: PositionFlags = []
 						if includeAltitude { pf.insert(.Altitude) }
 						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
