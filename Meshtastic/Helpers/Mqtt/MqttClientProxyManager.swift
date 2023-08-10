@@ -50,10 +50,15 @@ class MqttClientProxyManager {
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		
 		let defaultServerAddress = "mqtt.meshtastic.org"
-		let defaultServerPort = 1883
+		let useSsl = node.mqttConfig?.tlsEnabled == true
+		var defaultServerPort = useSsl ? 8883 : 1883
 		var host = node.mqttConfig?.address
 		if host == nil || host!.isEmpty {
 			host = defaultServerAddress
+		}
+		else if host != nil && host!.contains(":") {
+			host = host!.components(separatedBy: ":")[0]
+			defaultServerPort = Int(host!.components(separatedBy: ":")[1])!
 		}
 		
 		if let host = host {
@@ -65,11 +70,11 @@ class MqttClientProxyManager {
 			let prefix = root! + "/2/c"
 			topic = prefix + "/#"
 			let qos = CocoaMQTTQoS(rawValue :UInt8(1))!
-			connect(host: host, port: port, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
+			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
 		}
 	}
 	
-	func connect(host: String, port: Int, username: String?, password: String?, topic: String?, qos: CocoaMQTTQoS, cleanSession: Bool) {
+	func connect(host: String, port: Int, useSsl: Bool, username: String?, password: String?, topic: String?, qos: CocoaMQTTQoS, cleanSession: Bool) {
 		
 		guard !host.isEmpty else {
 			delegate?.onMqttDisconnected()
@@ -83,6 +88,8 @@ class MqttClientProxyManager {
 		mqttClientProxy = CocoaMQTT(clientID: clientId, host: host, port: UInt16(port))
 		if let mqttClient = mqttClientProxy {
 			
+			mqttClient.enableSSL = useSsl
+			mqttClient.allowUntrustCACertificate = true
 			mqttClient.username = username
 			mqttClient.password = password
 			mqttClient.keepAlive = 60
