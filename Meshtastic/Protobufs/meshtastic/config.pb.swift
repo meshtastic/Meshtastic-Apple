@@ -507,6 +507,7 @@ struct Config {
     var waitBluetoothSecs: UInt32 = 0
 
     ///
+    /// Deprecated in 2.1.X
     /// Mesh Super Deep Sleep Timeout Seconds
     /// While in Light Sleep if this value is exceeded we will lower into super deep sleep
     /// for sds_secs (default 1 year) or a button press

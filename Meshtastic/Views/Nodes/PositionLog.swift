@@ -127,7 +127,7 @@ struct PositionLog: View {
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
 				.padding(.bottom)
-				.padding(.trailing)
+				.padding(.leading)
 				.confirmationDialog(
 					"are.you.sure",
 					isPresented: $isPresentingClearLogConfirm,
@@ -154,7 +154,7 @@ struct PositionLog: View {
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
 				.padding(.bottom)
-				.padding(.leading)
+				.padding(.trailing)
 			}
 			.fileExporter(
 				isPresented: $isExporting,

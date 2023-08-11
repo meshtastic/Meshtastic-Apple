@@ -67,23 +67,24 @@ struct MeshLog: View {
 					 print(error)
 				   }
 			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
+				Label("Clear", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
-			Spacer()
+			.padding(.bottom)
+			.padding(.leading)
 
 			Button {
 				isExporting = true
 			} label: {
-				Label("Save Log", systemImage: "square.and.arrow.down")
+				Label("Save", systemImage: "square.and.arrow.down")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 			Spacer()
 		}
 		.padding(.bottom, 10)
