@@ -18,6 +18,26 @@ body:
       required: true
 
   - type: textarea
+    attributes:
+      label: What did you do?
+      description: |
+        Please include a *minimal* reproduction case. If possible, include a link to a reproduction of the problem in the [ESLint demo](https://eslint.org/demo). Otherwise, include source code, configuration file(s), and any other information about how you're using ESLint. You can use Markdown in this field.
+      value: |
+        <details>
+        <summary>Configuration</summary>
+    
+        ```
+        <!-- Paste your configuration here -->
+        ```
+        </details>
+    
+        ```js
+        <!-- Paste your code here -->
+        ```
+    validations:
+      required: true
+
+  - type: textarea
     id: expected
     attributes:
       label: Expected Behavior
@@ -32,3 +52,13 @@ body:
       description: Tell us what happens instead of the expected behavior.
     validations:
       required: false
+- type: checkboxes
+  attributes:
+    label: Participation
+    options:
+      - label: I am willing to submit a pull request for this issue.
+        required: false
+- type: textarea
+  attributes:
+    label: Additional comments
+    description: Is there anything else that's important for the team to know?
