@@ -40,25 +40,26 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: Expected Behavior
-      description: Tell us what should happen.
+    label: Expected Behavior
+    description: Tell us what should happen.
     validations:
-      required: true
-
+    required: true
+  
   - type: textarea
     id: current
     attributes:
-      label: Current Behavior
-      description: Tell us what happens instead of the expected behavior.
+    label: Current Behavior
+    description: Tell us what happens instead of the expected behavior.
     validations:
-      required: false
-- type: checkboxes
-  attributes:
+    required: false
+    
+  - type: checkboxes
+    attributes:
     label: Participation
     options:
-      - label: I am willing to submit a pull request for this issue.
-        required: false
-- type: textarea
-  attributes:
-    label: Additional comments
-    description: Is there anything else that's important for the team to know?
+    - label: I am willing to submit a pull request for this issue.
+      required: false
+    - type: textarea
+      attributes:
+      label: Additional comments
+      description: Is there anything else that's important for the team to know?
