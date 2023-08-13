@@ -1,0 +1,34 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+  - type: input
+    id: version
+    attributes:
+      label: Firmware Version
+      description: This can be found on the device's screen or via one of the apps.
+      placeholder: x.x.x.yyyyyyy
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Tell us what should happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Behavior
+      description: Tell us what happens instead of the expected behavior.
+    validations:
+      required: false
