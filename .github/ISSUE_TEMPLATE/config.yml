@@ -1,5 +1,1 @@
 blank_issues_enabled: false
-contact_links:
-  - name: Test Flight Beta Link
-    url: https://testflight.apple.com/join/c8nNl8q1
-    about: Please submit bugs through the App Store or TestFlight, bugs submitted as GitHub issues will be closed.
