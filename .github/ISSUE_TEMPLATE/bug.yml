@@ -59,7 +59,7 @@ body:
     options:
     - label: I am willing to submit a pull request for this issue.
       required: false
-    - type: textarea
-      attributes:
+  - type: textarea
+    attributes:
       label: Additional comments
       description: Is there anything else that's important for the team to know?
