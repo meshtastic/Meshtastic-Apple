@@ -22,18 +22,6 @@ body:
       label: What did you do?
       description: |
         Please include a *minimal* reproduction case. You can use Markdown in this field.
-      value: |
-        <details>
-        <summary>Configuration</summary>
-    
-        ```
-        <!-- Paste your configuration here -->
-        ```
-        </details>
-    
-        ```js
-        <!-- Paste your code here -->
-        ```
     validations:
       required: true
 
