@@ -13,7 +13,16 @@ struct ConnectedDevice: View {
     var body: some View {
 
         HStack {
-
+			Image(systemName: "iphone.gen3.radiowaves.left.and.right.circle.fill")
+				.imageScale(.large)
+				.foregroundColor(.green)
+				.symbolRenderingMode(.hierarchical)
+			
+			Image(systemName: "xmark.circle.fill")
+				.imageScale(.large)
+				.foregroundColor(.red)
+				.symbolRenderingMode(.hierarchical)
+			
             if bluetoothOn {
                 if deviceConnected {
                     Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")

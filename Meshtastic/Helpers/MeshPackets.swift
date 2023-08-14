@@ -90,7 +90,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			myInfoEntity.peripheralId = peripheralId
 			myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 			myInfoEntity.rebootCount = Int32(myInfo.rebootCount)
-			myInfoEntity.minAppVersion = Int32(bitPattern: myInfo.minAppVersion)
 			do {
 				try context.save()
 				print("💾 Saved a new myInfo for node number: \(String(myInfo.myNodeNum))")
@@ -105,7 +104,6 @@ func myInfoPacket (myInfo: MyNodeInfo, peripheralId: String, context: NSManagedO
 			fetchedMyInfo[0].peripheralId = peripheralId
 			fetchedMyInfo[0].myNodeNum = Int64(myInfo.myNodeNum)
 			fetchedMyInfo[0].rebootCount = Int32(myInfo.rebootCount)
-			fetchedMyInfo[0].minAppVersion = Int32(bitPattern: myInfo.minAppVersion)
 
 			do {
 				try context.save()

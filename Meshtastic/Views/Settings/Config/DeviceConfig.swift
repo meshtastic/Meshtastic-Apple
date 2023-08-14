@@ -151,7 +151,7 @@ struct DeviceConfig: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
-					.padding()
+					.padding(.leading)
 					.confirmationDialog(
 						"are.you.sure",
 						isPresented: $isPresentingNodeDBResetConfirm,
@@ -174,7 +174,7 @@ struct DeviceConfig: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
-					.padding()
+					.padding(.trailing)
 					.confirmationDialog(
 						"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
 						isPresented: $isPresentingFactoryResetConfirm,
