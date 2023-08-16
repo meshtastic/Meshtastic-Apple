@@ -13,12 +13,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MqttClientProxyManagerDelegate
 	func onMqttConnected() {
 		mqttManager.status = .connected
+		mqttProxyConnected = true
 		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
 	
 	func onMqttDisconnected() {
 		mqttManager.status = .disconnected
+		mqttProxyConnected = false
 		print("MQTT Disconnected")
 	}
 	
@@ -66,6 +68,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var invalidVersion = false
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
+	@Published var mqttProxyConnected: Bool = false
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
