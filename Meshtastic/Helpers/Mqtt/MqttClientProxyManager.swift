@@ -24,10 +24,6 @@ class MqttClientProxyManager {
 	var mqttClientProxy: CocoaMQTT?
 	var topic = "msh/2/c"
 	
-	private init() {
-		
-	}
-	
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		
 		let defaultServerAddress = "mqtt.meshtastic.org"
@@ -140,7 +136,6 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 			}
 			print(errorDescription)
 			delegate?.onMqttError(message: errorDescription)
-			
 			self.disconnect()
 		}
 	}

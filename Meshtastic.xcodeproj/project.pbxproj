@@ -115,6 +115,7 @@
 		DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */; };
 		DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */; };
 		DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC3B273283F411B00AC321C /* LastHeardText.swift */; };
+		DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */; };
 		DDC4D568275499A500A4208E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC4D567275499A500A4208E /* Persistence.swift */; };
 		DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
 		DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */; };
@@ -318,6 +319,8 @@
 		DDC2E18E26CE25FE0042C5E4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DDC2E1A626CEB3400042C5E4 /* LocationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationHelper.swift; sourceTree = "<group>"; };
 		DDC3B273283F411B00AC321C /* LastHeardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastHeardText.swift; sourceTree = "<group>"; };
+		DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionSensorConfig.swift; sourceTree = "<group>"; };
+		DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV16.xcdatamodel; sourceTree = "<group>"; };
 		DDC4D567275499A500A4208E /* Persistence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevel.swift; sourceTree = "<group>"; };
 		DDC94FC329CED7280082EA6E /* MeshtasticDataModelV10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV10.xcdatamodel; sourceTree = "<group>"; };
@@ -517,6 +520,7 @@
 				DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
+				DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
 			);
 			path = Module;
 			sourceTree = "<group>";
@@ -1109,6 +1113,7 @@
 				DDDB444E29F8AB0E00EE2349 /* Int.swift in Sources */,
 				DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */,
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
+				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				DD5E5210298EE33B00D21B61 /* telemetry.pb.swift in Sources */,
 				DD5E5205298EE33B00D21B61 /* mesh.pb.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
@@ -1622,6 +1627,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */,
 				DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */,
 				DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */,
 				DDB75A1F2A10766D006ED576 /* MeshtasticDataModelV13.xcdatamodel */,
@@ -1638,7 +1644,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */;
+			currentVersion = DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

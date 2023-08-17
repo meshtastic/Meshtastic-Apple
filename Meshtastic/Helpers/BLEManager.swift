@@ -10,48 +10,6 @@ import CocoaMQTT
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 	
-	// MqttClientProxyManagerDelegate
-	func onMqttConnected() {
-		//mqttManager.status = .connected
-		mqttProxyConnected = true
-		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
-		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
-	}
-	
-	func onMqttDisconnected() {
-	//	mqttManager.status = .disconnected
-		mqttProxyConnected = false
-		print("MQTT Disconnected")
-	}
-	
-	func onMqttMessageReceived(message: CocoaMQTTMessage) {
-
-		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
-		if message.topic.contains("/stat/") {
-			return
-		}
-		var proxyMessage = MqttClientProxyMessage()
-		proxyMessage.topic = message.topic
-		proxyMessage.data = Data(message.payload)
-		proxyMessage.retained = message.retained
-		
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.mqttClientProxyMessage = proxyMessage
-		let binaryData: Data = try! toRadio.serializedData()
-		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			print("📲 Sent Mqtt client proxy message to the connected device.")
-		}
-
-	}
-	
-	func onMqttError(message: String) {
-		mqttProxyConnected = false
-		print("MQTT Error")
-	}
-	
-
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -316,6 +274,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 	}
 	
+	// MARK:  MqttClientProxyManagerDelegate Methods
+	func onMqttConnected() {
+		mqttProxyConnected = true
+		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
+		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+	}
+	
+	func onMqttDisconnected() {
+		mqttProxyConnected = false
+		print("MQTT Disconnected")
+	}
+	
+	func onMqttMessageReceived(message: CocoaMQTTMessage) {
+
+		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
+		if message.topic.contains("/stat/") {
+			return
+		}
+		var proxyMessage = MqttClientProxyMessage()
+		proxyMessage.topic = message.topic
+		proxyMessage.data = Data(message.payload)
+		proxyMessage.retained = message.retained
+		
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.mqttClientProxyMessage = proxyMessage
+		let binaryData: Data = try! toRadio.serializedData()
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			print("📲 Sent Mqtt client proxy message to the connected device.")
+		}
+	}
+	
+	func onMqttError(message: String) {
+		mqttProxyConnected = false
+		print("📲 Mqtt Client Proxy onMqttError: \(message)")
+	}
+	
+	// MARK: Protobuf Methods
 	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
 		
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return 0 }
