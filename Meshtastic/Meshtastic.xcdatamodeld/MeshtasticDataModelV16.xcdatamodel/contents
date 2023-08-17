@@ -40,7 +40,14 @@
         </uniquenessConstraints>
     </entity>
     <entity name="DetectionSensorConfigEntity" representedClassName="DetectionSensorConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="detectionTriggeredHigh" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="enabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="minimumBroadcastSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="monitorPin" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="sendBell" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="stateBroadcastSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="usePullup" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="detectionSensorConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="detectionSensorConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="DeviceConfigEntity" representedClassName="DeviceConfigEntity" syncable="YES" codeGenerationType="class">
