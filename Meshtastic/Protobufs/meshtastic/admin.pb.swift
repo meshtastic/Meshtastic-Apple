@@ -742,6 +742,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case ambientlightingConfig // = 10
+
+    ///
+    /// TODO: REPLACE
+    case detectionsensorConfig // = 11
     case UNRECOGNIZED(Int)
 
     init() {
@@ -761,6 +765,7 @@ struct AdminMessage {
       case 8: self = .remotehardwareConfig
       case 9: self = .neighborinfoConfig
       case 10: self = .ambientlightingConfig
+      case 11: self = .detectionsensorConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -778,6 +783,7 @@ struct AdminMessage {
       case .remotehardwareConfig: return 8
       case .neighborinfoConfig: return 9
       case .ambientlightingConfig: return 10
+      case .detectionsensorConfig: return 11
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -816,6 +822,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .remotehardwareConfig,
     .neighborinfoConfig,
     .ambientlightingConfig,
+    .detectionsensorConfig,
   ]
 }
 
@@ -1428,6 +1435,7 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "REMOTEHARDWARE_CONFIG"),
     9: .same(proto: "NEIGHBORINFO_CONFIG"),
     10: .same(proto: "AMBIENTLIGHTING_CONFIG"),
+    11: .same(proto: "DETECTIONSENSOR_CONFIG"),
   ]
 }
 

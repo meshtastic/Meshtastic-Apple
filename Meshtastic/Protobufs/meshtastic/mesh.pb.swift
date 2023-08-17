@@ -107,6 +107,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case nanoG2Ultra // = 18
 
   ///
+  /// LoRAType device: https://loratype.org/
+  case loraType // = 19
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -232,6 +236,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 16: self = .tloraT3S3
     case 17: self = .nanoG1Explorer
     case 18: self = .nanoG2Ultra
+    case 19: self = .loraType
     case 25: self = .stationG1
     case 26: self = .rak11310
     case 32: self = .loraRelayV1
@@ -281,6 +286,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tloraT3S3: return 16
     case .nanoG1Explorer: return 17
     case .nanoG2Ultra: return 18
+    case .loraType: return 19
     case .stationG1: return 25
     case .rak11310: return 26
     case .loraRelayV1: return 32
@@ -335,6 +341,7 @@ extension HardwareModel: CaseIterable {
     .tloraT3S3,
     .nanoG1Explorer,
     .nanoG2Ultra,
+    .loraType,
     .stationG1,
     .rak11310,
     .loraRelayV1,
@@ -462,7 +469,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
   case transmitFailed // = 8
 
   ///
-  /// We detected that the main CPU voltage dropped below the minumum acceptable value
+  /// We detected that the main CPU voltage dropped below the minimum acceptable value
   case brownout // = 9
 
   /// Selftest of SX1262 radio chip failed 
@@ -2496,6 +2503,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     16: .same(proto: "TLORA_T3_S3"),
     17: .same(proto: "NANO_G1_EXPLORER"),
     18: .same(proto: "NANO_G2_ULTRA"),
+    19: .same(proto: "LORA_TYPE"),
     25: .same(proto: "STATION_G1"),
     26: .same(proto: "RAK11310"),
     32: .same(proto: "LORA_RELAY_V1"),
