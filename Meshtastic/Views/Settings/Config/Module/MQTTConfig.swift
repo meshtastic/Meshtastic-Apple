@@ -187,7 +187,7 @@ struct MQTTConfig: View {
 				Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
 					.font(.caption2)
 			}
-			Text("WiFi or Ethernet must also be enabled for MQTT to work. You can set uplink and downlink for each channel.")
+			Text("You can set uplink and downlink for each channel.")
 				.font(.callout)
 		}
 		.scrollDismissesKeyboard(.interactively)

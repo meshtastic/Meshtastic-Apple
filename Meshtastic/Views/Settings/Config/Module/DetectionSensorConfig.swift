@@ -20,9 +20,9 @@ struct DetectionSensorConfig: View {
 	@State var name: String = ""
 	@State var detectionTriggeredHigh: Bool = true
 	@State var usePullup: Bool = false
-	@State var minimumBroadcastSecs = UInt32(0)
-	@State var stateBroadcastSecs = UInt32(0)
-	@State var monitorPin = UInt32(0)
+	@State var minimumBroadcastSecs = 0
+	@State var stateBroadcastSecs = 0
+	@State var monitorPin = 0
 
 	var body: some View {
 
@@ -102,22 +102,25 @@ struct DetectionSensorConfig: View {
 			}
 				
 			Section(header: Text("update.interval")) {
+				Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
+					Text("Default").tag(0)
+					ForEach(UpdateIntervals.allCases) { ui in
+						Text(ui.description).tag(ui.rawValue)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
 				Text("Mininum time between detection broadcasts. Default is 45 seconds.")
 					.font(.caption)
-				Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
+				
+				Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
+					Text("Default").tag(0)
 					ForEach(UpdateIntervals.allCases) { ui in
-						Text(ui.description)
+						Text(ui.description).tag(ui.rawValue)
 					}
 				}
 				.pickerStyle(DefaultPickerStyle())
 				Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
 					.font(.caption)
-				Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
-					ForEach(UpdateIntervals.allCases) { ui in
-						Text(ui.description)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
 				
 			}
 		}
@@ -230,11 +233,11 @@ struct DetectionSensorConfig: View {
 		self.enabled = (node?.detectionSensorConfig?.enabled ?? false)
 		self.sendBell = (node?.detectionSensorConfig?.sendBell ?? false)
 		self.name = (node?.detectionSensorConfig?.name ?? "")
-		self.monitorPin = UInt32(node?.detectionSensorConfig?.monitorPin ?? 0)
+		self.monitorPin = Int(node?.detectionSensorConfig?.monitorPin ?? 0)
 		self.usePullup = (node?.detectionSensorConfig?.usePullup ?? false)
 		self.detectionTriggeredHigh = (node?.detectionSensorConfig?.detectionTriggeredHigh ?? true)
-		self.minimumBroadcastSecs = UInt32(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 45)
-		self.stateBroadcastSecs = UInt32(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0)
+		self.minimumBroadcastSecs = Int(node?.detectionSensorConfig?.minimumBroadcastSecs ?? 45)
+		self.stateBroadcastSecs = Int(node?.detectionSensorConfig?.stateBroadcastSecs ?? 0)
 
 		self.hasChanges = false
 	}
