@@ -103,7 +103,6 @@ struct DetectionSensorConfig: View {
 				
 			Section(header: Text("update.interval")) {
 				Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
-					Text("Default").tag(0)
 					ForEach(UpdateIntervals.allCases) { ui in
 						Text(ui.description).tag(ui.rawValue)
 					}
@@ -113,7 +112,7 @@ struct DetectionSensorConfig: View {
 					.font(.caption)
 				
 				Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
-					Text("Default").tag(0)
+					Text("Never").tag(0)
 					ForEach(UpdateIntervals.allCases) { ui in
 						Text(ui.description).tag(ui.rawValue)
 					}

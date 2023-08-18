@@ -578,6 +578,47 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	}
 }
 
+func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
+	
+	if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+		// RequestResponse
+		switch storeAndForwardMessage.rr {
+			
+		case .unset:
+			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerError:
+			MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerHeartbeat:
+			// Query any messages since the heartbeat.period. Send their ids to the store and forward node.
+			MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerPing:
+			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerPong:
+			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerBusy:
+			MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerHistory:
+			MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .routerStats:
+			MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientError:
+			MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientHistory:
+			MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientStats:
+			MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientPing:
+			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientPong:
+			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .clientAbort:
+			MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		case .UNRECOGNIZED(_):
+			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+		}
+	}
+}
+
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
