@@ -867,7 +867,19 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				waypoint.created = Date()
 				do {
 					try context.save()
-					print("💾 Updated Node Waypoint App Packet For: \(waypoint.id)")
+					print("💾 Added Node Waypoint App Packet For: \(waypoint.id)")
+					let manager = LocalNotificationManager()
+					let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+					let latitude = Double(waypoint.latitudeI) / 1e7
+					let longitude = Double(waypoint.longitudeI) / 1e7
+					manager.notifications = [
+						Notification(
+							id: ("notification.id.\(waypoint.id)"),
+							title: "New Waypoint Received",
+							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
+							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")")
+					]
+					manager.schedule()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError
