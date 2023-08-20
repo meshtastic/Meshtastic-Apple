@@ -505,7 +505,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
-					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion ?? "unknown".localized
+					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
 					
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					
