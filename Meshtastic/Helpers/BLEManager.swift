@@ -40,6 +40,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
+	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
@@ -552,7 +553,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .storeForwardApp:
 				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .rangeTestApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				if wantRangeTestPackets {
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				}
+				else {
+					MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				}
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 			case .textMessageCompressedApp:
@@ -600,7 +606,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				
-				/// MQTT Client Proxy
+				/// MQTT Client Proxy and RangeTest interest
 				if connectedPeripheral.num > 0 {
 					
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -608,12 +614,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					do {
 						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
-							
 							//Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
 								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
 							}
 						}
+						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
+							wantRangeTestPackets = true;
+						}
+						
 					} catch {
 						print("Failed to find a node info for the connected node")
 					}
