@@ -32,13 +32,20 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 	case M5STACK
 	case HELTECV3
 	case HELTECWSLV3
+	case NANOG2ULTRA
+	case RAK11310
+	case RPIPICO
+	case HELTECWIRELESSTRACKER
+	case HELTECWIRELESSPAPER
+	case TDECK
+	case TWATCHS3
 
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
 
 		case .UNSET:
-			return NSLocalizedString("unset", comment: "UNSET")
+			return "unset".localized
 		case .TLORAV2:
 			return "TLoRa V2"
 		case .TLORAV1:
@@ -83,6 +90,20 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return "Heltec V3"
 		case .HELTECWSLV3:
 			return "Heltec wireless stick lite V3"
+		case .NANOG2ULTRA:
+			return "Nano G2 Ultra"
+		case .RAK11310:
+			return "RAK 11310 Pi Pico"
+		case .RPIPICO:
+			return "Pi Pico"
+		case .HELTECWIRELESSTRACKER:
+			return "Heltec Wireless Tracker"
+		case .HELTECWIRELESSPAPER:
+			return "Heltec Wireless Paper"
+		case .TDECK:
+			return "T-Deck"
+		case .TWATCHS3:
+			return "T-Watch S3"
 		}
 
 	}
@@ -135,6 +156,20 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return ["firmware-heltec-v3-"]
 		case .HELTECWSLV3:
 			return ["firmware-heltec-wsl-v3-"]
+		case .NANOG2ULTRA:
+			return ["firmware-nano-g2-ultra-"]
+		case .RAK11310:
+			return ["firmware-rak11310-"]
+		case .RPIPICO:
+			return ["firmware-pico-"]
+		case .HELTECWIRELESSTRACKER:
+			return ["firmware-heltec-wireless-tracker-"]
+		case .HELTECWIRELESSPAPER:
+			return ["firmware-heltec-wireless-paper-"]
+		case .TDECK:
+			return ["firmware-t-echo-"]
+		case .TWATCHS3:
+			return ["firmware-t-watch-s3-"]
 		}
 
 	}
@@ -188,6 +223,20 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return HardwarePlatforms.esp32
 		case .HELTECWSLV3:
 			return HardwarePlatforms.esp32
+		case .NANOG2ULTRA:
+			return HardwarePlatforms.nrf52
+		case .RAK11310:
+			return HardwarePlatforms.piPico
+		case .RPIPICO:
+			return HardwarePlatforms.piPico
+		case .HELTECWIRELESSTRACKER:
+			return HardwarePlatforms.esp32
+		case .HELTECWIRELESSPAPER:
+			return HardwarePlatforms.esp32
+		case .TDECK:
+			return HardwarePlatforms.esp32
+		case .TWATCHS3:
+			return HardwarePlatforms.esp32
 		}
 	}
 	func protoEnumValue() -> HardwareModel {
@@ -240,6 +289,20 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 			return HardwareModel.heltecV3
 		case .HELTECWSLV3:
 			return HardwareModel.heltecWslV3
+		case .NANOG2ULTRA:
+			return HardwareModel.nanoG2Ultra
+		case .RAK11310:
+			return HardwareModel.rak11310
+		case .RPIPICO:
+			return HardwareModel.rpiPico
+		case .HELTECWIRELESSTRACKER:
+			return HardwareModel.heltecWirelessTracker
+		case .HELTECWIRELESSPAPER:
+			return HardwareModel.heltecWirelessPaper
+		case .TDECK:
+			return HardwareModel.tDeck
+		case .TWATCHS3:
+			return HardwareModel.tWatchS3
 		}
 	}
 }

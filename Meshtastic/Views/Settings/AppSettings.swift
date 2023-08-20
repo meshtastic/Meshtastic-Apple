@@ -8,11 +8,14 @@ struct AppSettings: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	@ObservedObject var tileManager = OfflineTileManager.shared
+	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
 	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
+	@State private var isPresentingDeleteMapTilesConfirm = false
 	
 	var body: some View {
 		VStack {
@@ -35,78 +38,110 @@ struct AppSettings: View {
 					let speed = Measurement(value: locationHelper.locationManager.location?.speed ?? 0, unit: UnitSpeed.kilometersPerHour)
 					HStack {
 						Label("Accuracy \(accuracy.formatted())", systemImage: "scope")
-							.font(.callout)
+							.font(.footnote)
 						Label("Sats \(LocationHelper.satsInView)", systemImage: "sparkles")
-							.font(.callout)
+							.font(.footnote)
 					}
-					Label("Coordinates \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.longitude ?? 0))", systemImage: "mappin")
-							.font(.callout)
-							.textSelection(.enabled)
+					Label("Coordinate \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.latitude ?? 0)), \(String(format: "%.5f", locationHelper.locationManager.location?.coordinate.longitude ?? 0))", systemImage: "mappin")
+						.font(.footnote)
+						.textSelection(.enabled)
 					if locationHelper.locationManager.location?.verticalAccuracy ?? 0 > 0 {
 						Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-							.font(.callout)
+							.font(.footnote)
 					}
 					if locationHelper.locationManager.location?.courseAccuracy ?? 0 > 0 {
 						Label("Heading \(String(format: "%.2f", locationHelper.locationManager.location?.course ?? 0))°", systemImage: "location.circle")
-							.font(.callout)
+							.font(.footnote)
 					}
 					if locationHelper.locationManager.location?.speedAccuracy ?? 0 > 0 {
 						Label("Speed \(speed.formatted())", systemImage: "speedometer")
-							.font(.callout)
+							.font(.footnote)
 					}
 					
+				}
+				Section(header: Text("Location Settings")) {
+					
 					Toggle(isOn: $provideLocation) {
-						
 						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.provideLocation.toggle()
-						UserDefaults.provideLocation = self.provideLocation
-					}
 					
 					if UserDefaults.provideLocation {
-						
-						Picker("update.interval", selection: $provideLocationInterval) {
-							ForEach(LocationUpdateInterval.allCases) { lu in
-								Text(lu.description)
+						VStack {
+							Picker("update.interval", selection: $provideLocationInterval) {
+								ForEach(LocationUpdateInterval.allCases) { lu in
+									Text(lu.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
+								UserDefaults.provideLocationInterval = newProvideLocationInterval
+							}
+							Text("phone.gps.interval.description")
+								.font(.caption2)
+								.foregroundColor(.gray)
+						}
+					}
+					
+				}
+				Section(header: Text("App Data")) {
+					
+					Button {
+						isPresentingCoreDataResetConfirm = true
+					} label: {
+						Label("clear.app.data", systemImage: "trash")
+							.foregroundColor(.red)
+					}
+					.confirmationDialog(
+						"are.you.sure",
+						isPresented: $isPresentingCoreDataResetConfirm,
+						titleVisibility: .visible
+					) {
+						Button("Erase all app data?", role: .destructive) {
+							bleManager.disconnectPeripheral()
+							clearCoreDataDatabase(context: context)
+							UserDefaults.standard.reset()
+							UserDefaults.standard.synchronize()
+						}
+					}
+				}
+				if totalDownloadedTileSize != "0MB" {
+					Section(header: Text("Map Tile Data")) {
+						Button {
+							isPresentingDeleteMapTilesConfirm = true
+						} label: {
+							Label("\("map.tiles.delete".localized) (\(totalDownloadedTileSize))", systemImage: "trash")
+								.foregroundColor(.red)
+						}
+						.confirmationDialog(
+							"are.you.sure",
+							isPresented: $isPresentingDeleteMapTilesConfirm,
+							titleVisibility: .visible
+						) {
+							Button("Delete all map tiles?", role: .destructive) {
+								tileManager.removeAll()
+								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+								print("delete all tiles")
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
-						.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
-							UserDefaults.provideLocationInterval = newProvideLocationInterval
-						}
 						
-						Text("phone.gps.interval.description")
-							.font(.caption)
-							.foregroundColor(.gray)
+						ForEach(MapTileServer.allCases, id: \.self) { tsl in
+							
+							Button {
+								tileManager.remove(for: tsl)
+								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+							} label: {
+								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+									.foregroundColor(.red)
+									.font(.footnote)
+							}
+						}
 					}
 				}
 			}
-			HStack {
-				Button {
-					isPresentingCoreDataResetConfirm = true
-				} label: {
-					Label("clear.app.data", systemImage: "trash")
-						.foregroundColor(.red)
-				}
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"are.you.sure",
-					isPresented: $isPresentingCoreDataResetConfirm,
-					titleVisibility: .visible
-				) {
-					Button("Erase all app data?", role: .destructive) {
-						bleManager.disconnectPeripheral()
-						clearCoreDataDatabase(context: context)
-						UserDefaults.standard.reset()
-						UserDefaults.standard.synchronize()
-					}
-				}
-			}
+			.onAppear(perform: {
+				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+			})
 		}
 		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:
@@ -119,8 +154,8 @@ struct AppSettings: View {
 		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
 			UserDefaults.meshtasticUsername = newMeshtasticUsername
 		}
-		.onChange(of: provideLocation) { _ in
-			
+		.onChange(of: provideLocation) { newProvideLocation in
+			UserDefaults.provideLocation = newProvideLocation
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}

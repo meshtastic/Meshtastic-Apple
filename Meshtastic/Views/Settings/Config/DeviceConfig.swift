@@ -26,6 +26,7 @@ struct DeviceConfig: View {
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
 	@State var doubleTapAsButtonPress = false
+	@State var isManaged = false
 	
 	var body: some View {
 		
@@ -88,6 +89,13 @@ struct DeviceConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Treat double tap on supported accelerometers as a user button press.")
 						.font(.caption)
+					
+					Toggle(isOn: $isManaged) {
+						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
+						.font(.caption)
 				}
 				
 				Section(header: Text("Debug")) {
@@ -143,7 +151,7 @@ struct DeviceConfig: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
-					.padding()
+					.padding(.leading)
 					.confirmationDialog(
 						"are.you.sure",
 						isPresented: $isPresentingNodeDBResetConfirm,
@@ -166,7 +174,7 @@ struct DeviceConfig: View {
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
-					.padding()
+					.padding(.trailing)
 					.confirmationDialog(
 						"All device and app data will be deleted. You will also need to forget your devices under Settings > Bluetooth.",
 						isPresented: $isPresentingFactoryResetConfirm,
@@ -204,8 +212,8 @@ struct DeviceConfig: View {
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-					let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+					let nodeName = node?.user?.longName ?? "unknown".localized
+					let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 					Button(buttonText) {
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 						if connectedNode != nil {
@@ -217,6 +225,7 @@ struct DeviceConfig: View {
 							dc.buzzerGpio = UInt32(buzzerGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+							dc.isManaged = isManaged
 							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
@@ -247,58 +256,49 @@ struct DeviceConfig: View {
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-				if node != nil && connectedNode != nil {
+				if node != nil && connectedNode != nil && connectedNode?.user != nil {
 					_ = bleManager.requestDeviceConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
 		.onChange(of: deviceRole) { newRole in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newRole != node!.deviceConfig!.role { hasChanges = true }
 			}
 		}
 		.onChange(of: serialEnabled) { newSerial in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newSerial != node!.deviceConfig!.serialEnabled { hasChanges = true }
 			}
 		}
 		.onChange(of: debugLogEnabled) { newDebugLog in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newDebugLog != node!.deviceConfig!.debugLogEnabled {	hasChanges = true }
 			}
 		}
 		.onChange(of: buttonGPIO) { newButtonGPIO in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newButtonGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: buzzerGPIO) { newBuzzerGPIO in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: rebroadcastMode) { newRebroadcastMode in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
 			}
 		}
 		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
-			
-			if node != nil && node!.deviceConfig != nil {
-				
+			if node != nil && node?.deviceConfig != nil {
 				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
+			}
+		}
+		.onChange(of: isManaged) { newIsManaged in
+			if node != nil && node?.deviceConfig != nil {
+				if newIsManaged != node!.deviceConfig!.isManaged { hasChanges = true }
 			}
 		}
 	}
@@ -309,7 +309,8 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
-		self.doubleTapAsButtonPress = node!.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false
 	}
 }

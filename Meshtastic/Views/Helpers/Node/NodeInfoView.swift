@@ -28,44 +28,41 @@ struct NodeInfoView: View {
 		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 75, fontSize: 24, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 105 : 55, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				Divider()
 				VStack {
 					if node.user != nil {
 						Image(hwModelString)
 							.resizable()
-							.aspectRatio(contentMode: .fill)
+							.aspectRatio(contentMode: .fit)
 							.frame(width: 100, height: 100)
 							.cornerRadius(5)
 
 						Text(String(hwModelString))
 							.foregroundColor(.gray)
-							.font(.largeTitle).fixedSize()
+							.font(.title).fixedSize()
 					}
 				}
-
-				if node.snr > 0 {
-					Divider()
+				Divider()
+				if node.snr != 0 {
 					VStack(alignment: .center) {
-
-						Image(systemName: "waveform.path")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-							.padding(.bottom, 10)
-						Text("SNR").font(.largeTitle).fixedSize()
-						Text("\(String(format: "%.2f", node.snr)) dB")
-							.font(.largeTitle)
-							.foregroundColor(.gray)
-							.fixedSize()
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
+						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+						Text("Signal \(signalStrength.description)").font(.title)
+						Text("SNR \(String(format: "%.2f", node.snr))dB")
+							.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
+							.font(.title3)
+						Text("RSSI \(node.rssi)dB")
+							.foregroundColor(getRssiColor(rssi: node.rssi))
+							.font(.title3)
 					}
+					Divider()
 				}
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
 					
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-					Divider()
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 						if mostRecent?.voltage ?? 0 > 0.0 {
@@ -109,20 +106,6 @@ struct NodeInfoView: View {
 				Divider()
 				VStack {
 					HStack {
-						Image(systemName: "globe")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-						Text("MAC Address: ").font(.title)
-
-					}
-					Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address"))
-						.font(.title)
-						.foregroundColor(.gray)
-				}
-				Divider()
-				VStack {
-					HStack {
 						Image(systemName: "clock.badge.checkmark.fill")
 							.font(.title)
 							.foregroundColor(.accentColor)
@@ -142,41 +125,39 @@ struct NodeInfoView: View {
 			HStack {
 
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
-				Divider()
-				VStack {
-					if node.user != nil {
-						Image(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset"))
+				
+				if node.user != nil {
+					Divider()
+					VStack {
+						Image(node.user!.hwModel ?? "unset".localized)
 							.resizable()
+							.aspectRatio(contentMode: .fit)
 							.frame(width: 75, height: 75)
 							.cornerRadius(5)
-						Text(String(node.user!.hwModel ?? NSLocalizedString("unset", comment: "Unset")))
-							.font(.callout).fixedSize()
+						Text(String(node.user!.hwModel ?? "unset".localized))
+							.font(.caption2).fixedSize()
 					}
 				}
-
-				if node.snr > 0 {
+				if node.snr != 0 {
 					Divider()
 					VStack(alignment: .center) {
-
-						Image(systemName: "waveform.path")
-							.font(.title)
-							.foregroundColor(.accentColor)
-							.symbolRenderingMode(.hierarchical)
-						Text("SNR").font(.title2).fixedSize()
-						Text("\(String(format: "%.2f", node.snr)) dB")
-							.font(.title2)
-							.foregroundColor(.gray)
-							.fixedSize()
+						let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
+						LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+						Text("Signal \(signalStrength.description)").font(.footnote)
+						Text("SNR \(String(format: "%.2f", node.snr))dB")
+							.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
+							.font(.caption2)
+						Text("RSSI \(node.rssi)dB")
+							.foregroundColor(getRssiColor(rssi: node.rssi))
+							.font(.caption2)
 					}
 				}
-
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
-					
-					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					Divider()
+					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
 						if mostRecent?.voltage ?? 0 > 0 {
@@ -213,16 +194,6 @@ struct NodeInfoView: View {
 					Text(String(node.num)).font(.title3).foregroundColor(.gray)
 				}
 			}
-			Divider()
-			HStack {
-				Image(systemName: "globe")
-					.font(.headline)
-					.foregroundColor(.accentColor)
-					.symbolRenderingMode(.hierarchical)
-				Text("MAC Address: ")
-				Text(String(node.user?.macaddr?.macAddressString ?? "not a valid mac address")).foregroundColor(.gray)
-			}
-			.padding([.bottom], 10)
 			Divider()
 		}
 

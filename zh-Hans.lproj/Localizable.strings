@@ -113,6 +113,7 @@
 "interval.twenty.seconds"="二十秒";
 "interval.twentyfive.seconds"="二十五秒";
 "interval.thirty.seconds"="三十秒";
+"interval.fortyfive.seconds"="Forty Five Seconds";
 "interval.one.minute"="一分钟";
 "interval.two.minutes"="两分钟";
 "interval.five.minutes"="五分钟";
@@ -137,6 +138,7 @@
 "lora.config"="LoRa 配置";
 "map"="Mesh 地图";
 "map.centering"="Centering";
+"map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="地图类型";
 "map.usertrackingmode"="User tracking mode";
@@ -187,15 +189,18 @@
 "module.configuration"="模块配置";
 "mqtt"="MQTT";
 "mqtt.config"="MQTT 配置";
+"mqtt.clientproxy"="MQTT Client Proxy";
 "mqtt.username"="用户名称";
 "name"="名称";
 "network"="网络";
 "network.config"="网络配置";
 "nodes"="节点";
+"nodes %@"="节点 (%@)";
 "no.nodes"="未找到 Meshtastic 节点";
 "not.connected"="未连接到电台";
 "numbers.punctuation"="数字和标点符号";
 "off"="关闭";
+"offline"="Offline";
 "on.boot"="仅在启动时";
 "options"="选项";
 "password"="密码";

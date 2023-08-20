@@ -40,19 +40,19 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .client:
-			return NSLocalizedString("device.role.client", comment: "Client (default) - App connected client.")
+			return "device.role.client".localized
 		case .clientMute:
-			return NSLocalizedString("device.role.clientmute", comment: "Client Mute - Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh.")
+			return "device.role.clientmute".localized
 		case .router:
-			return NSLocalizedString("device.role.router", comment: "Router -  Mesh packets will prefer to be routed over this node. Assumes device will operate in a standalone manner while placed in a location with a coverage advantage. WARNING: The BLE/Wi-Fi radios and the OLED screen will be put to sleep.")
+			return "device.role.router".localized
 		case .routerClient:
-			return NSLocalizedString("device.role.routerclient", comment: "Router Client - Hybrid of the Client and Router roles. Similar to Router, except the Router Client can be used as both a Router and an app connected Client. BLE/Wi-Fi and OLED screen will not be put to sleep.")
+			return "device.role.routerclient".localized
 		case .repeater:
-			return NSLocalizedString("device.role.repeater", comment: "Repeater - Mesh packets will prefer to be routed over this node. This role eliminates unnecessary overhead such as NodeInfo, DeviceTelemetry, and any other mesh packet, resulting in the device not appearing as part of the network.  Please see Rebroadcast Mode for additional settings specific to this role.")
+			return "device.role.repeater".localized
 		case .tracker:
-			return NSLocalizedString("device.role.tracker", comment: "Tracker - For use with devices intended as a GPS tracker. Position packets sent from this device will be higher priority, with position broadcasting every two minutes. Smart Position Broadcast will default to off.")
+			return "device.role.tracker".localized
 		case .sensor:
-			return NSLocalizedString("device.role.sensor", comment: "Sensor - For use with remote telemetry sensors. Setting this role will turn on environment telemetry. Telemetry packets sent from this device will be higher priority, with telemetry broadcasting every 7 minutes")
+			return "device.role.sensor".localized
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {

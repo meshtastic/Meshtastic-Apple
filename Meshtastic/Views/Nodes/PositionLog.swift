@@ -61,7 +61,7 @@ struct PositionLog: View {
 						Text("\(String(format: "%.2f", position.snr)) dB")
 					}
 					TableColumn("Time Stamp") { position in
-						Text(position.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+						Text(position.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 					}
 					.width(min: 180)
 				}
@@ -121,12 +121,13 @@ struct PositionLog: View {
 				Button(role: .destructive) {
 					isPresentingClearLogConfirm = true
 				} label: {
-					Label("Clear Log", systemImage: "trash.fill")
+					Label("clear.log", systemImage: "trash.fill")
 				}
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
-				.padding()
+				.padding(.bottom)
+				.padding(.leading)
 				.confirmationDialog(
 					"are.you.sure",
 					isPresented: $isPresentingClearLogConfirm,
@@ -143,10 +144,8 @@ struct PositionLog: View {
 				}
 				
 				Button {
-					
 					exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 					isExporting = true
-					
 				} label: {
 					
 					Label("save", systemImage: "square.and.arrow.down")
@@ -154,7 +153,8 @@ struct PositionLog: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
-				.padding()
+				.padding(.bottom)
+				.padding(.trailing)
 			}
 			.fileExporter(
 				isPresented: $isExporting,

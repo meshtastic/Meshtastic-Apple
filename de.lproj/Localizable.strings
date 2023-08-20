@@ -113,6 +113,7 @@
 "interval.twenty.seconds"="Zwanzig Sekunden";
 "interval.twentyfive.seconds"="Fünfundzwanzig Sekunden";
 "interval.thirty.seconds"="Dreißig Sekunden";
+"interval.fortyfive.seconds"="Forty Five Seconds";
 "interval.one.minute"="Eine Minute";
 "interval.two.minutes"="Zwei Minutes";
 "interval.five.minutes"="Fünf Minutes";
@@ -137,6 +138,7 @@
 "lora.config"="LoRa Einstellungen";
 "map"="Mesh Karte";
 "map.centering"="Centering";
+"map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.type"="kartentyp";
 "map.usertrackingmode"="User tracking mode";
@@ -187,15 +189,18 @@
 "module.configuration"="Modul Konfiguration";
 "mqtt"="MQTT";
 "mqtt.config"="MQTT Config";
+"mqtt.clientproxy"="MQTT Client Proxy";
 "mqtt.username"="Benutzername";
 "name"="Name";
 "network"="Netzwerk";
 "network.config"="Netzwerkeinstellungen";
 "nodes"="Nodes";
+"nodes %@"="Nodes (%@)";
 "no.nodes"="Keine Meshtastic Nodes gefunden";
 "not.connected"="Kein Gerät verbunden";
 "numbers.punctuation"="Ziffern und Interpunktion";
 "off"="Aus";
+"offline"="Offline";
 "on.boot"="Nur beim Starten";
 "options"="Optionen";
 "password"="Passwort";

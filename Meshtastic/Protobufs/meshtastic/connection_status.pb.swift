@@ -98,7 +98,7 @@ struct WifiConnectionStatus {
   mutating func clearStatus() {self._status = nil}
 
   ///
-  /// WiFi access point SSID 
+  /// WiFi access point SSID
   var ssid: String = String()
 
   ///

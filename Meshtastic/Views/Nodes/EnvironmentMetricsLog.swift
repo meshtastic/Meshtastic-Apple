@@ -27,7 +27,10 @@ struct EnvironmentMetricsLog: View {
 		let chartData = environmentMetrics
 				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 				.sorted { $0.time! < $1.time! }
-
+		let locale = NSLocale.current as NSLocale
+		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
+		var format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+		
 		NavigationStack {
 			
 			if chartData.count > 0 {
@@ -69,7 +72,7 @@ struct EnvironmentMetricsLog: View {
 					.chartXAxis(content: {
 						AxisMarks(position: .top)
 					})
-					.chartYScale(domain: 0...125)
+					.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
 					.chartForegroundStyleScale([
 						"Temperature" : .clear
 					])
@@ -101,17 +104,17 @@ struct EnvironmentMetricsLog: View {
 						Text("\(String(format: "%.2f", em.voltage))")
 					}
 					TableColumn("timestamp") { em in
-						Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+						Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 					}
 					.width(min: 180)
 				}
 			} else {
 				ScrollView {
 					let columns = [
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
@@ -145,8 +148,8 @@ struct EnvironmentMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", em.gasResistance))")
 									.font(.caption)
-								Text(em.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
-									.font(.caption2)
+								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+									.font(.caption)
 							}
 						}
 					}
@@ -160,12 +163,13 @@ struct EnvironmentMetricsLog: View {
 			Button(role: .destructive) {
 				isPresentingClearLogConfirm = true
 			} label: {
-				Label("Clear Log", systemImage: "trash.fill")
+				Label("clear.log", systemImage: "trash.fill")
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.leading)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -186,7 +190,8 @@ struct EnvironmentMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 		}
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)
@@ -201,7 +206,7 @@ struct EnvironmentMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user!.longName ?? "Node") Environment Metrics Log"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") Environment Metrics Log"),
 			onCompletion: { result in
 				if case .success = result {
 					print("Environment metrics log download succeeded.")

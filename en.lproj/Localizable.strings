@@ -45,7 +45,7 @@
 "channel.utilization"="Channel Utilization";
 "channels"="Channels";
 "clear.app.data"="Clear App Data";
-"clear.log"="Clear Log";
+"clear.log"="Clear";
 "close"="Close";
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";
@@ -57,6 +57,8 @@
 "current"="Current";
 "default"="Default";
 "delete"="Delete";
+"detection.sensor"="Detection Sensor";
+"detection.sensor.config"="Detection Sensor Config";
 "device"="Device";
 "device.config"="Device Config";
 "device.metrics.delete"="Delete all device metrics?";
@@ -113,6 +115,7 @@
 "interval.twenty.seconds"="Twenty Seconds";
 "interval.twentyfive.seconds"="Twenty Five Seconds";
 "interval.thirty.seconds"="Thirty Seconds";
+"interval.fortyfive.seconds"="Forty Five Seconds";
 "interval.one.minute"="One Minute";
 "interval.two.minutes"="Two Minutes";
 "interval.five.minutes"="Five Minutes";
@@ -138,6 +141,7 @@
 "map"="Mesh Map";
 "map.type"="Default Type";
 "map.centering"="Centering Mode";
+"map.tiles.delete"="Delete All Map Tiles";
 "map.recentering"="Automatic Re-centering";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.follow"="Follow";
@@ -187,15 +191,18 @@
 "module.configuration"="Module Configuration";
 "mqtt"="MQTT";
 "mqtt.config"="MQTT Config";
+"mqtt.clientproxy"="MQTT Client Proxy";
 "mqtt.username"="Username";
 "name"="Name";
 "network"="Network";
 "network.config"="Network Config";
 "nodes"="Nodes";
+"nodes %@"="Nodes (%@)";
 "no.nodes"="No Meshtastic Nodes Found";
 "not.connected"="No device connected";
 "numbers.punctuation"="Numbers and Punctuation";
 "off"="Off";
+"offline"="Offline";
 "on.boot"="On Boot Only";
 "options"="Options";
 "password"="Password";
@@ -204,7 +211,7 @@
 "position"="Position";
 "position.config"="Position Config";
 "preferred.radio"="Preferred Radio";
-"provide.location"="Provide location to mesh";
+"provide.location"="Share location";
 "radio.configuration"="Radio Configuration";
 "range.test"="Range Test";
 "range.test.config"="Range Test Config";

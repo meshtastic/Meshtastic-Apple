@@ -23,6 +23,7 @@ struct AdminMessageList: View {
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
+
 		List {
 			if user != nil {
 
@@ -30,7 +31,7 @@ struct AdminMessageList: View {
 
 					VStack(alignment: .leading) {
 
-						Text("\(am.adminDescription ?? NSLocalizedString("unknown", comment: "Unknown"))")
+						Text("\(am.adminDescription ?? "unknown".localized)")
 							.font(.caption)
 
 						Text("Sent \(Date(timeIntervalSince1970: TimeInterval(am.messageTimestamp)).formattedDate(format: dateFormatString))")
@@ -47,7 +48,7 @@ struct AdminMessageList: View {
 										.foregroundColor(am.receivedACK ? .gray : .red)
 										.font(.caption2)
 								} else {
-									Text("Implicit ACK from Unknown Node")
+									Text("Implicit ACK from another node")
 										.foregroundColor(.orange)
 										.font(.caption2)
 								}

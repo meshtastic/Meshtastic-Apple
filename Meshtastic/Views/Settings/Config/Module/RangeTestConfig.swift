@@ -72,13 +72,13 @@ struct RangeTestConfig: View {
 						.font(.caption)
 				}
 			}
-			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil || !(node != nil && node?.metadata?.hasWifi ?? false))
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {
 				Label("save", systemImage: "square.and.arrow.down")
 			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !(node?.metadata?.hasWifi ?? false))
+			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
@@ -88,8 +88,8 @@ struct RangeTestConfig: View {
 				isPresented: $isPresentingSaveConfirm,
 				titleVisibility: .visible
 			) {
-				let nodeName = node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown")
-				let buttonText = String.localizedStringWithFormat(NSLocalizedString("save.config %@", comment: "Save Config for %@"), nodeName)
+				let nodeName = node?.user?.longName ?? "unknown".localized
+				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 				Button(buttonText) {
 
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)

@@ -28,6 +28,24 @@ extension String {
 		return base64url
 	}
 
+	var localized: String { NSLocalizedString(self, comment: self) }
+	
+	
+	
+	func isEmoji() -> Bool {
+		// Emoji are no more than 4 bytes
+		if self.count > 4 {
+			return false
+		} else {
+			let characters = Array(self)
+			if characters.count <= 0 {
+				return false
+			} else {
+				return characters[0].isEmoji
+			}
+		}
+	}
+	
 	func onlyEmojis() -> Bool {
 		return count > 0 && !contains { !$0.isEmoji }
 	}

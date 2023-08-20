@@ -135,6 +135,46 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			return "Short Range - Fast"
 		}
 	}
+	var name: String {
+		switch self {
+		case .longFast:
+			return "LongFast"
+		case .longSlow:
+			return "LongSlow"
+		case .longModerate:
+			return "LongModerate"
+		case .vLongSlow:
+			return "VLongFast"
+		case .medSlow:
+			return "MediumSlow"
+		case .medFast:
+			return "MediumFast"
+		case .shortSlow:
+			return "ShortSlow"
+		case .shortFast:
+			return "ShortFast"
+		}
+	}
+	func snrLimit() -> Float {
+		switch self {
+		case .longFast:
+			return -17.5
+		case .longSlow:
+			return -7.5
+		case .longModerate:
+			return -17.5
+		case .vLongSlow:
+			return -20
+		case .medSlow:
+			return -15
+		case .medFast:
+			return -12.5
+		case .shortSlow:
+			return -10
+		case .shortFast:
+			return -7.5
+		}
+	}
 	func protoEnumValue() -> Config.LoRaConfig.ModemPreset {
 		switch self {
 		case .longFast:

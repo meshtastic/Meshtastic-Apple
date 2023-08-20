@@ -23,10 +23,10 @@ struct DeviceMetricsLog: View {
 	
 	var body: some View {
 		
-		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
+		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
-				.filter { $0.time != nil && $0.time! >= oneDayAgo! }
+				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 				.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
@@ -47,7 +47,7 @@ struct DeviceMetricsLog: View {
 							.accessibilityLabel("Line Series")
 							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 							.foregroundStyle(batteryChartColor)
-							.interpolationMethod(.cardinal)
+							.interpolationMethod(.catmullRom(alpha: 1.0))
 							
 							Plot {
 								PointMark(
@@ -112,18 +112,20 @@ struct DeviceMetricsLog: View {
 						Text("\(String(format: "%.2f", dm.airUtilTx))%")
 					}
 					TableColumn("timestamp") { dm in
-						Text(dm.time?.formattedDate(format: dateFormatString) ?? NSLocalizedString("unknown.age", comment: ""))
+						Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 					}
 					.width(min: 180)
 				}
 			} else {
 				ScrollView {
 					let columns = [
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						//GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 45), spacing: 0.1),
+						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
-						GridItem(spacing: 0)
+						GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
+						
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {
@@ -159,7 +161,7 @@ struct DeviceMetricsLog: View {
 								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.caption)
 								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
-									.font(.caption2)
+									.font(.caption)
 							}
 						}
 					}
@@ -177,7 +179,8 @@ struct DeviceMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.leading)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -191,6 +194,7 @@ struct DeviceMetricsLog: View {
 					}
 				}
 			}
+
 			Button {
 				exportString = telemetryToCsvFile(telemetry: deviceMetrics, metricsType: 0)
 				isExporting = true
@@ -200,7 +204,8 @@ struct DeviceMetricsLog: View {
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
-			.padding()
+			.padding(.bottom)
+			.padding(.trailing)
 		}
 		.navigationTitle("device.metrics.log")
 		.navigationBarTitleDisplayMode(.inline)
@@ -215,7 +220,7 @@ struct DeviceMetricsLog: View {
 			isPresented: $isExporting,
 			document: CsvDocument(emptyCsv: exportString),
 			contentType: .commaSeparatedText,
-			defaultFilename: String("\(node.user?.longName ?? "Node") \(NSLocalizedString("device.metrics.log", comment: "Device Metrics Log"))"),
+			defaultFilename: String("\(node.user?.longName ?? "Node") \("device.metrics.log".localized)"),
 			onCompletion: { result in
 				if case .success = result {
 					print("Device metrics log download succeeded.")

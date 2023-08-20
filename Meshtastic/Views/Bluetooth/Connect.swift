@@ -49,20 +49,18 @@ struct Connect: View {
 						Section(header: Text("connected.radio").font(.title)) {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 								HStack {
-									Image(systemName: "antenna.radiowaves.left.and.right")
-										.resizable()
-										.symbolRenderingMode(.hierarchical)
-										.foregroundColor(.green)
-										.frame(width: 60, height: 60)
-										.padding(.trailing)
+									VStack(alignment: .center) {
+										CircleText(text: node?.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90, fontSize: (node?.user?.shortName ?? "???").isEmoji() ? 52 : (node?.user?.shortName?.count ?? 0 == 4  ? 26 : 36), textColor: UIColor(hex: UInt32(node?.num ?? 0)).isLight() ? .black : .white )
+									}
+									.padding(.trailing)
 									VStack(alignment: .leading) {
 										if node != nil {
 											Text(bleManager.connectedPeripheral.longName).font(.title2)
 										}
-										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? NSLocalizedString("unknown", comment: "Unknown"))")
+										Text("ble.name").font(.callout)+Text(": \(bleManager.connectedPeripheral.peripheral.name ?? "unknown".localized)")
 											.font(.callout).foregroundColor(Color.gray)
 										if node != nil {
-											Text("firmware.version").font(.callout)+Text(": \(node?.myInfo?.firmwareVersion ?? NSLocalizedString("unknown", comment: "Unknown"))")
+											Text("firmware.version").font(.callout)+Text(": \(node?.metadata?.firmwareVersion ?? "unknown".localized)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if bleManager.isSubscribed {
@@ -74,7 +72,8 @@ struct Connect: View {
 										}
 									}
 								}
-								.font(.caption).foregroundColor(Color.gray)
+								.font(.caption)
+								.foregroundColor(Color.gray)
 								.padding([.top, .bottom])
 								.swipeActions {
 
@@ -110,9 +109,7 @@ struct Connect: View {
 										#endif
 										Text("Num: \(String(node!.num))")
 										Text("Short Name: \(node?.user?.shortName ?? "????")")
-										Text("Long Name: \(node?.user?.longName ?? NSLocalizedString("unknown", comment: "Unknown"))")
-										Text("Max Channels: \(String(node?.myInfo?.maxChannels ?? 0))")
-										Text("Bitrate: \(String(format: "%.2f", node?.myInfo?.bitrate ?? 0.00))")
+										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 									}
 								}
@@ -254,7 +251,7 @@ struct Connect: View {
 			.navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 									ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????", mqttProxyConnected: bleManager.mqttProxyConnected)
 			})
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {

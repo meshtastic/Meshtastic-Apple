@@ -205,6 +205,26 @@ struct AdminMessage {
   }
 
   ///
+  /// Get the mesh's nodes with their available gpio pins for RemoteHardware module use
+  var getNodeRemoteHardwarePinsRequest: Bool {
+    get {
+      if case .getNodeRemoteHardwarePinsRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .getNodeRemoteHardwarePinsRequest(newValue)}
+  }
+
+  ///
+  /// Respond with the mesh's nodes with their available gpio pins for RemoteHardware module use
+  var getNodeRemoteHardwarePinsResponse: NodeRemoteHardwarePinsResponse {
+    get {
+      if case .getNodeRemoteHardwarePinsResponse(let v)? = payloadVariant {return v}
+      return NodeRemoteHardwarePinsResponse()
+    }
+    set {payloadVariant = .getNodeRemoteHardwarePinsResponse(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   var setOwner: User {
     get {
@@ -409,6 +429,12 @@ struct AdminMessage {
     /// Setup a node for licensed amateur (ham) radio operation
     case setHamMode(HamParameters)
     ///
+    /// Get the mesh's nodes with their available gpio pins for RemoteHardware module use
+    case getNodeRemoteHardwarePinsRequest(Bool)
+    ///
+    /// Respond with the mesh's nodes with their available gpio pins for RemoteHardware module use
+    case getNodeRemoteHardwarePinsResponse(NodeRemoteHardwarePinsResponse)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -530,6 +556,14 @@ struct AdminMessage {
       }()
       case (.setHamMode, .setHamMode): return {
         guard case .setHamMode(let l) = lhs, case .setHamMode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getNodeRemoteHardwarePinsRequest, .getNodeRemoteHardwarePinsRequest): return {
+        guard case .getNodeRemoteHardwarePinsRequest(let l) = lhs, case .getNodeRemoteHardwarePinsRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.getNodeRemoteHardwarePinsResponse, .getNodeRemoteHardwarePinsResponse): return {
+        guard case .getNodeRemoteHardwarePinsResponse(let l) = lhs, case .getNodeRemoteHardwarePinsResponse(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.setOwner, .setOwner): return {
@@ -700,6 +734,18 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case remotehardwareConfig // = 8
+
+    ///
+    /// TODO: REPLACE
+    case neighborinfoConfig // = 9
+
+    ///
+    /// TODO: REPLACE
+    case ambientlightingConfig // = 10
+
+    ///
+    /// TODO: REPLACE
+    case detectionsensorConfig // = 11
     case UNRECOGNIZED(Int)
 
     init() {
@@ -717,6 +763,9 @@ struct AdminMessage {
       case 6: self = .cannedmsgConfig
       case 7: self = .audioConfig
       case 8: self = .remotehardwareConfig
+      case 9: self = .neighborinfoConfig
+      case 10: self = .ambientlightingConfig
+      case 11: self = .detectionsensorConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -732,6 +781,9 @@ struct AdminMessage {
       case .cannedmsgConfig: return 6
       case .audioConfig: return 7
       case .remotehardwareConfig: return 8
+      case .neighborinfoConfig: return 9
+      case .ambientlightingConfig: return 10
+      case .detectionsensorConfig: return 11
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -768,6 +820,9 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .cannedmsgConfig,
     .audioConfig,
     .remotehardwareConfig,
+    .neighborinfoConfig,
+    .ambientlightingConfig,
+    .detectionsensorConfig,
   ]
 }
 
@@ -803,12 +858,29 @@ struct HamParameters {
   init() {}
 }
 
+///
+/// Response envelope for node_remote_hardware_pins
+struct NodeRemoteHardwarePinsResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Nodes and their respective remote hardware GPIO pins
+  var nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension AdminMessage: @unchecked Sendable {}
 extension AdminMessage.OneOf_PayloadVariant: @unchecked Sendable {}
 extension AdminMessage.ConfigType: @unchecked Sendable {}
 extension AdminMessage.ModuleConfigType: @unchecked Sendable {}
 extension HamParameters: @unchecked Sendable {}
+extension NodeRemoteHardwarePinsResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -835,6 +907,8 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     16: .standard(proto: "get_device_connection_status_request"),
     17: .standard(proto: "get_device_connection_status_response"),
     18: .standard(proto: "set_ham_mode"),
+    19: .standard(proto: "get_node_remote_hardware_pins_request"),
+    20: .standard(proto: "get_node_remote_hardware_pins_response"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
@@ -1026,6 +1100,27 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .setHamMode(v)
+        }
+      }()
+      case 19: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getNodeRemoteHardwarePinsRequest(v)
+        }
+      }()
+      case 20: try {
+        var v: NodeRemoteHardwarePinsResponse?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .getNodeRemoteHardwarePinsResponse(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .getNodeRemoteHardwarePinsResponse(v)
         }
       }()
       case 32: try {
@@ -1239,6 +1334,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .setHamMode(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
     }()
+    case .getNodeRemoteHardwarePinsRequest?: try {
+      guard case .getNodeRemoteHardwarePinsRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 19)
+    }()
+    case .getNodeRemoteHardwarePinsResponse?: try {
+      guard case .getNodeRemoteHardwarePinsResponse(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+    }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
@@ -1330,6 +1433,9 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "CANNEDMSG_CONFIG"),
     7: .same(proto: "AUDIO_CONFIG"),
     8: .same(proto: "REMOTEHARDWARE_CONFIG"),
+    9: .same(proto: "NEIGHBORINFO_CONFIG"),
+    10: .same(proto: "AMBIENTLIGHTING_CONFIG"),
+    11: .same(proto: "DETECTIONSENSOR_CONFIG"),
   ]
 }
 
@@ -1378,6 +1484,38 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.txPower != rhs.txPower {return false}
     if lhs.frequency != rhs.frequency {return false}
     if lhs.shortName != rhs.shortName {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePinsResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_remote_hardware_pins"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.nodeRemoteHardwarePins) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.nodeRemoteHardwarePins.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.nodeRemoteHardwarePins, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: NodeRemoteHardwarePinsResponse, rhs: NodeRemoteHardwarePinsResponse) -> Bool {
+    if lhs.nodeRemoteHardwarePins != rhs.nodeRemoteHardwarePins {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -18,11 +18,11 @@ enum ConfigPresets: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .unset:
-			return NSLocalizedString("canned.messages.preset.manual", comment: "Manual Configuration")
+			return "canned.messages.preset.manual".localized
 		case .rakRotaryEncoder:
-			return NSLocalizedString("canned.messages.preset.rakrotary", comment: "RAK Rotary Encoder Module")
+			return "canned.messages.preset.rakrotary".localized
 		case .cardKB:
-			return NSLocalizedString("canned.messages.preset.cardkb", comment: "M5 Stack Card KB / RAK Keypad")
+			return "canned.messages.preset.cardkb".localized
 		}
 	}
 }
@@ -44,21 +44,21 @@ enum InputEventChars: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .none:
-			return NSLocalizedString("inputevent.none", comment: "None")
+			return "inputevent.none".localized
 		case .up:
-			return NSLocalizedString("inputevent.up", comment: "Up")
+			return "inputevent.up".localized
 		case .down:
-			return NSLocalizedString("inputevent.down", comment: "Down")
+			return "inputevent.down".localized
 		case .left:
-			return NSLocalizedString("inputevent.left", comment: "Left")
+			return "inputevent.left".localized
 		case .right:
-			return NSLocalizedString("inputevent.right", comment: "Right")
+			return "inputevent.right".localized
 		case .select:
-			return NSLocalizedString("inputevent.select", comment: "Select")
+			return "inputevent.select".localized
 		case .back:
-			return NSLocalizedString("inputevent.back", comment: "Back")
+			return "inputevent.back".localized
 		case .cancel:
-			return NSLocalizedString("inputevent.cancel", comment: "Cancel")
+			return "inputevent.cancel".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.CannedMessageConfig.InputEventChar {

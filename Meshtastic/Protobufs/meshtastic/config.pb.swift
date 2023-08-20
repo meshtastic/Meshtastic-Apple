@@ -181,6 +181,11 @@ struct Config {
     /// Treat double tap interrupt on supported accelerometers as a button press if set to true
     var doubleTapAsButtonPress: Bool = false
 
+    ///
+    /// If true, device is considered to be "managed" by a mesh administrator
+    /// Clients should then limit available configuration and administrative options inside the user interface
+    var isManaged: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -199,7 +204,7 @@ struct Config {
 
       ///
       /// Router device role.
-      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps. 
+      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps.
       ///   The wifi/ble radios and the oled screen will be put to sleep.
       ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
@@ -212,7 +217,7 @@ struct Config {
       ///
       /// Repeater device role
       ///   Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
-      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate. 
+      ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate.
       case repeater // = 4
 
       ///
@@ -363,7 +368,7 @@ struct Config {
     var broadcastSmartMinimumDistance: UInt32 = 0
 
     ///
-    /// The minumum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
+    /// The minimum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
     var broadcastSmartMinimumIntervalSecs: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -502,13 +507,6 @@ struct Config {
     var waitBluetoothSecs: UInt32 = 0
 
     ///
-    /// Mesh Super Deep Sleep Timeout Seconds
-    /// While in Light Sleep if this value is exceeded we will lower into super deep sleep 
-    /// for sds_secs (default 1 year) or a button press
-    /// 0 for default of two hours, MAXUINT for disabled
-    var meshSdsTimeoutSecs: UInt32 = 0
-
-    ///
     /// Super Deep Sleep Seconds
     /// While in Light Sleep if mesh_sds_timeout_secs is exceeded we will lower into super deep sleep
     /// for this value (default 1 year) or a button press
@@ -527,6 +525,10 @@ struct Config {
     /// While in light sleep when we receive packets on the LoRa radio we will wake and handle them and stay awake in no BLE mode for this value
     /// 0 for default of 10 seconds
     var minWakeSecs: UInt32 = 0
+
+    ///
+    /// I2C address of INA_2XX to use for reading device battery voltage
+    var deviceBatteryInaAddress: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -669,7 +671,7 @@ struct Config {
     var autoScreenCarouselSecs: UInt32 = 0
 
     ///
-    /// If this is set, the displayed compass will always point north. if unset, the old behaviour 
+    /// If this is set, the displayed compass will always point north. if unset, the old behaviour
     /// (top of display is heading direction) is used.
     var compassNorthTop: Bool = false
 
@@ -973,9 +975,9 @@ struct Config {
     var channelNum: UInt32 = 0
 
     ///
-    /// If true, duty cycle limits will be exceeded and thus you're possibly not following 
+    /// If true, duty cycle limits will be exceeded and thus you're possibly not following
     /// the local regulations if you're not a HAM.
-    /// Has no effect if the duty cycle of the used region is 100%. 
+    /// Has no effect if the duty cycle of the used region is 100%.
     var overrideDutyCycle: Bool = false
 
     ///
@@ -1592,6 +1594,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     6: .standard(proto: "rebroadcast_mode"),
     7: .standard(proto: "node_info_broadcast_secs"),
     8: .standard(proto: "double_tap_as_button_press"),
+    9: .standard(proto: "is_managed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1608,6 +1611,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 6: try { try decoder.decodeSingularEnumField(value: &self.rebroadcastMode) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.nodeInfoBroadcastSecs) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.doubleTapAsButtonPress) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       default: break
       }
     }
@@ -1638,6 +1642,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.doubleTapAsButtonPress != false {
       try visitor.visitSingularBoolField(value: self.doubleTapAsButtonPress, fieldNumber: 8)
     }
+    if self.isManaged != false {
+      try visitor.visitSingularBoolField(value: self.isManaged, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1650,6 +1657,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.rebroadcastMode != rhs.rebroadcastMode {return false}
     if lhs.nodeInfoBroadcastSecs != rhs.nodeInfoBroadcastSecs {return false}
     if lhs.doubleTapAsButtonPress != rhs.doubleTapAsButtonPress {return false}
+    if lhs.isManaged != rhs.isManaged {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1790,10 +1798,10 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     2: .standard(proto: "on_battery_shutdown_after_secs"),
     3: .standard(proto: "adc_multiplier_override"),
     4: .standard(proto: "wait_bluetooth_secs"),
-    5: .standard(proto: "mesh_sds_timeout_secs"),
     6: .standard(proto: "sds_secs"),
     7: .standard(proto: "ls_secs"),
     8: .standard(proto: "min_wake_secs"),
+    9: .standard(proto: "device_battery_ina_address"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1806,10 +1814,10 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.onBatteryShutdownAfterSecs) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.adcMultiplierOverride) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.waitBluetoothSecs) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.meshSdsTimeoutSecs) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.sdsSecs) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.lsSecs) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.minWakeSecs) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.deviceBatteryInaAddress) }()
       default: break
       }
     }
@@ -1828,9 +1836,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.waitBluetoothSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.waitBluetoothSecs, fieldNumber: 4)
     }
-    if self.meshSdsTimeoutSecs != 0 {
-      try visitor.visitSingularUInt32Field(value: self.meshSdsTimeoutSecs, fieldNumber: 5)
-    }
     if self.sdsSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.sdsSecs, fieldNumber: 6)
     }
@@ -1840,6 +1845,9 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.minWakeSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.minWakeSecs, fieldNumber: 8)
     }
+    if self.deviceBatteryInaAddress != 0 {
+      try visitor.visitSingularUInt32Field(value: self.deviceBatteryInaAddress, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1848,10 +1856,10 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.onBatteryShutdownAfterSecs != rhs.onBatteryShutdownAfterSecs {return false}
     if lhs.adcMultiplierOverride != rhs.adcMultiplierOverride {return false}
     if lhs.waitBluetoothSecs != rhs.waitBluetoothSecs {return false}
-    if lhs.meshSdsTimeoutSecs != rhs.meshSdsTimeoutSecs {return false}
     if lhs.sdsSecs != rhs.sdsSecs {return false}
     if lhs.lsSecs != rhs.lsSecs {return false}
     if lhs.minWakeSecs != rhs.minWakeSecs {return false}
+    if lhs.deviceBatteryInaAddress != rhs.deviceBatteryInaAddress {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

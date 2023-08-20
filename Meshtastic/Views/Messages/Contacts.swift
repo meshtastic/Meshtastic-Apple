@@ -148,11 +148,11 @@ struct Contacts: View {
 								HStack {
 									VStack {
 										HStack {
-											CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 60, fontSize: 18, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+											CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 60, fontSize: (user.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
 												.padding(.trailing, 5)
 											VStack {
 												HStack {
-													Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
+													Text(user.longName ?? "unknown".localized).font(.headline)
 													Spacer()
 													if user.messageList.count > 0 {
 														VStack(alignment: .trailing) {

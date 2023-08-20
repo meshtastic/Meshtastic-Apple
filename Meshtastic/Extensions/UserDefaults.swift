@@ -10,31 +10,21 @@ import Foundation
 extension UserDefaults {
 	
 	enum Keys: String, CaseIterable {
-		case hasBeenLaunched
 		case meshtasticUsername
 		case preferredPeripheralId
 		case provideLocation
 		case provideLocationInterval
-		case meshMapType
-		case meshMapCenteringMode
+		case mapLayer
 		case meshMapRecentering
-		case meshMapCustomTileServer
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case enableOfflineMaps
+		case mapTileServer
+		case mapTilesAboveLabels
 	}
 
 	func reset() {
 		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
-	}
-	
-	static var hasBeenLaunched: Bool {
-		get {
-			let result = UserDefaults.standard.bool(forKey: "hasBeenLaunched")
-			UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
-			return result
-		} set {
-			UserDefaults.standard.set(newValue, forKey: "hasBeenLaunched")
-		}
 	}
 	
 	static var meshtasticUsername: String {
@@ -57,9 +47,7 @@ extension UserDefaults {
 	
 	static var provideLocation: Bool {
 		get {
-			let result = UserDefaults.standard.bool(forKey: "provideLocation")
-			UserDefaults.standard.set(true, forKey: "provideLocation")
-			return result
+			UserDefaults.standard.bool(forKey: "provideLocation")
 		} set {
 			UserDefaults.standard.set(newValue, forKey: "provideLocation")
 		}
@@ -74,12 +62,12 @@ extension UserDefaults {
 		}
 	}
 	
-	static var mapType: Int {
+	static var mapLayer: MapLayer {
 		get {
-			UserDefaults.standard.integer(forKey: "meshMapType")
+			MapLayer(rawValue: UserDefaults.standard.string(forKey: "mapLayer") ?? MapLayer.standard.rawValue) ?? MapLayer.standard
 		}
 		set {
-			UserDefaults.standard.set(newValue, forKey: "meshMapType")
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapLayer")
 		}
 	}
 	
@@ -118,13 +106,50 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "enableOfflineMaps")
 		}
 	}
-	
-	static var mapTileServer: String {
+	static var enableOfflineMapsMBTiles: Bool {
 		get {
-			UserDefaults.standard.string(forKey: "mapTileServer") ?? ""
+			UserDefaults.standard.bool(forKey: "enableOfflineMapsMBTiles")
 		}
 		set {
-			UserDefaults.standard.set(newValue, forKey: "mapTileServer")
+			UserDefaults.standard.set(newValue, forKey: "enableOfflineMapsMBTiles")
+		}
+	}
+	
+	static var mapTileServer: MapTileServer {
+		get {
+			
+			MapTileServer(rawValue: UserDefaults.standard.string(forKey: "mapTileServer") ?? MapTileServer.openStreetMap.rawValue) ?? MapTileServer.openStreetMap
+		}
+		set {
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapTileServer")
+		}
+	}
+	
+	static var enableOverlayServer: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableOverlayServer")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableOverlayServer")
+		}
+	}
+	
+	static var mapOverlayServer: MapOverlayServer {
+		get {
+			
+			MapOverlayServer(rawValue: UserDefaults.standard.string(forKey: "mapOverlayServer") ?? MapOverlayServer.baseReReflectivityCurrent.rawValue) ?? MapOverlayServer.baseReReflectivityCurrent
+		}
+		set {
+			UserDefaults.standard.set(newValue.rawValue, forKey: "mapOverlayServer")
+		}
+	}
+	
+	static var mapTilesAboveLabels: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "mapTilesAboveLabels")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "mapTilesAboveLabels")
 		}
 	}
 }

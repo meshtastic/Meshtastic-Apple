@@ -16,7 +16,9 @@ struct NodeDetail: View {
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
-	@State private var mapType: MKMapType = .standard
+	//@State private var mapType: MKMapType = .standard
+	@State private var selectedMapLayer: MapLayer = .standard
+	@State var mapRect: MKMapRect = MKMapRect()
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
@@ -52,7 +54,7 @@ struct NodeDetail: View {
 	var body: some View {
 
 		let hwModelString = node.user?.hwModel ?? "UNSET"
-
+		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
@@ -68,8 +70,12 @@ struct NodeDetail: View {
 										if wpId > 0 {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
-									}, positions: lastTenThousand, waypoints: Array(waypoints),
-									mapViewType: mapType,
+									},
+									//visibleMapRect: $mapRect,
+									selectedMapLayer: selectedMapLayer,
+									positions: lastTenThousand,
+									waypoints: Array(waypoints),
+									//mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
@@ -78,15 +84,17 @@ struct NodeDetail: View {
 								VStack(alignment: .leading) {
 									Spacer()
 									HStack(alignment: .bottom, spacing: 1) {
-
-										Picker("Map Type", selection: $mapType) {
-											ForEach(MeshMapTypes.allCases) { map in
-												Text(map.description)
-													.tag(map.MKMapTypeValue())
+										Picker("Map Type", selection: $selectedMapLayer) {
+											ForEach(MapLayer.allCases, id: \.self) { layer in
+												if layer == MapLayer.offline && UserDefaults.enableOfflineMaps {
+													Text(layer.localized)
+												} else if layer != MapLayer.offline {
+													Text(layer.localized)
+												}
 											}
 										}
-										.onChange(of: (mapType)) { newMapType in
-											UserDefaults.mapType = Int(newMapType.rawValue)
+										.onChange(of: (selectedMapLayer)) { newMapLayer in
+											UserDefaults.mapLayer = newMapLayer
 										}
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.pickerStyle(.menu)
@@ -145,7 +153,7 @@ struct NodeDetail: View {
 						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
 
 							HStack {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
+								
 								if node.metadata?.canShutdown ?? false {
 
 									Button(action: {
@@ -215,7 +223,7 @@ struct NodeDetail: View {
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				})
-				.navigationBarTitle(String(node.user?.longName ?? NSLocalizedString("unknown", comment: "")), displayMode: .inline)
+				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {
 					ConnectedDevice(
@@ -225,7 +233,7 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					mapType = MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
+					//mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {

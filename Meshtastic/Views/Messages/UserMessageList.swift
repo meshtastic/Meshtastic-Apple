@@ -182,7 +182,7 @@ struct UserMessageList: View {
 												if message.realACK {
 													Text("\(ackErrorVal?.display ?? "Empty Ack Error")").font(.caption2).foregroundColor(.gray)
 												} else {
-													Text("Implicit ACK from Unknown Node").font(.caption2).foregroundColor(.orange)
+													Text("Implicit ACK from another node").font(.caption2).foregroundColor(.orange)
 												}
 											} else if currentUser && message.ackError == 0 {
 												// Empty Error
@@ -204,7 +204,6 @@ struct UserMessageList: View {
 								.id(message.messageId)
 								.alert(isPresented: $showDeleteMessageAlert) {
 									Alert(title: Text("Are you sure you want to delete this message?"), message: Text("This action is permanent."), primaryButton: .destructive(Text("Delete")) {
-										print("OK button tapped")
 										if deleteMessageId > 0 {
 											let message = user.messageList.first(where: { $0.messageId == deleteMessageId })
 											context.delete(message!)
@@ -254,7 +253,7 @@ struct UserMessageList: View {
 						.symbolRenderingMode(.hierarchical)
 						.imageScale(.large).foregroundColor(.accentColor)
 				}
-				ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+				ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 					.frame(width: 130)
 					.padding(5)
 					.font(.subheadline)
@@ -302,7 +301,7 @@ struct UserMessageList: View {
 										.symbolRenderingMode(.hierarchical)
 										.imageScale(.large).foregroundColor(.accentColor)
 								}
-								ProgressView("\(NSLocalizedString("bytes", comment: "")): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
+								ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
 									.frame(width: 130)
 									.padding(5)
 									.font(.subheadline)
@@ -354,7 +353,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white ).fixedSize()
-					Text(user.longName ?? NSLocalizedString("unknown", comment: "Unknown")).font(.headline)
+					Text(user.longName ?? "unknown".localized).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
