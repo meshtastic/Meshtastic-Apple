@@ -877,7 +877,9 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							id: ("notification.id.\(waypoint.id)"),
 							title: "New Waypoint Received",
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
-							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")")
+							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+							target: "waypoint"
+						)
 					]
 					manager.schedule()
 				} catch {
