@@ -746,6 +746,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			newMessage.receivedTimestamp = Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi

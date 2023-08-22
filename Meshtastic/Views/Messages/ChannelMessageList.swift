@@ -197,6 +197,10 @@ struct ChannelMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.font(.caption2).foregroundColor(.red)
+										} else if isDetectionSensorMessage {
+											let timeStamp = message.messageTimestamp <= 0 ? message.receivedTimestamp : message.messageTimestamp
+											let messageDate = Date(timeIntervalSince1970: TimeInterval(timeStamp))
+											Text(" \(messageDate.formattedDate(format: dateFormatString))").font(.caption2).foregroundColor(.gray)
 										}
 									}
 								}
