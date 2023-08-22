@@ -22,16 +22,17 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void)
 	{
 		let userInfo = response.notification.request.content.userInfo
-		if let targetValue = userInfo["target"] as? String, targetValue == "waypoint"
-		{
-			openWaypoint()
+		let targetValue = userInfo["target"] as? String
+		if targetValue == "map" {
+			AppState.shared.tabSelection = Tab.map
 		}
-		
+		else if targetValue == "message" {
+			AppState.shared.tabSelection = Tab.messages
+		}
+		else if targetValue == "node" {
+			AppState.shared.tabSelection = Tab.nodes
+		}
+					
 		completionHandler()
-	}
-
-	private func openWaypoint()
-	{
-		AppState.shared.tabSelection = Tab.map
 	}
 }
