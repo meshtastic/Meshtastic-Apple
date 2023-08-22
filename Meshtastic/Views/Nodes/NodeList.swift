@@ -12,6 +12,16 @@ import SwiftUI
 import CoreLocation
 
 struct NodeList: View {
+	
+	@State private var searchText = ""
+	var nodesQuery: Binding<String> {
+		 Binding {
+			 searchText
+		 } set: { newValue in
+			 searchText = newValue
+			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS %@", newValue)
+		 }
+	 }
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -116,5 +126,7 @@ struct NodeList: View {
 			   Text("select.node")
 		   }
 	   }
+	   .searchable(text: nodesQuery, prompt: "Find a node")
 	}
 }
+
