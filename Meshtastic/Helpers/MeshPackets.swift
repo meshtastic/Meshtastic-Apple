@@ -750,6 +750,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
+			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
