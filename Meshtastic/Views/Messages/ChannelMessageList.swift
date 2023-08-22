@@ -63,12 +63,24 @@ struct ChannelMessageList: View {
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 									let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
+									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
+									
 									Text(markdownText)
 										.tint(linkBlue)
 										.padding(10)
 										.foregroundColor(.white)
 										.background(currentUser ? .accentColor : Color(.gray))
 										.cornerRadius(15)
+										.overlay(
+											VStack {
+												isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+														.padding()
+														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+														.foregroundStyle(Color.orange)
+														.offset(x: 20, y: -20)
+												: nil
+											}
+										)
 										.contextMenu {
 											VStack {
 												Text("channel")+Text(": \(message.channel)")

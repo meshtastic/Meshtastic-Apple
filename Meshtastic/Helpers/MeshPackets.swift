@@ -686,6 +686,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					let content = UNMutableNotificationContent()
 					content.title = "Critically Low Battery!"
 					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
+					content.userInfo["target"] = "node"
 					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
 					let uuidString = UUID().uuidString
 					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
@@ -748,6 +749,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
+			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
@@ -774,7 +776,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 				messageSaved = true
 
 				if messageSaved {
-
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
@@ -783,7 +784,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								id: ("notification.id.\(newMessage.messageId)"),
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-								content: messageText)
+								content: messageText,
+								target: "message"
+							)
 						]
 						manager.schedule()
 						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -810,7 +813,8 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-												content: messageText)
+												content: messageText,
+												target: "message")
 										]
 										manager.schedule()
 										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -876,7 +880,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							title: "New Waypoint Received",
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-							target: "waypoint"
+							target: "map"
 						)
 					]
 					manager.schedule()

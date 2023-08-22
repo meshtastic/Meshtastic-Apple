@@ -16,6 +16,7 @@ struct NodeMap: View {
 	@EnvironmentObject var bleManager: BLEManager
 	
 	@ObservedObject var tileManager = OfflineTileManager.shared
+	@StateObject var appState = AppState.shared
 	
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
