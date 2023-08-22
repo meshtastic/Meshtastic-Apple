@@ -89,22 +89,20 @@ struct Connect: View {
 
 									if node != nil {
 										#if !targetEnvironment(macCatalyst)
-										if #available(iOS 16.2, *) {
-											Button {
-												if !liveActivityStarted {
+										Button {
+											if !liveActivityStarted {
+											#if canImport(ActivityKit)
+												print("Start live activity.")
+												startNodeActivity()
+											#endif
+											} else {
 												#if canImport(ActivityKit)
-													print("Start live activity.")
-													startNodeActivity()
-												#endif
-												} else {
-													#if canImport(ActivityKit)
-													print("Stop live activity.")
-													endActivity()
-												#endif
-												}
-											} label: {
-												Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
+												print("Stop live activity.")
+												endActivity()
+											#endif
 											}
+										} label: {
+											Label("mesh.live.activity", systemImage: liveActivityStarted ? "stop" : "play")
 										}
 										#endif
 										Text("Num: \(String(node!.num))")
@@ -293,40 +291,36 @@ struct Connect: View {
 	}
 	#if canImport(ActivityKit)
 	func startNodeActivity() {
-		if #available(iOS 16.2, *) {
-			liveActivityStarted = true
-			let timerSeconds = 60
-			
-			let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-			let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		liveActivityStarted = true
+		let timerSeconds = 60
+		
+		let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 
-			let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
+		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName ?? "unknown")
 
-			let future = Date(timeIntervalSinceNow: Double(timerSeconds))
+		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 
-			let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0))
+		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0))
 
-			let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
+		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
 
-			do {
-				let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
-																			  pushType: nil)
-				print(" Requested MyActivity live activity. ID: \(myActivity.id)")
-			} catch let error {
-				print("Error requesting live activity: \(error.localizedDescription)")
-			}
+		do {
+			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
+																		  pushType: nil)
+			print(" Requested MyActivity live activity. ID: \(myActivity.id)")
+		} catch let error {
+			print("Error requesting live activity: \(error.localizedDescription)")
 		}
 	}
 
 	func endActivity() {
 		liveActivityStarted = false
 		Task {
-			if #available(iOS 16.2, *) {
-				for activity in Activity<MeshActivityAttributes>.activities {
-					// Check if this is the activity associated with this order.
-					if activity.attributes.nodeNum == node?.num ?? 0 {
-						await activity.end(nil, dismissalPolicy: .immediate)
-					}
+			for activity in Activity<MeshActivityAttributes>.activities {
+				// Check if this is the activity associated with this order.
+				if activity.attributes.nodeNum == node?.num ?? 0 {
+					await activity.end(nil, dismissalPolicy: .immediate)
 				}
 			}
 		}

@@ -701,7 +701,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
-				if #available(iOS 16.2, *) {
 
 					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
 					let date = Date.now...oneMinuteLater
@@ -717,7 +716,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							print("Updated live activity.")
 						}
 					}
-				}
 #endif
 			}
 		} catch {
