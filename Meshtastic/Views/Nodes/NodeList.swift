@@ -19,7 +19,7 @@ struct NodeList: View {
 			 searchText
 		 } set: { newValue in
 			 searchText = newValue
-			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS[c] %@", newValue)
+			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS[c] %@ OR user.shortName CONTAINS[c] %@", newValue, newValue)
 		 }
 	 }
 
