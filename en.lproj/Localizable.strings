@@ -59,6 +59,7 @@
 "delete"="Delete";
 "detection.sensor"="Detection Sensor";
 "detection.sensor.config"="Detection Sensor Config";
+"detection.sensor.log"="Detection Sensor Log";
 "device"="Device";
 "device.config"="Device Config";
 "device.metrics.delete"="Delete all device metrics?";
