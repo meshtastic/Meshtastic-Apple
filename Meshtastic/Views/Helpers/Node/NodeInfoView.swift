@@ -243,6 +243,19 @@ struct NodeInfoView: View {
 				}
 				Divider()
 			}
+			NavigationLink {
+				DetectionSensorLog(node: node)
+			} label: {
+
+				Image(systemName: "sensor")
+					.symbolRenderingMode(.hierarchical)
+					.font(.title)
+
+				Text("Detection Sensor Log")
+					.font(.title3)
+			}
+			.fixedSize(horizontal: false, vertical: true)
+				Divider()
 		}
 	}
 }

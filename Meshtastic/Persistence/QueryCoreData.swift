@@ -60,3 +60,23 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 	}
 	return WaypointEntity(context: context)
 }
+
+
+public func getDetectionSensorMessages(nodeNum: Int64?, context: NSManagedObjectContext) -> [MessageEntity] {
+
+	let fetchDetectionMessagesPredicate: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	fetchDetectionMessagesPredicate.predicate = NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue))
+
+	do {
+		let fetched = try context.fetch(fetchDetectionMessagesPredicate) as? [MessageEntity] ?? []
+		if nodeNum == nil {
+			return fetched.reversed()
+		}
+		return fetched.filter { message in
+			return message.fromUser?.num == nodeNum!
+		}.reversed()
+	}
+	catch {
+		return []
+	}
+}

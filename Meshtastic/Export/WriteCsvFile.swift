@@ -53,6 +53,21 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	return csvString
 }
 
+func detectionsToCsv(detections: [MessageEntity]) -> String {
+	var csvString: String = ""
+	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+	// Create Header
+	csvString = "Detection event, \("timestamp".localized)"
+	for d in detections {
+		csvString += "\n"
+		csvString += d.messagePayload ?? "Detection"
+		csvString += ", "
+		csvString += d.timestamp.formattedDate(format: dateFormatString).localized
+	}
+	return csvString
+}
+
 func positionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
