@@ -972,3 +972,64 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 		print("💥 Fetching node for core data TelemetryConfigEntity failed: \(nsError)")
 	}
 }
+
+func upsertDetectionSensorModuleConfigPacket(config: Meshtastic.ModuleConfig.DetectionSensorConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.detectionsensor.config %@".localized, String(nodeNum))
+	MeshLogger.log("📈 \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save Detection Sensor Config
+		if !fetchedNode.isEmpty {
+
+			if fetchedNode[0].detectionSensorConfig == nil {
+
+				let newConfig = DetectionSensorConfigEntity(context: context)
+				newConfig.enabled = config.enabled
+				newConfig.sendBell = config.sendBell
+				newConfig.name = config.name
+
+				newConfig.monitorPin = Int32(config.monitorPin)
+				newConfig.detectionTriggeredHigh = config.detectionTriggeredHigh
+				newConfig.usePullup = config.usePullup
+				newConfig.minimumBroadcastSecs = Int32(config.minimumBroadcastSecs)
+				newConfig.stateBroadcastSecs = Int32(config.stateBroadcastSecs)
+				fetchedNode[0].detectionSensorConfig = newConfig
+
+			} else {
+				fetchedNode[0].detectionSensorConfig?.enabled = config.enabled
+				fetchedNode[0].detectionSensorConfig?.sendBell = config.sendBell
+				fetchedNode[0].detectionSensorConfig?.name = config.name
+				fetchedNode[0].detectionSensorConfig?.monitorPin = Int32(config.monitorPin)
+				fetchedNode[0].detectionSensorConfig?.usePullup = config.usePullup
+				fetchedNode[0].detectionSensorConfig?.detectionTriggeredHigh = config.detectionTriggeredHigh
+				fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(config.minimumBroadcastSecs)
+				fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(config.stateBroadcastSecs)
+			}
+
+			do {
+				try context.save()
+				print("💾 Updated Detection Sensor Module Config for node number: \(String(nodeNum))")
+
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data DetectionSensorConfigEntity: \(nsError)")
+			}
+
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Detection Sensor Module Config")
+		}
+
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data DetectionSensorConfigEntity failed: \(nsError)")
+	}
+}

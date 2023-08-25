@@ -31,6 +31,7 @@ struct Settings: View {
 		case networkConfig
 		case positionConfig
 		case cannedMessagesConfig
+		case detectionSensorConfig
 		case externalNotificationConfig
 		case mqttConfig
 		case rangeTestConfig
@@ -202,6 +203,17 @@ struct Settings: View {
 							Text("canned.messages")
 						}
 						.tag(SettingsSidebar.cannedMessagesConfig)
+						
+						NavigationLink {
+							DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						} label: {
+							
+							Image(systemName: "sensor")
+								.symbolRenderingMode(.hierarchical)
+							
+							Text("detection.sensor")
+						}
+						.tag(SettingsSidebar.detectionSensorConfig)
 						
 						NavigationLink {
 							ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))

@@ -47,8 +47,7 @@ struct DeviceMetricsLog: View {
 							.accessibilityLabel("Line Series")
 							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 							.foregroundStyle(batteryChartColor)
-							.interpolationMethod(.cardinal)
-							//.interpolationMethod(.catmullRom(alpha: 1.0))
+							.interpolationMethod(.catmullRom(alpha: 1.0))
 							
 							Plot {
 								PointMark(
@@ -181,7 +180,7 @@ struct DeviceMetricsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding(.bottom)
-			.padding(.trailing)
+			.padding(.leading)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -195,6 +194,7 @@ struct DeviceMetricsLog: View {
 					}
 				}
 			}
+
 			Button {
 				exportString = telemetryToCsvFile(telemetry: deviceMetrics, metricsType: 0)
 				isExporting = true

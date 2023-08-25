@@ -194,6 +194,7 @@
 "name"="名称";
 "network"="网络";
 "network.config"="网络配置";
+"nodes"="节点";
 "nodes %@"="节点 (%@)";
 "no.nodes"="未找到 Meshtastic 节点";
 "not.connected"="未连接到电台";

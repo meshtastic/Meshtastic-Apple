@@ -194,6 +194,16 @@ struct ModuleConfig {
     set {payloadVariant = .ambientLighting(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  var detectionSensor: ModuleConfig.DetectionSensorConfig {
+    get {
+      if case .detectionSensor(let v)? = payloadVariant {return v}
+      return ModuleConfig.DetectionSensorConfig()
+    }
+    set {payloadVariant = .detectionSensor(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -232,6 +242,9 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     case ambientLighting(ModuleConfig.AmbientLightingConfig)
+    ///
+    /// TODO: REPLACE
+    case detectionSensor(ModuleConfig.DetectionSensorConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -281,6 +294,10 @@ struct ModuleConfig {
       }()
       case (.ambientLighting, .ambientLighting): return {
         guard case .ambientLighting(let l) = lhs, case .ambientLighting(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.detectionSensor, .detectionSensor): return {
+        guard case .detectionSensor(let l) = lhs, case .detectionSensor(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -386,6 +403,57 @@ struct ModuleConfig {
     /// Interval in seconds of how often we should try to send our
     /// Neighbor Info to the mesh
     var updateInterval: UInt32 = 0
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+  }
+
+  ///
+  /// Detection Sensor Module Config
+  struct DetectionSensorConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Whether the Module is enabled
+    var enabled: Bool = false
+
+    ///
+    /// Interval in seconds of how often we can send a message to the mesh when a state change is detected
+    var minimumBroadcastSecs: UInt32 = 0
+
+    ///
+    /// Interval in seconds of how often we should send a message to the mesh with the current state regardless of changes
+    /// When set to 0, only state changes will be broadcasted
+    /// Works as a sort of status heartbeat for peace of mind
+    var stateBroadcastSecs: UInt32 = 0
+
+    ///
+    /// Send ASCII bell with alert message
+    /// Useful for triggering ext. notification on bell
+    var sendBell: Bool = false
+
+    ///
+    /// Friendly name used to format message sent to mesh
+    /// Example: A name "Motion" would result in a message "Motion detected"
+    /// Maximum length of 20 characters
+    var name: String = String()
+
+    ///
+    /// GPIO pin to monitor for state changes
+    var monitorPin: UInt32 = 0
+
+    ///
+    /// Whether or not the GPIO pin state detection is triggered on HIGH (1)
+    /// Otherwise LOW (0)
+    var detectionTriggeredHigh: Bool = false
+
+    ///
+    /// Whether or not use INPUT_PULLUP mode for GPIO pin
+    /// Only applicable if the board uses pull-up resistors on the pin
+    var usePullup: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1080,6 +1148,7 @@ extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
 extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
 extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
+extension ModuleConfig.DetectionSensorConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig: @unchecked Sendable {}
@@ -1121,6 +1190,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     9: .standard(proto: "remote_hardware"),
     10: .standard(proto: "neighbor_info"),
     11: .standard(proto: "ambient_lighting"),
+    12: .standard(proto: "detection_sensor"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1272,6 +1342,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .ambientLighting(v)
         }
       }()
+      case 12: try {
+        var v: ModuleConfig.DetectionSensorConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .detectionSensor(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .detectionSensor(v)
+        }
+      }()
       default: break
       }
     }
@@ -1326,6 +1409,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .ambientLighting?: try {
       guard case .ambientLighting(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .detectionSensor?: try {
+      guard case .detectionSensor(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
     }()
     case nil: break
     }
@@ -1496,6 +1583,80 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
   static func ==(lhs: ModuleConfig.NeighborInfoConfig, rhs: ModuleConfig.NeighborInfoConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.updateInterval != rhs.updateInterval {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".DetectionSensorConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "minimum_broadcast_secs"),
+    3: .standard(proto: "state_broadcast_secs"),
+    4: .standard(proto: "send_bell"),
+    5: .same(proto: "name"),
+    6: .standard(proto: "monitor_pin"),
+    7: .standard(proto: "detection_triggered_high"),
+    8: .standard(proto: "use_pullup"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.minimumBroadcastSecs) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.stateBroadcastSecs) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.sendBell) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.monitorPin) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.detectionTriggeredHigh) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.usePullup) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.minimumBroadcastSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.minimumBroadcastSecs, fieldNumber: 2)
+    }
+    if self.stateBroadcastSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.stateBroadcastSecs, fieldNumber: 3)
+    }
+    if self.sendBell != false {
+      try visitor.visitSingularBoolField(value: self.sendBell, fieldNumber: 4)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 5)
+    }
+    if self.monitorPin != 0 {
+      try visitor.visitSingularUInt32Field(value: self.monitorPin, fieldNumber: 6)
+    }
+    if self.detectionTriggeredHigh != false {
+      try visitor.visitSingularBoolField(value: self.detectionTriggeredHigh, fieldNumber: 7)
+    }
+    if self.usePullup != false {
+      try visitor.visitSingularBoolField(value: self.usePullup, fieldNumber: 8)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.DetectionSensorConfig, rhs: ModuleConfig.DetectionSensorConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.minimumBroadcastSecs != rhs.minimumBroadcastSecs {return false}
+    if lhs.stateBroadcastSecs != rhs.stateBroadcastSecs {return false}
+    if lhs.sendBell != rhs.sendBell {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.monitorPin != rhs.monitorPin {return false}
+    if lhs.detectionTriggeredHigh != rhs.detectionTriggeredHigh {return false}
+    if lhs.usePullup != rhs.usePullup {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

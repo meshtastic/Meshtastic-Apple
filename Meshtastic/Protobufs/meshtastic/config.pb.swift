@@ -368,7 +368,7 @@ struct Config {
     var broadcastSmartMinimumDistance: UInt32 = 0
 
     ///
-    /// The minumum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
+    /// The minimum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
     var broadcastSmartMinimumIntervalSecs: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -505,13 +505,6 @@ struct Config {
     /// The number of seconds for to wait before turning off BLE in No Bluetooth states
     /// 0 for default of 1 minute
     var waitBluetoothSecs: UInt32 = 0
-
-    ///
-    /// Mesh Super Deep Sleep Timeout Seconds
-    /// While in Light Sleep if this value is exceeded we will lower into super deep sleep
-    /// for sds_secs (default 1 year) or a button press
-    /// 0 for default of two hours, MAXUINT for disabled
-    var meshSdsTimeoutSecs: UInt32 = 0
 
     ///
     /// Super Deep Sleep Seconds
@@ -1805,7 +1798,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     2: .standard(proto: "on_battery_shutdown_after_secs"),
     3: .standard(proto: "adc_multiplier_override"),
     4: .standard(proto: "wait_bluetooth_secs"),
-    5: .standard(proto: "mesh_sds_timeout_secs"),
     6: .standard(proto: "sds_secs"),
     7: .standard(proto: "ls_secs"),
     8: .standard(proto: "min_wake_secs"),
@@ -1822,7 +1814,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.onBatteryShutdownAfterSecs) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.adcMultiplierOverride) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.waitBluetoothSecs) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.meshSdsTimeoutSecs) }()
       case 6: try { try decoder.decodeSingularUInt32Field(value: &self.sdsSecs) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.lsSecs) }()
       case 8: try { try decoder.decodeSingularUInt32Field(value: &self.minWakeSecs) }()
@@ -1845,9 +1836,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.waitBluetoothSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.waitBluetoothSecs, fieldNumber: 4)
     }
-    if self.meshSdsTimeoutSecs != 0 {
-      try visitor.visitSingularUInt32Field(value: self.meshSdsTimeoutSecs, fieldNumber: 5)
-    }
     if self.sdsSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.sdsSecs, fieldNumber: 6)
     }
@@ -1868,7 +1856,6 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.onBatteryShutdownAfterSecs != rhs.onBatteryShutdownAfterSecs {return false}
     if lhs.adcMultiplierOverride != rhs.adcMultiplierOverride {return false}
     if lhs.waitBluetoothSecs != rhs.waitBluetoothSecs {return false}
-    if lhs.meshSdsTimeoutSecs != rhs.meshSdsTimeoutSecs {return false}
     if lhs.sdsSecs != rhs.sdsSecs {return false}
     if lhs.lsSecs != rhs.lsSecs {return false}
     if lhs.minWakeSecs != rhs.minWakeSecs {return false}

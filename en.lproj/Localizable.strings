@@ -57,6 +57,9 @@
 "current"="Current";
 "default"="Default";
 "delete"="Delete";
+"detection.sensor"="Detection Sensor";
+"detection.sensor.config"="Detection Sensor Config";
+"detection.sensor.log"="Detection Sensor Log";
 "device"="Device";
 "device.config"="Device Config";
 "device.metrics.delete"="Delete all device metrics?";
@@ -194,6 +197,7 @@
 "name"="Name";
 "network"="Network";
 "network.config"="Network Config";
+"nodes"="Nodes";
 "nodes %@"="Nodes (%@)";
 "no.nodes"="No Meshtastic Nodes Found";
 "not.connected"="No device connected";

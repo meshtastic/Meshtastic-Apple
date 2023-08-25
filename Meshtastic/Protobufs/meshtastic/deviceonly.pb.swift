@@ -109,14 +109,6 @@ struct DeviceState {
   mutating func clearOwner() {_uniqueStorage()._owner = nil}
 
   ///
-  /// Deprecated in 2.1.x
-  /// Old node_db. See NodeInfoLite node_db_lite
-  var nodeDb: [NodeInfo] {
-    get {return _storage._nodeDb}
-    set {_uniqueStorage()._nodeDb = newValue}
-  }
-
-  ///
   /// Received packets saved for delivery to the phone
   var receiveQueue: [MeshPacket] {
     get {return _storage._receiveQueue}
@@ -446,7 +438,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     2: .standard(proto: "my_node"),
     3: .same(proto: "owner"),
-    4: .standard(proto: "node_db"),
     5: .standard(proto: "receive_queue"),
     8: .same(proto: "version"),
     7: .standard(proto: "rx_text_message"),
@@ -460,7 +451,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   fileprivate class _StorageClass {
     var _myNode: MyNodeInfo? = nil
     var _owner: User? = nil
-    var _nodeDb: [NodeInfo] = []
     var _receiveQueue: [MeshPacket] = []
     var _version: UInt32 = 0
     var _rxTextMessage: MeshPacket? = nil
@@ -477,7 +467,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     init(copying source: _StorageClass) {
       _myNode = source._myNode
       _owner = source._owner
-      _nodeDb = source._nodeDb
       _receiveQueue = source._receiveQueue
       _version = source._version
       _rxTextMessage = source._rxTextMessage
@@ -506,7 +495,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         switch fieldNumber {
         case 2: try { try decoder.decodeSingularMessageField(value: &_storage._myNode) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._owner) }()
-        case 4: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeDb) }()
         case 5: try { try decoder.decodeRepeatedMessageField(value: &_storage._receiveQueue) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._rxTextMessage) }()
         case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
@@ -533,9 +521,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._owner {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
-      if !_storage._nodeDb.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._nodeDb, fieldNumber: 4)
-      }
       if !_storage._receiveQueue.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._receiveQueue, fieldNumber: 5)
       }
@@ -571,7 +556,6 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         let rhs_storage = _args.1
         if _storage._myNode != rhs_storage._myNode {return false}
         if _storage._owner != rhs_storage._owner {return false}
-        if _storage._nodeDb != rhs_storage._nodeDb {return false}
         if _storage._receiveQueue != rhs_storage._receiveQueue {return false}
         if _storage._version != rhs_storage._version {return false}
         if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}

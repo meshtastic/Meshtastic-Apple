@@ -169,7 +169,7 @@ struct EnvironmentMetricsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding(.bottom)
-			.padding(.trailing)
+			.padding(.leading)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -191,7 +191,7 @@ struct EnvironmentMetricsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding(.bottom)
-			.padding(.leading)
+			.padding(.trailing)
 		}
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)

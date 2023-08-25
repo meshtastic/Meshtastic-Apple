@@ -5,22 +5,11 @@
 import SwiftUI
 
 struct ContentView: View {
-
-	@State private var selection: Tab = .ble
-
-	enum Tab {
-		case contacts
-		case messages
-		case map
-		case ble
-		case nodes
-		case settings
-	}
-
+	@StateObject var appState = AppState.shared
+	
 	var body: some View {
-
-		TabView(selection: $selection) {
-
+		
+		TabView(selection: $appState.tabSelection) {
 			Contacts()
 				.tabItem {
 					Label("messages", systemImage: "message")
@@ -54,4 +43,13 @@ struct ContentView_Previews: PreviewProvider {
 	static var previews: some View {
 		ContentView()
 	}
+}
+
+enum Tab {
+	case contacts
+	case messages
+	case map
+	case ble
+	case nodes
+	case settings
 }

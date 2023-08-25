@@ -10,45 +10,6 @@ import CocoaMQTT
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
 	
-	// MqttClientProxyManagerDelegate
-	func onMqttConnected() {
-		mqttManager.status = .connected
-		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
-		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
-	}
-	
-	func onMqttDisconnected() {
-		mqttManager.status = .disconnected
-		print("MQTT Disconnected")
-	}
-	
-	func onMqttMessageReceived(message: CocoaMQTTMessage) {
-
-		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
-		if message.topic.contains("/stat/") {
-			return
-		}
-		var proxyMessage = MqttClientProxyMessage()
-		proxyMessage.topic = message.topic
-		proxyMessage.data = Data(message.payload)
-		proxyMessage.retained = message.retained
-		
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.mqttClientProxyMessage = proxyMessage
-		let binaryData: Data = try! toRadio.serializedData()
-		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
-			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			print("📲 Sent Mqtt client proxy message to the connected device.")
-		}
-
-	}
-	
-	func onMqttError(message: String) {
-		print("MQTT Error")
-	}
-	
-
 	private static var documentsFolder: URL {
 		do {
 			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -66,6 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var invalidVersion = false
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
+	@Published var mqttProxyConnected: Bool = false
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -78,6 +40,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
+	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
@@ -312,6 +275,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 	}
 	
+	// MARK:  MqttClientProxyManagerDelegate Methods
+	func onMqttConnected() {
+		mqttProxyConnected = true
+		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
+		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
+	}
+	
+	func onMqttDisconnected() {
+		mqttProxyConnected = false
+		print("MQTT Disconnected")
+	}
+	
+	func onMqttMessageReceived(message: CocoaMQTTMessage) {
+
+		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
+		if message.topic.contains("/stat/") {
+			return
+		}
+		var proxyMessage = MqttClientProxyMessage()
+		proxyMessage.topic = message.topic
+		proxyMessage.data = Data(message.payload)
+		proxyMessage.retained = message.retained
+		
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.mqttClientProxyMessage = proxyMessage
+		let binaryData: Data = try! toRadio.serializedData()
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+			print("📲 Sent Mqtt client proxy message to the connected device.")
+		}
+	}
+	
+	func onMqttError(message: String) {
+		mqttProxyConnected = false
+		print("📲 Mqtt Client Proxy onMqttError: \(message)")
+	}
+	
+	// MARK: Protobuf Methods
 	func requestDeviceMetadata(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32, context: NSManagedObjectContext) -> Int64 {
 		
 		guard connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected else { return 0 }
@@ -503,7 +505,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
-					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion ?? "unknown".localized
+					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
 					
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					
@@ -528,7 +530,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 				
-			case .textMessageApp:
+			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
@@ -549,9 +551,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .serialApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .storeForwardApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Store Forward App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .rangeTestApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				if wantRangeTestPackets {
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				}
+				else {
+					MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				}
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 			case .textMessageCompressedApp:
@@ -599,7 +606,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				
-				/// MQTT Client Proxy
+				/// MQTT Client Proxy and RangeTest interest
 				if connectedPeripheral.num > 0 {
 					
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -607,12 +614,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					do {
 						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
-							
 							//Subscribe to Mqtt Client Proxy if enabled
 							if fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
 								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
 							}
 						}
+						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
+							wantRangeTestPackets = true;
+						}
+						
 					} catch {
 						print("Failed to find a node info for the connected node")
 					}
@@ -658,7 +668,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			self.startScanning()
 			
 			// Try and connect to the preferredPeripherial first
-			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.preferredPeripheralId as? String ?? "" }).first
+			let preferredPeripheral = peripherals.filter({ $0.peripheral.identifier.uuidString == UserDefaults.preferredPeripheralId as String }).first
 			if preferredPeripheral != nil && preferredPeripheral?.peripheral != nil {
 				connectTo(peripheral: preferredPeripheral!.peripheral)
 			}
@@ -1533,6 +1543,32 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
+	public func saveDetectionSensorModuleConfig(config: ModuleConfig.DetectionSensorConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.detectionSensor = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "Saved Telemetry Module Config for \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertDetectionSensorModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+		return 0
+	}
+	
 	public func getChannel(channelIndex: UInt32, fromUser: UserEntity, toUser: UserEntity, wantResponse: Bool) -> Bool {
 		
 		var adminPacket = AdminMessage()
@@ -1900,6 +1936,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return false
 	}
+	
+	public func requestDetectionSensorModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.detectionsensorConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested Detection Sensor Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+	
 	
 	public func requestSerialModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
