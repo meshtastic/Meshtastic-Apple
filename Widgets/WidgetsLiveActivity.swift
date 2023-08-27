@@ -63,7 +63,7 @@ struct WidgetsLiveActivity: Widget {
 						.tint(Color("LightIndigo"))
 
 				}
-				DynamicIslandExpandedRegion(.bottom){
+				DynamicIslandExpandedRegion(.bottom) {
 					Text(context.attributes.name)
 						.font(context.attributes.name.count > 14 ? .callout : .title3)
 						.fontWeight(.semibold)

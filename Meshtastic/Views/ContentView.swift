@@ -6,9 +6,7 @@ import SwiftUI
 
 struct ContentView: View {
 	@StateObject var appState = AppState.shared
-	
 	var body: some View {
-		
 		TabView(selection: $appState.tabSelection) {
 			Contacts()
 				.tabItem {

@@ -15,23 +15,16 @@ import SwiftUI
 import StoreKit
 
 struct Firmware: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
 	var node: NodeInfoEntity?
-	
 	@State var minimumVersion = "2.1.0"
 	@State var version = ""
-	
 	@State private var firmwareReleaseData: FirmwareRelease = FirmwareRelease()
-	
 	var body: some View {
 		// NavigationSplitView {
 		NavigationStack {
-			
 			let hwModel: HardwareModels = HardwareModels.allCases.first(where: { $0.rawValue == node?.user?.hwModel ?? "UNSET" }) ?? HardwareModels.UNSET
-			
 			VStack(alignment: .leading) {
 				Text("Current Version: \(bleManager.connectedVersion)")
 					.font(.largeTitle)
@@ -78,7 +71,7 @@ struct Firmware: View {
 								if connectedNode != nil {
 									if !bleManager.sendRebootOta(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex) {
 										print("Reboot Failed")
-									} 
+									}
 								}
 							} label: {
 								Label("Send Reboot OTA", systemImage: "square.and.arrow.down")
@@ -98,7 +91,6 @@ struct Firmware: View {
 					Text(hwModel.platform().description)
 						.font(.title3)
 				}
-				
 			}.padding()
 			VStack(alignment: .leading) {
 				Text("Firmware Releases")
@@ -152,85 +144,65 @@ struct Firmware: View {
 			.navigationBarTitleDisplayMode(.inline)
 		}
 	}
-	
 	func loadData() {
-		
 		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
 			return
 		}
-		
 		let request = URLRequest(url: url)
 		URLSession.shared.dataTask(with: request) { data, _, _ in
-			
 			if let data = data {
 				if let response_obj = try? JSONDecoder().decode(FirmwareRelease.self, from: data) {
-					
 					DispatchQueue.main.async {
 						self.firmwareReleaseData = response_obj
 					}
 				}
 			}
-			
 		}.resume()
 	}
 }
 
 struct FirmwareRelease: Codable {
-	
 	var releases: Releases?       = Releases()
 	var pullRequests: [PullRequests]? = []
-	
 	enum CodingKeys: String, CodingKey {
-		
-		case releases     = "releases"
-		case pullRequests = "pullRequests"
+		case releases     = "Releases"
+		case pullRequests = "Pull Requests"
 	}
-	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
-		
 		releases     = try values.decodeIfPresent(Releases.self, forKey: .releases     )
 		pullRequests = try values.decodeIfPresent([PullRequests].self, forKey: .pullRequests )
 	}
-	
 	init() {
-		
 	}
 }
 
 struct Releases: Codable {
-	
 	var stable: [Stable]? = []
 	var alpha: [Alpha]?  = []
-	
 	enum CodingKeys: String, CodingKey {
-		case stable = "stable"
-		case alpha  = "alpha"
+		case stable = "Stable"
+		case alpha  = "Alpha"
 	}
-	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
 		stable = try values.decodeIfPresent([Stable].self, forKey: .stable )
 		alpha  = try values.decodeIfPresent([Alpha].self, forKey: .alpha  )
 	}
-	
 	init() {}
 }
 
 struct Alpha: Codable {
-	
 	var id: String?
 	var title: String?
 	var pageUrl: String?
 	var zipUrl: String?
-	
 	enum CodingKeys: String, CodingKey {
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
 		case zipUrl  = "zip_url"
 	}
-	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
 		id      = try values.decodeIfPresent(String.self, forKey: .id      )
@@ -238,24 +210,20 @@ struct Alpha: Codable {
 		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
 	}
-	
 	init() {}
 }
 
 struct Stable: Codable {
-	
 	var id: String?
 	var title: String?
 	var pageUrl: String?
 	var zipUrl: String?
-	
 	enum CodingKeys: String, CodingKey {
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
 		case zipUrl  = "zip_url"
 	}
-	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
 		id      = try values.decodeIfPresent(String.self, forKey: .id      )
@@ -263,24 +231,20 @@ struct Stable: Codable {
 		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
 	}
-	
 	init() {}
 }
 
 struct PullRequests: Codable {
-	
 	var id: String?
 	var title: String?
 	var pageUrl: String?
 	var zipUrl: String?
-	
 	enum CodingKeys: String, CodingKey {
 		case id      = "id"
 		case title   = "title"
 		case pageUrl = "page_url"
 		case zipUrl  = "zip_url"
 	}
-	
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
 		id      = try values.decodeIfPresent(String.self, forKey: .id      )
@@ -288,6 +252,5 @@ struct PullRequests: Codable {
 		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
 		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
 	}
-	
 	init() {}
 }

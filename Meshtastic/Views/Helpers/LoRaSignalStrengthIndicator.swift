@@ -72,16 +72,13 @@ private func getColor(signalStrength: LoRaSignalStrength) -> Color {
 }
 
 func getLoRaSignalStrength(snr: Float, rssi: Int32, preset: ModemPresets) -> LoRaSignalStrength {
-	
 	if rssi > -115 && snr > (preset.snrLimit()) {
 		return .good
 	} else if rssi < -126 && snr < (preset.snrLimit() - 7.5) {
 		return .none
 	} else if rssi <= -120 || snr <= (preset.snrLimit() - 5.5) {
 		return .bad
-	} else  {
-		return .fair
-	}
+	} else { return .fair }
 }
 
 func getRssiColor(rssi: Int32) -> Color {
@@ -94,8 +91,7 @@ func getRssiColor(rssi: Int32) -> Color {
 	} else if rssi > -126 {
 		/// Bad
 		return .orange
-	} else  {
-		// None
+	} else { // None
 		return .red
 	}
 }
@@ -110,7 +106,5 @@ func getSnrColor(snr: Float, preset: ModemPresets) -> Color {
 	} else if snr >= (preset.snrLimit() - 7.5) {
 		/// Bad
 		return .orange
-	} else  {
-		return .red
-	}
+	} else { return .red }
 }

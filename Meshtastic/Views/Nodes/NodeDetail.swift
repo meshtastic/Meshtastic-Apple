@@ -49,8 +49,6 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-	
-	
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
@@ -70,11 +68,11 @@ struct NodeDetail: View {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
 									},
-									//visibleMapRect: $mapRect,
+									// visibleMapRect: $mapRect,
 									selectedMapLayer: selectedMapLayer,
 									positions: lastTenThousand,
 									waypoints: Array(waypoints),
-									//mapViewType: mapType,
+									// mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
@@ -146,13 +144,10 @@ struct NodeDetail: View {
 						}
 						.padding([.top], 20)
 					}
-
-					ScrollView() {
+					ScrollView {
 						NodeInfoView(node: node)
 						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
-
 							HStack {
-								
 								if node.metadata?.canShutdown ?? false {
 
 									Button(action: {
@@ -232,22 +227,18 @@ struct NodeDetail: View {
 				})
 				.onAppear {
 					self.bleManager.context = context
-					//mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
+					// mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
 				}
 				.task(id: node.num) {
 					if !loadedWeather {
 						do {
-							
 							if node.positions?.count ?? 0 > 0 {
-								
 								let mostRecent = node.positions?.lastObject as? PositionEntity
-								
 								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 								condition = weather.currentWeather.condition
 								temperature = weather.currentWeather.temperature
 								humidity = Int(weather.currentWeather.humidity * 100)
 								symbolName = weather.currentWeather.symbolName
-								
 								let attribution = try await WeatherService.shared.attribution
 								attributionLink = attribution.legalPageURL
 								attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL

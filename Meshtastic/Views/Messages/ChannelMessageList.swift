@@ -64,7 +64,6 @@ struct ChannelMessageList: View {
 									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 									let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-									
 									Text(markdownText)
 										.tint(linkBlue)
 										.padding(10)
@@ -247,7 +246,6 @@ struct ChannelMessageList: View {
 			#if targetEnvironment(macCatalyst)
 			HStack {
 				Spacer()
-				
 				Button {
 					let bell = "🔔 Alert Bell Character! \u{7}"
 					print(bell)

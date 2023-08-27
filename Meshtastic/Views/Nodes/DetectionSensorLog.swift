@@ -9,18 +9,14 @@ import SwiftUI
 import Charts
 
 struct DetectionSensorLog: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	
 	var node: NodeInfoEntity
 
 	var body: some View {
-		
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
 		let detections = getDetectionSensorMessages(nodeNum: node.num, context: context)
 		let chartData = detections
@@ -28,10 +24,8 @@ struct DetectionSensorLog: View {
 			.sorted { $0.timestamp < $1.timestamp }
 
 		NavigationStack {
-			
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(detections.count) Total Detection Events", systemImage: "sensor")) {
-					
 					Chart {
 						ForEach(chartData, id: \.self) { point in
 							Plot {
@@ -62,7 +56,7 @@ struct DetectionSensorLog: View {
 					.chartXAxis(.automatic)
 					.chartYScale(domain: 0...20)
 					.chartForegroundStyleScale([
-						"Detection events" : .green,
+						"Detection events": .green
 					])
 					.chartLegend(position: .automatic, alignment: .bottom)
 				}
@@ -71,7 +65,6 @@ struct DetectionSensorLog: View {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				
 				// Add a table for mac and ipad
 				Table(detections) {
 					TableColumn("Detection event") { d in
@@ -149,9 +142,3 @@ struct DetectionSensorLog: View {
 		)
 	}
 }
-//
-//struct DetectionSensorLog_Previews: PreviewProvider {
-//    static var previews: some View {
-//        DetectionSensorLog()
-//    }
-//}

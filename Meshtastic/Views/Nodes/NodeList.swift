@@ -12,7 +12,6 @@ import SwiftUI
 import CoreLocation
 
 struct NodeList: View {
-	
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -129,4 +128,3 @@ struct NodeList: View {
 	   .searchable(text: nodesQuery, prompt: "Find a node")
 	}
 }
-

@@ -23,10 +23,8 @@ struct MQTTConfig: View {
 	@State var jsonEnabled = false
 	@State var tlsEnabled = true
 	@State var root = "msh"
-	
 
 	var body: some View {
-
 		Form {
 			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 				Text("There has been no response to a request for device metadata over the admin channel for this node.")
@@ -163,7 +161,6 @@ struct MQTTConfig: View {
 				}
 				.keyboardType(.default)
 				.scrollDismissesKeyboard(.interactively)
-				
 				HStack {
 					Label("Root Topic", systemImage: "tree")
 					TextField("Root Topic", text: $root)
@@ -300,7 +297,6 @@ struct MQTTConfig: View {
 			}
 		}
 	}
-	
 	func setMqttValues() {
 		self.enabled = (node?.mqttConfig?.enabled ?? false)
 		self.proxyToClientEnabled = (node?.mqttConfig?.proxyToClientEnabled ?? false)

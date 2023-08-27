@@ -117,7 +117,6 @@ struct StoreForwardConfig: View {
 					sfc.records = UInt32(self.records)
 					sfc.historyReturnMax = UInt32(self.historyReturnMax)
 					sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-				
 					let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true

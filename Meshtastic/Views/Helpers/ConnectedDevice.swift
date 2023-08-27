@@ -16,7 +16,6 @@ struct ConnectedDevice: View {
         HStack {
 			if bluetoothOn {
 				if deviceConnected && mqttProxyConnected {
-					
 					if mqttProxyConnected {
 						Image(systemName: "iphone.gen3.radiowaves.left.and.right.circle.fill")
 							.imageScale(.large)

@@ -43,15 +43,12 @@ struct BatteryIcon: View {
 				.font(font)
 				.foregroundColor(color)
 				.symbolRenderingMode(.hierarchical)
-			
 		} else if batteryLevel! == 0 {
-			
 			Image(systemName: "battery.0")
 				.font(font)
 				.foregroundColor(.red)
 				.symbolRenderingMode(.hierarchical)
 		} else if batteryLevel! > 100 {
-			
 			Image(systemName: "powerplug")
 				.font(font)
 				.foregroundColor(color)

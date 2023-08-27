@@ -567,11 +567,9 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 }
 
 func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-	
 	if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-		// RequestResponse
+		// Request Response
 		switch storeAndForwardMessage.rr {
-			
 		case .unset:
 			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 		case .routerError:
@@ -601,7 +599,7 @@ func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context:
 			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 		case .clientAbort:
 			MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .UNRECOGNIZED(_):
+		case .UNRECOGNIZED:
 			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 		}
 	}
@@ -617,7 +615,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			MeshLogger.log("📈 \(logString)")
 		} else {
 			// If it is the connected node
-
 		}
 
 		let telemetry = TelemetryEntity(context: context)
@@ -790,7 +787,6 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)
 									}
-									
 									if channel.index == newMessage.channel && !channel.mute {
 										// Create an iOS Notification for the received private channel message and schedule it immediately
 										let manager = LocalNotificationManager()

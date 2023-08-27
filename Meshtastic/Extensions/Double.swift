@@ -7,7 +7,6 @@
 import Foundation
 
 extension Double {
-	
 	var toBytes: String {
 	  let formatter = MeasurementFormatter()
 	  let measurement = Measurement(value: self, unit: UnitInformationStorage.bytes)

@@ -18,7 +18,6 @@ struct Connect: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	//@EnvironmentObject var userSettings: UserSettings
 	@State var node: NodeInfoEntity?
 	@State var isUnsetRegion = false
 	@State var invalidFirmwareVersion = false
@@ -180,7 +179,6 @@ struct Connect: View {
 												.imageScale(.large).foregroundColor(.gray)
 												.padding(.trailing)
 										}
-										
 										Button(action: {
 											if UserDefaults.preferredPeripheralId.count > 0 && peripheral.peripheral.identifier.uuidString != UserDefaults.preferredPeripheralId {
 												presentingSwitchPreferredPeripheral = true
@@ -293,7 +291,6 @@ struct Connect: View {
 	func startNodeActivity() {
 		liveActivityStarted = true
 		let timerSeconds = 60
-		
 		let deviceMetrics = node?.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 
@@ -319,9 +316,7 @@ struct Connect: View {
 		Task {
 			for activity in Activity<MeshActivityAttributes>.activities {
 				// Check if this is the activity associated with this order.
-				if activity.attributes.nodeNum == node?.num ?? 0 {
-					await activity.end(nil, dismissalPolicy: .immediate)
-				}
+				if activity.attributes.nodeNum == node?.num ?? 0 { await activity.end(nil, dismissalPolicy: .immediate)	}
 			}
 		}
 	}

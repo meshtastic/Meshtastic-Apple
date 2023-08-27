@@ -9,47 +9,35 @@ import Foundation
 import MapKit
 
 class OfflineTileManager: ObservableObject {
-	
 	enum DownloadStatus {
 		case download, downloading, downloaded
 	}
-	
 	static let shared = OfflineTileManager()
-	
 	init() {
 		print("Documents Directory = \(documentsDirectory)")
 		createDirectoriesIfNecessary()
 	}
-	
-	// MARK: -  Private properties
+	// MARK: - Private properties
 	private var overlay: MKTileOverlay { MKTileOverlay(urlTemplate: UserDefaults.mapTileServer.tileUrl.count > 1 ? UserDefaults.mapTileServer.tileUrl : MapTileServer.openStreetMap.tileUrl) }
-	
 	private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
-	
 	private let fileManager = FileManager.default
-	
-	// MARK: -  Public property
+	// MARK: - Public property
 	var progress: Float = 0
 	var status: DownloadStatus = .download
-	
-	// MARK: -  Public methods
+	// MARK: - Public methods
 	func getAllDownloadedSize() -> String {
 		fileManager.allocatedSizeOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"))
 	}
-	
 	func hasBeenDownloaded(for boundingBox: MKMapRect) -> Bool {
 		getEstimatedDownloadSize(for: boundingBox) == 0
 	}
-	
 	func getEstimatedDownloadSize(for boundingBox: MKMapRect) -> Double {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		let count = self.filterTilesAlreadyExisting(paths: paths).count
 		let size: Double = 30000 // Bytes (average size)
 		return Double(count) * size
 	}
-	
 	func getDownloadedSize(for mapTileLink: MapTileServer) -> Double {
-		
 		var accumulatedSize: UInt64 = 0
 		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
 		let matchingTiles = mapTiles.filter { fileName in
@@ -61,10 +49,8 @@ class OfflineTileManager: ObservableObject {
 			let url = documentsDirectory.appendingPathComponent(tile.absoluteString)
 			accumulatedSize += (try? url.regularFileAllocatedSize()) ?? 0
 		}
-		
 		return Double(accumulatedSize)
 	}
-	
 	func getDownloadedSize(for boundingBox: MKMapRect) -> Double {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		var accumulatedSize: UInt64 = 0
@@ -75,14 +61,11 @@ class OfflineTileManager: ObservableObject {
 		}
 		return Double(accumulatedSize)
 	}
-	
 	func removeAll() {
 		try? fileManager.removeItem(at: documentsDirectory.appendingPathComponent("tiles"))
 		createDirectoriesIfNecessary()
 	}
-	
 	func remove(for mapTileLink: MapTileServer) {
-		
 		let mapTiles = try! fileManager.contentsOfDirectory(at: documentsDirectory.appendingPathComponent("tiles"), includingPropertiesForKeys: [])
 		let matchingTiles = mapTiles.filter { fileName in
 			let fileNameLower = fileName.absoluteString
@@ -93,7 +76,6 @@ class OfflineTileManager: ObservableObject {
 			try? fileManager.removeItem(at: tile.absoluteURL)
 		}
 	}
-	
 	func remove(for boundingBox: MKMapRect) {
 		let paths = self.computeTileOverlayPaths(boundingBox: boundingBox)
 		for path in paths {
@@ -103,7 +85,6 @@ class OfflineTileManager: ObservableObject {
 		}
 		self.status = .download
 	}
-	
 	/// Download and persist all tiles within the boundingBox
 	func download(boundingBox: MKMapRect, name: String) {
 		NetworkManager.shared.runIfNetwork {
@@ -116,18 +97,17 @@ class OfflineTileManager: ObservableObject {
 				self.progress = Float(i) / Float(filteredPaths.count)
 			}
 			DispatchQueue.main.async {
-				//NotificationManager.shared.sendNotification(title: "\("DownloadedTitle".localized) (\((self.getDownloadedSize(for: boundingBox)).toBytes))", message: "\("Downloaded".localized) (\(name))")
+				// NotificationManager.shared.sendNotification(title: "\("DownloadedTitle".localized) (\((self.getDownloadedSize(for: boundingBox)).toBytes))", message: "\("Downloaded".localized) (\(name))")
 				self.progress = 0
 				self.status = .downloaded
 			}
 		}
 	}
-	
 	func getTileOverlay(for path: MKTileOverlayPath) -> URL {
 		let file = "\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
 		// Check is tile is already available
 		let tilesUrl = documentsDirectory.appendingPathComponent("tiles").appendingPathComponent(file)
-		if fileManager.fileExists(atPath: tilesUrl.path){
+		if fileManager.fileExists(atPath: tilesUrl.path) {
 			return tilesUrl
 		} else {
 			if UserDefaults.enableOfflineMaps { // Get and persist newTile
@@ -137,8 +117,7 @@ class OfflineTileManager: ObservableObject {
 			}
 		}
 	}
-	
-	// MARK: -  Private methods
+	// MARK: Private methods
 	private func computeTileOverlayPaths(boundingBox box: MKMapRect, maxZ: Int = 17) -> [MKTileOverlayPath] {
 		var paths = [MKTileOverlayPath]()
 		for z in 1...maxZ {
@@ -153,15 +132,13 @@ class OfflineTileManager: ObservableObject {
 		}
 		return paths
 	}
-	
-	private func tranformCoordinate(coordinates: CLLocationCoordinate2D , zoom: Int) -> TileCoordinates {
+	private func tranformCoordinate(coordinates: CLLocationCoordinate2D, zoom: Int) -> TileCoordinates {
 		let lng = coordinates.longitude
 		let lat = coordinates.latitude
 		let tileX = Int(floor((lng + 180) / 360.0 * pow(2.0, Double(zoom))))
 		let tileY = Int(floor((1 - log( tan( lat * Double.pi / 180.0 ) + 1 / cos( lat * Double.pi / 180.0 )) / Double.pi ) / 2 * pow(2.0, Double(zoom))))
 		return (tileX, tileY, zoom)
 	}
-	
 	@discardableResult private func persistLocally(path: MKTileOverlayPath) -> URL {
 		let url = overlay.url(forTilePath: path)
 		let file = "tiles/\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
@@ -174,7 +151,6 @@ class OfflineTileManager: ObservableObject {
 		}
 		return url
 	}
-	
 	private func filterTilesAlreadyExisting(paths: [MKTileOverlayPath]) -> [MKTileOverlayPath] {
 		paths.filter {
 			let file = "\(UserDefaults.mapTileServer.id)-z\($0.z)x\($0.x)y\($0.y).png"
@@ -182,10 +158,8 @@ class OfflineTileManager: ObservableObject {
 			return !fileManager.fileExists(atPath: tilesPath)
 		}
 	}
-	
 	private func createDirectoriesIfNecessary() {
 		let tiles = documentsDirectory.appendingPathComponent("tiles")
 		try? fileManager.createDirectory(at: tiles, withIntermediateDirectories: true, attributes: [:])
 	}
-	
 }

@@ -118,11 +118,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
-			
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
 			}
-		
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				let newUser = UserEntity(context: context)
 					newUser.userId = newUserMessage.id
@@ -141,7 +139,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].rssi = packet.rxRssi
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
