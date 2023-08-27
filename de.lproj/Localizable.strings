@@ -157,6 +157,7 @@
 "mesh.log.display.config %@"="Display Konfiguration empfangen: %@";
 "mesh.log.devicemetadata %@"="Anforderung der Geräte Metadaten für %@";
 "mesh.log.device.metadata.received %@"="Device Metadata received from: %@";
+"mesh.log.detectionsensor.config %@"="Detection Sensor module config received: %@";
 "mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
@@ -171,6 +172,7 @@
 "mesh.log.routing.message %@ %@"="Routing empfangen für RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial Modul Konfiguration empfangen: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
+"mesh.log.storeforward.config %@"="Store & Forward module config received: %@";
 "mesh.log.telemetry.config %@"="Telemetrie Modul Konfiguration empfangen: %@";
 "mesh.log.telemetry.received %@"="Telemetrie empfangen für: %@";
 "mesh.log.textmessage.received"="Nachricht von der Textnachricht-App empfangen.";
@@ -253,6 +255,9 @@
 "set.region"="Setze LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"storeforward"="Store & Forward";
+"storeforward.config"="Store & Forward Config";
+"storeforward.heartbeat"="Send Heartbeat";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Gehört";
