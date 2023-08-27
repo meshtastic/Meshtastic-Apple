@@ -130,6 +130,20 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
 			}
+
+			let myInfoEntity = MyInfoEntity(context: context)
+			myInfoEntity.myNodeNum = Int64(packet.from)
+			myInfoEntity.rebootCount = 0
+			do {
+				try context.save()
+				print("💾 Saved a new myInfo for node number: \(String(packet.from))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
+			}
+			newNode.myInfo = myInfoEntity
+			
 		} else {
 			// Update an existing node
 			fetchedNode[0].id = Int64(packet.from)
