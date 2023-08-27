@@ -256,6 +256,9 @@
 "set.region"="Set LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"storeforward"="Store & Forward";
+"storeforward.config"="Store & Forward Config";
+"storeforward.heartbeat"="Send Heartbeat";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";

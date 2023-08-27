@@ -53,7 +53,6 @@ struct NodeDetail: View {
 	
 	var body: some View {
 
-		let hwModelString = node.user?.hwModel ?? "UNSET"
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in

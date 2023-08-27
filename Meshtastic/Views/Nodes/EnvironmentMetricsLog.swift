@@ -29,7 +29,7 @@ struct EnvironmentMetricsLog: View {
 				.sorted { $0.time! < $1.time! }
 		let locale = NSLocale.current as NSLocale
 		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-		var format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
+		let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
 		
 		NavigationStack {
 			

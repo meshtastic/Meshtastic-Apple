@@ -259,6 +259,15 @@ struct Settings: View {
 						.tag(SettingsSidebar.serialConfig)
 						
 						NavigationLink {
+							StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						} label: {
+							Image(systemName: "envelope.arrow.triangle.branch")
+								.symbolRenderingMode(.hierarchical)
+							Text("storeforward")
+						}
+						.tag(SettingsSidebar.serialConfig)
+						
+						NavigationLink {
 							TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
 							Image(systemName: "chart.xyaxis.line")

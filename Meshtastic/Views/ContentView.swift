@@ -33,6 +33,7 @@ struct ContentView: View {
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")
+						.font(.title)
 				}
 				.tag(Tab.settings)
 		}

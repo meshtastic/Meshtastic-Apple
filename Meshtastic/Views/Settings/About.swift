@@ -36,7 +36,7 @@ struct AboutMeshtastic: View {
 				}
 				if locale.region?.identifier ?? "no locale" == "US" {
 					Section(header: Text("Get Devices")) {
-						Link("Buy Complete Radios", destination: URL(string: "https://www.etsy.com/shop/GarthVH")!)
+						Link("Buy Complete Radios", destination: URL(string: "http://garthvh.com")!)
 							.font(.title2)
 					}
 				}

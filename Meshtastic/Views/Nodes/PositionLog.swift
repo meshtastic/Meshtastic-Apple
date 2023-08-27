@@ -32,7 +32,7 @@ struct PositionLog: View {
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
-				var positions = node.positions?.reversed() as? [PositionEntity] ?? []
+				let positions = node.positions?.reversed() as? [PositionEntity] ?? []
 				
 				Table(positions) {
 					TableColumn("Latitude") { position in
