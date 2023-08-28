@@ -369,6 +369,7 @@
 		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForward.swift; sourceTree = "<group>"; };
+		DDF6B24B2A9C2FC800BA6931 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -928,6 +929,7 @@
 				de,
 				Base,
 				"zh-Hans",
+				pl,
 			);
 			mainGroup = DDC2E14B26CE248E0042C5E4;
 			packageReferences = (
@@ -1200,6 +1202,7 @@
 				DDCDC6CC29481FCC004C1DDA /* en */,
 				DDCDC6CE294821AD004C1DDA /* de */,
 				A65FA974296876BF00A97686 /* zh-Hans */,
+				DDF6B24B2A9C2FC800BA6931 /* pl */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

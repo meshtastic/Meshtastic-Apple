@@ -80,10 +80,12 @@ struct StoreForwardConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Picker("History Return Window", selection: $historyReturnWindow ) {
 					Text("unset").tag(0)
-					Text("One Hour").tag(60)
-					Text("Two Hours").tag(120)
-					Text("Four Hours").tag(240)
-					Text("Six Hours").tag(360)
+					Text("One Minute").tag(60)
+					Text("Five Minutes").tag(300)
+					Text("Ten Minutes").tag(600)
+					Text("Fifteen Minutes").tag(900)
+					Text("Thirty Minutes").tag(1800)
+					Text("One Hour").tag(3600)
 				}
 				.pickerStyle(DefaultPickerStyle())
 			}
@@ -178,7 +180,7 @@ struct StoreForwardConfig: View {
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)
 		self.historyReturnMax = Int(node?.storeForwardConfig?.historyReturnMax ?? 100)
-		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 60)
+		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 300)
 		self.hasChanges = false
 	}
 }
