@@ -307,9 +307,7 @@ enum HardwareModels: String, CaseIterable, Identifiable {
 	}
 }
 
-
 enum HardwarePlatforms: String, CaseIterable, Identifiable {
-	
 	case none
 	case esp32
 	case nrf52
@@ -319,7 +317,6 @@ enum HardwarePlatforms: String, CaseIterable, Identifiable {
 	var id: String { self.rawValue }
 	var description: String {
 		switch self {
-			
 		case .none:
 			return "None"
 		case .esp32:

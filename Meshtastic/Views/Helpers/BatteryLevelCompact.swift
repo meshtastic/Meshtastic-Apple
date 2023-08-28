@@ -13,10 +13,8 @@ struct BatteryLevelCompact: View {
 	var color: Color
 
 	var body: some View {
-		
-		HStack (alignment: .center, spacing: 0) {
+		HStack(alignment: .center, spacing: 0) {
 			if batteryLevel == 100 {
-
 				Image(systemName: "battery.100.bolt")
 					.font(iconFont)
 					.foregroundColor(color)
@@ -45,21 +43,17 @@ struct BatteryLevelCompact: View {
 					.font(iconFont)
 					.foregroundColor(color)
 					.symbolRenderingMode(.hierarchical)
-				
 			} else if batteryLevel! == 0 {
-				
 				Image(systemName: "battery.0")
 					.font(iconFont)
 					.foregroundColor(.red)
 					.symbolRenderingMode(.hierarchical)
 			} else if batteryLevel! > 100 {
-				
 				Image(systemName: "powerplug")
 					.font(iconFont)
 					.foregroundColor(color)
 					.symbolRenderingMode(.hierarchical)
 			}
-			
 			if batteryLevel ?? 0 > 100 {
 				Text("PWD")
 					.font(font)

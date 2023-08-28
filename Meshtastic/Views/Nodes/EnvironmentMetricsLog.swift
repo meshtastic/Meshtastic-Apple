@@ -20,8 +20,6 @@ struct EnvironmentMetricsLog: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
-		
-		
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		let environmentMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 1")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = environmentMetrics
@@ -29,13 +27,10 @@ struct EnvironmentMetricsLog: View {
 				.sorted { $0.time! < $1.time! }
 		let locale = NSLocale.current as NSLocale
 		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
-		var format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
-		
+		let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
 		NavigationStack {
-			
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-					
 					Chart {
 						ForEach(chartData, id: \.time) { dataPoint in
 							AreaMark(
@@ -53,7 +48,6 @@ struct EnvironmentMetricsLog: View {
 							)
 							.alignsMarkStylesWithPlotArea()
 							.accessibilityHidden(true)
-							
 							LineMark(
 								x: .value("Time", dataPoint.time!),
 								y: .value("Temperature", dataPoint.temperature.localeTemperature())
@@ -74,12 +68,11 @@ struct EnvironmentMetricsLog: View {
 					})
 					.chartYScale(domain: format == .celsius ? -20...55 : 0...125)
 					.chartForegroundStyleScale([
-						"Temperature" : .clear
+						"Temperature": .clear
 					])
 					.chartLegend(position: .automatic, alignment: .bottom)
 				}
 			}
-			
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
@@ -169,7 +162,7 @@ struct EnvironmentMetricsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding(.bottom)
-			.padding(.trailing)
+			.padding(.leading)
 			.confirmationDialog(
 				"are.you.sure",
 				isPresented: $isPresentingClearLogConfirm,
@@ -191,7 +184,7 @@ struct EnvironmentMetricsLog: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding(.bottom)
-			.padding(.leading)
+			.padding(.trailing)
 		}
 		.navigationTitle("Environment Metrics Log")
 		.navigationBarTitleDisplayMode(.inline)

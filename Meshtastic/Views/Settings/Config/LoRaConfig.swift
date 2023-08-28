@@ -57,7 +57,6 @@ struct LoRaConfig: View {
 						Text("LoRa config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
 							.font(.callout)
 							.foregroundColor(.orange)
-							
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
@@ -144,7 +143,7 @@ struct LoRaConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases air time utilization and should be used carefully.")
+					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
 						.font(.caption)
 
 					HStack {

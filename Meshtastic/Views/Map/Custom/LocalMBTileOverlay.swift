@@ -109,7 +109,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 	}
 }
 
-//public class CustomMapOverlaySource: MKTileOverlay {
+// public class CustomMapOverlaySource: MKTileOverlay {
 //
 //	// requires folder: tiles/{mapName}/z/y/y,{tileType}
 //	private var parent: MapViewSwiftUI
@@ -150,4 +150,4 @@ class LocalMBTileOverlay: MKTileOverlay {
 //			return URL(string: urlstring)!
 //		}
 //	}
-//}
+// }

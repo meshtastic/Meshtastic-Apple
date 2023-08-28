@@ -234,6 +234,28 @@ struct LocalModuleConfig {
   mutating func clearNeighborInfo() {_uniqueStorage()._neighborInfo = nil}
 
   ///
+  /// The part of the config that is specific to the Ambient Lighting module
+  var ambientLighting: ModuleConfig.AmbientLightingConfig {
+    get {return _storage._ambientLighting ?? ModuleConfig.AmbientLightingConfig()}
+    set {_uniqueStorage()._ambientLighting = newValue}
+  }
+  /// Returns true if `ambientLighting` has been explicitly set.
+  var hasAmbientLighting: Bool {return _storage._ambientLighting != nil}
+  /// Clears the value of `ambientLighting`. Subsequent reads from it will return its default value.
+  mutating func clearAmbientLighting() {_uniqueStorage()._ambientLighting = nil}
+
+  ///
+  /// The part of the config that is specific to the Detection Sensor module
+  var detectionSensor: ModuleConfig.DetectionSensorConfig {
+    get {return _storage._detectionSensor ?? ModuleConfig.DetectionSensorConfig()}
+    set {_uniqueStorage()._detectionSensor = newValue}
+  }
+  /// Returns true if `detectionSensor` has been explicitly set.
+  var hasDetectionSensor: Bool {return _storage._detectionSensor != nil}
+  /// Clears the value of `detectionSensor`. Subsequent reads from it will return its default value.
+  mutating func clearDetectionSensor() {_uniqueStorage()._detectionSensor = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -395,6 +417,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     9: .same(proto: "audio"),
     10: .standard(proto: "remote_hardware"),
     11: .standard(proto: "neighbor_info"),
+    12: .standard(proto: "ambient_lighting"),
+    13: .standard(proto: "detection_sensor"),
     8: .same(proto: "version"),
   ]
 
@@ -409,6 +433,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _audio: ModuleConfig.AudioConfig? = nil
     var _remoteHardware: ModuleConfig.RemoteHardwareConfig? = nil
     var _neighborInfo: ModuleConfig.NeighborInfoConfig? = nil
+    var _ambientLighting: ModuleConfig.AmbientLightingConfig? = nil
+    var _detectionSensor: ModuleConfig.DetectionSensorConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -426,6 +452,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _audio = source._audio
       _remoteHardware = source._remoteHardware
       _neighborInfo = source._neighborInfo
+      _ambientLighting = source._ambientLighting
+      _detectionSensor = source._detectionSensor
       _version = source._version
     }
   }
@@ -456,6 +484,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 9: try { try decoder.decodeSingularMessageField(value: &_storage._audio) }()
         case 10: try { try decoder.decodeSingularMessageField(value: &_storage._remoteHardware) }()
         case 11: try { try decoder.decodeSingularMessageField(value: &_storage._neighborInfo) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._ambientLighting) }()
+        case 13: try { try decoder.decodeSingularMessageField(value: &_storage._detectionSensor) }()
         default: break
         }
       }
@@ -501,6 +531,12 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._neighborInfo {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       } }()
+      try { if let v = _storage._ambientLighting {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
+      try { if let v = _storage._detectionSensor {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -520,6 +556,8 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._audio != rhs_storage._audio {return false}
         if _storage._remoteHardware != rhs_storage._remoteHardware {return false}
         if _storage._neighborInfo != rhs_storage._neighborInfo {return false}
+        if _storage._ambientLighting != rhs_storage._ambientLighting {return false}
+        if _storage._detectionSensor != rhs_storage._detectionSensor {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

@@ -15,7 +15,6 @@ extension URL {
 	guard resourceValues.isRegularFile ?? false else {
 	  return 0
 	}
-	  
 	return UInt64(resourceValues.totalFileAllocatedSize ?? resourceValues.fileAllocatedSize ?? 0)
   }
 }

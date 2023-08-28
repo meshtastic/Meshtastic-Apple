@@ -63,12 +63,23 @@ struct ChannelMessageList: View {
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 									let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
+									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 									Text(markdownText)
 										.tint(linkBlue)
 										.padding(10)
 										.foregroundColor(.white)
 										.background(currentUser ? .accentColor : Color(.gray))
 										.cornerRadius(15)
+										.overlay(
+											VStack {
+												isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+														.padding()
+														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+														.foregroundStyle(Color.orange)
+														.offset(x: 20, y: -20)
+												: nil
+											}
+										)
 										.contextMenu {
 											VStack {
 												Text("channel")+Text(": \(message.channel)")
@@ -185,6 +196,9 @@ struct ChannelMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.font(.caption2).foregroundColor(.red)
+										} else if isDetectionSensorMessage {
+											let messageDate = message.timestamp
+											Text(" \(messageDate.formattedDate(format: dateFormatString))").font(.caption2).foregroundColor(.gray)
 										}
 									}
 								}
@@ -232,7 +246,6 @@ struct ChannelMessageList: View {
 			#if targetEnvironment(macCatalyst)
 			HStack {
 				Spacer()
-				
 				Button {
 					let bell = "🔔 Alert Bell Character! \u{7}"
 					print(bell)

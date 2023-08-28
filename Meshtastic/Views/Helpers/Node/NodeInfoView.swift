@@ -21,7 +21,6 @@ struct NodeInfoView: View {
 	var node: NodeInfoEntity
 
 	var body: some View {
-		
 		let hwModelString = node.user?.hwModel ?? "UNSET"
 
 		Divider()
@@ -61,7 +60,6 @@ struct NodeInfoView: View {
 				}
 				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 				if deviceMetrics?.count ?? 0 >= 1 {
-					
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
@@ -127,7 +125,6 @@ struct NodeInfoView: View {
 				VStack(alignment: .center) {
 					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
-				
 				if node.user != nil {
 					Divider()
 					VStack {
@@ -243,14 +240,19 @@ struct NodeInfoView: View {
 				}
 				Divider()
 			}
-		}
-	}
-}
-struct NodeInfoView_Previews: PreviewProvider {
-	static var previews: some View {
+			NavigationLink {
+				DetectionSensorLog(node: node)
+			} label: {
 
-		VStack {
-			
+				Image(systemName: "sensor")
+					.symbolRenderingMode(.hierarchical)
+					.font(.title)
+
+				Text("Detection Sensor Log")
+					.font(.title3)
+			}
+			.fixedSize(horizontal: false, vertical: true)
+				Divider()
 		}
 	}
 }

@@ -10,16 +10,16 @@ class LocalNotificationManager {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
 
             if granted == true && error == nil {
-                self.scheduleNotifications()
+				self.scheduleNotifications()
             }
         }
     }
 
-    func schedule() {
+	func schedule() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .notDetermined:
-                self.requestAuthorization()
+				self.requestAuthorization()
             case .authorized, .provisional:
                 self.scheduleNotifications()
             default:
@@ -37,6 +37,9 @@ class LocalNotificationManager {
             content.body                = notification.content
             content.sound               = .default
             content.interruptionLevel   = .timeSensitive
+			if notification.target != nil {
+				content.userInfo["target"]  = notification.target
+			}
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
             let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger)
@@ -65,4 +68,5 @@ struct Notification {
     var title: String
     var subtitle: String
     var content: String
+	var target: String?
 }

@@ -57,6 +57,9 @@
 "current"="Current";
 "default"="Default";
 "delete"="Delete";
+"detection.sensor"="Detection Sensor";
+"detection.sensor.config"="Detection Sensor Config";
+"detection.sensor.log"="Detection Sensor Log";
 "device"="Device";
 "device.config"="Device Config";
 "device.metrics.delete"="Delete all device metrics?";
@@ -157,6 +160,7 @@
 "mesh.log.display.config %@"="Display config received: %@";
 "mesh.log.devicemetadata %@"="Requesting Device Metadata for %@";
 "mesh.log.device.metadata.received %@"="Device Metadata received from: %@";
+"mesh.log.detectionsensor.config %@"="Detection Sensor module config received: %@";
 "mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
@@ -171,6 +175,7 @@
 "mesh.log.routing.message %@ %@"="Routing received for RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial module config received: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
+"mesh.log.storeforward.config %@"="Store & Forward module config received: %@";
 "mesh.log.telemetry.config %@"="Telemetry module config received: %@";
 "mesh.log.telemetry.received %@"="Telemetry received for: %@";
 "mesh.log.textmessage.received"="Message received from the text message app.";
@@ -194,6 +199,7 @@
 "name"="Name";
 "network"="Network";
 "network.config"="Network Config";
+"nodes"="Nodes";
 "nodes %@"="Nodes (%@)";
 "no.nodes"="No Meshtastic Nodes Found";
 "not.connected"="No device connected";
@@ -252,6 +258,9 @@
 "set.region"="Set LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"storeforward"="Store & Forward";
+"storeforward.config"="Store & Forward Config";
+"storeforward.heartbeat"="Send Heartbeat";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";
