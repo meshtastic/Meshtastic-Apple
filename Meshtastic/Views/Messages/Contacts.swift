@@ -36,58 +36,68 @@ struct Contacts: View {
 					if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 						ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 							if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
+
 								NavigationLink(destination: ChannelMessageList(channel: channel)) {
 
 									let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 									let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-									VStack(alignment: .leading) {
-										HStack {
-											CircleText(text: String(channel.index), color: .accentColor, circleSize: 60, fontSize: 42, brightness: 0.1)
-												.padding(.trailing, 5)
-											VStack {
-												HStack {
-													if channel.name?.isEmpty ?? false {
-														if channel.role == 1 {
-															Text(String("PrimaryChannel").camelCaseToWords()).font(.headline)
-														} else {
-															Text(String("Channel \(channel.index)").camelCaseToWords()).font(.headline)
-														}
-													} else {
-														Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords()).font(.headline)
-													}
-													Spacer()
-													if channel.allPrivateMessages.count > 0 {
-														VStack(alignment: .trailing) {
-															if lastMessageDay == currentDay {
-																Text(lastMessageTime, style: .time )
-																	.font(.subheadline)
-															} else if  lastMessageDay == (currentDay - 1) {
-																Text("Yesterday")
-																	.font(.subheadline)
-															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: dateFormatString))
-																	.font(.subheadline)
-															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: dateFormatString))
-																	.font(.subheadline)
-															}
-														}
-														.brightness(-0.20)
-													}
+
+									ZStack {
+										Image(systemName: "circle.fill")
+											.opacity(true ? 1 : 0)
+											.font(.system(size: 10))
+											.foregroundColor(.accentColor)
+									}
+									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 36)
+									
+									VStack(alignment: .leading){
+										HStack{
+											if channel.name?.isEmpty ?? false {
+												if channel.role == 1 {
+													Text(String("PrimaryChannel").camelCaseToWords())
+												} else {
+													Text(String("Channel \(channel.index)").camelCaseToWords())
 												}
-												if channel.allPrivateMessages.count > 0 {
-													HStack(alignment: .top) {
-														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-															.truncationMode(.tail)
-															.frame(maxWidth: .infinity, alignment: .leading)
-															.brightness(-0.20)
-															.font(.body)
-													}
+											} else {
+												Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+											}
+											
+											Spacer()
+											
+											if channel.allPrivateMessages.count > 0 {
+
+												if lastMessageDay == currentDay {
+													Text(lastMessageTime, style: .time )
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if  lastMessageDay == (currentDay - 1) {
+													Text("Yesterday")
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+													Text(lastMessageTime.formattedDate(format: dateFormatString))
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if lastMessageDay < (currentDay - 1800) {
+													Text(lastMessageTime.formattedDate(format: dateFormatString))
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
 												}
 											}
-											.frame(maxWidth: .infinity, alignment: .leading)
+											
+//											Image(systemName: "chevron.forward")
+//												.font(.caption)
+//												.foregroundColor(.secondary)
+										}
+										
+										if channel.allPrivateMessages.count > 0 {
+											HStack(alignment: .top) {
+												Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+													.font(.system(size: 16))
+													.foregroundColor(.secondary)
+											}
 										}
 									}
 								}
@@ -163,23 +173,23 @@ struct Contacts: View {
 										Spacer()
 										
 										if user.messageList.count > 0 {
-												if lastMessageDay == currentDay {
-													Text(lastMessageTime, style: .time )
-														.font(.system(size: 16))
-														.foregroundColor(.secondary)
-												} else if lastMessageDay == (currentDay - 1) {
-													Text("Yesterday")
-														.font(.system(size: 16))
-														.foregroundColor(.secondary)
-												} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-													Text(lastMessageTime.formattedDate(format: dateFormatString))
-														.font(.system(size: 16))
-														.foregroundColor(.secondary)
-												} else if lastMessageDay < (currentDay - 1800) {
-													Text(lastMessageTime.formattedDate(format: dateFormatString))
-														.font(.system(size: 16))
-														.foregroundColor(.secondary)
-												}
+											if lastMessageDay == currentDay {
+												Text(lastMessageTime, style: .time )
+													.font(.system(size: 16))
+													.foregroundColor(.secondary)
+											} else if lastMessageDay == (currentDay - 1) {
+												Text("Yesterday")
+													.font(.system(size: 16))
+													.foregroundColor(.secondary)
+											} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+												Text(lastMessageTime.formattedDate(format: dateFormatString))
+													.font(.system(size: 16))
+													.foregroundColor(.secondary)
+											} else if lastMessageDay < (currentDay - 1800) {
+												Text(lastMessageTime.formattedDate(format: dateFormatString))
+													.font(.system(size: 16))
+													.foregroundColor(.secondary)
+											}
 										}
 										
 //										Image(systemName: "chevron.forward")
@@ -194,9 +204,7 @@ struct Contacts: View {
 												.foregroundColor(.secondary)
 										}
 									}
-									
 								}
-								
 							}
 							.frame(height: 90)
 							.contextMenu {
