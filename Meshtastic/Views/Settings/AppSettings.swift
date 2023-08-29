@@ -12,6 +12,7 @@ struct AppSettings: View {
 	@StateObject var locationHelper = LocationHelper()
 	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
+	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
@@ -27,6 +28,13 @@ struct AppSettings: View {
 					.keyboardType(.asciiCapable)
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
+				}
+				Section(header: Text("options")) {
+					
+					Toggle(isOn: $blockRangeTest) {
+						Label("range.test.blocked", systemImage: "x.circle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("phone.gps")) {
 					let accuracy = Measurement(value: locationHelper.locationManager.location?.horizontalAccuracy ?? 300, unit: UnitLength.meters)
@@ -115,16 +123,16 @@ struct AppSettings: View {
 								print("delete all tiles")
 							}
 						}
-						ForEach(MapTileServer.allCases, id: \.self) { tsl in
-							Button {
-								tileManager.remove(for: tsl)
-								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-							} label: {
-								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
-									.foregroundColor(.red)
-									.font(.footnote)
-							}
-						}
+//						ForEach(MapTileServer.allCases, id: \.self) { tsl in
+//							Button {
+//								tileManager.remove(for: tsl)
+//								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+//							} label: {
+//								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+//									.foregroundColor(.red)
+//									.font(.footnote)
+//							}
+//						}
 					}
 				}
 			}
@@ -139,6 +147,9 @@ struct AppSettings: View {
 		})
 		.onAppear {
 			self.bleManager.context = context
+		}
+		.onChange(of: blockRangeTest) { newBlockRangeTest in
+			UserDefaults.blockRangeTest = newBlockRangeTest
 		}
 		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
 			UserDefaults.meshtasticUsername = newMeshtasticUsername

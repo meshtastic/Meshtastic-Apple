@@ -9,6 +9,7 @@ import Foundation
 
 extension UserDefaults {
 	enum Keys: String, CaseIterable {
+		case enableRangeTest
 		case meshtasticUsername
 		case preferredPeripheralId
 		case provideLocation
@@ -24,6 +25,13 @@ extension UserDefaults {
 
 	func reset() {
 		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
+	}
+	static var blockRangeTest: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "blockRangeTest") 
+		} set {
+			UserDefaults.standard.set(newValue, forKey: "blockRangeTest")
+		}
 	}
 	static var meshtasticUsername: String {
 		get {

@@ -214,6 +214,7 @@
 "provide.location"="Standort im Mesh veröffentlichen";
 "radio.configuration"="Geräteeinstellungen";
 "range.test"="Entfernungstest";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="Entfernungstest Konfiguration";
 "reboot"="Reboot";
 "reboot.node"="Node neustarten?";

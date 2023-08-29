@@ -215,6 +215,7 @@
 "provide.location"="Udostępnij lokalizację";
 "radio.configuration"="Konfiguracja radia";
 "range.test"="Test zasięgu";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="Konfiguracja testu zasięgu";
 "reply"="Odpowiedz";
 "reboot"="Uruchom ponownie";

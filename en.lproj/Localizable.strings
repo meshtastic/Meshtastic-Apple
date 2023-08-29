@@ -217,6 +217,7 @@
 "provide.location"="Share location";
 "radio.configuration"="Radio Configuration";
 "range.test"="Range Test";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="Range Test Config";
 "reply"="Reply";
 "reboot"="Reboot";

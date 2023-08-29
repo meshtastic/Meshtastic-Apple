@@ -214,6 +214,7 @@
 "provide.location"="提供定位到 Mesh 网络";
 "radio.configuration"="电台配置";
 "range.test"="拉距测试";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="拉距测试配置";
 "reply"="回复";
 "reboot"="重启";

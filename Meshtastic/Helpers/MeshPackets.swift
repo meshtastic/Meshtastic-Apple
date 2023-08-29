@@ -711,9 +711,13 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
+func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
+		
+		if blockRangeTest && messageText.starts(with: "seq ") {
+			return
+		}
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
 
