@@ -52,7 +52,8 @@ struct Contacts: View {
 											.foregroundColor(.accentColor)
 											.brightness(0.2)
 									}
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 42)
+									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 40)
+										.brightness(0.2)
 									
 									VStack(alignment: .leading){
 										HStack{
@@ -164,9 +165,11 @@ struct Contacts: View {
 										.opacity(user.unreadMessages > 0 ? 1 : 0)
 										.font(.system(size: 10))
 										.foregroundColor(.accentColor)
+										.brightness(0.2)
 								}
 								
 								CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 45, fontSize: (user.shortName ?? "???").isEmoji() ? 32 : (user.shortName?.count ?? 0 == 4  ? 14 : (user.shortName?.count ?? 0 == 3  ? 18 : 22)), brightness: 0.0, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+									.brightness(0.2)
 								
 								VStack(alignment: .leading){
 									HStack{
