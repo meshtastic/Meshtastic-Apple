@@ -46,7 +46,7 @@ struct Contacts: View {
 
 									ZStack {
 										Image(systemName: "circle.fill")
-											.opacity(true ? 1 : 0)
+											.opacity(channel.allPrivateMessages.count > 0 ? 1 : 0)
 											.font(.system(size: 10))
 											.foregroundColor(.accentColor)
 									}
@@ -101,7 +101,7 @@ struct Contacts: View {
 										}
 									}
 								}
-								.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
+								.frame(height: 62)
 								.contextMenu {
 									Button {
 										channel.mute = !channel.mute
@@ -206,7 +206,7 @@ struct Contacts: View {
 									}
 								}
 							}
-							.frame(height: 90)
+							.frame(height: 62)
 							.contextMenu {
 								Button {
 									user.mute = !user.mute
