@@ -216,8 +216,14 @@ struct UserMessageList: View {
 										}
 									}, secondaryButton: .cancel())
 								}
+								.onAppear {
+									if !message.read {
+										print("\(message.messageId) read")
+									}
+								}
 							}
 						}
+						// End Message List ForEach
 					}
 				}
 				.padding([.top])
