@@ -14,7 +14,7 @@ struct Contacts: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
