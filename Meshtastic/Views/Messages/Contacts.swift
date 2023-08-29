@@ -44,13 +44,15 @@ struct Contacts: View {
 									let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
 									let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
+									
 									ZStack {
 										Image(systemName: "circle.fill")
 											.opacity(channel.allPrivateMessages.count > 0 ? 1 : 0)
 											.font(.system(size: 10))
 											.foregroundColor(.accentColor)
+											.brightness(0.2)
 									}
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 36)
+									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 42)
 									
 									VStack(alignment: .leading){
 										HStack{
@@ -261,6 +263,7 @@ struct Contacts: View {
 					}
 				}
 			}
+			.listStyle(.grouped)
 			.navigationTitle("contacts")
 			.navigationBarItems(leading:
 				MeshtasticLogo()
