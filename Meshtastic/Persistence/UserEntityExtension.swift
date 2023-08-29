@@ -19,7 +19,7 @@ extension UserEntity {
 	
 	var unreadMessages: Int {
 		
-		let unreadMessages = receivedMessages?.filter{ ($0 as AnyObject).read == false } ?? []
+		let unreadMessages = messageList.filter{ ($0 as AnyObject).read == false } 
 		return unreadMessages.count
 	}
 }

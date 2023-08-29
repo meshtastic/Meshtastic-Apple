@@ -703,10 +703,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					newMessage.messageId = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 					newMessage.messageTimestamp =  Int32(Date().timeIntervalSince1970)
 					newMessage.receivedACK = false
+					newMessage.read = true
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
 						newMessage.toUser?.lastMessage = Date()
-						newMessage.read = true
 						newMessage.toUser?.objectWillChange.send()
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
