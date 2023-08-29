@@ -14,7 +14,7 @@ struct Contacts: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "longName", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: true)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
@@ -139,107 +139,116 @@ struct Contacts: View {
 				}
 				Section(header: Text("direct.messages")) {
 					ForEach(users) { (user: UserEntity) in
+						
+						let mostRecent = user.messageList.last
+						let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
+						let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
+						let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 						if  user.num != bleManager.connectedPeripheral?.num ?? 0 {
+							
 							NavigationLink(destination: UserMessageList(user: user)) {
-								let mostRecent = user.messageList.last
-								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
-								let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
-								let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
-								HStack {
-									VStack {
-										HStack {
-											CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 60, fontSize: (user.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
-												.padding(.trailing, 5)
-											VStack {
-												HStack {
-													Text(user.longName ?? "unknown".localized).font(.headline)
-													Spacer()
-													if user.messageList.count > 0 {
-														VStack(alignment: .trailing) {
-															if lastMessageDay == currentDay {
-																Text(lastMessageTime, style: .time )
-																	.font(.subheadline)
-															} else if  lastMessageDay == (currentDay - 1) {
-																Text("Yesterday")
-																	.font(.subheadline)
-															} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
-																Text(lastMessageTime.formattedDate(format: dateFormatString))
-																	.font(.subheadline)
-															} else if lastMessageDay < (currentDay - 1800) {
-																Text(lastMessageTime.formattedDate(format: dateFormatString))
-																	.font(.subheadline)
-															}
-														}
-														.brightness(-0.2)
-													}
+								ZStack {
+									Image(systemName: "circle.fill")
+										.opacity(user.unreadMessages > 0 ? 1 : 0)
+										.font(.system(size: 10))
+										.foregroundColor(.accentColor)
+								}
+								
+								CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 45, fontSize: (user.shortName ?? "???").isEmoji() ? 32 : (user.shortName?.count ?? 0 == 4  ? 14 : (user.shortName?.count ?? 0 == 3  ? 18 : 22)), brightness: 0.0, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+								
+								VStack(alignment: .leading){
+									HStack{
+										Text(user.longName ?? "unknown".localized)
+										
+										Spacer()
+										
+										if user.messageList.count > 0 {
+												if lastMessageDay == currentDay {
+													Text(lastMessageTime, style: .time )
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if lastMessageDay == (currentDay - 1) {
+													Text("Yesterday")
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
+													Text(lastMessageTime.formattedDate(format: dateFormatString))
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
+												} else if lastMessageDay < (currentDay - 1800) {
+													Text(lastMessageTime.formattedDate(format: dateFormatString))
+														.font(.system(size: 16))
+														.foregroundColor(.secondary)
 												}
-												if user.messageList.count > 0 {
-													HStack(alignment: .top) {
-														Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-															.truncationMode(.tail)
-															.font(.body)
-															.frame(maxWidth: .infinity, alignment: .leading)
-															.brightness(-0.2)
-													}
-												}
-											}
-											.frame(maxWidth: .infinity, maxHeight: 80, alignment: .leading)
-											.contextMenu {
-												Button {
-													user.mute = !user.mute
-													do {
-														try context.save()
-													} catch {
-														context.rollback()
-														print("💥 Save User Mute Error")
-													}
-												} label: {
-													Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
-												}
-												Button {
-													let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
-													if success {
-														isPresentingTraceRouteSentAlert = true
-													}
-												} label: {
-													Label("Trace Route", systemImage: "signpost.right.and.left")
-												}
-												if user.messageList.count  > 0 {
-													Button(role: .destructive) {
-														isPresentingDeleteUserMessagesConfirm = true
-														userSelection = user
-													} label: {
-														Label("Delete Messages", systemImage: "trash")
-													}
-												}
-											}
-											.alert(
-												"Trace Route Sent",
-												isPresented: $isPresentingTraceRouteSentAlert
-											) {
-												Button("OK", role: .cancel) { }
-											}
-											message: {
-												Text("This could take a while, response will appear in the mesh log.")
-											}
-											.confirmationDialog(
-												"This conversation will be deleted.",
-												isPresented: $isPresentingDeleteUserMessagesConfirm,
-												titleVisibility: .visible
-											) {
-												Button(role: .destructive) {
-													deleteUserMessages(user: userSelection!, context: context)
-													context.refresh(node!.user!, mergeChanges: true)
-												} label: {
-													Text("delete")
-												}
-											}
 										}
+										
+//										Image(systemName: "chevron.forward")
+//											.font(.caption)
+//											.foregroundColor(.secondary)
+									}
+									
+									if user.messageList.count > 0 {
+										HStack(alignment: .top) {
+											Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
+												.font(.system(size: 16))
+												.foregroundColor(.secondary)
+										}
+									}
+									
+								}
+								
+							}
+							.frame(height: 90)
+							.contextMenu {
+								Button {
+									user.mute = !user.mute
+									do {
+										try context.save()
+									} catch {
+										context.rollback()
+										print("💥 Save User Mute Error")
+									}
+								} label: {
+									Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+								}
+								Button {
+									let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
+									if success {
+										isPresentingTraceRouteSentAlert = true
+									}
+								} label: {
+									Label("Trace Route", systemImage: "signpost.right.and.left")
+								}
+								if user.messageList.count  > 0 {
+									Button(role: .destructive) {
+										isPresentingDeleteUserMessagesConfirm = true
+										userSelection = user
+									} label: {
+										Label("Delete Messages", systemImage: "trash")
 									}
 								}
 							}
-							.padding(.top, 10)
-							.padding(.bottom, 10)
+							.alert(
+								"Trace Route Sent",
+								isPresented: $isPresentingTraceRouteSentAlert
+							) {
+								Button("OK", role: .cancel) { }
+							}
+							message: {
+								Text("This could take a while, response will appear in the mesh log.")
+							}
+							.confirmationDialog(
+								"This conversation will be deleted.",
+								isPresented: $isPresentingDeleteUserMessagesConfirm,
+								titleVisibility: .visible
+							) {
+								Button(role: .destructive) {
+									deleteUserMessages(user: userSelection!, context: context)
+									context.refresh(node!.user!, mergeChanges: true)
+								} label: {
+									Text("delete")
+								}
+							}
 						}
 					}
 				}
@@ -266,8 +275,7 @@ struct Contacts: View {
 					}
 				}
 			}
-		}
-		detail: {
+		} detail: {
 			if let user = userSelection {
 				UserMessageList(user: user)
 

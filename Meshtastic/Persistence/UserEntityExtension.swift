@@ -18,4 +18,9 @@ extension UserEntity {
 
 		self.value(forKey: "adminMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
+	
+	var unreadMessages: Int {
+		self.receivedMessages?.count ?? 0
+	}
 }
+

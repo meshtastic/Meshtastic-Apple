@@ -1,8 +1,10 @@
 /*
-  Localizable.strings
-  Meshtastic
+ Localizable.strings
+ Meshtastic
 
-  Created by Shiv Kokroo ( @kokroo ) on 27/08/23, with contributions from @Marek_SP5ISZ
+ Copyright(r) Garth Vander Houwen 12/12/22.
+
+ Created by Shiv Kokroo ( @kokroo ) on 27/08/23, with contributions from @Marek_SP5ISZ
  
 */
 "about"="O programie";

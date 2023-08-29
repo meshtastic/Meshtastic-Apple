@@ -13,6 +13,7 @@ struct ContentView: View {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
+				.badge(42)
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
@@ -23,11 +24,13 @@ struct ContentView: View {
 					Label("nodes", systemImage: "flipphone")
 				}
 				.tag(Tab.nodes)
+				.badge(11)
 			NodeMap()
 				.tabItem {
 					Label("map", systemImage: "map")
 				}
 				.tag(Tab.map)
+				.badge(4)
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")
