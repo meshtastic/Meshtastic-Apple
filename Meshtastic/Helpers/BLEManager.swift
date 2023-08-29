@@ -705,6 +705,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					newMessage.receivedACK = false
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
+						newMessage.toUser?.lastMessage = Date()
+						newMessage.read = true
+						newMessage.toUser?.objectWillChange.send()
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji

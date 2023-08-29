@@ -218,11 +218,11 @@ struct UserMessageList: View {
 								}
 								.onAppear {
 									if !message.read {
-										print("\(message.messageId) read")
 										message.read = true
+										message.toUser?.objectWillChange.send()
 										do {
 											try context.save()
-											deleteMessageId = 0
+											print("Read message \(message.messageId) ")
 										} catch {
 											print("Failed to read message \(message.messageId)")
 										}

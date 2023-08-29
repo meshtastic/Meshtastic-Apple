@@ -14,7 +14,7 @@ struct Contacts: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
@@ -151,6 +151,7 @@ struct Contacts: View {
 					}
 				}
 				Section(header: Text("direct.messages")) {
+					
 					ForEach(users) { (user: UserEntity) in
 						
 						let mostRecent = user.messageList.last
@@ -169,7 +170,6 @@ struct Contacts: View {
 								}
 								
 								CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 45, fontSize: (user.shortName ?? "???").isEmoji() ? 32 : (user.shortName?.count ?? 0 == 4  ? 14 : (user.shortName?.count ?? 0 == 3  ? 18 : 22)), brightness: 0.0, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
-									.brightness(0.2)
 								
 								VStack(alignment: .leading){
 									HStack{

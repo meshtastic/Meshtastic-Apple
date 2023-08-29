@@ -23,4 +23,3 @@ extension UserEntity {
 		return unreadMessages.count
 	}
 }
-
