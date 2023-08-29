@@ -219,11 +219,17 @@ struct UserMessageList: View {
 								.onAppear {
 									if !message.read {
 										print("\(message.messageId) read")
+										message.read = true
+										do {
+											try context.save()
+											deleteMessageId = 0
+										} catch {
+											print("Failed to read message \(message.messageId)")
+										}
 									}
 								}
 							}
 						}
-						// End Message List ForEach
 					}
 				}
 				.padding([.top])
