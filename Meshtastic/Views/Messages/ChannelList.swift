@@ -17,6 +17,7 @@ struct ChannelList: View {
 
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
+
 	@State private var isPresentingTraceRouteSentAlert = false
 	
 	var body: some View {
@@ -145,7 +146,6 @@ struct ChannelList: View {
 					.padding([.top, .bottom])
 				}
 			}
-			.listStyle(.grouped)
 			.navigationTitle("channels")
 		}
 	}

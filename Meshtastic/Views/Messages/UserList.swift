@@ -27,8 +27,6 @@ struct UserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		List {
-
-			
 			ForEach(users) { (user: UserEntity) in
 				
 				let mostRecent = user.messageList.last
@@ -143,25 +141,6 @@ struct UserList: View {
 				}
 			}
 		}
-		.listStyle(.grouped)
 		.navigationTitle("contacts")
-		.onAppear {
-			self.bleManager.context = context
-			if UserDefaults.preferredPeripheralId.count > 0 {
-				let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
-				fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))
-				do {
-					guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
-						return
-					}
-					// Found a node, check it for a region
-					if !fetchedNode.isEmpty {
-						node = fetchedNode[0]
-					}
-				} catch {
-
-				}
-			}
-		}
 	}
 }

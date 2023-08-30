@@ -80,17 +80,9 @@ struct Messages: View {
 			}
 			
 		} content: {
-			
-			ChannelList()
-			UserList()
 
 		} detail: {
-			if let user = userSelection {
-				UserMessageList(user: user)
 
-			} else {
-				Text("select.contact")
-			}
 		}
 	}
 }
