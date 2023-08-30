@@ -226,6 +226,18 @@ struct ChannelMessageList: View {
 									}
 								}, secondaryButton: .cancel())
 							}
+							.onAppear {
+								if !message.read {
+									message.read = true
+									message.toUser?.objectWillChange.send()
+									do {
+										try context.save()
+										print("Read message \(message.messageId) ")
+									} catch {
+										print("Failed to read message \(message.messageId)")
+									}
+								}
+							}
 						}
 					}
 				}

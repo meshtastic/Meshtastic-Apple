@@ -47,7 +47,7 @@ struct Contacts: View {
 									
 									ZStack {
 										Image(systemName: "circle.fill")
-											.opacity(channel.allPrivateMessages.count > 0 ? 1 : 0)
+											.opacity(channel.unreadMessages > 0 ? 1 : 0)
 											.font(.system(size: 10))
 											.foregroundColor(.accentColor)
 											.brightness(0.2)
