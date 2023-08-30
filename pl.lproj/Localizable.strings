@@ -55,6 +55,7 @@
 "connected"="Podłączony";
 "connecting"="Łączenie . .";
 "contacts"="Kontakty";
+"contacts %@"="Kontakty (%@)";
 "copy"="Kopiuj";
 "current"="Bieżący";
 "default"="Domyślny";

@@ -53,6 +53,7 @@
 "connected"="已连接到电台";
 "connecting"="连接中...";
 "contacts"="联系人";
+"contacts %@"="联系人 (%@)";
 "copy"="复制";
 "current"="当前";
 "default"="默认";

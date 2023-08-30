@@ -53,6 +53,7 @@
 "connected"="Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
+"contacts %@"="Contacts (%@)";
 "copy"="Copy";
 "current"="Current";
 "default"="Default";
