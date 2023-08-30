@@ -71,11 +71,9 @@ struct UserList: View {
 											.foregroundColor(.secondary)
 									}
 								}
-								#if targetEnvironment(macCatalyst)
-								Image(systemName: "chevron.forward")
-									.font(.caption)
-									.foregroundColor(.secondary)
-								#endif
+//								Image(systemName: "chevron.forward")
+//									.font(.caption)
+//									.foregroundColor(.secondary)
 							}
 							
 							if user.messageList.count > 0 {
@@ -141,6 +139,7 @@ struct UserList: View {
 				}
 			}
 		}
+		.listStyle(.plain)
 		.navigationTitle("contacts")
 	}
 }

@@ -13,17 +13,9 @@ struct Messages: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
-		animation: .default)
-
-	private var users: FetchedResults<UserEntity>
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var channelSelection: ChannelEntity? // Nothing selected by default.
-	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
-	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
-	@State private var isPresentingTraceRouteSentAlert = false
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	

@@ -84,11 +84,9 @@ struct ChannelList: View {
 													.foregroundColor(.secondary)
 											}
 										}
-										#if targetEnvironment(macCatalyst)
-										Image(systemName: "chevron.forward")
-											.font(.caption)
-											.foregroundColor(.secondary)
-										#endif
+//										Image(systemName: "chevron.forward")
+//											.font(.caption)
+//											.foregroundColor(.secondary)
 									}
 									
 									if channel.allPrivateMessages.count > 0 {
@@ -146,6 +144,7 @@ struct ChannelList: View {
 					.padding([.top, .bottom])
 				}
 			}
+			.listStyle(.plain)
 			.navigationTitle("channels")
 		}
 	}
