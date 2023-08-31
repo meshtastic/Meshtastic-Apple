@@ -219,9 +219,10 @@ struct UserMessageList: View {
 								.onAppear {
 									if !message.read {
 										message.read = true
-										UserDefaults.unreadMessages = UserDefaults.unreadMessages - 1
-										UserDefaults.standard.synchronize()
+										//UserDefaults.unreadMessages = UserDefaults.unreadMessages - 1
+										//UserDefaults.standard.synchronize()
 										message.toUser?.objectWillChange.send()
+										message.fromUser?.objectWillChange.send()
 										do {
 											try context.save()
 											print("Read message \(message.messageId) ")

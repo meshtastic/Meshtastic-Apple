@@ -749,8 +749,8 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != 4294967295 {
 				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
 				if connectedNode == newMessage.toUser?.num {
-					UserDefaults.unreadMessages = (newMessage.toUser?.unreadMessages ?? 0) + 1
-					UserDefaults.standard.synchronize()
+					//UserDefaults.unreadMessages = (newMessage.toUser?.unreadMessages ?? 0) + 1
+					//UserDefaults.standard.synchronize()
 				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {

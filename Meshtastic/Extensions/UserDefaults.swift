@@ -147,11 +147,11 @@ extension UserDefaults {
 		}
 	}
 	
-	static var unreadMessages: Int {
-		get {
-			UserDefaults.standard.integer(forKey: "unreadMessages")
-		} set {
-			UserDefaults.standard.set(newValue, forKey: "unreadMessages")
-		}
-	}
+//	static var unreadMessages: Int {
+//		get {
+//			UserDefaults.standard.integer(forKey: "unreadMessages")
+//		} set {
+//			UserDefaults.standard.set(newValue, forKey: "unreadMessages")
+//		}
+//	}
 }

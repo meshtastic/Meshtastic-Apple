@@ -13,7 +13,7 @@ struct ContentView: View {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
-				.badge(UserDefaults.unreadMessages)
+				//.badge(UserDefaults.unreadMessages)
 				
 			Connect()
 				.tabItem {
