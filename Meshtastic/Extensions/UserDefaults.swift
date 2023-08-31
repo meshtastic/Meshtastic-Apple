@@ -21,6 +21,7 @@ extension UserDefaults {
 		case enableOfflineMaps
 		case mapTileServer
 		case mapTilesAboveLabels
+		case unreadMessages
 	}
 
 	func reset() {
@@ -143,6 +144,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "mapTilesAboveLabels")
+		}
+	}
+	
+	static var unreadMessages: Int {
+		get {
+			UserDefaults.standard.integer(forKey: "unreadMessages")
+		} set {
+			UserDefaults.standard.set(newValue, forKey: "unreadMessages")
 		}
 	}
 }

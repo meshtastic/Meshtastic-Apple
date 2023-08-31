@@ -9,7 +9,8 @@ import SwiftUI
 
 class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-		print("App launched!")
+		print("🚀 Meshtstic Apple App launched!")
+		UserDefaults.standard.register(defaults: ["blockRangeTest" : true])
 		UNUserNotificationCenter.current().delegate = self
 		return true
 	}

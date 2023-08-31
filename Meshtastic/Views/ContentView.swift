@@ -13,7 +13,8 @@ struct ContentView: View {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
-			//	.badge(42)
+				.badge(UserDefaults.unreadMessages)
+				
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
