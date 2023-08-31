@@ -63,7 +63,7 @@ struct WidgetsLiveActivity: Widget {
 						.tint(Color("LightIndigo"))
 
 				}
-				DynamicIslandExpandedRegion(.bottom){
+				DynamicIslandExpandedRegion(.bottom) {
 					Text(context.attributes.name)
 						.font(context.attributes.name.count > 14 ? .callout : .title3)
 						.fontWeight(.semibold)
@@ -76,7 +76,7 @@ struct WidgetsLiveActivity: Widget {
 				}
 
             } compactLeading: {
-				Image("logo-black")
+				Image("m-logo-black")
 					.resizable()
 					.frame(width: 30.0)
 					.padding(4)
@@ -87,7 +87,7 @@ struct WidgetsLiveActivity: Widget {
 					.foregroundColor(Color("LightIndigo"))
 					.frame(width: 40)
             } minimal: {
-				Image("logo-black")
+				Image("m-logo-black")
 					.resizable()
 					.frame(width: 24.0)
 					.padding(4)
@@ -137,7 +137,7 @@ struct LiveActivityView: View {
 
 	var body: some View {
 		HStack {
-			Image(colorScheme == .light ? "logo-black" : "logo-white")
+			Image(colorScheme == .light ? "m-logo-black" : "m-logo-white")
 				.resizable()
 				.clipShape(ContainerRelativeShape())
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)

@@ -61,7 +61,6 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 	return WaypointEntity(context: context)
 }
 
-
 public func getDetectionSensorMessages(nodeNum: Int64?, context: NSManagedObjectContext) -> [MessageEntity] {
 
 	let fetchDetectionMessagesPredicate: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
@@ -75,8 +74,7 @@ public func getDetectionSensorMessages(nodeNum: Int64?, context: NSManagedObject
 		return fetched.filter { message in
 			return message.fromUser?.num == nodeNum!
 		}.reversed()
-	}
-	catch {
+	} catch {
 		return []
 	}
 }

@@ -4,7 +4,7 @@ import SwiftUI
 import CoreData
 
 @main
-struct MeshtasticAppleApp : App {
+struct MeshtasticAppleApp: App {
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager()
@@ -14,7 +14,6 @@ struct MeshtasticAppleApp : App {
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
 	@StateObject var appState = AppState.shared
-	
     var body: some Scene {
         WindowGroup {
 			ContentView()

@@ -7,7 +7,6 @@
 import SwiftUI
 
 struct PositionLog: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
@@ -16,24 +15,18 @@ struct PositionLog: View {
 		let result = (verticalSizeClass == .regular || verticalSizeClass == .compact) && horizontalSizeClass == .compact
 		return result
 	}
-	
 	@State var isExporting = false
 	@State var exportString = ""
-	
 	var node: NodeInfoEntity
-	
 	@State private var isPresentingClearLogConfirm = false
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.latitude)]
-	
 	var body: some View {
-		
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
-				var positions = node.positions?.reversed() as? [PositionEntity] ?? []
-				
+				let positions = node.positions?.reversed() as? [PositionEntity] ?? []
 				Table(positions) {
 					TableColumn("Latitude") { position in
 						Text(String(format: "%.5f", position.latitude ?? 0))
@@ -65,9 +58,7 @@ struct PositionLog: View {
 					}
 					.width(min: 180)
 				}
-				
 			} else {
-				
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
 					let columns = [
@@ -78,7 +69,6 @@ struct PositionLog: View {
 						GridItem(spacing: 0)
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
-						
 						GridRow {
 							Text("Latitude")
 								.font(.caption2)
@@ -115,9 +105,7 @@ struct PositionLog: View {
 				}
 				.padding(.leading)
 			}
-			
 			HStack {
-				
 				Button(role: .destructive) {
 					isPresentingClearLogConfirm = true
 				} label: {
@@ -136,18 +124,15 @@ struct PositionLog: View {
 					Button("Delete all positions?", role: .destructive) {
 						if clearPositions(destNum: node.num, context: context) {
 							print("Successfully Cleared Position Log")
-							
 						} else {
 							print("Clear Position Log Failed")
 						}
 					}
 				}
-				
 				Button {
 					exportString = positionToCsvFile(positions: node.positions!.array as? [PositionEntity] ?? [])
 					isExporting = true
 				} label: {
-					
 					Label("save", systemImage: "square.and.arrow.down")
 				}
 				.buttonStyle(.bordered)
@@ -162,14 +147,10 @@ struct PositionLog: View {
 				contentType: .commaSeparatedText,
 				defaultFilename: String("\(node.user?.longName ?? "Node") Position Log"),
 				onCompletion: { result in
-					
 					if case .success = result {
-						
 						print("Position log download succeeded.")
 						self.isExporting = false
-						
 					} else {
-						
 						print("Position log download failed: \(result).")
 					}
 				}
@@ -177,13 +158,10 @@ struct PositionLog: View {
 		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
 		.navigationBarItems(trailing:
-								
 								ZStack {
-			
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
 		})
 		.onAppear {
-			
 			self.bleManager.context = context
 		}
 	}

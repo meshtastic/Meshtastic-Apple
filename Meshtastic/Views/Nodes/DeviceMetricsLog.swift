@@ -8,21 +8,21 @@ import SwiftUI
 import Charts
 
 struct DeviceMetricsLog: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
+
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	
+
 	@State private var batteryChartColor: Color = .blue
 	@State private var airtimeChartColor: Color = .orange
 	@State private var channelUtilizationChartColor: Color = .green
 	var node: NodeInfoEntity
-	
+
 	var body: some View {
-		
+
 		let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).reversed() as? [TelemetryEntity] ?? []
 		let chartData = deviceMetrics
@@ -30,14 +30,14 @@ struct DeviceMetricsLog: View {
 				.sorted { $0.time! < $1.time! }
 
 		NavigationStack {
-			
+
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
-					
+
 					Chart {
-						
+
 						ForEach(chartData, id: \.self) { point in
-							
+
 							Plot {
 								LineMark(
 									x: .value("x", point.time!),
@@ -48,7 +48,7 @@ struct DeviceMetricsLog: View {
 							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 							.foregroundStyle(batteryChartColor)
 							.interpolationMethod(.catmullRom(alpha: 1.0))
-							
+
 							Plot {
 								PointMark(
 									x: .value("x", point.time!),
@@ -58,11 +58,11 @@ struct DeviceMetricsLog: View {
 							.accessibilityLabel("Line Series")
 							.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
 							.foregroundStyle(channelUtilizationChartColor)
-							
+
 							RuleMark(y: .value("Limit", 10))
 								.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
 								.foregroundStyle(airtimeChartColor)
-							
+
 							Plot {
 								PointMark(
 									x: .value("x", point.time!),
@@ -80,7 +80,7 @@ struct DeviceMetricsLog: View {
 					.chartXAxis(.automatic)
 					.chartYScale(domain: 0...100)
 					.chartForegroundStyleScale([
-						"Battery Level" : .blue,
+						"Battery Level": .blue,
 						"Channel Utilization": .green,
 						"Airtime": .orange
 					])
@@ -91,9 +91,8 @@ struct DeviceMetricsLog: View {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				
 				// Add a table for mac and ipad
-				//Table(Array(deviceMetrics),id: \.self) {
+				// Table(Array(deviceMetrics),id: \.self) {
 				Table(deviceMetrics) {
 					TableColumn("battery.level") { dm in
 						if dm.batteryLevel > 100 {
@@ -119,13 +118,11 @@ struct DeviceMetricsLog: View {
 			} else {
 				ScrollView {
 					let columns = [
-						//GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 45), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
 						GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
 						GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
-						
 					]
 					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 						GridRow {

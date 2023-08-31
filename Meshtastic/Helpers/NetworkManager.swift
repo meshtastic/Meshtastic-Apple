@@ -9,11 +9,9 @@ import Foundation
 import Network
 
 class NetworkManager {
-	
 	static let shared = NetworkManager()
-	
-	// MARK: -  Public methods
-	func runIfNetwork(completion: @escaping ()->() ) {
+	// MARK: Public methods
+	func runIfNetwork(completion: @escaping () -> Void ) {
 		let pathMonitor = NWPathMonitor()
 		pathMonitor.pathUpdateHandler = {
 			guard $0.status == .satisfied else {
@@ -26,5 +24,4 @@ class NetworkManager {
 		}
 		pathMonitor.start(queue: DispatchQueue.global(qos: .background))
 	}
-	
 }

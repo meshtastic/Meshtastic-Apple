@@ -12,7 +12,6 @@ import SwiftUI
 import CoreLocation
 
 struct NodeList: View {
-	
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -112,6 +111,7 @@ struct NodeList: View {
 					.padding([.top, .bottom])
 				}
 			 }
+			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.navigationBarItems(leading:
 				MeshtasticLogo()
@@ -129,4 +129,3 @@ struct NodeList: View {
 	   .searchable(text: nodesQuery, prompt: "Find a node")
 	}
 }
-

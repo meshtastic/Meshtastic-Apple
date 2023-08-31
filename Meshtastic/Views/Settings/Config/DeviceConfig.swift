@@ -7,18 +7,18 @@
 import SwiftUI
 
 struct DeviceConfig: View {
-	
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
-	
+
 	var node: NodeInfoEntity?
-	
+
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
 	@State private var isPresentingSaveConfirm = false
 	@State var hasChanges = false
-	
+
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
@@ -27,17 +27,14 @@ struct DeviceConfig: View {
 	@State var rebroadcastMode = 0
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
-	
+
 	var body: some View {
-		
 		VStack {
-			
 			Form {
 				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-					
 				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					// Let users know what is going on if they are using remote admin and don't have the config yet
 					if node?.deviceConfig == nil {
@@ -60,7 +57,6 @@ struct DeviceConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
-					
 					Picker("Device Role", selection: $deviceRole ) {
 						ForEach(DeviceRoles.allCases) { dr in
 							Text(dr.name)
@@ -71,7 +67,6 @@ struct DeviceConfig: View {
 					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.caption)
-					
 					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
 						ForEach(RebroadcastModes.allCases) { rm in
 							Text(rm.name)
@@ -82,14 +77,13 @@ struct DeviceConfig: View {
 					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.caption)
-					
 					Toggle(isOn: $doubleTapAsButtonPress) {
 						Label("Double Tap as Button", systemImage: "hand.tap")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Treat double tap on supported accelerometers as a user button press.")
 						.font(.caption)
-					
+
 					Toggle(isOn: $isManaged) {
 						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 					}
@@ -97,24 +91,17 @@ struct DeviceConfig: View {
 					Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
 						.font(.caption)
 				}
-				
 				Section(header: Text("Debug")) {
-					
 					Toggle(isOn: $serialEnabled) {
-						
 						Label("Serial Console", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $debugLogEnabled) {
-						
 						Label("Debug Log", systemImage: "ant.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				
 				Section(header: Text("GPIO")) {
-					
 					Picker("Button GPIO", selection: $buttonGPIO) {
 						ForEach(0..<46) {
 							if $0 == 0 {
@@ -136,14 +123,11 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 				}
-				
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
-			
 			// Only show these buttons for the BLE connected node
 			if bleManager.connectedPeripheral != nil && node?.num ?? -1  == bleManager.connectedPeripheral.num {
 				HStack {
-					
 					Button("Reset NodeDB", role: .destructive) {
 						isPresentingNodeDBResetConfirm = true
 					}
@@ -158,7 +142,6 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Erase all device and app data?", role: .destructive) {
-							
 							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								bleManager.disconnectPeripheral()
 								clearCoreDataDatabase(context: context)
@@ -181,23 +164,19 @@ struct DeviceConfig: View {
 						titleVisibility: .visible
 					) {
 						Button("Factory reset your device and app? ", role: .destructive) {
-							
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								bleManager.disconnectPeripheral()
 								clearCoreDataDatabase(context: context)
 							} else {
 								print("Factory Reset Failed")
-								
 							}
 						}
 					}
 				}
 			}
 			HStack {
-				
 				Button {
 					isPresentingSaveConfirm = true
-					
 				} label: {
 					Label("save", systemImage: "square.and.arrow.down")
 				}
@@ -207,7 +186,6 @@ struct DeviceConfig: View {
 				.controlSize(.large)
 				.padding()
 				.confirmationDialog(
-					
 					"are.you.sure",
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
@@ -226,7 +204,6 @@ struct DeviceConfig: View {
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 							dc.isManaged = isManaged
-							
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 							if adminMessageId > 0 {
 								// Should show a saved successfully alert once I know that to be true
@@ -251,7 +228,6 @@ struct DeviceConfig: View {
 		.onAppear {
 			self.bleManager.context = context
 			setDeviceValues()
-			
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {
 				print("empty device config")

@@ -57,7 +57,6 @@ struct LoRaConfig: View {
 						Text("LoRa config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
 							.font(.callout)
 							.foregroundColor(.orange)
-							
 					} else {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)

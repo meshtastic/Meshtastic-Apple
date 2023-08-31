@@ -6,15 +6,14 @@ import SwiftUI
 
 struct ContentView: View {
 	@StateObject var appState = AppState.shared
-	
 	var body: some View {
-		
 		TabView(selection: $appState.tabSelection) {
-			Contacts()
+			Messages()
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
+			//	.badge(42)
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
@@ -33,6 +32,7 @@ struct ContentView: View {
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")
+						.font(.title)
 				}
 				.tag(Tab.settings)
 		}
