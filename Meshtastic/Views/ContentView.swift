@@ -8,11 +8,6 @@ struct ContentView: View {
 	@StateObject var appState = AppState.shared
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
-//			Contacts()
-//				.tabItem {
-//					Label("messages", systemImage: "message")
-//				}
-//				.tag(Tab.contacts)
 			Messages()
 				.tabItem {
 					Label("messages", systemImage: "message")
