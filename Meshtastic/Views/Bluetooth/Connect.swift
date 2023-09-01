@@ -49,7 +49,7 @@ struct Connect: View {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
 								HStack {
 									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90, fontSize: (node?.user?.shortName ?? "???").isEmoji() ? 52 : (node?.user?.shortName?.count ?? 0 == 4  ? 26 : 36), textColor: UIColor(hex: UInt32(node?.num ?? 0)).isLight() ? .black : .white )
+										CircleText(text: node?.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90, textColor: UIColor(hex: UInt32(node?.num ?? 0)).isLight() ? .black : .white )
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {

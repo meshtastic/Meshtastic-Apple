@@ -47,7 +47,7 @@ struct ChannelList: View {
 										.foregroundColor(.accentColor)
 										.brightness(0.2)
 								}
-								CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 40)
+								CircleText(text: String(channel.index), color: .accentColor)
 									.brightness(0.2)
 								
 								VStack(alignment: .leading){

@@ -31,7 +31,7 @@ extension UIColor {
 	}
 
 	func darker(componentDelta: CGFloat = 0.1) -> UIColor {
-		return makeColor(componentDelta: -3*componentDelta)
+		return makeColor(componentDelta: -2*componentDelta)
 	}
 
 	private func add(_ value: CGFloat, toComponent: CGFloat) -> CGFloat {
