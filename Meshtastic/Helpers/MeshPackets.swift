@@ -237,7 +237,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			return nil
 		}
 		// Not Found Insert
-		if fetchedNode.isEmpty && nodeInfo.hasUser {
+		if fetchedNode.isEmpty {
 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
@@ -296,6 +296,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
+					print("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
 					return newNode
 				} catch {
 					context.rollback()
@@ -314,7 +315,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 
 			if nodeInfo.hasUser {
-
+				if (fetchedNode[0].user == nil) {
+					fetchedNode[0].user = UserEntity(context: context)
+				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
@@ -750,10 +753,9 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
-			if packet.to != 4294967295 {
+			if packet.to != 4294967295 && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
-
 			var messageSaved = false
 
 			do {
