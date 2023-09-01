@@ -68,6 +68,7 @@
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
+		DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093E2AA1B146007A8BF0 /* UIColor.swift */; };
 		DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD798B062915928D005217CD /* ChannelMessageList.swift */; };
 		DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */; };
 		DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */; };
@@ -268,6 +269,7 @@
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
+		DD77093E2AA1B146007A8BF0 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		DD798B062915928D005217CD /* ChannelMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageList.swift; sourceTree = "<group>"; };
 		DD8169F8271F1A6100F4AB02 /* MeshLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLogger.swift; sourceTree = "<group>"; };
 		DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshLog.swift; sourceTree = "<group>"; };
@@ -790,6 +792,7 @@
 				DDDB444329F8A8DD00EE2349 /* Float.swift */,
 				DDDB444D29F8AB0E00EE2349 /* Int.swift */,
 				DDDB444729F8A9C900EE2349 /* String.swift */,
+				DD77093E2AA1B146007A8BF0 /* UIColor.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
@@ -1145,6 +1148,7 @@
 				DD3CC6BC28E366DF00FA9159 /* Meshtastic.xcdatamodeld in Sources */,
 				DDC4C9FF2A8D982900CE201C /* DetectionSensorConfig.swift in Sources */,
 				DD5E5210298EE33B00D21B61 /* telemetry.pb.swift in Sources */,
+				DD77093F2AA1B146007A8BF0 /* UIColor.swift in Sources */,
 				DD5E5205298EE33B00D21B61 /* mesh.pb.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForward.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,

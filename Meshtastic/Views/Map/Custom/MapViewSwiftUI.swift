@@ -290,7 +290,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				if positionAnnotation.latest {
-					annotationView.markerTintColor = .systemRed
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)).darker()
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
