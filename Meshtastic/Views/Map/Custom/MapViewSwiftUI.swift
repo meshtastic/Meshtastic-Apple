@@ -251,18 +251,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 		}
+		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
 			if UserDefaults.enableMapRecentering {
 				if latest.count == 1 {
 					mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
 				} else {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					mapView.fitAllAnnotations()
 				}
 			}
 		} else {
-			mapView.addAnnotations(showNodeHistory ? positions : latest)
 			mapView.showsUserLocation = true
 		}
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
