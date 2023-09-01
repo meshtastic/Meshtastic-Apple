@@ -10,8 +10,8 @@ import MapKit
 import CoreData
 import CoreLocation
 import CoreBluetooth
-#if canImport(ActivityKit)
-import ActivityKit
+#if canImport(TipKit)
+import TipKit
 #endif
 
 struct Connect: View {
@@ -47,6 +47,9 @@ struct Connect: View {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+								if #available(iOS 17.0, macOS 14.0, *) {
+									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
+								}
 								HStack {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90, fontSize: (node?.user?.shortName ?? "???").isEmoji() ? 52 : (node?.user?.shortName?.count ?? 0 == 4  ? 26 : 36), textColor: UIColor(hex: UInt32(node?.num ?? 0)).isLight() ? .black : .white )
