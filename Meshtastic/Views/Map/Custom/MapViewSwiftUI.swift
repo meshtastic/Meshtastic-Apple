@@ -289,12 +289,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "node") as? MKMarkerAnnotationView ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: reuseID )
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
+				annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0))
 				if positionAnnotation.latest {
-					annotationView.markerTintColor = .systemRed
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0))
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}

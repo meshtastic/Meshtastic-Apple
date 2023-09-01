@@ -7,6 +7,9 @@
 import SwiftUI
 import CoreData
 import CoreImage.CIFilterBuiltins
+#if canImport(TipKit)
+import TipKit
+#endif
 
 struct QrCodeImage {
 	let context = CIContext()
@@ -43,16 +46,17 @@ struct ShareChannels: View {
 	@State var includeChannel5 = true
 	@State var includeChannel6 = true
 	@State var includeChannel7 = true
-	@State var isPresentingHelp = false
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
 
 	var body: some View {
+		
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
 			ScrollView {
 					if node != nil && node?.myInfo != nil {
+						
 						Grid {
 							GridRow {
 								Spacer()
@@ -183,75 +187,35 @@ struct ShareChannels: View {
 						let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 						VStack {
 							if node != nil {
-								ShareLink("Share QR Code & Link",
-											item: Image(uiImage: qrImage),
-											subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
-											message: Text(channelsUrl),
-											preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
-																image: Image(uiImage: qrImage))
-								)
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.large)
-								.padding(.bottom)
+								VStack {
+									if #available(iOS 17.0, macOS 14.0, *) {
+										// Place the tip view near the feature you want to highlight.
+										TipView(ShareChannelsTip(), arrowEdge: .top)
+									}
+								}
+								HStack {
+									ShareLink("Share QR Code & Link",
+											  item: Image(uiImage: qrImage),
+											  subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
+											  message: Text(channelsUrl),
+											  preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
+																	image: Image(uiImage: qrImage))
+									)
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+								}
 
 								Image(uiImage: qrImage)
 									.resizable()
 									.scaledToFit()
 									.frame(
-										minWidth: smallest * 0.95,
-										maxWidth: smallest * 0.95,
-										minHeight: smallest * 0.95,
-										maxHeight: smallest * 0.95,
-										alignment: .top
-									)
-								Button {
-									isPresentingHelp = true
-								} label: {
-									Label("Help Me!", systemImage: "lifepreserver")
-								}
-								.buttonStyle(.bordered)
-								.buttonBorderShape(.capsule)
-								.controlSize(.small)
+										maxHeight: smallest * 0.75,
+										alignment: .top)
 							}
 						}
 					}
-			}
-			.sheet(isPresented: $isPresentingHelp) {
-				VStack {
-					Text("Meshtastic Channels").font(.title)
-					Text("A Meshtastic LoRa Mesh network can have up to 8 distinct channels.")
-						.font(.headline)
-						.padding(.bottom)
-					Text("Primary Channel").font(.title2)
-					Text("The first channel is the Primary channel and is where much of the mesh activity takes place. DM's are only available on the primary channel and it can not be disabled. If you don't share your primary channel, the first channel will become the primary channel on the other network and will allow communication with your mesh on the group channel.")
-						.font(.callout)
-						.padding([.leading, .trailing, .bottom])
-					Text("Admin Channel").font(.title2)
-					Text("A channel with the name 'admin' is the Admin channel and can be used to remotely administer nodes on your mesh, text messages can not be sent over the admin channel.")
-						.font(.callout)
-						.padding([.leading, .trailing, .bottom])
-					Text("Private Channels").font(.title2)
-					Text("The other channels can be used for private group converations. Each of these groups has its own encryption key.")
-						.font(.callout)
-						.padding([.leading, .trailing, .bottom])
-					Divider()
-				}
-				.padding()
-				.presentationDetents([.large])
-				.presentationDragIndicator(.automatic)
-
-				#if targetEnvironment(macCatalyst)
-					Button {
-						isPresentingHelp = false
-					} label: {
-						Label("close", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding()
-				#endif
 			}
 			.navigationTitle("generate.qr.code")
 			.navigationBarTitleDisplayMode(.inline)

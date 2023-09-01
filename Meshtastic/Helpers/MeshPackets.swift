@@ -296,8 +296,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
-					print(" Saved a new Node Info For: (String(nodeInfo.num))")
-
+					print("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
 					return newNode
 				} catch {
 					context.rollback()
@@ -758,7 +757,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
-			if packet.to != 4294967295 {
+			if packet.to != 4294967295 && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
 
