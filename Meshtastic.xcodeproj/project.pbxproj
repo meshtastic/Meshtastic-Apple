@@ -162,6 +162,7 @@
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFAC1F62AA0F1450010E4D4 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFAC1F52AA0F1450010E4D4 /* ChannelTips.swift */; };
 		DDFAC1F82AA152660010E4D4 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFAC1F72AA152660010E4D4 /* BluetoothTips.swift */; };
+		DDFAC1FA2AA19DBC0010E4D4 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFAC1F92AA19DBC0010E4D4 /* UIColor.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
 /* End PBXBuildFile section */
 
@@ -381,6 +382,7 @@
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFAC1F52AA0F1450010E4D4 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
 		DDFAC1F72AA152660010E4D4 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
+		DDFAC1F92AA19DBC0010E4D4 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -795,6 +797,7 @@
 				DDDB444329F8A8DD00EE2349 /* Float.swift */,
 				DDDB444D29F8AB0E00EE2349 /* Int.swift */,
 				DDDB444729F8A9C900EE2349 /* String.swift */,
+				DDFAC1F92AA19DBC0010E4D4 /* UIColor.swift */,
 				DDDB444F29F8AC9C00EE2349 /* UIImage.swift */,
 				DDDB443F29F79AB000EE2349 /* UserDefaults.swift */,
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
@@ -1113,6 +1116,7 @@
 				DDC2E18F26CE25FE0042C5E4 /* ContentView.swift in Sources */,
 				DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */,
 				DD2DC2C029BCD8AB003B383C /* HardwareModels.swift in Sources */,
+				DDFAC1FA2AA19DBC0010E4D4 /* UIColor.swift in Sources */,
 				DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */,
 				DDD9E4E4284B208E003777C5 /* UserEntityExtension.swift in Sources */,
 				DD2553592855B52700E55709 /* PositionConfig.swift in Sources */,
