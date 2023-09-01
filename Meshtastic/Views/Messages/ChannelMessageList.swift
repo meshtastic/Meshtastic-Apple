@@ -229,7 +229,6 @@ struct ChannelMessageList: View {
 							.onAppear {
 								if !message.read {
 									message.read = true
-									message.toUser?.objectWillChange.send()
 									do {
 										try context.save()
 										print("Read message \(message.messageId) ")
