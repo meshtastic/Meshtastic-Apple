@@ -54,6 +54,7 @@ struct Messages: View {
 				}
 			}
 			.navigationTitle("messages")
+			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onAppear {
 				self.bleManager.context = context
