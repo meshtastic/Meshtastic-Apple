@@ -9,7 +9,12 @@ import SwiftUI
 
 class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-		print("App launched!")
+		print("🚀 Meshtstic Apple App launched!")
+		// Default User Default Values
+		UserDefaults.standard.register(defaults: ["blockRangeTest" : true])
+		UserDefaults.standard.register(defaults: ["meshMapRecentering" : true])
+		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory" : true])
+		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines" : true])
 		UNUserNotificationCenter.current().delegate = self
 		return true
 	}

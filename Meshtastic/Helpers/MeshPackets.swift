@@ -766,6 +766,11 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 
 				if messageSaved {
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
+						// Set Unread Message Indicators
+						if packet.to == connectedNode {
+							var state = AppState.shared
+							state.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+						}
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [

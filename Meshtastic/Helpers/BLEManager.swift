@@ -718,6 +718,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					newMessage.messagePayload = message
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
+					newMessage.read = true
 					
 					let dataType = PortNum.textMessageApp
 					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")

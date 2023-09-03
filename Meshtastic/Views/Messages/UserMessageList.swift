@@ -10,6 +10,7 @@ import CoreData
 
 struct UserMessageList: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -222,6 +223,8 @@ struct UserMessageList: View {
 										do {
 											try context.save()
 											print("Read message \(message.messageId) ")
+											appState.unreadDirectMessages = user.unreadMessages
+
 										} catch {
 											print("Failed to read message \(message.messageId)")
 										}

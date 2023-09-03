@@ -23,6 +23,7 @@ struct CircleText: View {
 					  .minimumScaleFactor(0.001)
 					  .frame(width: circleSize * 0.94, height: circleSize * 0.94, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
         }
+		.aspectRatio(1, contentMode: .fit)
     }
 }
 

@@ -632,16 +632,16 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
-				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
+				DD86D40D2881BDB300BAEB7A /* Export */,
+				DDDB443E29F79A9400EE2349 /* Extensions */,
+				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
+				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDAF8C5626ED07740058C060 /* Protobufs */,
-				DD86D40D2881BDB300BAEB7A /* Export */,
-				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
-				DDC2E18726CE24E40042C5E4 /* Views */,
-				DDC2E18826CE24EE0042C5E4 /* Model */,
 				DDC2E18926CE24F70042C5E4 /* Resources */,
+				DDC2E18726CE24E40042C5E4 /* Views */,
 				DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */,
 				DDC2E16526CE248F0042C5E4 /* Info.plist */,
 				DDC2E15D26CE248F0042C5E4 /* Preview Content */,
@@ -760,14 +760,14 @@
 		DDC4D5662754996200A4208E /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
+				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
 				DDC4D567275499A500A4208E /* Persistence.swift */,
 				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
-				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
-				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
+				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
-				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
