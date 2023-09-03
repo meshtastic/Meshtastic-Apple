@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22221.1" systemVersion="23A5337a" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
@@ -181,6 +181,9 @@
         <attribute name="rebootCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="channels" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="ChannelEntity" inverseName="myInfoChannel" inverseEntity="ChannelEntity"/>
         <relationship name="myInfoNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="myInfo" inverseEntity="NodeInfoEntity"/>
+        <fetchedProperty name="allMessages" optional="YES">
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="toUser == nil"/>
+        </fetchedProperty>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="myNodeNum"/>

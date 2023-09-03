@@ -765,11 +765,11 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 				messageSaved = true
 
 				if messageSaved {
+					var appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Set Unread Message Indicators
 						if packet.to == connectedNode {
-							var state = AppState.shared
-							state.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 						}
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
@@ -794,6 +794,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 								return
 							}
 							if !fetchedMyInfo.isEmpty {
+								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)

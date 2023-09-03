@@ -12,6 +12,7 @@
 		6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */; };
 		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
+		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD14E72E2A82A614006E39BC /* RemoteHardware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD14E72D2A82A614006E39BC /* RemoteHardware.swift */; };
@@ -208,6 +209,7 @@
 		6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntityExtension.swift; sourceTree = "<group>"; };
 		A65FA974296876BF00A97686 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
+		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
@@ -762,6 +764,7 @@
 			children = (
 				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
 				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
+				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
 				DDC4D567275499A500A4208E /* Persistence.swift */,
 				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
 				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
@@ -1076,6 +1079,7 @@
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
 				DDDB444A29F8AA3A00EE2349 /* CLLocationCoordinate2D.swift in Sources */,
 				DD41582628582E9B009B0E59 /* DeviceConfig.swift in Sources */,
+				DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */,
 				DD3CC6B528E33FD100FA9159 /* ShareChannels.swift in Sources */,
 				DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */,
 				DD5E5207298EE33B00D21B61 /* connection_status.pb.swift in Sources */,
