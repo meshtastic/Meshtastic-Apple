@@ -471,7 +471,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if nodeInfo != nil {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 							if nodeInfo!.user != nil {
-								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "????"
+								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "?"
 								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "unknown".localized
 							}
 						}
@@ -2143,7 +2143,7 @@ extension BLEManager: CBCentralManagerDelegate {
 			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
-		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
+		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
 		
 		if let peripheralIndex = index {

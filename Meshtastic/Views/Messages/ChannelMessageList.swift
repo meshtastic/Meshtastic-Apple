@@ -56,7 +56,7 @@ struct ChannelMessageList: View {
 							HStack(alignment: .top) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "????", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, textColor: UIColor(hex: UInt32(message.fromUser?.num ?? 0)).isLight() ? .black : .white)
+									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, textColor: UIColor(hex: UInt32(message.fromUser?.num ?? 0)).isLight() ? .black : .white)
 										.padding(.all, 5)
 										.offset(y: -5)
 								}
@@ -170,7 +170,7 @@ struct ChannelMessageList: View {
 													VStack {
 														let image = tapback.messagePayload!.image(fontSize: 20)
 														Image(uiImage: image!).font(.caption)
-														Text("\(tapback.fromUser?.shortName ?? "????")")
+														Text("\(tapback.fromUser?.shortName ?? "?")")
 															.font(.caption2)
 															.foregroundColor(.gray)
 															.fixedSize()
@@ -409,7 +409,7 @@ struct ChannelMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				}
 			}
 		}

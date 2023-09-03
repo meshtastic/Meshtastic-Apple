@@ -27,7 +27,7 @@ struct NodeInfoView: View {
 		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
 				}
 				Divider()
 				VStack {
@@ -123,7 +123,7 @@ struct NodeInfoView: View {
 			HStack {
 
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
 				}
 				if node.user != nil {
 					Divider()
@@ -177,7 +177,7 @@ struct NodeInfoView: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("User Id:").font(.title2)
 					}
-					Text(node.user?.userId ?? "??????").font(.title3).foregroundColor(.gray)
+					Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
 				}
 				Divider()
 				VStack {

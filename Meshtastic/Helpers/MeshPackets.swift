@@ -772,7 +772,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 							Notification(
 								id: ("notification.id.\(newMessage.messageId)"),
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText,
 								target: "message"
 							)
@@ -800,7 +800,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText,
 												target: "message")
 										]

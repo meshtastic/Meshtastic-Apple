@@ -160,7 +160,7 @@ struct UserMessageList: View {
 														VStack {
 															let image = tapback.messagePayload!.image(fontSize: 20)
 															Image(uiImage: image!).font(.caption)
-															Text("\(tapback.fromUser?.shortName ?? "????")")
+															Text("\(tapback.fromUser?.shortName ?? "?")")
 																.font(.caption2)
 																.foregroundColor(.gray)
 																.fixedSize()
@@ -363,7 +363,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -371,7 +371,7 @@ struct UserMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				}
 			}
 		}
