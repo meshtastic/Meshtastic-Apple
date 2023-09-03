@@ -363,7 +363,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

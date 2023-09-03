@@ -56,7 +56,7 @@ struct UserList: View {
 									.brightness(0.2)
 							}
 							
-							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
 							
 							VStack(alignment: .leading){
 								HStack{

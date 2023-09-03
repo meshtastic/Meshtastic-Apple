@@ -9,7 +9,6 @@ struct CircleText: View {
     var text: String
     var color: Color
 	var circleSize: CGFloat = 45
-	var textColor: Color? = .white
 	
     var body: some View {
 
@@ -19,21 +18,33 @@ struct CircleText: View {
                 .frame(width: circleSize, height: circleSize)
 			Text(text)
 				.textCase(.uppercase)
-				.foregroundColor(textColor)
+				.foregroundColor(color.isLight() ? .black : .white)
 				.font(.system(size: 500))
 					  .minimumScaleFactor(0.001)
-					  .frame(width: circleSize * 0.90,
-							 height: circleSize * 0.90, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+					  .frame(width: circleSize * 0.94, height: circleSize * 0.94, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
         }
     }
 }
 
 struct CircleText_Previews: PreviewProvider {
     static var previews: some View {
-		CircleText(text: "MOMO", color: Color.accentColor, circleSize: 80)
-		CircleText(text: "WWWW", color: Color.accentColor, circleSize: 80)
-		CircleText(text: "LCP", color: Color.accentColor, circleSize: 80)
-		CircleText(text: "8", color: Color.accentColor, circleSize: 80)
-            .previewLayout(.fixed(width: 300, height: 100))
+		VStack {
+			CircleText(text: "MOMO", color: Color.secondary, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "WWWW", color: Color.accentColor, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "LCP", color: Color.primary, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "69", color: Color.green, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "N1", color: Color.yellow, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "8", color: Color.purple, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "😝", color: Color.red, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+			CircleText(text: "🍔", color: Color.brown, circleSize: 80)
+				.previewLayout(.fixed(width: 300, height: 100))
+		}
     }
 }
