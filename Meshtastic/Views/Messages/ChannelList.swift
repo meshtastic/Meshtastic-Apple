@@ -32,7 +32,7 @@ struct ChannelList: View {
 					ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 						if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
 
-							NavigationLink(destination: ChannelMessageList(channel: channel)) {
+							NavigationLink(destination: ChannelMessageList(myInfo: node!.myInfo!, channel: channel)) {
 
 								let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))

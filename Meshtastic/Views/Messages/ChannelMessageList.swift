@@ -10,6 +10,7 @@ import CoreData
 
 struct ChannelMessageList: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -23,7 +24,8 @@ struct ChannelMessageList: View {
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
 
-	@ObservedObject var channel: ChannelEntity
+	@StateObject var myInfo: MyInfoEntity
+	@StateObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
@@ -232,6 +234,7 @@ struct ChannelMessageList: View {
 									do {
 										try context.save()
 										print("Read message \(message.messageId) ")
+										appState.unreadChannelMessages = myInfo.unreadMessages
 									} catch {
 										print("Failed to read message \(message.messageId)")
 									}

@@ -33,7 +33,7 @@ struct NodeDetail: View {
 			canReplaceMapContent: true
 		)
 
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
