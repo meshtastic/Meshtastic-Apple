@@ -111,7 +111,7 @@ struct UserList: View {
 									print("💥 Save User VIP Error")
 								}
 							} label: {
-								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.fill" : "star.slash.fill")
+								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.slash.fill" : "star.fill")
 							}
 							Button {
 								user.mute = !user.mute
