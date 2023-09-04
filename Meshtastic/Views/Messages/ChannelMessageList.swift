@@ -235,6 +235,7 @@ struct ChannelMessageList: View {
 										try context.save()
 										print("Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
+										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 									} catch {
 										print("Failed to read message \(message.messageId)")
 									}
