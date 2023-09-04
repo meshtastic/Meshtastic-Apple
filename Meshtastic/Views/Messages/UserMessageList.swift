@@ -23,7 +23,7 @@ struct UserMessageList: View {
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
 	// View State Items
-	@StateObject var user: UserEntity
+	@ObservedObject var user: UserEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
