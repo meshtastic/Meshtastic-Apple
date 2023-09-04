@@ -16,9 +16,7 @@ struct NodeDetail: View {
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
-	//@State private var mapType: MKMapType = .standard
 	@State private var selectedMapLayer: MapLayer = .standard
-	@State var mapRect: MKMapRect = MKMapRect()
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
@@ -26,15 +24,12 @@ struct NodeDetail: View {
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var showOverlays: Bool = true
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-			mapName: "offlinemap",
-			tileType: "png",
-			canReplaceMapContent: true
-		)
-
+		mapName: "offlinemap",
+		tileType: "png",
+		canReplaceMapContent: true
+	)
 	@ObservedObject var node: NodeInfoEntity
-
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
@@ -49,6 +44,7 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
+
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
