@@ -613,16 +613,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
 						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
-						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
+						if fetchedNodeInfo.count == 1 {
 							// Subscribe to Mqtt Client Proxy if enabled
-							if fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
+							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
 								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
+							} else {
+								if mqttProxyConnected {
+									mqttManager.mqttClientProxy?.disconnect()
+								}
 							}
 							// Set initial unread message badge states
-							var appState = AppState.shared
+							let appState = AppState.shared
 							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
 							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
-							appState.connectedNode = fetchedNodeInfo[0]
+							//appState.connectedNode = fetchedNodeInfo[0]
 							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 							
 						}

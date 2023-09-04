@@ -13,6 +13,7 @@
 		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
+		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD14E72E2A82A614006E39BC /* RemoteHardware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD14E72D2A82A614006E39BC /* RemoteHardware.swift */; };
@@ -209,6 +210,7 @@
 		A65FA974296876BF00A97686 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
+		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
@@ -437,6 +439,20 @@
 				DDDB443529F6287000EE2349 /* MapButtons.swift */,
 			);
 			path = Custom;
+			sourceTree = "<group>";
+		};
+		DD007BB12AA59B9A00F5FA12 /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
+				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
+				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
+				DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */,
+				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
+				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
+				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
+			);
+			path = CoreData;
 			sourceTree = "<group>";
 		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
@@ -759,15 +775,9 @@
 		DDC4D5662754996200A4208E /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
-				DD58C5F12919AD3C00D5BEFB /* ChannelEntityExtension.swift */,
-				6DEDA55B2A9592F900321D2E /* MessageEntityExtension.swift */,
-				DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */,
 				DDC4D567275499A500A4208E /* Persistence.swift */,
-				DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */,
 				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,
-				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
-				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -783,6 +793,7 @@
 		DDDB443E29F79A9400EE2349 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				DD007BB12AA59B9A00F5FA12 /* CoreData */,
 				DDDB444529F8A96500EE2349 /* Character.swift */,
 				DDDB444929F8AA3A00EE2349 /* CLLocationCoordinate2D.swift */,
 				DDDB444B29F8AAA600EE2349 /* Color.swift */,
@@ -1085,6 +1096,7 @@
 				DDB6ABE628B1406100384BA1 /* LoraConfigEnums.swift in Sources */,
 				DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */,
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
+				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,

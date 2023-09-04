@@ -58,8 +58,9 @@ struct NodeInfoView: View {
 					}
 					Divider()
 				}
-				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-				if deviceMetrics?.count ?? 0 >= 1 {
+				
+				if node.hasDeviceMetrics {
+					let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
@@ -196,7 +197,7 @@ struct NodeInfoView: View {
 
 		VStack {
 
-			if (node.positions?.count ?? 0) > 0 {
+			if node.hasPositions{
 
 				NavigationLink {
 					PositionLog(node: node)
@@ -213,20 +214,22 @@ struct NodeInfoView: View {
 				Divider()
 			}
 
-			if (node.telemetries?.count ?? 0) > 0 {
-
+			if node.hasDeviceMetrics {
+				
 				NavigationLink {
 					DeviceMetricsLog(node: node)
 				} label: {
-
+					
 					Image(systemName: "flipphone")
 						.symbolRenderingMode(.hierarchical)
 						.font(.title)
-
+					
 					Text("Device Metrics Log")
 						.font(.title3)
 				}
 				Divider()
+			}
+			if node.hasEnvironmentMetrics {
 				NavigationLink {
 					EnvironmentMetricsLog(node: node)
 				} label: {

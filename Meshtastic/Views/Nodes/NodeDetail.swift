@@ -55,7 +55,7 @@ struct NodeDetail: View {
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
-					if node.positions?.count ?? 0 > 0 {
+					if node.hasPositions {
 						ZStack {
 							let positionArray = node.positions?.array as? [PositionEntity] ?? []
 							let lastTenThousand = Array(positionArray.prefix(10000))
@@ -232,7 +232,7 @@ struct NodeDetail: View {
 				.task(id: node.num) {
 					if !loadedWeather {
 						do {
-							if node.positions?.count ?? 0 > 0 {
+							if node.hasPositions {
 								let mostRecent = node.positions?.lastObject as? PositionEntity
 								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 								condition = weather.currentWeather.condition
