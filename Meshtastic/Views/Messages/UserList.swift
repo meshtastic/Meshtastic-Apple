@@ -24,7 +24,7 @@ struct UserList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "vip", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
@@ -63,7 +63,10 @@ struct UserList: View {
 									Text(user.longName ?? "unknown".localized)
 									
 									Spacer()
-									
+									if user.vip {
+										Image(systemName: "star.fill")
+											.foregroundColor(.secondary)
+									}
 									if user.messageList.count > 0 {
 										if lastMessageDay == currentDay {
 											Text(lastMessageTime, style: .time )
@@ -99,6 +102,17 @@ struct UserList: View {
 						}
 						.frame(height: 62)
 						.contextMenu {
+							Button {
+								user.vip = !user.vip
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									print("💥 Save User VIP Error")
+								}
+							} label: {
+								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.fill" : "star.slash.fill")
+							}
 							Button {
 								user.mute = !user.mute
 								do {

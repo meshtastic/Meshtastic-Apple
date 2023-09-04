@@ -75,22 +75,23 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		#if targetEnvironment(macCatalyst)
-		// Show the default always visible compass and the mac only controls
-		mapView.showsCompass = true
-		mapView.showsZoomControls = true
-		mapView.showsPitchControl = true
-		#else
-		#if os(iOS)
-		// Move the default compass under the mapbuttons control
+		
 		mapView.showsCompass = false
 		let compass = MKCompassButton(mapView: mapView)
 		compass.translatesAutoresizingMaskIntoConstraints = false
+		#if targetEnvironment(macCatalyst)
+		// Show the default always visible compass and the mac only controls
+		compass.compassVisibility = .visible
+		mapView.addSubview(compass)
+		mapView.showsZoomControls = true
+		mapView.showsPitchControl = true
+		compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -115).isActive = true
+		compass.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -5).isActive = true
+		#else
 		compass.compassVisibility = .adaptive
 		mapView.addSubview(compass)
 		compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compass.topAnchor.constraint(equalTo: mapView.topAnchor, constant: 145).isActive = true
-		#endif
 		#endif
 	}
 	private func setMapBaseLayer(mapView: MKMapView) {
