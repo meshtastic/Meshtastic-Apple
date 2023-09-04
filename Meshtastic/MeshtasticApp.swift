@@ -124,4 +124,5 @@ class AppState: ObservableObject {
 	@Published var tabSelection: Tab = .ble
 	@Published var unreadDirectMessages: Int = 0
 	@Published var unreadChannelMessages: Int = 0
+	@Published var connectedNode: NodeInfoEntity?
 }
