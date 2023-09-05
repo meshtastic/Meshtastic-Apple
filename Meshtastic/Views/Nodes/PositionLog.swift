@@ -19,7 +19,11 @@ struct PositionLog: View {
 	@State var exportString = ""
 	var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
-	@State private var sortOrder = [KeyPathComparator(\PositionEntity.latitude)]
+	//@State private var sortOrder = [KeyPathComparator(\PositionEntity.latitude)]
+	
+	@State var sortOrder: [KeyPathComparator<PositionEntity>] = [
+				.init(\.latitude, order: SortOrder.forward)
+			]
 	var body: some View {
 		NavigationStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
@@ -27,7 +31,7 @@ struct PositionLog: View {
 			if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
 				// Add a table for mac and ipad
 				let positions = node.positions?.reversed() as? [PositionEntity] ?? []
-				Table(positions) {
+				Table(positions, sortOrder: $sortOrder) {
 					TableColumn("Latitude") { position in
 						Text(String(format: "%.5f", position.latitude ?? 0))
 					}
@@ -58,6 +62,7 @@ struct PositionLog: View {
 					}
 					.width(min: 180)
 				}
+				
 			} else {
 				ScrollView {
 					// Use a grid on iOS as a table only shows a single column
@@ -97,7 +102,7 @@ struct PositionLog: View {
 									.font(.caption2)
 								Text(altitude.formatted())
 									.font(.caption2)
-								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
+								Text(mappin.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 									.font(.caption2)
 							}
 						}

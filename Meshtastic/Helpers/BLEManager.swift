@@ -28,6 +28,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
+	
+	@StateObject var appState = AppState.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -516,6 +518,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let version = decodedInfo.metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))]
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
+						appState.firmwareVersion = connectedVersion
 					}
 					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
@@ -718,7 +721,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
 						newMessage.toUser?.lastMessage = Date()
-						newMessage.toUser?.objectWillChange.send()
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji

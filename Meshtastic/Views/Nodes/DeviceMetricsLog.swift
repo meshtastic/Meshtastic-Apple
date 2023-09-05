@@ -157,7 +157,7 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.caption)
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
+								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 									.font(.caption)
 							}
 						}

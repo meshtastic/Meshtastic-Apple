@@ -143,7 +143,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			newNode.objectWillChange.send()
+			//newNode.objectWillChange.send()
 			
 		} else {
 			// Update an existing node

@@ -64,11 +64,9 @@ struct NodeDetail: View {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
 									},
-									// visibleMapRect: $mapRect,
 									selectedMapLayer: selectedMapLayer,
 									positions: lastTenThousand,
 									waypoints: Array(waypoints),
-									// mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
@@ -221,10 +219,6 @@ struct NodeDetail: View {
 						deviceConnected: bleManager.connectedPeripheral != nil,
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				})
-				.onAppear {
-					self.bleManager.context = context
-					// mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
-				}
 				.task(id: node.num) {
 					if !loadedWeather {
 						do {

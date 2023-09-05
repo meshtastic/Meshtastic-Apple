@@ -535,26 +535,26 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
 
-				if fetchedMessage![0].toUser != nil {
-					fetchedMessage![0].toUser?.objectWillChange.send()
-				} else {
-					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
-					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
-						if fetchedMyInfo?.count ?? 0 > 0 {
-
-							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
-
-								if ch.index == packet.channel {
-									ch.objectWillChange.send()
-								}
-							}
-						}
-					} catch {
-
-					}
-				}
+//				if fetchedMessage![0].toUser != nil {
+//					//fetchedMessage![0].toUser?.objectWillChange.send()
+//				} else {
+//					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+//					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
+//					do {
+//						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
+//						if fetchedMyInfo?.count ?? 0 > 0 {
+//
+//							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
+//
+//								if ch.index == packet.channel {
+//								//	ch.objectWillChange.send()
+//								}
+//							}
+//						}
+//					} catch {
+//
+//					}
+//				}
 
 			} else {
 				return
@@ -765,7 +765,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 				messageSaved = true
 
 				if messageSaved {
-					var appState = AppState.shared
+					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Set Unread Message Indicators
 						if packet.to == connectedNode {

@@ -409,9 +409,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
 			switch view.annotation {
-			case let positionAnnotation as PositionEntity:
-				print(positionAnnotation)
-			case let waypointAnnotation as WaypointEntity:
+			case _ as WaypointEntity:
 				// Only Allow Edit for waypoint annotations with a id
 				if view.tag > 0 {
 					parent.onWaypointEdit(view.tag)

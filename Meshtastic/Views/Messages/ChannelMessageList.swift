@@ -24,8 +24,8 @@ struct ChannelMessageList: View {
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
 
-	@StateObject var myInfo: MyInfoEntity
-	@StateObject var channel: ChannelEntity
+	@ObservedObject var myInfo: MyInfoEntity
+	@ObservedObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
