@@ -29,7 +29,7 @@ struct NodeDetail: View {
 		tileType: "png",
 		canReplaceMapContent: true
 	)
-	@ObservedObject var node: NodeInfoEntity
+	var node: NodeInfoEntity
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
