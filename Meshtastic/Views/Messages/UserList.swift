@@ -10,6 +10,9 @@ import CoreData
 
 struct UserList: View {
 	
+	@StateObject var appState = AppState.shared
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
 	@State private var searchText = ""
 	var usersQuery: Binding<String> {
 		 Binding {
@@ -19,10 +22,6 @@ struct UserList: View {
 			 users.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "longName CONTAINS[c] %@ OR shortName CONTAINS[c] %@", newValue, newValue)
 		 }
 	 }
-	
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "vip", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
@@ -158,6 +157,7 @@ struct UserList: View {
 						Button(role: .destructive) {
 							deleteUserMessages(user: userSelection!, context: context)
 							context.refresh(node!.user!, mergeChanges: true)
+							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 						} label: {
 							Text("delete")
 						}
