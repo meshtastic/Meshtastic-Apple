@@ -476,7 +476,6 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 			}
 			do {
 				try context.save()
-				context.refresh(fetchedNode[0], mergeChanges: true)
 				print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()
