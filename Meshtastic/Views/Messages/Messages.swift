@@ -10,6 +10,7 @@ import CoreData
 
 struct Messages: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -38,6 +39,7 @@ struct Messages: View {
 						.brightness(0.2)
 					Text("channels")
 						.font(.title2)
+						.badge(appState.unreadChannelMessages)
 				}
 				NavigationLink {
 					UserList(node: node)
@@ -48,9 +50,11 @@ struct Messages: View {
 						.brightness(0.2)
 					Text("direct.messages")
 						.font(.title2)
+						.badge(appState.unreadDirectMessages)
 				}
 			}
 			.navigationTitle("messages")
+			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onAppear {
 				self.bleManager.context = context

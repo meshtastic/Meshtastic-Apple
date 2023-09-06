@@ -10,6 +10,7 @@ import CoreData
 
 struct UserMessageList: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -160,7 +161,7 @@ struct UserMessageList: View {
 														VStack {
 															let image = tapback.messagePayload!.image(fontSize: 20)
 															Image(uiImage: image!).font(.caption)
-															Text("\(tapback.fromUser?.shortName ?? "????")")
+															Text("\(tapback.fromUser?.shortName ?? "?")")
 																.font(.caption2)
 																.foregroundColor(.gray)
 																.fixedSize()
@@ -219,10 +220,12 @@ struct UserMessageList: View {
 								.onAppear {
 									if !message.read {
 										message.read = true
-										message.toUser?.objectWillChange.send()
 										do {
 											try context.save()
 											print("Read message \(message.messageId) ")
+											appState.unreadDirectMessages = user.unreadMessages
+											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+
 										} catch {
 											print("Failed to read message \(message.messageId)")
 										}
@@ -364,7 +367,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, fontSize: (user.shortName ?? "???").isEmoji() ? 32 : (user.shortName?.count ?? 0 == 4  ? 14 : (user.shortName?.count ?? 0 == 3  ? 18 : 22)), brightness: 0.0, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -372,7 +375,7 @@ struct UserMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				}
 			}
 		}

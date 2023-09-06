@@ -157,7 +157,7 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 								Text("\(String(format: "%.2f", dm.airUtilTx))%")
 									.font(.caption)
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "Unknown time")
+								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 									.font(.caption)
 							}
 						}
@@ -208,7 +208,7 @@ struct DeviceMetricsLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context

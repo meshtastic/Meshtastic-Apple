@@ -143,7 +143,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			newNode.objectWillChange.send()
+			//newNode.objectWillChange.send()
 			
 		} else {
 			// Update an existing node
@@ -476,7 +476,6 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 			}
 			do {
 				try context.save()
-				context.refresh(fetchedNode[0], mergeChanges: true)
 				print("💾 Updated LoRa Config for node number: \(String(nodeNum))")
 			} catch {
 				context.rollback()

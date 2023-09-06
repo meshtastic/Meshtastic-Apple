@@ -52,7 +52,7 @@ struct Connect: View {
 								}
 								HStack {
 									VStack(alignment: .center) {
-										CircleText(text: node?.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90, fontSize: (node?.user?.shortName ?? "???").isEmoji() ? 52 : (node?.user?.shortName?.count ?? 0 == 4  ? 26 : 36), textColor: UIColor(hex: UInt32(node?.num ?? 0)).isLight() ? .black : .white )
+										CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
 									}
 									.padding(.trailing)
 									VStack(alignment: .leading) {
@@ -108,7 +108,7 @@ struct Connect: View {
 										}
 										#endif
 										Text("Num: \(String(node!.num))")
-										Text("Short Name: \(node?.user?.shortName ?? "????")")
+										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
 									}
@@ -250,7 +250,7 @@ struct Connect: View {
 			.navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 									ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????", mqttProxyConnected: bleManager.mqttProxyConnected)
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
 			})
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {

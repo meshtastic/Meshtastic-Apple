@@ -237,7 +237,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			return nil
 		}
 		// Not Found Insert
-		if fetchedNode.isEmpty && nodeInfo.hasUser {
+		if fetchedNode.isEmpty {
 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
@@ -296,6 +296,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
+					print("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
 					return newNode
 				} catch {
 					context.rollback()
@@ -314,7 +315,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 
 			if nodeInfo.hasUser {
-
+				if (fetchedNode[0].user == nil) {
+					fetchedNode[0].user = UserEntity(context: context)
+				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
@@ -532,26 +535,26 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
 
-				if fetchedMessage![0].toUser != nil {
-					fetchedMessage![0].toUser?.objectWillChange.send()
-				} else {
-					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
-					do {
-						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
-						if fetchedMyInfo?.count ?? 0 > 0 {
-
-							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
-
-								if ch.index == packet.channel {
-									ch.objectWillChange.send()
-								}
-							}
-						}
-					} catch {
-
-					}
-				}
+//				if fetchedMessage![0].toUser != nil {
+//					//fetchedMessage![0].toUser?.objectWillChange.send()
+//				} else {
+//					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+//					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
+//					do {
+//						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
+//						if fetchedMyInfo?.count ?? 0 > 0 {
+//
+//							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
+//
+//								if ch.index == packet.channel {
+//								//	ch.objectWillChange.send()
+//								}
+//							}
+//						}
+//					} catch {
+//
+//					}
+//				}
 
 			} else {
 				return
@@ -750,10 +753,9 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
-			if packet.to != 4294967295 {
+			if packet.to != 4294967295 && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
-
 			var messageSaved = false
 
 			do {
@@ -763,14 +765,20 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 				messageSaved = true
 
 				if messageSaved {
+					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
+						// Set Unread Message Indicators
+						if packet.to == connectedNode {
+							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+						}
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
 								id: ("notification.id.\(newMessage.messageId)"),
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText,
 								target: "message"
 							)
@@ -787,6 +795,9 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 								return
 							}
 							if !fetchedMyInfo.isEmpty {
+								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+								
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)
@@ -798,7 +809,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText,
 												target: "message")
 										]

@@ -75,22 +75,23 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		mapView.showsBuildings = true
 		mapView.showsScale = true
 		mapView.showsTraffic = true
-		#if targetEnvironment(macCatalyst)
-		// Show the default always visible compass and the mac only controls
-		mapView.showsCompass = true
-		mapView.showsZoomControls = true
-		mapView.showsPitchControl = true
-		#else
-		#if os(iOS)
-		// Move the default compass under the mapbuttons control
+		
 		mapView.showsCompass = false
 		let compass = MKCompassButton(mapView: mapView)
 		compass.translatesAutoresizingMaskIntoConstraints = false
+		#if targetEnvironment(macCatalyst)
+		// Show the default always visible compass and the mac only controls
+		compass.compassVisibility = .visible
+		mapView.addSubview(compass)
+		mapView.showsZoomControls = true
+		mapView.showsPitchControl = true
+		compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -115).isActive = true
+		compass.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -5).isActive = true
+		#else
 		compass.compassVisibility = .adaptive
 		mapView.addSubview(compass)
 		compass.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -5).isActive = true
 		compass.topAnchor.constraint(equalTo: mapView.topAnchor, constant: 145).isActive = true
-		#endif
 		#endif
 	}
 	private func setMapBaseLayer(mapView: MKMapView) {
@@ -251,18 +252,17 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			mapView.removeAnnotations(mapView.annotations)
 			mapView.addAnnotations(waypoints)
 		}
+		mapView.addAnnotations(showNodeHistory ? positions : latest)
 		if userTrackingMode == MKUserTrackingMode.none {
 			mapView.showsUserLocation = false
 			if UserDefaults.enableMapRecentering {
 				if latest.count == 1 {
 					mapView.fit(annotations: showNodeHistory ? positions : latest, andShow: true)
 				} else {
-					mapView.addAnnotations(showNodeHistory ? positions : latest)
 					mapView.fitAllAnnotations()
 				}
 			}
 		} else {
-			mapView.addAnnotations(showNodeHistory ? positions : latest)
 			mapView.showsUserLocation = true
 		}
 		mapView.setUserTrackingMode(userTrackingMode, animated: true)
@@ -290,11 +290,11 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				annotationView.tag = -1
 				annotationView.canShowCallout = true
 				if positionAnnotation.latest {
-					annotationView.markerTintColor = .systemRed
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)).darker()
 					annotationView.displayPriority = .required
 					annotationView.titleVisibility = .visible
 				} else {
-					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0))
+					annotationView.markerTintColor = UIColor(hex: UInt32(positionAnnotation.nodePosition?.num ?? 0)).lighter()
 					annotationView.displayPriority = .defaultHigh
 					annotationView.titleVisibility = .adaptive
 				}
@@ -409,9 +409,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 		}
 		func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
 			switch view.annotation {
-			case let positionAnnotation as PositionEntity:
-				print(positionAnnotation)
-			case let waypointAnnotation as WaypointEntity:
+			case _ as WaypointEntity:
 				// Only Allow Edit for waypoint annotations with a id
 				if view.tag > 0 {
 					parent.onWaypointEdit(view.tag)
@@ -442,7 +440,7 @@ struct MapViewSwiftUI: UIViewRepresentable {
 				if let routePolyline = overlay as? MKPolyline {
 					let titleString = routePolyline.title ?? "0"
 					let renderer = MKPolylineRenderer(polyline: routePolyline)
-					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0)
+					renderer.strokeColor = UIColor(hex: UInt32(titleString) ?? 0).lighter()
 					renderer.lineWidth = 8
 					return renderer
 				}
