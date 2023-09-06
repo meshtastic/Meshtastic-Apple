@@ -14,6 +14,7 @@ struct MeshtasticAppleApp: App {
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
 	@StateObject var appState = AppState.shared
+
     var body: some Scene {
         WindowGroup {
 			ContentView()
@@ -121,4 +122,8 @@ class AppState: ObservableObject {
 	static let shared = AppState()
 
 	@Published var tabSelection: Tab = .ble
+	@Published var unreadDirectMessages: Int = 0
+	@Published var unreadChannelMessages: Int = 0
+	@Published var firmwareVersion: String = "0.0.0"
+	@Published var connectedNode: NodeInfoEntity?
 }

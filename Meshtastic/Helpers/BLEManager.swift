@@ -28,6 +28,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
+	
+	@StateObject var appState = AppState.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -471,7 +473,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if nodeInfo != nil {
 						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
 							if nodeInfo!.user != nil {
-								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "????"
+								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "?"
 								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "unknown".localized
 							}
 						}
@@ -516,6 +518,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let version = decodedInfo.metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: decodedInfo.metadata.firmwareVersion))]
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
+						appState.firmwareVersion = connectedVersion
 					}
 					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
@@ -613,11 +616,22 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(connectedPeripheral.num))
 					do {
 						let fetchedNodeInfo = try context?.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] ?? []
-						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].mqttConfig != nil {
-							//Subscribe to Mqtt Client Proxy if enabled
-							if fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
+						if fetchedNodeInfo.count == 1 {
+							// Subscribe to Mqtt Client Proxy if enabled
+							if fetchedNodeInfo[0].mqttConfig != nil && fetchedNodeInfo[0].mqttConfig?.enabled ?? false && fetchedNodeInfo[0].mqttConfig?.proxyToClientEnabled ?? false {
 								mqttManager.connectFromConfigSettings(node: fetchedNodeInfo[0])
+							} else {
+								if mqttProxyConnected {
+									mqttManager.mqttClientProxy?.disconnect()
+								}
 							}
+							// Set initial unread message badge states
+							let appState = AppState.shared
+							appState.unreadChannelMessages = fetchedNodeInfo[0].myInfo?.unreadMessages ?? 0
+							appState.unreadDirectMessages = fetchedNodeInfo[0].user?.unreadMessages ?? 0
+							//appState.connectedNode = fetchedNodeInfo[0]
+							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+							
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
 							wantRangeTestPackets = true;
@@ -707,7 +721,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						newMessage.toUser = fetchedUsers.first(where: { $0.num == toUserNum })
 						newMessage.toUser?.lastMessage = Date()
-						newMessage.toUser?.objectWillChange.send()
 					}
 					newMessage.fromUser = fetchedUsers.first(where: { $0.num == fromUserNum })
 					newMessage.isEmoji = isEmoji
@@ -718,6 +731,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 					newMessage.messagePayload = message
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
+					newMessage.read = true
 					
 					let dataType = PortNum.textMessageApp
 					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
@@ -2143,7 +2157,7 @@ extension BLEManager: CBCentralManagerDelegate {
 			print("ℹ️ BLE Reconnecting to prefered peripheral: \(peripheral.name ?? "Unknown")")
 		}
 		let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
-		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "????", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
+		let device = Peripheral(id: peripheral.identifier.uuidString, num: 0, name: name ?? "Unknown", shortName: "?", longName: name ?? "Unknown", firmwareVersion: "Unknown", rssi: RSSI.intValue, lastUpdate: Date(), peripheral: peripheral)
 		let index = peripherals.map { $0.peripheral }.firstIndex(of: peripheral)
 		
 		if let peripheralIndex = index {

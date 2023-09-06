@@ -10,6 +10,9 @@ import CoreData
 
 struct UserList: View {
 	
+	@StateObject var appState = AppState.shared
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
 	@State private var searchText = ""
 	var usersQuery: Binding<String> {
 		 Binding {
@@ -19,12 +22,8 @@ struct UserList: View {
 			 users.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "longName CONTAINS[c] %@ OR shortName CONTAINS[c] %@", newValue, newValue)
 		 }
 	 }
-	
-	@Environment(\.managedObjectContext) var context
-	@EnvironmentObject var bleManager: BLEManager
-
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "vip", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
@@ -56,14 +55,17 @@ struct UserList: View {
 									.brightness(0.2)
 							}
 							
-							CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 45, fontSize: (user.shortName ?? "???").isEmoji() ? 32 : (user.shortName?.count ?? 0 == 4  ? 14 : (user.shortName?.count ?? 0 == 3  ? 18 : 22)), brightness: 0.0, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white)
+							CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))))
 							
 							VStack(alignment: .leading){
 								HStack{
 									Text(user.longName ?? "unknown".localized)
 									
 									Spacer()
-									
+									if user.vip {
+										Image(systemName: "star.fill")
+											.foregroundColor(.secondary)
+									}
 									if user.messageList.count > 0 {
 										if lastMessageDay == currentDay {
 											Text(lastMessageTime, style: .time )
@@ -99,6 +101,17 @@ struct UserList: View {
 						}
 						.frame(height: 62)
 						.contextMenu {
+							Button {
+								user.vip = !user.vip
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									print("💥 Save User VIP Error")
+								}
+							} label: {
+								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.slash.fill" : "star.fill")
+							}
 							Button {
 								user.mute = !user.mute
 								do {
@@ -144,6 +157,7 @@ struct UserList: View {
 						Button(role: .destructive) {
 							deleteUserMessages(user: userSelection!, context: context)
 							context.refresh(node!.user!, mergeChanges: true)
+							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 						} label: {
 							Text("delete")
 						}

@@ -27,7 +27,7 @@ struct NodeInfoView: View {
 		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
 			HStack {
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 105 : 55, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 150)
 				}
 				Divider()
 				VStack {
@@ -58,8 +58,9 @@ struct NodeInfoView: View {
 					}
 					Divider()
 				}
-				let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-				if deviceMetrics?.count ?? 0 >= 1 {
+				
+				if node.hasDeviceMetrics {
+					let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 					let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
 					VStack(alignment: .center) {
 						BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
@@ -123,7 +124,7 @@ struct NodeInfoView: View {
 			HStack {
 
 				VStack(alignment: .center) {
-					CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 42 : 20, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white )
+					CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
 				}
 				if node.user != nil {
 					Divider()
@@ -177,7 +178,7 @@ struct NodeInfoView: View {
 							.symbolRenderingMode(.hierarchical)
 						Text("User Id:").font(.title2)
 					}
-					Text(node.user?.userId ?? "??????").font(.title3).foregroundColor(.gray)
+					Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
 				}
 				Divider()
 				VStack {
@@ -196,7 +197,7 @@ struct NodeInfoView: View {
 
 		VStack {
 
-			if (node.positions?.count ?? 0) > 0 {
+			if node.hasPositions{
 
 				NavigationLink {
 					PositionLog(node: node)
@@ -213,20 +214,22 @@ struct NodeInfoView: View {
 				Divider()
 			}
 
-			if (node.telemetries?.count ?? 0) > 0 {
-
+			if node.hasDeviceMetrics {
+				
 				NavigationLink {
 					DeviceMetricsLog(node: node)
 				} label: {
-
+					
 					Image(systemName: "flipphone")
 						.symbolRenderingMode(.hierarchical)
 						.font(.title)
-
+					
 					Text("Device Metrics Log")
 						.font(.title3)
 				}
 				Divider()
+			}
+			if node.hasEnvironmentMetrics {
 				NavigationLink {
 					EnvironmentMetricsLog(node: node)
 				} label: {

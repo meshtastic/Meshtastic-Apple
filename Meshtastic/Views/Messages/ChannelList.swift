@@ -10,6 +10,7 @@ import CoreData
 
 struct ChannelList: View {
 	
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -32,7 +33,7 @@ struct ChannelList: View {
 					ForEach(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self) { (channel: ChannelEntity) in
 						if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
 
-							NavigationLink(destination: ChannelMessageList(channel: channel)) {
+							NavigationLink(destination: ChannelMessageList(myInfo: node!.myInfo!, channel: channel)) {
 
 								let mostRecent = channel.allPrivateMessages.last(where: { $0.channel == channel.index })
 								let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
@@ -47,7 +48,7 @@ struct ChannelList: View {
 										.foregroundColor(.accentColor)
 										.brightness(0.2)
 								}
-								CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 40)
+								CircleText(text: String(channel.index), color: .accentColor)
 									.brightness(0.2)
 								
 								VStack(alignment: .leading){
@@ -100,23 +101,6 @@ struct ChannelList: View {
 							}
 							.frame(height: 62)
 							.contextMenu {
-								Button {
-									channel.mute = !channel.mute
-
-									do {
-										try context.save()
-										// Would rather not do this but the merge changes on
-										// A single object is only working on mac GVH
-										context.refreshAllObjects()
-										// context.refresh(channel, mergeChanges: true)
-									} catch {
-										context.rollback()
-										print("💥 Save Channel Mute Error")
-									}
-								} label: {
-									Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
-								}
-
 								if channel.allPrivateMessages.count > 0 {
 									Button(role: .destructive) {
 										isPresentingDeleteChannelMessagesConfirm = true
@@ -134,6 +118,7 @@ struct ChannelList: View {
 								Button(role: .destructive) {
 									deleteChannelMessages(channel: channelSelection!, context: context)
 									context.refresh(node!.myInfo!, mergeChanges: true)
+									UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 									channelSelection = nil
 								} label: {
 									Text("delete")

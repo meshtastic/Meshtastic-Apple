@@ -47,7 +47,7 @@ struct NodeList: View {
 						LazyVStack(alignment: .leading) {
 							HStack {
 								VStack(alignment: .leading) {
-									CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : (node.user?.shortName?.count ?? 0 == 4  ? 19 : 26), brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
+									CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
 										.padding(.trailing, 5)
 									let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 									if deviceMetrics?.count ?? 0 >= 1 {

@@ -16,9 +16,7 @@ struct NodeDetail: View {
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
-	//@State private var mapType: MKMapType = .standard
 	@State private var selectedMapLayer: MapLayer = .standard
-	@State var mapRect: MKMapRect = MKMapRect()
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
 	@State private var loadedWeather: Bool = false
@@ -26,15 +24,12 @@ struct NodeDetail: View {
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var showOverlays: Bool = true
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-			mapName: "offlinemap",
-			tileType: "png",
-			canReplaceMapContent: true
-		)
-
+		mapName: "offlinemap",
+		tileType: "png",
+		canReplaceMapContent: true
+	)
 	var node: NodeInfoEntity
-
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
@@ -49,13 +44,14 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
+
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
-					if node.positions?.count ?? 0 > 0 {
+					if node.hasPositions {
 						ZStack {
 							let positionArray = node.positions?.array as? [PositionEntity] ?? []
 							let lastTenThousand = Array(positionArray.prefix(10000))
@@ -68,11 +64,9 @@ struct NodeDetail: View {
 											waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: nil, waypointId: Int64(wpId))
 										}
 									},
-									// visibleMapRect: $mapRect,
 									selectedMapLayer: selectedMapLayer,
 									positions: lastTenThousand,
 									waypoints: Array(waypoints),
-									// mapViewType: mapType,
 									userTrackingMode: MKUserTrackingMode.none,
 									showNodeHistory: meshMapShowNodeHistory,
 									showRouteLines: meshMapShowRouteLines,
@@ -223,16 +217,12 @@ struct NodeDetail: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				})
-				.onAppear {
-					self.bleManager.context = context
-					// mapType = .standard// MeshMapTypes(rawValue: meshMapType)?.MKMapTypeValue() ?? .standard
-				}
 				.task(id: node.num) {
 					if !loadedWeather {
 						do {
-							if node.positions?.count ?? 0 > 0 {
+							if node.hasPositions {
 								let mostRecent = node.positions?.lastObject as? PositionEntity
 								let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
 								condition = weather.currentWeather.condition
