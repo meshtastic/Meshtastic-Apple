@@ -14,7 +14,7 @@ struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
-			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
+			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, nodes: 17, nodesOnline: 7, timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
@@ -105,7 +105,7 @@ struct WidgetsLiveActivity: Widget {
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
+		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
 
     static var previews: some View {
         attributes
@@ -133,6 +133,8 @@ struct LiveActivityView: View {
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
+	var nodes: Int
+	var nodesOnline: Int
 	var timerRange: ClosedRange<Date>
 
 	var body: some View {
@@ -144,7 +146,7 @@ struct LiveActivityView: View {
 				.aspectRatio(contentMode: .fit)
 				.frame(width: 65)
 			Spacer()
-			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel)
+			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel, nodes: nodes, nodesOnline: nodesOnline)
 			Spacer()
 			VStack {
 				BatteryIcon(batteryLevel: Int32(batteryLevel), font: .title, color: .secondary)
@@ -188,6 +190,8 @@ struct NodeInfoView: View {
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
+	var nodes: Int
+	var nodesOnline: Int
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
@@ -203,6 +207,12 @@ struct NodeInfoView: View {
 				.fixedSize()
 			Text("\(String(format: "Airtime: %.2f", airtime))%")
 				.font(.headline)
+				.fontWeight(.medium)
+				.foregroundStyle(.secondary)
+				.opacity(isLuminanceReduced ? 0.8 : 1.0)
+				.fixedSize()
+			Text("\(String(format: "Connected: %d of %d online", nodesOnline, nodes))")
+				.font(.callout)
 				.fontWeight(.medium)
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)

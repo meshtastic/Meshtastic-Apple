@@ -72,8 +72,17 @@ struct Connect: View {
 											Text("subscribed").font(.callout)
 												.foregroundColor(.green)
 										} else {
-											Text("communicating").font(.callout)
-												.foregroundColor(.orange)
+											
+											HStack {
+												if #available(iOS 17.0, macOS 14.0, *) {
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
+												}
+												Text("communicating").font(.callout)
+													.foregroundColor(.orange)
+											}
 										}
 									}
 								}
@@ -304,7 +313,7 @@ struct Connect: View {
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0))
+		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0), nodes: 17, nodesOnline: 9)
 
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
 

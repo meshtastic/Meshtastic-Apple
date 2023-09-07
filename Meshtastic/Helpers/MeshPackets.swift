@@ -688,9 +688,9 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
 
-					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
-					let date = Date.now...oneMinuteLater
-					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
+					let oneHourLater = Calendar.current.date(byAdding: .minute, value: (Int(60) ), to: Date())!
+					let date = Date.now...oneHourLater
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel), nodes: 17, nodesOnline: 9)
 					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 

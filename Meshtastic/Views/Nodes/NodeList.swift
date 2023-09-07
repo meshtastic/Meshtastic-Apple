@@ -123,7 +123,11 @@ struct NodeList: View {
 		   if let node = selection {
 			   NodeDetail(node: node)
 		   } else {
-			   Text("select.node")
+			   if #available (iOS 17, *) {
+				   ContentUnavailableView("select.node", systemImage: "flipphone", description: Text("Pick a node from the list."))
+			   } else {
+				   Text("select.node")
+			   }
 		   }
 	   }
 	   .searchable(text: nodesQuery, prompt: "Find a node")
