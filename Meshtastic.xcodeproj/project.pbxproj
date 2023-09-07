@@ -662,7 +662,6 @@
 			isa = PBXGroup;
 			children = (
 				DD7709392AA1ABA1007A8BF0 /* Tips */,
-				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DD90860A26F645B700DC5189 /* Meshtastic.entitlements */,
 				DD8ED9C6289CE4A100B3B0AB /* Enums */,
 				DD86D40D2881BDB300BAEB7A /* Export */,

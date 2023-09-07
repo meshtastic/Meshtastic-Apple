@@ -13,6 +13,9 @@ import CoreBluetooth
 #if canImport(TipKit)
 import TipKit
 #endif
+#if canImport(ActivityKit)
+import ActivityKit
+#endif
 
 struct Connect: View {
 
