@@ -61,12 +61,20 @@ struct NodeList: View {
 										.font(.callout)
 									if connected {
 										HStack(alignment: .bottom) {
-											Image(systemName: "repeat.circle.fill")
-												.font(.callout)
+											Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
+												.font(.footnote)
 												.symbolRenderingMode(.hierarchical)
-											Text("connected").font(.callout)
 												.foregroundColor(.green)
+											Text("connected").font(.caption)
 										}
+									}
+									HStack(alignment: .bottom) {
+										Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+											.font(.footnote)
+											.symbolRenderingMode(.hierarchical)
+											.foregroundColor(node.isOnline ? .green : .orange)
+										LastHeardText(lastHeard: node.lastHeard)
+											.font(.caption)
 									}
 									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 != node.num) {
 										HStack(alignment: .bottom) {
@@ -91,13 +99,6 @@ struct NodeList: View {
 												.font(.footnote)
 										}
 									}
-									HStack(alignment: .bottom) {
-										Image(systemName: "clock.badge.checkmark.fill")
-											.font(.caption)
-											.symbolRenderingMode(.hierarchical)
-										LastHeardText(lastHeard: node.lastHeard)
-											.font(.caption)
-									}
 									if !connected {
 										HStack(alignment: .bottom) {										let preset = ModemPresets(rawValue: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
 											LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
@@ -112,6 +113,7 @@ struct NodeList: View {
 				}
 			 }
 			.listStyle(.plain)
+			.navigationSplitViewColumnWidth(300)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.navigationBarItems(leading:
 				MeshtasticLogo()

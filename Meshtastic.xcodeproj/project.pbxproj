@@ -116,6 +116,7 @@
 		DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F40F2A9EE5B400230ECE /* Messages.swift */; };
 		DDB8F4122A9EE5DD00230ECE /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4112A9EE5DD00230ECE /* UserList.swift */; };
 		DDB8F4142A9EE5F000230ECE /* ChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB8F4132A9EE5F000230ECE /* ChannelList.swift */; };
+		DDC18AD12AAAE5920083FE1E /* NodeListDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC18AD02AAAE5920083FE1E /* NodeListDetail.swift */; };
 		DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */; };
 		DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */; };
 		DDC2E15F26CE248F0042C5E4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDC2E15E26CE248F0042C5E4 /* Preview Assets.xcassets */; };
@@ -323,6 +324,7 @@
 		DDB8F4112A9EE5DD00230ECE /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
 		DDB8F4132A9EE5F000230ECE /* ChannelList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelList.swift; sourceTree = "<group>"; };
 		DDBA45EC299ED78100DEEDDC /* MeshtasticDataModelV8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV8.xcdatamodel; sourceTree = "<group>"; };
+		DDC18AD02AAAE5920083FE1E /* NodeListDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListDetail.swift; sourceTree = "<group>"; };
 		DDC2E15426CE248E0042C5E4 /* Meshtastic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC2E15726CE248E0042C5E4 /* MeshtasticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshtasticApp.swift; sourceTree = "<group>"; };
 		DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
@@ -831,6 +833,7 @@
 			isa = PBXGroup;
 			children = (
 				DDDEE5E029DA3E1100A8E078 /* NodeInfoView.swift */,
+				DDC18AD02AAAE5920083FE1E /* NodeListDetail.swift */,
 			);
 			path = Node;
 			sourceTree = "<group>";
@@ -1082,6 +1085,7 @@
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,
 				DDB75A232A13CDA9006ED576 /* BatteryLevelCompact.swift in Sources */,
 				DDB75A162A0594AD006ED576 /* TileOverlay.swift in Sources */,
+				DDC18AD12AAAE5920083FE1E /* NodeListDetail.swift in Sources */,
 				DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */,
 				DD3CC6BE28E4CD9800FA9159 /* BatteryGauge.swift in Sources */,
 				DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */,
