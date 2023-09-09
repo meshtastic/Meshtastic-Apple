@@ -16,7 +16,6 @@
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
-		DD14E72E2A82A614006E39BC /* RemoteHardware.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD14E72D2A82A614006E39BC /* RemoteHardware.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
@@ -138,6 +137,7 @@
 		DDDB263F2AABEE20003AFCB7 /* NodeListSplit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB263E2AABEE20003AFCB7 /* NodeListSplit.swift */; };
 		DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26412AABF655003AFCB7 /* NodeListItem.swift */; };
 		DDDB26442AAC0206003AFCB7 /* NodeDetailItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */; };
+		DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */; };
 		DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443529F6287000EE2349 /* MapButtons.swift */; };
 		DDDB443D29F6592F00EE2349 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443C29F6592F00EE2349 /* NetworkManager.swift */; };
 		DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443F29F79AB000EE2349 /* UserDefaults.swift */; };
@@ -217,7 +217,6 @@
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
-		DD14E72D2A82A614006E39BC /* RemoteHardware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteHardware.swift; sourceTree = "<group>"; };
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
@@ -357,6 +356,7 @@
 		DDDB263E2AABEE20003AFCB7 /* NodeListSplit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListSplit.swift; sourceTree = "<group>"; };
 		DDDB26412AABF655003AFCB7 /* NodeListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
 		DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailItem.swift; sourceTree = "<group>"; };
+		DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoItem.swift; sourceTree = "<group>"; };
 		DDDB443529F6287000EE2349 /* MapButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtons.swift; sourceTree = "<group>"; };
 		DDDB443C29F6592F00EE2349 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		DDDB443F29F79AB000EE2349 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
@@ -471,7 +471,6 @@
 				DD47E3CD26F103C600029299 /* NodeList.swift */,
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
-				DD14E72D2A82A614006E39BC /* RemoteHardware.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
 				DDDB263E2AABEE20003AFCB7 /* NodeListSplit.swift */,
 			);
@@ -809,8 +808,9 @@
 		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */,
+				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
+				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1093,6 +1093,7 @@
 				DD8169FF272476C700F4AB02 /* LogDocument.swift in Sources */,
 				DDC94FC129CE063B0082EA6E /* BatteryLevel.swift in Sources */,
 				DDDB445429F8AD1600EE2349 /* Data.swift in Sources */,
+				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
 				DD5E5213298EE33B00D21B61 /* deviceonly.pb.swift in Sources */,
 				DD5E5208298EE33B00D21B61 /* rtttl.pb.swift in Sources */,
@@ -1194,7 +1195,6 @@
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
-				DD14E72E2A82A614006E39BC /* RemoteHardware.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,
 				DD5E5211298EE33B00D21B61 /* remote_hardware.pb.swift in Sources */,
 				DD5E5204298EE33B00D21B61 /* xmodem.pb.swift in Sources */,

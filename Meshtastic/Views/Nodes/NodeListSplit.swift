@@ -39,21 +39,20 @@ struct NodeListSplit: View {
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selection) { node in
 				
-				NodeListItem(node: node)
+				NodeListItem(node: node, connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num, connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1), modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
 			}
 			.searchable(text: nodesQuery, prompt: "Find a node")
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
-			.navigationSplitViewColumnWidth(300)
+			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(leading:
 				MeshtasticLogo()
 			)
 		} content: {
 			
 			if let node = selection {
-				//NodeDetailItem(node: node)
-			 NodeDetail(node: node)
-					.navigationSplitViewColumnWidth(300)
+				NodeDetailItem(node: node)
+					
 			 } else {
 				 Text("select.node")
 			 }

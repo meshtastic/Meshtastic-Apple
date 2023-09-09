@@ -26,6 +26,7 @@ struct LoRaSignalStrengthMeter: View {
 					.foregroundColor(getRssiColor(rssi: rssi))
 					.font(.caption2)
 			}
+			.padding(.bottom, 2)
 		} else {
 			Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
 			} currentValueLabel: {

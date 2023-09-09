@@ -6,18 +6,18 @@
 //
 
 import SwiftUI
-
-
-
+import CoreLocation
 
 struct NodeListItem: View {
 	
-	@StateObject var node: NodeInfoEntity
+	public var node: NodeInfoEntity
+	var connected: Bool
+	var connectedNode: Int64
+	var modemPreset: Int
 	
 	var body: some View {
 		
 		NavigationLink(value: node) {
-			let connected: Bool = false //(bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
@@ -50,20 +50,20 @@ struct NodeListItem: View {
 							LastHeardText(lastHeard: node.lastHeard)
 								.font(.caption)
 						}
-//						if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 != node.num) {
-//							HStack(alignment: .bottom) {
-//								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-//								let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-//								if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
-//									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-//									let metersAway = nodeCoord.distance(from: myCoord)
-//									Image(systemName: "lines.measurement.horizontal")
-//										.font(.footnote)
-//										.symbolRenderingMode(.hierarchical)
-//									DistanceText(meters: metersAway).font(.caption)
-//								}
-//							}
-//						}
+						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
+							HStack(alignment: .bottom) {
+								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
+								let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
+								if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
+									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+									let metersAway = nodeCoord.distance(from: myCoord)
+									Image(systemName: "lines.measurement.horizontal")
+										.font(.footnote)
+										.symbolRenderingMode(.hierarchical)
+									DistanceText(meters: metersAway).font(.caption)
+								}
+							}
+						}
 						if node.channel > 0 {
 							HStack(alignment: .bottom) {
 								Image(systemName: "fibrechannel")
@@ -74,11 +74,12 @@ struct NodeListItem: View {
 							}
 						}
 						
-//						if !connected {
-//							HStack(alignment: .bottom) {										let preset = ModemPresets(rawValue: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
-//								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
-//							}
-//						}
+						if !connected {
+							HStack(alignment: .bottom) {										
+								let preset = ModemPresets(rawValue: Int(modemPreset))
+								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
+							}
+						}
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)
 				}

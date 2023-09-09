@@ -44,7 +44,7 @@ struct NodeDetail: View {
 
 	@State private var attributionLink: URL?
 	@State private var attributionLogo: URL?
-
+	
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
