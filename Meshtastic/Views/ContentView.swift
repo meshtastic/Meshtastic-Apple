@@ -24,6 +24,11 @@ struct ContentView: View {
 					Label("nodes", systemImage: "flipphone")
 				}
 				.tag(Tab.nodes)
+			NodeListSplit()
+				.tabItem {
+					Label("nodes", systemImage: "flipphone")
+				}
+				.tag(Tab.nodes2)
 			NodeMap()
 				.tabItem {
 					Label("map", systemImage: "map")
@@ -51,5 +56,6 @@ enum Tab {
 	case map
 	case ble
 	case nodes
+	case nodes2
 	case settings
 }

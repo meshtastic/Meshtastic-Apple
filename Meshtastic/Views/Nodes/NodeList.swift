@@ -12,6 +12,10 @@ import SwiftUI
 import CoreLocation
 
 struct NodeList: View {
+	
+	init () {
+		//self.bleManager.context = context
+	}
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -86,7 +90,7 @@ struct NodeList: View {
 												Image(systemName: "lines.measurement.horizontal")
 													.font(.footnote)
 													.symbolRenderingMode(.hierarchical)
-												DistanceText(meters: metersAway).font(.footnote)
+												DistanceText(meters: metersAway).font(.caption)
 											}
 										}
 									}
@@ -119,7 +123,7 @@ struct NodeList: View {
 				MeshtasticLogo()
 			)
 			.onAppear {
-				self.bleManager.context = context
+			//	self.bleManager.context = context
 			}
 	   } detail: {
 		   if let node = selection {
