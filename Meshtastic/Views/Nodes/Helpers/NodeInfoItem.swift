@@ -12,14 +12,6 @@ import MapKit
 struct NodeInfoItem: View {
 
 	var node: NodeInfoEntity
-	
-	enum SelectedDetail {
-		case positionLog
-		case nodeMap
-		case deviceMetricsLog
-		case environmentMetricsLog
-		case detectionSensorLog
-	}
 
 	var body: some View {
 		
@@ -105,26 +97,7 @@ struct NodeInfoItem: View {
 
 		VStack {
 		//	List {
-				if node.hasPositions {
-					
-					NavigationLink {
-						PositionLog(node: node)
-							.onAppear {
 								
-							 }
-					} label: {
-						
-						Image(systemName: "building.columns")
-							.symbolRenderingMode(.hierarchical)
-							.font(.title)
-						
-						Text("Position Log")
-							.font(.title3)
-					}
-					.fixedSize(horizontal: false, vertical: true)
-					Divider()
-				}
-				
 				if node.hasDeviceMetrics {
 					
 					NavigationLink {
@@ -152,6 +125,25 @@ struct NodeInfoItem: View {
 						Text("Environment Metrics Log")
 							.font(.title3)
 					}
+					Divider()
+				}
+				if node.hasPositions {
+					
+					NavigationLink {
+						PositionLog(node: node)
+							.onAppear {
+								
+							 }
+					} label: {
+						
+						Image(systemName: "building.columns")
+							.symbolRenderingMode(.hierarchical)
+							.font(.title)
+						
+						Text("Position Log")
+							.font(.title3)
+					}
+					.fixedSize(horizontal: false, vertical: true)
 					Divider()
 				}
 				NavigationLink {

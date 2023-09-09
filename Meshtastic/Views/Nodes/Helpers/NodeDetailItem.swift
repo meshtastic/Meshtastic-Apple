@@ -13,14 +13,6 @@ struct NodeDetailItem: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@AppStorage("meshMapType") private var meshMapType = 0
-	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var meshMapShowRouteLines = false
-	@State private var selectedMapLayer: MapLayer = .standard
-	@State var waypointCoordinate: WaypointCoordinate?
-	@State var editingWaypoint: Int = 0
-	@State private var loadedWeather: Bool = false
-	@State private var showingDetailsPopover = false
 	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
@@ -29,21 +21,7 @@ struct NodeDetailItem: View {
 		tileType: "png",
 		canReplaceMapContent: true
 	)
-	@ObservedObject var node: NodeInfoEntity
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-				  predicate: NSPredicate(
-					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .none)
-	private var waypoints: FetchedResults<WaypointEntity>
-
-	/// The current weather condition for the city.
-	@State private var condition: WeatherCondition?
-	@State private var temperature: Measurement<UnitTemperature>?
-	@State private var humidity: Int?
-	@State private var symbolName: String = "cloud.fill"
-
-	@State private var attributionLink: URL?
-	@State private var attributionLogo: URL?
+	var node: NodeInfoEntity
 
 	var body: some View {
 
@@ -102,12 +80,12 @@ struct NodeDetailItem: View {
 						}
 					}
 				}
+				.onAppear {
+					if self.bleManager.context == nil {
+						self.bleManager.context = context
+					}
+				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
-				.sheet(item: $waypointCoordinate, content: { wpc in
-					WaypointFormView(coordinate: wpc)
-						.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.automatic)
-				})
 				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
 				.navigationBarItems(trailing:
 					ZStack {

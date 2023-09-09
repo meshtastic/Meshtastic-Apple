@@ -7,9 +7,22 @@
 import SwiftUI
 import CoreLocation
 
+enum SelectedDetail {
+	case positionLog
+	case nodeMap
+	case deviceMetricsLog
+	case environmentMetricsLog
+	case detectionSensorLog
+}
+
 struct NodeListSplit: View {
 	
+	// Layout variables
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
+	@State private var selectedNode: NodeInfoEntity?
+	@State private var selectedDetail: SelectedDetail?
+	
+	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
@@ -30,14 +43,14 @@ struct NodeListSplit: View {
 
 	private var nodes: FetchedResults<NodeInfoEntity>
 	
-	@State private var selection: NodeInfoEntity? // Nothing selected by default.
+
 
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			
 			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-			List(nodes, id: \.self, selection: $selection) { node in
+			List(nodes, id: \.self, selection: $selectedNode) { node in
 				
 				NodeListItem(node: node, connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num, connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1), modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
 			}
@@ -50,7 +63,7 @@ struct NodeListSplit: View {
 			)
 		} content: {
 			
-			if let node = selection {
+			if let node = selectedNode {
 				NodeDetailItem(node: node)
 					
 			 } else {
@@ -61,6 +74,11 @@ struct NodeListSplit: View {
 			Text("Content")
 		}
 		.navigationSplitViewStyle(.balanced)
+		.onAppear {
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
+		}
 
 //		} detail: {
 //			VStack {

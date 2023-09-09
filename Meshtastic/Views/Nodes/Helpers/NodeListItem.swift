@@ -10,7 +10,7 @@ import CoreLocation
 
 struct NodeListItem: View {
 	
-	public var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool
 	var connectedNode: Int64
 	var modemPreset: Int

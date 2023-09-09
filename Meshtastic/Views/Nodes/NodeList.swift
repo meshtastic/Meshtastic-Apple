@@ -13,9 +13,6 @@ import CoreLocation
 
 struct NodeList: View {
 	
-	init () {
-		//self.bleManager.context = context
-	}
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -123,7 +120,9 @@ struct NodeList: View {
 				MeshtasticLogo()
 			)
 			.onAppear {
-			//	self.bleManager.context = context
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
 			}
 	   } detail: {
 		   if let node = selection {

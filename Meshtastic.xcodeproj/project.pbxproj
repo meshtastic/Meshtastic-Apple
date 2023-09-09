@@ -138,6 +138,7 @@
 		DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26412AABF655003AFCB7 /* NodeListItem.swift */; };
 		DDDB26442AAC0206003AFCB7 /* NodeDetailItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */; };
 		DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */; };
+		DDDB26482AACD6D1003AFCB7 /* NodeMapControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */; };
 		DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443529F6287000EE2349 /* MapButtons.swift */; };
 		DDDB443D29F6592F00EE2349 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443C29F6592F00EE2349 /* NetworkManager.swift */; };
 		DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB443F29F79AB000EE2349 /* UserDefaults.swift */; };
@@ -357,6 +358,7 @@
 		DDDB26412AABF655003AFCB7 /* NodeListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListItem.swift; sourceTree = "<group>"; };
 		DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailItem.swift; sourceTree = "<group>"; };
 		DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoItem.swift; sourceTree = "<group>"; };
+		DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapControl.swift; sourceTree = "<group>"; };
 		DDDB443529F6287000EE2349 /* MapButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapButtons.swift; sourceTree = "<group>"; };
 		DDDB443C29F6592F00EE2349 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		DDDB443F29F79AB000EE2349 /* UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
@@ -811,6 +813,7 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetailItem.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1101,6 +1104,7 @@
 				DDDB263F2AABEE20003AFCB7 /* NodeListSplit.swift in Sources */,
 				DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */,
 				DDB8F4102A9EE5B400230ECE /* Messages.swift in Sources */,
+				DDDB26482AACD6D1003AFCB7 /* NodeMapControl.swift in Sources */,
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
