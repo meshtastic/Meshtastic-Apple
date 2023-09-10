@@ -7,21 +7,10 @@
 import SwiftUI
 import CoreLocation
 
-enum SelectedDetail {
-	case positionLog
-	case nodeMap
-	case deviceMetricsLog
-	case environmentMetricsLog
-	case detectionSensorLog
-}
-
-
-
 struct NodeListSplit: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
-	@State private var selectedDetail: SelectedDetail?
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
@@ -74,16 +63,22 @@ struct NodeListSplit: View {
 				NodeDetail(node: node)
 					
 			 } else {
-				 Text("select.node")
+				 if #available (iOS 17, *) {
+					 ContentUnavailableView("select.node", systemImage: "flipphone")
+				 } else {
+					 Text("select.node")
+				 }
 			 }
 		
 		} detail: {
-			Text("Select something to view")
+			if #available (iOS 17, *) {
+				ContentUnavailableView("", systemImage: "line.3.horizontal")
+			} else {
+				Text("Select something to view")
+			}
+			
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: selectedNode) { _ in
-			selectedDetail = nil
-		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
