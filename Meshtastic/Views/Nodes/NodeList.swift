@@ -17,7 +17,7 @@ enum SelectedDetail {
 
 
 
-struct NodeListSplit: View {
+struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
