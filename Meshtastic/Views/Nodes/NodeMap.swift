@@ -26,8 +26,10 @@ struct NodeMap: View {
 	@State var selectedOverlayServer: MapOverlayServer = UserDefaults.mapOverlayServer
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
 	let fromDate: NSDate = Calendar.current.date(byAdding: .month, value: -1, to: Date())! as NSDate
+//	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
+//				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
+				  predicate: NSPredicate(format: "nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
