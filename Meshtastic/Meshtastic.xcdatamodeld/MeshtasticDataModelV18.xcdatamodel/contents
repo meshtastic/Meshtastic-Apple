@@ -348,7 +348,7 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false"/>
         </fetchedProperty>
         <fetchedProperty name="detectionSensorMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="UserEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND isEmoji == false AND portNum = 10"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND portNum = 10"/>
         </fetchedProperty>
     </entity>
     <entity name="WaypointEntity" representedClassName="WaypointEntity" syncable="YES" codeGenerationType="class">

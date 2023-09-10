@@ -24,12 +24,6 @@ struct PositionLog: View {
 	var body: some View {
 		NavigationStack {
 			
-			
-			if node.hasPositions {
-				
-			} else {
-				Text("Node has no positions.")
-			}
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {

@@ -8,7 +8,7 @@ import WeatherKit
 import MapKit
 import CoreLocation
 
-struct NodeDetailItem: View {
+struct NodeDetail: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -40,18 +40,6 @@ struct NodeDetailItem: View {
 							.disabled(!node.hasDeviceMetrics)
 							Divider()
 							NavigationLink {
-								EnvironmentMetricsLog(node: node)
-							} label: {
-								Image(systemName: "chart.xyaxis.line")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-								
-								Text("Environment Metrics Log")
-									.font(.title3)
-							}
-							.disabled(!node.hasEnvironmentMetrics)
-							Divider()
-							NavigationLink {
 								NodeMapControl(node: node)
 							} label: {
 								Image(systemName: "map")
@@ -76,6 +64,18 @@ struct NodeDetailItem: View {
 							.disabled(!node.hasPositions)
 							Divider()
 							NavigationLink {
+								EnvironmentMetricsLog(node: node)
+							} label: {
+								Image(systemName: "chart.xyaxis.line")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Environment Metrics Log")
+									.font(.title3)
+							}
+							.disabled(!node.hasEnvironmentMetrics)
+							Divider()
+							NavigationLink {
 								DetectionSensorLog(node: node)
 							} label: {
 								Image(systemName: "sensor")
@@ -85,6 +85,7 @@ struct NodeDetailItem: View {
 								Text("Detection Sensor Log")
 									.font(.title3)
 							}
+							.disabled(!node.hasDetectionSensorMetrics)
 							Divider()
 						}
 						
@@ -150,7 +151,7 @@ struct NodeDetailItem: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 				})
 			}
 			.padding(.bottom, 2)
