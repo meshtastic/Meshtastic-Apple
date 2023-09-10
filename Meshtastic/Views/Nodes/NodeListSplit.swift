@@ -17,7 +17,6 @@ enum SelectedDetail {
 
 struct NodeListSplit: View {
 	
-	// Layout variables
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var selectedDetail: SelectedDetail?
@@ -71,9 +70,12 @@ struct NodeListSplit: View {
 			 }
 		
 		} detail: {
-			Text("Content")
+			Text("Select something to view")
 		}
 		.navigationSplitViewStyle(.balanced)
+		.onChange(of: selectedNode) { _ in
+			selectedDetail = nil
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context

@@ -467,11 +467,11 @@
 			isa = PBXGroup;
 			children = (
 				DDDB26402AABEF7B003AFCB7 /* Helpers */,
-				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
-				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				DD2E65252767A01F00E45FC5 /* NodeDetail.swift */,
 				DD47E3CD26F103C600029299 /* NodeList.swift */,
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
+				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
+				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
 				DDDB263E2AABEE20003AFCB7 /* NodeListSplit.swift */,

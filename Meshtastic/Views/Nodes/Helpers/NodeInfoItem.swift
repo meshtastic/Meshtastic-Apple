@@ -11,16 +11,11 @@ import MapKit
 
 struct NodeInfoItem: View {
 
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
 		
 		Divider()
-		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-			
-		} else {
-			
-		}
 		
 		HStack {
 
@@ -70,7 +65,7 @@ struct NodeInfoItem: View {
 			}
 		}
 		Divider()
-		VStack(alignment: .center) {
+		HStack(alignment: .center) {
 			VStack {
 				HStack {
 					Image(systemName: "number")
@@ -92,75 +87,7 @@ struct NodeInfoItem: View {
 				}
 				Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
 			}
-			Divider()
 		}
-
-		VStack {
-		//	List {
-								
-				if node.hasDeviceMetrics {
-					
-					NavigationLink {
-						DeviceMetricsLog(node: node)
-					} label: {
-						
-						Image(systemName: "flipphone")
-							.symbolRenderingMode(.hierarchical)
-							.font(.title)
-						
-						Text("Device Metrics Log")
-							.font(.title3)
-					}
-					Divider()
-				}
-				if node.hasEnvironmentMetrics {
-					NavigationLink {
-						EnvironmentMetricsLog(node: node)
-					} label: {
-						
-						Image(systemName: "chart.xyaxis.line")
-							.symbolRenderingMode(.hierarchical)
-							.font(.title)
-						
-						Text("Environment Metrics Log")
-							.font(.title3)
-					}
-					Divider()
-				}
-				if node.hasPositions {
-					
-					NavigationLink {
-						PositionLog(node: node)
-							.onAppear {
-								
-							 }
-					} label: {
-						
-						Image(systemName: "building.columns")
-							.symbolRenderingMode(.hierarchical)
-							.font(.title)
-						
-						Text("Position Log")
-							.font(.title3)
-					}
-					.fixedSize(horizontal: false, vertical: true)
-					Divider()
-				}
-				NavigationLink {
-					DetectionSensorLog(node: node)
-				} label: {
-					
-					Image(systemName: "sensor")
-						.symbolRenderingMode(.hierarchical)
-						.font(.title)
-					
-					Text("Detection Sensor Log")
-						.font(.title3)
-				}
-				.fixedSize(horizontal: false, vertical: true)
-				Divider()
-		//	}
-		//	.listStyle(.plain)
-		}
+		Divider()
 	}
 }

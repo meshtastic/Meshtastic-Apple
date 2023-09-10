@@ -13,15 +13,10 @@ struct NodeDetailItem: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@State private var showingForecast = false
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
-	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-		mapName: "offlinemap",
-		tileType: "png",
-		canReplaceMapContent: true
-	)
-	var node: NodeInfoEntity
+
+	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
 
@@ -31,6 +26,69 @@ struct NodeDetailItem: View {
 				VStack {
 					ScrollView {
 						NodeInfoItem(node: node)
+						VStack {
+							NavigationLink {
+								DeviceMetricsLog(node: node)
+							} label: {
+								Image(systemName: "flipphone")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Device Metrics Log")
+									.font(.title3)
+							}
+							.disabled(!node.hasDeviceMetrics)
+							Divider()
+							NavigationLink {
+								EnvironmentMetricsLog(node: node)
+							} label: {
+								Image(systemName: "chart.xyaxis.line")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Environment Metrics Log")
+									.font(.title3)
+							}
+							.disabled(!node.hasEnvironmentMetrics)
+							Divider()
+							NavigationLink {
+								NodeMapControl(node: node)
+							} label: {
+								Image(systemName: "map")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Node Map")
+									.font(.title3)
+							}
+							.disabled(!node.hasPositions)
+							Divider()
+							NavigationLink {
+								PositionLog(node: node)
+							} label: {
+								Image(systemName: "building.columns")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Position Log")
+									.font(.title3)
+							}
+							.disabled(!node.hasPositions)
+							Divider()
+							NavigationLink {
+								DetectionSensorLog(node: node)
+							} label: {
+								Image(systemName: "sensor")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Detection Sensor Log")
+									.font(.title3)
+							}
+							Divider()
+						}
+						
+						
 						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
 							HStack {
 								if node.metadata?.canShutdown ?? false {

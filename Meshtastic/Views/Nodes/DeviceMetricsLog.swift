@@ -19,7 +19,7 @@ struct DeviceMetricsLog: View {
 	@State private var batteryChartColor: Color = .blue
 	@State private var airtimeChartColor: Color = .orange
 	@State private var channelUtilizationChartColor: Color = .green
-	var node: NodeInfoEntity
+	@ObservedObject  var node: NodeInfoEntity
 
 	var body: some View {
 
