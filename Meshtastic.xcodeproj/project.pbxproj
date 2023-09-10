@@ -162,7 +162,7 @@
 		DDDE5A1129AFE69700490C6C /* MeshActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */; };
 		DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
-		DDDEE5E129DA3E1100A8E078 /* NodeInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDEE5E029DA3E1100A8E078 /* NodeInfoView.swift */; };
+		DDDEE5E129DA3E1100A8E078 /* NodeInfoViewOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDEE5E029DA3E1100A8E078 /* NodeInfoViewOld.swift */; };
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForward.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
@@ -382,7 +382,7 @@
 		DDDE5A0429AF163E00490C6C /* WidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetsExtension.entitlements; sourceTree = "<group>"; };
 		DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshActivityAttributes.swift; sourceTree = "<group>"; };
 		DDDE5A1229AFEAB900490C6C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		DDDEE5E029DA3E1100A8E078 /* NodeInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoView.swift; sourceTree = "<group>"; };
+		DDDEE5E029DA3E1100A8E078 /* NodeInfoViewOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoViewOld.swift; sourceTree = "<group>"; };
 		DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
 		DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
 		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
@@ -469,11 +469,12 @@
 			children = (
 				DDDB26402AABEF7B003AFCB7 /* Helpers */,
 				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
-				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
 				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
-				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
+				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
+				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
+				DDDEE5E029DA3E1100A8E078 /* NodeInfoViewOld.swift */,
 				DD2E65252767A01F00E45FC5 /* NodeDetailOld.swift */,
 				DD47E3CD26F103C600029299 /* NodeListOld.swift */,
 			);
@@ -749,7 +750,6 @@
 		DDC2E18D26CE25CB0042C5E4 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				DDDEE5DF29DA3DA000A8E078 /* Node */,
 				DD5E523D298F5A7D00D21B61 /* Weather */,
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
@@ -854,14 +854,6 @@
 				DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */,
 			);
 			path = Widgets;
-			sourceTree = "<group>";
-		};
-		DDDEE5DF29DA3DA000A8E078 /* Node */ = {
-			isa = PBXGroup;
-			children = (
-				DDDEE5E029DA3E1100A8E078 /* NodeInfoView.swift */,
-			);
-			path = Node;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1138,7 +1130,7 @@
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
 				DD47E3CE26F103C600029299 /* NodeListOld.swift in Sources */,
 				DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */,
-				DDDEE5E129DA3E1100A8E078 /* NodeInfoView.swift in Sources */,
+				DDDEE5E129DA3E1100A8E078 /* NodeInfoViewOld.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,
 				DD47E3D626F17ED900029299 /* CircleText.swift in Sources */,

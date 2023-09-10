@@ -34,7 +34,7 @@ struct NodeListItem: View {
 							.fontWeight(.medium)
 							.font(.callout)
 						if connected {
-							HStack(alignment: .bottom) {
+							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
 									.font(.footnote)
 									.symbolRenderingMode(.hierarchical)
@@ -42,7 +42,7 @@ struct NodeListItem: View {
 								Text("connected").font(.caption)
 							}
 						}
-						HStack(alignment: .bottom) {
+						HStack {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
 								.font(.footnote)
 								.symbolRenderingMode(.hierarchical)
@@ -51,7 +51,7 @@ struct NodeListItem: View {
 								.font(.caption)
 						}
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
-							HStack(alignment: .bottom) {
+							HStack {
 								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
 								let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
 								if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
@@ -65,17 +65,17 @@ struct NodeListItem: View {
 							}
 						}
 						if node.channel > 0 {
-							HStack(alignment: .bottom) {
+							HStack {
 								Image(systemName: "fibrechannel")
 									.font(.footnote)
 									.symbolRenderingMode(.hierarchical)
 								Text("Channel: \(node.channel)")
-									.font(.footnote)
+									.font(.caption)
 							}
 						}
 						
 						if !connected {
-							HStack(alignment: .bottom) {										
+							HStack {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
 							}
