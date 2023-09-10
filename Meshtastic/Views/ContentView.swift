@@ -19,7 +19,7 @@ struct ContentView: View {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(Tab.ble)
-			NodeList()
+			NodeListSplit()
 				.tabItem {
 					Label("nodes", systemImage: "flipphone")
 				}

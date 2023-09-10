@@ -8,6 +8,7 @@
 import Foundation
 
 extension UserEntity {
+	
 
 	var messageList: [MessageEntity] {
 		self.value(forKey: "allMessages") as? [MessageEntity] ?? [MessageEntity]()
@@ -15,6 +16,10 @@ extension UserEntity {
 
 	var adminMessageList: [MessageEntity] {
 		self.value(forKey: "adminMessages") as? [MessageEntity] ?? [MessageEntity]()
+	}
+	
+	var sensorMessageList: [MessageEntity] {
+		self.value(forKey: "detectionSensorMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
 	
 	var unreadMessages: Int {

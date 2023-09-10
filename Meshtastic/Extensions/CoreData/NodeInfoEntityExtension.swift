@@ -24,4 +24,16 @@ extension NodeInfoEntity {
 		let environmentMetrics = telemetries?.filter{ ($0 as AnyObject).metricsType == 1 }
 		return environmentMetrics?.count ?? 0 > 0
 	}
+	var hasDetectionSensorMetrics: Bool {
+		return user?.sensorMessageList.count ?? 0 > 0
+	}
+	
+	var isOnline: Bool {
+
+		let fifteenMinutesAgo = Calendar.current.date(byAdding: .minute, value: -15, to: Date())
+		if lastHeard?.compare(fifteenMinutesAgo!) == .orderedDescending {
+			 return true
+		}
+		return false
+	}
 }

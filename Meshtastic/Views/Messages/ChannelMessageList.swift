@@ -24,8 +24,8 @@ struct ChannelMessageList: View {
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
 
-	@ObservedObject var myInfo: MyInfoEntity
-	@ObservedObject var channel: ChannelEntity
+	@StateObject var myInfo: MyInfoEntity
+	@StateObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
@@ -244,7 +244,7 @@ struct ChannelMessageList: View {
 									message.read = true
 									do {
 										try context.save()
-										print("Read message \(message.messageId) ")
+										print("📖 Read message \(message.messageId) ")
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										context.refresh(myInfo, mergeChanges: true)

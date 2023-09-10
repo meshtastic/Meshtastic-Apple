@@ -14,7 +14,7 @@ struct DetectionSensorLog: View {
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
