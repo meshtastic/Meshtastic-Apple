@@ -19,16 +19,11 @@ struct ContentView: View {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(Tab.ble)
-			NodeList()
-				.tabItem {
-					Label("nodes", systemImage: "flipphone")
-				}
-				.tag(Tab.nodes)
 			NodeListSplit()
 				.tabItem {
 					Label("nodes", systemImage: "flipphone")
 				}
-				.tag(Tab.nodes2)
+				.tag(Tab.nodes)
 			NodeMap()
 				.tabItem {
 					Label("map", systemImage: "map")
@@ -56,6 +51,5 @@ enum Tab {
 	case map
 	case ble
 	case nodes
-	case nodes2
 	case settings
 }

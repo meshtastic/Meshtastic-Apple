@@ -66,7 +66,7 @@ struct NodeDetailItem: View {
 							NavigationLink {
 								PositionLog(node: node)
 							} label: {
-								Image(systemName: "building.columns")
+								Image(systemName: "mappin.and.ellipse")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
 								
