@@ -37,7 +37,6 @@
 		DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41582928585C32009B0E59 /* RangeTestConfig.swift */; };
 		DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */; };
 		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
-		DD47E3CE26F103C600029299 /* NodeListOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3CD26F103C600029299 /* NodeListOld.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
@@ -241,7 +240,6 @@
 		DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLESignalStrengthIndicator.swift; sourceTree = "<group>"; };
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
-		DD47E3CD26F103C600029299 /* NodeListOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListOld.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
@@ -473,7 +471,6 @@
 				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
 				DD2E65252767A01F00E45FC5 /* NodeDetailOld.swift */,
-				DD47E3CD26F103C600029299 /* NodeListOld.swift */,
 			);
 			path = Nodes;
 			sourceTree = "<group>";
@@ -1125,7 +1122,6 @@
 				DD5E520D298EE33B00D21B61 /* storeforward.pb.swift in Sources */,
 				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
-				DD47E3CE26F103C600029299 /* NodeListOld.swift in Sources */,
 				DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,

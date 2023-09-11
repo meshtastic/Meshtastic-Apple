@@ -22,7 +22,7 @@ struct NodeDetail: View {
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-//		NavigationStack {
+		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
 					ScrollView {
@@ -147,6 +147,6 @@ struct NodeDetail: View {
 				}
 			}
 			.padding(.bottom, 2)
-//		}
+		}
 	}
 }

@@ -238,7 +238,9 @@ struct NodeMap: View {
 		})
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
