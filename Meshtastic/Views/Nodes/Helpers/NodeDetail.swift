@@ -17,6 +17,7 @@ struct NodeDetail: View {
 	@State private var showingRebootConfirm: Bool = false
 
 	@ObservedObject var node: NodeInfoEntity
+	var columnVisibility = NavigationSplitViewVisibility.all
 
 	var body: some View {
 
@@ -144,15 +145,6 @@ struct NodeDetail: View {
 						self.bleManager.context = context
 					}
 				}
-				.edgesIgnoringSafeArea([.leading, .trailing])
-				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
-				.navigationBarItems(trailing:
-					ZStack {
-					ConnectedDevice(
-						bluetoothOn: bleManager.isSwitchedOn,
-						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-				})
 			}
 			.padding(.bottom, 2)
 		}

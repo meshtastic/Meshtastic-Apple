@@ -7,11 +7,21 @@
 import SwiftUI
 import CoreLocation
 import MapKit
+import WeatherKit
 
 struct NodeMapControl: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	/// Weather
+	/// The current weather condition for the city.
+	@State private var condition: WeatherCondition?
+	@State private var temperature: Measurement<UnitTemperature>?
+	@State private var humidity: Int?
+	@State private var symbolName: String = "cloud.fill"
+	@State private var attributionLink: URL?
+	@State private var attributionLogo: URL?
+	
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var meshMapShowNodeHistory = false
@@ -76,6 +86,51 @@ struct NodeMapControl: View {
 										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 										.pickerStyle(.menu)
 										.padding(5)
+										VStack {
+											VStack {
+												Label(temperature?.formatted(.measurement(width: .narrow)) ?? "??", systemImage: symbolName)
+													.font(.caption)
+												
+												Label("\(humidity ?? 0)%", systemImage: "humidity")
+													.font(.caption2)
+
+												AsyncImage(url: attributionLogo) { image in
+													image
+														.resizable()
+														.scaledToFit()
+												} placeholder: {
+													ProgressView()
+														.controlSize(.mini)
+												}
+												.frame(height: 10)
+				
+												Link("Other data sources", destination: attributionLink ?? URL(string: "https://weather-data.apple.com/legal-attribution.html")!)
+													.font(.caption2)
+											}
+											.padding(5)
+											
+										}
+										.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+										.padding(5)
+										.task {
+											do {
+												if node.hasPositions {
+													let mostRecent = node.positions?.lastObject as? PositionEntity
+													let weather = try await WeatherService.shared.weather(for: mostRecent?.nodeLocation ?? CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude))
+													condition = weather.currentWeather.condition
+													temperature = weather.currentWeather.temperature
+													humidity = Int(weather.currentWeather.humidity * 100)
+													symbolName = weather.currentWeather.symbolName
+													let attribution = try await WeatherService.shared.attribution
+													attributionLink = attribution.legalPageURL
+													attributionLogo = colorScheme == .light ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL
+												}
+											} catch {
+												print("Could not gather weather information...", error.localizedDescription)
+												condition = .clear
+												symbolName = "cloud.fill"
+											}
+										}
 									}
 								}
 							}

@@ -7,7 +7,17 @@
 import SwiftUI
 import CoreLocation
 
-struct NodeListSplit: View {
+enum SelectedDetail {
+	case positionLog
+	case nodeMap
+	case deviceMetricsLog
+	case environmentMetricsLog
+	case detectionSensorLog
+}
+
+
+
+struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
@@ -58,10 +68,28 @@ struct NodeListSplit: View {
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 				})
 		} content: {
-			
 			if let node = selectedNode {
-				NodeDetail(node: node)
-					
+				NavigationStack {
+					NodeDetail(node: node, columnVisibility: columnVisibility)
+						.edgesIgnoringSafeArea([.leading, .trailing])
+						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+						.navigationBarItems(
+							trailing:
+							ZStack {
+								if (UIDevice.current.userInterfaceIdiom != .phone) {
+									Button {
+										columnVisibility = .detailOnly
+									} label: {
+										Image(systemName: "rectangle")
+									}
+								}
+								ConnectedDevice(
+									bluetoothOn: bleManager.isSwitchedOn,
+									deviceConnected: bleManager.connectedPeripheral != nil,
+									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
+						})
+				}
+				.padding(.bottom, 5)
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
@@ -69,7 +97,6 @@ struct NodeListSplit: View {
 					 Text("select.node")
 				 }
 			 }
-		
 		} detail: {
 			if #available (iOS 17, *) {
 				ContentUnavailableView("", systemImage: "line.3.horizontal")
@@ -79,6 +106,13 @@ struct NodeListSplit: View {
 			
 		}
 		.navigationSplitViewStyle(.balanced)
+//		.onChange(of: selectedNode) { _ in
+//			if selectedNode == nil {
+//				columnVisibility = .all
+//			} else {
+//				columnVisibility = .doubleColumn
+//			}
+//		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
