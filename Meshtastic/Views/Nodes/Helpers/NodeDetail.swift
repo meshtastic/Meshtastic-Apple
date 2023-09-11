@@ -22,7 +22,7 @@ struct NodeDetail: View {
 	var body: some View {
 
 		let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
-		NavigationStack {
+//		NavigationStack {
 			GeometryReader { bounds in
 				VStack {
 					ScrollView {
@@ -145,18 +145,8 @@ struct NodeDetail: View {
 						self.bleManager.context = context
 					}
 				}
-				.edgesIgnoringSafeArea([.leading, .trailing])
-				.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
-				.navigationBarItems(
-					trailing:
-					ZStack {
-						ConnectedDevice(
-							bluetoothOn: bleManager.isSwitchedOn,
-							deviceConnected: bleManager.connectedPeripheral != nil,
-							name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
-				})
 			}
 			.padding(.bottom, 2)
-		}
+//		}
 	}
 }

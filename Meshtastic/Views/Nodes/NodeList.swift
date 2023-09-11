@@ -66,13 +66,25 @@ struct NodeList: View {
 				})
 		} content: {
 			if let node = selectedNode {
-				NodeDetail(node: node, columnVisibility: columnVisibility)
-				VStack {
-					Button {
-						columnVisibility = .detailOnly
-					} label: {
-						Image(systemName: "rectangle")
-					}
+				NavigationStack {
+					NodeDetail(node: node, columnVisibility: columnVisibility)
+						.edgesIgnoringSafeArea([.leading, .trailing])
+						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+						.navigationBarItems(
+							trailing:
+							ZStack {
+								if (UIDevice.current.userInterfaceIdiom != .phone) {
+									Button {
+										columnVisibility = .detailOnly
+									} label: {
+										Image(systemName: "rectangle")
+									}
+								}
+								ConnectedDevice(
+									bluetoothOn: bleManager.isSwitchedOn,
+									deviceConnected: bleManager.connectedPeripheral != nil,
+									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
+						})
 				}
 				.padding(.bottom, 5)
 			 } else {
@@ -82,13 +94,13 @@ struct NodeList: View {
 			Text("Select something to view")
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: selectedNode) { _ in
-			if selectedNode == nil {
-				columnVisibility = .all
-			} else {
-				columnVisibility = .doubleColumn
-			}
-		}
+//		.onChange(of: selectedNode) { _ in
+//			if selectedNode == nil {
+//				columnVisibility = .all
+//			} else {
+//				columnVisibility = .doubleColumn
+//			}
+//		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
