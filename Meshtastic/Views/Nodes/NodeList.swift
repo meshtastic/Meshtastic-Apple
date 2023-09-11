@@ -21,10 +21,6 @@ struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
-	@State private var selectedDetail: SelectedDetail?
-	
-	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-	
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -69,20 +65,29 @@ struct NodeList: View {
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 				})
 		} content: {
-			
 			if let node = selectedNode {
-				NodeDetail(node: node)
-					
+				NodeDetail(node: node, columnVisibility: columnVisibility)
+				VStack {
+					Button {
+						columnVisibility = .detailOnly
+					} label: {
+						Image(systemName: "rectangle")
+					}
+				}
+				.padding(.bottom, 5)
 			 } else {
 				 Text("select.node")
 			 }
-		
 		} detail: {
 			Text("Select something to view")
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: selectedNode) { _ in
-			selectedDetail = nil
+			if selectedNode == nil {
+				columnVisibility = .all
+			} else {
+				columnVisibility = .doubleColumn
+			}
 		}
 		.onAppear {
 			if self.bleManager.context == nil {
