@@ -35,45 +35,77 @@ struct NodeMapSwiftUI: View {
 	@ObservedObject var node: NodeInfoEntity
 	
 	var body: some View {
+		let nodeColor = UIColor(hex: UInt32(node.num))
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
 		let mostRecent = node.positions?.lastObject as? PositionEntity
+		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
+			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
+		})
+
 		if mostRecent != nil {
 			NavigationStack {
 				ZStack {
-					
 					Map(initialPosition: .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 500, heading: 90, pitch: 60)),
 						bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: 3500),
 						scope: mapScope) {
-							ForEach(positionArray, id: \.id) { position in
+						/// Route Lines
+						if meshMapShowRouteLines {
+							MapPolyline(coordinates: lineCoords, contourStyle: .straight)
+								.stroke(Color(nodeColor.lighter()), lineWidth: 8)
+						}
+						/// Node Annotations
+						ForEach(positionArray.reversed(), id: \.id) { position in
 								Annotation(position.latest ? node.user?.shortName ?? "?" : "", coordinate:  position.coordinate) {
 									ZStack {
+										
+										let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
+										
+										let symbolName = "flipphone"
+										
 										if position.latest {
 											Circle()
-												.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).darker()).opacity(0.4))
+												.foregroundStyle(Color(nodeColor).opacity(0.4))
 												.frame(width: 60, height: 60)
-											Image(systemName: "flipphone")
+												
+											Image(systemName: symbolName)
 												.symbolEffect(.pulse.byLayer)
 												.padding(7)
-												.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
+												.foregroundStyle(Color(nodeColor.lighter()).isLight() ? .black : .white)
 												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 												.clipShape(Circle())
+												.zIndex(100)
 										} else {
 											if showNodeHistory {
+												if pf.contains(.Heading) {
+//													if parent.userTrackingMode != MKUserTrackingMode.followWithHeading {
+//														annotationView.glyphImage = UIImage(systemName: "location.north.fill")?
+//														subtitle.text! += "Heading: \(String(positionAnnotation.heading)) \n"
+//													} else {
+//														annotationView.glyphImage = UIImage(systemName: "flipphone")
+//													}
+												}
+												if pf.contains(.Speed) {
+//													let formatter = MeasurementFormatter()
+//													formatter.locale = Locale.current
+//													if positionAnnotation.speed <= 1 {
+//														annotationView.glyphImage = UIImage(systemName: "hexagon")
+//													}
+//													subtitle.text! += "Speed: \(formatter.string(from: Measurement(value: Double(positionAnnotation.speed), unit: UnitSpeed.kilometersPerHour))) \n"
+												}
+												
+												
 												Image(systemName: "mappin.circle")
 													.padding(2)
 													.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
 													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
 													.clipShape(Circle())
+													.zIndex(1000)
 											}
 										}
 										
 									}
 								}
 								.tag(node.num)
-								
-//								Marker(node.user?.shortName ?? "?", systemImage: "mappin.and.ellipse", coordinate: position.coordinate)
-//									.tint(position.latest ? Color(UIColor(hex: UInt32(node.num)).darker()) : Color(UIColor(hex: UInt32(node.num)).lighter()))
-//									.tag(node.num)
 							}
 						}
 						.mapScope(mapScope)
@@ -94,7 +126,7 @@ struct NodeMapSwiftUI: View {
 							MapCompass(scope: mapScope)
 								.mapControlVisibility(.visible)
 						}
-						.controlSize(.large)
+						.controlSize(.regular)
 				}
 				.navigationBarTitle(String("Node Map " + (node.user?.shortName ?? "unknown".localized)), displayMode: .inline)
 				.navigationBarItems(trailing:
