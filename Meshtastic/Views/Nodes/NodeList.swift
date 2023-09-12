@@ -7,16 +7,6 @@
 import SwiftUI
 import CoreLocation
 
-enum SelectedDetail {
-	case positionLog
-	case nodeMap
-	case deviceMetricsLog
-	case environmentMetricsLog
-	case detectionSensorLog
-}
-
-
-
 struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all

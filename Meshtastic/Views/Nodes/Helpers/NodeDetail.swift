@@ -41,7 +41,12 @@ struct NodeDetail: View {
 							.disabled(!node.hasDeviceMetrics)
 							Divider()
 							NavigationLink {
-								NodeMapControl(node: node)
+								if #available (iOS 17, macOS 14, *) {
+									NodeMapSwiftUI(node: node)
+								} else {
+									NodeMapControl(node: node)
+								}
+								
 							} label: {
 								Image(systemName: "map")
 									.symbolRenderingMode(.hierarchical)
