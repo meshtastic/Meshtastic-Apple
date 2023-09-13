@@ -20,23 +20,18 @@ struct NodeMapSwiftUI: View {
 	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	
 	@State private var selectedMapLayer: MapLayer = .standard
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
-	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-		mapName: "offlinemap",
-		tileType: "png",
-		canReplaceMapContent: true
-	)
+
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	@ObservedObject var node: NodeInfoEntity
-	
-	@State private var position: MapCameraPosition = .automatic
-	
+		
 	var body: some View {
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
@@ -60,7 +55,7 @@ struct NodeMapSwiftUI: View {
 							)
 							let stroke = StrokeStyle(
 								lineWidth: 5, 
-								lineCap: .round, lineJoin: .round, dash: [10, 10]
+								lineCap: .round, lineJoin: .round, dash: [10, 20]
 							)
 							MapPolyline(coordinates: lineCoords)
 								.stroke(gradient, style: stroke)
