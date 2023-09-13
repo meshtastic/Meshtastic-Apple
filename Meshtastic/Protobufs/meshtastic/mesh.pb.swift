@@ -583,9 +583,8 @@ struct Position {
 
   ///
   /// This is usually not sent over the mesh (to save space), but it is sent
-  /// from the phone so that the local device can set its RTC If it is sent over
-  /// the mesh (because there are devices on the mesh without GPS), it will only
-  /// be sent by devices which has a hardware GPS clock.
+  /// from the phone so that the local device can set its time if it is sent over
+  /// the mesh (because there are devices on the mesh without GPS or RTC).
   /// seconds since 1970
   var time: UInt32 {
     get {return _storage._time}
