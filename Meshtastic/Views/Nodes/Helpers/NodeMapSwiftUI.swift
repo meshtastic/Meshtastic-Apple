@@ -35,6 +35,8 @@ struct NodeMapSwiftUI: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 	@ObservedObject var node: NodeInfoEntity
 	
+	@State private var position: MapCameraPosition = .automatic
+	
 	var body: some View {
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
@@ -51,8 +53,17 @@ struct NodeMapSwiftUI: View {
 						scope: mapScope) {
 						/// Route Lines
 						if showRouteLines {
-							MapPolyline(coordinates: lineCoords, contourStyle: .straight)
-								.stroke(Color(nodeColor.lighter()), lineWidth: 6)
+							
+							let gradient = LinearGradient(
+								colors: [Color(nodeColor.lighter()), Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter().lighter().lighter())],
+								startPoint: .leading, endPoint: .trailing
+							)
+							let stroke = StrokeStyle(
+								lineWidth: 5, 
+								lineCap: .round, lineJoin: .round, dash: [10, 10]
+							)
+							MapPolyline(coordinates: lineCoords)
+								.stroke(gradient, style: stroke)
 						}
 						/// Node Annotations
 						ForEach(positionArray.reversed(), id: \.id) { position in
