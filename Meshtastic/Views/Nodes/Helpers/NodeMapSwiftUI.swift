@@ -54,8 +54,8 @@ struct NodeMapSwiftUI: View {
 								startPoint: .leading, endPoint: .trailing
 							)
 							let stroke = StrokeStyle(
-								lineWidth: 5, 
-								lineCap: .round, lineJoin: .round, dash: [10, 20]
+								lineWidth: 5,
+								lineCap: .round, lineJoin: .round, dash: [10, 10]
 							)
 							MapPolyline(coordinates: lineCoords)
 								.stroke(gradient, style: stroke)
