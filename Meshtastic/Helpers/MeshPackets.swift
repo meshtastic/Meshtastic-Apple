@@ -534,27 +534,27 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				
+				if fetchedMessage![0].toUser != nil {
+					fetchedMessage![0].toUser!.objectWillChange.send()
+				} else {
+					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
+					do {
+						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
+						if fetchedMyInfo?.count ?? 0 > 0 {
 
-//				if fetchedMessage![0].toUser != nil {
-//					//fetchedMessage![0].toUser?.objectWillChange.send()
-//				} else {
-//					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-//					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
-//					do {
-//						let fetchedMyInfo = try context.fetch(fetchMyInfoRequest) as? [MyInfoEntity]
-//						if fetchedMyInfo?.count ?? 0 > 0 {
-//
-//							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
-//
-//								if ch.index == packet.channel {
-//								//	ch.objectWillChange.send()
-//								}
-//							}
-//						}
-//					} catch {
-//
-//					}
-//				}
+							for ch in fetchedMyInfo![0].channels!.array as? [ChannelEntity] ?? [] {
+
+								if ch.index == packet.channel {
+									ch.objectWillChange.send()
+								}
+							}
+						}
+					} catch {
+
+					}
+				}
 
 			} else {
 				return
