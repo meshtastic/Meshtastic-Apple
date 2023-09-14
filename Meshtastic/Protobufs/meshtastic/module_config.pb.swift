@@ -1020,6 +1020,7 @@ struct ModuleConfig {
     init() {}
   }
 
+  ///
   ///Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
   ///Initially created for the RAK14001 RGB LED module.
   struct AmbientLightingConfig {
@@ -1027,19 +1028,24 @@ struct ModuleConfig {
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
-    ///Sets LED to on or off.  
+    ///
+    /// Sets LED to on or off.
     var ledState: Bool = false
 
-    ///Sets the overall current for the LED, firmware side range for the RAK14001 is 1-31, but users should be given a range of 0-100%  
+    ///
+    /// Sets the current for the LED output. Default is 10.
     var current: UInt32 = 0
 
-    /// Red level
+    ///
+    /// Sets the red LED level. Values are 0-255.
     var red: UInt32 = 0
 
-    ///Sets the green level of the LED, firmware side values are 0-255, but users should be given a range of 0-100%   
+    ///
+    /// Sets the green LED level. Values are 0-255.
     var green: UInt32 = 0
 
-    ///Sets the blue level of the LED, firmware side values are 0-255, but users should be given a range of 0-100%   
+    ///
+    /// Sets the blue LED level. Values are 0-255.
     var blue: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
