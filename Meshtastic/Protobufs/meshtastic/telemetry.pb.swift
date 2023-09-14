@@ -284,11 +284,7 @@ struct Telemetry {
   // methods supported on all messages.
 
   ///
-  /// This is usually not sent over the mesh (to save space), but it is sent
-  /// from the phone so that the local device can set its RTC If it is sent over
-  /// the mesh (because there are devices on the mesh without GPS), it will only
-  /// be sent by devices which has a hardware GPS clock (IE Mobile Phone).
-  /// seconds since 1970
+  /// Seconds since 1970 - or 0 for unknown/unset
   var time: UInt32 = 0
 
   var variant: Telemetry.OneOf_Variant? = nil

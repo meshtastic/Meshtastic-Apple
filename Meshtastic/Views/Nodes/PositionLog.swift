@@ -17,15 +17,13 @@ struct PositionLog: View {
 	}
 	@State var isExporting = false
 	@State var exportString = ""
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 	@State private var isPresentingClearLogConfirm = false
-	//@State private var sortOrder = [KeyPathComparator(\PositionEntity.latitude)]
+	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
 	
-	@State var sortOrder: [KeyPathComparator<PositionEntity>] = [
-				.init(\.latitude, order: SortOrder.forward)
-			]
 	var body: some View {
 		NavigationStack {
+			
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 			if UIDevice.current.userInterfaceIdiom == .pad && !useGrid || UIDevice.current.userInterfaceIdiom == .mac {
@@ -162,12 +160,15 @@ struct PositionLog: View {
 			)
 		}
 		.navigationTitle("Position Log \(node.positions?.count ?? 0) Points")
-		.navigationBarItems(trailing:
-								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+		.navigationBarItems(
+			trailing:
+				ZStack {
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		}
 	}
 }

@@ -222,7 +222,7 @@ struct UserMessageList: View {
 										message.read = true
 										do {
 											try context.save()
-											print("Read message \(message.messageId) ")
+											print("📖 Read message \(message.messageId) ")
 											appState.unreadDirectMessages = user.unreadMessages
 											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 

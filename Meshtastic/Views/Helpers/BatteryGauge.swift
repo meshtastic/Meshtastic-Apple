@@ -9,7 +9,7 @@ import SwiftUI
 import Charts
 
 struct BatteryGauge: View {
-	@State var batteryLevel = 0.0
+	var batteryLevel = 0.0
 	private let minValue = 0.0
 	private let maxValue = 100.00
 

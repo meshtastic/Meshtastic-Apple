@@ -50,7 +50,7 @@
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";
 "connected.radio"="Connected Radio";
-"connected"="Connected";
+"connected"="Bluetooth Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
 "contacts %@"="Contacts (%@)";

@@ -14,7 +14,7 @@ struct DetectionSensorLog: View {
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
 	@State var exportString = ""
-	var node: NodeInfoEntity
+	@ObservedObject var node: NodeInfoEntity
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
@@ -124,7 +124,9 @@ struct DetectionSensorLog: View {
 				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		}
 		.fileExporter(
 			isPresented: $isExporting,

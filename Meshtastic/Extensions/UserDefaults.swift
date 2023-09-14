@@ -41,7 +41,6 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "meshtasticUsername")
 		}
 	}
-
 	static var preferredPeripheralId: String {
 		get {
 			UserDefaults.standard.string(forKey: "preferredPeripheralId") ?? ""
