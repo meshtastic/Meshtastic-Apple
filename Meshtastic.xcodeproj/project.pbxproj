@@ -675,7 +675,6 @@
 				DDDB443E29F79A9400EE2349 /* Extensions */,
 				DDC2E1A526CEB32B0042C5E4 /* Helpers */,
 				DDC2E18826CE24EE0042C5E4 /* Model */,
-				DDDB263D2AABD34F003AFCB7 /* Navigation */,
 				DDC4D5662754996200A4208E /* Persistence */,
 				DDAF8C5626ED07740058C060 /* Protobufs */,
 				DDC2E18926CE24F70042C5E4 /* Resources */,
@@ -809,13 +808,6 @@
 				DDD43FE22A78C8900083A3E9 /* MqttClientProxyManager.swift */,
 			);
 			path = Mqtt;
-			sourceTree = "<group>";
-		};
-		DDDB263D2AABD34F003AFCB7 /* Navigation */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Navigation;
 			sourceTree = "<group>";
 		};
 		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
