@@ -28,7 +28,7 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "user.vip", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>

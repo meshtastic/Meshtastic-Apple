@@ -10,7 +10,7 @@ import CoreLocation
 import MapKit
 import WeatherKit
 
-@available(iOS 17.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 struct NodeMapSwiftUI: View {
 	
 	@Environment(\.managedObjectContext) var context
@@ -23,11 +23,11 @@ struct NodeMapSwiftUI: View {
 	@State private var position = MapCameraPosition.automatic
 	@State private var scene: MKLookAroundScene?
 	@State private var showUserLocation: Bool = false
+	@State var selected: PositionEntity?
 	/// Unused map items
 	@State private var selectedMapLayer: MapLayer = .standard
 	@State var waypointCoordinate: WaypointCoordinate?
 	@State var editingWaypoint: Int = 0
-
 	/// Data
 	@ObservedObject var node: NodeInfoEntity
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
@@ -35,7 +35,6 @@ struct NodeMapSwiftUI: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	
 	
 	var body: some View {
 		let nodeColor = UIColor(hex: UInt32(node.num))
@@ -45,7 +44,7 @@ struct NodeMapSwiftUI: View {
 			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 		})
 
-		if mostRecent != nil {
+		if node.hasPositions {
 			ZStack {
 				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: .infinity), scope: mapScope) {
 					/// Route Lines
@@ -72,7 +71,6 @@ struct NodeMapSwiftUI: View {
 									Circle()
 										.foregroundStyle(Color(nodeColor.lighter()).opacity(0.4))
 										.frame(width: 60, height: 60)
-									
 									if pf.contains(.Heading) {
 										Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.fill" : "location.north")
 											.symbolEffect(.pulse.byLayer)
@@ -81,6 +79,11 @@ struct NodeMapSwiftUI: View {
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
 											.rotationEffect(.degrees(Double(position.heading)))
+											.onTapGesture {
+												selected = (selected == position ? nil : position) // <-- here
+												print("tapity tap tap \(position.time)")
+											 }
+											
 									} else {
 										Image(systemName: "flipphone")
 											.symbolEffect(.pulse.byLayer)
@@ -88,6 +91,11 @@ struct NodeMapSwiftUI: View {
 											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
+											.onTapGesture {
+												 selected = (selected == position ? nil : position) // <-- here
+												print("tapity tap tap \(position.time)")
+											 }
+										
 									}
 								} else {
 									if showNodeHistory {
@@ -134,7 +142,7 @@ struct NodeMapSwiftUI: View {
 				}
 				.controlSize(.regular)
 				.overlay(alignment: .bottom) {
-					if scene != nil {
+					if scene != nil{
 						LookAroundPreview(scene: $scene, allowsNavigation: false, badgePosition: .bottomTrailing)
 							.frame(height: 175)
 							.clipShape(RoundedRectangle(cornerRadius: 12))
@@ -143,11 +151,8 @@ struct NodeMapSwiftUI: View {
 					}
 				}
 				.onChange(of: node) {
-					print("Node changed")
 					let mostRecent = node.positions?.lastObject as? PositionEntity
 					position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 60))
-				}
-				.onChange(of: mostRecent) {
 					if let mostRecent {
 						Task {
 							scene = try? await fetchScene(for: mostRecent.coordinate)
@@ -155,15 +160,19 @@ struct NodeMapSwiftUI: View {
 					}
 				}
 				.onAppear {
+					UIApplication.shared.isIdleTimerDisabled = true
 					if self.scene == nil {
 						Task {
 							scene = try? await fetchScene(for: mostRecent!.coordinate)
 						}
 					}
 				}
+				.onDisappear {
+					UIApplication.shared.isIdleTimerDisabled = false
+				}
 							
 			}
-			.navigationBarTitle(String("Node Map " + (node.user?.shortName ?? "unknown".localized)), displayMode: .inline)
+			.navigationBarTitle(String((node.user?.shortName ?? "unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
 			.navigationBarItems(trailing:
 				ZStack {
 				ConnectedDevice(
@@ -171,6 +180,8 @@ struct NodeMapSwiftUI: View {
 					deviceConnected: bleManager.connectedPeripheral != nil,
 					name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
+		} else {
+			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 		}
 	}
 	
