@@ -46,7 +46,7 @@ struct NodeMapSwiftUI: View {
 		
 		if node.hasPositions {
 			ZStack {
-				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: .infinity), scope: mapScope) {
+				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 					/// Route Lines
 					if showRouteLines {
 						let gradient = LinearGradient(
@@ -79,10 +79,10 @@ struct NodeMapSwiftUI: View {
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
 											.rotationEffect(.degrees(Double(position.heading)))
-											.onTapGesture {
-												selected = (selected == position ? nil : position) // <-- here
-												print("tapity tap tap \(position.time)")
-											 }
+//											.onTapGesture {
+//												selected = (selected == position ? nil : position) // <-- here
+//												print("tapity tap tap \(position.time)")
+//											 }
 									} else {
 										Image(systemName: "flipphone")
 											.symbolEffect(.pulse.byLayer)
@@ -90,10 +90,10 @@ struct NodeMapSwiftUI: View {
 											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
-											.onTapGesture {
-												 selected = (selected == position ? nil : position) // <-- here
-												print("tapity tap tap \(position.time)")
-											 }
+//											.onTapGesture {
+//												 selected = (selected == position ? nil : position) // <-- here
+//												print("tapity tap tap \(position.time)")
+//											 }
 									}
 								} else {
 									if showNodeHistory {

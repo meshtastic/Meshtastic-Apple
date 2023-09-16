@@ -12,7 +12,6 @@ struct NodeDetail: View {
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@Environment(\.colorScheme) var colorScheme: ColorScheme
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
 
@@ -39,6 +38,7 @@ struct NodeDetail: View {
 									.font(.title3)
 							}
 							.disabled(!node.hasDeviceMetrics)
+							
 							Divider()
 							NavigationLink {
 								if #available (iOS 17, macOS 14, *) {
