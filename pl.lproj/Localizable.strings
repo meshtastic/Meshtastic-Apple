@@ -274,6 +274,12 @@
 "telemetry.config"="Konfiguracja telemetrii";
 "timeout"="Limit czasu";
 "timestamp"="Znacznik czasu";
+"tip.bluetooth.connect.title"="Connected LoRa Radio";
+"tip.bluetooth.connect.message"="Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channels.share.title"="Sharing Meshtastic Channels";
+"tip.channels.share.message"="In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key.";
+"tip.messages.title"="Messages";
+"tip.messages.message"="You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.";
 "twitter"="Twitter";
 "unknown"="Nieznany";
 "unknown.age"="Nieznany wiek";

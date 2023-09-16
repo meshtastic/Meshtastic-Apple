@@ -13,16 +13,14 @@ import TipKit
 struct MessagesTip: Tip {
 
    var id: String {
-	   return "tip-messages"
+	   return "tip.messages"
    }
    var title: Text {
-	   Text("Messages")
+	   Text("tip.messages.title")
    }
-
    var message: Text? {
-	   Text("You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.")
+	   Text("tip.messages.message")
    }
-
    var image: Image? {
 	   Image(systemName: "questionmark.circle")
    }

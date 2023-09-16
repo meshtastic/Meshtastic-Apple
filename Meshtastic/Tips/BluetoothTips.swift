@@ -13,16 +13,14 @@ import TipKit
 struct BluetoothConnectionTip: Tip {
 
 	var id: String {
-		return "tip-bluetooth-connect"
+		return "tip.bluetooth.connect"
 	}
 	var title: Text {
-		Text("Connected LoRa Radio")
+		Text("tip.bluetooth.connect.title")
 	}
-
 	var message: Text? {
-		Text("Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.")
+		Text("tip.bluetooth.connect.message")
 	}
-
 	var image: Image? {
 		Image(systemName: "questionmark.circle")
 	}
