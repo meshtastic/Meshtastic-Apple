@@ -36,7 +36,7 @@ struct UserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		
-		NavigationStack {
+		VStack {
 			List {
 				ForEach(users) { (user: UserEntity) in
 					

@@ -25,8 +25,7 @@ struct ChannelList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		
-		NavigationStack {
-			
+		VStack {
 			List {
 				// Display Contacts for the rest of the non admin channels
 				if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
