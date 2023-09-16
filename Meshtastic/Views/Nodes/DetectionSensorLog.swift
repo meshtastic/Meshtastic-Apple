@@ -23,7 +23,7 @@ struct DetectionSensorLog: View {
 			.filter { $0.timestamp >= oneDayAgo! }
 			.sorted { $0.timestamp < $1.timestamp }
 
-		NavigationStack {
+		VStack {
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(detections.count) Total Detection Events", systemImage: "sensor")) {
 					Chart {

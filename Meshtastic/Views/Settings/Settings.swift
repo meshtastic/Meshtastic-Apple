@@ -289,8 +289,12 @@ struct Settings: View {
 									MeshtasticLogo()
 			)
 		}
-	detail: {
-		Text("select.menu.item")
-	}
+		detail: {
+			if #available (iOS 17, *) {
+				ContentUnavailableView("select.menu.item", systemImage: "gear")
+			} else {
+				Text("select.menu.item")
+			}
+		}
 	}
 }

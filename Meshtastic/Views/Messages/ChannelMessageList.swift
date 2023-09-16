@@ -32,7 +32,7 @@ struct ChannelMessageList: View {
 	@State private var sendPositionWithMessage: Bool = false
 
 	var body: some View {
-		NavigationStack {
+		VStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
 			ScrollViewReader { scrollView in
@@ -74,12 +74,23 @@ struct ChannelMessageList: View {
 										.cornerRadius(15)
 										.overlay(
 											VStack {
-												isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+												if #available(iOS 17.0, macOS 14.0, *) {
+													isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+														.padding()
+														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+														.foregroundStyle(Color.orange)
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.offset(x: 20, y: -20)
+													: nil
+												} else {
+													isDetectionSensorMessage ? Image(systemName: "sensor.fill")
 														.padding()
 														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
 														.foregroundStyle(Color.orange)
 														.offset(x: 20, y: -20)
-												: nil
+													: nil
+												}
 											}
 										)
 										.contextMenu {

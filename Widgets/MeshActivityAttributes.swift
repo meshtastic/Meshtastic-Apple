@@ -20,6 +20,8 @@ struct MeshActivityAttributes: ActivityAttributes {
 		var channelUtilization: Float
 		var airtime: Float
 		var batteryLevel: UInt32
+		var nodes: Int
+		var nodesOnline: Int
 	}
 
 	// Fixed non-changing properties about your activity go here!

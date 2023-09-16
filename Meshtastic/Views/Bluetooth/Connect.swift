@@ -10,6 +10,9 @@ import MapKit
 import CoreData
 import CoreLocation
 import CoreBluetooth
+#if canImport(TipKit)
+import TipKit
+#endif
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -40,13 +43,15 @@ struct Connect: View {
 		})
 	}
 	var body: some View {
-
 		NavigationStack {
 			VStack {
 				List {
 					if bleManager.isSwitchedOn {
 						Section(header: Text("connected.radio").font(.title)) {
 							if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == .connected {
+								if #available(iOS 17.0, macOS 14.0, *) {
+									TipView(BluetoothConnectionTip(), arrowEdge: .bottom)
+								}
 								HStack {
 									VStack(alignment: .center) {
 										CircleText(text: node?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node?.num ?? 0))), circleSize: 90)
@@ -66,8 +71,17 @@ struct Connect: View {
 											Text("subscribed").font(.callout)
 												.foregroundColor(.green)
 										} else {
-											Text("communicating").font(.callout)
-												.foregroundColor(.orange)
+											
+											HStack {
+												if #available(iOS 17.0, macOS 14.0, *) {
+													Image(systemName: "square.stack.3d.down.forward")
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.foregroundColor(.orange)
+												}
+												Text("communicating").font(.callout)
+													.foregroundColor(.orange)
+											}
 										}
 									}
 								}
@@ -75,7 +89,6 @@ struct Connect: View {
 								.foregroundColor(Color.gray)
 								.padding([.top, .bottom])
 								.swipeActions {
-
 									Button(role: .destructive) {
 										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 											bleManager.disconnectPeripheral(reconnect: false)
@@ -298,7 +311,7 @@ struct Connect: View {
 
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
 
-		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0))
+		let initialContentState = MeshActivityAttributes.ContentState(timerRange: Date.now...future, connected: true, channelUtilization: mostRecent?.channelUtilization ?? 0.0, airtime: mostRecent?.airUtilTx ?? 0.0, batteryLevel: UInt32(mostRecent?.batteryLevel ?? 0), nodes: 17, nodesOnline: 9)
 
 		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 2, to: Date())!)
 

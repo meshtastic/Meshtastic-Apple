@@ -160,45 +160,6 @@ struct MapViewSwiftUI: UIViewRepresentable {
 			}
 		}
 	}
-	private func setGeoJsonOverlay(mapView: MKMapView) {
-		guard let geoJsonFileUrl = URL(string: "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json"),
-			  //  Bundle.main.url(forResource: "location", withExtension: "geojson"),
-			  // guard let geoJsonFileUrl = URL(string: "https://hrbrmstr.github.io/noaa-alerts-sp-to-geojson/current-all.geojson"),
-				let geoJsonData = try? Data.init(contentsOf: geoJsonFileUrl) else {
-			fatalError("Failure to fetch the file.")
-		}
-		guard let objs = try? MKGeoJSONDecoder().decode(geoJsonData) as? [MKGeoJSONFeature] else {
-			fatalError("Wrong format")
-		}
-		// Parse the objects
-		objs.forEach { (feature) in
-			guard let geometry = feature.geometry.first,
-				  let propData = feature.properties else {
-				return
-			}
-			// Check if it is MKPolygon
-			if let polygon = geometry as? MKPolygon {
-				let polygonInfo = try? JSONDecoder.init().decode(PolygonInfo.self, from: propData)
-				mapView.addOverlay(polygon)
-				// self.view?.render(overlay: polygon, info: polygonInfo)
-			}
-			// Check if it is MKPolyline
-			if let polyline = geometry as? MKPolyline {
-				mapView.addOverlay(polyline, level: .aboveLabels)
-				// let polylineInfo = try? JSONDecoder.init().decode(PolylineInfo.self, from: propData)
-				// self.view?.render(overlay: polyline,  info: polylineInfo)
-			}
-			// Check if it is MKPointAnnotation
-			//				if let annotation = geometry as? MKPointAnnotation {
-			//					let info = try? JSONDecoder.init().decode(Info.self, from: propData)
-			//					let storeAnnotation = StoreAnnotation.init(title: info?.name,
-			//															   subtitle: info?.subTitle,
-			//															   website: info?.website,
-			//															   coordinate: annotation.coordinate)
-			//					self.view?.setAnnotations(annotations: [storeAnnotation])
-			//				}
-		}
-	}
 	func makeUIView(context: Context) -> MKMapView {
 		currentMapLayer = nil
 		mapView.delegate = context.coordinator

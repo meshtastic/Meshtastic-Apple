@@ -7,20 +7,13 @@
 import SwiftUI
 import CoreLocation
 
-enum SelectedDetail {
-	case positionLog
-	case nodeMap
-	case deviceMetricsLog
-	case environmentMetricsLog
-	case detectionSensorLog
-}
-
-
-
 struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
+	
+	@SceneStorage("selectedDetailView") var selectedDetailView: String?
+	
 	@State private var searchText = ""
 	var nodesQuery: Binding<String> {
 		 Binding {
@@ -35,7 +28,7 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "user.vip", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
 	private var nodes: FetchedResults<NodeInfoEntity>
@@ -88,10 +81,19 @@ struct NodeList: View {
 				}
 				.padding(.bottom, 5)
 			 } else {
-				 Text("select.node")
+				 if #available (iOS 17, *) {
+					 ContentUnavailableView("select.node", systemImage: "flipphone")
+				 } else {
+					 Text("select.node")
+				 }
 			 }
 		} detail: {
-			Text("Select something to view")
+			if #available (iOS 17, *) {
+				ContentUnavailableView("", systemImage: "line.3.horizontal")
+			} else {
+				Text("Select something to view")
+			}
+			
 		}
 		.navigationSplitViewStyle(.balanced)
 //		.onChange(of: selectedNode) { _ in

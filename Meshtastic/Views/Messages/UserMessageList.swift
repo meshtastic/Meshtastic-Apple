@@ -30,7 +30,7 @@ struct UserMessageList: View {
 	@State private var sendPositionWithMessage: Bool = false
 
 	var body: some View {
-		NavigationStack {
+		VStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmss", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 			ScrollViewReader { scrollView in

@@ -18,6 +18,8 @@ extension UserDefaults {
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case enableMapTraffic
+		case enableMapPointsOfInterest
 		case enableOfflineMaps
 		case mapTileServer
 		case mapTilesAboveLabels
@@ -96,6 +98,25 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "meshMapShowRouteLines")
 		}
 	}
+	static var enableMapTraffic: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableMapTraffic")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableMapTraffic")
+		}
+	}
+	static var enableMapPointsOfInterest: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableMapPointsOfInterest")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableMapPointsOfInterest")
+		}
+	}
+	
+	
+	
 	static var enableOfflineMaps: Bool {
 		get {
 			UserDefaults.standard.bool(forKey: "enableOfflineMaps")
