@@ -10,29 +10,24 @@ import CoreLocation
 import MapKit
 import WeatherKit
 
-extension CLLocationCoordinate2D {
-	static let bigBen = CLLocationCoordinate2D(latitude: 51.500685, longitude: -0.124570)
-	static let towerBridge = CLLocationCoordinate2D(latitude: 51.505507, longitude: -0.075402)
-}
 @available(iOS 17.0, macOS 14.0, *)
 struct NodeMapSwiftUI: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	/// Map State
 	@Namespace var mapScope
-	@AppStorage("meshMapType") private var meshMapType = 0
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
+	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
+	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
+	@State private var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
 	@State private var position = MapCameraPosition.automatic
 	@State private var scene: MKLookAroundScene?
 	@State private var isLookingAround = false
+	@State private var isEditingSettings = false
 	@State private var showUserLocation: Bool = false
 	@State var selected: PositionEntity?
-	/// Unused map items
-	@State private var selectedMapLayer: MapLayer = .standard
-	@State var waypointCoordinate: WaypointCoordinate?
-	@State var editingWaypoint: Int = 0
 	/// Data
 	@ObservedObject var node: NodeInfoEntity
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
@@ -48,7 +43,7 @@ struct NodeMapSwiftUI: View {
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 		})
-
+		
 		if node.hasPositions {
 			ZStack {
 				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 100, maximumDistance: .infinity), scope: mapScope) {
@@ -88,7 +83,6 @@ struct NodeMapSwiftUI: View {
 												selected = (selected == position ? nil : position) // <-- here
 												print("tapity tap tap \(position.time)")
 											 }
-											
 									} else {
 										Image(systemName: "flipphone")
 											.symbolEffect(.pulse.byLayer)
@@ -100,7 +94,6 @@ struct NodeMapSwiftUI: View {
 												 selected = (selected == position ? nil : position) // <-- here
 												print("tapity tap tap \(position.time)")
 											 }
-										
 									}
 								} else {
 									if showNodeHistory {
@@ -126,7 +119,7 @@ struct NodeMapSwiftUI: View {
 					}
 				}
 				.mapScope(mapScope)
-				.mapStyle(.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true))
+				.mapStyle(mapStyle)
 				.mapControls {
 					MapScaleView(scope: mapScope)
 						.mapControlVisibility(.visible)
@@ -143,11 +136,89 @@ struct NodeMapSwiftUI: View {
 				.overlay(alignment: .bottom) {
 					if scene != nil && isLookingAround {
 						LookAroundPreview(initialScene: scene)
-							.frame(height: 175)
+							.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
 							.clipShape(RoundedRectangle(cornerRadius: 12))
-							//.safeAreaPadding(.bottom, UIDevice.current.userInterfaceIdiom == .phone ? 20 : 75)
 							.padding(.horizontal, 20)
 					}
+				}
+				.sheet(isPresented: $isEditingSettings) {
+					VStack {
+						Form {
+							Section(header: Text("Map Options")) {
+								Picker(selection: $selectedMapLayer, label: Text("")) {
+									ForEach(MapLayer.allCases, id: \.self) { layer in
+										if layer != MapLayer.offline {
+											Text(layer.localized)
+										}
+									}
+								}
+								.pickerStyle(SegmentedPickerStyle())
+								.onChange(of: (selectedMapLayer)) { newMapLayer in
+									switch selectedMapLayer {
+									case .standard:
+										UserDefaults.mapLayer = newMapLayer
+										mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+									case .hybrid:
+										UserDefaults.mapLayer = newMapLayer
+										mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+									case .satellite:
+										UserDefaults.mapLayer = newMapLayer
+										mapStyle = MapStyle.imagery(elevation: .realistic)
+									case .offline:
+										return
+									}
+								}
+								.padding(.top, 5)
+								.padding(.bottom, 5)
+								Toggle(isOn: $showNodeHistory) {
+									Label("Node History", systemImage: "building.columns.fill")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.showNodeHistory.toggle()
+									UserDefaults.enableMapNodeHistoryPins = self.showNodeHistory
+								}
+								Toggle(isOn: $showRouteLines) {
+									Label("Route Lines", systemImage: "road.lanes")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.showRouteLines.toggle()
+									UserDefaults.enableMapRouteLines = self.showRouteLines
+								}
+								Toggle(isOn: $showTraffic) {
+									Label("Traffic", systemImage: "car")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.showTraffic.toggle()
+									UserDefaults.enableMapTraffic = self.showTraffic
+								}
+								Toggle(isOn: $showPointsOfInterest) {
+									Label("Points of Interest", systemImage: "mappin.and.ellipse")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.showPointsOfInterest.toggle()
+									UserDefaults.enableMapPointsOfInterest = self.showPointsOfInterest
+								}
+							}
+						}
+						#if targetEnvironment(macCatalyst)
+							Button {
+								isEditingSettings = false
+							} label: {
+								Label("close", systemImage: "xmark")
+							}
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							.padding()
+						#endif
+					}
+					//.presentationDetents([.fraction(0.4)])
+					.presentationDetents([.medium])
+					.presentationDragIndicator(.visible)
 				}
 				.onChange(of: node) {
 					let mostRecent = node.positions?.lastObject as? PositionEntity
@@ -160,6 +231,16 @@ struct NodeMapSwiftUI: View {
 				}
 				.onAppear {
 					UIApplication.shared.isIdleTimerDisabled = true
+					switch selectedMapLayer {
+					case .standard:
+						mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+					case .hybrid:
+						mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+					case .satellite:
+						mapStyle = MapStyle.imagery(elevation: .realistic)
+					case .offline:
+						mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+					}
 					if self.scene == nil {
 						Task {
 							scene = try? await fetchScene(for: mostRecent!.coordinate)
@@ -168,6 +249,17 @@ struct NodeMapSwiftUI: View {
 				}
 				.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
 					HStack {
+						Button(action: {
+							withAnimation {
+								isEditingSettings = !isEditingSettings
+							}
+						}) {
+							Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
 						/// Look Around Button
 						if self.scene != nil {
 							Button(action: {
@@ -182,6 +274,7 @@ struct NodeMapSwiftUI: View {
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
 						}
+						
 						#if targetEnvironment(macCatalyst)
 							MapZoomStepper(scope: mapScope)
 								.mapControlVisibility(.visible)
@@ -189,6 +282,7 @@ struct NodeMapSwiftUI: View {
 								.mapControlVisibility(.visible)
 						#endif
 					}
+					.controlSize(.regular)
 					.padding(5)
 				}
 				.onDisappear {
