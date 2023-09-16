@@ -22,7 +22,7 @@ struct PositionLog: View {
 	@State private var sortOrder = [KeyPathComparator(\PositionEntity.time)]
 	
 	var body: some View {
-		NavigationStack {
+		VStack {
 			if node.hasPositions {
 				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
 				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")

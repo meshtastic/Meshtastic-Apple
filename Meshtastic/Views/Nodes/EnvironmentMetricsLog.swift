@@ -28,7 +28,7 @@ struct EnvironmentMetricsLog: View {
 		let locale = NSLocale.current as NSLocale
 		let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey"))
 		let format: UnitTemperature = localeUnit as? String ?? "Celsius" == "Fahrenheit" ? .fahrenheit : .celsius
-		NavigationStack {
+		VStack {
 			if chartData.count > 0 {
 				GroupBox(label: Label("\(environmentMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 					Chart {

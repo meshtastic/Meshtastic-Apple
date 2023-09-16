@@ -10,6 +10,10 @@ import CoreLocation
 import MapKit
 import WeatherKit
 
+extension CLLocationCoordinate2D {
+	static let bigBen = CLLocationCoordinate2D(latitude: 51.500685, longitude: -0.124570)
+	static let towerBridge = CLLocationCoordinate2D(latitude: 51.505507, longitude: -0.075402)
+}
 @available(iOS 17.0, macOS 14.0, *)
 struct NodeMapSwiftUI: View {
 	
@@ -22,6 +26,7 @@ struct NodeMapSwiftUI: View {
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@State private var position = MapCameraPosition.automatic
 	@State private var scene: MKLookAroundScene?
+	@State private var isLookingAround = false
 	@State private var showUserLocation: Bool = false
 	@State var selected: PositionEntity?
 	/// Unused map items
@@ -131,28 +136,22 @@ struct NodeMapSwiftUI: View {
 					}
 					MapPitchToggle(scope: mapScope)
 						.mapControlVisibility(.visible)
-				#if targetEnvironment(macCatalyst)
-					MapZoomStepper(scope: mapScope)
-						.mapControlVisibility(.visible)
-					MapPitchSlider(scope: mapScope)
-						.mapControlVisibility(.visible)
-				#endif
 					MapCompass(scope: mapScope)
 						.mapControlVisibility(.visible)
 				}
 				.controlSize(.regular)
 				.overlay(alignment: .bottom) {
-					if scene != nil{
-						LookAroundPreview(scene: $scene, allowsNavigation: false, badgePosition: .bottomTrailing)
+					if scene != nil && isLookingAround {
+						LookAroundPreview(initialScene: scene)
 							.frame(height: 175)
 							.clipShape(RoundedRectangle(cornerRadius: 12))
-							.safeAreaPadding(.bottom, UIDevice.current.userInterfaceIdiom == .phone ? 30 : 75)
+							//.safeAreaPadding(.bottom, UIDevice.current.userInterfaceIdiom == .phone ? 20 : 75)
 							.padding(.horizontal, 20)
 					}
 				}
 				.onChange(of: node) {
 					let mostRecent = node.positions?.lastObject as? PositionEntity
-					position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 60))
+					position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 0))
 					if let mostRecent {
 						Task {
 							scene = try? await fetchScene(for: mostRecent.coordinate)
@@ -167,10 +166,34 @@ struct NodeMapSwiftUI: View {
 						}
 					}
 				}
+				.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+					HStack {
+						/// Look Around Button
+						if self.scene != nil {
+							Button(action: {
+								withAnimation {
+									isLookingAround = !isLookingAround
+								}
+							}) {
+								Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
+									.padding(.vertical, 5)
+							}
+							.tint(Color(UIColor.secondarySystemBackground))
+							.foregroundColor(.accentColor)
+							.buttonStyle(.borderedProminent)
+						}
+						#if targetEnvironment(macCatalyst)
+							MapZoomStepper(scope: mapScope)
+								.mapControlVisibility(.visible)
+							MapPitchSlider(scope: mapScope)
+								.mapControlVisibility(.visible)
+						#endif
+					}
+					.padding(5)
+				}
 				.onDisappear {
 					UIApplication.shared.isIdleTimerDisabled = false
 				}
-							
 			}
 			.navigationBarTitle(String((node.user?.shortName ?? "unknown".localized) + (" \(node.positions?.count ?? 0) points")), displayMode: .inline)
 			.navigationBarItems(trailing:

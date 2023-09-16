@@ -28,143 +28,140 @@ struct DeviceMetricsLog: View {
 		let chartData = deviceMetrics
 				.filter { $0.time != nil && $0.time! >= oneWeekAgo! }
 				.sorted { $0.time! < $1.time! }
+		
+		if chartData.count > 0 {
+			GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
-		NavigationStack {
+				Chart {
 
-			if chartData.count > 0 {
-				GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
+					ForEach(chartData, id: \.self) { point in
 
-					Chart {
+						Plot {
+							LineMark(
+								x: .value("x", point.time!),
+								y: .value("y", point.batteryLevel)
+							)
+						}
+						.accessibilityLabel("Line Series")
+						.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
+						.foregroundStyle(batteryChartColor)
+						.interpolationMethod(.catmullRom(alpha: 1.0))
 
-						ForEach(chartData, id: \.self) { point in
+						Plot {
+							PointMark(
+								x: .value("x", point.time!),
+								y: .value("y", point.channelUtilization)
+							)
+						}
+						.accessibilityLabel("Line Series")
+						.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
+						.foregroundStyle(channelUtilizationChartColor)
 
-							Plot {
-								LineMark(
-									x: .value("x", point.time!),
-									y: .value("y", point.batteryLevel)
-								)
-							}
-							.accessibilityLabel("Line Series")
-							.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
-							.foregroundStyle(batteryChartColor)
-							.interpolationMethod(.catmullRom(alpha: 1.0))
-
-							Plot {
-								PointMark(
-									x: .value("x", point.time!),
-									y: .value("y", point.channelUtilization)
-								)
-							}
-							.accessibilityLabel("Line Series")
-							.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
-							.foregroundStyle(channelUtilizationChartColor)
-
-							RuleMark(y: .value("Limit", 10))
-								.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
-								.foregroundStyle(airtimeChartColor)
-
-							Plot {
-								PointMark(
-									x: .value("x", point.time!),
-									y: .value("y", point.airUtilTx)
-								)
-							}
-							.accessibilityLabel("Line Series")
-							.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
+						RuleMark(y: .value("Limit", 10))
+							.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 10]))
 							.foregroundStyle(airtimeChartColor)
+
+						Plot {
+							PointMark(
+								x: .value("x", point.time!),
+								y: .value("y", point.airUtilTx)
+							)
 						}
+						.accessibilityLabel("Line Series")
+						.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")
+						.foregroundStyle(airtimeChartColor)
 					}
-					.chartXAxis(content: {
-						AxisMarks(position: .top)
-					})
-					.chartXAxis(.automatic)
-					.chartYScale(domain: 0...100)
-					.chartForegroundStyleScale([
-						"Battery Level": .blue,
-						"Channel Utilization": .green,
-						"Airtime": .orange
-					])
-					.chartLegend(position: .automatic, alignment: .bottom)
 				}
-				.frame(minHeight: 250)
+				.chartXAxis(content: {
+					AxisMarks(position: .top)
+				})
+				.chartXAxis(.automatic)
+				.chartYScale(domain: 0...100)
+				.chartForegroundStyleScale([
+					"Battery Level": .blue,
+					"Channel Utilization": .green,
+					"Airtime": .orange
+				])
+				.chartLegend(position: .automatic, alignment: .bottom)
 			}
-			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
-			if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-				// Add a table for mac and ipad
-				// Table(Array(deviceMetrics),id: \.self) {
-				Table(deviceMetrics) {
-					TableColumn("battery.level") { dm in
-						if dm.batteryLevel > 100 {
-							Text("Powered")
-						} else {
-							Text("\(String(dm.batteryLevel))%")
-						}
+			.frame(minHeight: 250)
+		}
+		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+		if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+			// Add a table for mac and ipad
+			// Table(Array(deviceMetrics),id: \.self) {
+			Table(deviceMetrics) {
+				TableColumn("battery.level") { dm in
+					if dm.batteryLevel > 100 {
+						Text("Powered")
+					} else {
+						Text("\(String(dm.batteryLevel))%")
 					}
-					TableColumn("voltage") { dm in
-						Text("\(String(format: "%.2f", dm.voltage))")
-					}
-					TableColumn("channel.utilization") { dm in
-						Text("\(String(format: "%.2f", dm.channelUtilization))%")
-					}
-					TableColumn("airtime") { dm in
-						Text("\(String(format: "%.2f", dm.airUtilTx))%")
-					}
-					TableColumn("timestamp") { dm in
-						Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
-					}
-					.width(min: 180)
 				}
-			} else {
-				ScrollView {
-					let columns = [
-						GridItem(.flexible(minimum: 30, maximum: 45), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
-						GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
-						GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
-					]
-					LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
+				TableColumn("voltage") { dm in
+					Text("\(String(format: "%.2f", dm.voltage))")
+				}
+				TableColumn("channel.utilization") { dm in
+					Text("\(String(format: "%.2f", dm.channelUtilization))%")
+				}
+				TableColumn("airtime") { dm in
+					Text("\(String(format: "%.2f", dm.airUtilTx))%")
+				}
+				TableColumn("timestamp") { dm in
+					Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+				}
+				.width(min: 180)
+			}
+		} else {
+			ScrollView {
+				let columns = [
+					GridItem(.flexible(minimum: 30, maximum: 45), spacing: 0.1),
+					GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
+					GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
+					GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
+					GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
+				]
+				LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
+					GridRow {
+						Text("Batt")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("Volt")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("ChUtil")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("AirTm")
+							.font(.caption)
+							.fontWeight(.bold)
+						Text("timestamp")
+							.font(.caption)
+							.fontWeight(.bold)
+					}
+					ForEach(deviceMetrics) { dm in
 						GridRow {
-							Text("Batt")
-								.font(.caption)
-								.fontWeight(.bold)
-							Text("Volt")
-								.font(.caption)
-								.fontWeight(.bold)
-							Text("ChUtil")
-								.font(.caption)
-								.fontWeight(.bold)
-							Text("AirTm")
-								.font(.caption)
-								.fontWeight(.bold)
-							Text("timestamp")
-								.font(.caption)
-								.fontWeight(.bold)
-						}
-						ForEach(deviceMetrics) { dm in
-							GridRow {
-								if dm.batteryLevel > 100 {
-									Text("PWD")
-										.font(.caption)
-								} else {
-									Text("\(String(dm.batteryLevel))%")
-										.font(.caption)
-								}
-								Text(String(dm.voltage))
+							if dm.batteryLevel > 100 {
+								Text("PWD")
 									.font(.caption)
-								Text("\(String(format: "%.2f", dm.channelUtilization))%")
-									.font(.caption)
-								Text("\(String(format: "%.2f", dm.airUtilTx))%")
-									.font(.caption)
-								Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+							} else {
+								Text("\(String(dm.batteryLevel))%")
 									.font(.caption)
 							}
+							Text(String(dm.voltage))
+								.font(.caption)
+							Text("\(String(format: "%.2f", dm.channelUtilization))%")
+								.font(.caption)
+							Text("\(String(format: "%.2f", dm.airUtilTx))%")
+								.font(.caption)
+							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
+								.font(.caption)
 						}
 					}
-					.padding(.leading, 15)
-					.padding(.trailing, 5)
 				}
+				.padding(.leading, 15)
+				.padding(.trailing, 5)
 			}
 		}
 		HStack {
