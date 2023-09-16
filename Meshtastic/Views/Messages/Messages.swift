@@ -7,6 +7,9 @@
 
 import SwiftUI
 import CoreData
+#if canImport(TipKit)
+import TipKit
+#endif
 
 struct Messages: View {
 
@@ -51,6 +54,9 @@ struct Messages: View {
 					Text("direct.messages")
 						.font(.title2)
 						.badge(appState.unreadDirectMessages)
+				}
+				if #available(iOS 17.0, macOS 14.0, *) {
+					TipView(MessagesTip(), arrowEdge: .top)
 				}
 			}
 			.navigationTitle("messages")

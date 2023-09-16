@@ -43,7 +43,6 @@ struct Connect: View {
 		})
 	}
 	var body: some View {
-
 		NavigationStack {
 			VStack {
 				List {
@@ -90,7 +89,6 @@ struct Connect: View {
 								.foregroundColor(Color.gray)
 								.padding([.top, .bottom])
 								.swipeActions {
-
 									Button(role: .destructive) {
 										if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 											bleManager.disconnectPeripheral(reconnect: false)

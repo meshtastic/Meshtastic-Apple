@@ -126,7 +126,7 @@ struct NodeMapSwiftUI: View {
 					}
 				}
 				.mapScope(mapScope)
-				.mapStyle(.hybrid(elevation: .realistic))
+				.mapStyle(.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true))
 				.mapControls {
 					MapScaleView(scope: mapScope)
 						.mapControlVisibility(.visible)

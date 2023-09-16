@@ -207,10 +207,10 @@ struct ShareChannels: View {
 								.resizable()
 								.scaledToFit()
 								.frame(
-									minWidth: smallest * 0.95,
-									maxWidth: smallest * 0.95,
-									minHeight: smallest * 0.95,
-									maxHeight: smallest * 0.95,
+									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
+									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
+									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
+									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
 									alignment: .top
 								)
 						}

@@ -16,7 +16,7 @@ struct BluetoothConnectionTip: Tip {
 		return "tip-bluetooth-connect"
 	}
 	var title: Text {
-		Text("Connected LoRa Radio Info")
+		Text("Connected LoRa Radio")
 	}
 
 	var message: Text? {
