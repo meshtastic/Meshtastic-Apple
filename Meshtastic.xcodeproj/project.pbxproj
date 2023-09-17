@@ -159,7 +159,6 @@
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
 		DDDE59FB29AF163D00490C6C /* WidgetsLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59FA29AF163D00490C6C /* WidgetsLiveActivity.swift */; };
-		DDDE59FD29AF163D00490C6C /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59FC29AF163D00490C6C /* Widgets.swift */; };
 		DDDE5A0329AF163E00490C6C /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DDDE5A1029AFE69700490C6C /* MeshActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */; };
 		DDDE5A1129AFE69700490C6C /* MeshActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */; };
@@ -382,7 +381,6 @@
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
 		DDDE59FA29AF163D00490C6C /* WidgetsLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsLiveActivity.swift; sourceTree = "<group>"; };
-		DDDE59FC29AF163D00490C6C /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
 		DDDE5A0029AF163E00490C6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDDE5A0429AF163E00490C6C /* WidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetsExtension.entitlements; sourceTree = "<group>"; };
 		DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshActivityAttributes.swift; sourceTree = "<group>"; };
@@ -854,7 +852,6 @@
 				DDDE5A1229AFEAB900490C6C /* Assets.xcassets */,
 				DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */,
 				DDDE59FA29AF163D00490C6C /* WidgetsLiveActivity.swift */,
-				DDDE59FC29AF163D00490C6C /* Widgets.swift */,
 				DDDE5A0029AF163E00490C6C /* Info.plist */,
 				DDDE5A0F29AFE69700490C6C /* MeshActivityAttributes.swift */,
 				DDC94FC029CE063B0082EA6E /* BatteryLevel.swift */,
@@ -1230,7 +1227,6 @@
 				DDC94FC229CE063B0082EA6E /* BatteryLevel.swift in Sources */,
 				DDDE5A1129AFE69700490C6C /* MeshActivityAttributes.swift in Sources */,
 				DDDE59FB29AF163D00490C6C /* WidgetsLiveActivity.swift in Sources */,
-				DDDE59FD29AF163D00490C6C /* Widgets.swift in Sources */,
 				DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

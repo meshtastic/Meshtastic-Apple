@@ -105,7 +105,7 @@ struct WidgetsLiveActivity: Widget {
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
+		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
 
     static var previews: some View {
         attributes
@@ -211,12 +211,12 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
-			Text("\(String(format: "Connected: %d of %d online", nodesOnline, nodes))")
-				.font(.callout)
-				.fontWeight(.medium)
-				.foregroundStyle(.secondary)
-				.opacity(isLuminanceReduced ? 0.8 : 1.0)
-				.fixedSize()
+//			Text("\(String(format: "Connected: %d of %d online", nodesOnline, nodes))")
+//				.font(.callout)
+//				.fontWeight(.medium)
+//				.foregroundStyle(.secondary)
+//				.opacity(isLuminanceReduced ? 0.8 : 1.0)
+//				.fixedSize()
 			let now = Date()
 			Text("Last Heard: \(now.formatted())")
 				.font(.caption)
