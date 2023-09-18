@@ -30,9 +30,16 @@ struct NodeListItem: View {
 						}
 					}
 					VStack(alignment: .leading) {
-						Text(node.user?.longName ?? "unknown".localized)
-							.fontWeight(.medium)
-							.font(.callout)
+						HStack {
+							Text(node.user?.longName ?? "unknown".localized)
+								.fontWeight(.medium)
+								.font(.callout)
+							if node.user?.vip ?? false {
+								Spacer()
+								Image(systemName: "star.fill")
+									.foregroundColor(.secondary)
+							}
+						}
 						if connected {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")

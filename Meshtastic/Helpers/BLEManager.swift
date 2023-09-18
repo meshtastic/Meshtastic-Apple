@@ -69,7 +69,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
 		if isSwitchedOn {
-			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
 			print("✅ Scanning Started")
 		}
 	}
@@ -486,18 +486,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
-					
 					nowKnown = true
 					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion {
-					
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-					
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
-						
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 						}
@@ -508,9 +504,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
-					
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
-					
 					if lastDotIndex == nil {
 						invalidVersion = true
 						connectedVersion = "0.0.0"
@@ -520,19 +514,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedVersion = String(version.dropLast())
 						appState.firmwareVersion = connectedVersion
 					}
-					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
-					
 					if !supportedVersion {
 						invalidVersion = true
 						lastConnectionError = "🚨" + "update.firmware".localized
 						return
-						
 					}
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
-				
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: UserDefaults.blockRangeTest, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:

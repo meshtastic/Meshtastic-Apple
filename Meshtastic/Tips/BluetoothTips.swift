@@ -22,6 +22,6 @@ struct BluetoothConnectionTip: Tip {
 		Text("tip.bluetooth.connect.message")
 	}
 	var image: Image? {
-		Image(systemName: "questionmark.circle")
+		Image(systemName: "flipphone")
 	}
 }

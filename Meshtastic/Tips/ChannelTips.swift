@@ -22,6 +22,6 @@
 		Text("tip.channels.share.message")
 	}
 	var image: Image? {
-		Image(systemName: "questionmark.circle")
+		Image(systemName: "qrcode")
 	}
  }

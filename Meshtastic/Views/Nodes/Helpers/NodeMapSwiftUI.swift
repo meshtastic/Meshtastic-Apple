@@ -11,6 +11,7 @@ import MapKit
 import WeatherKit
 
 @available(iOS 17.0, macOS 14.0, *)
+
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -27,6 +28,8 @@ struct NodeMapSwiftUI: View {
 	@State private var isLookingAround = false
 	@State private var isEditingSettings = false
 	@State private var showUserLocation: Bool = false
+	
+	@State private var showConvexHull = true
 	@State var selected: PositionEntity?
 	/// Data
 	@ObservedObject var node: NodeInfoEntity
@@ -35,6 +38,8 @@ struct NodeMapSwiftUI: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
+	
+	@State private var showingPopover = false
 	
 	var body: some View {
 		let nodeColor = UIColor(hex: UInt32(node.num))
@@ -48,17 +53,26 @@ struct NodeMapSwiftUI: View {
 			ZStack {
 				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 					/// Route Lines
-					if showRouteLines {
-						let gradient = LinearGradient(
-							colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-							startPoint: .leading, endPoint: .trailing
-						)
-						let stroke = StrokeStyle(
-							lineWidth: 5,
-							lineCap: .round, lineJoin: .round, dash: [10, 10]
-						)
-						MapPolyline(coordinates: lineCoords)
-							.stroke(gradient, style: stroke)
+					if showRouteLines  {
+						if showRouteLines {
+							let gradient = LinearGradient(
+								colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+								startPoint: .leading, endPoint: .trailing
+							)
+							let dashed = StrokeStyle(
+								lineWidth: 5,
+								lineCap: .round, lineJoin: .round, dash: [10, 10]
+							)
+							MapPolyline(coordinates: lineCoords)
+								.stroke(gradient, style: dashed)
+						}
+					}
+					/// Convex Hull
+					if showConvexHull {
+						let hull = getConvexHull(input: lineCoords)
+						MapPolygon(coordinates: hull)
+							.stroke(Color(nodeColor.darker()), lineWidth: 5)
+							.foregroundStyle(Color(nodeColor).opacity(0.4))
 					}
 					/// Node Annotations
 					ForEach(positionArray.reversed(), id: \.id) { position in
@@ -79,10 +93,16 @@ struct NodeMapSwiftUI: View {
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
 											.rotationEffect(.degrees(Double(position.heading)))
-//											.onTapGesture {
-//												selected = (selected == position ? nil : position) // <-- here
-//												print("tapity tap tap \(position.time)")
-//											 }
+											.onTapGesture {
+												showingPopover = true
+												selected = (selected == position ? nil : position) // <-- here
+											 }
+											.popover(isPresented: $showingPopover, arrowEdge: .bottom) {
+												PositionPopover(position: position)
+													.padding()
+													.opacity(0.8)
+													.presentationCompactAdaptation(.popover)
+											}
 									} else {
 										Image(systemName: "flipphone")
 											.symbolEffect(.pulse.byLayer)
@@ -90,10 +110,16 @@ struct NodeMapSwiftUI: View {
 											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
-//											.onTapGesture {
-//												 selected = (selected == position ? nil : position) // <-- here
-//												print("tapity tap tap \(position.time)")
-//											 }
+											.onTapGesture {
+												showingPopover = true
+												selected = (selected == position ? nil : position) // <-- here
+											 }
+											.popover(isPresented: $showingPopover, arrowEdge: .bottom) {
+												PositionPopover(position: position)
+													.padding()
+													.opacity(0.8)
+													.presentationCompactAdaptation(.popover)
+											}
 									}
 								} else {
 									if showNodeHistory {
@@ -186,6 +212,14 @@ struct NodeMapSwiftUI: View {
 									self.showRouteLines.toggle()
 									UserDefaults.enableMapRouteLines = self.showRouteLines
 								}
+								Toggle(isOn: $showConvexHull) {
+									Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.onTapGesture {
+									self.showConvexHull.toggle()
+									UserDefaults.enableMapConvexHull = self.showConvexHull
+								}
 								Toggle(isOn: $showTraffic) {
 									Label("Traffic", systemImage: "car")
 								}
@@ -216,13 +250,13 @@ struct NodeMapSwiftUI: View {
 							.padding()
 						#endif
 					}
-					//.presentationDetents([.fraction(0.4)])
+					//.presentationDetents([.fraction(0.5)])
 					.presentationDetents([.medium])
 					.presentationDragIndicator(.visible)
 				}
 				.onChange(of: node) {
 					let mostRecent = node.positions?.lastObject as? PositionEntity
-					position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 0))
+					position =  MapCameraPosition.automatic//.camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 0))
 					if let mostRecent {
 						Task {
 							scene = try? await fetchScene(for: mostRecent.coordinate)
@@ -306,4 +340,49 @@ struct NodeMapSwiftUI: View {
 			let lookAroundScene = MKLookAroundSceneRequest(coordinate: coordinate)
 			return try await lookAroundScene.scene
 	}
+	
+	func getConvexHull(input: [CLLocationCoordinate2D]) -> [CLLocationCoordinate2D] {
+			
+			// X = longitude
+			// Y = latitudeß
+			
+			// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
+			// Returns a positive value, if OAB makes a counter-clockwise turn,
+			// negative for clockwise turn, and zero if the points are collinear.
+			func cross(P: CLLocationCoordinate2D, A: CLLocationCoordinate2D, B: CLLocationCoordinate2D) -> Double {
+				let part1 = (A.longitude - P.longitude) * (B.latitude - P.latitude)
+				let part2 = (A.latitude - P.latitude) * (B.longitude - P.longitude)
+				return part1 - part2;
+			}
+			
+			// Sort points lexicographically
+			let points = input.sorted() {
+				$0.longitude == $1.longitude ? $0.latitude < $1.latitude : $0.longitude < $1.longitude
+			}
+			
+			// Build the lower hull
+			var lower: [CLLocationCoordinate2D] = []
+			for p in points {
+				while lower.count >= 2 && cross(P: lower[lower.count - 2], A: lower[lower.count - 1], B: p) <= 0 {
+					lower.removeLast()
+				}
+				lower.append(p)
+			}
+			
+			// Build upper hull
+			var upper: [CLLocationCoordinate2D] = []
+			for p in points.reversed() {
+				while upper.count >= 2 && cross(P: upper[upper.count-2], A: upper[upper.count-1], B: p) <= 0 {
+					upper.removeLast()
+				}
+				upper.append(p)
+			}
+			
+			// Last point of upper list is omitted because it is repeated at the
+			// beginning of the lower list.
+			upper.removeLast()
+			
+			// Concatenation of the lower and upper hulls gives the convex hull.
+			return (upper + lower)
+		}
 }
