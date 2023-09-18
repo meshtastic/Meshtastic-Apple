@@ -15,6 +15,9 @@ import WeatherKit
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
+	/// Parameters
+	@ObservedObject var node: NodeInfoEntity
+	@State var showUserLocation: Bool = false
 	/// Map State
 	@Namespace var mapScope
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
@@ -27,19 +30,15 @@ struct NodeMapSwiftUI: View {
 	@State private var scene: MKLookAroundScene?
 	@State private var isLookingAround = false
 	@State private var isEditingSettings = false
-	@State private var showUserLocation: Bool = false
-	
 	@State private var showConvexHull = true
-	@State var selected: PositionEntity?
+	@State private var selected: PositionEntity?
+	@State private var showingPopover = false
 	/// Data
-	@ObservedObject var node: NodeInfoEntity
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	
-	@State private var showingPopover = false
 	
 	var body: some View {
 		let nodeColor = UIColor(hex: UInt32(node.num))

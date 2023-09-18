@@ -17,6 +17,7 @@ struct PositionPopover: View {
 				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))))
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.title3)
+				let degrees = Angle.degrees(Double(position.heading))
 			}
 			Divider()
 			VStack (alignment: .leading) {
@@ -45,7 +46,6 @@ struct PositionPopover: View {
 				/// Altitude
 				Label {
 					Text("Altitude: \(distanceFormatter.string(fromDistance: Double(position.altitude)))")
-					//	.font(.footnote)
 						.foregroundColor(.primary)
 				} icon: {
 					Image(systemName: "mountain.2.fill")
@@ -58,7 +58,6 @@ struct PositionPopover: View {
 				if pf.contains(.Satsinview) {
 					Label {
 						Text("Sats in view: \(String(position.satsInView))")
-					//		.font(.footnote)
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "sparkles")
@@ -71,7 +70,6 @@ struct PositionPopover: View {
 				if pf.contains(.SeqNo) {
 					Label {
 						Text("Sequence: \(String(position.seqNo))")
-					//		.font(.footnote)
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "number")
@@ -82,7 +80,18 @@ struct PositionPopover: View {
 				}
 				/// Heading
 //				if pf.contains(.Heading) {
-//					Text("Heading: \(Int32(position.heading))")
+//					let degrees = Angle.degrees(Double(position.heading))
+//					Label {
+//						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+//						Text("Heading: \(heading.formatted())")
+//							.foregroundColor(.primary)
+//					} icon: {
+//						Image(systemName: "location.north")
+//							.symbolRenderingMode(.hierarchical)
+//							.frame(width: 35)
+//							.rotationEffect(degrees)
+//					}
+//					.padding(.bottom, 5)
 //				}
 				/// Speed
 				if pf.contains(.Speed) {
