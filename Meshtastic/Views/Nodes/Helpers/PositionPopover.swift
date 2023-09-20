@@ -79,20 +79,20 @@ struct PositionPopover: View {
 					.padding(.bottom, 5)
 				}
 				/// Heading
-//				if pf.contains(.Heading) {
-//					let degrees = Angle.degrees(Double(position.heading))
-//					Label {
-//						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-//						Text("Heading: \(heading.formatted())")
-//							.foregroundColor(.primary)
-//					} icon: {
-//						Image(systemName: "location.north")
-//							.symbolRenderingMode(.hierarchical)
-//							.frame(width: 35)
-//							.rotationEffect(degrees)
-//					}
-//					.padding(.bottom, 5)
-//				}
+				if pf.contains(.Heading) {
+					let degrees = Angle.degrees(Double(position.heading))
+					Label {
+						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+						Text("Heading: \(heading.formatted())")
+							.foregroundColor(.primary)
+					} icon: {
+						Image(systemName: "location.north")
+							.symbolRenderingMode(.hierarchical)
+							.frame(width: 35)
+							.rotationEffect(degrees)
+					}
+					.padding(.bottom, 5)
+				}
 				/// Speed
 				if pf.contains(.Speed) {
 					let formatter = MeasurementFormatter()

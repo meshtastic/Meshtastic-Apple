@@ -1,9 +1,12 @@
 import Foundation
 import CoreLocation
+import MapKit
 
 class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 	static let shared = LocationHelper()
 	var locationManager = CLLocationManager()
+	
+	//@Published var region = MKCoordinateRegion()
 	@Published var authorizationStatus: CLAuthorizationStatus?
 	override init() {
 		super.init()
@@ -89,6 +92,13 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 	}
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//		locationManager.stopUpdatingLocation()
+//		locations.last.map {
+//				region = MKCoordinateRegion(
+//					center: $0.coordinate,
+//					span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
+//				)
+//			}
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
 		print("Location manager error: \(error.localizedDescription)")

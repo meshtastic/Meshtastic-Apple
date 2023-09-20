@@ -18,30 +18,26 @@ struct NodeMapSwiftUI: View {
 	/// Parameters
 	@ObservedObject var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
-	/// Map State
-	@Namespace var mapScope
+	@State var positions: [PositionEntity] = []
+	@State var waypoints: [WaypointEntity] = []
+	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("meshMapShowConvexHull") private var showConvexHull = true
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
+	// Map Configuration
+	@Namespace var mapScope
 	@State private var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
 	@State private var position = MapCameraPosition.automatic
 	@State private var scene: MKLookAroundScene?
 	@State private var isLookingAround = false
 	@State private var isEditingSettings = false
-	@State private var showConvexHull = true
 	@State private var selected: PositionEntity?
-	@State private var showingPopover = false
-	/// Data
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-				  predicate: NSPredicate(
-					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .none)
-	private var waypoints: FetchedResults<WaypointEntity>
+	@State private var showingPositionPopover = false
 	
 	var body: some View {
-		let nodeColor = UIColor(hex: UInt32(node.num))
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
 		let mostRecent = node.positions?.lastObject as? PositionEntity
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
@@ -51,6 +47,8 @@ struct NodeMapSwiftUI: View {
 		if node.hasPositions {
 			ZStack {
 				Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
+					/// Node Color from node.num
+					let nodeColor = UIColor(hex: UInt32(node.num))
 					/// Route Lines
 					if showRouteLines  {
 						if showRouteLines {
@@ -68,7 +66,7 @@ struct NodeMapSwiftUI: View {
 					}
 					/// Convex Hull
 					if showConvexHull {
-						let hull = getConvexHull(input: lineCoords)
+						let hull = lineCoords.getConvexHull()
 						MapPolygon(coordinates: hull)
 							.stroke(Color(nodeColor.darker()), lineWidth: 5)
 							.foregroundStyle(Color(nodeColor).opacity(0.4))
@@ -78,6 +76,7 @@ struct NodeMapSwiftUI: View {
 						let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
 						let formatter = MeasurementFormatter()
 						let speedText = formatter.string(from: Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour))
+						let headingDegrees = Angle.degrees(Double(position.heading))
 						Annotation(position.latest ? node.user?.shortName ?? "?" : (pf.contains(.Speed) && position.speed > 2) ? speedText : "", coordinate:  position.coordinate) {
 							ZStack {
 								if position.latest {
@@ -85,18 +84,18 @@ struct NodeMapSwiftUI: View {
 										.foregroundStyle(Color(nodeColor.lighter()).opacity(0.4))
 										.frame(width: 60, height: 60)
 									if pf.contains(.Heading) {
-										Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.fill" : "location.north")
+										Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "hexagon")
 											.symbolEffect(.pulse.byLayer)
 											.padding(5)
 											.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
-											.rotationEffect(.degrees(Double(position.heading)))
+											.rotationEffect(headingDegrees)
 											.onTapGesture {
-												showingPopover = true
+												showingPositionPopover = true
 												selected = (selected == position ? nil : position) // <-- here
 											 }
-											.popover(isPresented: $showingPopover, arrowEdge: .bottom) {
+											.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
 												PositionPopover(position: position)
 													.padding()
 													.opacity(0.8)
@@ -110,10 +109,10 @@ struct NodeMapSwiftUI: View {
 											.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 											.clipShape(Circle())
 											.onTapGesture {
-												showingPopover = true
+												showingPositionPopover = true
 												selected = (selected == position ? nil : position) // <-- here
 											 }
-											.popover(isPresented: $showingPopover, arrowEdge: .bottom) {
+											.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
 												PositionPopover(position: position)
 													.padding()
 													.opacity(0.8)
@@ -123,12 +122,12 @@ struct NodeMapSwiftUI: View {
 								} else {
 									if showNodeHistory {
 										if pf.contains(.Heading) {
-											Image(systemName: pf.contains(.Speed) && position.speed > 0 ? "location.north.fill" : "hexagon")
+											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "hexagon")
 												.padding(2)
 												.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
 												.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
 												.clipShape(Circle())
-												.rotationEffect(.degrees(Double(position.heading)))
+												.rotationEffect(headingDegrees)
 										} else {
 											Image(systemName: "mappin.circle")
 												.padding(2)
@@ -141,6 +140,8 @@ struct NodeMapSwiftUI: View {
 							}
 						}
 						.tag(position.time)
+						.annotationTitles(.automatic)
+						.annotationSubtitles(.automatic)
 					}
 				}
 				.mapScope(mapScope)
@@ -339,49 +340,4 @@ struct NodeMapSwiftUI: View {
 			let lookAroundScene = MKLookAroundSceneRequest(coordinate: coordinate)
 			return try await lookAroundScene.scene
 	}
-	
-	func getConvexHull(input: [CLLocationCoordinate2D]) -> [CLLocationCoordinate2D] {
-			
-			// X = longitude
-			// Y = latitudeß
-			
-			// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
-			// Returns a positive value, if OAB makes a counter-clockwise turn,
-			// negative for clockwise turn, and zero if the points are collinear.
-			func cross(P: CLLocationCoordinate2D, A: CLLocationCoordinate2D, B: CLLocationCoordinate2D) -> Double {
-				let part1 = (A.longitude - P.longitude) * (B.latitude - P.latitude)
-				let part2 = (A.latitude - P.latitude) * (B.longitude - P.longitude)
-				return part1 - part2;
-			}
-			
-			// Sort points lexicographically
-			let points = input.sorted() {
-				$0.longitude == $1.longitude ? $0.latitude < $1.latitude : $0.longitude < $1.longitude
-			}
-			
-			// Build the lower hull
-			var lower: [CLLocationCoordinate2D] = []
-			for p in points {
-				while lower.count >= 2 && cross(P: lower[lower.count - 2], A: lower[lower.count - 1], B: p) <= 0 {
-					lower.removeLast()
-				}
-				lower.append(p)
-			}
-			
-			// Build upper hull
-			var upper: [CLLocationCoordinate2D] = []
-			for p in points.reversed() {
-				while upper.count >= 2 && cross(P: upper[upper.count-2], A: upper[upper.count-1], B: p) <= 0 {
-					upper.removeLast()
-				}
-				upper.append(p)
-			}
-			
-			// Last point of upper list is omitted because it is repeated at the
-			// beginning of the lower list.
-			upper.removeLast()
-			
-			// Concatenation of the lower and upper hulls gives the convex hull.
-			return (upper + lower)
-		}
 }

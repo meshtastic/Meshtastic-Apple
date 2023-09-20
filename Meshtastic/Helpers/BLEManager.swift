@@ -42,6 +42,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
+	let locationHelper = LocationHelper.shared
 	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -834,27 +835,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(destNum: Int64, wantResponse: Bool, smartPosition: Bool) -> Bool {
+	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
 		
-		if smartPosition {
-			if lastPosition != nil {
-				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
-				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
-						return false
-					}
-				}
-			}
-		}
-		lastPosition = LocationHelper.currentLocation
+//		if smartPosition {
+//			if lastPosition != nil {
+//				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
+//				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
+//					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
+//						return false
+//					}
+//				}
+//			}
+//		}
+//		lastPosition = LocationHelper.currentLocation
+//		var locationHelper = LocationHelper()
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+		positionPacket.latitudeI = Int32((locationFetcher.lastKnownLocation?.latitude ?? 0) * 1e7)
+		positionPacket.longitudeI =  Int32((locationFetcher.manager.location?.coordinate.longitude ?? 0) * 1e7)
 		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
@@ -892,7 +894,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if UserDefaults.provideLocation {
-				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false, smartPosition: true)
+				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 			}
 		}
 	}
