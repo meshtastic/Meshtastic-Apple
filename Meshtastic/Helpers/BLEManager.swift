@@ -841,22 +841,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
-		
-//		if smartPosition {
-//			if lastPosition != nil {
-//				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
-//				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-//					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
-//						return false
-//					}
-//				}
-//			}
-//		}
-//		lastPosition = LocationHelper.currentLocation
-//		var locationHelper = LocationHelper()
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32((locationFetcher.lastKnownLocation?.latitude ?? 0) * 1e7)
-		positionPacket.longitudeI =  Int32((locationFetcher.manager.location?.coordinate.longitude ?? 0) * 1e7)
+		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(LocationHelper.currentAltitude)

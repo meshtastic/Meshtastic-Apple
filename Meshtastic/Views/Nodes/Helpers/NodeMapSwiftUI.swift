@@ -11,7 +11,6 @@ import MapKit
 import WeatherKit
 
 @available(iOS 17.0, macOS 14.0, *)
-
 struct NodeMapSwiftUI: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -19,7 +18,7 @@ struct NodeMapSwiftUI: View {
 	@ObservedObject var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
-	@State var waypoints: [WaypointEntity] = []
+	//@State var waypoints: [WaypointEntity] = []
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -35,7 +34,18 @@ struct NodeMapSwiftUI: View {
 	@State private var isLookingAround = false
 	@State private var isEditingSettings = false
 	@State private var selected: PositionEntity?
+	@State private var selectedWaypoint: WaypointEntity?
+	@State private var selectedWaypointRect: CGRect = .zero
+	@State private var selectedWaypointPoint: CGPoint = .zero
 	@State private var showingPositionPopover = false
+	@State private var showingWaypointPopover = false
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
+				  predicate: NSPredicate(
+					format: "expire == nil || expire >= %@", Date() as NSDate
+				  ), animation: .none)
+	private var waypoints: FetchedResults<WaypointEntity>
+	@State var waypoiintSelectionRect: CGRect = .zero
 	
 	var body: some View {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
@@ -43,6 +53,7 @@ struct NodeMapSwiftUI: View {
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 		})
+		
 		
 		if node.hasPositions {
 			ZStack {
@@ -71,13 +82,29 @@ struct NodeMapSwiftUI: View {
 							.stroke(Color(nodeColor.darker()), lineWidth: 5)
 							.foregroundStyle(Color(nodeColor).opacity(0.4))
 					}
+					/// Waypoint Annotations
+					ForEach(Array(waypoints), id: \.id) { waypoint in
+						Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+							ZStack {
+								CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
+									.onTapGesture(coordinateSpace: .global) { location in
+										print("Tapped at \(location)")
+										let size = CGSize(width: 1, height: 1)
+										let rect = CGRect(origin: location, size: size)
+										selectedWaypointRect = rect
+										selectedWaypointPoint = location
+										showingWaypointPopover = true
+										selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+								}
+							}
+						}
+					}
 					/// Node Annotations
-					ForEach(positionArray.reversed(), id: \.id) { position in
+					ForEach(positionArray, id: \.id) { position in
 						let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
 						let formatter = MeasurementFormatter()
-						let speedText = formatter.string(from: Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour))
 						let headingDegrees = Angle.degrees(Double(position.heading))
-						Annotation(position.latest ? node.user?.shortName ?? "?" : (pf.contains(.Speed) && position.speed > 2) ? speedText : "", coordinate:  position.coordinate) {
+						Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 							ZStack {
 								if position.latest {
 									Circle()
@@ -95,7 +122,7 @@ struct NodeMapSwiftUI: View {
 												showingPositionPopover = true
 												selected = (selected == position ? nil : position) // <-- here
 											 }
-											.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
+											.popover(isPresented: $showingPositionPopover) {
 												PositionPopover(position: position)
 													.padding()
 													.opacity(0.8)
@@ -114,6 +141,7 @@ struct NodeMapSwiftUI: View {
 											 }
 											.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
 												PositionPopover(position: position)
+													.tag(position.id)
 													.padding()
 													.opacity(0.8)
 													.presentationCompactAdaptation(.popover)
@@ -166,6 +194,13 @@ struct NodeMapSwiftUI: View {
 							.clipShape(RoundedRectangle(cornerRadius: 12))
 							.padding(.horizontal, 20)
 					}
+				}
+				.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
+				//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
+					WaypointPopover(waypoint: selection)
+						.padding()
+						.opacity(0.8)
+						.presentationCompactAdaptation(.popover)
 				}
 				.sheet(isPresented: $isEditingSettings) {
 					VStack {
@@ -250,8 +285,8 @@ struct NodeMapSwiftUI: View {
 							.padding()
 						#endif
 					}
-					//.presentationDetents([.fraction(0.5)])
-					.presentationDetents([.medium])
+					.presentationDetents([.fraction(0.46)])
+					//.presentationDetents([.medium])
 					.presentationDragIndicator(.visible)
 				}
 				.onChange(of: node) {

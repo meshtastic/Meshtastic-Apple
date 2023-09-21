@@ -68,6 +68,7 @@
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
+		DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD760AAD2ABAC706002C022E /* WaypointPopover.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
 		DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */; };
@@ -166,7 +167,6 @@
 		DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
-		DDE179302ABA2482005777A8 /* LocationDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE1792F2ABA2482005777A8 /* LocationDataManager.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForward.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
@@ -277,6 +277,7 @@
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
+		DD760AAD2ABAC706002C022E /* WaypointPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointPopover.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
@@ -390,7 +391,6 @@
 		DDDE5A1229AFEAB900490C6C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
 		DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
-		DDE1792F2ABA2482005777A8 /* LocationDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDataManager.swift; sourceTree = "<group>"; };
 		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreForward.swift; sourceTree = "<group>"; };
@@ -793,7 +793,6 @@
 				DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */,
 				DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */,
 				DDDB443C29F6592F00EE2349 /* NetworkManager.swift */,
-				DDE1792F2ABA2482005777A8 /* LocationDataManager.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -825,6 +824,7 @@
 				DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
+				DD760AAD2ABAC706002C022E /* WaypointPopover.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1075,6 +1075,7 @@
 				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
+				DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */,
 				DD5E5203298EE33B00D21B61 /* config.pb.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
@@ -1183,7 +1184,6 @@
 				DD5E520E298EE33B00D21B61 /* mqtt.pb.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
-				DDE179302ABA2482005777A8 /* LocationDataManager.swift in Sources */,
 				DDDB443D29F6592F00EE2349 /* NetworkManager.swift in Sources */,
 				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
