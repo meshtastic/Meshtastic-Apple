@@ -52,7 +52,7 @@ struct WidgetsLiveActivity: Widget {
 								.foregroundColor(.gray)
 								.fixedSize()
 						} else {
-							Text("Plugged In")
+							Text("PWD")
 								.font(.title3)
 								.foregroundColor(.gray)
 						}
@@ -101,7 +101,6 @@ struct WidgetsLiveActivity: Widget {
     }
 }
 
-@available(iOS 16.2, *)
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
@@ -123,7 +122,6 @@ struct WidgetsLiveActivity_Previews: PreviewProvider {
     }
 }
 
-@available(iOS 16.2, *)
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
