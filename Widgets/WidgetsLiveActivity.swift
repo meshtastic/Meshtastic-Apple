@@ -9,7 +9,6 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-@available(iOS 16.2, *)
 struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 

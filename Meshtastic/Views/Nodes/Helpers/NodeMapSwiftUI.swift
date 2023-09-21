@@ -150,7 +150,7 @@ struct NodeMapSwiftUI: View {
 								} else {
 									if showNodeHistory {
 										if pf.contains(.Heading) {
-											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "hexagon")
+											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.circle" : "hexagon")
 												.padding(2)
 												.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
 												.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
