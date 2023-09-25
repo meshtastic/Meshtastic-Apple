@@ -63,7 +63,9 @@ struct Messages: View {
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
 			.onAppear {
-				self.bleManager.context = context
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
 				if UserDefaults.preferredPeripheralId.count > 0 {
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
 					fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(bleManager.connectedPeripheral?.num ?? -1))

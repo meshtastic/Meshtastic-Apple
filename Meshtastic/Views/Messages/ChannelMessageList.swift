@@ -259,7 +259,9 @@ struct ChannelMessageList: View {
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear(perform: {
-					self.bleManager.context = context
+					if self.bleManager.context == nil {
+						self.bleManager.context = context
+					}
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
@@ -409,6 +411,7 @@ struct ChannelMessageList: View {
 				}) {
 					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.accentColor)
 				}
+				
 			}
 			.padding(.all, 15)
 		}

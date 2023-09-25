@@ -143,19 +143,19 @@ struct UserList: View {
 							}
 						}
 					}
-						.alert(
-							"Trace Route Sent",
-							isPresented: $isPresentingTraceRouteSentAlert
-						) {
-							Button("OK", role: .cancel) { }
-						} message: {
-							Text("This could take a while, response will appear in the mesh log.")
-						}
-						.confirmationDialog(
-							"This conversation will be deleted.",
-							isPresented: $isPresentingDeleteUserMessagesConfirm,
-							titleVisibility: .visible
-						) {
+					.alert(
+						"Trace Route Sent",
+						isPresented: $isPresentingTraceRouteSentAlert
+					) {
+						Button("OK", role: .cancel) { }
+					} message: {
+						Text("This could take a while, response will appear in the mesh log.")
+					}
+					.confirmationDialog(
+						"This conversation will be deleted.",
+						isPresented: $isPresentingDeleteUserMessagesConfirm,
+						titleVisibility: .visible
+					) {
 							Button(role: .destructive) {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)
