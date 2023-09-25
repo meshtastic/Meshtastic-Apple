@@ -186,6 +186,10 @@ struct Config {
     /// Clients should then limit available configuration and administrative options inside the user interface
     var isManaged: Bool = false
 
+    ///
+    /// Disables the triple-press of user button to enable or disable GPS
+    var disableTripleClick: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -370,6 +374,10 @@ struct Config {
     ///
     /// The minimum number of seconds (since the last send) before we can send a position to the mesh if position_broadcast_smart_enabled
     var broadcastSmartMinimumIntervalSecs: UInt32 = 0
+
+    ///
+    /// (Re)define PIN_GPS_EN for your board.
+    var gpsEnGpio: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -951,6 +959,7 @@ struct Config {
     ///
     /// Maximum number of hops. This can't be greater than 7.
     /// Default of 3
+    /// Attempting to set a value > 7 results in the default
     var hopLimit: UInt32 = 0
 
     ///
@@ -1596,6 +1605,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     7: .standard(proto: "node_info_broadcast_secs"),
     8: .standard(proto: "double_tap_as_button_press"),
     9: .standard(proto: "is_managed"),
+    10: .standard(proto: "disable_triple_click"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1613,6 +1623,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.nodeInfoBroadcastSecs) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.doubleTapAsButtonPress) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.disableTripleClick) }()
       default: break
       }
     }
@@ -1646,6 +1657,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.isManaged != false {
       try visitor.visitSingularBoolField(value: self.isManaged, fieldNumber: 9)
     }
+    if self.disableTripleClick != false {
+      try visitor.visitSingularBoolField(value: self.disableTripleClick, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1659,6 +1673,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.nodeInfoBroadcastSecs != rhs.nodeInfoBroadcastSecs {return false}
     if lhs.doubleTapAsButtonPress != rhs.doubleTapAsButtonPress {return false}
     if lhs.isManaged != rhs.isManaged {return false}
+    if lhs.disableTripleClick != rhs.disableTripleClick {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1698,6 +1713,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     9: .standard(proto: "tx_gpio"),
     10: .standard(proto: "broadcast_smart_minimum_distance"),
     11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
+    12: .standard(proto: "gps_en_gpio"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1717,6 +1733,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 9: try { try decoder.decodeSingularUInt32Field(value: &self.txGpio) }()
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumDistance) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumIntervalSecs) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.gpsEnGpio) }()
       default: break
       }
     }
@@ -1756,6 +1773,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.broadcastSmartMinimumIntervalSecs != 0 {
       try visitor.visitSingularUInt32Field(value: self.broadcastSmartMinimumIntervalSecs, fieldNumber: 11)
     }
+    if self.gpsEnGpio != 0 {
+      try visitor.visitSingularUInt32Field(value: self.gpsEnGpio, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1771,6 +1791,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.txGpio != rhs.txGpio {return false}
     if lhs.broadcastSmartMinimumDistance != rhs.broadcastSmartMinimumDistance {return false}
     if lhs.broadcastSmartMinimumIntervalSecs != rhs.broadcastSmartMinimumIntervalSecs {return false}
+    if lhs.gpsEnGpio != rhs.gpsEnGpio {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

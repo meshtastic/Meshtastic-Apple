@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22222" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="AmbientLightingConfigEntity" representedClassName="AmbientLightingConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="blue" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="current" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="green" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="ledState" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="red" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="ambientLightingConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="ambientLightingConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
     <entity name="BluetoothConfigEntity" representedClassName="BluetoothConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="fixedPin" optional="YES" attributeType="Integer 32" defaultValueString="123456" usesScalarValueType="YES"/>
@@ -54,6 +62,7 @@
         <attribute name="buttonGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="buzzerGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="disableTripleClick" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="doubleTapAsButtonPress" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isManaged" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="nodeInfoBroadcastSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -214,6 +223,7 @@
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
         <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
         <relationship name="detectionSensorConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DetectionSensorConfigEntity" inverseName="detectionSensorConfigNode" inverseEntity="DetectionSensorConfigEntity"/>
