@@ -18,6 +18,7 @@ extension UserDefaults {
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
+		case enableMapConvexHull
 		case enableMapTraffic
 		case enableMapPointsOfInterest
 		case enableOfflineMaps
@@ -96,6 +97,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "meshMapShowRouteLines")
+		}
+	}
+	static var enableMapConvexHull: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableMapConvexHull")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableMapConvexHull")
 		}
 	}
 	static var enableMapTraffic: Bool {

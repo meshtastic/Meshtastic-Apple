@@ -42,7 +42,7 @@ struct NodeDetail: View {
 							Divider()
 							NavigationLink {
 								if #available (iOS 17, macOS 14, *) {
-									NodeMapSwiftUI(node: node)
+									NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 								} else {
 									NodeMapControl(node: node)
 								}

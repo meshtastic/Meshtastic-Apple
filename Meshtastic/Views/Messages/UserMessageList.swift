@@ -237,12 +237,14 @@ struct UserMessageList: View {
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear(perform: {
-					self.bleManager.context = context
+				.onAppear {
+					if self.bleManager.context == nil {
+						self.bleManager.context = context
+					}
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
-				})
+				}
 				.onChange(of: user.messageList, perform: { _ in
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
@@ -335,7 +337,7 @@ struct UserMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
+									if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
 										print("Location Sent")
 									}
 								}
@@ -352,7 +354,7 @@ struct UserMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
+							if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
 								print("Location Sent")
 							}
 						}

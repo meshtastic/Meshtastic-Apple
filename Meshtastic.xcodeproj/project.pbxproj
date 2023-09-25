@@ -16,6 +16,7 @@
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
+		DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
@@ -67,6 +68,7 @@
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
+		DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD760AAD2ABAC706002C022E /* WaypointPopover.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
 		DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */; };
@@ -218,6 +220,7 @@
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
+		DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionPopover.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
@@ -227,6 +230,7 @@
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
 		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
+		DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
 		DD2DC2BF29BCD8AB003B383C /* HardwareModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareModels.swift; sourceTree = "<group>"; };
 		DD2E65252767A01F00E45FC5 /* NodeDetailOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailOld.swift; sourceTree = "<group>"; };
 		DD3501882852FC3B000FC853 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -274,6 +278,7 @@
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
+		DD760AAD2ABAC706002C022E /* WaypointPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointPopover.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
@@ -819,6 +824,8 @@
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
 				DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
+				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
+				DD760AAD2ABAC706002C022E /* WaypointPopover.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1069,6 +1076,7 @@
 				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
+				DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */,
 				DD5E5203298EE33B00D21B61 /* config.pb.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
@@ -1106,6 +1114,7 @@
 				DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */,
 				DD5E5209298EE33B00D21B61 /* module_config.pb.swift in Sources */,
 				DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */,
+				DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */,
 				6DEDA55C2A9592F900321D2E /* MessageEntityExtension.swift in Sources */,
 				DDDB444229F8A88700EE2349 /* Double.swift in Sources */,
 				DD5E520F298EE33B00D21B61 /* cannedmessages.pb.swift in Sources */,
@@ -1410,7 +1419,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.6;
+				MARKETING_VERSION = 2.2.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1444,7 +1453,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.6;
+				MARKETING_VERSION = 2.2.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1566,7 +1575,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.6;
+				MARKETING_VERSION = 2.2.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1599,7 +1608,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.6;
+				MARKETING_VERSION = 2.2.7;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1710,6 +1719,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */,
 				DDDB26492AAD743E003AFCB7 /* MeshtasticDataModelV18.xcdatamodel */,
 				DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */,
 				DDC4CA012A8DAA3800CE201C /* MeshtasticDataModelV16.xcdatamodel */,
@@ -1729,7 +1739,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDDB26492AAD743E003AFCB7 /* MeshtasticDataModelV18.xcdatamodel */;
+			currentVersion = DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

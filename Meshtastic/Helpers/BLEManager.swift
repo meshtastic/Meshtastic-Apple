@@ -30,6 +30,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var mqttProxyConnected: Bool = false
 	
 	@StateObject var appState = AppState.shared
+	//public var locationHelper = LocationHelper.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -42,6 +43,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
+	//var locationHelper = LocationHelper.shared
 	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -69,7 +71,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// Scan for nearby BLE devices using the Meshtastic BLE service ID
 	func startScanning() {
 		if isSwitchedOn {
-			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+			centralManager.scanForPeripherals(withServices: [meshtasticServiceCBUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
 			print("✅ Scanning Started")
 		}
 	}
@@ -486,18 +488,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
-					
 					nowKnown = true
 					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion {
-					
 					nowKnown = true
 					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
-					
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
-						
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
 						}
@@ -508,9 +506,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					nowKnown = true
 					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
-					
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
-					
 					if lastDotIndex == nil {
 						invalidVersion = true
 						connectedVersion = "0.0.0"
@@ -520,19 +516,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedVersion = String(version.dropLast())
 						appState.firmwareVersion = connectedVersion
 					}
-					
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
-					
 					if !supportedVersion {
 						invalidVersion = true
 						lastConnectionError = "🚨" + "update.firmware".localized
 						return
-						
 					}
 				}
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
-				
 			case .textMessageApp, .detectionSensorApp:
 				textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: UserDefaults.blockRangeTest, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
@@ -844,24 +836,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(destNum: Int64, wantResponse: Bool, smartPosition: Bool) -> Bool {
+	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 			return false
 		}
-		
-		if smartPosition {
-			if lastPosition != nil {
-				let connectedNode = getNodeInfo(id: connectedPeripheral?.num ?? 0, context: context!)
-				if connectedNode?.positionConfig?.smartPositionEnabled ?? false {
-					if lastPosition!.distance(from: LocationHelper.currentLocation) < Double(connectedNode?.positionConfig?.broadcastSmartMinimumDistance ?? 50) {
-						return false
-					}
-				}
-			}
-		}
-		lastPosition = LocationHelper.currentLocation
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -893,6 +873,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
+			print(positionPacket)
 			MeshLogger.log("📍 \(logString)")
 		}
 		return success
@@ -902,7 +883,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if UserDefaults.provideLocation {
-				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false, smartPosition: true)
+				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
 			}
 		}
 	}

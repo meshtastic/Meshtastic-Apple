@@ -31,7 +31,7 @@ struct NodeList: View {
 		sortDescriptors: [NSSortDescriptor(key: "user.vip", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
-	private var nodes: FetchedResults<NodeInfoEntity>
+	var nodes: FetchedResults<NodeInfoEntity>
 	
 
 
@@ -42,7 +42,39 @@ struct NodeList: View {
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
 			List(nodes, id: \.self, selection: $selectedNode) { node in
 				
-				NodeListItem(node: node, connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num, connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1), modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+				NodeListItem(node: node, 
+							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
+							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1),
+							 modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+				.contextMenu {
+					if node.user != nil {
+						Button {
+							node.user!.vip = !node.user!.vip
+							context.refresh(node, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User VIP Error")
+							}
+						} label: {
+							Label(node.user?.vip ?? false ? "Un-Favorite" : "Favorite", systemImage: node.user?.vip ?? false ? "star.slash.fill" : "star.fill")
+						}
+						Button {
+							node.user!.mute = !node.user!.mute
+							context.refresh(node, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User Mute Error")
+							}
+						} label: {
+							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
+						}
+					}
+					
+				}
 			}
 			.searchable(text: nodesQuery, prompt: "Find a node")
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))

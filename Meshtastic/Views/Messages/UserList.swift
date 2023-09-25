@@ -7,6 +7,9 @@
 
 import SwiftUI
 import CoreData
+#if canImport(TipKit)
+import TipKit
+#endif
 
 struct UserList: View {
 	
@@ -37,6 +40,9 @@ struct UserList: View {
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		VStack {
 			List {
+				if #available(iOS 17.0, macOS 14.0, *) {
+					TipView(ContactsTip(), arrowEdge: .bottom)
+				}
 				ForEach(users) { (user: UserEntity) in
 					let mostRecent = user.messageList.last
 					let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
@@ -96,60 +102,60 @@ struct UserList: View {
 							}
 						}
 					}
-						.frame(height: 62)
-						.contextMenu {
-							Button {
-								user.vip = !user.vip
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									print("💥 Save User VIP Error")
-								}
-							} label: {
-								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.slash.fill" : "star.fill")
+					.frame(height: 62)
+					.contextMenu {
+						Button {
+							user.vip = !user.vip
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User VIP Error")
 							}
-							Button {
-								user.mute = !user.mute
-								do {
-									try context.save()
-								} catch {
-									context.rollback()
-									print("💥 Save User Mute Error")
-								}
-							} label: {
-								Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+						} label: {
+							Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.slash.fill" : "star.fill")
+						}
+						Button {
+							user.mute = !user.mute
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User Mute Error")
 							}
-							Button {
-								let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
-								if success {
-									isPresentingTraceRouteSentAlert = true
-								}
-							} label: {
-								Label("Trace Route", systemImage: "signpost.right.and.left")
+						} label: {
+							Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
+						}
+						Button {
+							let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
+							if success {
+								isPresentingTraceRouteSentAlert = true
 							}
-							if user.messageList.count  > 0 {
-								Button(role: .destructive) {
-									isPresentingDeleteUserMessagesConfirm = true
-									userSelection = user
-								} label: {
-									Label("Delete Messages", systemImage: "trash")
-								}
+						} label: {
+							Label("Trace Route", systemImage: "signpost.right.and.left")
+						}
+						if user.messageList.count  > 0 {
+							Button(role: .destructive) {
+								isPresentingDeleteUserMessagesConfirm = true
+								userSelection = user
+							} label: {
+								Label("Delete Messages", systemImage: "trash")
 							}
 						}
-						.alert(
-							"Trace Route Sent",
-							isPresented: $isPresentingTraceRouteSentAlert
-						) {
-							Button("OK", role: .cancel) { }
-						} message: {
-							Text("This could take a while, response will appear in the mesh log.")
-						}
-						.confirmationDialog(
-							"This conversation will be deleted.",
-							isPresented: $isPresentingDeleteUserMessagesConfirm,
-							titleVisibility: .visible
-						) {
+					}
+					.alert(
+						"Trace Route Sent",
+						isPresented: $isPresentingTraceRouteSentAlert
+					) {
+						Button("OK", role: .cancel) { }
+					} message: {
+						Text("This could take a while, response will appear in the mesh log.")
+					}
+					.confirmationDialog(
+						"This conversation will be deleted.",
+						isPresented: $isPresentingDeleteUserMessagesConfirm,
+						titleVisibility: .visible
+					) {
 							Button(role: .destructive) {
 								deleteUserMessages(user: userSelection!, context: context)
 								context.refresh(node!.user!, mergeChanges: true)

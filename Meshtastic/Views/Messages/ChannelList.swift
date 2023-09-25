@@ -123,6 +123,11 @@ struct ChannelList: View {
 									Text("delete")
 								}
 							}
+							.onAppear {
+								if self.bleManager.context == nil {
+									self.bleManager.context = context
+								}
+							}
 						}
 					}
 					.padding([.top, .bottom])

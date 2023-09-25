@@ -50,7 +50,8 @@ struct PositionLog: View {
 							Text(speed.formatted())
 						}
 						TableColumn("Heading") { position in
-							Text("\(position.heading)°")
+							let heading = Measurement(value: Double(position.heading), unit: UnitAngle.degrees)
+							Text("\(heading.formatted())")
 						}
 						TableColumn("SNR") { position in
 							Text("\(String(format: "%.2f", position.snr)) dB")
