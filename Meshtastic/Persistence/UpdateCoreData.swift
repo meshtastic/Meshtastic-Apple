@@ -218,7 +218,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 							position.latest = false
 						}
 					}
-
+					print("Incoming position message: \n \(positionMessage)")
 					let position = PositionEntity(context: context)
 					position.latest = true
 					position.snr = packet.rxSnr

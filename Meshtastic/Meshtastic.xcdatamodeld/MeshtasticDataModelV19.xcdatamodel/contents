@@ -345,7 +345,7 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND isEmoji == false AND admin = true"/>
         </fetchedProperty>
         <fetchedProperty name="allMessages" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 1"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="((toUser.num == $FETCH_SOURCE.num) OR (fromUser.num == $FETCH_SOURCE.num)) AND toUser != nil AND fromUser != nil AND isEmoji == false AND admin = false AND portNum != 10 "/>
         </fetchedProperty>
         <fetchedProperty name="detectionSensorMessages" optional="YES">
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND portNum = 10"/>

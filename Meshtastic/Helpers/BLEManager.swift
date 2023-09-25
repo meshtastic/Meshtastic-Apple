@@ -30,6 +30,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var mqttProxyConnected: Bool = false
 	
 	@StateObject var appState = AppState.shared
+	//public var locationHelper = LocationHelper.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -42,7 +43,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
-	let locationHelper = LocationHelper.shared
+	//var locationHelper = LocationHelper.shared
 	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -872,6 +873,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
+			print(positionPacket)
 			MeshLogger.log("📍 \(logString)")
 		}
 		return success
