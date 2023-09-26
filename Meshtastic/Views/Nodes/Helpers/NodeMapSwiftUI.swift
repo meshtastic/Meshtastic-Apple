@@ -7,7 +7,9 @@
 
 import SwiftUI
 import CoreLocation
+#if canImport(MapKit)
 import MapKit
+#endif
 import WeatherKit
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -88,17 +90,17 @@ struct NodeMapSwiftUI: View {
 							Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 								ZStack {
 									CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-//										.onTapGesture(coordinateSpace: .global) { location in
-//											print("Tapped at \(location)")
-//											let pinLocation = reader.convert(location, from: .local)
-//											print(pinLocation)
-//											let size = CGSize(width: 1, height: 50)
-//											let rect = CGRect(origin: location, size: size)
-//											selectedWaypointRect = rect
-//											selectedWaypointPoint = location
-//											showingWaypointPopover = true
-//											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-//										}
+										.onTapGesture(coordinateSpace: .global) { location in
+											print("Tapped at \(location)")
+											let pinLocation = reader.convert(location, from: .local)
+											print(pinLocation)
+											let size = CGSize(width: 1, height: 50)
+											let rect = CGRect(origin: location, size: size)
+											selectedWaypointRect = rect
+											selectedWaypointPoint = location
+											showingWaypointPopover = true
+											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+										}
 								}
 							}
 						}
@@ -198,13 +200,13 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
-//					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
-//						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
-//						WaypointPopover(waypoint: selection)
-//							.padding()
-//							.opacity(0.8)
-//							.presentationCompactAdaptation(.popover)
-//					}
+					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
+						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
+						WaypointPopover(waypoint: selection)
+							.padding()
+							.opacity(0.8)
+							.presentationCompactAdaptation(.popover)
+					}
 					.sheet(isPresented: $isEditingSettings) {
 						VStack {
 							Form {
@@ -276,7 +278,7 @@ struct NodeMapSwiftUI: View {
 									}
 								}
 							}
-#if targetEnvironment(macCatalyst)
+							#if targetEnvironment(macCatalyst)
 							Button {
 								isEditingSettings = false
 							} label: {
@@ -286,11 +288,11 @@ struct NodeMapSwiftUI: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 							.padding()
-#endif
+							#endif
 						}
-						.presentationDetents([.fraction(0.46)])
-						//.presentationDetents([.medium])
-						.presentationDragIndicator(.visible)
+						.presentationDetents([.fraction(0.60)])
+						//.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity
@@ -347,12 +349,12 @@ struct NodeMapSwiftUI: View {
 								.buttonStyle(.borderedProminent)
 							}
 							
-#if targetEnvironment(macCatalyst)
+							#if targetEnvironment(macCatalyst)
 							MapZoomStepper(scope: mapScope)
 								.mapControlVisibility(.visible)
 							MapPitchSlider(scope: mapScope)
 								.mapControlVisibility(.visible)
-#endif
+							#endif
 						}
 						.controlSize(.regular)
 						.padding(5)

@@ -55,11 +55,14 @@ struct ChannelList: View {
 										if channel.name?.isEmpty ?? false {
 											if channel.role == 1 {
 												Text(String("PrimaryChannel").camelCaseToWords())
+													.font(.headline)
 											} else {
 												Text(String("Channel \(channel.index)").camelCaseToWords())
+													.font(.headline)
 											}
 										} else {
 											Text(String(channel.name ?? "Channel \(channel.index)").camelCaseToWords())
+												.font(.headline)
 										}
 										
 										Spacer()
@@ -68,19 +71,19 @@ struct ChannelList: View {
 
 											if lastMessageDay == currentDay {
 												Text(lastMessageTime, style: .time )
-													.font(.system(size: 16))
+													.font(.footnote)
 													.foregroundColor(.secondary)
 											} else if  lastMessageDay == (currentDay - 1) {
 												Text("Yesterday")
-													.font(.system(size: 16))
+													.font(.footnote)
 													.foregroundColor(.secondary)
 											} else if  lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 												Text(lastMessageTime.formattedDate(format: dateFormatString))
-													.font(.system(size: 16))
+													.font(.footnote)
 													.foregroundColor(.secondary)
 											} else if lastMessageDay < (currentDay - 1800) {
 												Text(lastMessageTime.formattedDate(format: dateFormatString))
-													.font(.system(size: 16))
+													.font(.footnote)
 													.foregroundColor(.secondary)
 											}
 										}
@@ -92,7 +95,8 @@ struct ChannelList: View {
 									if channel.allPrivateMessages.count > 0 {
 										HStack(alignment: .top) {
 											Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-												.font(.system(size: 16))
+												//.font(.system(size: 16))
+												.font(.footnote)
 												.foregroundColor(.secondary)
 										}
 									}
