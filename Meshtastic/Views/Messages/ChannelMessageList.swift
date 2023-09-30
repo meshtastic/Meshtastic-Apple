@@ -258,14 +258,14 @@ struct ChannelMessageList: View {
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear(perform: {
+				.onAppear {
 					if self.bleManager.context == nil {
 						self.bleManager.context = context
 					}
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
-				})
+				}
 				.onChange(of: channel.allPrivateMessages, perform: { _ in
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
