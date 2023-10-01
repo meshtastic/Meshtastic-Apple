@@ -25,6 +25,28 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 	return nil
 }
 
+public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
+	
+	let time = seconds * -1
+	let fetchMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
+	let milleseconds = Int32(timeRange?.timeIntervalSince1970 ?? 0)
+	fetchMessagesRequest.predicate =  NSPredicate(format: "receivedTimestamp >= %d", milleseconds)
+
+	do {
+		guard let fetchedMessages = try context.fetch(fetchMessagesRequest) as? [MessageEntity] else {
+			return []
+		}
+		if fetchedMessages.count == 1 {
+			return fetchedMessages.map { UInt32($0.messageId) }
+		}
+	} catch {
+		return []
+	}
+	return []
+}
+
+
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 
 	let fetchUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
