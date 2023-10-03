@@ -71,7 +71,7 @@ struct NodeMapSwiftUI: View {
 									startPoint: .leading, endPoint: .trailing
 								)
 								let dashed = StrokeStyle(
-									lineWidth: 5,
+									lineWidth: 3,
 									lineCap: .round, lineJoin: .round, dash: [10, 10]
 								)
 								MapPolyline(coordinates: lineCoords)
@@ -82,7 +82,7 @@ struct NodeMapSwiftUI: View {
 						if showConvexHull {
 							let hull = lineCoords.getConvexHull()
 							MapPolygon(coordinates: hull)
-								.stroke(Color(nodeColor.darker()), lineWidth: 5)
+								.stroke(Color(nodeColor.darker()), lineWidth: 4)
 								.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
 						/// Waypoint Annotations
@@ -116,7 +116,7 @@ struct NodeMapSwiftUI: View {
 											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.4))
 											.frame(width: 60, height: 60)
 										if pf.contains(.Heading) {
-											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "hexagon")
+											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
 												.symbolEffect(.pulse.byLayer)
 												.padding(5)
 												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
@@ -155,7 +155,7 @@ struct NodeMapSwiftUI: View {
 									} else {
 										if showNodeHistory {
 											if pf.contains(.Heading) {
-												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.circle" : "hexagon")
+												Image(systemName: "location.north.circle")
 													.resizable()
 													.scaledToFit()
 													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
@@ -377,7 +377,7 @@ struct NodeMapSwiftUI: View {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 		}
 	}
-	
+	/// Get the look around scene
 	private func fetchScene(for coordinate: CLLocationCoordinate2D) async throws -> MKLookAroundScene? {
 		let lookAroundScene = MKLookAroundSceneRequest(coordinate: coordinate)
 		return try await lookAroundScene.scene
