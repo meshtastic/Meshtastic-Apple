@@ -156,13 +156,14 @@ struct NodeMapSwiftUI: View {
 										if showNodeHistory {
 											if pf.contains(.Heading) {
 												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.circle" : "hexagon")
+													.resizable()
+													.scaledToFit()
 													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
 													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
 													.clipShape(Circle())
 													.rotationEffect(headingDegrees)
-													.resizable()
-													.scaledToFit()
 													.frame(width: 16, height: 16)
+										
 											} else {
 												Circle()
 													.fill(Color(UIColor(hex: UInt32(node.num)).lighter()))
@@ -202,6 +203,7 @@ struct NodeMapSwiftUI: View {
 						}
 					}
 					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
+						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
 						WaypointPopover(waypoint: selection)
 							.padding()
 							.opacity(0.8)
