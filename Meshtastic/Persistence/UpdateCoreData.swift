@@ -206,8 +206,8 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
 
-			// Don't save empty position packets
-			if (positionMessage.longitudeI == 0 && positionMessage.latitudeI == 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
+			/// Don't save empty position packets from null island or apple park
+			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
 				guard let fetchedNode = try context.fetch(fetchNodePositionRequest) as? [NodeInfoEntity] else {
 					return
 				}
