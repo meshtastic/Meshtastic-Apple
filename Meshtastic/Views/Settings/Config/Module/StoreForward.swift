@@ -91,7 +91,7 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
 
 		Button {
 			isPresentingSaveConfirm = true

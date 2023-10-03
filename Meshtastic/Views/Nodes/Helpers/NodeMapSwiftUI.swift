@@ -156,17 +156,18 @@ struct NodeMapSwiftUI: View {
 										if showNodeHistory {
 											if pf.contains(.Heading) {
 												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.circle" : "hexagon")
-													.padding(2)
-													.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
+													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
 													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
 													.clipShape(Circle())
 													.rotationEffect(headingDegrees)
+													.resizable()
+													.scaledToFit()
+													.frame(width: 16, height: 16)
 											} else {
-												Image(systemName: "mappin.circle")
-													.padding(2)
-													.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
-													.clipShape(Circle())
+												Circle()
+													.fill(Color(UIColor(hex: UInt32(node.num)).lighter()))
+													.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
+													.frame(width: 12, height: 12)
 											}
 										}
 									}
@@ -201,7 +202,6 @@ struct NodeMapSwiftUI: View {
 						}
 					}
 					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
-						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
 						WaypointPopover(waypoint: selection)
 							.padding()
 							.opacity(0.8)
