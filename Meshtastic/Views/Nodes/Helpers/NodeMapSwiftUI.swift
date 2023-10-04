@@ -24,7 +24,7 @@ struct NodeMapSwiftUI: View {
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("meshMapShowConvexHull") private var showConvexHull = true
+	@AppStorage("enableMapConvexHull") private var showConvexHull = true
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
@@ -113,8 +113,9 @@ struct NodeMapSwiftUI: View {
 								ZStack {
 									if position.latest {
 										Circle()
-											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.4))
-											.frame(width: 60, height: 60)
+											.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+											.frame(width: 50, height: 50)
 										if pf.contains(.Heading) {
 											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
 												.symbolEffect(.pulse.byLayer)
