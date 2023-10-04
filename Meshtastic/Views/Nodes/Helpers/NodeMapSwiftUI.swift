@@ -82,7 +82,7 @@ struct NodeMapSwiftUI: View {
 						if showConvexHull {
 							let hull = lineCoords.getConvexHull()
 							MapPolygon(coordinates: hull)
-								.stroke(Color(nodeColor.darker()), lineWidth: 4)
+								.stroke(Color(nodeColor.darker()), lineWidth: 3)
 								.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
 						/// Waypoint Annotations
@@ -160,14 +160,14 @@ struct NodeMapSwiftUI: View {
 													.resizable()
 													.scaledToFit()
 													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
+													.background(Color(UIColor(hex: UInt32(node.num))))
 													.clipShape(Circle())
 													.rotationEffect(headingDegrees)
 													.frame(width: 16, height: 16)
 										
 											} else {
 												Circle()
-													.fill(Color(UIColor(hex: UInt32(node.num)).lighter()))
+													.fill(Color(UIColor(hex: UInt32(node.num))))
 													.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
 													.frame(width: 12, height: 12)
 											}

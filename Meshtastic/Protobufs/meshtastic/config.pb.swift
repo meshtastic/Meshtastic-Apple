@@ -227,11 +227,15 @@ struct Config {
       ///
       /// Tracker device role
       ///   Position Mesh packets will be prioritized higher and sent more frequently by default.
+      ///   When used in conjunction with power.is_power_saving = true, nodes will wake up, 
+      ///   send position, and then sleep for position.position_broadcast_secs seconds.
       case tracker // = 5
 
       ///
       /// Sensor device role
       ///   Telemetry Mesh packets will be prioritized higher and sent more frequently by default.
+      ///   When used in conjunction with power.is_power_saving = true, nodes will wake up, 
+      ///   send environment telemetry, and then sleep for telemetry.environment_update_interval seconds.
       case sensor // = 6
       case UNRECOGNIZED(Int)
 
