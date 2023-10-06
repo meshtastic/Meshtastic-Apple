@@ -120,6 +120,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.rssi = packet.rxRssi
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
+				print(packet.channel)
+				print("Channel From Message\(nodeInfoMessage.channel)")
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				let newUser = UserEntity(context: context)
@@ -129,6 +131,10 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.shortName = newUserMessage.shortName
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
+			}
+			
+			if newNode.user == nil {
+				print("Nil User on nodeinfo")
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -166,6 +172,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
+					/// Seeing Some crashes here ?
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
@@ -199,8 +206,8 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 		if let positionMessage = try? Position(serializedData: packet.decoded.payload) {
 
-			// Don't save empty position packets
-			if positionMessage.longitudeI > 0 || positionMessage.latitudeI > 0 && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
+			/// Don't save empty position packets from null island or apple park
+			if (positionMessage.longitudeI != 0 && positionMessage.latitudeI != 0) && (positionMessage.latitudeI != 373346000 && positionMessage.longitudeI != -1220090000) {
 				guard let fetchedNode = try context.fetch(fetchNodePositionRequest) as? [NodeInfoEntity] else {
 					return
 				}

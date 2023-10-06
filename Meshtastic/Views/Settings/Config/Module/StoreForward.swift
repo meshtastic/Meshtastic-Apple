@@ -36,8 +36,8 @@ struct StoreForwardConfig: View {
 
 			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.detectionSensorConfig == nil {
-					Text("Detection Sensor config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+				if node?.storeForwardConfig == nil {
+					Text("Store and forward config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
 						.font(.callout)
 						.foregroundColor(.orange)
 				} else {
@@ -91,7 +91,7 @@ struct StoreForwardConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
+		.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
 
 		Button {
 			isPresentingSaveConfirm = true

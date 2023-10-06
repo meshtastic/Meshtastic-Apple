@@ -40,20 +40,24 @@ struct Messages: View {
 						.symbolRenderingMode(.hierarchical)
 						.foregroundColor(.accentColor)
 						.brightness(0.2)
+						.font(.title)
 					Text("channels")
 						.font(.title2)
 						.badge(appState.unreadChannelMessages)
+						.padding(.vertical)
 				}
 				NavigationLink {
 					UserList(node: node)
 				} label: {
-					Image(systemName: "person")
+					Image(systemName: "person.circle")
 						.symbolRenderingMode(.hierarchical)
 						.foregroundColor(.accentColor)
 						.brightness(0.2)
+						.font(.largeTitle)
 					Text("direct.messages")
 						.font(.title2)
 						.badge(appState.unreadDirectMessages)
+						.padding(.vertical)
 				}
 				if #available(iOS 17.0, macOS 14.0, *) {
 					TipView(MessagesTip(), arrowEdge: .top)

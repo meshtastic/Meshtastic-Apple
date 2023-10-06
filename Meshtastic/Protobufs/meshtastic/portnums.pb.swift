@@ -104,6 +104,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// Same as Text Message but originating from Detection Sensor Module.
+  /// NOTE: This portnum traffic is not sent to the public MQTT starting at firmware version 2.2.9
   case detectionSensorApp // = 10
 
   ///
@@ -135,6 +136,7 @@ enum PortNum: SwiftProtobuf.Enum {
   ///
   /// Optional port for messages for the range test module.
   /// ENCODING: ASCII Plaintext
+  /// NOTE: This portnum traffic is not sent to the public MQTT starting at firmware version 2.2.9
   case rangeTestApp // = 66
 
   ///

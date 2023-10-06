@@ -7,7 +7,9 @@
 
 import SwiftUI
 import CoreLocation
+#if canImport(MapKit)
 import MapKit
+#endif
 import WeatherKit
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -22,7 +24,7 @@ struct NodeMapSwiftUI: View {
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("meshMapShowConvexHull") private var showConvexHull = true
+	@AppStorage("enableMapConvexHull") private var showConvexHull = true
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
@@ -69,7 +71,7 @@ struct NodeMapSwiftUI: View {
 									startPoint: .leading, endPoint: .trailing
 								)
 								let dashed = StrokeStyle(
-									lineWidth: 5,
+									lineWidth: 3,
 									lineCap: .round, lineJoin: .round, dash: [10, 10]
 								)
 								MapPolyline(coordinates: lineCoords)
@@ -80,7 +82,7 @@ struct NodeMapSwiftUI: View {
 						if showConvexHull {
 							let hull = lineCoords.getConvexHull()
 							MapPolygon(coordinates: hull)
-								.stroke(Color(nodeColor.darker()), lineWidth: 5)
+								.stroke(Color(nodeColor.darker()), lineWidth: 3)
 								.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
 						/// Waypoint Annotations
@@ -88,17 +90,17 @@ struct NodeMapSwiftUI: View {
 							Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 								ZStack {
 									CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-//										.onTapGesture(coordinateSpace: .global) { location in
-//											print("Tapped at \(location)")
-//											let pinLocation = reader.convert(location, from: .local)
-//											print(pinLocation)
-//											let size = CGSize(width: 1, height: 50)
-//											let rect = CGRect(origin: location, size: size)
-//											selectedWaypointRect = rect
-//											selectedWaypointPoint = location
-//											showingWaypointPopover = true
-//											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-//										}
+										.onTapGesture(coordinateSpace: .global) { location in
+											print("Tapped at \(location)")
+											let pinLocation = reader.convert(location, from: .local)
+											print(pinLocation)
+											let size = CGSize(width: 1, height: 50)
+											let rect = CGRect(origin: location, size: size)
+											selectedWaypointRect = rect
+											selectedWaypointPoint = location
+											showingWaypointPopover = true
+											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+										}
 								}
 							}
 						}
@@ -111,10 +113,11 @@ struct NodeMapSwiftUI: View {
 								ZStack {
 									if position.latest {
 										Circle()
-											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.4))
-											.frame(width: 60, height: 60)
+											.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+											.frame(width: 50, height: 50)
 										if pf.contains(.Heading) {
-											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "hexagon")
+											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
 												.symbolEffect(.pulse.byLayer)
 												.padding(5)
 												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
@@ -153,18 +156,20 @@ struct NodeMapSwiftUI: View {
 									} else {
 										if showNodeHistory {
 											if pf.contains(.Heading) {
-												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north.circle" : "hexagon")
-													.padding(2)
-													.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
+												Image(systemName: "location.north.circle")
+													.resizable()
+													.scaledToFit()
+													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
+													.background(Color(UIColor(hex: UInt32(node.num))))
 													.clipShape(Circle())
 													.rotationEffect(headingDegrees)
+													.frame(width: 16, height: 16)
+										
 											} else {
-												Image(systemName: "mappin.circle")
-													.padding(2)
-													.foregroundStyle(Color(UIColor(hex: UInt32(node.num)).lighter()).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num)).lighter()))
-													.clipShape(Circle())
+												Circle()
+													.fill(Color(UIColor(hex: UInt32(node.num))))
+													.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
+													.frame(width: 12, height: 12)
 											}
 										}
 									}
@@ -198,13 +203,13 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
-//					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
-//						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
-//						WaypointPopover(waypoint: selection)
-//							.padding()
-//							.opacity(0.8)
-//							.presentationCompactAdaptation(.popover)
-//					}
+					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
+						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
+						WaypointPopover(waypoint: selection)
+							.padding()
+							.opacity(0.8)
+							.presentationCompactAdaptation(.popover)
+					}
 					.sheet(isPresented: $isEditingSettings) {
 						VStack {
 							Form {
@@ -276,7 +281,7 @@ struct NodeMapSwiftUI: View {
 									}
 								}
 							}
-#if targetEnvironment(macCatalyst)
+							#if targetEnvironment(macCatalyst)
 							Button {
 								isEditingSettings = false
 							} label: {
@@ -286,11 +291,11 @@ struct NodeMapSwiftUI: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
 							.padding()
-#endif
+							#endif
 						}
-						.presentationDetents([.fraction(0.46)])
-						//.presentationDetents([.medium])
-						.presentationDragIndicator(.visible)
+						.presentationDetents([.fraction(0.60)])
+						//.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.automatic)
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity
@@ -347,12 +352,12 @@ struct NodeMapSwiftUI: View {
 								.buttonStyle(.borderedProminent)
 							}
 							
-#if targetEnvironment(macCatalyst)
+							#if targetEnvironment(macCatalyst)
 							MapZoomStepper(scope: mapScope)
 								.mapControlVisibility(.visible)
 							MapPitchSlider(scope: mapScope)
 								.mapControlVisibility(.visible)
-#endif
+							#endif
 						}
 						.controlSize(.regular)
 						.padding(5)
@@ -373,7 +378,7 @@ struct NodeMapSwiftUI: View {
 			ContentUnavailableView("No Positions", systemImage: "mappin.slash")
 		}
 	}
-	
+	/// Get the look around scene
 	private func fetchScene(for coordinate: CLLocationCoordinate2D) async throws -> MKLookAroundScene? {
 		let lookAroundScene = MKLookAroundSceneRequest(coordinate: coordinate)
 		return try await lookAroundScene.scene

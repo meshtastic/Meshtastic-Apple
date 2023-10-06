@@ -28,9 +28,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
-	
 	@StateObject var appState = AppState.shared
-	//public var locationHelper = LocationHelper.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -43,7 +41,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var lastPosition: CLLocationCoordinate2D?
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
-	//var locationHelper = LocationHelper.shared
 	var wantRangeTestPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
@@ -2071,6 +2068,72 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 		}
 		return false
+	}
+	
+	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+			// Request Response
+			switch storeAndForwardMessage.rr {
+			case .unset:
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerError:
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerHeartbeat:
+				/// When we get a router heartbeat we know there is a store and forward node on the network
+				/// Check if it is the primary S&F Router
+				if (storeAndForwardMessage.heartbeat.secondary == 0) {
+					/// send a request for ClientHistory with a time period matching the heartbeat
+					var sfPacket = StoreAndForward()
+					sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
+					sfPacket.history.window = storeAndForwardMessage.heartbeat.period
+					var meshPacket: MeshPacket = MeshPacket()
+					meshPacket.to = UInt32(packet.from)
+					meshPacket.from	= UInt32(connectedNodeNum)
+					meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+					meshPacket.priority =  MeshPacket.Priority.reliable
+					meshPacket.wantAck = true
+					var dataMessage = DataMessage()
+					dataMessage.payload = try! sfPacket.serializedData()
+					dataMessage.portnum = PortNum.storeForwardApp
+					dataMessage.wantResponse = true
+					meshPacket.decoded = dataMessage
+					
+					var toRadio: ToRadio!
+					toRadio = ToRadio()
+					toRadio.packet = meshPacket
+					let binaryData: Data = try! toRadio.serializedData()
+					if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
+						connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+						print("📮 Sent a request for a Store & Forward Client History to \(packet.from) for the last \(storeAndForwardMessage.heartbeat.period) seconds.")
+					}
+				}
+				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerPing:
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerPong:
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerBusy:
+				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerHistory:
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerStats:
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientError:
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientHistory:
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientStats:
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientPing:
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientPong:
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .clientAbort:
+				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .UNRECOGNIZED:
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			}
+		}
 	}
 	
 	public func tryClearExistingChannels() {

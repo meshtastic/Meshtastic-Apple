@@ -63,7 +63,7 @@ struct UserList: View {
 						VStack(alignment: .leading){
 							HStack{
 								Text(user.longName ?? "unknown".localized)
-								
+									.font(.headline)
 								Spacer()
 								if user.vip {
 									Image(systemName: "star.fill")
@@ -72,19 +72,19 @@ struct UserList: View {
 								if user.messageList.count > 0 {
 									if lastMessageDay == currentDay {
 										Text(lastMessageTime, style: .time )
-											.font(.system(size: 16))
+											.font(.footnote)
 											.foregroundColor(.secondary)
 									} else if lastMessageDay == (currentDay - 1) {
 										Text("Yesterday")
-											.font(.system(size: 16))
+											.font(.footnote)
 											.foregroundColor(.secondary)
 									} else if lastMessageDay < (currentDay - 1) && lastMessageDay > (currentDay - 5) {
 										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.system(size: 16))
+											.font(.footnote)
 											.foregroundColor(.secondary)
 									} else if lastMessageDay < (currentDay - 1800) {
 										Text(lastMessageTime.formattedDate(format: dateFormatString))
-											.font(.system(size: 16))
+											.font(.footnote)
 											.foregroundColor(.secondary)
 									}
 								}
@@ -96,7 +96,7 @@ struct UserList: View {
 							if user.messageList.count > 0 {
 								HStack(alignment: .top) {
 									Text("\(mostRecent != nil ? mostRecent!.messagePayload! : " ")")
-										.font(.system(size: 16))
+										.font(.footnote)
 										.foregroundColor(.secondary)
 								}
 							}
