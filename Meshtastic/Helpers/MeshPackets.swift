@@ -265,6 +265,16 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 				newNode.user = newUser
+			} else {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(nodeInfo.num)
+				let userId = String(format:"%2X", nodeInfo.num)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				newNode.user = newUser
 			}
 
 			if nodeInfo.position.longitudeI > 0 || nodeInfo.position.latitudeI > 0 && (nodeInfo.position.latitudeI != 373346000 && nodeInfo.position.longitudeI != -1220090000) {
@@ -306,7 +316,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			} catch {
 				print("💥 Fetch MyInfo Error")
 			}
-		} else if nodeInfo.hasUser && nodeInfo.num > 0 {
+		} else if nodeInfo.num > 0 {
 
 			fetchedNode[0].id = Int64(nodeInfo.num)
 			fetchedNode[0].num = Int64(nodeInfo.num)
@@ -323,6 +333,16 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
 				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+			} else {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(nodeInfo.num)
+				let userId = String(format:"%2X", nodeInfo.num)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				fetchedNode[0].user = newUser
 			}
 
 			if nodeInfo.hasDeviceMetrics {

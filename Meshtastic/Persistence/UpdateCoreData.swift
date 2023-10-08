@@ -178,6 +178,16 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
+				} else {
+					let newUser = UserEntity(context: context)
+					newUser.num = Int64(nodeInfoMessage.num)
+					let userId = String(format:"%2X", nodeInfoMessage.num)
+					newUser.userId = "!\(userId)"
+					let last4 = String(userId.suffix(4))
+					newUser.longName = "Meshtastic \(last4)"
+					newUser.shortName = last4
+					newUser.hwModel = "UNSET"
+					fetchedNode[0].user! = newUser
 				}
 			}
 			do {
