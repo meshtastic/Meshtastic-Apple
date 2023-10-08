@@ -11,12 +11,10 @@ import CoreLocation
 import CoreData
 
 struct NodeMap: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	
 	@ObservedObject var tileManager = OfflineTileManager.shared
-	
+	@StateObject var appState = AppState.shared
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
 	@State var enableMapRouteLines: Bool = UserDefaults.enableMapRouteLines
@@ -27,35 +25,28 @@ struct NodeMap: View {
 	@State var enableOverlayServer: Bool = UserDefaults.enableOverlayServer
 	@State var selectedOverlayServer: MapOverlayServer = UserDefaults.mapOverlayServer
 	@State var mapTilesAboveLabels: Bool = UserDefaults.mapTilesAboveLabels
-	
 	let fromDate: NSDate = Calendar.current.date(byAdding: .month, value: -1, to: Date())! as NSDate
-	
+//	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
+//				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
+				  predicate: NSPredicate(format: "nodePosition != nil", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
-	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	@State var waypointCoordinate: WaypointCoordinate?
-	
 	@State var selectedTracking: UserTrackingModes = .none
-	
 	@State var isPresentingInfoSheet: Bool = false
-	
 	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
 		mapName: "offlinemap",
 		tileType: "png",
 		canReplaceMapContent: true
 	)
-	
 	var body: some View {
-		
 		NavigationStack {
 			ZStack {
-				
 				MapViewSwiftUI(
 					onLongPress: { coord in
 						waypointCoordinate = WaypointCoordinate(id: .init(), coordinate: coord, waypointId: 0)
@@ -73,16 +64,13 @@ struct NodeMap: View {
 					customMapOverlay: self.customMapOverlay
 				)
 				VStack(alignment: .trailing) {
-					
 					HStack(alignment: .top) {
 						Spacer()
 						MapButtons(tracking: $selectedTracking, isPresentingInfoSheet: $isPresentingInfoSheet)
 							.padding(.trailing, 8)
 							.padding(.top, 16)
 					}
-					
 					Spacer()
-					
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
@@ -111,9 +99,7 @@ struct NodeMap: View {
 							}
 							.padding(.top, 5)
 							.padding(.bottom, 5)
-							
 							Toggle(isOn: $enableMapRecentering) {
-								
 								Label("map.recentering", systemImage: "camera.metering.center.weighted")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -121,9 +107,7 @@ struct NodeMap: View {
 								self.enableMapRecentering.toggle()
 								UserDefaults.enableMapRecentering = self.enableMapRecentering
 							}
-							
 							Toggle(isOn: $enableMapNodeHistoryPins) {
-								
 								Label("Show Node History", systemImage: "building.columns.fill")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -131,9 +115,7 @@ struct NodeMap: View {
 								self.enableMapNodeHistoryPins.toggle()
 								UserDefaults.enableMapNodeHistoryPins = self.enableMapNodeHistoryPins
 							}
-							
 							Toggle(isOn: $enableMapRouteLines) {
-								
 								Label("Show Route Lines", systemImage: "road.lanes")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -141,12 +123,9 @@ struct NodeMap: View {
 								self.enableMapRouteLines.toggle()
 								UserDefaults.enableMapRouteLines = self.enableMapRouteLines
 							}
-							
 							let locale = Locale.current
 							if locale.region?.identifier ?? "no locale" == "US" {
-								
 								Toggle(isOn: $enableOverlayServer) {
-									
 									Label("Show Weather", systemImage: "cloud.fill")
 								}
 								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -154,7 +133,6 @@ struct NodeMap: View {
 									self.enableOverlayServer.toggle()
 									UserDefaults.enableOverlayServer = self.enableOverlayServer
 								}
-								
 								if enableOverlayServer {
 									Picker(selection: $selectedOverlayServer,
 										   label: Text("Radar")) {
@@ -179,8 +157,8 @@ struct NodeMap: View {
 								Text("Enable Offline Maps")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.onChange(of: (enableOfflineMaps)) { newEnableOfflineMaps in
-								UserDefaults.enableOfflineMaps = enableOfflineMaps
+							.onChange(of: enableOfflineMaps) { newEnableOfflineMaps in
+								UserDefaults.enableOfflineMaps = newEnableOfflineMaps
 								if !enableOfflineMaps {
 									if self.selectedMapLayer == .offline {
 										self.selectedMapLayer = .standard
@@ -188,10 +166,8 @@ struct NodeMap: View {
 								}
 							}
 							if enableOfflineMaps {
-								VStack (alignment: .leading) {
-									
+								VStack(alignment: .leading) {
 									if !enableOfflineMapsMBTiles {
-										
 										Picker(selection: $selectedTileServer,
 											   label: Text("Tile Server")) {
 											ForEach(MapTileServer.allCases, id: \.self) { tsl in
@@ -218,7 +194,6 @@ struct NodeMap: View {
 											self.mapTilesAboveLabels.toggle()
 											UserDefaults.mapTilesAboveLabels = self.mapTilesAboveLabels
 										}
-										
 									}
 									Divider()
 									Toggle(isOn: $enableOfflineMapsMBTiles) {
@@ -259,11 +234,13 @@ struct NodeMap: View {
 				bluetoothOn: bleManager.isSwitchedOn,
 				deviceConnected: bleManager.connectedPeripheral != nil,
 				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-					"????")
+					"?")
 		})
 		.onAppear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = true
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		})
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false

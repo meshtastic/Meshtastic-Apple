@@ -1,120 +1,160 @@
 //
-//  NodeList.swift
+//  NodeListSplit.swift
 //  Meshtastic
 //
-//  Copyright(c) Garth Vander Houwen 8/7/21.
+//  Created by Garth Vander Houwen on 9/8/23.
 //
-
-// Abstract:
-//  A view showing a list of devices that have been seen on the mesh network from the perspective of the connected device.
-
 import SwiftUI
 import CoreLocation
 
 struct NodeList: View {
+	
+	@State private var columnVisibility = NavigationSplitViewVisibility.all
+	@State private var selectedNode: NodeInfoEntity?
+	
+	@SceneStorage("selectedDetailView") var selectedDetailView: String?
+	
+	@State private var searchText = ""
+	var nodesQuery: Binding<String> {
+		 Binding {
+			 searchText
+		 } set: { newValue in
+			 searchText = newValue
+			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS[c] %@ OR user.shortName CONTAINS[c] %@", newValue, newValue)
+		 }
+	 }
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "user.vip", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
-	private var nodes: FetchedResults<NodeInfoEntity>
+	var nodes: FetchedResults<NodeInfoEntity>
+	
 
-	@State private var selection: NodeInfoEntity? // Nothing selected by default.
 
 	var body: some View {
-
-		NavigationSplitView {
+		NavigationSplitView(columnVisibility: $columnVisibility) {
+			
 			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-			List(nodes, id: \.self, selection: $selection) { node in
-				if nodes.count == 0 {
-					Text("no.nodes").font(.title)
-				} else {
-					NavigationLink(value: node) {
-						let connected: Bool = (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num)
-						LazyVStack(alignment: .leading) {
-							HStack {
-								VStack(alignment: .leading) {
-									CircleText(text: node.user?.shortName ?? "???", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65, fontSize: (node.user?.shortName ?? "???").isEmoji() ? 44 : (node.user?.shortName?.count ?? 0 == 4  ? 19 : 26), brightness: 0.0, textColor: UIColor(hex: UInt32(node.num)).isLight() ? .black : .white)
-										.padding(.trailing, 5)
-									let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-									if deviceMetrics?.count ?? 0 >= 1 {
-										let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-										BatteryLevelCompact(batteryLevel: mostRecent?.batteryLevel, font: .caption2, iconFont: .callout, color: .accentColor)
-									}
-								}
-								VStack(alignment: .leading) {
-									Text(node.user?.longName ?? "unknown".localized)
-										.fontWeight(.medium)
-										.font(.callout)
-									if connected {
-										HStack(alignment: .bottom) {
-											Image(systemName: "repeat.circle.fill")
-												.font(.callout)
-												.symbolRenderingMode(.hierarchical)
-											Text("connected").font(.callout)
-												.foregroundColor(.green)
-										}
-									}
-									if node.positions?.count ?? 0 > 0 && (bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 != node.num) {
-										HStack(alignment: .bottom) {
-											let lastPostion = node.positions!.reversed()[0] as! PositionEntity
-											let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)
-											if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationHelper.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationHelper.DefaultLocation.latitude {
-												let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-												let metersAway = nodeCoord.distance(from: myCoord)
-												Image(systemName: "lines.measurement.horizontal")
-													.font(.footnote)
-													.symbolRenderingMode(.hierarchical)
-												DistanceText(meters: metersAway).font(.footnote)
-											}
-										}
-									}
-									if node.channel > 0 {
-										HStack(alignment: .bottom) {
-											Image(systemName: "fibrechannel")
-												.font(.footnote)
-												.symbolRenderingMode(.hierarchical)
-											Text("Channel: \(node.channel)")
-												.font(.footnote)
-										}
-									}
-									HStack(alignment: .bottom) {
-										Image(systemName: "clock.badge.checkmark.fill")
-											.font(.caption)
-											.symbolRenderingMode(.hierarchical)
-										LastHeardText(lastHeard: node.lastHeard)
-											.font(.caption)
-									}
-									if !connected {
-										HStack(alignment: .bottom) {										let preset = ModemPresets(rawValue: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
-											LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
-										}
-									}
-								}
-								.frame(maxWidth: .infinity, alignment: .leading)
+			List(nodes, id: \.self, selection: $selectedNode) { node in
+				
+				NodeListItem(node: node, 
+							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
+							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1),
+							 modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+				.contextMenu {
+					if node.user != nil {
+						Button {
+							node.user!.vip = !node.user!.vip
+							context.refresh(node, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User VIP Error")
 							}
+						} label: {
+							Label(node.user?.vip ?? false ? "Un-Favorite" : "Favorite", systemImage: node.user?.vip ?? false ? "star.slash.fill" : "star.fill")
+						}
+						Button {
+							node.user!.mute = !node.user!.mute
+							context.refresh(node, mergeChanges: true)
+							do {
+								try context.save()
+							} catch {
+								context.rollback()
+								print("💥 Save User Mute Error")
+							}
+						} label: {
+							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
 					}
-					.padding([.top, .bottom])
+					
 				}
-			 }
+			}
+			.searchable(text: nodesQuery, prompt: "Find a node")
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
+			.listStyle(.plain)
+			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(leading:
-				MeshtasticLogo()
-			)
-			.onAppear {
+				MeshtasticLogo(),
+				trailing:
+					ZStack {
+					ConnectedDevice(
+						bluetoothOn: bleManager.isSwitchedOn,
+						deviceConnected: bleManager.connectedPeripheral != nil,
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
+				})
+		} content: {
+			if let node = selectedNode {
+				NavigationStack {
+					NodeDetail(node: node, columnVisibility: columnVisibility)
+						.edgesIgnoringSafeArea([.leading, .trailing])
+						.navigationBarTitle(String(node.user?.longName ?? "unknown".localized), displayMode: .inline)
+						.navigationBarItems(
+							trailing:
+							ZStack {
+								if (UIDevice.current.userInterfaceIdiom != .phone) {
+									Button {
+										columnVisibility = .detailOnly
+									} label: {
+										Image(systemName: "rectangle")
+									}
+								}
+								ConnectedDevice(
+									bluetoothOn: bleManager.isSwitchedOn,
+									deviceConnected: bleManager.connectedPeripheral != nil,
+									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
+						})
+				}
+				.padding(.bottom, 5)
+			 } else {
+				 if #available (iOS 17, *) {
+					 ContentUnavailableView("select.node", systemImage: "flipphone")
+				 } else {
+					 Text("select.node")
+				 }
+			 }
+		} detail: {
+			if #available (iOS 17, *) {
+				ContentUnavailableView("", systemImage: "line.3.horizontal")
+			} else {
+				Text("Select something to view")
+			}
+			
+		}
+		.navigationSplitViewStyle(.balanced)
+//		.onChange(of: selectedNode) { _ in
+//			if selectedNode == nil {
+//				columnVisibility = .all
+//			} else {
+//				columnVisibility = .doubleColumn
+//			}
+//		}
+		.onAppear {
+			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-	   } detail: {
-		   if let node = selection {
-			   NodeDetail(node: node)
-		   } else {
-			   Text("select.node")
-		   }
-	   }
+		}
+
+//		} detail: {
+//			VStack {
+//				Button("Detail Only") {
+//					columnVisibility = .detailOnly
+//				}
+//
+//				Button("Content and Detail") {
+//					columnVisibility = .doubleColumn
+//				}
+//
+//				Button("Show All") {
+//					columnVisibility = .all
+//				}
+//			}
+//		}
 	}
 }

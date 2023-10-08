@@ -64,8 +64,9 @@ struct Channels: View {
 						}) {
 							VStack(alignment: .leading) {
 								HStack {
-									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45, fontSize: 36, brightness: 0.1)
+									CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
 										.padding(.trailing, 5)
+										.brightness(0.1)
 									VStack {
 										HStack {
 											if channel.name?.isEmpty ?? false {
@@ -281,7 +282,7 @@ struct Channels: View {
 		.navigationTitle("channels")
 		.navigationBarItems(trailing:
 		ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			bleManager.context = context

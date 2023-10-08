@@ -10,36 +10,39 @@ struct ConnectedDevice: View {
     var deviceConnected: Bool
     var name: String
 	var mqttProxyConnected: Bool = false
+	var phoneOnly: Bool = false
 
     var body: some View {
 
         HStack {
-			if bluetoothOn {
-				if deviceConnected && mqttProxyConnected {
-					
-					if mqttProxyConnected {
-						Image(systemName: "iphone.gen3.radiowaves.left.and.right.circle.fill")
+			
+			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
+				if bluetoothOn {
+					if deviceConnected && mqttProxyConnected {
+						if mqttProxyConnected {
+							Image(systemName: "iphone.gen3.radiowaves.left.and.right.circle.fill")
+								.imageScale(.large)
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					if deviceConnected {
+						Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
 							.imageScale(.large)
 							.foregroundColor(.green)
 							.symbolRenderingMode(.hierarchical)
-					}
-				}
-                if deviceConnected {
-                    Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-						.imageScale(.large)
-                        .foregroundColor(.green)
-                        .symbolRenderingMode(.hierarchical)
-					Text(name).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
-                } else {
+						Text(name).font(name.isEmoji() ? .title : .callout).foregroundColor(.gray)
+					} else {
 
-                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                        .imageScale(.medium)
-                        .foregroundColor(.red)
-                        .symbolRenderingMode(.hierarchical)
-                }
-            } else {
-                Text("bluetooth.off").font(.subheadline).foregroundColor(.red)
-            }
+						Image(systemName: "antenna.radiowaves.left.and.right.slash")
+							.imageScale(.medium)
+							.foregroundColor(.red)
+							.symbolRenderingMode(.hierarchical)
+					}
+				} else {
+					Text("bluetooth.off").font(.subheadline).foregroundColor(.red)
+				}
+			}
         }
     }
 }

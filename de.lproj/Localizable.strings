@@ -53,6 +53,7 @@
 "connected"="Derzeit verbunden";
 "connecting"="Verbinde...";
 "contacts"="Kontakte";
+"contacts %@"="Kontakte (%@)";
 "copy"="Kopieren";
 "current"="Current";
 "default"="Standard";
@@ -157,6 +158,7 @@
 "mesh.log.display.config %@"="Display Konfiguration empfangen: %@";
 "mesh.log.devicemetadata %@"="Anforderung der Geräte Metadaten für %@";
 "mesh.log.device.metadata.received %@"="Device Metadata received from: %@";
+"mesh.log.detectionsensor.config %@"="Detection Sensor module config received: %@";
 "mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
@@ -171,6 +173,7 @@
 "mesh.log.routing.message %@ %@"="Routing empfangen für RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial Modul Konfiguration empfangen: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
+"mesh.log.storeforward.config %@"="Store & Forward module config received: %@";
 "mesh.log.telemetry.config %@"="Telemetrie Modul Konfiguration empfangen: %@";
 "mesh.log.telemetry.received %@"="Telemetrie empfangen für: %@";
 "mesh.log.textmessage.received"="Nachricht von der Textnachricht-App empfangen.";
@@ -212,6 +215,7 @@
 "provide.location"="Standort im Mesh veröffentlichen";
 "radio.configuration"="Geräteeinstellungen";
 "range.test"="Entfernungstest";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="Entfernungstest Konfiguration";
 "reboot"="Reboot";
 "reboot.node"="Node neustarten?";
@@ -253,6 +257,9 @@
 "set.region"="Setze LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"storeforward"="Store & Forward";
+"storeforward.config"="Store & Forward Config";
+"storeforward.heartbeat"="Send Heartbeat";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Gehört";
@@ -266,6 +273,12 @@
 "telemetry.config"="Telemetrie Einstellungen";
 "timeout"="Zeitlimit erreicht";
 "timestamp"="Timestamp";
+"tip.bluetooth.connect.title"="Connected LoRa Radio";
+"tip.bluetooth.connect.message"="Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channels.share.title"="Sharing Meshtastic Channels";
+"tip.channels.share.message"="In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key.";
+"tip.messages.title"="Messages";
+"tip.messages.message"="You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.";
 "twitter"="Twitter";
 "unknown"="Unknown";
 "unknown.age"="Unbekanntes alter";

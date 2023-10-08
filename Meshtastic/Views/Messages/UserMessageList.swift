@@ -10,6 +10,7 @@ import CoreData
 
 struct UserMessageList: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -29,7 +30,7 @@ struct UserMessageList: View {
 	@State private var sendPositionWithMessage: Bool = false
 
 	var body: some View {
-		NavigationStack {
+		VStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmss", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss:a")
 			ScrollViewReader { scrollView in
@@ -160,7 +161,7 @@ struct UserMessageList: View {
 														VStack {
 															let image = tapback.messagePayload!.image(fontSize: 20)
 															Image(uiImage: image!).font(.caption)
-															Text("\(tapback.fromUser?.shortName ?? "????")")
+															Text("\(tapback.fromUser?.shortName ?? "?")")
 																.font(.caption2)
 																.foregroundColor(.gray)
 																.fixedSize()
@@ -216,18 +217,34 @@ struct UserMessageList: View {
 										}
 									}, secondaryButton: .cancel())
 								}
+								.onAppear {
+									if !message.read {
+										message.read = true
+										do {
+											try context.save()
+											print("📖 Read message \(message.messageId) ")
+											appState.unreadDirectMessages = user.unreadMessages
+											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+
+										} catch {
+											print("Failed to read message \(message.messageId)")
+										}
+									}
+								}
 							}
 						}
 					}
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear(perform: {
-					self.bleManager.context = context
+				.onAppear {
+					if self.bleManager.context == nil {
+						self.bleManager.context = context
+					}
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
 					}
-				})
+				}
 				.onChange(of: user.messageList, perform: { _ in
 					if user.messageList.count > 0 {
 						scrollView.scrollTo(user.messageList.last!.messageId)
@@ -320,7 +337,7 @@ struct UserMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
+									if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
 										print("Location Sent")
 									}
 								}
@@ -337,7 +354,7 @@ struct UserMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: user.num, wantResponse: true, smartPosition: false) {
+							if bleManager.sendPosition(destNum: user.num, wantResponse: true) {
 								print("Location Sent")
 							}
 						}
@@ -352,8 +369,7 @@ struct UserMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: user.shortName ?? "???", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(user.num)).isLight() ? .black : .white ).fixedSize()
-					Text(user.longName ?? "unknown".localized).font(.headline)
+					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
@@ -361,7 +377,7 @@ struct UserMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				}
 			}
 		}

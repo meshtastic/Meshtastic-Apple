@@ -113,13 +113,11 @@ struct PositionConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 					Text("The maximum interval that can elapse without a node sending a position")
 						.font(.caption)
-					
 					Toggle(isOn: $smartPositionEnabled) {
 
 						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					if smartPositionEnabled {
 						Picker("Minimum Broadcast Interval", selection: $broadcastSmartMinimumIntervalSecs) {
 							ForEach(UpdateIntervals.allCases) { at in
@@ -129,19 +127,15 @@ struct PositionConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
 							.font(.caption)
-						
 						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
 							ForEach(10..<151) {
-								
 								if $0 == 0 {
 									Text("unset")
 								} else {
-									
 									if $0.isMultiple(of: 5) {
 										Text("\($0)")
 											.tag($0)
 									}
-									
 								}
 							}
 						}
@@ -217,7 +211,6 @@ struct PositionConfig: View {
 						Label("Device GPS Enabled", systemImage: "location")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					if deviceGpsEnabled {
 						Picker("Update Interval", selection: $gpsUpdateInterval) {
 							ForEach(GpsUpdateIntervals.allCases) { ui in
@@ -232,9 +225,6 @@ struct PositionConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Text("How long should we try to get our position during each GPS Update Interval attempt?")
-							.font(.caption)
-						
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
 							ForEach(0..<46) {
 								if $0 == 0 {
@@ -245,7 +235,6 @@ struct PositionConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						
 						Picker("GPS Transmit GPIO", selection: $txGpio) {
 							ForEach(0..<46) {
 								if $0 == 0 {
@@ -288,7 +277,7 @@ struct PositionConfig: View {
 				Button(buttonText) {
 
 					if fixedPosition {
-						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true, smartPosition: false)
+						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true)
 					}
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 
@@ -318,8 +307,7 @@ struct PositionConfig: View {
 						pc.positionFlags = UInt32(pf.rawValue)
 						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
+							// Disable the button after a successful save
 							hasChanges = false
 							goBack()
 						}
@@ -335,7 +323,7 @@ struct PositionConfig: View {
 
 			ZStack {
 
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 
@@ -457,9 +445,7 @@ struct PositionConfig: View {
 			if existingValue != hvdopFlag { hasChanges = true }
 		}
 	}
-	
 	func setPositionValues() {
-		
 		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
 		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
 		self.rxGpio = Int(node?.positionConfig?.rxGpio ?? 0)

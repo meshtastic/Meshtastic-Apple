@@ -2,10 +2,13 @@
 
 import SwiftUI
 import CoreData
+#if canImport(TipKit)
+import TipKit
+#endif
 
 @main
 struct MeshtasticAppleApp: App {
-
+	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager()
 	@Environment(\.scenePhase) var scenePhase
@@ -13,10 +16,11 @@ struct MeshtasticAppleApp: App {
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
+	@StateObject var appState = AppState.shared
 
     var body: some Scene {
         WindowGroup {
-		ContentView()
+			ContentView()
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
@@ -45,7 +49,6 @@ struct MeshtasticAppleApp: App {
 
 				print("Some sort of URL was received \(url)")
 				self.incomingUrl = url
-
 				if url.absoluteString.lowercased().contains("meshtastic.org/e/#") {
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
 						self.channelSettings = components.last!
@@ -93,6 +96,25 @@ struct MeshtasticAppleApp: App {
 					}
 				}
 			})
+			.task {
+				if #available(iOS 17.0, macOS 14.0, *) {
+					#if DEBUG
+					/// Optionally, call `Tips.resetDatastore()` before `Tips.configure()` to reset the state of all tips. This will allow tips to re-appear even after they have been dismissed by the user.
+					/// This is for testing only, and should not be enabled in release builds.
+					try? Tips.resetDatastore()
+					#endif
+
+					try? Tips.configure(
+						[
+							// Reset which tips have been shown and what parameters have been tracked, useful during testing and for this sample project
+							.datastoreLocation(.applicationDefault),
+							// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
+							// You can adjust this on per tip level as well
+							.displayFrequency(.immediate)
+						]
+					)
+				}
+			}
 		}
 		.onChange(of: scenePhase) { (newScenePhase) in
 			switch newScenePhase {
@@ -115,5 +137,15 @@ struct MeshtasticAppleApp: App {
 				print("💥 Apple must have changed something")
 			}
 		}
-    }
+	}
+}
+
+class AppState: ObservableObject {
+	static let shared = AppState()
+
+	@Published var tabSelection: Tab = .ble
+	@Published var unreadDirectMessages: Int = 0
+	@Published var unreadChannelMessages: Int = 0
+	@Published var firmwareVersion: String = "0.0.0"
+	@Published var connectedNode: NodeInfoEntity?
 }

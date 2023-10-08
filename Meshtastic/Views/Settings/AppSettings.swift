@@ -5,7 +5,6 @@ import SwiftProtobuf
 import MapKit
 
 struct AppSettings: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@ObservedObject var tileManager = OfflineTileManager.shared
@@ -13,15 +12,14 @@ struct AppSettings: View {
 	@StateObject var locationHelper = LocationHelper()
 	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
+	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
-	
 	var body: some View {
 		VStack {
 			Form {
 				Section(header: Text("user.details")) {
-					
 					HStack {
 						Label("Name", systemImage: "person.crop.rectangle.fill")
 						TextField("Username", text: $meshtasticUsername)
@@ -31,7 +29,13 @@ struct AppSettings: View {
 					.disableAutocorrection(true)
 					.listRowSeparator(.visible)
 				}
-				
+				Section(header: Text("options")) {
+					
+					Toggle(isOn: $blockRangeTest) {
+						Label("range.test.blocked", systemImage: "x.circle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				}
 				Section(header: Text("phone.gps")) {
 					let accuracy = Measurement(value: locationHelper.locationManager.location?.horizontalAccuracy ?? 300, unit: UnitLength.meters)
 					let altitiude = Measurement(value: locationHelper.locationManager.location?.altitude ?? 0, unit: UnitLength.meters)
@@ -57,15 +61,12 @@ struct AppSettings: View {
 						Label("Speed \(speed.formatted())", systemImage: "speedometer")
 							.font(.footnote)
 					}
-					
 				}
 				Section(header: Text("Location Settings")) {
-					
 					Toggle(isOn: $provideLocation) {
 						Label("provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					if UserDefaults.provideLocation {
 						VStack {
 							Picker("update.interval", selection: $provideLocationInterval) {
@@ -82,10 +83,8 @@ struct AppSettings: View {
 								.foregroundColor(.gray)
 						}
 					}
-					
 				}
 				Section(header: Text("App Data")) {
-					
 					Button {
 						isPresentingCoreDataResetConfirm = true
 					} label: {
@@ -124,18 +123,16 @@ struct AppSettings: View {
 								print("delete all tiles")
 							}
 						}
-						
-						ForEach(MapTileServer.allCases, id: \.self) { tsl in
-							
-							Button {
-								tileManager.remove(for: tsl)
-								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-							} label: {
-								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
-									.foregroundColor(.red)
-									.font(.footnote)
-							}
-						}
+//						ForEach(MapTileServer.allCases, id: \.self) { tsl in
+//							Button {
+//								tileManager.remove(for: tsl)
+//								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
+//							} label: {
+//								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
+//									.foregroundColor(.red)
+//									.font(.footnote)
+//							}
+//						}
 					}
 				}
 			}
@@ -146,10 +143,13 @@ struct AppSettings: View {
 		.navigationTitle("app.settings")
 		.navigationBarItems(trailing:
 								ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context
+		}
+		.onChange(of: blockRangeTest) { newBlockRangeTest in
+			UserDefaults.blockRangeTest = newBlockRangeTest
 		}
 		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
 			UserDefaults.meshtasticUsername = newMeshtasticUsername
