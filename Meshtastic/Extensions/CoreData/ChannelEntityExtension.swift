@@ -12,4 +12,10 @@ extension ChannelEntity {
 
 		self.value(forKey: "allPrivateMessages") as? [MessageEntity] ?? [MessageEntity]()
 	}
+	
+	var unreadMessages: Int {
+		
+		let unreadMessages = allPrivateMessages.filter{ ($0 as AnyObject).read == false }
+		return unreadMessages.count
+	}
 }

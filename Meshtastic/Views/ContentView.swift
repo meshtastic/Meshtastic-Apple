@@ -5,27 +5,15 @@
 import SwiftUI
 
 struct ContentView: View {
-
-	@State private var selection: Tab = .ble
-
-	enum Tab {
-		case contacts
-		case messages
-		case map
-		case ble
-		case nodes
-		case settings
-	}
-
+	@StateObject var appState = AppState.shared
 	var body: some View {
-
-		TabView(selection: $selection) {
-
-			Contacts()
+		TabView(selection: $appState.tabSelection) {
+			Messages()
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
 				.tag(Tab.contacts)
+				.badge(appState.unreadDirectMessages + appState.unreadChannelMessages)
 			Connect()
 				.tabItem {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
@@ -44,6 +32,7 @@ struct ContentView: View {
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")
+						.font(.title)
 				}
 				.tag(Tab.settings)
 		}
@@ -54,4 +43,13 @@ struct ContentView_Previews: PreviewProvider {
 	static var previews: some View {
 		ContentView()
 	}
+}
+
+enum Tab {
+	case contacts
+	case messages
+	case map
+	case ble
+	case nodes
+	case settings
 }

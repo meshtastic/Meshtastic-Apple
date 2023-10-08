@@ -10,6 +10,7 @@ import CoreData
 
 struct ChannelMessageList: View {
 
+	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
@@ -23,14 +24,15 @@ struct ChannelMessageList: View {
 	var maxbytes = 228
 	@FocusState var focusedField: Field?
 
-	@ObservedObject var channel: ChannelEntity
+	@StateObject var myInfo: MyInfoEntity
+	@StateObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
 
 	var body: some View {
-		NavigationStack {
+		VStack {
 			let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
 			let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
 			ScrollViewReader { scrollView in
@@ -56,19 +58,41 @@ struct ChannelMessageList: View {
 							HStack(alignment: .top) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
-									CircleText(text: message.fromUser?.shortName ?? "????", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44, fontSize: 14, textColor: UIColor(hex: UInt32(message.fromUser?.num ?? 0)).isLight() ? .black : .white)
+									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
 										.padding(.all, 5)
 										.offset(y: -5)
 								}
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let markdownText: LocalizedStringKey =  LocalizedStringKey.init(message.messagePayloadMarkdown ?? (message.messagePayload ?? "EMPTY MESSAGE"))
 									let linkBlue = Color(red: 0.4627, green: 0.8392, blue: 1) /* #76d6ff */
+									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 									Text(markdownText)
 										.tint(linkBlue)
 										.padding(10)
 										.foregroundColor(.white)
 										.background(currentUser ? .accentColor : Color(.gray))
 										.cornerRadius(15)
+										.overlay(
+											VStack {
+												if #available(iOS 17.0, macOS 14.0, *) {
+													isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+														.padding()
+														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+														.foregroundStyle(Color.orange)
+														.symbolRenderingMode(.multicolor)
+														.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+														.offset(x: 20, y: -20)
+													: nil
+												} else {
+													isDetectionSensorMessage ? Image(systemName: "sensor.fill")
+														.padding()
+														.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+														.foregroundStyle(Color.orange)
+														.offset(x: 20, y: -20)
+													: nil
+												}
+											}
+										)
 										.contextMenu {
 											VStack {
 												Text("channel")+Text(": \(message.channel)")
@@ -159,7 +183,7 @@ struct ChannelMessageList: View {
 													VStack {
 														let image = tapback.messagePayload!.image(fontSize: 20)
 														Image(uiImage: image!).font(.caption)
-														Text("\(tapback.fromUser?.shortName ?? "????")")
+														Text("\(tapback.fromUser?.shortName ?? "?")")
 															.font(.caption2)
 															.foregroundColor(.gray)
 															.fixedSize()
@@ -185,6 +209,9 @@ struct ChannelMessageList: View {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											Text("\(ackErrorVal?.display ?? "Empty Ack Error")").fixedSize(horizontal: false, vertical: true)
 												.font(.caption2).foregroundColor(.red)
+										} else if isDetectionSensorMessage {
+											let messageDate = message.timestamp
+											Text(" \(messageDate.formattedDate(format: dateFormatString))").font(.caption2).foregroundColor(.gray)
 										}
 									}
 								}
@@ -212,17 +239,33 @@ struct ChannelMessageList: View {
 									}
 								}, secondaryButton: .cancel())
 							}
+							.onAppear {
+								if !message.read {
+									message.read = true
+									do {
+										try context.save()
+										print("📖 Read message \(message.messageId) ")
+										appState.unreadChannelMessages = myInfo.unreadMessages
+										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+										context.refresh(myInfo, mergeChanges: true)
+									} catch {
+										print("Failed to read message \(message.messageId)")
+									}
+								}
+							}
 						}
 					}
 				}
 				.padding([.top])
 				.scrollDismissesKeyboard(.immediately)
-				.onAppear(perform: {
-					self.bleManager.context = context
+				.onAppear {
+					if self.bleManager.context == nil {
+						self.bleManager.context = context
+					}
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
 					}
-				})
+				}
 				.onChange(of: channel.allPrivateMessages, perform: { _ in
 					if channel.allPrivateMessages.count > 0 {
 						scrollView.scrollTo(channel.allPrivateMessages.last!.messageId)
@@ -232,7 +275,6 @@ struct ChannelMessageList: View {
 			#if targetEnvironment(macCatalyst)
 			HStack {
 				Spacer()
-				
 				Button {
 					let bell = "🔔 Alert Bell Character! \u{7}"
 					print(bell)
@@ -344,7 +386,7 @@ struct ChannelMessageList: View {
 								focusedField = nil
 								replyMessageId = 0
 								if sendPositionWithMessage {
-									if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false, smartPosition: false) {
+									if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false) {
 										print("Location Sent")
 									}
 								}
@@ -361,7 +403,7 @@ struct ChannelMessageList: View {
 						focusedField = nil
 						replyMessageId = 0
 						if sendPositionWithMessage {
-							if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false, smartPosition: false) {
+							if bleManager.sendPosition(destNum: Int64(channel.index), wantResponse: false) {
 								print("Location Sent")
 							}
 						}
@@ -369,6 +411,7 @@ struct ChannelMessageList: View {
 				}) {
 					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.accentColor)
 				}
+				
 			}
 			.padding(.all, 15)
 		}
@@ -376,7 +419,7 @@ struct ChannelMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44, fontSize: 30).fixedSize()
+					CircleText(text: String(channel.index), color: .accentColor, circleSize: 44).fixedSize()
 					Text(String(channel.name ?? "unknown".localized).camelCaseToWords()).font(.headline)
 				}
 			}
@@ -385,7 +428,7 @@ struct ChannelMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 				}
 			}
 		}

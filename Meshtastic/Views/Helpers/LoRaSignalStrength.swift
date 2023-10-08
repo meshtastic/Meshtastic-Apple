@@ -8,17 +8,13 @@ import Foundation
 import SwiftUI
 
 struct LoRaSignalStrengthMeter: View {
-	
 	var snr: Float
 	var rssi: Int32
 	var preset: ModemPresets
 	var compact: Bool
-	
 	var body: some View {
-		
 		let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
 		let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
-		
 		if !compact {
 			VStack {
 				LoRaSignalStrengthIndicator(signalStrength: signalStrength)
@@ -30,6 +26,7 @@ struct LoRaSignalStrengthMeter: View {
 					.foregroundColor(getRssiColor(rssi: rssi))
 					.font(.caption2)
 			}
+			.padding(.bottom, 2)
 		} else {
 			Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
 			} currentValueLabel: {
@@ -92,5 +89,3 @@ struct LoRaSignalStrengthMeter_Previews: PreviewProvider {
 		}
 	}
 }
-
-

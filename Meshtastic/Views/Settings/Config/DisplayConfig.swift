@@ -73,14 +73,12 @@ struct DisplayConfig: View {
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("The compass heading on the screen outside of the circle will always point north.")
 					.font(.caption)
-				
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				Text("Requires that there be an accelerometer on your device.")
 					.font(.caption)
-				
 				Toggle(isOn: $flipScreen) {
 
 					Label("Flip Screen", systemImage: "pip.swap")
@@ -97,7 +95,6 @@ struct DisplayConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("Override automatic OLED screen detection.")
 					.font(.caption)
-
 			}
 			Section(header: Text("Timing & Format")) {
 				Picker("Screen on for", selection: $screenOnSeconds ) {
@@ -181,7 +178,7 @@ struct DisplayConfig: View {
 		.navigationTitle("display.config")
 		.navigationBarItems(trailing:
 			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context
@@ -238,7 +235,6 @@ struct DisplayConfig: View {
 		}
 	}
 	func setDisplayValues() {
-		
 			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
 			self.screenOnSeconds = Int(node?.displayConfig?.screenOnSeconds ?? 0)
 			self.screenCarouselInterval = Int(node?.displayConfig?.screenCarouselInterval ?? 0)

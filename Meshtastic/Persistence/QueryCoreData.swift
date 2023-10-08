@@ -25,6 +25,28 @@ public func getNodeInfo(id: Int64, context: NSManagedObjectContext) -> NodeInfoE
 	return nil
 }
 
+public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectContext) -> [UInt32] {
+	
+	let time = seconds * -1
+	let fetchMessagesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	let timeRange = Calendar.current.date(byAdding: .minute, value: time, to: Date())
+	let milleseconds = Int32(timeRange?.timeIntervalSince1970 ?? 0)
+	fetchMessagesRequest.predicate =  NSPredicate(format: "receivedTimestamp >= %d", milleseconds)
+
+	do {
+		guard let fetchedMessages = try context.fetch(fetchMessagesRequest) as? [MessageEntity] else {
+			return []
+		}
+		if fetchedMessages.count == 1 {
+			return fetchedMessages.map { UInt32($0.messageId) }
+		}
+	} catch {
+		return []
+	}
+	return []
+}
+
+
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 
 	let fetchUserRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "UserEntity")
@@ -59,4 +81,22 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 		return WaypointEntity(context: context)
 	}
 	return WaypointEntity(context: context)
+}
+
+public func getDetectionSensorMessages(nodeNum: Int64?, context: NSManagedObjectContext) -> [MessageEntity] {
+
+	let fetchDetectionMessagesPredicate: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
+	fetchDetectionMessagesPredicate.predicate = NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue))
+
+	do {
+		let fetched = try context.fetch(fetchDetectionMessagesPredicate) as? [MessageEntity] ?? []
+		if nodeNum == nil {
+			return fetched.reversed()
+		}
+		return fetched.filter { message in
+			return message.fromUser?.num == nodeNum!
+		}.reversed()
+	} catch {
+		return []
+	}
 }

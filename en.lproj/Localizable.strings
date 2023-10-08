@@ -50,15 +50,17 @@
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";
 "connected.radio"="Connected Radio";
-"connected"="Connected";
+"connected"="Bluetooth Connected";
 "connecting"="Connecting . .";
 "contacts"="Contacts";
+"contacts %@"="Contacts (%@)";
 "copy"="Copy";
 "current"="Current";
 "default"="Default";
 "delete"="Delete";
 "detection.sensor"="Detection Sensor";
 "detection.sensor.config"="Detection Sensor Config";
+"detection.sensor.log"="Detection Sensor Log";
 "device"="Device";
 "device.config"="Device Config";
 "device.metrics.delete"="Delete all device metrics?";
@@ -159,6 +161,7 @@
 "mesh.log.display.config %@"="Display config received: %@";
 "mesh.log.devicemetadata %@"="Requesting Device Metadata for %@";
 "mesh.log.device.metadata.received %@"="Device Metadata received from: %@";
+"mesh.log.detectionsensor.config %@"="Detection Sensor module config received: %@";
 "mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
@@ -173,6 +176,7 @@
 "mesh.log.routing.message %@ %@"="Routing received for RequestID: %@ Ack Status: %@";
 "mesh.log.serial.config %@"="Serial module config received: %@";
 "mesh.log.sharelocation %@"="Sent a Position Packet from the Apple device GPS to node: %@";
+"mesh.log.storeforward.config %@"="Store & Forward module config received: %@";
 "mesh.log.telemetry.config %@"="Telemetry module config received: %@";
 "mesh.log.telemetry.received %@"="Telemetry received for: %@";
 "mesh.log.textmessage.received"="Message received from the text message app.";
@@ -214,6 +218,7 @@
 "provide.location"="Share location";
 "radio.configuration"="Radio Configuration";
 "range.test"="Range Test";
+"range.test.blocked"="Block Range Test";
 "range.test.config"="Range Test Config";
 "reply"="Reply";
 "reboot"="Reboot";
@@ -255,6 +260,9 @@
 "set.region"="Set LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"storeforward"="Store & Forward";
+"storeforward.config"="Store & Forward Config";
+"storeforward.heartbeat"="Send Heartbeat";
 "ssid"="SSID";
 "tapback"="Tapback Response";
 "tapback.heart"="Heart";
@@ -268,6 +276,12 @@
 "telemetry.config"="Telemetry Config";
 "timeout"="Timeout";
 "timestamp"="Timestamp";
+"tip.bluetooth.connect.title"="Connected Radio";
+"tip.bluetooth.connect.message"="Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channels.share.title"="Sharing Meshtastic Channels";
+"tip.channels.share.message"="In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key.";
+"tip.messages.title"="Messages";
+"tip.messages.message"="You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.";
 "twitter"="Twitter";
 "unknown"="Unknown";
 "unknown.age"="Unknown Age";

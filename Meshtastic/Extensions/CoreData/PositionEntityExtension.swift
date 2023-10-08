@@ -50,7 +50,6 @@ extension PositionEntity {
 
 	var annotaton: MKPointAnnotation {
 		let pointAnn = MKPointAnnotation()
-		
 		if nodeCoordinate != nil {
 			pointAnn.coordinate = nodeCoordinate!
 		}

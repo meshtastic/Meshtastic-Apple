@@ -19,14 +19,12 @@ struct MQTTConfig: View {
 	@State var address = ""
 	@State var username = ""
 	@State var password = ""
-	@State var encryptionEnabled = false
+	@State var encryptionEnabled = true
 	@State var jsonEnabled = false
 	@State var tlsEnabled = true
 	@State var root = "msh"
-	
 
 	var body: some View {
-
 		Form {
 			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 				Text("There has been no response to a request for device metadata over the admin channel for this node.")
@@ -65,7 +63,7 @@ struct MQTTConfig: View {
 					Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("If both MQTT and the client proxy are enabled your device will utalize an available network connection to connect to the specified MQTT server.")
+				Text("If both MQTT and the client proxy are enabled your mobile device will utalize an available network connection to connect to the specified MQTT server.")
 					.font(.caption2)
 
 				Toggle(isOn: $encryptionEnabled) {
@@ -73,17 +71,22 @@ struct MQTTConfig: View {
 					Label("Encryption Enabled", systemImage: "lock.icloud")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				Toggle(isOn: $tlsEnabled) {
-
-					Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
 				Toggle(isOn: $jsonEnabled) {
 
 					Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("JSON mode is a limited, unencrypted MQTT output.")
+					.font(.caption2)
+				
+				Toggle(isOn: $tlsEnabled) {
+
+					Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				Text("Your MQTT Server must support TLS.")
+					.font(.caption2)
 			}
 			Section(header: Text("Custom Server")) {
 				HStack {
@@ -163,7 +166,6 @@ struct MQTTConfig: View {
 				}
 				.keyboardType(.default)
 				.scrollDismissesKeyboard(.interactively)
-				
 				HStack {
 					Label("Root Topic", systemImage: "tree")
 					TextField("Root Topic", text: $root)
@@ -239,7 +241,7 @@ struct MQTTConfig: View {
 		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context
@@ -287,11 +289,18 @@ struct MQTTConfig: View {
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
+				if newEncryptionEnabled {
+					jsonEnabled = false
+				}
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
+				
+				if newJsonEnabled {
+					encryptionEnabled = false
+				}
 			}
 		}
 		.onChange(of: tlsEnabled) { newTlsEnabled in
@@ -300,7 +309,6 @@ struct MQTTConfig: View {
 			}
 		}
 	}
-	
 	func setMqttValues() {
 		self.enabled = (node?.mqttConfig?.enabled ?? false)
 		self.proxyToClientEnabled = (node?.mqttConfig?.proxyToClientEnabled ?? false)

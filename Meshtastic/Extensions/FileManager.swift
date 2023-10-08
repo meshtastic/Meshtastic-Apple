@@ -9,7 +9,7 @@ import Foundation
 let allocatedSizeResourceKeys: Set<URLResourceKey> = [
   .isRegularFileKey,
   .fileAllocatedSizeKey,
-  .totalFileAllocatedSizeKey,
+  .totalFileAllocatedSizeKey
 ]
 
 public extension FileManager {
@@ -26,7 +26,7 @@ public extension FileManager {
   func allocatedSizeOfDirectory(at directoryURL: URL) -> String {
 
 	// The error handler simply stores the error and stops traversal
-	var enumeratorError: Error? = nil
+	var enumeratorError: Error?
 	func errorHandler(_: URL, error: Error) -> Bool {
 	  enumeratorError = error
 	  return false

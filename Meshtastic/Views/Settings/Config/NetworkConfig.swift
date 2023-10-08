@@ -106,7 +106,6 @@ struct NetworkConfig: View {
 						Text("Enabling WiFi will disable the bluetooth connection to the app.")
 							.font(.callout)
 					}
-					
 				}
 				if (node != nil && node?.metadata?.hasEthernet ?? false) {
 					Section(header: Text("Ethernet Options")) {
@@ -164,7 +163,7 @@ struct NetworkConfig: View {
 		.navigationTitle("network.config")
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context
@@ -205,7 +204,6 @@ struct NetworkConfig: View {
 			}
 		}
 	}
-	
 	func setNetworkValues() {
 		self.wifiEnabled = node?.networkConfig?.wifiEnabled ?? false
 		self.wifiSsid = node?.networkConfig?.wifiSsid ?? ""

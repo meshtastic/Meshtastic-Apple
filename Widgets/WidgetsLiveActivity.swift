@@ -9,12 +9,11 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-@available(iOS 16.2, *)
 struct WidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
 
         ActivityConfiguration(for: MeshActivityAttributes.self) { context in
-			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, timerRange: context.state.timerRange)
+			LiveActivityView(nodeName: context.attributes.name, channelUtilization: context.state.channelUtilization, airtime: context.state.airtime, batteryLevel: context.state.batteryLevel, nodes: 17, nodesOnline: 7, timerRange: context.state.timerRange)
 				.widgetURL(URL(string: "meshtastic://node/\(context.attributes.name)"))
 
         } dynamicIsland: { context in
@@ -52,7 +51,7 @@ struct WidgetsLiveActivity: Widget {
 								.foregroundColor(.gray)
 								.fixedSize()
 						} else {
-							Text("Plugged In")
+							Text("PWD")
 								.font(.title3)
 								.foregroundColor(.gray)
 						}
@@ -63,7 +62,7 @@ struct WidgetsLiveActivity: Widget {
 						.tint(Color("LightIndigo"))
 
 				}
-				DynamicIslandExpandedRegion(.bottom){
+				DynamicIslandExpandedRegion(.bottom) {
 					Text(context.attributes.name)
 						.font(context.attributes.name.count > 14 ? .callout : .title3)
 						.fontWeight(.semibold)
@@ -76,7 +75,7 @@ struct WidgetsLiveActivity: Widget {
 				}
 
             } compactLeading: {
-				Image("logo-black")
+				Image("m-logo-black")
 					.resizable()
 					.frame(width: 30.0)
 					.padding(4)
@@ -87,7 +86,7 @@ struct WidgetsLiveActivity: Widget {
 					.foregroundColor(Color("LightIndigo"))
 					.frame(width: 40)
             } minimal: {
-				Image("logo-black")
+				Image("m-logo-black")
 					.resizable()
 					.frame(width: 24.0)
 					.padding(4)
@@ -101,11 +100,10 @@ struct WidgetsLiveActivity: Widget {
     }
 }
 
-@available(iOS 16.2, *)
 struct WidgetsLiveActivity_Previews: PreviewProvider {
 	static let attributes = MeshActivityAttributes(nodeNum: 123456789, name: "RAK Compact Rotary Handset Gray 8E6G")
 	static let state = MeshActivityAttributes.ContentState(
-		timerRange: Date.now...Date(timeIntervalSinceNow: 3600), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39)
+		timerRange: Date.now...Date(timeIntervalSinceNow: 60), connected: true, channelUtilization: 25.84, airtime: 10.01, batteryLevel: 39, nodes: 17, nodesOnline: 9)
 
     static var previews: some View {
         attributes
@@ -123,7 +121,6 @@ struct WidgetsLiveActivity_Previews: PreviewProvider {
     }
 }
 
-@available(iOS 16.2, *)
 struct LiveActivityView: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.isLuminanceReduced) var isLuminanceReduced
@@ -133,18 +130,20 @@ struct LiveActivityView: View {
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
+	var nodes: Int
+	var nodesOnline: Int
 	var timerRange: ClosedRange<Date>
 
 	var body: some View {
 		HStack {
-			Image(colorScheme == .light ? "logo-black" : "logo-white")
+			Image(colorScheme == .light ? "m-logo-black" : "m-logo-white")
 				.resizable()
 				.clipShape(ContainerRelativeShape())
 				.opacity(isLuminanceReduced ? 0.5 : 1.0)
 				.aspectRatio(contentMode: .fit)
 				.frame(width: 65)
 			Spacer()
-			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel)
+			NodeInfoView(nodeName: nodeName, timerRange: timerRange, channelUtilization: channelUtilization, airtime: airtime, batteryLevel: batteryLevel, nodes: nodes, nodesOnline: nodesOnline)
 			Spacer()
 			VStack {
 				BatteryIcon(batteryLevel: Int32(batteryLevel), font: .title, color: .secondary)
@@ -188,6 +187,8 @@ struct NodeInfoView: View {
 	var channelUtilization: Float
 	var airtime: Float
 	var batteryLevel: UInt32
+	var nodes: Int
+	var nodesOnline: Int
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
@@ -207,6 +208,12 @@ struct NodeInfoView: View {
 				.foregroundStyle(.secondary)
 				.opacity(isLuminanceReduced ? 0.8 : 1.0)
 				.fixedSize()
+//			Text("\(String(format: "Connected: %d of %d online", nodesOnline, nodes))")
+//				.font(.callout)
+//				.fontWeight(.medium)
+//				.foregroundStyle(.secondary)
+//				.opacity(isLuminanceReduced ? 0.8 : 1.0)
+//				.fixedSize()
 			let now = Date()
 			Text("Last Heard: \(now.formatted())")
 				.font(.caption)

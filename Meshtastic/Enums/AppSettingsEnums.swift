@@ -9,16 +9,13 @@ import Foundation
 import MapKit
 
 enum MeshMapTypes: Int, CaseIterable, Identifiable {
-	
 	case standard = 0
 	case mutedStandard = 5
 	case hybrid = 2
 	case hybridFlyover = 4
 	case satellite = 1
 	case satelliteFlyover = 3
-	
 	var id: Int { self.rawValue }
-	
 	var description: String {
 		switch self {
 		case .standard:
@@ -36,7 +33,6 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func MKMapTypeValue() -> MKMapType {
-		
 		switch self {
 		case .standard:
 			return MKMapType.standard
@@ -55,13 +51,10 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 }
 
 enum UserTrackingModes: Int, CaseIterable, Identifiable {
-	
 	case none = 0
 	case follow = 1
 	case followWithHeading = 2
-	
 	var id: Int { self.rawValue }
-	
 	var description: String {
 		switch self {
 		case .none:
@@ -80,7 +73,6 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 		}
 	}
 	func MKUserTrackingModeValue() -> MKUserTrackingMode {
-		
 		switch self {
 		case .none:
 			return MKUserTrackingMode.none
@@ -93,8 +85,6 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 }
 
 enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
-	
-	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
@@ -103,12 +93,9 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	case fiveMinutes = 300
 	case tenMinutes = 600
 	case fifteenMinutes = 900
-	
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
-		case .fiveSeconds:
-			return "interval.five.seconds".localized
 		case .tenSeconds:
 			return "interval.ten.seconds".localized
 		case .fifteenSeconds:
@@ -138,7 +125,6 @@ enum MapLayer: String, CaseIterable, Equatable {
 }
 
 enum MapTileServer: String, CaseIterable, Identifiable {
-	
 	case openStreetMap
 	case openStreetMapDE
 	case openStreetMapFR
@@ -154,8 +140,6 @@ enum MapTileServer: String, CaseIterable, Identifiable {
 	var id: String { self.rawValue }
 	var attribution: String {
 		switch self {
-			
-		
 		case .openStreetMap:
 			return "Map and data © [OpenStreetMap](http://www.openstreetmap.org) and contributors, [CC-BY-SA](http://creativecommons.org/licenses/by-sa/2.0/)"
 		case .openStreetMapDE:
@@ -276,7 +260,6 @@ enum OverlayType: String, CaseIterable, Equatable {
 }
 
 enum MapOverlayServer: String, CaseIterable, Identifiable {
-	
 	case baseReReflectivityCurrent
 	case baseReReflectivityOneHourAgo
 	case echoTopsEetCurrent
@@ -290,7 +273,6 @@ enum MapOverlayServer: String, CaseIterable, Identifiable {
 	var id: String { self.rawValue }
 	var overlayType: OverlayType {
 		switch self {
-			
 		case .baseReReflectivityCurrent:
 			return .tileServer
 		case .baseReReflectivityOneHourAgo:

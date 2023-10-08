@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct RtttlConfig: View {
-	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
@@ -49,7 +48,6 @@ struct RtttlConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
-					
 					HStack {
 						Label("ringtone", systemImage: "music.quarternote.3")
 						TextField("Ringtone Transfer Language", text: $ringtone, axis: .vertical)
@@ -114,7 +112,7 @@ struct RtttlConfig: View {
 			.navigationTitle("ringtone.config")
 			.navigationBarItems(trailing:
 				ZStack {
-					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
 				self.bleManager.context = context
@@ -134,7 +132,6 @@ struct RtttlConfig: View {
 			}
 		}
     }
-	
 	func setRtttLConfigValue() {
 		self.ringtone = node?.rtttlConfig?.ringtone ?? ""
 		self.hasChanges = false

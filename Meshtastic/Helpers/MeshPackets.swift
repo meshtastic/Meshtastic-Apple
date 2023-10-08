@@ -58,6 +58,8 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 
 	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
+		upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(config.externalNotification) {
 		upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
@@ -68,8 +70,8 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 		upsertSerialModuleConfigPacket(config: config.serial, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(config.telemetry) {
 		upsertTelemetryModuleConfigPacket(config: config.telemetry, nodeNum: nodeNum, context: context)
-	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
-		upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(config.storeForward) {
+		upsertStoreForwardModuleConfigPacket(config: config.storeForward, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -235,7 +237,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			return nil
 		}
 		// Not Found Insert
-		if fetchedNode.isEmpty && nodeInfo.hasUser {
+		if fetchedNode.isEmpty {
 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)
@@ -294,6 +296,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				do {
 					try context.save()
+					print("💾 Saved a new Node Info For: \(String(nodeInfo.num))")
 					return newNode
 				} catch {
 					context.rollback()
@@ -312,7 +315,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
 
 			if nodeInfo.hasUser {
-
+				if (fetchedNode[0].user == nil) {
+					fetchedNode[0].user = UserEntity(context: context)
+				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
@@ -423,65 +428,48 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getChannelResponse(adminMessage.getChannelResponse) {
 			channelPacket(channel: adminMessage.getChannelResponse, fromNum: Int64(packet.from), context: context)
-
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getDeviceMetadataResponse(adminMessage.getDeviceMetadataResponse) {
 			deviceMetadataPacket(metadata: adminMessage.getDeviceMetadataResponse, fromNum: Int64(packet.from), context: context)
-
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getConfigResponse(adminMessage.getConfigResponse) {
-
 			let config = adminMessage.getConfigResponse
-
 			if config.payloadVariant == Config.OneOf_PayloadVariant.bluetooth(config.bluetooth) {
 				upsertBluetoothConfigPacket(config: config.bluetooth, nodeNum: Int64(packet.from), context: context)
-
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 				upsertDeviceConfigPacket(config: config.device, nodeNum: Int64(packet.from), context: context)
-
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.display(config.display) {
 				upsertDisplayConfigPacket(config: config.display, nodeNum: Int64(packet.from), context: context)
-
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.lora(config.lora) {
 				upsertLoRaConfigPacket(config: config.lora, nodeNum: Int64(packet.from), context: context)
-
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.network(config.network) {
 				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
-
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
-
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
-
 			let moduleConfig = adminMessage.getModuleConfigResponse
-
 			if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
 				upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from), context: context)
-
-			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
-				upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from), context: context)
-
-			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
-				upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from), context: context)
-
-			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
-				upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from), context: context)
-
-			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
-				upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from), context: context)
-
-			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
-				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(moduleConfig.detectionSensor) {
 				upsertDetectionSensorModuleConfigPacket(config: moduleConfig.detectionSensor, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.externalNotification(moduleConfig.externalNotification) {
+				upsertExternalNotificationModuleConfigPacket(config: moduleConfig.externalNotification, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(moduleConfig.mqtt) {
+				upsertMqttModuleConfigPacket(config: moduleConfig.mqtt, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(moduleConfig.rangeTest) {
+				upsertRangeTestModuleConfigPacket(config: moduleConfig.rangeTest, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(moduleConfig.serial) {
+				upsertSerialModuleConfigPacket(config: moduleConfig.serial, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.storeForward(moduleConfig.storeForward) {
+				upsertStoreForwardModuleConfigPacket(config: moduleConfig.storeForward, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.telemetry(moduleConfig.telemetry) {
+				upsertTelemetryModuleConfigPacket(config: moduleConfig.telemetry, nodeNum: Int64(packet.from), context: context)
 			}
-
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
 			let ringtone = adminMessage.getRingtoneResponse
 			upsertRtttlConfigPacket(ringtone: ringtone, nodeNum: Int64(packet.from), context: context)
 		} else {
 			MeshLogger.log("🕸️ MESH PACKET received for Admin App \(try! packet.decoded.jsonString())")
 		}
-
 		// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
 		adminResponseAck(packet: packet, context: context)
 	}
@@ -546,9 +534,9 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
 				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
-
+				
 				if fetchedMessage![0].toUser != nil {
-					fetchedMessage![0].toUser?.objectWillChange.send()
+					fetchedMessage![0].toUser!.objectWillChange.send()
 				} else {
 					let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 					fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", connectedNodeNum)
@@ -581,47 +569,6 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 	}
 }
 
-func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
-	
-	if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-		// RequestResponse
-		switch storeAndForwardMessage.rr {
-			
-		case .unset:
-			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerError:
-			MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerHeartbeat:
-			// Query any messages since the heartbeat.period. Send their ids to the store and forward node.
-			MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerPing:
-			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerPong:
-			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerBusy:
-			MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerHistory:
-			MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .routerStats:
-			MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientError:
-			MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientHistory:
-			MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientStats:
-			MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientPing:
-			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientPong:
-			MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .clientAbort:
-			MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		case .UNRECOGNIZED(_):
-			MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-		}
-	}
-}
-
 func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let telemetryMessage = try? Telemetry(serializedData: packet.decoded.payload) {
@@ -632,7 +579,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 			MeshLogger.log("📈 \(logString)")
 		} else {
 			// If it is the connected node
-
 		}
 
 		let telemetry = TelemetryEntity(context: context)
@@ -686,6 +632,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					let content = UNMutableNotificationContent()
 					content.title = "Critically Low Battery!"
 					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
+					content.userInfo["target"] = "node"
 					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
 					let uuidString = UUID().uuidString
 					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
@@ -701,12 +648,11 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
-				if #available(iOS 16.2, *) {
 
 					let oneMinuteLater = Calendar.current.date(byAdding: .minute, value: (Int(1) ), to: Date())!
 					let date = Date.now...oneMinuteLater
-					let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel))
-					let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
+				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(timerRange: date, connected: true, channelUtilization: telemetry.channelUtilization, airtime: telemetry.airUtilTx, batteryLevel: UInt32(telemetry.batteryLevel), nodes: 17, nodesOnline: 9)
+				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Device Metrics Data.", sound: .default)
 					let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 
 					let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
@@ -717,7 +663,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							print("Updated live activity.")
 						}
 					}
-				}
 #endif
 			}
 		} catch {
@@ -730,9 +675,13 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
+func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNode: Int64, context: NSManagedObjectContext) {
 
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
+		
+		if blockRangeTest && messageText.starts(with: "seq ") {
+			return
+		}
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
 
@@ -745,11 +694,13 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			let newMessage = MessageEntity(context: context)
 			newMessage.messageId = Int64(packet.id)
 			newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
+			newMessage.receivedTimestamp = Int32(Date().timeIntervalSince1970)
 			newMessage.receivedACK = false
 			newMessage.snr = packet.rxSnr
 			newMessage.rssi = packet.rxRssi
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
+			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
 
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
@@ -763,10 +714,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			}
 			newMessage.messagePayload = messageText
 			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
-
-			newMessage.fromUser?.objectWillChange.send()
-			newMessage.toUser?.objectWillChange.send()
-
+			if packet.to != 4294967295 && newMessage.fromUser != nil {
+				newMessage.fromUser?.lastMessage = Date()
+			}
 			var messageSaved = false
 
 			do {
@@ -776,16 +726,23 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 				messageSaved = true
 
 				if messageSaved {
-
+					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
+						// Set Unread Message Indicators
+						if packet.to == connectedNode {
+							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
+							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+						}
 						// Create an iOS Notification for the received DM message and schedule it immediately
 						let manager = LocalNotificationManager()
 						manager.notifications = [
 							Notification(
 								id: ("notification.id.\(newMessage.messageId)"),
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-								content: messageText)
+								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+								content: messageText,
+								target: "message"
+							)
 						]
 						manager.schedule()
 						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -799,11 +756,13 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								return
 							}
 							if !fetchedMyInfo.isEmpty {
+								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+								
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)
 									}
-									
 									if channel.index == newMessage.channel && !channel.mute {
 										// Create an iOS Notification for the received private channel message and schedule it immediately
 										let manager = LocalNotificationManager()
@@ -811,8 +770,9 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 											Notification(
 												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "???")",
-												content: messageText)
+												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+												content: messageText,
+												target: "message")
 										]
 										manager.schedule()
 										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -867,7 +827,21 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				waypoint.created = Date()
 				do {
 					try context.save()
-					print("💾 Updated Node Waypoint App Packet For: \(waypoint.id)")
+					print("💾 Added Node Waypoint App Packet For: \(waypoint.id)")
+					let manager = LocalNotificationManager()
+					let icon = String(UnicodeScalar(Int(waypoint.icon)) ?? "📍")
+					let latitude = Double(waypoint.latitudeI) / 1e7
+					let longitude = Double(waypoint.longitudeI) / 1e7
+					manager.notifications = [
+						Notification(
+							id: ("notification.id.\(waypoint.id)"),
+							title: "New Waypoint Received",
+							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
+							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
+							target: "map"
+						)
+					]
+					manager.schedule()
 				} catch {
 					context.rollback()
 					let nsError = error as NSError

@@ -12,9 +12,8 @@ struct MapButtons: View {
 	let width: CGFloat = 45
 	@Binding var tracking: UserTrackingModes
 	@Binding var isPresentingInfoSheet: Bool
-	
 	var body: some View {
-		VStack() {
+		VStack {
 			let impactLight = UIImpactFeedbackGenerator(style: .light)
 			Button(action: {
 				self.isPresentingInfoSheet.toggle()
@@ -46,7 +45,6 @@ struct MapButtons: View {
 		.cornerRadius(8)
 		.shadow(radius: 1)
 		.offset(x: 3, y: 25)
-	
 	}
 }
 
@@ -61,7 +59,6 @@ struct MapControl_Previews: PreviewProvider {
 			MapButtons(tracking: $tracking, isPresentingInfoSheet: $isPresentingInfoSheet)
 				.environment(\.colorScheme, .dark)
 		}
-		
 		.previewLayout(.fixed(width: 60, height: 100))
 	}
 }

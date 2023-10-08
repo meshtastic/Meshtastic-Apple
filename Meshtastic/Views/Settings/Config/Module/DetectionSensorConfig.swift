@@ -100,7 +100,6 @@ struct DetectionSensorConfig: View {
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			}
-				
 			Section(header: Text("update.interval")) {
 				Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
 					ForEach(UpdateIntervals.allCases) { ui in
@@ -110,7 +109,6 @@ struct DetectionSensorConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("Mininum time between detection broadcasts. Default is 45 seconds.")
 					.font(.caption)
-				
 				Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
 					Text("Never").tag(0)
 					ForEach(UpdateIntervals.allCases) { ui in
@@ -120,7 +118,6 @@ struct DetectionSensorConfig: View {
 				.pickerStyle(DefaultPickerStyle())
 				Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
 					.font(.caption)
-				
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
@@ -155,14 +152,14 @@ struct DetectionSensorConfig: View {
 					dsc.usePullup = self.usePullup
 					dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
 					dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
-				
 					let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
 						// for now just disable the button after a successful save
 						hasChanges = false
 						goBack()
-					}				}
+					}
+				}
 			}
 		}
 		message: {
@@ -171,7 +168,7 @@ struct DetectionSensorConfig: View {
 		.navigationTitle("detection.sensor.config")
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "????")
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			self.bleManager.context = context
@@ -227,7 +224,6 @@ struct DetectionSensorConfig: View {
 			}
 		}
 	}
-	
 	func setDetectionSensorValues() {
 		self.enabled = (node?.detectionSensorConfig?.enabled ?? false)
 		self.sendBell = (node?.detectionSensorConfig?.sendBell ?? false)
