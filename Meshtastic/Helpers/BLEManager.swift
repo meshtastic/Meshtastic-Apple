@@ -290,7 +290,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
 
-		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
+		
 		if message.topic.contains("/stat/") {
 			return
 		}
@@ -305,7 +305,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let binaryData: Data = try! toRadio.serializedData()
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			print("📲 Sent Mqtt client proxy message to the connected device.")
+			
 		}
 	}
 	
@@ -443,7 +443,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					payload:  [UInt8](decodedInfo.mqttClientProxyMessage.data),
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
-				print("📲 Publish Mqtt client proxy message received on FromRadio to the Mqtt server \(message)")
 				mqttManager.mqttClientProxy?.publish(message)
 			}
 			
@@ -870,7 +869,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			print(positionPacket)
 			MeshLogger.log("📍 \(logString)")
 		}
 		return success

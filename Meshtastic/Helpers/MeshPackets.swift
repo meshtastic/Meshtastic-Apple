@@ -258,6 +258,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			newNode.snr = nodeInfo.snr
 			if nodeInfo.hasUser {
+				
 				let newUser = UserEntity(context: context)
 				newUser.userId = nodeInfo.user.id
 				newUser.num = Int64(nodeInfo.num)
@@ -333,16 +334,18 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
 				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
-			} else {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(nodeInfo.num)
-				let userId = String(format:"%2X", nodeInfo.num)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
-				fetchedNode[0].user = newUser
+			} else  {
+				if (fetchedNode[0].user == nil) {
+					let newUser = UserEntity(context: context)
+					newUser.num = Int64(nodeInfo.num)
+					let userId = String(format:"%2X", nodeInfo.num)
+					newUser.userId = "!\(userId)"
+					let last4 = String(userId.suffix(4))
+					newUser.longName = "Meshtastic \(last4)"
+					newUser.shortName = last4
+					newUser.hwModel = "UNSET"
+					fetchedNode[0].user = newUser
+				}
 			}
 
 			if nodeInfo.hasDeviceMetrics {

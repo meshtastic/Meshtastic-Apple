@@ -22,6 +22,7 @@ class MqttClientProxyManager {
 	weak var delegate: MqttClientProxyManagerDelegate?
 	var mqttClientProxy: CocoaMQTT?
 	var topic = "msh/2/c"
+	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let defaultServerAddress = "mqtt.meshtastic.org"
 		let useSsl = node.mqttConfig?.tlsEnabled == true
@@ -58,9 +59,9 @@ class MqttClientProxyManager {
 			mqttClient.password = password
 			mqttClient.keepAlive = 60
 			mqttClient.cleanSession = cleanSession
-#if DEBUG
-			mqttClient.logLevel = .debug
-#endif
+			if debugLog {
+				mqttClient.logLevel = .debug
+			}
 			mqttClient.willMessage = CocoaMQTTMessage(topic: "/will", string: "dieout")
 			mqttClient.autoReconnect = true
 			mqttClient.delegate = self
@@ -82,7 +83,9 @@ class MqttClientProxyManager {
 	}
 	func publish(message: String, topic: String, qos: CocoaMQTTQoS) {
 		mqttClientProxy?.publish(topic, withString: message, qos: qos)
-		print("📲 MQTT Client Proxy publish for: " + topic)
+		if debugLog {
+			print("📲 MQTT Client Proxy publish for: " + topic)
+		}
 	}
 	func disconnect() {
 		if let client = mqttClientProxy {
@@ -130,15 +133,21 @@ extension MqttClientProxyManager: CocoaMQTTDelegate {
 		delegate?.onMqttDisconnected()
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-		print("📲 MQTT Client Proxy didPublishMessage from MqttClientProxyManager: \(message)")
+		if debugLog {
+			print("📲 MQTT Client Proxy didPublishMessage from MqttClientProxyManager: \(message)")
+		}
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
-		print("📲 MQTT Client Proxy didPublishAck from MqttClientProxyManager: \(id)")
+		if debugLog {
+			print("📲 MQTT Client Proxy didPublishAck from MqttClientProxyManager: \(id)")
+		}
 	}
 
 	public func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
 		delegate?.onMqttMessageReceived(message: message)
-		print("📲 MQTT Client Proxy message received on topic: \(message.topic)")
+		if debugLog {
+			print("📲 MQTT Client Proxy message received on topic: \(message.topic)")
+		}
 	}
 	func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
 		print("📲 MQTT Client Proxy didSubscribeTopics: \(success.allKeys.count) topics. failed: \(failed.count) topics")
