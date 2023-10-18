@@ -21,7 +21,7 @@ struct CircleText: View {
 				.foregroundColor(color.isLight() ? .black : .white)
 				.font(.system(size: 500))
 					  .minimumScaleFactor(0.001)
-					  .frame(width: circleSize * 0.94, height: circleSize * 0.94, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+					  .frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
         }
 		.aspectRatio(1, contentMode: .fit)
     }

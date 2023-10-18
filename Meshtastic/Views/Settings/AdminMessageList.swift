@@ -22,7 +22,9 @@ struct AdminMessageList: View {
 
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmmssa", options: 0, locale: Locale.current)
+		let localeTimeFormat = DateFormatter.dateFormat(fromTemplate: "h:mm:ss a", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mm:ss a")
+		let timeFormatString = (localeTimeFormat ?? "h:mm:ss a")
 
 		List {
 			if user != nil {
@@ -55,7 +57,7 @@ struct AdminMessageList: View {
 							}
 
 							if am.receivedACK && am.ackTimestamp > 0 {
-								Text(" \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: "h:mm:ss a"))")
+								Text(" \(Date(timeIntervalSince1970: TimeInterval(am.ackTimestamp)).formattedDate(format: timeFormatString))")
 									.foregroundColor(am.realACK ? .gray : .orange)
 									.font(.caption2)
 							}
