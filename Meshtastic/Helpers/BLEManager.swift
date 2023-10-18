@@ -272,6 +272,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 		}
 		if ![FROMNUM_characteristic, TORADIO_characteristic].contains(nil) {
+			if mqttProxyConnected {
+				mqttManager.mqttClientProxy?.disconnect()
+			}
 			sendWantConfig()
 		}
 	}
@@ -634,10 +637,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
 				if UserDefaults.provideLocation {
+					let interval = UserDefaults.provideLocationInterval > 0 ? UserDefaults.provideLocationInterval : 30
 					if positionTimer != nil {
-						positionTimer!.invalidate()
 					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}

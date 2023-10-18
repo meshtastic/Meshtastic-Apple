@@ -85,6 +85,7 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 }
 
 enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
+	case fiveSeconds = 5
 	case tenSeconds = 10
 	case fifteenSeconds = 15
 	case thirtySeconds = 30
@@ -96,6 +97,8 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
+		case .fiveSeconds:
+			return "interval.five.seconds".localized
 		case .tenSeconds:
 			return "interval.ten.seconds".localized
 		case .fifteenSeconds:
