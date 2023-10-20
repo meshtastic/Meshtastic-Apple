@@ -353,10 +353,11 @@ struct NodeMapSwiftUI: View {
 							}
 							
 							#if targetEnvironment(macCatalyst)
-							MapZoomStepper(scope: mapScope)
-								.mapControlVisibility(.visible)
-							MapPitchSlider(scope: mapScope)
-								.mapControlVisibility(.visible)
+							/// Hide non fuctional catalyst controls
+//							MapZoomStepper(scope: mapScope)
+//								.mapControlVisibility(.visible)
+//							MapPitchSlider(scope: mapScope)
+//								.mapControlVisibility(.visible)
 							#endif
 						}
 						.controlSize(.regular)

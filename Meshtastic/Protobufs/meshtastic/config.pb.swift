@@ -237,6 +237,13 @@ struct Config {
       ///   When used in conjunction with power.is_power_saving = true, nodes will wake up, 
       ///   send environment telemetry, and then sleep for telemetry.environment_update_interval seconds.
       case sensor // = 6
+
+      ///
+      /// TAK device role
+      ///    Used for nodes dedicated for connection to an ATAK EUD.
+      ///    Turns off many of the routine broadcasts to favor CoT packet stream
+      ///    from the Meshtastic ATAK plugin -> IMeshService -> Node
+      case tak // = 7
       case UNRECOGNIZED(Int)
 
       init() {
@@ -252,6 +259,7 @@ struct Config {
         case 4: self = .repeater
         case 5: self = .tracker
         case 6: self = .sensor
+        case 7: self = .tak
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -265,6 +273,7 @@ struct Config {
         case .repeater: return 4
         case .tracker: return 5
         case .sensor: return 6
+        case .tak: return 7
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1285,6 +1294,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .repeater,
     .tracker,
     .sensor,
+    .tak,
   ]
 }
 
@@ -1692,6 +1702,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "REPEATER"),
     5: .same(proto: "TRACKER"),
     6: .same(proto: "SENSOR"),
+    7: .same(proto: "TAK"),
   ]
 }
 

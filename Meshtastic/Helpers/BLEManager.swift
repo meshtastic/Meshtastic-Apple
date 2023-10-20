@@ -144,6 +144,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func disconnectPeripheral(reconnect: Bool = true) {
 		
 		guard let connectedPeripheral = connectedPeripheral else { return }
+		if mqttProxyConnected {
+			mqttManager.mqttClientProxy?.disconnect()
+		}
 		automaticallyReconnect = reconnect
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 		FROMRADIO_characteristic = nil
@@ -789,7 +792,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! waypoint.serializedData()
+		do {
+			dataMessage.payload = try waypoint.serializedData()
+		}
+		catch {
+			// Could not serialiaze the payload
+			return false
+		}
+		
 		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage
 		var toRadio: ToRadio!

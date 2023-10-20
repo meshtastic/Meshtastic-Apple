@@ -59,6 +59,9 @@ struct Settings: View {
 				}
 				.tag(SettingsSidebar.appSettings)
 				let node = nodes.first(where: { $0.num == connectedNodeNum })
+				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
+				
+				
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					Section("Configure") {
 						Picker("Configuring Node", selection: $selectedNode) {
@@ -72,7 +75,7 @@ struct Settings: View {
 								} else if node.metadata != nil {
 									Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
 										.tag(Int(node.num))
-								} else {
+								} else if hasAdmin {
 									Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
 										.tag(Int(node.num))
 								}

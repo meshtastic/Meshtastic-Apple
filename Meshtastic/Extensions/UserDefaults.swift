@@ -123,9 +123,6 @@ extension UserDefaults {
 			UserDefaults.standard.set(newValue, forKey: "enableMapPointsOfInterest")
 		}
 	}
-	
-	
-	
 	static var enableOfflineMaps: Bool {
 		get {
 			UserDefaults.standard.bool(forKey: "enableOfflineMaps")
