@@ -14,7 +14,6 @@ struct Settings: View {
 	private var nodes: FetchedResults<NodeInfoEntity>
 	@State private var selectedNode: Int = 0
 	@State private var connectedNodeNum: Int = 0
-	@State private var initialLoad: Bool = true
 	@State private var selection: SettingsSidebar = .about
 	enum SettingsSidebar {
 		case appSettings
@@ -60,41 +59,43 @@ struct Settings: View {
 				.tag(SettingsSidebar.appSettings)
 				let node = nodes.first(where: { $0.num == connectedNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
-				
-				
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					Section("Configure") {
-						Picker("Configuring Node", selection: $selectedNode) {
-							if selectedNode == 0 {
-								Text("Connect to a Node").tag(0)
-							}
-							ForEach(nodes) { node in
-								if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-									Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
-										.tag(Int(node.num))
-								} else if node.metadata != nil {
-									Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
-										.tag(Int(node.num))
-								} else if hasAdmin {
-									Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
-										.tag(Int(node.num))
+						if hasAdmin {
+							Picker("Configuring Node", selection: $selectedNode) {
+								if selectedNode == 0 {
+									Text("Connect to a Node").tag(0)
 								}
-							}
-						}
-						.pickerStyle(.automatic)
-						.labelsHidden()
-						.onChange(of: selectedNode) { newValue in
-							if selectedNode > 0 {
-								let node = nodes.first(where: { $0.num == newValue })
-								let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-								connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-								if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
-									let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-									if adminMessageId > 0 {
-										print("Sent node metadata request from node details")
+								ForEach(nodes) { node in
+									if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+										Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
+											.tag(Int(node.num))
+									} else if node.metadata != nil {
+										Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
+											.tag(Int(node.num))
+									} else if hasAdmin {
+										Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+											.tag(Int(node.num))
 									}
 								}
 							}
+							.pickerStyle(.automatic)
+							.labelsHidden()
+							.onChange(of: selectedNode) { newValue in
+								if selectedNode > 0 {
+									let node = nodes.first(where: { $0.num == newValue })
+									let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+									connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+									if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
+										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+										if adminMessageId > 0 {
+											print("Sent node metadata request from node details")
+										}
+									}
+								}
+							}
+						} else {
+							Text("Configuring Node \(node?.user?.longName ?? "unknown".localized)")
 						}
 					}
 					Section("radio.configuration") {
@@ -279,12 +280,11 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-				self.bleManager.context = context
-				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-				if initialLoad {
-					selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-					initialLoad = false
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
 				}
+				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+				selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

@@ -54,7 +54,7 @@ struct NodeListItem: View {
 								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
 								.foregroundColor(node.isOnline ? .green : .orange)
-							Text(node.lastHeard?.formatted() ?? "unknown".localized)
+							LastHeardText(lastHeard: node.lastHeard)
 								.font(.callout)
 						}
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {

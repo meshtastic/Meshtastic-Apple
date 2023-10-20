@@ -293,9 +293,9 @@ struct NodeMapSwiftUI: View {
 							.padding()
 							#endif
 						}
-						.presentationDetents([.fraction(0.60)])
-						//.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.automatic)
+						//.presentationDetents([.fraction(0.60)])
+						.presentationDetents([.medium, .large])
+						.presentationDragIndicator(.visible)
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity
