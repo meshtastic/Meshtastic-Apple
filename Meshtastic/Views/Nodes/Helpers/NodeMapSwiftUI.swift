@@ -195,7 +195,7 @@ struct NodeMapSwiftUI: View {
 					}
 					.sheet(item: $selectedWaypoint) { selection in
 						WaypointPopover(waypoint: selection)
-							.presentationDetents([.fraction(0.2), .medium])
+							.presentationDetents([.fraction(0.3), .medium])
 							.padding()
 							.opacity(0.8)
 					}

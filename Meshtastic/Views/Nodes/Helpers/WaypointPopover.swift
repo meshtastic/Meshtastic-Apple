@@ -32,7 +32,6 @@ struct WaypointPopover: View {
 					Label {
 						Text(waypoint.longDescription ?? "")
 							.foregroundColor(.primary)
-							.font(.footnote)
 							.multilineTextAlignment(.leading)
 							.fixedSize(horizontal: false, vertical: true)
 					} icon: {
@@ -41,43 +40,57 @@ struct WaypointPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
+					Divider()
 				}
+				/// Coordinate
+				Label {
+					Text("Coordinates: \(String(format: "%.6f", waypoint.coordinate.latitude)), \(String(format: "%.6f", waypoint.coordinate.longitude))")
+						//.font(.footnote)
+						.textSelection(.enabled)
+						.foregroundColor(.primary)
+				} icon: {
+					Image(systemName: "mappin.and.ellipse")
+						.symbolRenderingMode(.hierarchical)
+						.frame(width: 35)
+				}
+				.padding(.bottom, 5)
+				Divider()
 				/// Created
 				Label {
 					Text("Created: \(waypoint.created?.formatted() ?? "?")")
 						.foregroundColor(.primary)
-						.font(.footnote)
 				} icon: {
 					Image(systemName: "clock.badge.checkmark")
 						.symbolRenderingMode(.hierarchical)
 						.frame(width: 35)
 				}
 				.padding(.bottom, 5)
+				Divider()
 				/// Updated
 				if waypoint.lastUpdated != nil {
 					Label {
 						Text("Updated: \(waypoint.lastUpdated?.formatted() ?? "?")")
 							.foregroundColor(.primary)
-							.font(.footnote)
 					} icon: {
 						Image(systemName: "clock.arrow.circlepath")
 							.symbolRenderingMode(.hierarchical)
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
+					Divider()
 				}
-				/// Updated
+				/// Expires
 				if waypoint.expire != nil {
 					Label {
 						Text("Expires: \(waypoint.expire?.formatted() ?? "?")")
 							.foregroundColor(.primary)
-							.font(.footnote)
 					} icon: {
 						Image(systemName: "clock.badge.xmark")
 							.symbolRenderingMode(.hierarchical)
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
+					Divider()
 				}
 				/// Distance
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
@@ -85,12 +98,13 @@ struct WaypointPopover: View {
 					Label {
 						Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 							.foregroundColor(.primary)
-							.font(.footnote)
 					} icon: {
 						Image(systemName: "lines.measurement.horizontal")
 							.symbolRenderingMode(.hierarchical)
 							.frame(width: 35)
 					}
+					.padding(.bottom, 5)
+					Divider()
 				}
 			}
 			#if targetEnvironment(macCatalyst)
