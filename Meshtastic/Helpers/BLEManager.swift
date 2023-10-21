@@ -1618,7 +1618,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Sent a Get Channel \(channelIndex) Request Admin Message for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Sent a Get Channel \(channelIndex) Request Admin Message for node: \(toUser.longName ?? "unknown".localized))"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1712,7 +1712,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Device Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Device Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1740,7 +1740,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Display Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Display Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1768,7 +1768,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested LoRa Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			
@@ -1797,7 +1797,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		dataMessage.wantResponse = true
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Network Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Network Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
@@ -1825,7 +1825,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Position Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Position Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -1852,7 +1852,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Canned Messages Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Canned Messages Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -1879,7 +1879,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested External Notificaiton Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested External Notificaiton Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -1906,7 +1906,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested RTTTL Ringtone Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested RTTTL Ringtone Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -1933,7 +1933,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Range Test Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Range Test Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -1987,7 +1987,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Detection Sensor Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Detection Sensor Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -2015,7 +2015,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Serial Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Serial Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -2042,7 +2042,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		meshPacket.decoded = dataMessage
 		
-		let messageDescription = "🛎️ Requested Telemetry Module Config on admin channel \(adminIndex) for node: \(String(connectedPeripheral.num))"
+		let messageDescription = "🛎️ Requested Telemetry Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}
@@ -2070,7 +2070,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
-				print(adminDescription)
 				return true
 			} catch {
 				context!.rollback()
