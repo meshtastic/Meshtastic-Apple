@@ -193,11 +193,11 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
-					.popover(item: $selectedWaypoint) { selection in
+					.sheet(item: $selectedWaypoint) { selection in
 						WaypointPopover(waypoint: selection)
+							.presentationDetents([.fraction(0.2), .medium])
 							.padding()
 							.opacity(0.8)
-							.presentationCompactAdaptation(.sheet)
 					}
 					.sheet(isPresented: $isEditingSettings) {
 						VStack {
@@ -282,9 +282,7 @@ struct NodeMapSwiftUI: View {
 							.padding()
 							#endif
 						}
-						//.presentationDetents([.fraction(0.60)])
-						.presentationDetents([.medium, .large])
-						.presentationDragIndicator(.visible)
+						.presentationDetents([.fraction(0.4), .medium])
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity

@@ -9,12 +9,13 @@ import SwiftUI
 import MapKit
 
 struct WaypointPopover: View {
+	@Environment(\.dismiss) private var dismiss
 	var waypoint: WaypointEntity
 	let distanceFormatter = MKDistanceFormatter()
 	var body: some View {
 		VStack {
 			HStack  {
-				CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.blue)
+				CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange)
 				Text(waypoint.name ?? "?")
 					.font(.title3)
 				if waypoint.locked > 0 {
@@ -92,6 +93,17 @@ struct WaypointPopover: View {
 					}
 				}
 			}
+			#if targetEnvironment(macCatalyst)
+			Button {
+				dismiss()
+			} label: {
+				Label("close", systemImage: "xmark")
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
+			#endif
 		}
 		.tag(waypoint.id)
 	}
