@@ -20,7 +20,6 @@ struct NodeMapSwiftUI: View {
 	@ObservedObject var node: NodeInfoEntity
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
-	//@State var waypoints: [WaypointEntity] = []
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -30,24 +29,20 @@ struct NodeMapSwiftUI: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
-	@State private var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
-	@State private var position = MapCameraPosition.automatic
-	@State private var scene: MKLookAroundScene?
-	@State private var isLookingAround = false
-	@State private var isEditingSettings = false
-	@State private var selected: PositionEntity?
-	@State private var selectedWaypoint: WaypointEntity?
-	@State private var selectedWaypointRect: CGRect = .zero
-	@State private var selectedWaypointPoint: CGPoint = .zero
-	@State private var showingPositionPopover = false
-	@State private var showingWaypointPopover = false
+	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
+	@State var position = MapCameraPosition.automatic
+	@State var scene: MKLookAroundScene?
+	@State var isLookingAround = false
+	@State var isEditingSettings = false
+	@State var selected: PositionEntity?
+	@State var selectedWaypoint: WaypointEntity?
+	@State var showingPositionPopover = false
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	@State var waypoiintSelectionRect: CGRect = .zero
 	
 	var body: some View {
 		
@@ -90,15 +85,10 @@ struct NodeMapSwiftUI: View {
 							Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 								ZStack {
 									CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-										.onTapGesture(coordinateSpace: .global) { location in
+										
+										.onTapGesture(coordinateSpace: .named("nodemap")) { location in
 											print("Tapped at \(location)")
 											let pinLocation = reader.convert(location, from: .local)
-											print(pinLocation)
-											let size = CGSize(width: 1, height: 50)
-											let rect = CGRect(origin: location, size: size)
-											selectedWaypointRect = rect
-											selectedWaypointPoint = location
-											showingWaypointPopover = true
 											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
 										}
 								}
@@ -203,12 +193,11 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
-					.popover(item: $selectedWaypoint, attachmentAnchor: .rect(.rect(selectedWaypointRect)), arrowEdge: .bottom) { selection in
-						//.popover(isPresented: $showingWaypointPopover, arrowEdge: .bottom) {
+					.popover(item: $selectedWaypoint) { selection in
 						WaypointPopover(waypoint: selection)
 							.padding()
 							.opacity(0.8)
-							.presentationCompactAdaptation(.popover)
+							.presentationCompactAdaptation(.sheet)
 					}
 					.sheet(isPresented: $isEditingSettings) {
 						VStack {

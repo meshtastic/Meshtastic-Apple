@@ -44,7 +44,7 @@ struct BluetoothConfig: View {
 							setBluetoothValues()
 						}
 				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? -1 {
 				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 					.font(.title3)
 			} else {
