@@ -12,8 +12,8 @@ struct PositionPopover: View {
 	var position: PositionEntity
 	let distanceFormatter = MKDistanceFormatter()
 	var body: some View {
-		VStack {
-			HStack  {
+		VStack (alignment: .leading) {
+			HStack {
 				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))))
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.title3)

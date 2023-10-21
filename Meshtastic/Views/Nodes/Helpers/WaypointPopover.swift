@@ -13,7 +13,7 @@ struct WaypointPopover: View {
 	var waypoint: WaypointEntity
 	let distanceFormatter = MKDistanceFormatter()
 	var body: some View {
-		VStack {
+		VStack (alignment: .leading) {
 			HStack  {
 				CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange)
 				Text(waypoint.name ?? "?")
@@ -119,6 +119,7 @@ struct WaypointPopover: View {
 			.padding()
 			#endif
 		}
+		.presentationDetents([.fraction(0.3), .medium])
 		.tag(waypoint.id)
 	}
 }

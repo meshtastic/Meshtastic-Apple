@@ -21,11 +21,11 @@ struct NodeMapSwiftUI: View {
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
-	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapConvexHull") private var showConvexHull = true
-	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
-	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
+	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = true
+	@AppStorage("meshMapShowRouteLines") private var showRouteLines = true
+	@AppStorage("enableMapConvexHull") private var showConvexHull = false
+	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
+	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
@@ -35,6 +35,7 @@ struct NodeMapSwiftUI: View {
 	@State var isLookingAround = false
 	@State var isEditingSettings = false
 	@State var selected: PositionEntity?
+	@State var showWaypoints = false
 	@State var selectedWaypoint: WaypointEntity?
 	@State var showingPositionPopover = false
 	
@@ -80,17 +81,20 @@ struct NodeMapSwiftUI: View {
 								.stroke(Color(nodeColor.darker()), lineWidth: 3)
 								.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
+						
 						/// Waypoint Annotations
-						ForEach(Array(waypoints), id: \.id) { waypoint in
-							Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-								ZStack {
-									CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
+						if showWaypoints {
+							ForEach(Array(waypoints), id: \.id) { waypoint in
+								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+									ZStack {
+										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
 										
-										.onTapGesture(coordinateSpace: .named("nodemap")) { location in
-											print("Tapped at \(location)")
-											let pinLocation = reader.convert(location, from: .local)
-											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-										}
+											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
+												print("Tapped at \(location)")
+												let pinLocation = reader.convert(location, from: .local)
+												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+											}
+									}
 								}
 							}
 						}
@@ -195,9 +199,7 @@ struct NodeMapSwiftUI: View {
 					}
 					.sheet(item: $selectedWaypoint) { selection in
 						WaypointPopover(waypoint: selection)
-							.presentationDetents([.fraction(0.3), .medium])
 							.padding()
-							.opacity(0.8)
 					}
 					.sheet(isPresented: $isEditingSettings) {
 						VStack {
@@ -283,6 +285,8 @@ struct NodeMapSwiftUI: View {
 							#endif
 						}
 						.presentationDetents([.fraction(0.4), .medium])
+						.presentationDragIndicator(.visible)
+						
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity
@@ -324,6 +328,22 @@ struct NodeMapSwiftUI: View {
 							.tint(Color(UIColor.secondarySystemBackground))
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
+							
+							Button(action: {
+								withAnimation {
+									showWaypoints = !showWaypoints
+								}
+							}) {
+								Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
+									.padding(.vertical, 5)
+							}
+							.tint(Color(UIColor.secondarySystemBackground))
+							.foregroundColor(.accentColor)
+							.buttonStyle(.borderedProminent)
+							
+							
+							
+							
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {
