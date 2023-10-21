@@ -23,7 +23,7 @@ struct UserConfig: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var shortName = ""
-	@State var longName = ""
+	@State var longName: String = ""
 	@State var isLicensed = false
 	@State var overrideDutyCycle = false
 	@State var overrideFrequency: Float = 0.0
@@ -157,10 +157,11 @@ struct UserConfig: View {
 								}
 							} else {
 								var ham = HamParameters()
-								// ham.shortName = shortName
+								ham.shortName = shortName
 								ham.callSign = longName
 								ham.txPower = Int32(txPower)
 								ham.frequency = overrideFrequency
+								print(ham)
 								let adminMessageId = bleManager.saveLicensedUser(ham: ham, fromUser: connectedUser, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 								if adminMessageId > 0 {
 									hasChanges = false
@@ -201,7 +202,14 @@ struct UserConfig: View {
 		}
 		.onChange(of: isLicensed) { newIsLicensed in
 			if node != nil && node!.user != nil {
-				if newIsLicensed != node?.user!.isLicensed { hasChanges = true }
+				if newIsLicensed != node?.user!.isLicensed {
+					hasChanges = true
+					if newIsLicensed {
+						if node?.user?.longName?.count ?? 0 > 8 {
+							longName = ""
+						}
+					}
+				}
 			}
 		}
 		.onChange(of: overrideFrequency) { _ in
