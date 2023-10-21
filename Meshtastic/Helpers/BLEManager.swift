@@ -144,6 +144,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	func disconnectPeripheral(reconnect: Bool = true) {
 		
 		guard let connectedPeripheral = connectedPeripheral else { return }
+		if mqttProxyConnected {
+			mqttManager.mqttClientProxy?.disconnect()
+		}
 		automaticallyReconnect = reconnect
 		centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 		FROMRADIO_characteristic = nil
@@ -272,6 +275,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 		}
 		if ![FROMNUM_characteristic, TORADIO_characteristic].contains(nil) {
+			if mqttProxyConnected {
+				mqttManager.mqttClientProxy?.disconnect()
+			}
 			sendWantConfig()
 		}
 	}
@@ -290,7 +296,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func onMqttMessageReceived(message: CocoaMQTTMessage) {
 
-		print("📲 Mqtt Client Proxy onMqttMessageReceived for topic: \(message.topic)")
+		
 		if message.topic.contains("/stat/") {
 			return
 		}
@@ -305,7 +311,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let binaryData: Data = try! toRadio.serializedData()
 		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected {
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
-			print("📲 Sent Mqtt client proxy message to the connected device.")
+			
 		}
 	}
 	
@@ -443,7 +449,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					payload:  [UInt8](decodedInfo.mqttClientProxyMessage.data),
 					retained: decodedInfo.mqttClientProxyMessage.retained
 				)
-				print("📲 Publish Mqtt client proxy message received on FromRadio to the Mqtt server \(message)")
 				mqttManager.mqttClientProxy?.publish(message)
 			}
 			
@@ -635,10 +640,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
 				if UserDefaults.provideLocation {
+					let interval = UserDefaults.provideLocationInterval > 0 ? UserDefaults.provideLocationInterval : 30
 					if positionTimer != nil {
-						positionTimer!.invalidate()
 					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval )), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
@@ -787,7 +792,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
-		dataMessage.payload = try! waypoint.serializedData()
+		do {
+			dataMessage.payload = try waypoint.serializedData()
+		}
+		catch {
+			// Could not serialiaze the payload
+			return false
+		}
+		
 		dataMessage.portnum = PortNum.waypointApp
 		meshPacket.decoded = dataMessage
 		var toRadio: ToRadio!
@@ -870,7 +882,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			print(positionPacket)
 			MeshLogger.log("📍 \(logString)")
 		}
 		return success

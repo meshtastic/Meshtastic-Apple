@@ -26,14 +26,14 @@ struct NodeListItem: View {
 						let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 						if deviceMetrics?.count ?? 0 >= 1 {
 							let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-							BatteryLevelCompact(batteryLevel: mostRecent?.batteryLevel, font: .caption2, iconFont: .callout, color: .accentColor)
+							BatteryLevelCompact(batteryLevel: mostRecent?.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 						}
 					}
 					VStack(alignment: .leading) {
 						HStack {
 							Text(node.user?.longName ?? "unknown".localized)
 								.fontWeight(.medium)
-								.font(.callout)
+								.font(.headline)
 							if node.user?.vip ?? false {
 								Spacer()
 								Image(systemName: "star.fill")
@@ -43,19 +43,19 @@ struct NodeListItem: View {
 						if connected {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
-									.font(.footnote)
+									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 									.foregroundColor(.green)
-								Text("connected").font(.caption)
+								Text("connected").font(.callout)
 							}
 						}
 						HStack {
 							Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
-								.font(.footnote)
+								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
 								.foregroundColor(node.isOnline ? .green : .orange)
 							LastHeardText(lastHeard: node.lastHeard)
-								.font(.caption)
+								.font(.callout)
 						}
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
@@ -65,19 +65,19 @@ struct NodeListItem: View {
 									let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
 									let metersAway = nodeCoord.distance(from: myCoord)
 									Image(systemName: "lines.measurement.horizontal")
-										.font(.footnote)
+										.font(.callout)
 										.symbolRenderingMode(.hierarchical)
-									DistanceText(meters: metersAway).font(.caption)
+									DistanceText(meters: metersAway).font(.callout)
 								}
 							}
 						}
 						if node.channel > 0 {
 							HStack {
 								Image(systemName: "fibrechannel")
-									.font(.footnote)
+									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 								Text("Channel: \(node.channel)")
-									.font(.caption)
+									.font(.callout)
 							}
 						}
 						

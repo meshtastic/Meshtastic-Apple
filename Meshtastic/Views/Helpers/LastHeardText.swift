@@ -17,7 +17,7 @@ struct LastHeardText: View {
 	
 	var body: some View {
 		if lastHeard != nil && lastHeard! >= sixMonthsAgo! {
-			Text("heard")+Text(" \(LastHeardText.formatter.localizedString(for: lastHeard!, relativeTo: Date.now))")
+			Text(lastHeard?.formatted() ?? "unknown.age".localized)
 		} else {
 			Text("unknown.age")
 		}

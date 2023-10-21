@@ -209,6 +209,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case heltecHt62 // = 53
 
   ///
+  /// EBYTE SPI LoRa module and ESP32-S3
+  case ebyteEsp32S3 // = 54
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -265,6 +269,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 51: self = .tWatchS3
     case 52: self = .picomputerS3
     case 53: self = .heltecHt62
+    case 54: self = .ebyteEsp32S3
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -316,6 +321,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tWatchS3: return 51
     case .picomputerS3: return 52
     case .heltecHt62: return 53
+    case .ebyteEsp32S3: return 54
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -372,6 +378,7 @@ extension HardwareModel: CaseIterable {
     .tWatchS3,
     .picomputerS3,
     .heltecHt62,
+    .ebyteEsp32S3,
     .privateHw,
   ]
 }
@@ -2534,6 +2541,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     51: .same(proto: "T_WATCH_S3"),
     52: .same(proto: "PICOMPUTER_S3"),
     53: .same(proto: "HELTEC_HT62"),
+    54: .same(proto: "EBYTE_ESP32_S3"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
