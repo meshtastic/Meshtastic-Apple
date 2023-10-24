@@ -48,8 +48,8 @@ struct UserConfig: View {
 								.onChange(of: longName, perform: { _ in
 									let totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 8 : 36) {
-										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 8 : 36))
+									if totalBytes > (isLicensed ? 6 : 36) {
+										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
 										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 											// Set the longName back to the last place where it was the right size
 											longName = maxBytesString
