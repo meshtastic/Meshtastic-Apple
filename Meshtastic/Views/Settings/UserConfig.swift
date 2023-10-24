@@ -42,23 +42,28 @@ struct UserConfig: View {
 		VStack {
 			Form {
 				Section(header: Text("User Details")) {
-						HStack {
-							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
-							TextField("Long Name", text: $longName)
-								.onChange(of: longName, perform: { _ in
-									let totalBytes = longName.utf8.count
-									// Only mess with the value if it is too big
-									if totalBytes > (isLicensed ? 6 : 36) {
-										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the longName back to the last place where it was the right size
-											longName = maxBytesString
-										}
+					HStack {
+						Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
+						
+						TextField("Long Name", text: $longName)
+							.onChange(of: longName, perform: { _ in
+								let totalBytes = longName.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > (isLicensed ? 6 : 36) {
+									let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the longName back to the last place where it was the right size
+										longName = maxBytesString
 									}
-								})
-						}
-						.keyboardType(.default)
-						.disableAutocorrection(true)
+								}
+							})
+					}
+					.keyboardType(.default)
+					.disableAutocorrection(true)
+					if longName.isEmpty && isLicensed {
+						Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
+							.foregroundColor(.red)
+					}
 					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.font(.caption2)
 
@@ -141,6 +146,9 @@ struct UserConfig: View {
 					titleVisibility: .visible
 				) {
 					Button("Save User Config to \(node?.user?.longName ?? "Unknown")?") {
+						if longName.isEmpty && isLicensed {
+							return
+						}
 
 						let connectedUser = getUser(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
