@@ -221,10 +221,10 @@ struct UserConfig: View {
 			}
 		}
 		.onChange(of: overrideFrequency) { _ in
-			// hasChanges = true
+			 hasChanges = true
 		}
 		.onChange(of: txPower) { _ in
-			// hasChanges = true
+			hasChanges = true
 		}
 	}
 }

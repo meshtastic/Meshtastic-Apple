@@ -12,6 +12,7 @@ struct LoRaConfig: View {
 
 	enum Field: Hashable {
 		case channelNum
+		case frequencyOverride
 	}
 
 	let formatter: NumberFormatter = {
@@ -41,6 +42,13 @@ struct LoRaConfig: View {
 	@State var spreadFactor = 0
 	@State var codingRate = 0
 	@State var rxBoostedGain = false
+	@State var overrideFrequency: Float = 0.0
+
+	let floatFormatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.numberStyle = .decimal
+		return formatter
+	}()
 
 	var body: some View {
 
@@ -150,7 +158,6 @@ struct LoRaConfig: View {
 						Text("LoRa Channel Number")
 							.fixedSize()
 						TextField("Channel Number", value: $channelNum, formatter: formatter)
-							.multilineTextAlignment(.trailing)
 							.toolbar {
 								ToolbarItemGroup(placement: .keyboard) {
 									Button("dismiss.keyboard") {
@@ -169,6 +176,16 @@ struct LoRaConfig: View {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					HStack {
+						Label("Frequency", systemImage: "waveform.path.ecg")
+						Spacer()
+						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
+							.keyboardType(.decimalPad)
+							.scrollDismissesKeyboard(.immediately)
+							.focused($focusedField, equals: .frequencyOverride)
+					}
+					Text("This parameter is for advanced users with test equipment, it adds a frequency offset to the calculated band center frequency. Used to correct for crystal calibration errors.")
+						.font(.caption2)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
