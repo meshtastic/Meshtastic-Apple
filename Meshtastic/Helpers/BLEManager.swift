@@ -199,6 +199,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		self.isConnecting = false
 		self.isConnected = false
 		self.isSubscribed = false
+		let manager = LocalNotificationManager()
 		if let e = error {
 			// https://developer.apple.com/documentation/corebluetooth/cberror/code
 			let errorCode = (e as NSError).code
@@ -208,6 +209,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 7 { // CBError.Code.peripheralDisconnected The specified device has disconnected from us.
 				// Seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.
+				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString{
+					manager.notifications = [
+						Notification(
+							id: (peripheral.identifier.uuidString),
+							title: "Disconnected from Preferred Device",
+							subtitle: "Device: \(peripheral.name ?? "unknown".localized)",
+							content: "Error Code: 7, seems to be what is received when a tbeam sleeps, immediately recconnecting does not work.",
+							target: "device"
+						)
+					]
+					manager.schedule()
+				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			} else if errorCode == 14 { // Peer removed pairing information
@@ -215,6 +228,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.errorcode.14 %@".localized, e.localizedDescription)
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(lastConnectionError)")
 			} else {
+				if UserDefaults.preferredPeripheralId == peripheral.identifier.uuidString{
+					manager.notifications = [
+						Notification(
+							id: (peripheral.identifier.uuidString),
+							title: "Disconnected from Preferred Device",
+							subtitle: "Device: \(peripheral.name ?? "unknown".localized)",
+							content: "Error Code: \(errorCode), \(e.localizedDescription)",
+							target: "device"
+						)
+					]
+					manager.schedule()
+				}
 				lastConnectionError = "🚨 \(e.localizedDescription)"
 				print("🚨 BLE Disconnected: \(peripheral.name ?? "Unknown") Error Code: \(errorCode) Error: \(e.localizedDescription)")
 			}
