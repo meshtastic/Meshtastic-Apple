@@ -83,12 +83,11 @@ struct NodeMapSwiftUI: View {
 						}
 						
 						/// Waypoint Annotations
-						if showWaypoints {
+						if waypoints.count > 0 && showWaypoints {
 							ForEach(Array(waypoints), id: \.id) { waypoint in
 								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 									ZStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-										
 											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
 												print("Tapped at \(location)")
 												let pinLocation = reader.convert(location, from: .local)
@@ -328,22 +327,21 @@ struct NodeMapSwiftUI: View {
 							.tint(Color(UIColor.secondarySystemBackground))
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
-							
-							Button(action: {
-								withAnimation {
-									showWaypoints = !showWaypoints
-								}
-							}) {
+							/// Show / Hide Waypoints Button
+							if waypoints.count > 0 {
+								
+								Button(action: {
+									withAnimation {
+										showWaypoints = !showWaypoints
+									}
+								}) {
 								Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
 									.padding(.vertical, 5)
+								}
+								.tint(Color(UIColor.secondarySystemBackground))
+								.foregroundColor(.accentColor)
+								.buttonStyle(.borderedProminent)
 							}
-							.tint(Color(UIColor.secondarySystemBackground))
-							.foregroundColor(.accentColor)
-							.buttonStyle(.borderedProminent)
-							
-							
-							
-							
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {
@@ -358,7 +356,6 @@ struct NodeMapSwiftUI: View {
 								.foregroundColor(.accentColor)
 								.buttonStyle(.borderedProminent)
 							}
-							
 							#if targetEnvironment(macCatalyst)
 							/// Hide non fuctional catalyst controls
 //							MapZoomStepper(scope: mapScope)
