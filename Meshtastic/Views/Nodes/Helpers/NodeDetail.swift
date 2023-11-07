@@ -44,7 +44,7 @@ struct NodeDetail: View {
 								if #available (iOS 17, macOS 14, *) {
 									NodeMapSwiftUI(node: node, showUserLocation: connectedNode?.num ?? 0 == node.num)
 								} else {
-									NodeMapControl(node: node)
+									NodeMapMapkit(node: node)
 								}
 								
 							} label: {

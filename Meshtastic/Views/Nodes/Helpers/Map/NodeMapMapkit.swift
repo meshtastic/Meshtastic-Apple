@@ -9,7 +9,7 @@ import CoreLocation
 import MapKit
 import WeatherKit
 
-struct NodeMapControl: View {
+struct NodeMapMapkit: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
