@@ -99,7 +99,6 @@
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
-		DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
@@ -312,7 +311,6 @@
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
-		DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeAnnotation.swift; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
@@ -630,6 +628,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		DDAD49EB2AFAE82500B4425D /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */,
+			);
+			path = Map;
+			sourceTree = "<group>";
+		};
 		DDAF8C5626ED07740058C060 /* Protobufs */ = {
 			isa = PBXGroup;
 			children = (
@@ -771,7 +777,6 @@
 				DD47E3D526F17ED900029299 /* CircleText.swift */,
 				DDF924C926FBB953009FE055 /* ConnectedDevice.swift */,
 				DDC3B273283F411B00AC321C /* LastHeardText.swift */,
-				DDA6B2EA28420A7B003E8C16 /* NodeAnnotation.swift */,
 				DDD94A4F2845C8F5004A87A0 /* DateTimeText.swift */,
 				DDB6ABDA28B0AC6000384BA1 /* DistanceText.swift */,
 				DD3CC6BD28E4CD9800FA9159 /* BatteryGauge.swift */,
@@ -821,11 +826,11 @@
 		DDDB26402AABEF7B003AFCB7 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				DDAD49EB2AFAE82500B4425D /* Map */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
-				DDDB26472AACD6D1003AFCB7 /* NodeMapControl.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
 				DD760AAD2ABAC706002C022E /* WaypointPopover.swift */,
@@ -1082,7 +1087,6 @@
 				DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */,
 				DD5E5203298EE33B00D21B61 /* config.pb.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
-				DDA6B2EB28420A7B003E8C16 /* NodeAnnotation.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,
 				DD5394FE276BA0EF00AD86B1 /* PositionEntityExtension.swift in Sources */,
 				DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */,

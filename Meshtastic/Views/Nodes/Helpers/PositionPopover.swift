@@ -23,7 +23,7 @@ struct PositionPopover: View {
 			VStack (alignment: .leading) {
 				/// Time
 				Label {
-					Text(position.time?.formatted() ?? "Unknown")
+					LastHeardText(lastHeard: position.time)
 						.foregroundColor(.primary)
 				} icon: {
 					Image(systemName: "clock.badge.checkmark")

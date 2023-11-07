@@ -21,8 +21,8 @@ struct NodeMapSwiftUI: View {
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
-	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = true
-	@AppStorage("meshMapShowRouteLines") private var showRouteLines = true
+	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
@@ -114,7 +114,7 @@ struct NodeMapSwiftUI: View {
 												.symbolEffect(.pulse.byLayer)
 												.padding(5)
 												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
+												.background(Color(nodeColor.darker()))
 												.clipShape(Circle())
 												.rotationEffect(headingDegrees)
 												.onTapGesture {
