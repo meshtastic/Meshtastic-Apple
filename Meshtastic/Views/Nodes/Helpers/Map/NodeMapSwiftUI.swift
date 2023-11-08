@@ -34,10 +34,9 @@ struct NodeMapSwiftUI: View {
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
 	@State var isEditingSettings = false
-	@State var selected: PositionEntity?
+	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
 	@State var selectedWaypoint: WaypointEntity?
-	@State var showingPositionPopover = false
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
@@ -118,15 +117,15 @@ struct NodeMapSwiftUI: View {
 												.clipShape(Circle())
 												.rotationEffect(headingDegrees)
 												.onTapGesture {
-													showingPositionPopover = true
-													selected = (selected == position ? nil : position) // <-- here
+													selectedPosition = (selectedPosition == position ? nil : position)
 												}
-												.popover(isPresented: $showingPositionPopover) {
-													PositionPopover(position: position)
+												.popover(item: $selectedPosition) { selection in
+													PositionPopover(position: selection)
 														.padding()
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
+												
 										} else {
 											Image(systemName: "flipphone")
 												.symbolEffect(.pulse.byLayer)
@@ -135,16 +134,15 @@ struct NodeMapSwiftUI: View {
 												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 												.clipShape(Circle())
 												.onTapGesture {
-													showingPositionPopover = true
-													selected = (selected == position ? nil : position) // <-- here
+													selectedPosition = (selectedPosition == position ? nil : position)
 												}
-												.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
-													PositionPopover(position: position)
-														.tag(position.id)
+												.popover(item: $selectedPosition) { selection in
+													PositionPopover(position: selection)
 														.padding()
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
+												
 										}
 									} else {
 										if showNodeHistory {

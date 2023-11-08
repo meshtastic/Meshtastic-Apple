@@ -99,6 +99,7 @@
 		DDA0B6B2294CDC55001356EC /* Channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA0B6B1294CDC55001356EC /* Channels.swift */; };
 		DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */; };
 		DDA6B2E928419CF2003E8C16 /* MeshPackets.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */; };
+		DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */; };
 		DDAF8C5326EB1DF10058C060 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */; };
 		DDB6ABD928B0A4BA00384BA1 /* BluetoothModes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */; };
@@ -311,6 +312,7 @@
 		DDA0B6B1294CDC55001356EC /* Channels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Channels.swift; sourceTree = "<group>"; };
 		DDA1C48D28DB49D3009933EC /* ChannelRoles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelRoles.swift; sourceTree = "<group>"; };
 		DDA6B2E828419CF2003E8C16 /* MeshPackets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshPackets.swift; sourceTree = "<group>"; };
+		DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMap.swift; sourceTree = "<group>"; };
 		DDAF8C5226EB1DF10058C060 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
 		DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothConfig.swift; sourceTree = "<group>"; };
 		DDB6ABD828B0A4BA00384BA1 /* BluetoothModes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothModes.swift; sourceTree = "<group>"; };
@@ -477,6 +479,7 @@
 				DDDB26402AABEF7B003AFCB7 /* Helpers */,
 				DDDB263E2AABEE20003AFCB7 /* NodeList.swift */,
 				DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */,
+				DDAD49EC2AFB39DC00B4425D /* MeshMap.swift */,
 				DD90860D26F69BAE00DC5189 /* NodeMap.swift */,
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
@@ -1170,6 +1173,7 @@
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,
 				DD964FC62975DBFD007C176F /* QueryCoreData.swift in Sources */,
 				DDB75A112A059258006ED576 /* Url.swift in Sources */,
+				DDAD49ED2AFB39DC00B4425D /* MeshMap.swift in Sources */,
 				DD8169FB271F1F3A00F4AB02 /* MeshLog.swift in Sources */,
 				DD8ED9C52898D51F00B3B0AB /* NetworkConfig.swift in Sources */,
 				DDC3B274283F411B00AC321C /* LastHeardText.swift in Sources */,
