@@ -177,15 +177,13 @@ struct LoRaConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					HStack {
-						Label("Frequency", systemImage: "waveform.path.ecg")
+						Label("Frequency Override", systemImage: "waveform.path.ecg")
 						Spacer()
 						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
 							.keyboardType(.decimalPad)
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .frequencyOverride)
 					}
-					Text("This parameter is for advanced users with test equipment, it adds a frequency offset to the calculated band center frequency. Used to correct for crystal calibration errors.")
-						.font(.caption2)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
@@ -221,6 +219,7 @@ struct LoRaConfig: View {
 						lc.codingRate = UInt32(codingRate)
 						lc.spreadFactor = UInt32(spreadFactor)
 						lc.sx126XRxBoostedGain = rxBoostedGain
+						lc.overrideFrequency = overrideFrequency
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -298,6 +297,11 @@ struct LoRaConfig: View {
 				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
 			}
 		}
+		.onChange(of: overrideFrequency) { newOverrideFrequency in
+			if node != nil && node!.loRaConfig != nil {
+				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
+			}
+		}
 	}
 	func setLoRaValues() {
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
@@ -311,6 +315,7 @@ struct LoRaConfig: View {
 		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
+		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		self.hasChanges = false
 	}
 }

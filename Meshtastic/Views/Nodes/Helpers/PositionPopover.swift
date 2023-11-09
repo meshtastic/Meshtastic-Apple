@@ -14,7 +14,7 @@ struct PositionPopover: View {
 	var body: some View {
 		VStack (alignment: .leading) {
 			HStack {
-				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 80)
+				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 60)
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)
 				let degrees = Angle.degrees(Double(position.heading))
@@ -26,8 +26,9 @@ struct PositionPopover: View {
 					LastHeardText(lastHeard: position.time)
 						.foregroundColor(.primary)
 				} icon: {
-					Image(systemName: "clock.badge.checkmark")
+					Image(systemName: position.nodePosition?.isOnline ?? false ? "checkmark.circle.fill" : "moon.circle.fill")
 						.symbolRenderingMode(.hierarchical)
+						.foregroundColor(position.nodePosition?.isOnline ?? false ? .green : .orange)
 						.frame(width: 35)
 				}
 				.padding(.bottom, 5)
