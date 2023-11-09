@@ -20,7 +20,6 @@ struct MeshMap: View {
 	@StateObject var appState = AppState.shared
 	/// Parameters
 	@State var showUserLocation: Bool = true
-	//@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -42,23 +41,16 @@ struct MeshMap: View {
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
 	
-	let fromDate: NSDate = Calendar.current.date(byAdding: .month, value: -1, to: Date())! as NSDate
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
 				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -30, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
+	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
-	@State var waypointCoordinate: WaypointCoordinate?
-	@State var selectedTracking: UserTrackingModes = .none
-	@State var isPresentingInfoSheet: Bool = false
-	@State private var customMapOverlay: MapViewSwiftUI.CustomMapOverlay? = MapViewSwiftUI.CustomMapOverlay(
-		mapName: "offlinemap",
-		tileType: "png",
-		canReplaceMapContent: true
-	)
+
 	var body: some View {
 		NavigationStack {
 			ZStack {
@@ -70,7 +62,7 @@ struct MeshMap: View {
 								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 									ZStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
+											.onTapGesture(coordinateSpace: .named("meshmap")) { location in
 												print("Tapped at \(location)")
 												let pinLocation = reader.convert(location, from: .local)
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
@@ -90,45 +82,39 @@ struct MeshMap: View {
 											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
 											.scaleEffect(scale)
 											.animation(
-												Animation.easeInOut(duration: 1.0)
+												Animation.easeInOut(duration: 0.6)
 												   .repeatForever().delay(delay), value: scale
 											)
 											.onAppear {
 												self.scale = 1
 											}
 											.frame(width: 60, height: 60)
+											
 									}
 									CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
 								}
+								.onTapGesture(coordinateSpace: .named("meshmap")) { location in
+									print("Tapped at \(location)")
+									let pinLocation = reader.convert(location, from: .local)
+									selectedPosition = (selectedPosition == position ? nil : position)
+								}
 							}
 						}
-						/// Node Color from node.num
-						//let nodeColor = UIColor(hex: UInt32(node.num))
-						/// Route Lines
-//						if showRouteLines  {
-//							if showRouteLines {
-//								let gradient = LinearGradient(
-//									colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-//									startPoint: .leading, endPoint: .trailing
-//								)
-//								let dashed = StrokeStyle(
-//									lineWidth: 3,
-//									lineCap: .round, lineJoin: .round, dash: [10, 10]
-//								)
-//								MapPolyline(coordinates: lineCoords)
-//									.stroke(gradient, style: dashed)
-//							}
-//						}
 					}
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
-			.sheet(item: $waypointCoordinate, content: { wpc in
-				WaypointFormView(coordinate: wpc)
-					.presentationDetents([.medium, .large])
-					.presentationDragIndicator(.automatic)
-			})
+//			.popover(item: $selectedPosition) { selection in
+//				PositionPopover(position: selection)
+//					.padding()
+//					.opacity(0.8)
+//					.presentationCompactAdaptation(.sheet)
+//			}
+			.sheet(item: $selectedPosition) { selection in
+				PositionPopover(position: selection)
+					.padding()
+			}
 		}
 		.navigationTitle("Mesh Map")
 		.navigationBarItems(leading:

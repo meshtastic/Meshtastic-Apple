@@ -14,9 +14,9 @@ struct PositionPopover: View {
 	var body: some View {
 		VStack (alignment: .leading) {
 			HStack {
-				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))))
+				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 80)
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
-					.font(.title3)
+					.font(.largeTitle)
 				let degrees = Angle.degrees(Double(position.heading))
 			}
 			Divider()
@@ -121,6 +121,8 @@ struct PositionPopover: View {
 					}
 				}
 			}
-		}
+		}	
+		.presentationDetents([.fraction(0.4), .medium])
+		.presentationDragIndicator(.visible)
 	}
 }
