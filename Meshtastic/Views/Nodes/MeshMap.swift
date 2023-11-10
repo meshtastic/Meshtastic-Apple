@@ -151,6 +151,11 @@ struct MeshMap: View {
 							}
 						}
 					}
+					.onLongPressGesture(minimumDuration: 0.5, maximumDistance: 100, pressing: {
+						pressing in
+						print(pressing)
+				
+					}, perform: { value in })
 					.onTapGesture(perform: { screenCoord in
 						newWaypointLocation = reader.convert(screenCoord, from: .local)
 						print("Tapped at \(newWaypointLocation)")
