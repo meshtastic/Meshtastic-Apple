@@ -26,6 +26,7 @@ struct ContentView: View {
 				.tag(Tab.nodes)
 			if #available(iOS 17.0, macOS 14.0, *) {
 				MeshMap()
+				//NodeMap()
 					.tabItem {
 						Label("map", systemImage: "map")
 					}

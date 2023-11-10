@@ -13,14 +13,16 @@ struct WaypointPopover: View {
 	var waypoint: WaypointEntity
 	let distanceFormatter = MKDistanceFormatter()
 	var body: some View {
-		VStack (alignment: .leading) {
+		VStack {
 			HStack  {
-				CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange)
+				CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 65)
+				Spacer()
 				Text(waypoint.name ?? "?")
-					.font(.title3)
+					.font(.largeTitle)
+				Spacer()
 				if waypoint.locked > 0 {
 					Image(systemName: "lock.fill" )
-						.font(.title2)
+						.font(.largeTitle)
 				} else {
 					// Edit Button
 				}
@@ -40,12 +42,10 @@ struct WaypointPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
-					Divider()
 				}
 				/// Coordinate
 				Label {
 					Text("Coordinates: \(String(format: "%.6f", waypoint.coordinate.latitude)), \(String(format: "%.6f", waypoint.coordinate.longitude))")
-						//.font(.footnote)
 						.textSelection(.enabled)
 						.foregroundColor(.primary)
 				} icon: {
@@ -54,7 +54,6 @@ struct WaypointPopover: View {
 						.frame(width: 35)
 				}
 				.padding(.bottom, 5)
-				Divider()
 				/// Created
 				Label {
 					Text("Created: \(waypoint.created?.formatted() ?? "?")")
@@ -65,7 +64,6 @@ struct WaypointPopover: View {
 						.frame(width: 35)
 				}
 				.padding(.bottom, 5)
-				Divider()
 				/// Updated
 				if waypoint.lastUpdated != nil {
 					Label {
@@ -77,7 +75,6 @@ struct WaypointPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
-					Divider()
 				}
 				/// Expires
 				if waypoint.expire != nil {
@@ -85,12 +82,11 @@ struct WaypointPopover: View {
 						Text("Expires: \(waypoint.expire?.formatted() ?? "?")")
 							.foregroundColor(.primary)
 					} icon: {
-						Image(systemName: "clock.badge.xmark")
+						Image(systemName: "hourglass.bottomhalf.filled")
 							.symbolRenderingMode(.hierarchical)
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
-					Divider()
 				}
 				/// Distance
 				if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
@@ -104,10 +100,11 @@ struct WaypointPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
-					Divider()
 				}
 			}
+			.padding(.top)
 			#if targetEnvironment(macCatalyst)
+			Spacer()
 			Button {
 				dismiss()
 			} label: {
@@ -119,7 +116,7 @@ struct WaypointPopover: View {
 			.padding()
 			#endif
 		}
-		.presentationDetents([.fraction(0.3), .medium])
+		.presentationDetents([.fraction(0.5), .fraction(0.65)])
 		.tag(waypoint.id)
 	}
 }

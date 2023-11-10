@@ -37,6 +37,7 @@ struct MeshMap: View {
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
 	@State var selectedWaypoint: WaypointEntity?
+	@State var newWaypointLocation :CLLocationCoordinate2D? = nil
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
@@ -65,12 +66,11 @@ struct MeshMap: View {
 							ForEach(Array(waypoints), id: \.id) { waypoint in
 								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 									ZStack {
-										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-											.onTapGesture(coordinateSpace: .named("meshmap")) { location in
-												print("Tapped at \(location)")
+										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
+											.onTapGesture(perform: { location in
 												let pinLocation = reader.convert(location, from: .local)
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-											}
+											})
 									}
 								}
 							}
@@ -84,11 +84,9 @@ struct MeshMap: View {
 								//.stroke(Color(nodeColor.darker()), lineWidth: 3)
 								//.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
-						
 						/// Position Annotations
 						ForEach(Array(positions), id: \.id) { position in
-							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
-							/// Node Color from node.num
+							/// Node color from node.num
 							let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 							Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
 								ZStack {
@@ -134,7 +132,8 @@ struct MeshMap: View {
 									MapPolyline(coordinates: routeCoords)
 										.stroke(gradient, style: dashed)
 								}
-							}							// Node History
+							}
+							/// Node History
 							if showNodeHistory {
 								ForEach(position.nodePosition!.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 									Annotation(position.latest ? position.nodePosition?.user?.shortName ?? "?": "", coordinate: position.coordinate) {
@@ -152,6 +151,10 @@ struct MeshMap: View {
 							}
 						}
 					}
+					.onTapGesture(perform: { screenCoord in
+						newWaypointLocation = reader.convert(screenCoord, from: .local)
+						print("Tapped at \(newWaypointLocation)")
+					})
 				}
 			}
 			.mapScope(mapScope)

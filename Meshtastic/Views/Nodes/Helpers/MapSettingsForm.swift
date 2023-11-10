@@ -90,6 +90,7 @@ Spacer()
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
+				.padding(.bottom)
 #endif
 		}
 		.presentationDetents([.fraction(0.45), .fraction(0.65)])

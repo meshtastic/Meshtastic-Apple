@@ -128,6 +128,8 @@ struct PositionPopover: View {
 					if position.nodePosition != nil {
 						BatteryGauge(node: position.nodePosition!)
 					}
+					let mpInt = Int(position.nodePosition?.loRaConfig?.modemPreset ?? 0)
+					LoRaSignalStrengthMeter(snr: position.snr, rssi: position.rssi, preset: ModemPresets(rawValue: mpInt) ?? ModemPresets.longFast, compact: false)
 				}
 			}
 			.padding(.top)
@@ -146,7 +148,7 @@ struct PositionPopover: View {
 #endif
 			}
 		}
-		.presentationDetents([.fraction(0.45), .medium])
+		.presentationDetents([.fraction(0.45), .fraction(0.55), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
 	}
 }
