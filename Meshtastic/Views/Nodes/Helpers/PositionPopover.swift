@@ -9,10 +9,12 @@ import SwiftUI
 import MapKit
 
 struct PositionPopover: View {
+	@Environment(\.dismiss) private var dismiss
 	var position: PositionEntity
+	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
 	var body: some View {
-		VStack (alignment: .leading) {
+		VStack {
 			HStack {
 				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 65)
 				Spacer()
@@ -129,6 +131,20 @@ struct PositionPopover: View {
 				}
 			}
 			.padding(.top)
+			if !popover {
+#if targetEnvironment(macCatalyst)
+				Spacer()
+				Button {
+					dismiss()
+				} label: {
+					Label("close", systemImage: "xmark")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
+				.padding(.bottom)
+#endif
+			}
 		}
 		.presentationDetents([.fraction(0.45), .medium])
 		.presentationDragIndicator(.visible)

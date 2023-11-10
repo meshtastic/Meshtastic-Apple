@@ -145,7 +145,7 @@ struct NodeMapMapkit: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(item: $waypointCoordinate, content: { wpc in
-					WaypointFormView(coordinate: wpc)
+					WaypointFormMapKit(coordinate: wpc)
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				})

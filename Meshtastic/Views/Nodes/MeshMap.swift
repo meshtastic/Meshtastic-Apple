@@ -52,6 +52,10 @@ struct MeshMap: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 
 	var body: some View {
+		
+		let lineCoords = Array(positions).compactMap({(position) -> CLLocationCoordinate2D in
+			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
+		})
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
@@ -71,8 +75,21 @@ struct MeshMap: View {
 								}
 							}
 						}
+						/// Convex Hull
+						if showConvexHull {
+							let hull = lineCoords.getConvexHull()
+							MapPolygon(coordinates: hull)
+								.stroke(.blue, lineWidth: 3)
+								.foregroundStyle(.indigo.opacity(0.4))
+								//.stroke(Color(nodeColor.darker()), lineWidth: 3)
+								//.foregroundStyle(Color(nodeColor).opacity(0.4))
+						}
+						
 						/// Position Annotations
 						ForEach(Array(positions), id: \.id) { position in
+							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
+							/// Node Color from node.num
+							let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 							Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
 								ZStack {
 									let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
@@ -99,21 +116,130 @@ struct MeshMap: View {
 									selectedPosition = (selectedPosition == position ? nil : position)
 								}
 							}
+							// routeLines
+							if showRouteLines  {
+								let positionArray = position.nodePosition?.positions?.array as? [PositionEntity] ?? []
+								let routeCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
+									return position.nodeCoordinate ?? LocationHelper.DefaultLocation
+								})
+								if showRouteLines {
+									let gradient = LinearGradient(
+										colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+										startPoint: .leading, endPoint: .trailing
+									)
+									let dashed = StrokeStyle(
+										lineWidth: 3,
+										lineCap: .round, lineJoin: .round, dash: [10, 10]
+									)
+									MapPolyline(coordinates: routeCoords)
+										.stroke(gradient, style: dashed)
+								}
+							}							// Node History
+							if showNodeHistory {
+								ForEach(position.nodePosition!.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+									Annotation(position.latest ? position.nodePosition?.user?.shortName ?? "?": "", coordinate: position.coordinate) {
+										ZStack {
+												Circle()
+													.fill(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
+													.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+													.frame(width: 12, height: 12)
+											
+										}
+									}
+									.annotationTitles(.hidden)
+									.annotationSubtitles(.hidden)
+								}
+							}
 						}
 					}
 				}
 			}
-			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
-			.frame(maxHeight: .infinity)
-//			.popover(item: $selectedPosition) { selection in
-//				PositionPopover(position: selection)
-//					.padding()
-//					.opacity(0.8)
-//					.presentationCompactAdaptation(.sheet)
-//			}
+			.mapScope(mapScope)
+			.mapStyle(mapStyle)
+			.mapControls {
+				MapScaleView(scope: mapScope)
+					.mapControlVisibility(.visible)
+				if showUserLocation {
+					MapUserLocationButton(scope: mapScope)
+						.mapControlVisibility(.visible)
+				}
+				MapPitchToggle(scope: mapScope)
+					.mapControlVisibility(.visible)
+				MapCompass(scope: mapScope)
+					.mapControlVisibility(.visible)
+			}
+			.controlSize(.regular)
 			.sheet(item: $selectedPosition) { selection in
-				PositionPopover(position: selection)
+				PositionPopover(position: selection, popover: false)
 					.padding()
+			}
+			.sheet(item: $selectedWaypoint) { selection in
+				WaypointPopover(waypoint: selection)
+					.padding()
+			}
+			.sheet(isPresented: $isEditingSettings) {
+				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+			}
+			.onChange(of: (selectedMapLayer)) { newMapLayer in
+				switch selectedMapLayer {
+				case .standard:
+					UserDefaults.mapLayer = newMapLayer
+					mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+				case .hybrid:
+					UserDefaults.mapLayer = newMapLayer
+					mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+				case .satellite:
+					UserDefaults.mapLayer = newMapLayer
+					mapStyle = MapStyle.imagery(elevation: .realistic)
+				case .offline:
+					return
+				}
+			}
+			.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							isEditingSettings = !isEditingSettings
+						}
+					}) {
+						Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+					/// Show / Hide Waypoints Button
+					if waypoints.count > 0 {
+						
+						Button(action: {
+							withAnimation {
+								showWaypoints = !showWaypoints
+							}
+						}) {
+						Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
+							.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+					}
+					/// Look Around Button
+					if self.scene != nil {
+						Button(action: {
+							withAnimation {
+								isLookingAround = !isLookingAround
+							}
+						}) {
+							Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
+								.padding(.vertical, 5)
+						}
+						.tint(Color(UIColor.secondarySystemBackground))
+						.foregroundColor(.accentColor)
+						.buttonStyle(.borderedProminent)
+					}
+				}
+				.controlSize(.regular)
+				.padding(5)
 			}
 		}
 		.navigationTitle("Mesh Map")
@@ -126,12 +252,22 @@ struct MeshMap: View {
 				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
 					"?")
 		})
-		.onAppear(perform: {
+		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-		})
+			switch selectedMapLayer {
+			case .standard:
+				mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+			case .hybrid:
+				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+			case .satellite:
+				mapStyle = MapStyle.imagery(elevation: .realistic)
+			case .offline:
+				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+			}
+		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
 		})

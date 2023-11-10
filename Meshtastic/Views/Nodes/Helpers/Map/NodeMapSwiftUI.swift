@@ -99,7 +99,6 @@ struct NodeMapSwiftUI: View {
 						/// Node Annotations
 						ForEach(positionArray, id: \.id) { position in
 							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
-							let formatter = MeasurementFormatter()
 							let headingDegrees = Angle.degrees(Double(position.heading))
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 								ZStack {
@@ -199,91 +198,22 @@ struct NodeMapSwiftUI: View {
 							.padding()
 					}
 					.sheet(isPresented: $isEditingSettings) {
-						VStack {
-							Form {
-								Section(header: Text("Map Options")) {
-									Picker(selection: $selectedMapLayer, label: Text("")) {
-										ForEach(MapLayer.allCases, id: \.self) { layer in
-											if layer != MapLayer.offline {
-												Text(layer.localized)
-											}
-										}
-									}
-									.pickerStyle(SegmentedPickerStyle())
-									.onChange(of: (selectedMapLayer)) { newMapLayer in
-										switch selectedMapLayer {
-										case .standard:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-										case .hybrid:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-										case .satellite:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.imagery(elevation: .realistic)
-										case .offline:
-											return
-										}
-									}
-									.padding(.top, 5)
-									.padding(.bottom, 5)
-									Toggle(isOn: $showNodeHistory) {
-										Label("Node History", systemImage: "building.columns.fill")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showNodeHistory.toggle()
-										UserDefaults.enableMapNodeHistoryPins = self.showNodeHistory
-									}
-									Toggle(isOn: $showRouteLines) {
-										Label("Route Lines", systemImage: "road.lanes")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showRouteLines.toggle()
-										UserDefaults.enableMapRouteLines = self.showRouteLines
-									}
-									Toggle(isOn: $showConvexHull) {
-										Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showConvexHull.toggle()
-										UserDefaults.enableMapConvexHull = self.showConvexHull
-									}
-									Toggle(isOn: $showTraffic) {
-										Label("Traffic", systemImage: "car")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showTraffic.toggle()
-										UserDefaults.enableMapTraffic = self.showTraffic
-									}
-									Toggle(isOn: $showPointsOfInterest) {
-										Label("Points of Interest", systemImage: "mappin.and.ellipse")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showPointsOfInterest.toggle()
-										UserDefaults.enableMapPointsOfInterest = self.showPointsOfInterest
-									}
+						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+							.onChange(of: (selectedMapLayer)) { newMapLayer in
+								switch selectedMapLayer {
+								case .standard:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+								case .hybrid:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+								case .satellite:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.imagery(elevation: .realistic)
+								case .offline:
+									return
 								}
 							}
-							#if targetEnvironment(macCatalyst)
-							Button {
-								isEditingSettings = false
-							} label: {
-								Label("close", systemImage: "xmark")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding()
-							#endif
-						}
-						.presentationDetents([.fraction(0.4), .medium])
-						.presentationDragIndicator(.visible)
-						
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity

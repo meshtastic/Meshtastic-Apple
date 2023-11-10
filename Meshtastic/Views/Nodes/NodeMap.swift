@@ -76,7 +76,7 @@ struct NodeMap: View {
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.frame(maxHeight: .infinity)
 			.sheet(item: $waypointCoordinate, content: { wpc in
-				WaypointFormView(coordinate: wpc)
+				WaypointFormMapKit(coordinate: wpc)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.automatic)
 			})

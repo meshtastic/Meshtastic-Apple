@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreLocation
 
-struct WaypointFormView: View {
+struct WaypointFormMapKit: View {
 
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss

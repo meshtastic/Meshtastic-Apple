@@ -13,12 +13,12 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
-	@State var nodeHistory = false
-	@State var routeLines = false
-	@State var convexHull = false
-	@State var traffic: Bool = false
-	@State var pointsOfInterest: Bool = false
-	@State var mapLayer: MapLayer = .standard
+	@Binding var nodeHistory: Bool
+	@Binding var routeLines: Bool
+	@Binding var convexHull: Bool
+	@Binding var traffic: Bool
+	@Binding var pointsOfInterest: Bool
+	@Binding var mapLayer: MapLayer
 
 	var body: some View {
 		
@@ -35,6 +35,9 @@ struct MapSettingsForm: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
+					.onChange(of: mapLayer) { newMapLayer in
+						UserDefaults.mapLayer = newMapLayer
+					}
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
 					}
@@ -78,19 +81,18 @@ struct MapSettingsForm: View {
 				}
 			}
 #if targetEnvironment(macCatalyst)
-			Button {
-				dismiss()
-			} label: {
-				Label("close", systemImage: "xmark")
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
+Spacer()
+				Button {
+					dismiss()
+				} label: {
+					Label("close", systemImage: "xmark")
+				}
+				.buttonStyle(.bordered)
+				.buttonBorderShape(.capsule)
+				.controlSize(.large)
 #endif
 		}
-		.presentationDetents([.fraction(0.60)])
-		//.presentationDetents([.medium, .large])
-		.presentationDragIndicator(.automatic)
+		.presentationDetents([.fraction(0.45), .fraction(0.65)])
+		.presentationDragIndicator(.visible)
 	}
 }

@@ -121,7 +121,7 @@ struct UserConfig: View {
 							HStack {
 								Image(systemName: "antenna.radiowaves.left.and.right")
 									.foregroundColor(.accentColor)
-								Stepper("\(txPower)db Transmit Power", value: $txPower, in: 0...30, step: 1)
+								Stepper("\(txPower)db Transmit Power", value: $txPower, in: 1...30, step: 1)
 									.padding(5)
 							}
 						}
