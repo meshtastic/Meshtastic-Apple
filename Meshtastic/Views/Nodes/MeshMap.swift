@@ -36,8 +36,10 @@ struct MeshMap: View {
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
+	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
-	@State var newWaypointLocation :CLLocationCoordinate2D? = nil
+
+	@State var newWaypoint :CLLocationCoordinate2D?
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
@@ -151,9 +153,20 @@ struct MeshMap: View {
 							}
 						}
 					}
-					.onTapGesture(perform: { screenCoord in
-						newWaypointLocation = reader.convert(screenCoord, from: .local)
-						print("Tapped at \(newWaypointLocation)")
+					.gesture(LongPressGesture(minimumDuration: 0.5).sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
+						.onEnded { value in
+							switch value {
+								case .second(true, let drag):
+								/// Convert the touch point to a Coordinate
+								newWaypoint = reader.convert(drag?.location ?? .zero, from: .local)
+								/// Create a new WaypointEntity using the values from the newWaypoint which will trigger the WaypointForm sheet
+								editingWaypoint = WaypointEntity(context: context)
+								editingWaypoint!.name = "Waypoint Pin"
+								editingWaypoint!.latitudeI = Int32(newWaypoint?.latitude ?? 0 * 1e7)
+								editingWaypoint!.longitudeI = Int32(newWaypoint?.longitude ?? 0 * 1e7)
+								default:
+									break
+						}
 					})
 				}
 			}
@@ -178,6 +191,10 @@ struct MeshMap: View {
 			}
 			.sheet(item: $selectedWaypoint) { selection in
 				WaypointPopover(waypoint: selection)
+					.padding()
+			}
+			.sheet(item: $editingWaypoint) { selection in
+				WaypointForm(waypoint: selection)
 					.padding()
 			}
 			.sheet(isPresented: $isEditingSettings) {
@@ -246,14 +263,8 @@ struct MeshMap: View {
 			}
 		}
 		.navigationTitle("Mesh Map")
-		.navigationBarItems(leading:
-								MeshtasticLogo(), trailing:
-								ZStack {
-			ConnectedDevice(
-				bluetoothOn: bleManager.isSwitchedOn,
-				deviceConnected: bleManager.connectedPeripheral != nil,
-				name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName :
-					"?")
+		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
 			UIApplication.shared.isIdleTimerDisabled = true
