@@ -162,9 +162,11 @@ struct MeshMap: View {
 								/// Create a new WaypointEntity using the values from the newWaypoint which will trigger the WaypointForm sheet
 								editingWaypoint = WaypointEntity(context: context)
 								editingWaypoint!.name = "Waypoint Pin"
-								editingWaypoint!.latitudeI = Int32(newWaypoint?.latitude ?? 0 * 1e7)
-								editingWaypoint!.longitudeI = Int32(newWaypoint?.longitude ?? 0 * 1e7)
-								default:
+								
+								
+								editingWaypoint!.latitudeI = Int32((newWaypoint?.latitude ?? 0) * 1e7)
+								editingWaypoint!.longitudeI = Int32((newWaypoint!.longitude ?? 0) * 1e7)
+								editingWaypoint!.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))								default:
 									break
 						}
 					})
