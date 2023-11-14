@@ -13,31 +13,34 @@ struct LoRaSignalStrengthMeter: View {
 	var preset: ModemPresets
 	var compact: Bool
 	var body: some View {
-		let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
-		let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
-		if !compact {
-			VStack {
-				LoRaSignalStrengthIndicator(signalStrength: signalStrength)
-				Text("Signal \(signalStrength.description)").font(.footnote)
-				Text("SNR \(String(format: "%.2f", snr))dB")
-					.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
-					.font(.caption2)
-				Text("RSSI \(rssi)dB")
-					.foregroundColor(getRssiColor(rssi: rssi))
-					.font(.caption2)
+		
+		if (snr != 0.0 && rssi != 0)  {
+			let signalStrength = getLoRaSignalStrength(snr: snr, rssi: rssi, preset: preset)
+			let gradient = Gradient(colors: [.red, .orange, .yellow, .green])
+			if !compact {
+				VStack {
+					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
+					Text("Signal \(signalStrength.description)").font(.footnote)
+					Text("SNR \(String(format: "%.2f", snr))dB")
+						.foregroundColor(getSnrColor(snr: snr, preset: ModemPresets.longFast))
+						.font(.caption2)
+					Text("RSSI \(rssi)dB")
+						.foregroundColor(getRssiColor(rssi: rssi))
+						.font(.caption2)
+				}
+				.padding(.bottom, 2)
+			} else {
+				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
+				} currentValueLabel: {
+					Image(systemName: "dot.radiowaves.left.and.right")
+						.font(.callout)
+					Text("Signal \(signalStrength.description)")
+						.font(.callout)
+				}
+				.gaugeStyle(.accessoryLinear)
+				.tint(gradient)
+				.font(.caption)
 			}
-			.padding(.bottom, 2)
-		} else {
-			Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
-			} currentValueLabel: {
-				Image(systemName: "dot.radiowaves.left.and.right")
-					.font(.callout)
-				Text("Signal \(signalStrength.description)")
-					.font(.callout)
-			}
-			.gaugeStyle(.accessoryLinear)
-			.tint(gradient)
-			.font(.caption)
 		}
 	}
 }

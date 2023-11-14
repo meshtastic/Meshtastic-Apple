@@ -29,7 +29,7 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
@@ -39,7 +39,7 @@ struct MeshMap: View {
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 
-	@State var newWaypoint :CLLocationCoordinate2D?
+	@State var newWaypointCoord :CLLocationCoordinate2D?
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
@@ -110,9 +110,7 @@ struct MeshMap: View {
 									}
 									CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
 								}
-								.onTapGesture(coordinateSpace: .named("meshmap")) { location in
-									print("Tapped at \(location)")
-									let pinLocation = reader.convert(location, from: .local)
+								.onTapGesture { location in
 									selectedPosition = (selectedPosition == position ? nil : position)
 								}
 							}
@@ -153,23 +151,23 @@ struct MeshMap: View {
 							}
 						}
 					}
-					.gesture(LongPressGesture(minimumDuration: 0.5).sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
-						.onEnded { value in
-							switch value {
-								case .second(true, let drag):
-								/// Convert the touch point to a Coordinate
-								newWaypoint = reader.convert(drag?.location ?? .zero, from: .local)
-								/// Create a new WaypointEntity using the values from the newWaypoint which will trigger the WaypointForm sheet
-								editingWaypoint = WaypointEntity(context: context)
-								editingWaypoint!.name = "Waypoint Pin"
-								
-								
-								editingWaypoint!.latitudeI = Int32((newWaypoint?.latitude ?? 0) * 1e7)
-								editingWaypoint!.longitudeI = Int32((newWaypoint!.longitude ?? 0) * 1e7)
-								editingWaypoint!.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))								default:
-									break
-						}
-					})
+//					.gesture(LongPressGesture(minimumDuration: 0.5).sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
+//						.onEnded { value in
+//							switch value {
+//								case .second(true, let drag):
+//								/// Convert the touch point to a Coordinate
+//								newWaypointCoord = reader.convert(drag?.location ?? .zero, from: .local)
+//								/// Create a new WaypointEntity using the values from the newWaypoint which will trigger the WaypointForm sheet
+//								editingWaypoint = WaypointEntity(context: context)
+//								editingWaypoint!.name = "Waypoint Pin"
+//								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+//								editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
+//								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+//								editingWaypoint!.id = 0
+//							default:
+//								break
+//						}
+//					})
 				}
 			}
 			.mapScope(mapScope)
