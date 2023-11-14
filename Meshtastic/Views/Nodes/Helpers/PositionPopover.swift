@@ -121,41 +121,45 @@ struct PositionPopover: View {
 								.frame(width: 35)
 						}
 					}
+					Spacer()
 				}
 				Spacer()
-				VStack (alignment: .trailing) {
+				VStack (alignment: .center) {
 					if position.nodePosition != nil {
-						//if position.nodePosition?.user?.vip ?? false {
-//							Button {
-//								position.nodePosition!.user!.vip = !user.vip
-//								do {
-//									try context.save()
-//								} catch {
-//									context.rollback()
-//									print("💥 Save User VIP Error")
-//								}
-//							} label: {
-							Image(systemName: position.nodePosition?.user?.vip ?? false ? "star.slash.fill" : "star.fill")
-							.symbolRenderingMode(.hierarchical)
-							.font(.largeTitle)
-							//	Label(position.nodePosition!user!.vip ? "Un-Favorite" : "Favorite", systemImage: position.nodePosition!user!.vip ? "star.slash.fill" : "star.fill")
-						//	}
-					//	}
-						
+						if position.nodePosition?.user?.vip ?? false {
+							Image(systemName: "star.fill")
+								.symbolRenderingMode(.hierarchical)
+								.font(.largeTitle)
+								.padding(.bottom)
+						}
 						if position.nodePosition?.hasEnvironmentMetrics ?? false {
 							Image(systemName: "cloud.sun.rain")
+								.foregroundColor(.accentColor)
 								.symbolRenderingMode(.hierarchical)
 								.font(.largeTitle)
+								.padding(.bottom)
 						}
 						if position.nodePosition?.hasDetectionSensorMetrics ?? false {
-							Image(systemName: "sensor")
-								.symbolRenderingMode(.hierarchical)
-								.font(.largeTitle)
+							if #available(iOS 17.0, macOS 14.0, *) {
+								Image(systemName: "sensor.fill")
+									.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
+									.symbolRenderingMode(.hierarchical)
+									.foregroundColor(.accentColor)
+									.font(.largeTitle)
+									.padding(.bottom)
+							} else {
+								Image(systemName: "sensor.fill")
+									.symbolRenderingMode(.hierarchical)
+									.foregroundColor(.accentColor)
+									.font(.largeTitle)
+									.padding(.bottom)
+							}
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}
 					let mpInt = Int(position.nodePosition?.loRaConfig?.modemPreset ?? 0)
 					LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: mpInt) ?? ModemPresets.longFast, compact: false)
+					Spacer()
 				}
 			}
 			.padding(.top)
