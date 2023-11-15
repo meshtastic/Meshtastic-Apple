@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 import CoreLocation
+import Foundation
 #if canImport(MapKit)
 import MapKit
 #endif
@@ -18,6 +19,8 @@ struct MeshMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@StateObject var appState = AppState.shared
+	
+	@GestureState var isDetectingLongGesture = false
 	/// Parameters
 	@State var showUserLocation: Bool = true
 	/// Map State User Defaults
@@ -62,6 +65,7 @@ struct MeshMap: View {
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
+					
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						/// Waypoint Annotations
 						if waypoints.count > 0 && showWaypoints {
@@ -151,23 +155,17 @@ struct MeshMap: View {
 							}
 						}
 					}
-//					.gesture(LongPressGesture(minimumDuration: 0.5).sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
-//						.onEnded { value in
-//							switch value {
-//								case .second(true, let drag):
-//								/// Convert the touch point to a Coordinate
-//								newWaypointCoord = reader.convert(drag?.location ?? .zero, from: .local)
-//								/// Create a new WaypointEntity using the values from the newWaypoint which will trigger the WaypointForm sheet
-//								editingWaypoint = WaypointEntity(context: context)
-//								editingWaypoint!.name = "Waypoint Pin"
-//								editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-//								editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
-//								editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
-//								editingWaypoint!.id = 0
-//							default:
-//								break
-//						}
-//					})
+					.onTapGesture(perform: { location in
+						newWaypointCoord = reader.convert(location , from: .local)
+					})
+					.onLongPressGesture(minimumDuration: 0.5, maximumDistance: 10) {
+						editingWaypoint = WaypointEntity(context: context)
+						editingWaypoint!.name = "Waypoint Pin"
+						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+						editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
+						editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+						editingWaypoint!.id = 0
+					}
 				}
 			}
 			.mapScope(mapScope)
@@ -190,7 +188,8 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(item: $selectedWaypoint) { selection in
-				WaypointPopover(waypoint: selection)
+				//WaypointPopover(waypoint: selection)
+				WaypointForm(waypoint: selection)
 					.padding()
 			}
 			.sheet(item: $editingWaypoint) { selection in

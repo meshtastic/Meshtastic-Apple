@@ -24,7 +24,14 @@ struct WaypointPopover: View {
 					Image(systemName: "lock.fill" )
 						.font(.largeTitle)
 				} else {
-					// Edit Button
+					Button {
+						dismiss()
+					} label: {
+						Image(systemName: "square.and.pencil" )
+							.font(.largeTitle)
+							.symbolRenderingMode(.hierarchical)
+							.foregroundColor(.accentColor)
+					}
 				}
 			}
 			Divider()

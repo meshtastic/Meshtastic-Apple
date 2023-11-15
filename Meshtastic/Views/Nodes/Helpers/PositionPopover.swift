@@ -9,6 +9,8 @@ import SwiftUI
 import MapKit
 
 struct PositionPopover: View {
+	@Environment(\.managedObjectContext) var context
+	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	var position: PositionEntity
 	var popover: Bool = true
@@ -17,10 +19,9 @@ struct PositionPopover: View {
 		VStack {
 			HStack {
 				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 65)
-				Spacer()
+					.padding(.trailing, 5)
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)
-				Spacer()
 			}
 			Divider()
 			HStack (alignment: .center) {
@@ -128,9 +129,10 @@ struct PositionPopover: View {
 					if position.nodePosition != nil {
 						if position.nodePosition?.user?.vip ?? false {
 							Image(systemName: "star.fill")
+								.foregroundColor(.accentColor)
 								.symbolRenderingMode(.hierarchical)
 								.font(.largeTitle)
-								.padding(.bottom)
+								.padding(.bottom, 5)
 						}
 						if position.nodePosition?.hasEnvironmentMetrics ?? false {
 							Image(systemName: "cloud.sun.rain")

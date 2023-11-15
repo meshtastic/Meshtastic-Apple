@@ -132,12 +132,13 @@ struct WaypointForm: View {
 			}
 			HStack {
 				Button {
-
+					/// Send a new or exiting waypoint
 					var newWaypoint = Waypoint()
-					// Loading a waypoint from edit
 					if waypoint.id  ==  0 {
 						newWaypoint.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 						waypoint.id = Int64(newWaypoint.id)
+					} else {
+						newWaypoint.id = UInt32(waypoint.id)
 					}
 					newWaypoint.latitudeI = waypoint.latitudeI
 					newWaypoint.longitudeI = waypoint.longitudeI
@@ -198,10 +199,7 @@ struct WaypointForm: View {
 						 dismiss() })
 						Button("For everyone", action: {
 							var newWaypoint = Waypoint()
-
-							if waypoint.id > 0 {
-								newWaypoint.id = UInt32(waypoint.id)
-							}
+							newWaypoint.id = UInt32(waypoint.id)
 							newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 							newWaypoint.description_p = description
 							newWaypoint.latitudeI = waypoint.longitudeI
@@ -218,9 +216,16 @@ struct WaypointForm: View {
 									newWaypoint.lockedTo = UInt32(lockedTo)
 								}
 							}
-							newWaypoint.expire = 1
+							newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
 							if bleManager.sendWaypoint(waypoint: newWaypoint) {
-								dismiss()
+								
+								bleManager.context!.delete(waypoint)
+								 do {
+									 try bleManager.context!.save()
+								 } catch {
+									 bleManager.context!.rollback()
+								 }
+								 dismiss()
 							} else {
 								dismiss()
 								print("Send waypoint failed")
