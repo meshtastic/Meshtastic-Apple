@@ -71,7 +71,6 @@ struct MeshMap: View {
 									ZStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
 											.onTapGesture(perform: { location in
-												let pinLocation = reader.convert(location, from: .local)
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
 											})
 									}
@@ -84,8 +83,6 @@ struct MeshMap: View {
 							MapPolygon(coordinates: hull)
 								.stroke(.blue, lineWidth: 3)
 								.foregroundStyle(.indigo.opacity(0.4))
-								//.stroke(Color(nodeColor.darker()), lineWidth: 3)
-								//.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
 						/// Position Annotations
 						ForEach(Array(positions), id: \.id) { position in
@@ -107,7 +104,6 @@ struct MeshMap: View {
 												self.scale = 1
 											}
 											.frame(width: 60, height: 60)
-											
 									}
 									CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
 								}
@@ -137,7 +133,7 @@ struct MeshMap: View {
 							/// Node History
 							if showNodeHistory {
 								ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-									if mappin.latest == false { //} position.nodePosition.user.vip ?? false {
+									if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
 										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 										let headingDegrees = Angle.degrees(Double(mappin.heading))
 										Annotation("", coordinate: mappin.coordinate) {
