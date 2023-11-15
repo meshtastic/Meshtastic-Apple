@@ -19,8 +19,6 @@ struct MeshMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@StateObject var appState = AppState.shared
-	
-	@GestureState var isDetectingLongGesture = false
 	/// Parameters
 	@State var showUserLocation: Bool = true
 	/// Map State User Defaults
@@ -38,10 +36,9 @@ struct MeshMap: View {
 	@State var isLookingAround = false
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
+	@State var showWaypoints = true
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
-
 	@State var newWaypointCoord :CLLocationCoordinate2D?
 	
 	var delay: Double = 0
