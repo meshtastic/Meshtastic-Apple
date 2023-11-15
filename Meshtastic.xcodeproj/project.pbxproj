@@ -68,7 +68,6 @@
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
 		DD73FD1128750779000852D6 /* PositionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD73FD1028750779000852D6 /* PositionLog.swift */; };
-		DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD760AAD2ABAC706002C022E /* WaypointPopover.swift */; };
 		DD769E0328D18BF1001A3F05 /* DeviceMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */; };
 		DD77093B2AA1ABB8007A8BF0 /* BluetoothTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */; };
 		DD77093D2AA1AFA3007A8BF0 /* ChannelTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */; };
@@ -279,7 +278,6 @@
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
 		DD73FD1028750779000852D6 /* PositionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionLog.swift; sourceTree = "<group>"; };
-		DD760AAD2ABAC706002C022E /* WaypointPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointPopover.swift; sourceTree = "<group>"; };
 		DD769E0228D18BF0001A3F05 /* DeviceMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsLog.swift; sourceTree = "<group>"; };
 		DD77093A2AA1ABB8007A8BF0 /* BluetoothTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTips.swift; sourceTree = "<group>"; };
 		DD77093C2AA1AFA3007A8BF0 /* ChannelTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelTips.swift; sourceTree = "<group>"; };
@@ -634,7 +632,9 @@
 		DDAD49EB2AFAE82500B4425D /* Map */ = {
 			isa = PBXGroup;
 			children = (
+				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
+				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
 				DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */,
 			);
 			path = Map;
@@ -831,12 +831,9 @@
 			isa = PBXGroup;
 			children = (
 				DDAD49EB2AFAE82500B4425D /* Map */,
-				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
-				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
-				DD760AAD2ABAC706002C022E /* WaypointPopover.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1087,7 +1084,6 @@
 				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
-				DD760AAE2ABAC706002C022E /* WaypointPopover.swift in Sources */,
 				DD5E5203298EE33B00D21B61 /* config.pb.swift in Sources */,
 				DD798B072915928D005217CD /* ChannelMessageList.swift in Sources */,
 				DDC2E1A726CEB3400042C5E4 /* LocationHelper.swift in Sources */,

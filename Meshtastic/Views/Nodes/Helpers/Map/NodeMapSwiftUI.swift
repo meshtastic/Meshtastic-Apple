@@ -194,7 +194,7 @@ struct NodeMapSwiftUI: View {
 						}
 					}
 					.sheet(item: $selectedWaypoint) { selection in
-						WaypointPopover(waypoint: selection)
+						WaypointForm(waypoint: selection)
 							.padding()
 					}
 					.sheet(isPresented: $isEditingSettings) {

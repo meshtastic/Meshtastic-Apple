@@ -115,7 +115,7 @@ struct MeshMap: View {
 									selectedPosition = (selectedPosition == position ? nil : position)
 								}
 							}
-							// routeLines
+							/// Route Lines
 							if showRouteLines  {
 								let positionArray = position.nodePosition?.positions?.array as? [PositionEntity] ?? []
 								let routeCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
@@ -136,23 +136,38 @@ struct MeshMap: View {
 							}
 							/// Node History
 							if showNodeHistory {
-								ForEach(position.nodePosition!.positions!.reversed() as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-									Annotation(position.latest ? position.nodePosition?.user?.shortName ?? "?": "", coordinate: position.coordinate) {
-										ZStack {
-												Circle()
-													.fill(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
-													.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
-													.frame(width: 12, height: 12)
+								ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+									if mappin.latest == false &&  true { //} position.nodePosition.user.vip ?? false {
+										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 3))
+										let headingDegrees = Angle.degrees(Double(mappin.heading))
+										Annotation("", coordinate: mappin.coordinate) {
+											ZStack {
+												if pf.contains(.Heading) {
+													Image(systemName: "location.north.circle")
+														.resizable()
+														.scaledToFit()
+														.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
+														.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+														.clipShape(Circle())
+														.rotationEffect(headingDegrees)
+														.frame(width: 16, height: 16)
 											
+												} else {
+													Circle()
+														.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+														.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+														.frame(width: 12, height: 12)
+												}
+											}
 										}
+										.annotationTitles(.hidden)
+										.annotationSubtitles(.hidden)
 									}
-									.annotationTitles(.hidden)
-									.annotationSubtitles(.hidden)
 								}
 							}
 						}
 					}
-					.onTapGesture(perform: { location in
+					.onTapGesture(count: 1, perform: { location in
 						newWaypointCoord = reader.convert(location , from: .local)
 					})
 					.onLongPressGesture(minimumDuration: 0.5, maximumDistance: 10) {
@@ -161,6 +176,7 @@ struct MeshMap: View {
 						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 						editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
 						editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 						editingWaypoint!.id = 0
 					}
 				}
@@ -185,12 +201,11 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(item: $selectedWaypoint) { selection in
-				//WaypointPopover(waypoint: selection)
 				WaypointForm(waypoint: selection)
 					.padding()
 			}
 			.sheet(item: $editingWaypoint) { selection in
-				WaypointForm(waypoint: selection)
+				WaypointForm(waypoint: selection, editMode: true)
 					.padding()
 			}
 			.sheet(isPresented: $isEditingSettings) {
