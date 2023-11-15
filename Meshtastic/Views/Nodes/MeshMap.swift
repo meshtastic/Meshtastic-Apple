@@ -137,8 +137,8 @@ struct MeshMap: View {
 							/// Node History
 							if showNodeHistory {
 								ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-									if mappin.latest == false &&  true { //} position.nodePosition.user.vip ?? false {
-										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 3))
+									if mappin.latest == false { //} position.nodePosition.user.vip ?? false {
+										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 										let headingDegrees = Angle.degrees(Double(mappin.heading))
 										Annotation("", coordinate: mappin.coordinate) {
 											ZStack {
