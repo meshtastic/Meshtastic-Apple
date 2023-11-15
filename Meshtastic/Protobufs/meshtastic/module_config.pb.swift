@@ -786,6 +786,11 @@ struct ModuleConfig {
     /// and/or beep for 60 seconds
     var nagTimeout: UInt32 = 0
 
+    ///
+    /// When true, enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer
+    /// T-Watch S3 and T-Deck for example have this capability
+    var useI2SAsBuzzer: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -884,6 +889,21 @@ struct ModuleConfig {
     /// Interval in seconds of how often we should try to send our
     /// air quality metrics to the mesh
     var airQualityInterval: UInt32 = 0
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// air quality metrics to the mesh
+    var powerMeasurementEnabled: Bool = false
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// air quality metrics to the mesh
+    var powerUpdateInterval: UInt32 = 0
+
+    ///
+    /// Interval in seconds of how often we should try to send our
+    /// air quality metrics to the mesh
+    var powerScreenEnabled: Bool = false
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1873,6 +1893,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     13: .standard(proto: "alert_bell_buzzer"),
     7: .standard(proto: "use_pwm"),
     14: .standard(proto: "nag_timeout"),
+    15: .standard(proto: "use_i2s_as_buzzer"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1895,6 +1916,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
       case 12: try { try decoder.decodeSingularBoolField(value: &self.alertBellVibra) }()
       case 13: try { try decoder.decodeSingularBoolField(value: &self.alertBellBuzzer) }()
       case 14: try { try decoder.decodeSingularUInt32Field(value: &self.nagTimeout) }()
+      case 15: try { try decoder.decodeSingularBoolField(value: &self.useI2SAsBuzzer) }()
       default: break
       }
     }
@@ -1943,6 +1965,9 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if self.nagTimeout != 0 {
       try visitor.visitSingularUInt32Field(value: self.nagTimeout, fieldNumber: 14)
     }
+    if self.useI2SAsBuzzer != false {
+      try visitor.visitSingularBoolField(value: self.useI2SAsBuzzer, fieldNumber: 15)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1961,6 +1986,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
     if lhs.alertBellBuzzer != rhs.alertBellBuzzer {return false}
     if lhs.usePwm != rhs.usePwm {return false}
     if lhs.nagTimeout != rhs.nagTimeout {return false}
+    if lhs.useI2SAsBuzzer != rhs.useI2SAsBuzzer {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2076,6 +2102,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     5: .standard(proto: "environment_display_fahrenheit"),
     6: .standard(proto: "air_quality_enabled"),
     7: .standard(proto: "air_quality_interval"),
+    8: .standard(proto: "power_measurement_enabled"),
+    9: .standard(proto: "power_update_interval"),
+    10: .standard(proto: "power_screen_enabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2091,6 +2120,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
       case 5: try { try decoder.decodeSingularBoolField(value: &self.environmentDisplayFahrenheit) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.airQualityEnabled) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.airQualityInterval) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.powerMeasurementEnabled) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.powerUpdateInterval) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.powerScreenEnabled) }()
       default: break
       }
     }
@@ -2118,6 +2150,15 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.airQualityInterval != 0 {
       try visitor.visitSingularUInt32Field(value: self.airQualityInterval, fieldNumber: 7)
     }
+    if self.powerMeasurementEnabled != false {
+      try visitor.visitSingularBoolField(value: self.powerMeasurementEnabled, fieldNumber: 8)
+    }
+    if self.powerUpdateInterval != 0 {
+      try visitor.visitSingularUInt32Field(value: self.powerUpdateInterval, fieldNumber: 9)
+    }
+    if self.powerScreenEnabled != false {
+      try visitor.visitSingularBoolField(value: self.powerScreenEnabled, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2129,6 +2170,9 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.environmentDisplayFahrenheit != rhs.environmentDisplayFahrenheit {return false}
     if lhs.airQualityEnabled != rhs.airQualityEnabled {return false}
     if lhs.airQualityInterval != rhs.airQualityInterval {return false}
+    if lhs.powerMeasurementEnabled != rhs.powerMeasurementEnabled {return false}
+    if lhs.powerUpdateInterval != rhs.powerUpdateInterval {return false}
+    if lhs.powerScreenEnabled != rhs.powerScreenEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

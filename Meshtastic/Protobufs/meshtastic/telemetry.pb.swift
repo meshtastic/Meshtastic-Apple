@@ -80,6 +80,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// PM2.5 air quality sensor
   case pmsa003I // = 13
+
+  ///
+  /// INA3221 3 Channel Voltage / Current Sensor
+  case ina3221 // = 14
   case UNRECOGNIZED(Int)
 
   init() {
@@ -102,6 +106,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 11: self = .qmc5883L
     case 12: self = .sht31
     case 13: self = .pmsa003I
+    case 14: self = .ina3221
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -122,6 +127,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .qmc5883L: return 11
     case .sht31: return 12
     case .pmsa003I: return 13
+    case .ina3221: return 14
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -147,6 +153,7 @@ extension TelemetrySensorType: CaseIterable {
     .qmc5883L,
     .sht31,
     .pmsa003I,
+    .ina3221,
   ]
 }
 
@@ -204,12 +211,48 @@ struct EnvironmentMetrics {
   var gasResistance: Float = 0
 
   ///
-  /// Voltage measured
+  /// Voltage measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   var voltage: Float = 0
 
   ///
-  /// Current measured
+  /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   var current: Float = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
+/// Power Metrics (voltage / current / etc)
+struct PowerMetrics {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Voltage (Ch1)
+  var ch1Voltage: Float = 0
+
+  ///
+  /// Current (Ch1)
+  var ch1Current: Float = 0
+
+  ///
+  /// Voltage (Ch2)
+  var ch2Voltage: Float = 0
+
+  ///
+  /// Current (Ch2)
+  var ch2Current: Float = 0
+
+  ///
+  /// Voltage (Ch3)
+  var ch3Voltage: Float = 0
+
+  ///
+  /// Current (Ch3)
+  var ch3Current: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -319,6 +362,16 @@ struct Telemetry {
     set {variant = .airQualityMetrics(newValue)}
   }
 
+  ///
+  /// Power Metrics 
+  var powerMetrics: PowerMetrics {
+    get {
+      if case .powerMetrics(let v)? = variant {return v}
+      return PowerMetrics()
+    }
+    set {variant = .powerMetrics(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Variant: Equatable {
@@ -331,6 +384,9 @@ struct Telemetry {
     ///
     /// Air quality metrics
     case airQualityMetrics(AirQualityMetrics)
+    ///
+    /// Power Metrics 
+    case powerMetrics(PowerMetrics)
 
   #if !swift(>=4.1)
     static func ==(lhs: Telemetry.OneOf_Variant, rhs: Telemetry.OneOf_Variant) -> Bool {
@@ -350,6 +406,10 @@ struct Telemetry {
         guard case .airQualityMetrics(let l) = lhs, case .airQualityMetrics(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.powerMetrics, .powerMetrics): return {
+        guard case .powerMetrics(let l) = lhs, case .powerMetrics(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -363,6 +423,7 @@ struct Telemetry {
 extension TelemetrySensorType: @unchecked Sendable {}
 extension DeviceMetrics: @unchecked Sendable {}
 extension EnvironmentMetrics: @unchecked Sendable {}
+extension PowerMetrics: @unchecked Sendable {}
 extension AirQualityMetrics: @unchecked Sendable {}
 extension Telemetry: @unchecked Sendable {}
 extension Telemetry.OneOf_Variant: @unchecked Sendable {}
@@ -388,6 +449,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     11: .same(proto: "QMC5883L"),
     12: .same(proto: "SHT31"),
     13: .same(proto: "PMSA003I"),
+    14: .same(proto: "INA3221"),
   ]
 }
 
@@ -503,6 +565,68 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
+extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PowerMetrics"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "ch1_voltage"),
+    2: .standard(proto: "ch1_current"),
+    3: .standard(proto: "ch2_voltage"),
+    4: .standard(proto: "ch2_current"),
+    5: .standard(proto: "ch3_voltage"),
+    6: .standard(proto: "ch3_current"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self.ch1Voltage) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.ch1Current) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self.ch2Voltage) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self.ch2Current) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self.ch3Voltage) }()
+      case 6: try { try decoder.decodeSingularFloatField(value: &self.ch3Current) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.ch1Voltage != 0 {
+      try visitor.visitSingularFloatField(value: self.ch1Voltage, fieldNumber: 1)
+    }
+    if self.ch1Current != 0 {
+      try visitor.visitSingularFloatField(value: self.ch1Current, fieldNumber: 2)
+    }
+    if self.ch2Voltage != 0 {
+      try visitor.visitSingularFloatField(value: self.ch2Voltage, fieldNumber: 3)
+    }
+    if self.ch2Current != 0 {
+      try visitor.visitSingularFloatField(value: self.ch2Current, fieldNumber: 4)
+    }
+    if self.ch3Voltage != 0 {
+      try visitor.visitSingularFloatField(value: self.ch3Voltage, fieldNumber: 5)
+    }
+    if self.ch3Current != 0 {
+      try visitor.visitSingularFloatField(value: self.ch3Current, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: PowerMetrics, rhs: PowerMetrics) -> Bool {
+    if lhs.ch1Voltage != rhs.ch1Voltage {return false}
+    if lhs.ch1Current != rhs.ch1Current {return false}
+    if lhs.ch2Voltage != rhs.ch2Voltage {return false}
+    if lhs.ch2Current != rhs.ch2Current {return false}
+    if lhs.ch3Voltage != rhs.ch3Voltage {return false}
+    if lhs.ch3Current != rhs.ch3Current {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -608,6 +732,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     2: .standard(proto: "device_metrics"),
     3: .standard(proto: "environment_metrics"),
     4: .standard(proto: "air_quality_metrics"),
+    5: .standard(proto: "power_metrics"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -656,6 +781,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.variant = .airQualityMetrics(v)
         }
       }()
+      case 5: try {
+        var v: PowerMetrics?
+        var hadOneofValue = false
+        if let current = self.variant {
+          hadOneofValue = true
+          if case .powerMetrics(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.variant = .powerMetrics(v)
+        }
+      }()
       default: break
       }
     }
@@ -681,6 +819,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     case .airQualityMetrics?: try {
       guard case .airQualityMetrics(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case .powerMetrics?: try {
+      guard case .powerMetrics(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
     case nil: break
     }
