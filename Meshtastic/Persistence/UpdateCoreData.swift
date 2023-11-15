@@ -580,7 +580,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.fixedPosition = config.fixedPosition
 				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				newPositionConfig.gpsAttemptTime = Int32(config.gpsAttemptTime)
-				newPositionConfig.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				newPositionConfig.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
 				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
