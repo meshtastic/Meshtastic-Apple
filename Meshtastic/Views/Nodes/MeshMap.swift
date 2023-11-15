@@ -62,7 +62,6 @@ struct MeshMap: View {
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
-					
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						/// Waypoint Annotations
 						if waypoints.count > 0 && showWaypoints {
@@ -112,23 +111,17 @@ struct MeshMap: View {
 								}
 							}
 							/// Route Lines
-							if showRouteLines  {
-								let positionArray = position.nodePosition?.positions?.array as? [PositionEntity] ?? []
-								let routeCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
-									return position.nodeCoordinate ?? LocationHelper.DefaultLocation
-								})
-								if showRouteLines {
-									let gradient = LinearGradient(
-										colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-										startPoint: .leading, endPoint: .trailing
-									)
-									let dashed = StrokeStyle(
-										lineWidth: 3,
-										lineCap: .round, lineJoin: .round, dash: [10, 10]
-									)
-									MapPolyline(coordinates: routeCoords)
-										.stroke(gradient, style: dashed)
-								}
+							if showRouteLines {
+								let gradient = LinearGradient(
+									colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+									startPoint: .leading, endPoint: .trailing
+								)
+								let dashed = StrokeStyle(
+									lineWidth: 3,
+									lineCap: .round, lineJoin: .round, dash: [10, 10]
+								)
+								MapPolyline(coordinates: lineCoords)
+									.stroke(gradient, style: dashed)
 							}
 							/// Node History
 							if showNodeHistory {

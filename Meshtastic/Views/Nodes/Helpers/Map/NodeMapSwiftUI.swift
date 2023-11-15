@@ -98,7 +98,7 @@ struct NodeMapSwiftUI: View {
 						}
 						/// Node Annotations
 						ForEach(positionArray, id: \.id) { position in
-							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
+							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 								ZStack {
