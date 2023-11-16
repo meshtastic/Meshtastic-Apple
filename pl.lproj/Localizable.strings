@@ -144,6 +144,7 @@
 "map.centering"="Tryb Wyśrodkowania";
 "map.tiles.delete"="Usuń Wszystkie Kafle Mapy";
 "map.recentering"="Automatyczne Wyśrodkowywanie";
+"map.use.legacy"="Use Legacy Mesh Map";
 "map.usertrackingmode"="Tryb śledzenia użytkownika";
 "map.usertrackingmode.follow"="Śledź";
 "map.usertrackingmode.followwithheading"="Śledź z kierunkiem";

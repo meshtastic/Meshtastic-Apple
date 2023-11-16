@@ -24,11 +24,27 @@ struct ContentView: View {
 					Label("nodes", systemImage: "flipphone")
 				}
 				.tag(Tab.nodes)
-			NodeMap()
-				.tabItem {
-					Label("map", systemImage: "map")
+			if #available(iOS 17.0, macOS 14.0, *) {
+				if UserDefaults.mapUseLegacy {
+					NodeMap()
+						.tabItem {
+							Label("map", systemImage: "map")
+						}
+						.tag(Tab.map)
+				} else {
+					MeshMap()
+						.tabItem {
+							Label("map", systemImage: "map")
+						}
+						.tag(Tab.map)
 				}
-				.tag(Tab.map)
+			} else {
+				NodeMap()
+					.tabItem {
+						Label("map", systemImage: "map")
+					}
+					.tag(Tab.map)
+			}
 			Settings()
 				.tabItem {
 					Label("settings", systemImage: "gear")

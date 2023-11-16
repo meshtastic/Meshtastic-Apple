@@ -9,11 +9,17 @@ import SwiftUI
 import Charts
 
 struct BatteryGauge: View {
-	var batteryLevel = 0.0
+	
+	@ObservedObject var node: NodeInfoEntity
 	private let minValue = 0.0
 	private let maxValue = 100.00
 
 	var body: some View {
+		
+		let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
+		let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
+		let batteryLevel = Double(mostRecent?.batteryLevel ?? 0)
+		
 		VStack {
 			if batteryLevel > 100.0 {
 				// Plugged in
@@ -47,6 +53,12 @@ struct BatteryGauge: View {
 				.tint(gradient)
 				.gaugeStyle(.accessoryCircular)
 			}
+			if mostRecent?.voltage ?? 0 > 0 {
+				Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
+					.font(.callout)
+					.foregroundColor(.gray)
+					.fixedSize()
+			}
 		}
 	}
 }
@@ -54,14 +66,14 @@ struct BatteryGauge: View {
 struct BatteryGauge_Previews: PreviewProvider {
 	static var previews: some View {
 		VStack {
-			BatteryGauge(batteryLevel: 0.0)
-			BatteryGauge(batteryLevel: 9.0)
-			BatteryGauge(batteryLevel: 24.0)
-			BatteryGauge(batteryLevel: 49.0)
-			BatteryGauge(batteryLevel: 74.0)
-			BatteryGauge(batteryLevel: 99.0)
-			BatteryGauge(batteryLevel: 100.0)
-			BatteryGauge(batteryLevel: 111.0)
+		//	BatteryGauge(batteryLevel: 0.0)
+		//	BatteryGauge(batteryLevel: 9.0)
+		//	BatteryGauge(batteryLevel: 24.0)
+		//	BatteryGauge(batteryLevel: 49.0)
+		//	BatteryGauge(batteryLevel: 74.0)
+		//	BatteryGauge(batteryLevel: 99.0)
+		//	BatteryGauge(batteryLevel: 100.0)
+		//	BatteryGauge(batteryLevel: 111.0)
 		}
 	}
 }

@@ -48,20 +48,9 @@ struct NodeInfoItem: View {
 						.font(.caption2)
 				}
 			}
-			let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
-			if deviceMetrics?.count ?? 0 >= 1 {
+			if node.telemetries?.count ?? 0 > 0 {
 				Divider()
-				let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-				VStack(alignment: .center) {
-					BatteryGauge(batteryLevel: Double(mostRecent?.batteryLevel ?? 0))
-					if mostRecent?.voltage ?? 0 > 0 {
-
-						Text(String(format: "%.2f", mostRecent?.voltage ?? 0) + " V")
-							.font(.callout)
-							.foregroundColor(.gray)
-							.fixedSize()
-					}
-				}
+				BatteryGauge(node: node)
 			}
 		}
 		Divider()

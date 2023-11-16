@@ -265,6 +265,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.longName = nodeInfo.user.longName
 				newUser.shortName = nodeInfo.user.shortName
 				newUser.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
+				newUser.isLicensed = nodeInfo.user.isLicensed
 				newNode.user = newUser
 			} else {
 				let newUser = UserEntity(context: context)
@@ -333,6 +334,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
 				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
+				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			} else  {
 				if (fetchedNode[0].user == nil) {
@@ -556,7 +558,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					fetchedMessage![0].receivedACK = true
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
-				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				fetchedMessage![0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 				
 				if fetchedMessage![0].toUser != nil {
 					fetchedMessage![0].toUser!.objectWillChange.send()

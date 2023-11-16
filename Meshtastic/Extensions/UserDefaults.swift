@@ -24,6 +24,7 @@ extension UserDefaults {
 		case enableOfflineMaps
 		case mapTileServer
 		case mapTilesAboveLabels
+		case mapUseLegacy
 	}
 
 	func reset() {
@@ -169,6 +170,15 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "mapTilesAboveLabels")
+		}
+	}
+	
+	static var mapUseLegacy: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "mapUseLegacy")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "mapUseLegacy")
 		}
 	}
 }

@@ -23,9 +23,9 @@ struct NodeMapSwiftUI: View {
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapConvexHull") private var showConvexHull = true
-	@AppStorage("enableMapTraffic") private var showTraffic: Bool = true
-	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = true
+	@AppStorage("enableMapConvexHull") private var showConvexHull = false
+	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
+	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
@@ -34,9 +34,9 @@ struct NodeMapSwiftUI: View {
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
 	@State var isEditingSettings = false
-	@State var selected: PositionEntity?
+	@State var selectedPosition: PositionEntity?
+	@State var showWaypoints = false
 	@State var selectedWaypoint: WaypointEntity?
-	@State var showingPositionPopover = false
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
@@ -80,24 +80,25 @@ struct NodeMapSwiftUI: View {
 								.stroke(Color(nodeColor.darker()), lineWidth: 3)
 								.foregroundStyle(Color(nodeColor).opacity(0.4))
 						}
+						
 						/// Waypoint Annotations
-						ForEach(Array(waypoints), id: \.id) { waypoint in
-							Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-								ZStack {
-									CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-										
-										.onTapGesture(coordinateSpace: .named("nodemap")) { location in
-											print("Tapped at \(location)")
-											let pinLocation = reader.convert(location, from: .local)
-											selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-										}
+						if waypoints.count > 0 && showWaypoints {
+							ForEach(Array(waypoints), id: \.id) { waypoint in
+								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+									ZStack {
+										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
+											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
+												print("Tapped at \(location)")
+												let pinLocation = reader.convert(location, from: .local)
+												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+											}
+									}
 								}
 							}
 						}
 						/// Node Annotations
 						ForEach(positionArray, id: \.id) { position in
-							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 3))
-							let formatter = MeasurementFormatter()
+							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 								ZStack {
@@ -111,19 +112,19 @@ struct NodeMapSwiftUI: View {
 												.symbolEffect(.pulse.byLayer)
 												.padding(5)
 												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
+												.background(Color(nodeColor.darker()))
 												.clipShape(Circle())
 												.rotationEffect(headingDegrees)
 												.onTapGesture {
-													showingPositionPopover = true
-													selected = (selected == position ? nil : position) // <-- here
+													selectedPosition = (selectedPosition == position ? nil : position)
 												}
-												.popover(isPresented: $showingPositionPopover) {
-													PositionPopover(position: position)
+												.popover(item: $selectedPosition) { selection in
+													PositionPopover(position: selection)
 														.padding()
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
+												
 										} else {
 											Image(systemName: "flipphone")
 												.symbolEffect(.pulse.byLayer)
@@ -132,16 +133,15 @@ struct NodeMapSwiftUI: View {
 												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
 												.clipShape(Circle())
 												.onTapGesture {
-													showingPositionPopover = true
-													selected = (selected == position ? nil : position) // <-- here
+													selectedPosition = (selectedPosition == position ? nil : position)
 												}
-												.popover(isPresented: $showingPositionPopover, arrowEdge: .bottom) {
-													PositionPopover(position: position)
-														.tag(position.id)
+												.popover(item: $selectedPosition) { selection in
+													PositionPopover(position: selection)
 														.padding()
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
+												
 										}
 									} else {
 										if showNodeHistory {
@@ -194,95 +194,26 @@ struct NodeMapSwiftUI: View {
 						}
 					}
 					.sheet(item: $selectedWaypoint) { selection in
-						WaypointPopover(waypoint: selection)
-							.presentationDetents([.fraction(0.3), .medium])
+						WaypointForm(waypoint: selection)
 							.padding()
-							.opacity(0.8)
 					}
 					.sheet(isPresented: $isEditingSettings) {
-						VStack {
-							Form {
-								Section(header: Text("Map Options")) {
-									Picker(selection: $selectedMapLayer, label: Text("")) {
-										ForEach(MapLayer.allCases, id: \.self) { layer in
-											if layer != MapLayer.offline {
-												Text(layer.localized)
-											}
-										}
-									}
-									.pickerStyle(SegmentedPickerStyle())
-									.onChange(of: (selectedMapLayer)) { newMapLayer in
-										switch selectedMapLayer {
-										case .standard:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-										case .hybrid:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
-										case .satellite:
-											UserDefaults.mapLayer = newMapLayer
-											mapStyle = MapStyle.imagery(elevation: .realistic)
-										case .offline:
-											return
-										}
-									}
-									.padding(.top, 5)
-									.padding(.bottom, 5)
-									Toggle(isOn: $showNodeHistory) {
-										Label("Node History", systemImage: "building.columns.fill")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showNodeHistory.toggle()
-										UserDefaults.enableMapNodeHistoryPins = self.showNodeHistory
-									}
-									Toggle(isOn: $showRouteLines) {
-										Label("Route Lines", systemImage: "road.lanes")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showRouteLines.toggle()
-										UserDefaults.enableMapRouteLines = self.showRouteLines
-									}
-									Toggle(isOn: $showConvexHull) {
-										Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showConvexHull.toggle()
-										UserDefaults.enableMapConvexHull = self.showConvexHull
-									}
-									Toggle(isOn: $showTraffic) {
-										Label("Traffic", systemImage: "car")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showTraffic.toggle()
-										UserDefaults.enableMapTraffic = self.showTraffic
-									}
-									Toggle(isOn: $showPointsOfInterest) {
-										Label("Points of Interest", systemImage: "mappin.and.ellipse")
-									}
-									.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-									.onTapGesture {
-										self.showPointsOfInterest.toggle()
-										UserDefaults.enableMapPointsOfInterest = self.showPointsOfInterest
-									}
+						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+							.onChange(of: (selectedMapLayer)) { newMapLayer in
+								switch selectedMapLayer {
+								case .standard:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+								case .hybrid:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+								case .satellite:
+									UserDefaults.mapLayer = newMapLayer
+									mapStyle = MapStyle.imagery(elevation: .realistic)
+								case .offline:
+									return
 								}
 							}
-							#if targetEnvironment(macCatalyst)
-							Button {
-								isEditingSettings = false
-							} label: {
-								Label("close", systemImage: "xmark")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.large)
-							.padding()
-							#endif
-						}
-						.presentationDetents([.fraction(0.4), .medium])
 					}
 					.onChange(of: node) {
 						let mostRecent = node.positions?.lastObject as? PositionEntity
@@ -324,6 +255,21 @@ struct NodeMapSwiftUI: View {
 							.tint(Color(UIColor.secondarySystemBackground))
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
+							/// Show / Hide Waypoints Button
+							if waypoints.count > 0 {
+								
+								Button(action: {
+									withAnimation {
+										showWaypoints = !showWaypoints
+									}
+								}) {
+								Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
+									.padding(.vertical, 5)
+								}
+								.tint(Color(UIColor.secondarySystemBackground))
+								.foregroundColor(.accentColor)
+								.buttonStyle(.borderedProminent)
+							}
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {
@@ -338,7 +284,6 @@ struct NodeMapSwiftUI: View {
 								.foregroundColor(.accentColor)
 								.buttonStyle(.borderedProminent)
 							}
-							
 							#if targetEnvironment(macCatalyst)
 							/// Hide non fuctional catalyst controls
 //							MapZoomStepper(scope: mapScope)

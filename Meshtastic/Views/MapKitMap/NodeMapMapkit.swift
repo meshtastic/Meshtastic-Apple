@@ -9,7 +9,7 @@ import CoreLocation
 import MapKit
 import WeatherKit
 
-struct NodeMapControl: View {
+struct NodeMapMapkit: View {
 	
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -145,7 +145,7 @@ struct NodeMapControl: View {
 				}
 				.edgesIgnoringSafeArea([.leading, .trailing])
 				.sheet(item: $waypointCoordinate, content: { wpc in
-					WaypointFormView(coordinate: wpc)
+					WaypointFormMapKit(coordinate: wpc)
 						.presentationDetents([.medium, .large])
 						.presentationDragIndicator(.automatic)
 				})

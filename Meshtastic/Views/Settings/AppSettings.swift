@@ -13,6 +13,7 @@ struct AppSettings: View {
 	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
 	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
+	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
@@ -33,6 +34,11 @@ struct AppSettings: View {
 					
 					Toggle(isOn: $blockRangeTest) {
 						Label("range.test.blocked", systemImage: "x.circle")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $useLegacyMap) {
+						Label("map.use.legacy", systemImage: "map")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -123,16 +129,6 @@ struct AppSettings: View {
 								print("delete all tiles")
 							}
 						}
-//						ForEach(MapTileServer.allCases, id: \.self) { tsl in
-//							Button {
-//								tileManager.remove(for: tsl)
-//								totalDownloadedTileSize = tileManager.getAllDownloadedSize()
-//							} label: {
-//								Label("Delete \(tsl.description) Tiles", systemImage: "trash")
-//									.foregroundColor(.red)
-//									.font(.footnote)
-//							}
-//						}
 					}
 				}
 			}
@@ -159,6 +155,9 @@ struct AppSettings: View {
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}
+		}
+		.onChange(of: useLegacyMap) { newMapUseLegacy in
+			UserDefaults.mapUseLegacy = newMapUseLegacy
 		}
 	}
 }

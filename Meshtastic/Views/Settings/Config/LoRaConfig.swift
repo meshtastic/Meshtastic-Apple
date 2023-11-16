@@ -12,6 +12,7 @@ struct LoRaConfig: View {
 
 	enum Field: Hashable {
 		case channelNum
+		case frequencyOverride
 	}
 
 	let formatter: NumberFormatter = {
@@ -41,6 +42,13 @@ struct LoRaConfig: View {
 	@State var spreadFactor = 0
 	@State var codingRate = 0
 	@State var rxBoostedGain = false
+	@State var overrideFrequency: Float = 0.0
+
+	let floatFormatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.numberStyle = .decimal
+		return formatter
+	}()
 
 	var body: some View {
 
@@ -150,7 +158,6 @@ struct LoRaConfig: View {
 						Text("LoRa Channel Number")
 							.fixedSize()
 						TextField("Channel Number", value: $channelNum, formatter: formatter)
-							.multilineTextAlignment(.trailing)
 							.toolbar {
 								ToolbarItemGroup(placement: .keyboard) {
 									Button("dismiss.keyboard") {
@@ -169,6 +176,14 @@ struct LoRaConfig: View {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					HStack {
+						Label("Frequency Override", systemImage: "waveform.path.ecg")
+						Spacer()
+						TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
+							.keyboardType(.decimalPad)
+							.scrollDismissesKeyboard(.immediately)
+							.focused($focusedField, equals: .frequencyOverride)
+					}
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
@@ -204,6 +219,7 @@ struct LoRaConfig: View {
 						lc.codingRate = UInt32(codingRate)
 						lc.spreadFactor = UInt32(spreadFactor)
 						lc.sx126XRxBoostedGain = rxBoostedGain
+						lc.overrideFrequency = overrideFrequency
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -281,6 +297,11 @@ struct LoRaConfig: View {
 				if newRxBoostedGain != node!.loRaConfig!.sx126xRxBoostedGain { hasChanges = true }
 			}
 		}
+		.onChange(of: overrideFrequency) { newOverrideFrequency in
+			if node != nil && node!.loRaConfig != nil {
+				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
+			}
+		}
 	}
 	func setLoRaValues() {
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
@@ -294,6 +315,7 @@ struct LoRaConfig: View {
 		self.codingRate = Int(node?.loRaConfig?.codingRate ?? 0)
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
+		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
 		self.hasChanges = false
 	}
 }

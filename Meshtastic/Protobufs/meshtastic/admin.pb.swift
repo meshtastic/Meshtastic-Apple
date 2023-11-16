@@ -289,6 +289,16 @@ struct AdminMessage {
   }
 
   ///
+  /// Remove the node by the specified node-num from the NodeDB on the device
+  var removeByNodenum: UInt32 {
+    get {
+      if case .removeByNodenum(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .removeByNodenum(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   var beginEditSettings: Bool {
@@ -457,6 +467,9 @@ struct AdminMessage {
     /// Set the ringtone for ExternalNotification.
     case setRingtoneMessage(String)
     ///
+    /// Remove the node by the specified node-num from the NodeDB on the device
+    case removeByNodenum(UInt32)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -588,6 +601,10 @@ struct AdminMessage {
       }()
       case (.setRingtoneMessage, .setRingtoneMessage): return {
         guard case .setRingtoneMessage(let l) = lhs, case .setRingtoneMessage(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeByNodenum, .removeByNodenum): return {
+        guard case .removeByNodenum(let l) = lhs, case .removeByNodenum(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.beginEditSettings, .beginEditSettings): return {
@@ -915,6 +932,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     35: .standard(proto: "set_module_config"),
     36: .standard(proto: "set_canned_message_module_messages"),
     37: .standard(proto: "set_ringtone_message"),
+    38: .standard(proto: "remove_by_nodenum"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     95: .standard(proto: "reboot_ota_seconds"),
@@ -1191,6 +1209,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .setRingtoneMessage(v)
         }
       }()
+      case 38: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .removeByNodenum(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1365,6 +1391,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .setRingtoneMessage?: try {
       guard case .setRingtoneMessage(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 37)
+    }()
+    case .removeByNodenum?: try {
+      guard case .removeByNodenum(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 38)
     }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }

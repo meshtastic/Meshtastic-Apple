@@ -26,7 +26,7 @@ struct NodeListItem: View {
 						let deviceMetrics = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0"))
 						if deviceMetrics?.count ?? 0 >= 1 {
 							let mostRecent = deviceMetrics?.lastObject as? TelemetryEntity
-							BatteryLevelCompact(batteryLevel: mostRecent?.batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
+							BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
 						}
 					}
 					VStack(alignment: .leading) {
