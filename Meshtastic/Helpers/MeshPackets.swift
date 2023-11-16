@@ -558,7 +558,7 @@ func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSMana
 					fetchedMessage![0].receivedACK = true
 				}
 				fetchedMessage![0].ackSNR = packet.rxSnr
-				fetchedMessage![0].ackTimestamp = Int32(packet.rxTime)
+				fetchedMessage![0].ackTimestamp = Int32(truncatingIfNeeded: packet.rxTime)
 				
 				if fetchedMessage![0].toUser != nil {
 					fetchedMessage![0].toUser!.objectWillChange.send()

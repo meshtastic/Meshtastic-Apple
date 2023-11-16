@@ -145,6 +145,7 @@
 "map.centering"="Centering Mode";
 "map.tiles.delete"="Delete All Map Tiles";
 "map.recentering"="Automatic Re-centering";
+"map.use.legacy"="Use Legacy Mesh Map";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.follow"="Follow";
 "map.usertrackingmode.followwithheading"="Follow with heading";

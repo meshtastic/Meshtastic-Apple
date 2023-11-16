@@ -141,6 +141,7 @@
 "map.centering"="居中";
 "map.tiles.delete"="删除已缓存的地图区块";
 "map.recentering"="自动重新居中";
+"map.use.legacy"="Use Legacy Mesh Map";
 "map.type"="地图类型";
 "map.usertrackingmode"="用户跟随模式";
 "map.usertrackingmode.none"="无";

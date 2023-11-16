@@ -141,6 +141,7 @@
 "map.centering"="Centering";
 "map.tiles.delete"="Delete Cached Map Tiles";
 "map.recentering"="Automatic Re-centering";
+"map.use.legacy"="Use Legacy Mesh Map";
 "map.type"="kartentyp";
 "map.usertrackingmode"="User tracking mode";
 "map.usertrackingmode.none"="None";
