@@ -112,6 +112,10 @@ struct MeshMap: View {
 							}
 							/// Route Lines
 							if showRouteLines {
+								let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
+								let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
+									return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
+								})
 								let gradient = LinearGradient(
 									colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
 									startPoint: .leading, endPoint: .trailing
@@ -120,12 +124,12 @@ struct MeshMap: View {
 									lineWidth: 3,
 									lineCap: .round, lineJoin: .round, dash: [10, 10]
 								)
-								MapPolyline(coordinates: lineCoords)
+								MapPolyline(coordinates: routeCoords)
 									.stroke(gradient, style: dashed)
 							}
 							/// Node History
-							if showNodeHistory {
-								ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+							ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+								if showNodeHistory {
 									if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
 										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 										let headingDegrees = Angle.degrees(Double(mappin.heading))
@@ -140,7 +144,7 @@ struct MeshMap: View {
 														.clipShape(Circle())
 														.rotationEffect(headingDegrees)
 														.frame(width: 16, height: 16)
-											
+													
 												} else {
 													Circle()
 														.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
