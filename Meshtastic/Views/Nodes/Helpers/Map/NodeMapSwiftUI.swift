@@ -33,6 +33,7 @@ struct NodeMapSwiftUI: View {
 	@State var position = MapCameraPosition.automatic
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
+	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
@@ -75,10 +76,12 @@ struct NodeMapSwiftUI: View {
 						}
 						/// Convex Hull
 						if showConvexHull {
-							let hull = lineCoords.getConvexHull()
-							MapPolygon(coordinates: hull)
-								.stroke(Color(nodeColor.darker()), lineWidth: 3)
-								.foregroundStyle(Color(nodeColor).opacity(0.4))
+							if lineCoords.count > 0 {
+								let hull = lineCoords.getConvexHull()
+								MapPolygon(coordinates: hull)
+									.stroke(Color(nodeColor.darker()), lineWidth: 3)
+									.foregroundStyle(Color(nodeColor).opacity(0.4))
+							}
 						}
 						
 						/// Waypoint Annotations
@@ -88,8 +91,6 @@ struct NodeMapSwiftUI: View {
 									ZStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
 											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
-												print("Tapped at \(location)")
-												let pinLocation = reader.convert(location, from: .local)
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
 											}
 									}
@@ -193,6 +194,14 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
+					.overlay(alignment: .bottom) {
+						if !isLookingAround && isShowingAltitude {
+							PositionAltitudeChart(node: node)
+								.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
+								.clipShape(RoundedRectangle(cornerRadius: 12))
+								.padding(.horizontal, 20)
+						}
+					}
 					.sheet(item: $selectedWaypoint) { selection in
 						WaypointForm(waypoint: selection)
 							.padding()
@@ -273,11 +282,27 @@ struct NodeMapSwiftUI: View {
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {
-									withAnimation {
-										isLookingAround = !isLookingAround
+									if isShowingAltitude {
+										isShowingAltitude = false
 									}
+									isLookingAround = !isLookingAround
 								}) {
 									Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
+										.padding(.vertical, 5)
+								}
+								.tint(Color(UIColor.secondarySystemBackground))
+								.foregroundColor(.accentColor)
+								.buttonStyle(.borderedProminent)
+							}
+							/// Altitude Button
+							if node.positions?.count ?? 0 > 1 {
+								Button(action: {
+									if isLookingAround {
+										isLookingAround = false
+									}
+									isShowingAltitude = !isShowingAltitude
+								}) {
+									Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
 										.padding(.vertical, 5)
 								}
 								.tint(Color(UIColor.secondarySystemBackground))

@@ -78,10 +78,12 @@ struct MeshMap: View {
 						}
 						/// Convex Hull
 						if showConvexHull {
-							let hull = lineCoords.getConvexHull()
-							MapPolygon(coordinates: hull)
-								.stroke(.blue, lineWidth: 3)
-								.foregroundStyle(.indigo.opacity(0.4))
+							if lineCoords.count > 0 {
+								let hull = lineCoords.getConvexHull()
+								MapPolygon(coordinates: hull)
+									.stroke(.blue, lineWidth: 3)
+									.foregroundStyle(.indigo.opacity(0.4))
+							}
 						}
 						/// Position Annotations
 						ForEach(Array(positions), id: \.id) { position in
