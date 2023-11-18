@@ -106,7 +106,7 @@ struct MeshMap: View {
 											}
 											.frame(width: 60, height: 60)
 									}
-									if position.nodePostion?.hasDetectionSensor ?? false {
+									if position.nodePosition?.hasDetectionSensorMetrics ?? false {
 										Image(systemName: "sensor.fill")
 											.symbolRenderingMode(.palette)
 											.symbolEffect(.variableColor)
