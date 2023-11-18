@@ -666,7 +666,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let interval = UserDefaults.provideLocationInterval > 0 ? UserDefaults.provideLocationInterval : 30
 					if positionTimer != nil {
 					}
-					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval((UserDefaults.provideLocationInterval)), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
+					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval(interval), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
