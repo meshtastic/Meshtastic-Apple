@@ -106,7 +106,17 @@ struct MeshMap: View {
 											}
 											.frame(width: 60, height: 60)
 									}
-									CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+									if position.nodePostion?.hasDetectionSensor ?? false {
+										Image(systemName: "sensor.fill")
+											.symbolRenderingMode(.palette)
+											.symbolEffect(.variableColor)
+											.padding()
+											.foregroundStyle(.white)
+											.background(Color(nodeColor))
+											.clipShape(Circle())
+									} else {
+										CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+									}
 								}
 								.onTapGesture { location in
 									selectedPosition = (selectedPosition == position ? nil : position)

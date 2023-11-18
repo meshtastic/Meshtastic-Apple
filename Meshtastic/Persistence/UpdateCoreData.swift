@@ -259,8 +259,9 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					/// Don't save the same position over and over.
 					if mutablePositions.count > 0 {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.latitudeI == position.latitudeI && mostRecent.longitudeI == position.latitudeI {
+						if  mostRecent.latitudeI == position.latitudeI && mostRecent.longitudeI == position.longitudeI {
 							mutablePositions.remove(mostRecent)
+							print("Delete stupid fixed position for \(position.nodePosition)")
 						}
 					}
 					mutablePositions.add(position)
