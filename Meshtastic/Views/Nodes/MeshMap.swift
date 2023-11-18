@@ -78,10 +78,12 @@ struct MeshMap: View {
 						}
 						/// Convex Hull
 						if showConvexHull {
-							let hull = lineCoords.getConvexHull()
-							MapPolygon(coordinates: hull)
-								.stroke(.blue, lineWidth: 3)
-								.foregroundStyle(.indigo.opacity(0.4))
+							if lineCoords.count > 0 {
+								let hull = lineCoords.getConvexHull()
+								MapPolygon(coordinates: hull)
+									.stroke(.blue, lineWidth: 3)
+									.foregroundStyle(.indigo.opacity(0.4))
+							}
 						}
 						/// Position Annotations
 						ForEach(Array(positions), id: \.id) { position in
@@ -104,7 +106,17 @@ struct MeshMap: View {
 											}
 											.frame(width: 60, height: 60)
 									}
-									CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+									if position.nodePosition?.hasDetectionSensorMetrics ?? false {
+										Image(systemName: "sensor.fill")
+											.symbolRenderingMode(.palette)
+											.symbolEffect(.variableColor)
+											.padding()
+											.foregroundStyle(.white)
+											.background(Color(nodeColor))
+											.clipShape(Circle())
+									} else {
+										CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+									}
 								}
 								.onTapGesture { location in
 									selectedPosition = (selectedPosition == position ? nil : position)
