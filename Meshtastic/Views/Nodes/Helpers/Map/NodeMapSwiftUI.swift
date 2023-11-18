@@ -48,7 +48,7 @@ struct NodeMapSwiftUI: View {
 	var body: some View {
 		
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
-		let mostRecent = node.positions?.lastObject as? PositionEntity
+		var mostRecent = node.positions?.lastObject as? PositionEntity
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
 		})
@@ -225,8 +225,12 @@ struct NodeMapSwiftUI: View {
 							}
 					}
 					.onChange(of: node) {
-						let mostRecent = node.positions?.lastObject as? PositionEntity
-						position =  MapCameraPosition.automatic//.camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 1500, heading: 0, pitch: 0))
+						mostRecent = node.positions?.lastObject as? PositionEntity
+						if node.positions?.count ?? 0 > 1 {
+							position = .automatic
+						} else {
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 150, heading: 0, pitch: 60))
+						}
 						if let mostRecent {
 							Task {
 								scene = try? await fetchScene(for: mostRecent.coordinate)
@@ -244,6 +248,12 @@ struct NodeMapSwiftUI: View {
 							mapStyle = MapStyle.imagery(elevation: .realistic)
 						case .offline:
 							mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+						}
+						mostRecent = node.positions?.lastObject as? PositionEntity
+						if node.positions?.count ?? 0 > 1 {
+							position = .automatic
+						} else {
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 150, heading: 0, pitch: 60))
 						}
 						if self.scene == nil {
 							Task {

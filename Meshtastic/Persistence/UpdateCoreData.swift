@@ -256,6 +256,13 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
+					/// Don't save the same position over and over.
+					if mutablePositions.count > 0 {
+						let mostRecent = mutablePositions.lastObject as! PositionEntity
+						if  mostRecent.latitudeI == position.latitudeI && mostRecent.longitudeI == position.latitudeI {
+							mutablePositions.remove(mostRecent)
+						}
+					}
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
