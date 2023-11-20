@@ -30,6 +30,7 @@ struct ChannelMessageList: View {
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
 	@State private var sendPositionWithMessage: Bool = false
+	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 
 	var body: some View {
 		VStack {
@@ -39,7 +40,7 @@ struct ChannelMessageList: View {
 				ScrollView {
 					LazyVStack {
 						ForEach( channel.allPrivateMessages ) { (message: MessageEntity) in
-							let currentUser: Bool = (bleManager.connectedPeripheral?.num ?? -1 == message.fromUser?.num ? true : false)
+							let currentUser: Bool = (Int64(preferredPeripheralNum) == message.fromUser?.num ? true : false)
 							if message.replyID > 0 {
 								let messageReply = channel.allPrivateMessages.first(where: { $0.messageId == message.replyID })
 								HStack {

@@ -486,6 +486,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
 					if myInfo != nil {
+						UserDefaults.preferredPeripheralNum = Int(myInfo!.myNodeNum)
 						connectedPeripheral.num = myInfo!.myNodeNum
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized

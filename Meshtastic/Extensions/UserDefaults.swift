@@ -12,6 +12,7 @@ extension UserDefaults {
 		case enableRangeTest
 		case meshtasticUsername
 		case preferredPeripheralId
+		case preferredPeripheralNum
 		case provideLocation
 		case provideLocationInterval
 		case mapLayer
@@ -51,6 +52,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "preferredPeripheralId")
+		}
+	}
+	static var preferredPeripheralNum: Int {
+		get {
+			UserDefaults.standard.integer(forKey: "preferredPeripheralNum")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "preferredPeripheralNum")
 		}
 	}
 	static var provideLocation: Bool {
