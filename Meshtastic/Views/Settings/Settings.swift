@@ -283,7 +283,7 @@ struct Settings: View {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
-				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+				self.connectedNodeNum = UserDefaults.preferredPeripheralNum// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 				selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			}
 			.listStyle(GroupedListStyle())
