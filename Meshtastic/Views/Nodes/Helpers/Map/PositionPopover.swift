@@ -15,11 +15,32 @@ struct PositionPopover: View {
 	var position: PositionEntity
 	var popover: Bool = true
 	let distanceFormatter = MKDistanceFormatter()
+	var delay: Double = 0
+	@State private var scale: CGFloat = 0.5
 	var body: some View {
+		// Node Color from node.num
+		let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 		VStack {
 			HStack {
-				CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(position.nodePosition?.user?.num ?? 0))), circleSize: 65)
-					.padding(.trailing, 5)
+				ZStack {
+					
+					if position.nodePosition?.isOnline ?? false {
+						Circle()
+							.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+							.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+							.scaleEffect(scale)
+							.animation(
+								Animation.easeInOut(duration: 0.6)
+								   .repeatForever().delay(delay), value: scale
+							)
+							.onAppear {
+								self.scale = 1
+							}
+							.frame(width: 90, height: 90)
+					}
+					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
+				}
+				
 				Text(position.nodePosition?.user?.longName ?? "Unknown")
 					.font(.largeTitle)
 			}
