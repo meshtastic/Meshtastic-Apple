@@ -168,8 +168,10 @@ struct DeviceConfig: View {
 					) {
 						Button("Factory reset your device and app? ", role: .destructive) {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
-								bleManager.disconnectPeripheral()
-								clearCoreDataDatabase(context: context)
+								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+									bleManager.disconnectPeripheral()
+									clearCoreDataDatabase(context: context)
+								}
 							} else {
 								print("Factory Reset Failed")
 							}
