@@ -44,8 +44,9 @@ struct MeshMap: View {
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
 	
+	/// "time >= %@ && nodePosition != nil && latest == true"
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-				  predicate: NSPredicate(format: "time >= %@ && nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -30, to: Date())! as NSDate), animation: .none)
+				  predicate: NSPredicate(format: "nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -30, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
