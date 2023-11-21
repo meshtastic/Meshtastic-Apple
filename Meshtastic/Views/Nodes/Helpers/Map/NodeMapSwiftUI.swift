@@ -225,6 +225,8 @@ struct NodeMapSwiftUI: View {
 							}
 					}
 					.onChange(of: node) {
+						isLookingAround = false
+						isShowingAltitude = false
 						mostRecent = node.positions?.lastObject as? PositionEntity
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic

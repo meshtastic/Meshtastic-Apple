@@ -129,7 +129,7 @@ struct PositionPopover: View {
 					if position.nodePosition != nil {
 						if position.nodePosition?.user?.vip ?? false {
 							Image(systemName: "star.fill")
-								.foregroundColor(.accentColor)
+								.foregroundColor(.yellow)
 								.symbolRenderingMode(.hierarchical)
 								.font(.largeTitle)
 								.padding(.bottom, 5)
@@ -137,7 +137,7 @@ struct PositionPopover: View {
 						if position.nodePosition?.hasEnvironmentMetrics ?? false {
 							Image(systemName: "cloud.sun.rain")
 								.foregroundColor(.accentColor)
-								.symbolRenderingMode(.hierarchical)
+								.symbolRenderingMode(.multicolor)
 								.font(.largeTitle)
 								.padding(.bottom)
 						}

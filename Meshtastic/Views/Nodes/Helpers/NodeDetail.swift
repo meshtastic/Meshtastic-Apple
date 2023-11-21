@@ -72,7 +72,7 @@ struct NodeDetail: View {
 							NavigationLink {
 								EnvironmentMetricsLog(node: node)
 							} label: {
-								Image(systemName: "chart.xyaxis.line")
+								Image(systemName: "cloud.sun.rain")
 									.symbolRenderingMode(.hierarchical)
 									.font(.title)
 								

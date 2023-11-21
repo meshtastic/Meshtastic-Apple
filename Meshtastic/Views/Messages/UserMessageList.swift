@@ -38,7 +38,7 @@ struct UserMessageList: View {
 					LazyVStack {
 						ForEach( user.messageList ) { (message: MessageEntity) in
 							if user.num != bleManager.connectedPeripheral?.num ?? -1 {
-								let currentUser: Bool = (bleManager.connectedPeripheral?.num ?? 0 == message.fromUser?.num ?? -1 ? true : false)
+								let currentUser: Bool = (Int64(UserDefaults.preferredPeripheralNum) == message.fromUser?.num ?? -1 ? true : false)
 
 								if message.replyID > 0 {
 									let messageReply = user.messageList.first(where: { $0.messageId == message.replyID })
