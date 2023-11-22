@@ -61,18 +61,16 @@ struct NodeMapSwiftUI: View {
 						let nodeColor = UIColor(hex: UInt32(node.num))
 						/// Route Lines
 						if showRouteLines  {
-							if showRouteLines {
-								let gradient = LinearGradient(
-									colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-									startPoint: .leading, endPoint: .trailing
-								)
-								let dashed = StrokeStyle(
-									lineWidth: 3,
-									lineCap: .round, lineJoin: .round, dash: [10, 10]
-								)
-								MapPolyline(coordinates: lineCoords)
-									.stroke(gradient, style: dashed)
-							}
+							let gradient = LinearGradient(
+								colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+								startPoint: .leading, endPoint: .trailing
+							)
+							let dashed = StrokeStyle(
+								lineWidth: 3,
+								lineCap: .round, lineJoin: .round, dash: [10, 10]
+							)
+							MapPolyline(coordinates: lineCoords)
+								.stroke(gradient, style: dashed)
 						}
 						/// Convex Hull
 						if showConvexHull {

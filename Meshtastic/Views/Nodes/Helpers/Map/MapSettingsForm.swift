@@ -80,6 +80,7 @@ struct MapSettingsForm: View {
 					}
 				}
 			}
+
 #if targetEnvironment(macCatalyst)
 Spacer()
 				Button {
@@ -95,5 +96,6 @@ Spacer()
 		}
 		.presentationDetents([.fraction(0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
+		
 	}
 }

@@ -11,7 +11,7 @@ import MapKit
 import CoreLocation
 
 struct WaypointForm: View {
-
+	
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
@@ -27,7 +27,7 @@ struct WaypointForm: View {
 	@State private var expire: Date = Date.now.addingTimeInterval(60 * 480) // 1 minute * 480 = 8 Hours
 	@State private var locked: Bool = false
 	@State private var lockedTo: Int64 = 0
-
+	
 	var body: some View {
 		VStack {
 			if editMode {
@@ -341,7 +341,7 @@ struct WaypointForm: View {
 						}
 					}
 					.padding(.top)
-					#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
 					Spacer()
 					Button {
 						dismiss()
@@ -352,7 +352,7 @@ struct WaypointForm: View {
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
 					.padding()
-					#endif
+#endif
 				}
 			}
 		}
@@ -381,7 +381,7 @@ struct WaypointForm: View {
 				expires = false
 				expire = Date.now.addingTimeInterval(60 * 480)
 				icon = "📍"
-				latitude = waypoint.coordinate.latitude 
+				latitude = waypoint.coordinate.latitude
 				longitude = waypoint.coordinate.longitude
 			}
 		}

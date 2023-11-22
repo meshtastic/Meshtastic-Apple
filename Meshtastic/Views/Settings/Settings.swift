@@ -17,6 +17,7 @@ struct Settings: View {
 	@State private var selection: SettingsSidebar = .about
 	enum SettingsSidebar {
 		case appSettings
+		case routes
 		case shareChannels
 		case userConfig
 		case loraConfig
@@ -57,6 +58,17 @@ struct Settings: View {
 					Text("app.settings")
 				}
 				.tag(SettingsSidebar.appSettings)
+				if #available(iOS 17.0, macOS 14.0, *) {
+					NavigationLink {
+						Routes()
+					} label: {
+						Image(systemName: "gearshape")
+							.symbolRenderingMode(.hierarchical)
+						Text("routes")
+					}
+					.tag(SettingsSidebar.routes)
+				}
+				
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
 				if !(node?.deviceConfig?.isManaged ?? false) {
