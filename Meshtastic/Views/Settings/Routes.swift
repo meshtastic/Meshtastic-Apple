@@ -110,6 +110,18 @@ struct Routes: View {
 							.fill(Color(UIColor(hex: route.color >= 0 ? UInt32(route.color) : 0)))
 							.frame(width: 20, height: 20)
 					}
+					.swipeActions {
+						Button(role: .destructive) {
+							context.delete(route)
+							do {
+								try context.save()
+							} catch let error as NSError {
+								print("Error: \(error.localizedDescription)")
+							}
+						} label: {
+							Label("delete", systemImage: "trash")
+						}
+					}
 				}
 				.listStyle(.plain)
 			}
