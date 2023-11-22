@@ -33,9 +33,8 @@ struct Routes: View {
 			) { result in
 				do {
 					guard let selectedFile: URL = try result.get().first else { return }
-					
-					guard selectedFile.startAccessingSecurityScopedResource() else { // Notice this line right here
-						 return
+					guard selectedFile.startAccessingSecurityScopedResource() else {
+						return
 					}
 					
 					do {
@@ -79,7 +78,7 @@ struct Routes: View {
 								print("Error: \(error.localizedDescription)")
 							}
 						}
-			
+						
 					} catch {
 						print("error: \(error)") // to do deal with errors
 					}
@@ -97,7 +96,7 @@ struct Routes: View {
 				.listStyle(.plain)
 			}
 			.navigationTitle("Route List")
-	} detail: {
+		} detail: {
 			VStack {
 				if selectedRoute != nil {
 					let locationArray = selectedRoute?.locations?.array as? [LocationEntity] ?? []
@@ -105,18 +104,31 @@ struct Routes: View {
 						return location.locationCoordinate ?? LocationHelper.DefaultLocation
 					})
 					
-					Map () {
-						
-						let gradient = LinearGradient(
-							colors: [.cyan, .blue, .secondary],//[Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-							startPoint: .leading, endPoint: .trailing
-						)
+					Map() {
+						Annotation("Start", coordinate: lineCoords.first ?? LocationHelper.DefaultLocation) {
+							ZStack {
+								Circle()
+									.fill(Color(.green))
+									.strokeBorder(.white, lineWidth: 3)
+									.frame(width: 15, height: 15)
+							}
+						}
+						.annotationTitles(.automatic)
+						Annotation("Finish", coordinate: locationArray.last?.locationCoordinate ?? LocationHelper.DefaultLocation) {
+							ZStack {
+								Circle()
+									.fill(Color(.black))
+									.strokeBorder(.white, lineWidth: 3)
+									.frame(width: 15, height: 15)
+							}
+						}
+						.annotationTitles(.automatic)
 						let dashed = StrokeStyle(
 							lineWidth: 3,
-							lineCap: .round, lineJoin: .round, dash: [10, 10]
+							lineCap: .round, lineJoin: .round, dash: [7, 10]
 						)
 						MapPolyline(coordinates: lineCoords)
-							.stroke(gradient, style: dashed)
+							.stroke(.green, style: dashed)
 					}
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
 				}

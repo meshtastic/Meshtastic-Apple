@@ -62,7 +62,7 @@ struct Settings: View {
 					NavigationLink {
 						Routes()
 					} label: {
-						Image(systemName: "gearshape")
+						Image(systemName: "road.lanes.curved.right")
 							.symbolRenderingMode(.hierarchical)
 						Text("routes")
 					}
