@@ -37,5 +37,13 @@ extension UIColor {
 	private func add(_ value: CGFloat, toComponent: CGFloat) -> CGFloat {
 		return max(0, min(1, toComponent + value))
 	}
-
+	
+	static var random: UIColor {
+		 return UIColor(
+			 red: .random(in: 0...1),
+			 green: .random(in: 0...1),
+			 blue: .random(in: 0...1),
+			 alpha: 1.0
+		 )
+	 }
 }

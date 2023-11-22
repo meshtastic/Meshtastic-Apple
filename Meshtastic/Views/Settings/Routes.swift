@@ -26,6 +26,10 @@ struct Routes: View {
 			Button("Import Route") {
 				importing = true
 			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.large)
+			.padding()
 			.fileImporter(
 				isPresented: $importing,
 				allowedContentTypes: [.commaSeparatedText],
@@ -54,9 +58,9 @@ struct Routes: View {
 						}
 						if latIndex >= 0 && longIndex >= 0 {
 							let newRoute = RouteEntity(context: context)
-							newRoute.name = ("\(String(routeName)) - \(Date().formatted())")
+							newRoute.name = String(routeName)
 							newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
-							newRoute.color = 12
+							newRoute.color = Int64(UIColor.random.hex)
 							newRoute.date = Date()
 							var newLocations = [LocationEntity]()
 							lines.dropFirst().forEach { line in
@@ -90,8 +94,22 @@ struct Routes: View {
 			
 			VStack {
 				List(routes, id: \.self, selection: $selectedRoute) { route in
-					Text(route.name ?? "No Name Route")
-						.font(.title)
+					Label {
+						VStack (alignment: .leading) {
+							Text("\(route.name ?? "No Name Route")")
+								.padding(.top)
+								.foregroundStyle(.primary)
+							
+							Text("\(route.date?.formatted() ?? "Unknown Time")")
+								.padding(.bottom)
+								.font(.callout)
+								.foregroundColor(.gray)
+						}
+					} icon: {
+						RoundedRectangle(cornerRadius: 10)
+							.fill(Color(UIColor(hex: route.color >= 0 ? UInt32(route.color) : 0)))
+							.frame(width: 20, height: 20)
+					}
 				}
 				.listStyle(.plain)
 			}
@@ -128,11 +146,11 @@ struct Routes: View {
 							lineCap: .round, lineJoin: .round, dash: [7, 10]
 						)
 						MapPolyline(coordinates: lineCoords)
-							.stroke(.green, style: dashed)
+							.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: dashed)
 					}
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
 				}
-			}.navigationTitle(" \(selectedRoute?.name ?? "Unknown Route") Map")
+			}.navigationTitle(" \(selectedRoute?.name ?? "Unknown Route") \(selectedRoute?.locations?.count ?? 0) points")
 		}
 	}
 }
