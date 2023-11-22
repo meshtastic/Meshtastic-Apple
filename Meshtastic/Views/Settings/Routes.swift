@@ -17,6 +17,7 @@ struct Routes: View {
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var selectedRoute: RouteEntity?
 	@State private var importing = false
+	@State private var isShowingBadFileAlert = false
 	
 	@FetchRequest(sortDescriptors: [], animation: .default)
 	
@@ -30,6 +31,10 @@ struct Routes: View {
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
+	
+			.alert(isPresented: $isShowingBadFileAlert) {
+				Alert(title: Text("Not a valid route file"), message: Text("Your route file must have both Latitude and Longitude."), dismissButton: .default(Text("OK")))
+			}
 			.fileImporter(
 				isPresented: $importing,
 				allowedContentTypes: [.commaSeparatedText],
@@ -62,6 +67,7 @@ struct Routes: View {
 							newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 							newRoute.color = Int64(UIColor.random.hex)
 							newRoute.date = Date()
+							newRoute.enabled = true
 							var newLocations = [LocationEntity]()
 							lines.dropFirst().forEach { line in
 								let data = line.components(separatedBy: ",")
@@ -80,7 +86,10 @@ struct Routes: View {
 								try context.save()
 							} catch let error as NSError {
 								print("Error: \(error.localizedDescription)")
+								isShowingBadFileAlert = true
 							}
+						} else {
+							isShowingBadFileAlert = true
 						}
 						
 					} catch {
@@ -94,6 +103,7 @@ struct Routes: View {
 			
 			VStack {
 				List(routes, id: \.self, selection: $selectedRoute) { route in
+					let routeColor = Color(UIColor(hex: route.color >= 0 ? UInt32(route.color) : 0))
 					Label {
 						VStack (alignment: .leading) {
 							Text("\(route.name ?? "No Name Route")")
@@ -104,11 +114,26 @@ struct Routes: View {
 								.padding(.bottom)
 								.font(.callout)
 								.foregroundColor(.gray)
+							
+							if route.notes?.count ?? 0 > 0 {
+								Text("\(route.notes ?? "")")
+									.padding(.bottom)
+									.font(.callout)
+									.foregroundColor(.gray)
+							}
 						}
 					} icon: {
-						RoundedRectangle(cornerRadius: 10)
-							.fill(Color(UIColor(hex: route.color >= 0 ? UInt32(route.color) : 0)))
-							.frame(width: 20, height: 20)
+						ZStack {
+							Circle()
+								.fill(routeColor)
+								.frame(width: 40, height: 40)
+								.padding(.top)
+							if route.enabled {
+								Image(systemName: "checkmark.circle.fill")
+									.padding(.top)
+									.foregroundColor(routeColor.isLight() ? .black : .white)
+							}
+						}
 					}
 					.swipeActions {
 						Button(role: .destructive) {
