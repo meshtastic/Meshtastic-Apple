@@ -142,7 +142,7 @@ struct Channels: View {
 							Picker("Key Size", selection: $channelKeySize) {
 								Text("Empty").tag(0)
 								Text("Default").tag(-1)
-								Text("1 bit").tag(1)
+								Text("1 byte").tag(1)
 								Text("128 bit").tag(16)
 								Text("192 bit").tag(24)
 								Text("256 bit").tag(32)

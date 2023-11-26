@@ -22,7 +22,7 @@ struct MapSettingsForm: View {
 
 	var body: some View {
 		
-		VStack {
+		NavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {

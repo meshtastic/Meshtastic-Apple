@@ -612,7 +612,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			case .neighborinfoApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
+					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \(neighborInfo)")
+				}
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:

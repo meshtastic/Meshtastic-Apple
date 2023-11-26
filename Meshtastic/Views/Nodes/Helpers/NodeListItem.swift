@@ -80,6 +80,7 @@ struct NodeListItem: View {
 							HStack {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
+									.padding(.top, 2)
 							}
 						}
 						HStack {

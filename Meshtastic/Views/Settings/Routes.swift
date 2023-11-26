@@ -19,11 +19,12 @@ struct Routes: View {
 	@State private var importing = false
 	@State private var isShowingBadFileAlert = false
 	
-	@FetchRequest(sortDescriptors: [], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "enabled", ascending: false), NSSortDescriptor(key: "name", ascending: true), NSSortDescriptor(key: "date", ascending: false)], animation: .default)
 	
 	var routes: FetchedResults<RouteEntity>
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
+		//VStack {
 			Button("Import Route") {
 				importing = true
 			}
@@ -152,6 +153,7 @@ struct Routes: View {
 			}
 			.navigationTitle("Route List")
 		} detail: {
+			
 			VStack {
 				if selectedRoute != nil {
 					let locationArray = selectedRoute?.locations?.array as? [LocationEntity] ?? []
@@ -169,7 +171,7 @@ struct Routes: View {
 							}
 						}
 						.annotationTitles(.automatic)
-						Annotation("Finish", coordinate: locationArray.last?.locationCoordinate ?? LocationHelper.DefaultLocation) {
+						Annotation("Finish", coordinate: lineCoords.last ?? LocationHelper.DefaultLocation) {
 							ZStack {
 								Circle()
 									.fill(Color(.black))

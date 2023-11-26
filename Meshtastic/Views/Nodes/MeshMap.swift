@@ -54,6 +54,10 @@ struct MeshMap: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
+				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
+	private var routes: FetchedResults<RouteEntity>
 
 	var body: some View {
 		
@@ -123,7 +127,39 @@ struct MeshMap: View {
 									selectedPosition = (selectedPosition == position ? nil : position)
 								}
 							}
-							/// Route Lines
+							/// Routes
+							ForEach(Array(routes), id: \.id) { route in
+								let routeLocations = Array(route.locations!) as! [LocationEntity]
+								let routeCoords = routeLocations.compactMap({(loc) -> CLLocationCoordinate2D in
+									return loc.locationCoordinate ?? LocationHelper.DefaultLocation
+								})
+								Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.DefaultLocation) {
+									ZStack {
+										Circle()
+											.fill(Color(.green))
+											.strokeBorder(.white, lineWidth: 3)
+											.frame(width: 15, height: 15)
+									}
+								}
+								.annotationTitles(.automatic)
+								Annotation("Finish", coordinate: routeCoords.last ?? LocationHelper.DefaultLocation) {
+									ZStack {
+										Circle()
+											.fill(Color(.black))
+											.strokeBorder(.white, lineWidth: 3)
+											.frame(width: 15, height: 15)
+									}
+								}
+								.annotationTitles(.automatic)
+								let dashed = StrokeStyle(
+									lineWidth: 3,
+									lineCap: .round, lineJoin: .round, dash: [7, 10]
+								)
+								MapPolyline(coordinates: routeCoords)
+									.stroke(Color(UIColor(hex: UInt32(route.color))), style: dashed)
+								
+							}
+							/// Node Route Lines
 							if showRouteLines {
 								let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
 								let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
@@ -173,6 +209,19 @@ struct MeshMap: View {
 							}
 						}
 					}
+					.mapScope(mapScope)
+					.mapStyle(mapStyle)
+					.mapControls {
+						MapScaleView(scope: mapScope)
+							.mapControlVisibility(.automatic)
+						MapUserLocationButton(scope: mapScope)
+							.mapControlVisibility(showUserLocation ? .visible : .hidden)
+						MapPitchToggle(scope: mapScope)
+							.mapControlVisibility(.automatic)
+						MapCompass(scope: mapScope)
+							.mapControlVisibility(.automatic)
+					}
+					.controlSize(.regular)
 					.onTapGesture(count: 1, perform: { location in
 						newWaypointCoord = reader.convert(location , from: .local)
 					})
@@ -185,23 +234,10 @@ struct MeshMap: View {
 						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
 						editingWaypoint!.id = 0
 					}
+					
 				}
 			}
-			.mapScope(mapScope)
-			.mapStyle(mapStyle)
-			.mapControls {
-				MapScaleView(scope: mapScope)
-					.mapControlVisibility(.visible)
-				if showUserLocation {
-					MapUserLocationButton(scope: mapScope)
-						.mapControlVisibility(.visible)
-				}
-				MapPitchToggle(scope: mapScope)
-					.mapControlVisibility(.visible)
-				MapCompass(scope: mapScope)
-					.mapControlVisibility(.visible)
-			}
-			.controlSize(.regular)
+
 			.sheet(item: $selectedPosition) { selection in
 				PositionPopover(position: selection, popover: false)
 					.padding()

@@ -22,6 +22,7 @@
 		DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
 		DD1933782B084F4200771CD5 /* Measurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933772B084F4200771CD5 /* Measurement.swift */; };
 		DD1BF2F92776FE2E008C8D2F /* UserMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */; };
+		DD21007F2B0E571300F2F116 /* Settings2.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD21007E2B0E571300F2F116 /* Settings2.swift */; };
 		DD2160AF28C5552500C17253 /* MQTTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2160AE28C5552500C17253 /* MQTTConfig.swift */; };
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
@@ -231,6 +232,7 @@
 		DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
 		DD1933772B084F4200771CD5 /* Measurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Measurement.swift; sourceTree = "<group>"; };
 		DD1BF2F82776FE2E008C8D2F /* UserMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserMessageList.swift; sourceTree = "<group>"; };
+		DD21007E2B0E571300F2F116 /* Settings2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings2.swift; sourceTree = "<group>"; };
 		DD2160AE28C5552500C17253 /* MQTTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MQTTConfig.swift; sourceTree = "<group>"; };
 		DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralModel.swift; sourceTree = "<group>"; };
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
@@ -482,6 +484,21 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
+		DD2100802B0E676E00F2F116 /* Routes */ = {
+			isa = PBXGroup;
+			children = (
+				DD2100832B0E67AD00F2F116 /* RouteMap */,
+			);
+			path = Routes;
+			sourceTree = "<group>";
+		};
+		DD2100832B0E67AD00F2F116 /* RouteMap */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = RouteMap;
+			sourceTree = "<group>";
+		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -509,6 +526,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				DD2100802B0E676E00F2F116 /* Routes */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
@@ -518,6 +536,7 @@
 				DD8169FA271F1F3A00F4AB02 /* MeshLog.swift */,
 				DD86D40B287F401000BAEB7A /* SaveChannelQRCode.swift */,
 				DD3501882852FC3B000FC853 /* Settings.swift */,
+				DD21007E2B0E571300F2F116 /* Settings2.swift */,
 				DD3CC6B428E33FD100FA9159 /* ShareChannels.swift */,
 				DDCE4E2B2869F92900BE9F8F /* UserConfig.swift */,
 				DD61937A2863876A00E59241 /* Config */,
@@ -1091,6 +1110,7 @@
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
+				DD21007F2B0E571300F2F116 /* Settings2.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
