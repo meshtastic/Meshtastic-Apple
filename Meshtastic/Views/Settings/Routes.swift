@@ -23,8 +23,8 @@ struct Routes: View {
 	
 	var routes: FetchedResults<RouteEntity>
 	var body: some View {
-		NavigationSplitView(columnVisibility: $columnVisibility) {
-		//VStack {
+		//NavigationSplitView(columnVisibility: $columnVisibility) {
+		NavigationStack {
 			Button("Import Route") {
 				importing = true
 			}
@@ -152,7 +152,7 @@ struct Routes: View {
 				.listStyle(.plain)
 			}
 			.navigationTitle("Route List")
-		} detail: {
+//		} detail: {
 			
 			VStack {
 				if selectedRoute != nil {
