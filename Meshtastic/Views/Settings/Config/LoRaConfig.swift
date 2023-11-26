@@ -184,6 +184,12 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .frequencyOverride)
 					}
+					HStack {
+						Image(systemName: "antenna.radiowaves.left.and.right")
+							.foregroundColor(.accentColor)
+						Stepper("\(txPower)db Transmit Power", value: $txPower, in: 1...30, step: 1)
+							.padding(5)
+					}
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
@@ -214,6 +220,7 @@ struct LoRaConfig: View {
 						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
 						lc.usePreset = usePreset
 						lc.txEnabled = txEnabled
+						lc.txPower = Int32(txPower)
 						lc.channelNum = UInt32(channelNum)
 						lc.bandwidth = UInt32(bandwidth)
 						lc.codingRate = UInt32(codingRate)
@@ -300,6 +307,11 @@ struct LoRaConfig: View {
 		.onChange(of: overrideFrequency) { newOverrideFrequency in
 			if node != nil && node!.loRaConfig != nil {
 				if newOverrideFrequency != node!.loRaConfig!.overrideFrequency { hasChanges = true }
+			}
+		}
+		.onChange(of: txPower) { newTxPower in
+			if node != nil && node!.loRaConfig != nil {
+				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
 			}
 		}
 	}
