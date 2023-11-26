@@ -29,7 +29,7 @@ struct WaypointForm: View {
 	@State private var lockedTo: Int64 = 0
 	
 	var body: some View {
-		VStack {
+		NavigationStack {
 			if editMode {
 				Text((waypoint.id > 0) ? "Editing Waypoint" : "Create Waypoint")
 					.font(.largeTitle)
@@ -385,5 +385,7 @@ struct WaypointForm: View {
 				longitude = waypoint.coordinate.longitude
 			}
 		}
+		.presentationDetents([.fraction(0.75)])
+		.presentationDragIndicator(.visible)
 	}
 }

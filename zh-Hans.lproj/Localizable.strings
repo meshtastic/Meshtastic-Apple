@@ -225,6 +225,7 @@
 "received.ack.real"="收件人确认";
 "ringtone"="铃声";
 "ringtone.config"="铃声设置";
+"routes"="Routes";
 "routing.acknowledged"="确认";
 "routing.noroute"="找不到目标";
 "routing.gotnak"="收到否认";

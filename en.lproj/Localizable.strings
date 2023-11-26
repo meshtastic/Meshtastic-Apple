@@ -228,6 +228,7 @@
 "received.ack.real"="Recipient Ack";
 "ringtone"="Ringtone";
 "ringtone.config"="Ringtone Config";
+"routes"="Routes";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
 "routing.gotnak"="Received a negative acknowledgment";

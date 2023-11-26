@@ -226,6 +226,7 @@
 "received.ack.real"="Odbiorca potwierdzenia";
 "ringtone"="Dzwonek";
 "ringtone.config"="Konfiguracja dzwonka";
+"routes"="Routes";
 "routing.acknowledged"="Potwierdzono";
 "routing.noroute"="Brak trasy";
 "routing.gotnak"="Otrzymano negatywne potwierdzenie";

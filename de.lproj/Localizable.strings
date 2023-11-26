@@ -225,6 +225,7 @@
 "received.ack.real"="Recipient Ack";
 "ringtone"="Ringtone";
 "ringtone.config"="Ringtone Config";
+"routes"="Routes";
 "routing.acknowledged"="Bestätigt";
 "routing.noroute"="Keine Route";
 "routing.gotnak"="Negative Empfangsbestätigung empfangen";
