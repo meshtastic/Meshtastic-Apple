@@ -256,10 +256,10 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
-					/// Don't save the same position over and over.
+					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
 					if mutablePositions.count > 0 {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.latitudeI == position.latitudeI && mostRecent.longitudeI == position.longitudeI {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 10 {
 							mutablePositions.remove(mostRecent)
 						}
 					}
@@ -413,6 +413,7 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 				newDisplayConfig.flipScreen = config.flipScreen
 				newDisplayConfig.oledType = Int32(config.oled.rawValue)
 				newDisplayConfig.displayMode = Int32(config.displaymode.rawValue)
+				newDisplayConfig.units = Int32(config.units.rawValue)
 				newDisplayConfig.headingBold = config.headingBold
 				fetchedNode[0].displayConfig = newDisplayConfig
 
@@ -425,6 +426,7 @@ func upsertDisplayConfigPacket(config: Meshtastic.Config.DisplayConfig, nodeNum:
 				fetchedNode[0].displayConfig?.flipScreen = config.flipScreen
 				fetchedNode[0].displayConfig?.oledType = Int32(config.oled.rawValue)
 				fetchedNode[0].displayConfig?.displayMode = Int32(config.displaymode.rawValue)
+				fetchedNode[0].displayConfig?.units = Int32(config.units.rawValue)
 				fetchedNode[0].displayConfig?.headingBold = config.headingBold
 			}
 

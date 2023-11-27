@@ -26,6 +26,7 @@ struct DisplayConfig: View {
 	@State var flipScreen = false
 	@State var oledType = 0
 	@State var displayMode = 0
+	@State var units = 0
 
 	var body: some View {
 
@@ -125,6 +126,15 @@ struct DisplayConfig: View {
 				Text("The format used to display GPS coordinates on the device screen.")
 					.font(.caption)
 					.listRowSeparator(.visible)
+				
+				Picker("Display Units", selection: $units ) {
+					ForEach(Units.allCases) { un in
+						Text(un.description)
+					}
+				}
+				.pickerStyle(DefaultPickerStyle())
+				Text("Units displayed on the device screen")
+					.font(.caption)
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
@@ -160,6 +170,7 @@ struct DisplayConfig: View {
 					dc.flipScreen = flipScreen
 					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
 					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
+					dc.units = Units(rawValue: units)!.protoEnumValue()
 
 					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
@@ -233,6 +244,11 @@ struct DisplayConfig: View {
 				if newDisplayMode != node!.displayConfig!.displayMode { hasChanges = true }
 			}
 		}
+		.onChange(of: units) { newUnits in
+			if node != nil && node!.displayConfig != nil {
+				if newUnits != node!.displayConfig!.units { hasChanges = true }
+			}
+		}
 	}
 	func setDisplayValues() {
 			self.gpsFormat = Int(node?.displayConfig?.gpsFormat ?? 0)
@@ -243,6 +259,7 @@ struct DisplayConfig: View {
 			self.flipScreen = node?.displayConfig?.flipScreen ?? false
 			self.oledType = Int(node?.displayConfig?.oledType ?? 0)
 			self.displayMode = Int(node?.displayConfig?.displayMode ?? 0)
+			self.units = Int(node?.displayConfig?.units ?? 0)
 			self.hasChanges = false
 	}
 }

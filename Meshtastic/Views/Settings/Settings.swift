@@ -13,10 +13,11 @@ struct Settings: View {
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
 	@State private var selectedNode: Int = 0
-	@State private var connectedNodeNum: Int = 0
+	@State private var preferredNodeNum: Int = 0
 	@State private var selection: SettingsSidebar = .about
 	enum SettingsSidebar {
 		case appSettings
+		case routes
 		case shareChannels
 		case userConfig
 		case loraConfig
@@ -57,7 +58,18 @@ struct Settings: View {
 					Text("app.settings")
 				}
 				.tag(SettingsSidebar.appSettings)
-				let node = nodes.first(where: { $0.num == connectedNodeNum })
+				if #available(iOS 17.0, macOS 14.0, *) {
+					NavigationLink {
+						Routes()
+					} label: {
+						Image(systemName: "road.lanes.curved.right")
+							.symbolRenderingMode(.hierarchical)
+						Text("routes")
+					}
+					.tag(SettingsSidebar.routes)
+				}
+				
+				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
 				if !(node?.deviceConfig?.isManaged ?? false) {
 					Section("Configure") {
@@ -84,8 +96,8 @@ struct Settings: View {
 							.onChange(of: selectedNode) { newValue in
 								if selectedNode > 0 {
 									let node = nodes.first(where: { $0.num == newValue })
-									let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
-									connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+									let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
+									preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 									if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
 										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
 										if adminMessageId > 0 {
@@ -100,14 +112,14 @@ struct Settings: View {
 					}
 					Section("radio.configuration") {
 						NavigationLink {
-							ShareChannels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+							ShareChannels(node: nodes.first(where: { $0.num == preferredNodeNum }))
 						} label: {
 							Image(systemName: "qrcode")
 								.symbolRenderingMode(.hierarchical)
 							Text("share.channels")
 						}
 						.tag(SettingsSidebar.shareChannels)
-						.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 						NavigationLink {
 							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
@@ -125,14 +137,14 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.loraConfig)
 						NavigationLink {
-							Channels(node: nodes.first(where: { $0.num == connectedNodeNum }))
+							Channels(node: nodes.first(where: { $0.num == preferredNodeNum }))
 						} label: {
 							Image(systemName: "fibrechannel")
 								.symbolRenderingMode(.hierarchical)
 							Text("channels")
 						}
 						.tag(SettingsSidebar.channelConfig)
-						.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
+						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 						NavigationLink {
 							BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
@@ -257,7 +269,7 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.meshLog)
 						NavigationLink {
-							let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
+							let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
 							AdminMessageList(user: connectedNode?.user)
 						} label: {
 							Image(systemName: "building.columns")
@@ -266,24 +278,24 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.adminMessageLog)
 					}
-					Section(header: Text("Firmware")) {
-						NavigationLink {
-							Firmware(node: nodes.first(where: { $0.num == connectedNodeNum }))
-						} label: {
-							Image(systemName: "arrow.up.arrow.down.square")
-								.symbolRenderingMode(.hierarchical)					
-							Text("Firmware Updates")
-						}
-						.tag(SettingsSidebar.about)
-						.disabled(selectedNode > 0 && selectedNode != connectedNodeNum)
-					}
+//					Section(header: Text("Firmware")) {
+//						NavigationLink {
+//							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
+//						} label: {
+//							Image(systemName: "arrow.up.arrow.down.square")
+//								.symbolRenderingMode(.hierarchical)					
+//							Text("Firmware Updates")
+//						}
+//						.tag(SettingsSidebar.about)
+//						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+//					}
 				}
 			}
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
-				self.connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+				self.preferredNodeNum = UserDefaults.preferredPeripheralNum// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 				selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			}
 			.listStyle(GroupedListStyle())

@@ -67,7 +67,7 @@ struct UserList: View {
 								Spacer()
 								if user.vip {
 									Image(systemName: "star.fill")
-										.foregroundColor(.secondary)
+										.foregroundColor(.yellow)
 								}
 								if user.messageList.count > 0 {
 									if lastMessageDay == currentDay {

@@ -25,7 +25,8 @@ struct PositionAltitudeChart: View {
 	var body: some View {
 		let nodePositions = Array(node.positions!) as! [PositionEntity]
 		let data = nodePositions.map { PositionAltitude(time: $0.time ?? Date(), altitude: Measurement(value: Double($0.altitude), unit: .meters) ) }
-		HStack {
+		GroupBox(label: Label("Altitude", systemImage: "mountain.2")) {
+			
 			Chart(data, id: \.time) {
 				LineMark(
 					x: .value("Time", $0.time),
@@ -56,7 +57,6 @@ struct PositionAltitudeChart: View {
 			}
 			.chartXAxis(.visible)
 		}
-		.padding()
 		.background(Color(UIColor.secondarySystemBackground))
 		.opacity(/*@START_MENU_TOKEN@*/0.8/*@END_MENU_TOKEN@*/)
 	}

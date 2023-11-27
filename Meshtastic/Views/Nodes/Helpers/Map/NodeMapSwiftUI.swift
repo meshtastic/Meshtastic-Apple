@@ -61,18 +61,16 @@ struct NodeMapSwiftUI: View {
 						let nodeColor = UIColor(hex: UInt32(node.num))
 						/// Route Lines
 						if showRouteLines  {
-							if showRouteLines {
-								let gradient = LinearGradient(
-									colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-									startPoint: .leading, endPoint: .trailing
-								)
-								let dashed = StrokeStyle(
-									lineWidth: 3,
-									lineCap: .round, lineJoin: .round, dash: [10, 10]
-								)
-								MapPolyline(coordinates: lineCoords)
-									.stroke(gradient, style: dashed)
-							}
+							let gradient = LinearGradient(
+								colors: [Color(nodeColor.lighter().lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+								startPoint: .leading, endPoint: .trailing
+							)
+							let dashed = StrokeStyle(
+								lineWidth: 3,
+								lineCap: .round, lineJoin: .round, dash: [10, 10]
+							)
+							MapPolyline(coordinates: lineCoords)
+								.stroke(gradient, style: dashed)
 						}
 						/// Convex Hull
 						if showConvexHull {
@@ -125,7 +123,7 @@ struct NodeMapSwiftUI: View {
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
-												
+											
 										} else {
 											Image(systemName: "flipphone")
 												.symbolEffect(.pulse.byLayer)
@@ -142,7 +140,7 @@ struct NodeMapSwiftUI: View {
 														.opacity(0.8)
 														.presentationCompactAdaptation(.popover)
 												}
-												
+											
 										}
 									} else {
 										if showNodeHistory {
@@ -155,7 +153,7 @@ struct NodeMapSwiftUI: View {
 													.clipShape(Circle())
 													.rotationEffect(headingDegrees)
 													.frame(width: 16, height: 16)
-										
+												
 											} else {
 												Circle()
 													.fill(Color(UIColor(hex: UInt32(node.num))))
@@ -225,6 +223,8 @@ struct NodeMapSwiftUI: View {
 							}
 					}
 					.onChange(of: node) {
+						isLookingAround = false
+						isShowingAltitude = false
 						mostRecent = node.positions?.lastObject as? PositionEntity
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
@@ -282,8 +282,8 @@ struct NodeMapSwiftUI: View {
 										showWaypoints = !showWaypoints
 									}
 								}) {
-								Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
-									.padding(.vertical, 5)
+									Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
+										.padding(.vertical, 5)
 								}
 								.tint(Color(UIColor.secondarySystemBackground))
 								.foregroundColor(.accentColor)
@@ -319,13 +319,13 @@ struct NodeMapSwiftUI: View {
 								.foregroundColor(.accentColor)
 								.buttonStyle(.borderedProminent)
 							}
-							#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
 							/// Hide non fuctional catalyst controls
-//							MapZoomStepper(scope: mapScope)
-//								.mapControlVisibility(.visible)
-//							MapPitchSlider(scope: mapScope)
-//								.mapControlVisibility(.visible)
-							#endif
+							//							MapZoomStepper(scope: mapScope)
+							//								.mapControlVisibility(.visible)
+							//							MapPitchSlider(scope: mapScope)
+							//								.mapControlVisibility(.visible)
+#endif
 						}
 						.controlSize(.regular)
 						.padding(5)

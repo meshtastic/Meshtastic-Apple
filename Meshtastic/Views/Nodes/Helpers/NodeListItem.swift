@@ -23,7 +23,6 @@ struct NodeListItem: View {
 					VStack(alignment: .leading) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
 							.padding(.trailing, 5)
-						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
 					}
 					VStack(alignment: .leading) {
 						HStack {
@@ -33,7 +32,7 @@ struct NodeListItem: View {
 							if node.user?.vip ?? false {
 								Spacer()
 								Image(systemName: "star.fill")
-									.foregroundColor(.secondary)
+									.foregroundColor(.yellow)
 							}
 						}
 						if connected {
@@ -81,8 +80,30 @@ struct NodeListItem: View {
 							HStack {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
+									.padding(.top, 2)
 							}
 						}
+						HStack {
+							BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
+
+							if node.hasPositions {
+								Image(systemName: "mappin.and.ellipse")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+
+							}
+							if node.hasEnvironmentMetrics {
+								Image(systemName: "cloud.sun.rain")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+							}
+							if node.hasDetectionSensorMetrics {
+								Image(systemName: "sensor")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+							}
+						}
+						.padding(.top, 3)
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)
 				}

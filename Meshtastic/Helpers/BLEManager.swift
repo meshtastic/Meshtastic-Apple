@@ -486,6 +486,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
 					if myInfo != nil {
+						UserDefaults.preferredPeripheralNum = Int(myInfo!.myNodeNum)
 						connectedPeripheral.num = myInfo!.myNodeNum
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
@@ -611,7 +612,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 			case .neighborinfoApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
+					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \(neighborInfo)")
+				}
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:

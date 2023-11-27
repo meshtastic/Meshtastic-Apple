@@ -73,6 +73,7 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
 	case off = 0
+	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
@@ -84,6 +85,8 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 		switch self {
 		case .off:
 			return "off".localized
+		case .fifteenSeconds:
+			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
 			return "interval.thirty.seconds".localized
 		case .oneMinute:
@@ -165,6 +168,32 @@ enum DisplayModes: Int, CaseIterable, Identifiable {
 			return Config.DisplayConfig.DisplayMode.inverted
 		case .color:
 			return Config.DisplayConfig.DisplayMode.color
+		}
+	}
+}
+
+// Default of 0 is metric
+enum Units: Int, CaseIterable, Identifiable {
+
+	case metric = 0
+	case imperial = 1
+
+	var id: Int { self.rawValue }
+	var description: String {
+		switch self {
+		case .metric:
+			return "Metric"
+		case .imperial:
+			return "Imperial"
+		}
+	}
+	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
+
+		switch self {
+		case .metric:
+			return Config.DisplayConfig.DisplayUnits.metric
+		case .imperial:
+			return Config.DisplayConfig.DisplayUnits.imperial
 		}
 	}
 }
