@@ -256,10 +256,10 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					guard let mutablePositions = fetchedNode[0].positions!.mutableCopy() as? NSMutableOrderedSet else {
 						return
 					}
-					/// Don't save the same position over and over.
+					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
 					if mutablePositions.count > 0 {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.latitudeI == position.latitudeI && mostRecent.longitudeI == position.longitudeI {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 10 {
 							mutablePositions.remove(mostRecent)
 						}
 					}

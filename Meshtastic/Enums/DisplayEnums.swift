@@ -73,6 +73,7 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 
 	case off = 0
+	case fifteenSeconds = 15
 	case thirtySeconds = 30
 	case oneMinute = 60
 	case fiveMinutes = 300
@@ -84,6 +85,8 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 		switch self {
 		case .off:
 			return "off".localized
+		case .fifteenSeconds:
+			return "interval.fifteen.seconds".localized
 		case .thirtySeconds:
 			return "interval.thirty.seconds".localized
 		case .oneMinute:
