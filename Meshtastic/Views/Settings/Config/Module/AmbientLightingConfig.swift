@@ -149,9 +149,10 @@ struct AmbientLightingConfig: View {
 	func setAmbientLightingConfigValue() {
 		self.ledState = node?.ambientLightingConfig?.ledState ?? false
 		self.current = Int(node?.ambientLightingConfig?.current ?? 10)
-		color = Color(red: Double((node?.ambientLightingConfig?.red ?? 255) / 255),
-					  green: Double((node?.ambientLightingConfig?.green ?? 255) / 255),
-					  blue: Double((node?.ambientLightingConfig?.blue ?? 255) / 255))
+		let red = Double(node?.ambientLightingConfig?.red ?? 255)
+		let green = Double(node?.ambientLightingConfig?.green ?? 255)
+		let blue = Double(node?.ambientLightingConfig?.blue ?? 255)
+		color = Color(red: red / 255.0, green: green / 255.0, blue: blue / 255.0)
 		self.hasChanges = false
 	}
 }
