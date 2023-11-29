@@ -23,8 +23,10 @@ struct PositionAltitudeChart: View {
 	@State private var lineWidth = 2.0
 	
 	var body: some View {
+		let fiveYearsAgo = Calendar.current.date(byAdding: .year, value: -5, to: Date())
 		let nodePositions = Array(node.positions!) as! [PositionEntity]
-		let data = nodePositions.map { PositionAltitude(time: $0.time ?? Date(), altitude: Measurement(value: Double($0.altitude), unit: .meters) ) }
+		let filteredPositions = nodePositions.filter({$0.time != nil && ($0.time ?? fiveYearsAgo!) > fiveYearsAgo!})
+		let data = filteredPositions.map { PositionAltitude(time: $0.time ?? Date(), altitude: Measurement(value: Double($0.altitude), unit: .meters) ) }
 		GroupBox(label: Label("Altitude", systemImage: "mountain.2")) {
 			
 			Chart(data, id: \.time) {

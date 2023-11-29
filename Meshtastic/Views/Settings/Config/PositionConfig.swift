@@ -212,13 +212,7 @@ struct PositionConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if deviceGpsEnabled {
-						Picker("Update Interval", selection: $gpsUpdateInterval) {
-							ForEach(GpsUpdateIntervals.allCases) { ui in
-								Text(ui.description)
-							}
-						}
-						Text("How often should we try to get a GPS position.")
-							.font(.caption)
+						
 						Picker("Attempt Time", selection: $gpsAttemptTime) {
 							ForEach(GpsAttemptTimes.allCases) { at in
 								Text(at.description)
@@ -286,7 +280,6 @@ struct PositionConfig: View {
 						pc.positionBroadcastSmartEnabled = smartPositionEnabled
 						pc.gpsEnabled = deviceGpsEnabled
 						pc.fixedPosition = fixedPosition
-						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 						pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
@@ -357,11 +350,6 @@ struct PositionConfig: View {
 		.onChange(of: gpsAttemptTime) { newGpsAttemptTime in
 			if node != nil && node!.positionConfig != nil {
 				if newGpsAttemptTime != node!.positionConfig!.gpsAttemptTime { hasChanges = true }
-			}
-		}
-		.onChange(of: gpsUpdateInterval) { newGpsUpdateInterval in
-			if node != nil && node!.positionConfig != nil {
-				if newGpsUpdateInterval != node!.positionConfig!.gpsUpdateInterval { hasChanges = true }
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in

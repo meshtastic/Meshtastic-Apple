@@ -53,52 +53,18 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 	}
 }
 
-enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
+enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
 
-	case fiveSeconds = 5
-	case tenSeconds = 10
-	case fifteenSeconds = 15
-	case twentySeconds = 20
-	case twentyFiveSeconds = 25
-	case thirtySeconds = 30
-	case fortyFiveSeconds = 45
-	case oneMinute = 60
-	case twoMinutes = 120
-	case fiveMinutes = 300
-	case tenMinutes = 600
 	case fifteenMinutes = 900
 	case thirtyMinutes = 1800
 	case oneHour = 3600
 	case sixHours = 21600
 	case twelveHours = 43200
 	case twentyFourHours = 86400
-	case maxInt32 = 2147483647
 
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {
-		case .fiveSeconds:
-			return "interval.five.seconds".localized
-		case .tenSeconds:
-			return "interval.ten.seconds".localized
-		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
-		case .twentySeconds:
-			return "interval.twenty.seconds".localized
-		case .twentyFiveSeconds:
-			return "interval.twentyfive.seconds".localized
-		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
-		case .fortyFiveSeconds:
-			return "interval.fortyfive.seconds".localized
-		case .oneMinute:
-			return "interval.one.minute".localized
-		case .twoMinutes:
-			return "interval.two.minutes".localized
-		case .fiveMinutes:
-			return "interval.five.minutes".localized
-		case .tenMinutes:
-			return "interval.ten.minutes".localized
 		case .fifteenMinutes:
 			return "interval.fifteen.minutes".localized
 		case .thirtyMinutes:
@@ -111,57 +77,6 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 			return "interval.twelve.hours".localized
 		case .twentyFourHours:
 			return "interval.twentyfour.hours".localized
-		case .maxInt32:
-			return "on.boot"
-		}
-	}
-}
-
-enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
-
-	case twoSeconds = 2
-	case fiveSeconds = 5
-	case tenSeconds = 10
-	case fifteenSeconds = 15
-	case twentySeconds = 20
-	case twentyFiveSeconds = 25
-	case thirtySeconds = 30
-	case fortyFiveSeconds = 45
-	case oneMinute = 60
-	case twoMinutes = 120
-	case fiveMinutes = 300
-	case tenMinutes = 600
-	case fifteenMinutes = 900
-
-	var id: Int { self.rawValue }
-	var description: String {
-		switch self {
-		case .twoSeconds:
-			return "interval.two.seconds".localized
-		case .fiveSeconds:
-			return "interval.five.seconds".localized
-		case .tenSeconds:
-			return "interval.ten.seconds".localized
-		case .fifteenSeconds:
-			return "interval.fifteen.seconds".localized
-		case .twentySeconds:
-			return "interval.twenty.seconds".localized
-		case .twentyFiveSeconds:
-			return "interval.twentyfive.seconds".localized
-		case .thirtySeconds:
-			return "interval.thirty.seconds".localized
-		case .fortyFiveSeconds:
-			return "interval.fortyfive.seconds".localized
-		case .oneMinute:
-			return "interval.one.minute".localized
-		case .twoMinutes:
-			return "interval.two.minutes".localized
-		case .fiveMinutes:
-			return "interval.five.minutes".localized
-		case .tenMinutes:
-			return "interval.ten.minutes".localized
-		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
 		}
 	}
 }

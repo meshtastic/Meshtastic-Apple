@@ -41,6 +41,7 @@
 		DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD457187293C7E63000C49FB /* BLESignalStrengthIndicator.swift */; };
 		DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */; };
 		DD47E3D626F17ED900029299 /* CircleText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD47E3D526F17ED900029299 /* CircleText.swift */; };
+		DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */; };
 		DD4A911E2708C65400501B7E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4A911D2708C65400501B7E /* AppSettings.swift */; };
 		DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */; };
 		DD5394FC276993AD00AD86B1 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DD5394FB276993AD00AD86B1 /* SwiftProtobuf */; };
@@ -254,6 +255,7 @@
 		DD457BC4295D5E35004BCE4D /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		DD46401F2AFF10F4002A5ECB /* WaypointForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointForm.swift; sourceTree = "<group>"; };
 		DD47E3D526F17ED900029299 /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
+		DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientLightingConfig.swift; sourceTree = "<group>"; };
 		DD4A911D2708C65400501B7E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentMetricsLog.swift; sourceTree = "<group>"; };
 		DD5394FD276BA0EF00AD86B1 /* PositionEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionEntityExtension.swift; sourceTree = "<group>"; };
@@ -592,6 +594,7 @@
 		DD61937B2863877A00E59241 /* Module */ = {
 			isa = PBXGroup;
 			children = (
+				DD4975A42B147BA90026544E /* AmbientLightingConfig.swift */,
 				DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */,
 				DDC4C9FE2A8D982900CE201C /* DetectionSensorConfig.swift */,
 				DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */,
@@ -1216,6 +1219,7 @@
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
+				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				DD86D40A287F04F100BAEB7A /* InvalidVersion.swift in Sources */,
 				DDD94A502845C8F5004A87A0 /* DateTimeText.swift in Sources */,
 				DD5E5212298EE33B00D21B61 /* apponly.pb.swift in Sources */,

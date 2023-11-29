@@ -27,6 +27,7 @@ struct Settings: View {
 		case displayConfig
 		case networkConfig
 		case positionConfig
+		case ambientLightingConfig
 		case cannedMessagesConfig
 		case detectionSensorConfig
 		case externalNotificationConfig
@@ -187,6 +188,16 @@ struct Settings: View {
 						.tag(SettingsSidebar.positionConfig)
 					}
 					Section("module.configuration") {
+						if #available(iOS 17.0, macOS 14.0, *) {
+							NavigationLink {
+								AmbientLightingConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							} label: {
+								Image(systemName: "light.max")
+									.symbolRenderingMode(.hierarchical)
+								Text("ambient.lighting")
+							}
+							.tag(SettingsSidebar.ambientLightingConfig)
+						}
 						NavigationLink {
 							CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
