@@ -15,10 +15,13 @@ struct DetectionSensorLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "messageTimestamp", ascending: false)],
+				  predicate: NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue)), animation: .none)
+	private var detections: FetchedResults<MessageEntity>
 
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
-		let detections = getDetectionSensorMessages(nodeNum: node.num, context: context)
 		let chartData = detections
 			.filter { $0.timestamp >= oneDayAgo! }
 			.sorted { $0.timestamp < $1.timestamp }
