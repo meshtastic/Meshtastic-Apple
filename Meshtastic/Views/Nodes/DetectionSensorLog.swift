@@ -33,7 +33,7 @@ struct DetectionSensorLog: View {
 						ForEach(chartData, id: \.self) { point in
 							Plot {
 								BarMark(
-									x: .value("x", point.timestamp),
+									x: .value("x", point.timestamp, unit: .hour),
 									y: .value("y", 1)
 								)
 							}
@@ -52,12 +52,8 @@ struct DetectionSensorLog: View {
 					}
 					.chartXAxis(content: {
 						AxisMarks(position: .top)
-//						AxisMarks(position: .top, values: .stride(by: .hour)) { date in
-//							AxisValueLabel(format: .dateTime.hour())
-//						}
 					})
 					.chartXAxis(.automatic)
-					.chartYScale(domain: 0...20)
 					.chartForegroundStyleScale([
 						"Detection events": .green
 					])
