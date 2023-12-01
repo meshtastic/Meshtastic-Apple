@@ -93,6 +93,7 @@ struct DetectionSensorLog: View {
 						ForEach(detections) { d in
 							GridRow {
 								Text(d.messagePayload ?? "Detected")
+									.font(.caption)
 								Text(d.timestamp.formattedDate(format: dateFormatString))
 									.font(.caption)
 							}

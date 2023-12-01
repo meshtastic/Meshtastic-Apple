@@ -730,7 +730,11 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
-
+			if packet.decoded.portnum == PortNum.detectionSensorApp {
+				if !UserDefaults.enableDetectionNotifications {
+					newMessage.read = true
+				}
+			}
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
@@ -755,6 +759,10 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 				messageSaved = true
 
 				if messageSaved {
+					
+					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
+						return
+					}
 					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Set Unread Message Indicators
