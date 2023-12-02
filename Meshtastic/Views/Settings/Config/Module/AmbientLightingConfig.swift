@@ -54,24 +54,25 @@ struct AmbientLightingConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
-					VStack {
-						Toggle(isOn: $ledState) {
-							Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						HStack {
-							Image(systemName: "eyedropper")
-								.foregroundColor(.accentColor)
-							ColorPicker("Color", selection: $color, supportsOpacity: false)
-								.padding(5)
-						}
-						HStack {
-							Image(systemName: "directcurrent")
-								.foregroundColor(.accentColor)
-							Stepper("Current: \(current)", value: $current, in: 0...31, step: 1)
-								.padding(5)
-						}
-						
+					Toggle(isOn: $ledState) {
+						Label("LED State", systemImage: ledState ? "lightbulb.led.fill" : "lightbulb.led")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.hidden)
+					Text("The state of the LED (on/off)")
+						.font(.caption)
+						.foregroundStyle(.gray)
+					HStack {
+						Image(systemName: "eyedropper")
+							.foregroundColor(.accentColor)
+						ColorPicker("Color", selection: $color, supportsOpacity: false)
+							.padding(5)
+					}
+					HStack {
+						Image(systemName: "directcurrent")
+							.foregroundColor(.accentColor)
+						Stepper("Current: \(current)", value: $current, in: 0...31, step: 1)
+							.padding(5)
 					}
 					.onChange(of: color, initial: true) {
 						components = color.resolve(in: environment)
@@ -79,7 +80,7 @@ struct AmbientLightingConfig: View {
 					}
 				}
 			}
-			//.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
 			Button {
 				isPresentingSaveConfirm = true
 			} label: {

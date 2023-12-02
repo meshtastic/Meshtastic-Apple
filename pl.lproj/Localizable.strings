@@ -14,6 +14,8 @@
 "ago"="temu";
 "airtime"="Czas nadawania";
 "always.on"="Zawsze włączone";
+"ambient.lighting"="Ambient Lighting";
+"ambient.lighting.config"="Ambient Lighting Config";
 "app.settings"="Ustawienia aplikacji";
 "are.you.sure"="Jesteś pewny?";
 "ascii.capable"="Zgodny z ASCII";

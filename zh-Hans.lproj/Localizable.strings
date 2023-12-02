@@ -12,6 +12,8 @@
 "ago"="ago";
 "airtime"="广播时间";
 "always.on"="常亮";
+"ambient.lighting"="Ambient Lighting";
+"ambient.lighting.config"="Ambient Lighting Config";
 "app.settings"="通用设置";
 "are.you.sure"="是否确认？";
 "ascii.capable"="ASCII Capable";

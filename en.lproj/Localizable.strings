@@ -12,6 +12,8 @@
 "ago"="ago";
 "airtime"="Airtime";
 "always.on"="Always On";
+"ambient.lighting"="Ambient Lighting";
+"ambient.lighting.config"="Ambient Lighting Config";
 "app.settings"="App Settings";
 "are.you.sure"="Are you sure?";
 "ascii.capable"="ASCII Capable";
