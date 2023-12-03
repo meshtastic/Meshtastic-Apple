@@ -14,42 +14,15 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
 		locationManager.pausesLocationUpdatesAutomatically = true
 		locationManager.allowsBackgroundLocationUpdates = true
-		locationManager.activityType = .otherNavigation
+		locationManager.activityType = .other
 	}
 	// Apple Park
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
-	static let DefaultAltitude = CLLocationDistance(integerLiteral: 0)
-	static let DefaultSpeed = CLLocationSpeed(integerLiteral: 0)
-	static let DefaultHeading = CLLocationDirection(integerLiteral: 0)
 	static var currentLocation: CLLocationCoordinate2D {
 		guard let location = shared.locationManager.location else {
 			return DefaultLocation
 		}
 		return location.coordinate
-	}
-	static var currentAltitude: CLLocationDistance {
-		guard let altitude = shared.locationManager.location?.altitude else {
-			return DefaultAltitude
-		}
-		return altitude
-	}
-	static var currentSpeed: CLLocationSpeed {
-		guard let speed = shared.locationManager.location?.speed else {
-			return DefaultSpeed
-		}
-		return speed
-	}
-	static var currentHeading: CLLocationDirection {
-		guard let heading = shared.locationManager.location?.course else {
-			return DefaultHeading
-		}
-		return heading
-	}
-	static var currentTimestamp: Date {
-		guard let timestamp = shared.locationManager.location?.timestamp else {
-			return Date.now
-		}
-		return timestamp
 	}
 	static var satsInView: Int {
 		// If we have a position we have a sat
@@ -74,9 +47,11 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 		return sats
 	}
-
+	
 	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
 		switch manager.authorizationStatus {
+		case .authorizedAlways:
+			authorizationStatus = .authorizedAlways
 		case .authorizedWhenInUse:
 			authorizationStatus = .authorizedWhenInUse
 			locationManager.requestLocation()
@@ -86,19 +61,32 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 			authorizationStatus = .denied
 		case .notDetermined:
 			authorizationStatus = .notDetermined
-			locationManager.requestWhenInUseAuthorization()
+			locationManager.requestAlwaysAuthorization()
 		default:
 			break
 		}
 	}
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//		locationManager.stopUpdatingLocation()
-//		locations.last.map {
-//				region = MKCoordinateRegion(
-//					center: $0.coordinate,
-//					span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
-//				)
-//			}
+		let chimeOnLocationUpdate = true
+		//		locationManager.stopUpdatingLocation()
+		//		locations.last.map {
+		//				region = MKCoordinateRegion(
+		//					center: $0.coordinate,
+		//					span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
+		//				)
+		//			}
+		// Play a sound so it's easy to tell when a location update occurs while the app is in the background.
+		if chimeOnLocationUpdate && !locations.isEmpty {
+			//  setSessionActiveWithMixing(true) // Ducks the audio of other apps when playing the chime.
+			//  playSound()
+		}
+		
+		// Always process all of the provided locations. Don't assume the array only contains a single location.
+		for location in locations {
+			
+			print("process a location")
+			// displayNewBreadcrumbOnMap(location)
+		}
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
 		print("Location manager error: \(error.localizedDescription)")

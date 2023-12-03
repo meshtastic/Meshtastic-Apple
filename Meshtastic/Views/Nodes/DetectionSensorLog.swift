@@ -15,7 +15,6 @@ struct DetectionSensorLog: View {
 	@State var isExporting = false
 	@State var exportString = ""
 	@ObservedObject var node: NodeInfoEntity
-	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "messageTimestamp", ascending: false)],
 				  predicate: NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue)), animation: .none)
 	private var detections: FetchedResults<MessageEntity>
@@ -23,12 +22,12 @@ struct DetectionSensorLog: View {
 	var body: some View {
 		let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date())
 		let chartData = detections
-			.filter { $0.timestamp >= oneDayAgo! }
+			.filter { $0.timestamp >= oneDayAgo! && $0.fromUser?.num ?? -1 == node.user?.num ?? 0 }
 			.sorted { $0.timestamp < $1.timestamp }
 
 		VStack {
 			if chartData.count > 0 {
-				GroupBox(label: Label("\(detections.count) Total Detection Events", systemImage: "sensor")) {
+				GroupBox(label: Label("\(chartData.count) Total Detection Events", systemImage: "sensor")) {
 					Chart {
 						ForEach(chartData, id: \.self) { point in
 							Plot {
@@ -90,7 +89,7 @@ struct DetectionSensorLog: View {
 								.font(.caption)
 								.fontWeight(.bold)
 						}
-						ForEach(detections) { d in
+						ForEach(detections.filter( {$0.fromUser?.num ?? -1 == node.user?.num ?? 0})) { d in
 							GridRow {
 								Text(d.messagePayload ?? "Detected")
 									.font(.caption)

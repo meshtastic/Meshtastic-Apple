@@ -76,6 +76,7 @@ struct DetectionSensorConfig: View {
 					Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
 							.font(.caption)
 				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				.listRowSeparator(.visible)
 				if enabled {
 					HStack {
@@ -108,6 +109,7 @@ struct DetectionSensorConfig: View {
 						Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
 							.font(.caption)
 					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					HStack {
 						Label("Name", systemImage: "signature")

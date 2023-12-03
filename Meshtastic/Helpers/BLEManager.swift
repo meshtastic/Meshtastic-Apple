@@ -880,17 +880,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var positionPacket = Position()
 		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
+		let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+		positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
 		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		if LocationHelper.currentSpeed > 0 && (!LocationHelper.currentSpeed.isNaN || !LocationHelper.currentSpeed.isInfinite)  {
-			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed * 3.6)
+		let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+			positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
 		}
-		if LocationHelper.currentHeading > 0 && (!LocationHelper.currentHeading.isNaN || !LocationHelper.currentHeading.isInfinite) {
-			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
+		let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
+		if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+			positionPacket.groundTrack = UInt32(currentHeading)
 		}
-		
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
@@ -2175,7 +2177,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					/// send a request for ClientHistory with a time period matching the heartbeat
 					var sfPacket = StoreAndForward()
 					sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
-					sfPacket.history.window = storeAndForwardMessage.heartbeat.period
+					sfPacket.history.window = 18000000 // storeAndForwardMessage.heartbeat.period
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(packet.from)
 					meshPacket.from	= UInt32(connectedNodeNum)
