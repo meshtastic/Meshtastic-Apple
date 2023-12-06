@@ -25,176 +25,177 @@ struct MQTTConfig: View {
 	@State var root = "msh"
 
 	var body: some View {
-		Form {
-			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				Text("There has been no response to a request for device metadata over the admin channel for this node.")
-					.font(.callout)
-					.foregroundColor(.orange)
-
-			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.mqttConfig == nil {
-					Text("MQTT config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+		VStack {
+			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-				} else {
-					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+					
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.mqttConfig == nil {
+						Text("MQTT config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+							.onAppear {
+								setMqttValues()
+							}
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
-						.onAppear {
-							setMqttValues()
-						}
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
 				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-					.font(.title3)
-			} else {
-				Text("Please connect to a radio to configure settings.")
+				Section(header: Text("options")) {
+					Toggle(isOn: $enabled) {
+						
+						Label("enabled", systemImage: "dot.radiowaves.right")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $proxyToClientEnabled) {
+						
+						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("If both MQTT and the client proxy are enabled your mobile device will utalize an available network connection to connect to the specified MQTT server.")
+						.font(.caption2)
+					
+					Toggle(isOn: $encryptionEnabled) {
+						
+						Label("Encryption Enabled", systemImage: "lock.icloud")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $jsonEnabled) {
+						
+						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("JSON mode is a limited, unencrypted MQTT output.")
+						.font(.caption2)
+					
+					Toggle(isOn: $tlsEnabled) {
+						
+						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Your MQTT Server must support TLS.")
+						.font(.caption2)
+				}
+				Section(header: Text("Custom Server")) {
+					HStack {
+						Label("Address", systemImage: "server.rack")
+						TextField("Server Address", text: $address)
+							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
+							.onChange(of: address, perform: { _ in
+								let totalBytes = address.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > 62 {
+									let firstNBytes = Data(username.utf8.prefix(62))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the shortName back to the last place where it was the right size
+										address = maxBytesString
+									}
+								}
+								hasChanges = true
+							})
+							.foregroundColor(.gray)
+							.keyboardType(.default)
+					}
+					.autocorrectionDisabled()
+					
+					HStack {
+						Label("mqtt.username", systemImage: "person.text.rectangle")
+						TextField("mqtt.username", text: $username)
+							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
+							.onChange(of: username, perform: { _ in
+								
+								let totalBytes = username.utf8.count
+								
+								// Only mess with the value if it is too big
+								if totalBytes > 62 {
+									
+									let firstNBytes = Data(username.utf8.prefix(62))
+									
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										
+										// Set the shortName back to the last place where it was the right size
+										username = maxBytesString
+									}
+								}
+								hasChanges = true
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.default)
+					.scrollDismissesKeyboard(.interactively)
+					HStack {
+						Label("password", systemImage: "wallet.pass")
+						TextField("password", text: $password)
+							.foregroundColor(.gray)
+							.autocapitalization(.none)
+							.disableAutocorrection(true)
+							.onChange(of: password, perform: { _ in
+								
+								let totalBytes = password.utf8.count
+								
+								// Only mess with the value if it is too big
+								if totalBytes > 62 {
+									
+									let firstNBytes = Data(password.utf8.prefix(62))
+									
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										
+										// Set the shortName back to the last place where it was the right size
+										password = maxBytesString
+									}
+								}
+								hasChanges = true
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.default)
+					.scrollDismissesKeyboard(.interactively)
+					HStack {
+						Label("Root Topic", systemImage: "tree")
+						TextField("Root Topic", text: $root)
+							.foregroundColor(.gray)
+							.onChange(of: root, perform: { _ in
+								let totalBytes = root.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > 14 {
+									let firstNBytes = Data(root.utf8.prefix(14))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the shortName back to the last place where it was the right size
+										root = maxBytesString
+									}
+								}
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.asciiCapable)
+					.scrollDismissesKeyboard(.interactively)
+					.disableAutocorrection(true)
+					Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
+						.font(.caption2)
+				}
+				Text("You can set uplink and downlink for each channel.")
 					.font(.callout)
-					.foregroundColor(.orange)
 			}
-			Section(header: Text("options")) {
-				Toggle(isOn: $enabled) {
-
-					Label("enabled", systemImage: "dot.radiowaves.right")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $proxyToClientEnabled) {
-
-					Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("If both MQTT and the client proxy are enabled your mobile device will utalize an available network connection to connect to the specified MQTT server.")
-					.font(.caption2)
-
-				Toggle(isOn: $encryptionEnabled) {
-
-					Label("Encryption Enabled", systemImage: "lock.icloud")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
-				Toggle(isOn: $jsonEnabled) {
-
-					Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("JSON mode is a limited, unencrypted MQTT output.")
-					.font(.caption2)
-				
-				Toggle(isOn: $tlsEnabled) {
-
-					Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Your MQTT Server must support TLS.")
-					.font(.caption2)
-			}
-			Section(header: Text("Custom Server")) {
-				HStack {
-					Label("Address", systemImage: "server.rack")
-					TextField("Server Address", text: $address)
-						.foregroundColor(.gray)
-						.autocapitalization(.none)
-						.disableAutocorrection(true)
-						.onChange(of: address, perform: { _ in
-							let totalBytes = address.utf8.count
-							// Only mess with the value if it is too big
-							if totalBytes > 62 {
-								let firstNBytes = Data(username.utf8.prefix(62))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the shortName back to the last place where it was the right size
-									address = maxBytesString
-								}
-							}
-							hasChanges = true
-						})
-						.foregroundColor(.gray)
-						.keyboardType(.default)
-				}
-				.autocorrectionDisabled()
-
-				HStack {
-					Label("mqtt.username", systemImage: "person.text.rectangle")
-					TextField("mqtt.username", text: $username)
-						.foregroundColor(.gray)
-						.autocapitalization(.none)
-						.disableAutocorrection(true)
-						.onChange(of: username, perform: { _ in
-
-							let totalBytes = username.utf8.count
-
-							// Only mess with the value if it is too big
-							if totalBytes > 62 {
-
-								let firstNBytes = Data(username.utf8.prefix(62))
-
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-
-									// Set the shortName back to the last place where it was the right size
-									username = maxBytesString
-								}
-							}
-							hasChanges = true
-						})
-						.foregroundColor(.gray)
-				}
-				.keyboardType(.default)
-				.scrollDismissesKeyboard(.interactively)
-				HStack {
-					Label("password", systemImage: "wallet.pass")
-					TextField("password", text: $password)
-						.foregroundColor(.gray)
-						.autocapitalization(.none)
-						.disableAutocorrection(true)
-						.onChange(of: password, perform: { _ in
-
-							let totalBytes = password.utf8.count
-
-							// Only mess with the value if it is too big
-							if totalBytes > 62 {
-
-								let firstNBytes = Data(password.utf8.prefix(62))
-
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-
-									// Set the shortName back to the last place where it was the right size
-									password = maxBytesString
-								}
-							}
-							hasChanges = true
-						})
-						.foregroundColor(.gray)
-				}
-				.keyboardType(.default)
-				.scrollDismissesKeyboard(.interactively)
-				HStack {
-					Label("Root Topic", systemImage: "tree")
-					TextField("Root Topic", text: $root)
-						.foregroundColor(.gray)
-						.onChange(of: root, perform: { _ in
-							let totalBytes = root.utf8.count
-							// Only mess with the value if it is too big
-							if totalBytes > 14 {
-								let firstNBytes = Data(root.utf8.prefix(14))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the shortName back to the last place where it was the right size
-									root = maxBytesString
-								}
-							}
-						})
-						.foregroundColor(.gray)
-				}
-				.keyboardType(.asciiCapable)
-				.scrollDismissesKeyboard(.interactively)
-				.disableAutocorrection(true)
-				Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
-					.font(.caption2)
-			}
-			Text("You can set uplink and downlink for each channel.")
-				.font(.callout)
+			.scrollDismissesKeyboard(.interactively)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
 		}
-		.scrollDismissesKeyboard(.interactively)
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
-
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {

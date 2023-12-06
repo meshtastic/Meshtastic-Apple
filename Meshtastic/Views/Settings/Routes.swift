@@ -23,8 +23,7 @@ struct Routes: View {
 	
 	var routes: FetchedResults<RouteEntity>
 	var body: some View {
-		//NavigationSplitView(columnVisibility: $columnVisibility) {
-		NavigationStack {
+		VStack {
 			Button("Import Route") {
 				importing = true
 			}
@@ -152,8 +151,6 @@ struct Routes: View {
 				.listStyle(.plain)
 			}
 			.navigationTitle("Route List")
-//		} detail: {
-			
 			VStack {
 				if selectedRoute != nil {
 					let locationArray = selectedRoute?.locations?.array as? [LocationEntity] ?? []

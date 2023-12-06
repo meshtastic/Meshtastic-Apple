@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
 		print("🚀 Meshtstic Apple App launched!")
 		// Default User Default Values
@@ -16,6 +16,18 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory" : true])
 		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines" : true])
 		UNUserNotificationCenter.current().delegate = self
+		if #available(iOS 17.0, macOS 14.0, *) {
+			let locationsHandler = LocationsHandler.shared
+			
+			// If location updates were previously active, restart them after the background launch.
+			if locationsHandler.updatesStarted {
+				locationsHandler.startLocationUpdates()
+			}
+			// If a background activity session was previously active, reinstantiate it after the background launch.
+			if locationsHandler.backgroundActivity {
+				locationsHandler.backgroundActivity = true
+			}
+		}
 		return true
 	}
 	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {

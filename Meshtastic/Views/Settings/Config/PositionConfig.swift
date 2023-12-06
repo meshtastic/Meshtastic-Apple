@@ -39,8 +39,6 @@ struct PositionConfig: View {
 	@State var rxGpio = 0
 	@State var txGpio = 0
 	@State var fixedPosition = false
-	@State var gpsUpdateInterval = 0
-	@State var gpsAttemptTime = 0
 	@State var positionBroadcastSeconds = 0
 	@State var broadcastSmartMinimumDistance = 0
 	@State var broadcastSmartMinimumIntervalSecs = 0
@@ -213,12 +211,6 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if deviceGpsEnabled {
 						
-						Picker("Attempt Time", selection: $gpsAttemptTime) {
-							ForEach(GpsAttemptTimes.allCases) { at in
-								Text(at.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
 							ForEach(0..<46) {
 								if $0 == 0 {
@@ -280,7 +272,6 @@ struct PositionConfig: View {
 						pc.positionBroadcastSmartEnabled = smartPositionEnabled
 						pc.gpsEnabled = deviceGpsEnabled
 						pc.fixedPosition = fixedPosition
-						pc.gpsAttemptTime = UInt32(gpsAttemptTime)
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
 						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
@@ -345,11 +336,6 @@ struct PositionConfig: View {
 		.onChange(of: txGpio) { newTxGpio in
 			if node != nil && node!.positionConfig != nil {
 				if newTxGpio != node!.positionConfig!.txGpio { hasChanges = true }
-			}
-		}
-		.onChange(of: gpsAttemptTime) { newGpsAttemptTime in
-			if node != nil && node!.positionConfig != nil {
-				if newGpsAttemptTime != node!.positionConfig!.gpsAttemptTime { hasChanges = true }
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
@@ -439,8 +425,6 @@ struct PositionConfig: View {
 		self.rxGpio = Int(node?.positionConfig?.rxGpio ?? 0)
 		self.txGpio = Int(node?.positionConfig?.txGpio ?? 0)
 		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
-		self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
-		self.gpsAttemptTime = Int(node?.positionConfig?.gpsAttemptTime ?? 30)
 		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
 		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)
 		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 50)

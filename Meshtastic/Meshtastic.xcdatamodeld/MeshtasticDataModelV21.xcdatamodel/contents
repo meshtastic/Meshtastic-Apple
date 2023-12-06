@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="23C5055b" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="23C5047e" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AmbientLightingConfigEntity" representedClassName="AmbientLightingConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="blue" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="current" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -116,12 +116,10 @@
     <entity name="LocationEntity" representedClassName="LocationEntity" syncable="YES" codeGenerationType="class">
         <attribute name="altitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heading" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="horizontalAccuracy" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
         <attribute name="latitudeI" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="longitudeI" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="speed" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="verticalAccuracy" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="routeLocation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RouteEntity" inverseName="locations" inverseEntity="RouteEntity"/>
     </entity>
     <entity name="LoRaConfigEntity" representedClassName="LoRaConfigEntity" syncable="YES" codeGenerationType="class">

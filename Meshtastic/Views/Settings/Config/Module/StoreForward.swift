@@ -27,72 +27,72 @@ struct StoreForwardConfig: View {
 	@State var historyReturnWindow = 0
 
 	var body: some View {
-
-		Form {
-			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				Text("There has been no response to a request for device metadata over the admin channel for this node.")
-					.font(.callout)
-					.foregroundColor(.orange)
-
-			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.storeForwardConfig == nil {
-					Text("Store and forward config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+		VStack {
+			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-				} else {
-					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+					
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.storeForwardConfig == nil {
+						Text("Store and forward config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+							.onAppear {
+								setDetectionSensorValues()
+							}
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
-						.onAppear {
-							setDetectionSensorValues()
-						}
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
 				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-					.font(.title3)
-			} else {
-				Text("Please connect to a radio to configure settings.")
-					.font(.callout)
-					.foregroundColor(.orange)
+				Section(header: Text("options")) {
+					Toggle(isOn: $enabled) {
+						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
+					}
+					Toggle(isOn: $heartbeat) {
+						Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+					}
+					Picker("Number of records", selection: $records) {
+						Text("unset").tag(0)
+						Text("25").tag(25)
+						Text("50").tag(50)
+						Text("75").tag(75)
+						Text("100").tag(100)
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Picker("History Return Max", selection: $historyReturnMax ) {
+						Text("unset").tag(0)
+						Text("25").tag(25)
+						Text("50").tag(50)
+						Text("75").tag(75)
+						Text("100").tag(100)
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Picker("History Return Window", selection: $historyReturnWindow ) {
+						Text("unset").tag(0)
+						Text("One Minute").tag(60)
+						Text("Five Minutes").tag(300)
+						Text("Ten Minutes").tag(600)
+						Text("Fifteen Minutes").tag(900)
+						Text("Thirty Minutes").tag(1800)
+						Text("One Hour").tag(3600)
+					}
+					.pickerStyle(DefaultPickerStyle())
+				}
 			}
-			Section(header: Text("options")) {
-				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "envelope.arrow.triangle.branch")
-				}
-				Toggle(isOn: $heartbeat) {
-					Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
-				}
-				Picker("Number of records", selection: $records) {
-					Text("unset").tag(0)
-					Text("25").tag(25)
-					Text("50").tag(50)
-					Text("75").tag(75)
-					Text("100").tag(100)
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Picker("History Return Max", selection: $historyReturnMax ) {
-					Text("unset").tag(0)
-					Text("25").tag(25)
-					Text("50").tag(50)
-					Text("75").tag(75)
-					Text("100").tag(100)
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Picker("History Return Window", selection: $historyReturnWindow ) {
-					Text("unset").tag(0)
-					Text("One Minute").tag(60)
-					Text("Five Minutes").tag(300)
-					Text("Ten Minutes").tag(600)
-					Text("Fifteen Minutes").tag(900)
-					Text("Thirty Minutes").tag(1800)
-					Text("One Hour").tag(3600)
-				}
-				.pickerStyle(DefaultPickerStyle())
-			}
+			.scrollDismissesKeyboard(.interactively)
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
 		}
-		.scrollDismissesKeyboard(.interactively)
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
-
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {

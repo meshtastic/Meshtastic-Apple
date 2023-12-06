@@ -50,7 +50,7 @@ struct NodeMapSwiftUI: View {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
 		var mostRecent = node.positions?.lastObject as? PositionEntity
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationHelper.DefaultLocation
+			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
 		
 		if node.hasPositions {

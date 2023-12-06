@@ -20,7 +20,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var context: NSManagedObjectContext?
 	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
-	private let restoreKey = "Meshtastic.BLE.Manager"
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
@@ -874,25 +873,48 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-			return false
-		}
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-		positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-			positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+		
+		if #available(iOS 17.0, macOS 14.0, *) {
+			if fromNodeNum <= 0 {
+				return false
+			}
+			positionPacket.latitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.longitude * 1e7)
+			let timestamp = LocationsHandler.shared.lastLocation.timestamp
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationsHandler.shared.lastLocation.altitude)
+			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+			let currentSpeed = LocationsHandler.shared.lastLocation.speed
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+			}
+			let currentHeading  = LocationsHandler.shared.lastLocation.course
+			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+		} else {
+			if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+				return false
+			}
+			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+			}
+			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
+			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
 		}
-		let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-		if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-			positionPacket.groundTrack = UInt32(currentHeading)
-		}
+
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
@@ -2305,29 +2327,4 @@ extension BLEManager: CBCentralManagerDelegate {
 		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
-	
-	//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-	//
-	//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
-	//			return
-	//		}
-	//
-	//		if peripherals.count > 0 {
-	//
-	//			for peripheral in peripherals {
-	//				print(peripheral)
-	//			switch peripheral.state {
-	//				case .connecting: // I've only seen this happen when
-	//					// re-launching attached to Xcode.
-	//					print("Xcode Restore")
-	//
-	//				case .connected:
-	//					connectTo(peripheral: peripheral)
-	//					print("Restore BLE State")
-	//				default: break
-	//				}
-	//			}
-	//		}
-	//		print("willRestoreState Hit!")
-	//	}
 }
