@@ -60,7 +60,7 @@ class LocalMBTileOverlay: MKTileOverlay {
 
 			// make sure it's raster
 			let formatQuery = try mb.pluck(metadata.select(value).filter(name == "format"))
-			if formatQuery?[value] == nil || (formatQuery![value] != "jpg" && formatQuery![value] != "png") {
+			if formatQuery?[value] == nil || (formatQuery![value] != "jpeg" && formatQuery![value] != "jpg" && formatQuery![value] != "png") {
 				throw MapTileError.invalidFormat
 			}
 
