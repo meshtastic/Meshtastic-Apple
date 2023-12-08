@@ -173,6 +173,8 @@
 		DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDDE5A1429AFEAB900490C6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDDE5A1229AFEAB900490C6C /* Assets.xcassets */; };
 		DDE0F7C5295F77B700B8AAB3 /* AppSettingsEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */; };
+		DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */; };
+		DDE5B4062B227E3200FCDD05 /* TraceRouteEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */; };
 		DDE9659C2B1C3B6A00531070 /* RouteRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */; };
 		DDF6B2482A9AEBF500BA6931 /* StoreForward.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
@@ -407,6 +409,8 @@
 		DDDE5A1229AFEAB900490C6C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DDDEE5E229DBE43E00A8E078 /* MeshtasticDataModelV11.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV11.xcdatamodel; sourceTree = "<group>"; };
 		DDE0F7C4295F77B700B8AAB3 /* AppSettingsEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsEnums.swift; sourceTree = "<group>"; };
+		DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteLog.swift; sourceTree = "<group>"; };
+		DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceRouteEntityExtension.swift; sourceTree = "<group>"; };
 		DDE9659B2B1C3B6A00531070 /* RouteRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteRecorder.swift; sourceTree = "<group>"; };
 		DDEE03EC29544A1000FCAD57 /* MeshtasticDataModelV4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV4.xcdatamodel; sourceTree = "<group>"; };
 		DDF6B2462A9AEB9E00BA6931 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
@@ -485,6 +489,7 @@
 				DDD9E4E3284B208E003777C5 /* UserEntityExtension.swift */,
 				DD964FC1297272AE007C176F /* WaypointEntityExtension.swift */,
 				DDAB580E2B0DAFBC00147258 /* LocationEntityExtension.swift */,
+				DDE5B4052B227E3200FCDD05 /* TraceRouteEntityExtension.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -515,6 +520,7 @@
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
+				DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
 			);
 			path = Nodes;
 			sourceTree = "<group>";
@@ -1152,6 +1158,7 @@
 				DDDB26462AACC0B7003AFCB7 /* NodeInfoItem.swift in Sources */,
 				DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */,
 				DD5E5213298EE33B00D21B61 /* deviceonly.pb.swift in Sources */,
+				DDE5B4042B2279A700FCDD05 /* TraceRouteLog.swift in Sources */,
 				DD5E5208298EE33B00D21B61 /* rtttl.pb.swift in Sources */,
 				DD6193792863875F00E59241 /* SerialConfig.swift in Sources */,
 				DDDB263F2AABEE20003AFCB7 /* NodeList.swift in Sources */,
@@ -1263,6 +1270,7 @@
 				DDAB580F2B0DAFBC00147258 /* LocationEntityExtension.swift in Sources */,
 				DD5E5211298EE33B00D21B61 /* remote_hardware.pb.swift in Sources */,
 				DD5E5204298EE33B00D21B61 /* xmodem.pb.swift in Sources */,
+				DDE5B4062B227E3200FCDD05 /* TraceRouteEntityExtension.swift in Sources */,
 				DDC2E15826CE248E0042C5E4 /* MeshtasticApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

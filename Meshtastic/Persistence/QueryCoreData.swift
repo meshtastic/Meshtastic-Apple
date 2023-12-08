@@ -46,6 +46,23 @@ public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectC
 	return []
 }
 
+public func getTraceRoute(id: Int64, context: NSManagedObjectContext) -> TraceRouteEntity? {
+
+	let fetchTraceRouteRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "TraceRouteEntity")
+	fetchTraceRouteRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
+
+	do {
+		guard let fetchedTraceRoute = try context.fetch(fetchTraceRouteRequest) as? [TraceRouteEntity] else {
+			return nil
+		}
+		if fetchedTraceRoute.count == 1 {
+			return fetchedTraceRoute[0]
+		}
+	} catch {
+		return nil
+	}
+	return nil
+}
 
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 

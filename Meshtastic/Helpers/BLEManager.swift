@@ -376,6 +376,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let fromNodeNum = connectedPeripheral.num
 		let routePacket = RouteDiscovery()
 		var meshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
 		meshPacket.wantAck = true
@@ -394,8 +395,43 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			
-			let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
-			MeshLogger.log("🪧 \(logString)")
+			let traceRoute = TraceRouteEntity(context: context!)
+			let nodes: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral.num])
+			do {
+				guard let fetchedNodes = try context!.fetch(nodes) as? [NodeInfoEntity] else {
+					return false
+				}
+				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
+				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
+				
+				traceRoute.id = Int64(meshPacket.id)
+				traceRoute.time = Date()
+				traceRoute.node = receivingNode
+				// Grab the most recent postion, within the last hour
+				if connectedNode?.positions?.count ?? 0 > 0 {
+					let mostRecent = connectedNode?.positions?.lastObject as! PositionEntity
+					if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+						traceRoute.altitude = mostRecent.altitude
+						traceRoute.latitudeI = mostRecent.latitudeI
+						traceRoute.longitudeI = mostRecent.longitudeI
+					}
+				}
+				do {
+					try context!.save()
+					print("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized))")
+				} catch {
+					context!.rollback()
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				}
+			
+				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
+				MeshLogger.log("🪧 \(logString)")
+				
+			} catch {
+				
+			}
 		}
 		return success
 	}
@@ -595,16 +631,44 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
-					
+					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context!)
+					traceRoute?.response = true
+					traceRoute?.route = routingMessage.route
 					if routingMessage.route.count == 0 {
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(decodedInfo.packet.from))
 						MeshLogger.log("🪧 \(logString)")
-					} else {
 						
-						var routeString = "\(decodedInfo.packet.to) --> "
-						for node in routingMessage.route {
-							routeString += "\(node) --> "
+					} else {
+						var routeString = "You --> "
+						var hopNodes: [TraceRouteHopEntity] = []
+//						for node in routingMessage.route {
+//							let hopNode = getNodeInfo(id: Int64(node), context: context!)
+//							let traceRouteHop = TraceRouteHopEntity(context: context!)
+//							traceRouteHop.time = Date()
+//							let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
+//							if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+//								traceRouteHop.altitude = mostRecent.altitude
+//								traceRouteHop.latitudeI = mostRecent.latitudeI
+//								traceRouteHop.longitudeI = mostRecent.longitudeI
+//								traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+//							}
+//							traceRouteHop.num = hopNode?.num ?? 0
+//							if hopNode != nil {
+//								hopNodes.append(traceRouteHop)
+//							}
+//							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
+//						}
+						traceRoute?.routeText = routeString
+						traceRoute?.hops = NSOrderedSet(array: hopNodes)
+						do {
+							try context!.save()
+							print("💾 Saved Trace Route")
+						} catch {
+							context!.rollback()
+							let nsError = error as NSError
+							print("💥 Error Updating Core Data TraceRouteHOp: \(nsError)")
 						}
+						
 						routeString += "\(decodedInfo.packet.from)"
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")

@@ -93,9 +93,21 @@ struct NodeDetail: View {
 							}
 							.disabled(!node.hasDetectionSensorMetrics)
 							Divider()
+							if #available(iOS 17.0, macOS 14.0, *) {
+								NavigationLink {
+									TraceRouteLog(node: node)
+								} label: {
+									Image(systemName: "signpost.right.and.left")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+									
+									Text("Trace Route Log")
+										.font(.title3)
+								}
+								.disabled(node.traceRoutes?.count ?? 0 == 0)
+								Divider()
+							}
 						}
-						
-						
 						if self.bleManager.connectedPeripheral != nil && node.metadata != nil {
 							HStack {
 								if node.metadata?.canShutdown ?? false {
