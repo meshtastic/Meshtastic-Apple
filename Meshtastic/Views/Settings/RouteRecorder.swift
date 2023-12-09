@@ -144,14 +144,26 @@ struct RouteRecorder: View {
 										Label("Speed \(speed.formatted())", systemImage: "speedometer")
 									}
 									if locationsHandler.lastLocation.courseAccuracy > 0 {
-										Label("Heading \(String(format: "%.2f", locationsHandler.lastLocation.course))°", systemImage: "location.circle")
+										/// Heading
+										let degrees = Angle.degrees(Double(locationsHandler.lastLocation.course))
+										Label {
+											let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+											/// Text("Heading: \(heading.formatted())")
+											Text("Heading \(String(format: "%.2f", locationsHandler.lastLocation.course))°")
+												.foregroundColor(.primary)
+										} icon: {
+											Image(systemName: "location.circle")
+												.symbolRenderingMode(.hierarchical)
+												.frame(width: 35)
+												.rotationEffect(degrees)
+										}
 									}
 								}
 								.listStyle(.plain)
 							}
 						}
 					}
-					.presentationDetents([.fraction(0.5)])
+					.presentationDetents([.fraction(0.6)])
 					.presentationDragIndicator(.visible)
 				}
 			}

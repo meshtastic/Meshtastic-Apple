@@ -11,6 +11,7 @@ struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
+	@State private var isPresentingTraceRouteSentAlert = false
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
@@ -72,13 +73,31 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
+						if connectedNodeNum != node.num {
+							Button {
+								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
+								if success {
+									isPresentingTraceRouteSentAlert = true
+								}
+							} label: {
+								Label("Trace Route", systemImage: "signpost.right.and.left")
+							}
+						}
 					}
-					
+				}
+				.alert(
+					"Trace Route Sent",
+					isPresented: $isPresentingTraceRouteSentAlert
+				) {
+					Button("OK", role: .cancel) { }
+				} message: {
+					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 				}
 			}
 			.searchable(text: nodesQuery, prompt: "Find a node")
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
+			
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(leading:
 				MeshtasticLogo(),
