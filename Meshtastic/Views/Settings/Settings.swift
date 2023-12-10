@@ -313,7 +313,6 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-				selection = SettingsSidebar.about
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}

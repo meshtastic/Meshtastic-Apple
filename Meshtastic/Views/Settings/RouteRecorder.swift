@@ -37,7 +37,7 @@ struct RouteRecorder: View {
 	@State var isShowingDetails = false
 	@State var timer: Timer?
 	@Namespace var namespace
-	@Namespace var mapscope
+	@Namespace var routerecorderscope
 	@State var timeElapsed: TimerDisplayObject = TimerDisplayObject()
 	@State var timerDisplay = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 	
@@ -45,7 +45,7 @@ struct RouteRecorder: View {
 		VStack {
 			VStack {
 				VStack {
-					Map(position: $position, scope: mapscope) {
+					Map(position: $position, scope: routerecorderscope) {
 						UserAnnotation()
 //						ForEach(locations, id: \.id) { location in
 //							Marker(location.name, systemImage: location.icon, coordinate: location.location)
@@ -53,6 +53,7 @@ struct RouteRecorder: View {
 //						}
 					}
 				}
+				.mapScope(routerecorderscope)
 				.mapControls {
 					MapUserLocationButton()
 					MapCompass()
@@ -62,10 +63,6 @@ struct RouteRecorder: View {
 				.mapStyle(.hybrid(elevation: .realistic, showsTraffic: true))
 				.transition(.slide)
 				.mapControlVisibility(.visible)
-				.task {
-					print("this is running")
-					locationsHandler.startLocationUpdates()
-				}
 				.safeAreaInset(edge: .bottom) {
 					ZStack {
 						VStack {

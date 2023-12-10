@@ -41,6 +41,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
+	var wantStoreAndForwardPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
@@ -607,13 +608,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .serialApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .storeForwardApp:
-				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				if wantStoreAndForwardPackets {
+					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				} else {
+					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
+				}
 			case .rangeTestApp:
 				if wantRangeTestPackets && !UserDefaults.blockRangeTest {
 					textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: false, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
-					MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
 				}
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
@@ -718,6 +723,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
 							wantRangeTestPackets = true;
+						}
+						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
+							wantStoreAndForwardPackets = true;
 						}
 						
 					} catch {
