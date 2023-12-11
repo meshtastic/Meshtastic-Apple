@@ -155,6 +155,7 @@
 "map.usertrackingmode.none"="Brak";
 "mesh.live.activity"="Aktywność na Żywo";
 "mesh.log"="Dziennik Sieci";
+"mesh.log.ambientlighting.config %@"="Ambient Lighting module config received: %@";
 "mesh.log.bluetooth.config %@"="Otrzymano konfigurację Bluetooth: %@";
 "mesh.log.cannedmessage.config %@"="Otrzymano konfigurację modułu wiadomości gotowych: %@";
 "mesh.log.cannedmessages.messages.get %@"="Zażądano Wiadomości z Modułu Wiadomości Gotowych dla węzła: %@";

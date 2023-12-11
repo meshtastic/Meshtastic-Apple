@@ -157,6 +157,7 @@
 "map.usertrackingmode.none"="None";
 "mesh.live.activity"="Mesh Live Activity";
 "mesh.log"="Mesh Log";
+"mesh.log.ambientlighting.config %@"="Ambient Lighting module config received: %@";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";
 "mesh.log.cannedmessages.messages.get %@"="Requested Canned Messages Module Messages for node: %@";

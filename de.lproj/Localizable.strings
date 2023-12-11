@@ -153,6 +153,7 @@
 "map.usertrackingmode.followwithheading"="Follow with heading";
 "mesh.live.activity"="Mesh Live Activity";
 "mesh.log"="Mesh Log";
+"mesh.log.ambientlighting.config %@"="Ambient Lighting module config received: %@";
 "mesh.log.bluetooth.config %@"="Bluetooth Konfiguration empfangen: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";
 "mesh.log.cannedmessages.messages.get %@"="Requested Canned Messages Module Messages for node: %@";
