@@ -244,6 +244,21 @@ struct Config {
       ///    Turns off many of the routine broadcasts to favor CoT packet stream
       ///    from the Meshtastic ATAK plugin -> IMeshService -> Node
       case tak // = 7
+
+      ///
+      /// Client Hidden device role
+      ///    Used for nodes that "only speak when spoken to"
+      ///    Turns all of the routine broadcasts but allows for ad-hoc communication
+      ///    Still rebroadcasts, but with local only rebroadcast mode (known meshes only)
+      ///    Can be used for clandestine operation or to dramatically reduce airtime / power consumption 
+      case clientHidden // = 8
+
+      ///
+      /// Lost and Found device role
+      ///    Used to automatically send a text message to the mesh 
+      ///    with the current position of the device on a frequent interval:
+      ///    "I'm lost! Position: lat / long"
+      case lostAndFound // = 9
       case UNRECOGNIZED(Int)
 
       init() {
@@ -260,6 +275,8 @@ struct Config {
         case 5: self = .tracker
         case 6: self = .sensor
         case 7: self = .tak
+        case 8: self = .clientHidden
+        case 9: self = .lostAndFound
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -274,6 +291,8 @@ struct Config {
         case .tracker: return 5
         case .sensor: return 6
         case .tak: return 7
+        case .clientHidden: return 8
+        case .lostAndFound: return 9
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -299,6 +318,11 @@ struct Config {
       /// Ignores observed messages from foreign meshes that are open or those which it cannot decrypt.
       /// Only rebroadcasts message on the nodes local primary / secondary channels.
       case localOnly // = 2
+
+      ///
+      /// Ignores observed messages from foreign meshes like LOCAL_ONLY,
+      /// but takes it step further by also ignoring messages from nodenums not in the node's known list (NodeDB)
+      case knownOnly // = 3
       case UNRECOGNIZED(Int)
 
       init() {
@@ -310,6 +334,7 @@ struct Config {
         case 0: self = .all
         case 1: self = .allSkipDecoding
         case 2: self = .localOnly
+        case 3: self = .knownOnly
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -319,6 +344,7 @@ struct Config {
         case .all: return 0
         case .allSkipDecoding: return 1
         case .localOnly: return 2
+        case .knownOnly: return 3
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1295,6 +1321,8 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .tracker,
     .sensor,
     .tak,
+    .clientHidden,
+    .lostAndFound,
   ]
 }
 
@@ -1304,6 +1332,7 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
     .all,
     .allSkipDecoding,
     .localOnly,
+    .knownOnly,
   ]
 }
 
@@ -1703,6 +1732,8 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "TRACKER"),
     6: .same(proto: "SENSOR"),
     7: .same(proto: "TAK"),
+    8: .same(proto: "CLIENT_HIDDEN"),
+    9: .same(proto: "LOST_AND_FOUND"),
   ]
 }
 
@@ -1711,6 +1742,7 @@ extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding
     0: .same(proto: "ALL"),
     1: .same(proto: "ALL_SKIP_DECODING"),
     2: .same(proto: "LOCAL_ONLY"),
+    3: .same(proto: "KNOWN_ONLY"),
   ]
 }
 

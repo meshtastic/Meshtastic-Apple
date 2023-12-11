@@ -59,40 +59,42 @@ struct MeshtasticAppleApp: App {
 					saveChannels = false
 					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
+				
+				if UserDefaults.mapUseLegacy {
+					/// we are expecting a .mbtiles map file that contains raster data
+					/// save it to the documents directory, and name it offline_map.mbtiles
+					let fileManager = FileManager.default
+					let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+					let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
 
-				// we are expecting a .mbtiles map file that contains raster data
-				// save it to the documents directory, and name it offline_map.mbtiles
-				let fileManager = FileManager.default
-				let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-				let destination = documentsDirectory.appendingPathComponent("offline_map.mbtiles", isDirectory: false)
-
-				if !self.saveChannels {
-
-					// tell the system we want the file please
-					guard url.startAccessingSecurityScopedResource() else {
-						 return
-					}
-
-					// do we need to delete an old one?
-					if fileManager.fileExists(atPath: destination.path) {
-						print("ℹ️ Found an old map file.  Deleting it")
-						try? fileManager.removeItem(atPath: destination.path)
-					}
-
-					do {
-						try fileManager.copyItem(at: url, to: destination)
-					} catch {
-						print("Copy MB Tile file failed. Error: \(error)")
-					}
-
-					if fileManager.fileExists(atPath: destination.path) {
-						print("ℹ️ Saved the map file")
-
-						// need to tell the map view that it needs to update and try loading the new overlay
-						UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
-
-					} else {
-						print("💥 Didn't save the map file")
+					if !self.saveChannels {
+						
+						// tell the system we want the file please
+						guard url.startAccessingSecurityScopedResource() else {
+							return
+						}
+						
+						// do we need to delete an old one?
+						if fileManager.fileExists(atPath: destination.path) {
+							print("ℹ️ Found an old map file.  Deleting it")
+							try? fileManager.removeItem(atPath: destination.path)
+						}
+						
+						do {
+							try fileManager.copyItem(at: url, to: destination)
+						} catch {
+							print("Copy MB Tile file failed. Error: \(error)")
+						}
+						
+						if fileManager.fileExists(atPath: destination.path) {
+							print("ℹ️ Saved the map file")
+							
+							// need to tell the map view that it needs to update and try loading the new overlay
+							UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastUpdatedLocalMapFile")
+							
+						} else {
+							print("💥 Didn't save the map file")
+						}
 					}
 				}
 			})

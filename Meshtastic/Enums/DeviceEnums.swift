@@ -17,6 +17,9 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case repeater = 4
 	case tracker = 5
 	case sensor = 6
+	case tak = 7
+	case clientHidden = 8
+	case lostAndFound = 9
 
 	var id: Int { self.rawValue }
 	var name: String {
@@ -35,6 +38,12 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Tracker"
 		case .sensor:
 			return "Sensor"
+		case .tak:
+			return "TAK"
+		case .clientHidden:
+			return "Client Hidden"
+		case .lostAndFound:
+			return "Lost and Found"
 		}
 	}
 	var description: String {
@@ -53,6 +62,12 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.tracker".localized
 		case .sensor:
 			return "device.role.sensor".localized
+		case .tak:
+			return "device.role.tak".localized
+		case .clientHidden:
+			return "device.role.clienthidden".localized
+		case .lostAndFound:
+			return "device.role.lostandfound".localized
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
@@ -72,6 +87,12 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.tracker
 		case .sensor:
 			return Config.DeviceConfig.Role.sensor
+		case .tak:
+			return Config.DeviceConfig.Role.tak
+		case .clientHidden:
+			return Config.DeviceConfig.Role.clientHidden
+		case .lostAndFound:
+			return Config.DeviceConfig.Role.lostAndFound
 		}
 	}
 }
@@ -81,6 +102,7 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 	case all = 0
 	case allSkipDecoding = 1
 	case localOnly = 2
+	case knownOnly = 3
 
 	var id: Int { self.rawValue }
 
@@ -92,6 +114,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "All Skip Decoding"
 		case .localOnly:
 			return "Local Only"
+		case .knownOnly:
+			return "Known Only"
 		}
 	}
 	var description: String {
@@ -102,6 +126,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return "Same as behavior as ALL but skips packet decoding and simply rebroadcasts them. Only available in Repeater role. Setting this on any other roles will result in ALL behavior."
 		case .localOnly:
 			return "Ignores observed messages from foreign meshes that are open or those which it cannot decrypt. Only rebroadcasts message on the nodes local primary / secondary channels."
+		case .knownOnly:
+			return "Ignores observed messages from foreign meshes like Local Only, but takes it step further by also ignoring messages from nodes not already in the node's known list."
 		}
 	}
 	func protoEnumValue() -> Config.DeviceConfig.RebroadcastMode {
@@ -113,6 +139,8 @@ enum RebroadcastModes: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.RebroadcastMode.allSkipDecoding
 		case .localOnly:
 			return Config.DeviceConfig.RebroadcastMode.localOnly
+		case .knownOnly:
+			return Config.DeviceConfig.RebroadcastMode.knownOnly
 		}
 	}
 }
