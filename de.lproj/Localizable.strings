@@ -66,6 +66,8 @@
 "device.metrics.log"="Device Metrics Log";
 "device.role.client"="Client (Standard) - Mit App verbundener Client.";
 "device.role.clientmute"="Client Leise - Das selbe wie Client, außer das die Pakete nicht über diesen Node weitergeleitet werden. Nimmt nicht am Mesh-Routing teil.";
+"device.role.lostandfound"="Used to automatically send a text message to the mesh with the current position of the device on a frequent interval: \"I'm lost! Position: lat / long\"";
+"device.role.clienthidden"=" Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption.";
 "device.role.router"="Router - Mesh Pakete werden bevorzugt über diesen Node gerouted. Dieser Node wird nicht von einer Client App benutzt. WLAN, Bluetooth und Display sind aus.";
 "device.role.routerclient"="Router Client - Mesh Pakete werden bevorzugt über diesen Node gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden.";
 "device.role.repeater"="Repeater - Mesh packets will prefer to be routed over this node. This role eliminates unnecessary overhead such as NodeInfo, DeviceTelemetry, and any other mesh packet, resulting in the device not appearing as part of the network.  Please see Rebroadcast Mode for additional settings specific to this role.";
