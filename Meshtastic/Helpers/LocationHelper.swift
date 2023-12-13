@@ -67,26 +67,7 @@ class LocationHelper: NSObject, ObservableObject, CLLocationManagerDelegate {
 		}
 	}
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-		let chimeOnLocationUpdate = true
-		//		locationManager.stopUpdatingLocation()
-		//		locations.last.map {
-		//				region = MKCoordinateRegion(
-		//					center: $0.coordinate,
-		//					span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
-		//				)
-		//			}
-		// Play a sound so it's easy to tell when a location update occurs while the app is in the background.
-		if chimeOnLocationUpdate && !locations.isEmpty {
-			//  setSessionActiveWithMixing(true) // Ducks the audio of other apps when playing the chime.
-			//  playSound()
-		}
 		
-		// Always process all of the provided locations. Don't assume the array only contains a single location.
-		for location in locations {
-			
-			print("process a location")
-			// displayNewBreadcrumbOnMap(location)
-		}
 	}
 	func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
 		print("Location manager error: \(error.localizedDescription)")
