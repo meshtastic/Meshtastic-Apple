@@ -52,31 +52,3 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		}
 	}
 }
-
-enum GpsAttemptTimes: Int, CaseIterable, Identifiable {
-
-	case fifteenMinutes = 900
-	case thirtyMinutes = 1800
-	case oneHour = 3600
-	case sixHours = 21600
-	case twelveHours = 43200
-	case twentyFourHours = 86400
-
-	var id: Int { self.rawValue }
-	var description: String {
-		switch self {
-		case .fifteenMinutes:
-			return "interval.fifteen.minutes".localized
-		case .thirtyMinutes:
-			return "interval.thirty.minutes".localized
-		case .oneHour:
-			return "interval.one.hour".localized
-		case .sixHours:
-			return "interval.six.hours".localized
-		case .twelveHours:
-			return "interval.twelve.hours".localized
-		case .twentyFourHours:
-			return "interval.twentyfour.hours".localized
-		}
-	}
-}
