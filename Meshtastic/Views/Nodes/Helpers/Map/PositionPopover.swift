@@ -8,7 +8,9 @@
 import SwiftUI
 import MapKit
 
+@available(iOS 17.0, macOS 14.0, *)
 struct PositionPopover: View {
+	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var dismiss
@@ -132,8 +134,8 @@ struct PositionPopover: View {
 					.padding(.bottom, 5)
 					
 					/// Distance
-					if LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) > 0.0 {
-						let metersAway = position.coordinate.distance(from: LocationHelper.currentLocation)
+					if locationsHandler.lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
+						let metersAway = position.coordinate.distance(from:CLLocationCoordinate2D(latitude: locationsHandler.lastLocation.coordinate.latitude, longitude: locationsHandler.lastLocation.coordinate.longitude))
 						Label {
 							Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
 								.foregroundColor(.primary)

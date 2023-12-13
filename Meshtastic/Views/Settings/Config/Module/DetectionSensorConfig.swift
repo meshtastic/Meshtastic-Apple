@@ -6,6 +6,20 @@
 //
 import SwiftUI
 
+enum DetectionSensorRole: String, CaseIterable, Equatable {
+	case sensor
+	case client
+	var description: String {
+		switch self {
+		case .sensor:
+			return "Sensor"
+		case .client:
+			return "Client"
+		}
+	}
+	var localized: String { self.rawValue.localized }
+}
+
 struct DetectionSensorConfig: View {
 
 	@Environment(\.managedObjectContext) var context
@@ -14,8 +28,10 @@ struct DetectionSensorConfig: View {
 	var node: NodeInfoEntity?
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
+	@AppStorage("detectionSensorRole") private var role: DetectionSensorRole = .sensor
+	@AppStorage("enableDetectionNotifications") private var detectionNotificationsEnabled = false
+	/// Module Config Settings
 	@State var enabled = false
-	/// DetectionSensorModule will sends a bell character with the messages.
 	@State var sendBell: Bool = false
 	@State var name: String = ""
 	@State var detectionTriggeredHigh: Bool = true
@@ -25,99 +41,152 @@ struct DetectionSensorConfig: View {
 	@State var monitorPin = 0
 
 	var body: some View {
-
-		Form {
-			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				Text("There has been no response to a request for device metadata over the admin channel for this node.")
-					.font(.callout)
-					.foregroundColor(.orange)
-
-			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.detectionSensorConfig == nil {
-					Text("Detection Sensor config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+		VStack {
+			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-				} else {
-					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+					
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.detectionSensorConfig == nil {
+						Text("Detection Sensor config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+							.onAppear {
+								setDetectionSensorValues()
+							}
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
-						.onAppear {
-							setDetectionSensorValues()
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
+				}
+				Section(header: Text("options")) {
+					
+					Toggle(isOn: $enabled) {
+						Label("enabled", systemImage: "dot.radiowaves.right")
+						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
+							.font(.caption)
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					if enabled {
+						HStack {
+							Picker(selection: $role, label: Text("Role")) {
+								ForEach(DetectionSensorRole.allCases, id: \.self) { r in
+									Text(r.description)
+										.tag(r)
+								}
+							}
+							.pickerStyle(SegmentedPickerStyle())
+							.padding(.top, 5)
+							.padding(.bottom, 5)
 						}
+					}
 				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-					.font(.title3)
-			} else {
-				Text("Please connect to a radio to configure settings.")
-					.font(.callout)
-					.foregroundColor(.orange)
-			}
-			Section(header: Text("options")) {
-				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "dot.radiowaves.right")
+				if enabled && role == .client {
+					Section(header: Text("Client options")) {
+						Toggle(isOn: $detectionNotificationsEnabled) {
+							Label("Enable Notifications", systemImage: "bell.badge")
+							Text("Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge.")
+								.font(.caption)
+						}
+						.listRowSeparator(.visible)
+					}
 				}
-				Toggle(isOn: $sendBell) {
-					Label("Send Bell", systemImage: "bell")
-				}
-				TextField("Friendly name (sent for detection alerts text messages)", text: $name, axis: .vertical)
-					.foregroundColor(.gray)
-					.autocapitalization(.none)
-					.disableAutocorrection(true)
-					.onChange(of: name, perform: { _ in
-
-						let totalBytes = name.utf8.count
-						// Only mess with the value if it is too big
-						if totalBytes > 20 {
-
-							let firstNBytes = Data(name.utf8.prefix(20))
-							if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-								// Set the shortName back to the last place where it was the right size
-								name = maxBytesString
+				if enabled && role == .sensor {
+					Section(header: Text("Sensor options")) {
+						Toggle(isOn: $sendBell) {
+							Label("Send Bell", systemImage: "bell")
+							Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
+								.font(.caption)
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+						HStack {
+							Label("Name", systemImage: "signature")
+							TextField("Friendly name", text: $name, axis: .vertical)
+								.foregroundColor(.gray)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+								.onChange(of: name, perform: { _ in
+									
+									let totalBytes = name.utf8.count
+									// Only mess with the value if it is too big
+									if totalBytes > 20 {
+										
+										let firstNBytes = Data(name.utf8.prefix(20))
+										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+											// Set the shortName back to the last place where it was the right size
+											name = maxBytesString
+										}
+									}
+								})
+								.foregroundColor(.gray)
+						}
+						.listRowSeparator(.hidden)
+						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
+							.font(.caption)
+							.foregroundStyle(.gray)
+							.listRowSeparator(.visible)
+							.offset(y: -10)
+						Picker("GPIO Pin to monitor", selection: $monitorPin) {
+							ForEach(0..<46) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
 							}
 						}
-					})
-					.foregroundColor(.gray)
-			}
-			Section(header: Text("Sensor option")) {
-				Picker("GPIO Pin to monitor", selection: $monitorPin) {
-					ForEach(0..<46) {
-						if $0 == 0 {
-							Text("unset")
-						} else {
-							Text("Pin \($0)")
+						.pickerStyle(DefaultPickerStyle())
+						Toggle(isOn: $detectionTriggeredHigh) {
+							Label("Detection trigger High", systemImage: "dial.high")
+							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
+								.font(.caption)
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						
+						Toggle(isOn: $usePullup) {
+							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
+							Text(" Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
+								.font(.caption)
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					Section(header: Text("update.interval")) {
+						Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
+							ForEach(UpdateIntervals.allCases) { ui in
+								Text(ui.description).tag(ui.rawValue)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("Mininum time between detection broadcasts. Default is 45 seconds.")
+							.font(.caption)
+							.foregroundStyle(.gray)
+							.listRowSeparator(.visible)
+						Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
+							Text("Never").tag(0)
+							ForEach(UpdateIntervals.allCases) { ui in
+								Text(ui.description).tag(ui.rawValue)
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						.listRowSeparator(.hidden)
+						Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
+							.font(.caption)
+							.foregroundStyle(.gray)
 					}
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Toggle(isOn: $detectionTriggeredHigh) {
-					Label("Detection trigger High", systemImage: "dial.high")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				Toggle(isOn: $usePullup) {
-					Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			}
-			Section(header: Text("update.interval")) {
-				Picker("Minimum time between detection broadcasts", selection: $minimumBroadcastSecs) {
-					ForEach(UpdateIntervals.allCases) { ui in
-						Text(ui.description).tag(ui.rawValue)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Mininum time between detection broadcasts. Default is 45 seconds.")
-					.font(.caption)
-				Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
-					Text("Never").tag(0)
-					ForEach(UpdateIntervals.allCases) { ui in
-						Text(ui.description).tag(ui.rawValue)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
-					.font(.caption)
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
@@ -222,6 +291,9 @@ struct DetectionSensorConfig: View {
 			if node != nil && node?.detectionSensorConfig != nil {
 				if newStateBroadcastSecs != node!.detectionSensorConfig!.stateBroadcastSecs { hasChanges = true }
 			}
+		}
+		.onChange(of: detectionNotificationsEnabled) { newDetectionNotificationsEnabled in
+			UserDefaults.enableDetectionNotifications = newDetectionNotificationsEnabled
 		}
 	}
 	func setDetectionSensorValues() {

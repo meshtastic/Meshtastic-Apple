@@ -18,6 +18,7 @@ struct Settings: View {
 	enum SettingsSidebar {
 		case appSettings
 		case routes
+		case routeRecorder
 		case shareChannels
 		case userConfig
 		case loraConfig
@@ -27,6 +28,7 @@ struct Settings: View {
 		case displayConfig
 		case networkConfig
 		case positionConfig
+		case ambientLightingConfig
 		case cannedMessagesConfig
 		case detectionSensorConfig
 		case externalNotificationConfig
@@ -67,6 +69,15 @@ struct Settings: View {
 						Text("routes")
 					}
 					.tag(SettingsSidebar.routes)
+					
+//					NavigationLink {
+//						RouteRecorder()
+//					} label: {
+//						Image(systemName: "record.circle")
+//							.symbolRenderingMode(.hierarchical)
+//						Text("route.recorder")
+//					}
+//					.tag(SettingsSidebar.routeRecorder)
 				}
 				
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
@@ -187,6 +198,16 @@ struct Settings: View {
 						.tag(SettingsSidebar.positionConfig)
 					}
 					Section("module.configuration") {
+						if #available(iOS 17.0, macOS 14.0, *) {
+							NavigationLink {
+								AmbientLightingConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							} label: {
+								Image(systemName: "light.max")
+									.symbolRenderingMode(.hierarchical)
+								Text("ambient.lighting")
+							}
+							.tag(SettingsSidebar.ambientLightingConfig)
+						}
 						NavigationLink {
 							CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {

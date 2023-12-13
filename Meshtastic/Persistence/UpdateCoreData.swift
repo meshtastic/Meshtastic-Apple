@@ -624,6 +624,62 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 	}
 }
 
+func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
+	MeshLogger.log("🏮 \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save Ambient Lighting Config
+		if !fetchedNode.isEmpty {
+
+			if fetchedNode[0].cannedMessageConfig == nil {
+
+				let newAmbientLightingConfig = AmbientLightingConfigEntity(context: context)
+
+				newAmbientLightingConfig.ledState = config.ledState
+				newAmbientLightingConfig.current = Int32(config.current)
+				newAmbientLightingConfig.red = Int32(config.red)
+				newAmbientLightingConfig.green = Int32(config.green)
+				newAmbientLightingConfig.blue = Int32(config.blue)
+				fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
+
+			} else {
+				
+				if fetchedNode[0].ambientLightingConfig == nil {
+					fetchedNode[0].ambientLightingConfig = AmbientLightingConfigEntity(context: context)
+				}
+				fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
+				fetchedNode[0].ambientLightingConfig?.current = Int32(config.current)
+				fetchedNode[0].ambientLightingConfig?.red = Int32(config.red)
+				fetchedNode[0].ambientLightingConfig?.green = Int32(config.green)
+				fetchedNode[0].ambientLightingConfig?.blue = Int32(config.blue)
+			}
+
+			do {
+				try context.save()
+				print("💾 Updated Ambient Lighting Module Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data AmbientLightingConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Ambient Lighting Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data AmbientLightingConfigEntity failed: \(nsError)")
+	}
+}
+
 func upsertCannedMessagesModuleConfigPacket(config: Meshtastic.ModuleConfig.CannedMessageConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.cannedmessage.config %@".localized, String(nodeNum))

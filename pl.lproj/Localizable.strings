@@ -14,6 +14,8 @@
 "ago"="temu";
 "airtime"="Czas nadawania";
 "always.on"="Zawsze włączone";
+"ambient.lighting"="Ambient Lighting";
+"ambient.lighting.config"="Ambient Lighting Config";
 "app.settings"="Ustawienia aplikacji";
 "are.you.sure"="Jesteś pewny?";
 "ascii.capable"="Zgodny z ASCII";
@@ -66,6 +68,8 @@
 "device.metrics.log"="Dziennik metryk urządzenia";
 "device.role.client"="Klient (domyślnie) - Klient połączony z aplikacją.";
 "device.role.clientmute"="Wyciszenie klienta - To samo, co klient, z wyjątkiem pakietów, które nie przeskakują przez ten węzeł, nie przyczynia się do routingu pakietów dla siatki.";
+"device.role.clienthidden"=" Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption.";
+"device.role.lostandfound"="Used to automatically send a text message to the mesh with the current position of the device on a frequent interval: \"I'm lost! Position: lat / long\"";
 "device.role.router"="Router - Pakiety siatki będą preferować trasowanie przez ten węzeł. Zakłada, że urządzenie będzie działać samodzielnie, umieszczone w miejscu z przewagą zasięgu. UWAGA: Radia BLE/Wi-Fi i ekran OLED zostaną uśpione.";
 "device.role.routerclient"="Router Client - Hybryda ról klienta i routera. Podobnie jak w przypadku routera, z tym że Router Client może być używany zarówno jako router, jak i klient połączony z aplikacją. Radia BLE/Wi-Fi i ekran OLED nie zostaną uśpione.";
 "device.role.repeater"="Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli.";
@@ -151,6 +155,7 @@
 "map.usertrackingmode.none"="Brak";
 "mesh.live.activity"="Aktywność na Żywo";
 "mesh.log"="Dziennik Sieci";
+"mesh.log.ambientlighting.config %@"="Ambient Lighting module config received: %@";
 "mesh.log.bluetooth.config %@"="Otrzymano konfigurację Bluetooth: %@";
 "mesh.log.cannedmessage.config %@"="Otrzymano konfigurację modułu wiadomości gotowych: %@";
 "mesh.log.cannedmessages.messages.get %@"="Zażądano Wiadomości z Modułu Wiadomości Gotowych dla węzła: %@";

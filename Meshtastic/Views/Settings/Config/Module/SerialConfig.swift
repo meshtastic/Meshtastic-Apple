@@ -26,9 +26,7 @@ struct SerialConfig: View {
 	@State var mode = 0
 
 	var body: some View {
-
 		VStack {
-
 			Form {
 				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					Text("There has been no response to a request for device metadata over the admin channel for this node.")

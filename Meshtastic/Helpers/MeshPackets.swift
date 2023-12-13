@@ -56,7 +56,9 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 
 func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
 
-	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
+	if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(config.ambientLighting) {
+		upsertAmbientLightingModuleConfigPacket(config: config.ambientLighting, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(config.cannedMessage) {
 		upsertCannedMessagesModuleConfigPacket(config: config.cannedMessage, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(config.detectionSensor) {
 		upsertDetectionSensorModuleConfigPacket(config: config.detectionSensor, nodeNum: nodeNum, context: context)
@@ -472,7 +474,9 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse
-			if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
+			if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.ambientLighting(moduleConfig.ambientLighting) {
+				upsertAmbientLightingModuleConfigPacket(config: moduleConfig.ambientLighting, nodeNum: Int64(packet.from), context: context)
+			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(moduleConfig.cannedMessage) {
 				upsertCannedMessagesModuleConfigPacket(config: moduleConfig.cannedMessage, nodeNum: Int64(packet.from), context: context)
 			} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.detectionSensor(moduleConfig.detectionSensor) {
 				upsertDetectionSensorModuleConfigPacket(config: moduleConfig.detectionSensor, nodeNum: Int64(packet.from), context: context)
@@ -726,7 +730,11 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 			newMessage.isEmoji = packet.decoded.emoji == 1
 			newMessage.channel = Int32(packet.channel)
 			newMessage.portNum = Int32(packet.decoded.portnum.rawValue)
-
+			if packet.decoded.portnum == PortNum.detectionSensorApp {
+				if !UserDefaults.enableDetectionNotifications {
+					newMessage.read = true
+				}
+			}
 			if packet.decoded.replyID > 0 {
 				newMessage.replyID = Int64(packet.decoded.replyID)
 			}
@@ -751,6 +759,10 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 				messageSaved = true
 
 				if messageSaved {
+					
+					if packet.decoded.portnum == PortNum.detectionSensorApp && !UserDefaults.enableDetectionNotifications {
+						return
+					}
 					let appState = AppState.shared
 					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
 						// Set Unread Message Indicators

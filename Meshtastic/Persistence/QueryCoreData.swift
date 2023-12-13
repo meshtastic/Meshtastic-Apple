@@ -46,6 +46,23 @@ public func getStoreAndForwardMessageIds(seconds: Int, context: NSManagedObjectC
 	return []
 }
 
+public func getTraceRoute(id: Int64, context: NSManagedObjectContext) -> TraceRouteEntity? {
+
+	let fetchTraceRouteRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "TraceRouteEntity")
+	fetchTraceRouteRequest.predicate = NSPredicate(format: "id == %lld", Int64(id))
+
+	do {
+		guard let fetchedTraceRoute = try context.fetch(fetchTraceRouteRequest) as? [TraceRouteEntity] else {
+			return nil
+		}
+		if fetchedTraceRoute.count == 1 {
+			return fetchedTraceRoute[0]
+		}
+	} catch {
+		return nil
+	}
+	return nil
+}
 
 public func getUser(id: Int64, context: NSManagedObjectContext) -> UserEntity {
 
@@ -81,22 +98,4 @@ public func getWaypoint(id: Int64, context: NSManagedObjectContext) -> WaypointE
 		return WaypointEntity(context: context)
 	}
 	return WaypointEntity(context: context)
-}
-
-public func getDetectionSensorMessages(nodeNum: Int64?, context: NSManagedObjectContext) -> [MessageEntity] {
-
-	let fetchDetectionMessagesPredicate: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MessageEntity")
-	fetchDetectionMessagesPredicate.predicate = NSPredicate(format: "portNum == %d", Int32(PortNum.detectionSensorApp.rawValue))
-
-	do {
-		let fetched = try context.fetch(fetchDetectionMessagesPredicate) as? [MessageEntity] ?? []
-		if nodeNum == nil {
-			return fetched.reversed()
-		}
-		return fetched.filter { message in
-			return message.fromUser?.num == nodeNum!
-		}.reversed()
-	} catch {
-		return []
-	}
 }

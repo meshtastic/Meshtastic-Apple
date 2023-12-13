@@ -26,6 +26,8 @@ extension UserDefaults {
 		case mapTileServer
 		case mapTilesAboveLabels
 		case mapUseLegacy
+		case enableDetectionNotifications
+		case detectionSensorRole
 	}
 
 	func reset() {
@@ -188,6 +190,24 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "mapUseLegacy")
+		}
+	}
+	
+	static var enableDetectionNotifications: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableDetectionNotifications")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableDetectionNotifications")
+		}
+	}
+	
+	static var detectionSensorRole: DetectionSensorRole {
+		get {
+			DetectionSensorRole(rawValue: UserDefaults.standard.string(forKey: "detectionSensorRole") ?? DetectionSensorRole.sensor.rawValue) ?? DetectionSensorRole.sensor
+		}
+		set {
+			UserDefaults.standard.set(newValue.rawValue, forKey: "detectionSensorRole")
 		}
 	}
 }

@@ -33,7 +33,6 @@ struct UserList: View {
 	@State var node: NodeInfoEntity?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
-	@State private var isPresentingTraceRouteSentAlert = false
 	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
@@ -126,14 +125,6 @@ struct UserList: View {
 						} label: {
 							Label(user.mute ? "Show Alerts" : "Hide Alerts", systemImage: user.mute ? "bell" : "bell.slash")
 						}
-						Button {
-							let success = bleManager.sendTraceRouteRequest(destNum: user.num, wantResponse: true)
-							if success {
-								isPresentingTraceRouteSentAlert = true
-							}
-						} label: {
-							Label("Trace Route", systemImage: "signpost.right.and.left")
-						}
 						if user.messageList.count  > 0 {
 							Button(role: .destructive) {
 								isPresentingDeleteUserMessagesConfirm = true
@@ -142,14 +133,6 @@ struct UserList: View {
 								Label("Delete Messages", systemImage: "trash")
 							}
 						}
-					}
-					.alert(
-						"Trace Route Sent",
-						isPresented: $isPresentingTraceRouteSentAlert
-					) {
-						Button("OK", role: .cancel) { }
-					} message: {
-						Text("This could take a while, response will appear in the mesh log.")
 					}
 					.confirmationDialog(
 						"This conversation will be deleted.",

@@ -32,137 +32,138 @@ struct ExternalNotificationConfig: View {
 	@State var nagTimeout = 0
 
 	var body: some View {
-
-		Form {
-			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				Text("There has been no response to a request for device metadata over the admin channel for this node.")
-					.font(.callout)
-					.foregroundColor(.orange)
-
-			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.externalNotificationConfig == nil {
-					Text("External notification config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+		VStack {
+			Form {
+				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
 						.foregroundColor(.orange)
-				} else {
-					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+					
+				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
+					// Let users know what is going on if they are using remote admin and don't have the config yet
+					if node?.externalNotificationConfig == nil {
+						Text("External notification config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
+							.font(.callout)
+							.foregroundColor(.orange)
+					} else {
+						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
+							.font(.title3)
+							.onAppear {
+								setExternalNotificationValues()
+							}
+					}
+				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
+					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 						.font(.title3)
-						.onAppear {
-							setExternalNotificationValues()
-						}
+				} else {
+					Text("Please connect to a radio to configure settings.")
+						.font(.callout)
+						.foregroundColor(.orange)
 				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-					.font(.title3)
-			} else {
-				Text("Please connect to a radio to configure settings.")
-					.font(.callout)
-					.foregroundColor(.orange)
-			}
-			Section(header: Text("options")) {
-				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "megaphone")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $alertBell) {
-					Label("Alert when receiving a bell", systemImage: "bell")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $alertMessage) {
-					Label("Alert when receiving a message", systemImage: "message")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Toggle(isOn: $usePWM) {
-					Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
-					.font(.caption)
-			}
-			Section(header: Text("Advanced GPIO Options")) {
-				Section(header: Text("Primary GPIO")
-					.font(.caption)
-					.foregroundColor(.gray)
-					.textCase(.uppercase)) {
-					Toggle(isOn: $active) {
-						Label("Active", systemImage: "togglepower")
+				Section(header: Text("options")) {
+					Toggle(isOn: $enabled) {
+						Label("enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
-						.font(.caption)
-					Picker("Output pin GPIO", selection: $output) {
-						ForEach(0..<46) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
-							}
-						}
+					Toggle(isOn: $alertBell) {
+						Label("Alert when receiving a bell", systemImage: "bell")
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
-						ForEach(OutputIntervals.allCases) { oi in
-							Text(oi.description)
-						}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $alertMessage) {
+						Label("Alert when receiving a message", systemImage: "message")
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("When using in GPIO mode, keep the output on for this long. ")
-						.font(.caption)
-					Picker("Nag timeout", selection: $nagTimeout ) {
-						ForEach(OutputIntervals.allCases) { oi in
-							Text(oi.description)
-						}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $usePWM) {
+						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Specifies how long the monitored GPIO should output.")
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 						.font(.caption)
 				}
-
-				Section(header: Text("Optional GPIO")
-					.font(.caption)
-					.foregroundColor(.gray)
-					.textCase(.uppercase)) {
-					Toggle(isOn: $alertBellBuzzer) {
-						Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $alertBellVibra) {
-						Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $alertMessageBuzzer) {
-						Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $alertMessageBuzzer) {
-						Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
-						ForEach(0..<46) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
+				Section(header: Text("Advanced GPIO Options")) {
+					Section(header: Text("Primary GPIO")
+						.font(.caption)
+						.foregroundColor(.gray)
+						.textCase(.uppercase)) {
+							Toggle(isOn: $active) {
+								Label("Active", systemImage: "togglepower")
 							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Picker("Output pin vibra GPIO", selection: $outputVibra) {
-						ForEach(0..<46) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
+								.font(.caption)
+							Picker("Output pin GPIO", selection: $output) {
+								ForEach(0..<46) {
+									if $0 == 0 {
+										Text("unset")
+									} else {
+										Text("Pin \($0)")
+									}
+								}
 							}
+							.pickerStyle(DefaultPickerStyle())
+							Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
+								ForEach(OutputIntervals.allCases) { oi in
+									Text(oi.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("When using in GPIO mode, keep the output on for this long. ")
+								.font(.caption)
+							Picker("Nag timeout", selection: $nagTimeout ) {
+								ForEach(OutputIntervals.allCases) { oi in
+									Text(oi.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("Specifies how long the monitored GPIO should output.")
+								.font(.caption)
 						}
-					}
-					.pickerStyle(DefaultPickerStyle())
+					
+					Section(header: Text("Optional GPIO")
+						.font(.caption)
+						.foregroundColor(.gray)
+						.textCase(.uppercase)) {
+							Toggle(isOn: $alertBellBuzzer) {
+								Label("Alert GPIO buzzer when receiving a bell", systemImage: "bell")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Toggle(isOn: $alertBellVibra) {
+								Label("Alert GPIO vibra motor when receiving a bell", systemImage: "bell")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Toggle(isOn: $alertMessageBuzzer) {
+								Label("Alert GPIO buzzer when receiving a message", systemImage: "message")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Toggle(isOn: $alertMessageBuzzer) {
+								Label("Alert GPIO vibra motor when receiving a message", systemImage: "message")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
+								ForEach(0..<46) {
+									if $0 == 0 {
+										Text("unset")
+									} else {
+										Text("Pin \($0)")
+									}
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Picker("Output pin vibra GPIO", selection: $outputVibra) {
+								ForEach(0..<46) {
+									if $0 == 0 {
+										Text("unset")
+									} else {
+										Text("Pin \($0)")
+									}
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+						}
 				}
 			}
+			.disabled(self.bleManager.connectedPeripheral == nil || node?.externalNotificationConfig == nil)
 		}
-		.disabled(self.bleManager.connectedPeripheral == nil || node?.externalNotificationConfig == nil)
 		Button {
 			isPresentingSaveConfirm = true
 		} label: {

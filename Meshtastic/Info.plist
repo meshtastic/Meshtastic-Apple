@@ -55,6 +55,10 @@
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device. Route Recording uses location in the background.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>Privacy – Bluetooth Always Usage Description</key>

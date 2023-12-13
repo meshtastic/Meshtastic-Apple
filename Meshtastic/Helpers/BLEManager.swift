@@ -20,7 +20,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var context: NSManagedObjectContext?
 	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
-	private let restoreKey = "Meshtastic.BLE.Manager"
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
 	@Published var lastConnectionError: String
@@ -42,6 +41,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
+	var wantStoreAndForwardPackets = false
 	/* Meshtastic Service Details */
 	var TORADIO_characteristic: CBCharacteristic!
 	var FROMRADIO_characteristic: CBCharacteristic!
@@ -377,6 +377,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		let fromNodeNum = connectedPeripheral.num
 		let routePacket = RouteDiscovery()
 		var meshPacket = MeshPacket()
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
 		meshPacket.wantAck = true
@@ -395,8 +396,43 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			
-			let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
-			MeshLogger.log("🪧 \(logString)")
+			let traceRoute = TraceRouteEntity(context: context!)
+			let nodes: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+			nodes.predicate = NSPredicate(format: "num IN %@", [destNum, self.connectedPeripheral.num])
+			do {
+				guard let fetchedNodes = try context!.fetch(nodes) as? [NodeInfoEntity] else {
+					return false
+				}
+				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
+				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
+				
+				traceRoute.id = Int64(meshPacket.id)
+				traceRoute.time = Date()
+				traceRoute.node = receivingNode
+				// Grab the most recent postion, within the last hour
+				if connectedNode?.positions?.count ?? 0 > 0 {
+					let mostRecent = connectedNode?.positions?.lastObject as! PositionEntity
+					if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+						traceRoute.altitude = mostRecent.altitude
+						traceRoute.latitudeI = mostRecent.latitudeI
+						traceRoute.longitudeI = mostRecent.longitudeI
+					}
+				}
+				do {
+					try context!.save()
+					print("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "unknown".localized))")
+				} catch {
+					context!.rollback()
+					let nsError = error as NSError
+					print("💥 Error Updating Core Data BluetoothConfigEntity: \(nsError)")
+				}
+			
+				let logString = String.localizedStringWithFormat("mesh.log.traceroute.sent %@".localized, String(destNum))
+				MeshLogger.log("🪧 \(logString)")
+				
+			} catch {
+				
+			}
 		}
 		return success
 	}
@@ -572,13 +608,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .serialApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .storeForwardApp:
-				storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				if wantStoreAndForwardPackets {
+					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				} else {
+					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
+				}
 			case .rangeTestApp:
 				if wantRangeTestPackets && !UserDefaults.blockRangeTest {
 					textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: false, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
-					MeshLogger.log("🕸️ MESH PACKET received for Range Test App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
 				}
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
@@ -596,16 +636,44 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
-					
+					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context!)
+					traceRoute?.response = true
+					traceRoute?.route = routingMessage.route
 					if routingMessage.route.count == 0 {
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.direct %@".localized, String(decodedInfo.packet.from))
 						MeshLogger.log("🪧 \(logString)")
-					} else {
 						
-						var routeString = "\(decodedInfo.packet.to) --> "
-						for node in routingMessage.route {
-							routeString += "\(node) --> "
+					} else {
+						var routeString = "You --> "
+						var hopNodes: [TraceRouteHopEntity] = []
+//						for node in routingMessage.route {
+//							let hopNode = getNodeInfo(id: Int64(node), context: context!)
+//							let traceRouteHop = TraceRouteHopEntity(context: context!)
+//							traceRouteHop.time = Date()
+//							let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
+//							if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+//								traceRouteHop.altitude = mostRecent.altitude
+//								traceRouteHop.latitudeI = mostRecent.latitudeI
+//								traceRouteHop.longitudeI = mostRecent.longitudeI
+//								traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+//							}
+//							traceRouteHop.num = hopNode?.num ?? 0
+//							if hopNode != nil {
+//								hopNodes.append(traceRouteHop)
+//							}
+//							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
+//						}
+						traceRoute?.routeText = routeString
+						traceRoute?.hops = NSOrderedSet(array: hopNodes)
+						do {
+							try context!.save()
+							print("💾 Saved Trace Route")
+						} catch {
+							context!.rollback()
+							let nsError = error as NSError
+							print("💥 Error Updating Core Data TraceRouteHOp: \(nsError)")
 						}
+						
 						routeString += "\(decodedInfo.packet.from)"
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
@@ -655,6 +723,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						}
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].rangeTestConfig?.enabled == true {
 							wantRangeTestPackets = true;
+						}
+						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
+							wantStoreAndForwardPackets = true;
 						}
 						
 					} catch {
@@ -874,23 +945,48 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
-		if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-			return false
-		}
 		var positionPacket = Position()
-		positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-		positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-		positionPacket.time = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(LocationHelper.currentTimestamp.timeIntervalSince1970)
-		positionPacket.altitude = Int32(LocationHelper.currentAltitude)
-		positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-		if LocationHelper.currentSpeed > 0 && (!LocationHelper.currentSpeed.isNaN || !LocationHelper.currentSpeed.isInfinite)  {
-			positionPacket.groundSpeed = UInt32(LocationHelper.currentSpeed * 3.6)
-		}
-		if LocationHelper.currentHeading > 0 && (!LocationHelper.currentHeading.isNaN || !LocationHelper.currentHeading.isInfinite) {
-			positionPacket.groundTrack = UInt32(LocationHelper.currentHeading)
-		}
 		
+		if #available(iOS 17.0, macOS 14.0, *) {
+			if fromNodeNum <= 0 {
+				return false
+			}
+			positionPacket.latitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.longitude * 1e7)
+			let timestamp = LocationsHandler.shared.lastLocation.timestamp
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationsHandler.shared.lastLocation.altitude)
+			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+			let currentSpeed = LocationsHandler.shared.lastLocation.speed
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+			}
+			let currentHeading  = LocationsHandler.shared.lastLocation.course
+			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+		} else {
+			if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+				return false
+			}
+			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+			}
+			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
+			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+		}
+
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from	= UInt32(fromNodeNum)
@@ -1353,6 +1449,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			upsertNetworkConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
+	public func saveAmbientLightingModuleConfig(config: ModuleConfig.AmbientLightingConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.ambientLighting = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛟 Saved Ambient Lighting Module Config for \(toUser.longName ?? "unknown".localized)"
+		
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertAmbientLightingModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
 			return Int64(meshPacket.id)
 		}
 		
@@ -1858,6 +1981,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 	
+	public func requestAmbientLightingConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.ambientlightingConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested Ambient Lighting Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+	
 	public func requestCannedMessagesModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()
@@ -2121,7 +2271,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					/// send a request for ClientHistory with a time period matching the heartbeat
 					var sfPacket = StoreAndForward()
 					sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
-					sfPacket.history.window = storeAndForwardMessage.heartbeat.period
+					sfPacket.history.window = 18000000 // storeAndForwardMessage.heartbeat.period
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(packet.from)
 					meshPacket.from	= UInt32(connectedNodeNum)
@@ -2249,29 +2399,4 @@ extension BLEManager: CBCentralManagerDelegate {
 		let visibleDuration = Calendar.current.date(byAdding: .second, value: -5, to: today)!
 		self.peripherals.removeAll(where: { $0.lastUpdate < visibleDuration})
 	}
-	
-	//	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-	//
-	//		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
-	//			return
-	//		}
-	//
-	//		if peripherals.count > 0 {
-	//
-	//			for peripheral in peripherals {
-	//				print(peripheral)
-	//			switch peripheral.state {
-	//				case .connecting: // I've only seen this happen when
-	//					// re-launching attached to Xcode.
-	//					print("Xcode Restore")
-	//
-	//				case .connected:
-	//					connectTo(peripheral: peripheral)
-	//					print("Restore BLE State")
-	//				default: break
-	//				}
-	//			}
-	//		}
-	//		print("willRestoreState Hit!")
-	//	}
 }

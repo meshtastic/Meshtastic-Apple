@@ -12,6 +12,8 @@
 "ago"="ago";
 "airtime"="广播时间";
 "always.on"="常亮";
+"ambient.lighting"="Ambient Lighting";
+"ambient.lighting.config"="Ambient Lighting Config";
 "app.settings"="通用设置";
 "are.you.sure"="是否确认？";
 "ascii.capable"="ASCII Capable";
@@ -64,6 +66,8 @@
 "device.metrics.log"="电台指标日志";
 "device.role.client"="标准模式 - App 可以连接到电台进行收发操作，并且会自动转发 Mesh 网络中其他节点的消息。";
 "device.role.clientmute"="静默模式 - 与标准模式类似，App 可以连接到电台进行收发操作，但不会转发 Mesh 网络中其他节点的消息。";
+"device.role.clienthidden"=" Used for nodes that \"only speak when spoken to\" Turns all of the routine broadcasts but allows for ad-hoc communication. Still rebroadcasts, but with local only rebroadcast mode (known meshes only). Can be used for private operation or to dramatically reduce airtime / power consumption.";
+"device.role.lostandfound"="Used to automatically send a text message to the mesh with the current position of the device on a frequent interval: \"I'm lost! Position: lat / long\"";
 "device.role.router"="纯路由模式 -  自动转发 Mesh 网络中其他节点的消息，中继模式下屏幕会熄灭，Wi-Fi 和蓝牙将会进入睡眠模式，App 将无法连接到电台进行收发操作。";
 "device.role.routerclient"="路由客户端模式 - 优先转发 Mesh 网络中其他节点的消息，App 也可以连接到电台进行收发操作。";
 "device.role.repeater"="中继模式 - Mesh 网络数据包将优先通过此节点路由。此模式可消除不必要的开销，如 NodeInfo、DeviceTelemetry 和任何其他 Mesh 数据包，从而使设备不显示为 Mesh 网络的一部分。有关此角色的其他特定设置，请参阅转播模式。";
@@ -149,6 +153,7 @@
 "map.usertrackingmode.followwithheading"="Follow with heading";
 "mesh.live.activity"="Mesh 实时活动";
 "mesh.log"="Mesh 日志";
+"mesh.log.ambientlighting.config %@"="Ambient Lighting module config received: %@";
 "mesh.log.bluetooth.config %@"="Bluetooth config received: %@";
 "mesh.log.cannedmessage.config %@"="Canned Message module config received: %@";
 "mesh.log.cannedmessages.messages.get %@"="Requested Canned Messages Module Messages for node: %@";

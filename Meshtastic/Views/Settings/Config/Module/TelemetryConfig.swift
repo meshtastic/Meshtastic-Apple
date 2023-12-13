@@ -23,7 +23,6 @@ struct TelemetryConfig: View {
 	@State var environmentDisplayFahrenheit = false
 
 	var body: some View {
-
 		VStack {
 			Form {
 				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
