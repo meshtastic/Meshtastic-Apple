@@ -129,6 +129,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
 					newUser.shortName = newUserMessage.shortName
+					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
 			}
@@ -177,6 +178,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
 					fetchedNode[0].user!.longName = nodeInfoMessage.user.longName
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
+					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				} else {
 					if (fetchedNode[0].user == nil) {
@@ -587,8 +589,6 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.rxGpio = Int32(config.rxGpio)
 				newPositionConfig.txGpio = Int32(config.txGpio)
 				newPositionConfig.fixedPosition = config.fixedPosition
-				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
-				newPositionConfig.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				newPositionConfig.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
 				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
@@ -600,8 +600,6 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
 				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
-				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
-				fetchedNode[0].positionConfig?.gpsAttemptTime = Int32(config.gpsAttemptTime)
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
@@ -837,6 +835,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 				newExternalNotificationConfig.outputVibra = Int32(config.outputVibra)
 				newExternalNotificationConfig.outputMilliseconds = Int32(config.outputMs)
 				newExternalNotificationConfig.nagTimeout = Int32(config.nagTimeout)
+				newExternalNotificationConfig.useI2SAsBuzzer = config.useI2SAsBuzzer
 				fetchedNode[0].externalNotificationConfig = newExternalNotificationConfig
 
 			} else {
@@ -854,6 +853,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 				fetchedNode[0].externalNotificationConfig?.outputVibra = Int32(config.outputVibra)
 				fetchedNode[0].externalNotificationConfig?.outputMilliseconds = Int32(config.outputMs)
 				fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(config.nagTimeout)
+				fetchedNode[0].externalNotificationConfig?.useI2SAsBuzzer = config.useI2SAsBuzzer
 			}
 
 			do {
