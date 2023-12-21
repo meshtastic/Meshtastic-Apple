@@ -456,6 +456,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let binaryData: Data = try! toRadio.serializedData()
 			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			// Either Read the config complete value or from num notify value
+			guard connectedPeripheral != nil else { return }
 			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 	}
