@@ -669,7 +669,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if hopNode != nil {
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) -->"
+							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
 						}
 						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
