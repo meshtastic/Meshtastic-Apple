@@ -1317,11 +1317,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			} catch {
 				context!.rollback()
 				let nsError = error as NSError
-				print("💥 Error inserting new core data MessageEntity: \(nsError)")
+				print("💥 Error deleting node from core data: \(nsError)")
 			}
 		}
 		return false
-		
 	}
 	
 	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
