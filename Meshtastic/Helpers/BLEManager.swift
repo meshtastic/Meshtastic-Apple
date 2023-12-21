@@ -947,9 +947,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
-		
+
 		if #available(iOS 17.0, macOS 14.0, *) {
-			if fromNodeNum <= 0 {
+			
+			/// Throw out crappy locations and only send a position if we are connected to a device
+			if fromNodeNum <= 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy < 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy > 100 {
 				return false
 			}
 			positionPacket.latitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.latitude * 1e7)
@@ -1005,7 +1007,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			MeshLogger.log("📍 \(logString)")
+			print("📍 \(logString)")
 		}
 		return success
 	}
