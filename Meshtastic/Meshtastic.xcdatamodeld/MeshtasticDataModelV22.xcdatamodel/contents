@@ -64,6 +64,7 @@
         <attribute name="debugLogEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="disableTripleClick" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="doubleTapAsButtonPress" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="gpsEnGpio" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isManaged" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="nodeInfoBroadcastSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="rebroadcastMode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

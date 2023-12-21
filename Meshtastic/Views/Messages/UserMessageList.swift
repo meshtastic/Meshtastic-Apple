@@ -218,6 +218,7 @@ struct UserMessageList: View {
 									}, secondaryButton: .cancel())
 								}
 								.onAppear {
+									self.focusedField = .messageText
 									if !message.read {
 										message.read = true
 										do {

@@ -27,6 +27,7 @@ struct DeviceConfig: View {
 	@State var rebroadcastMode = 0
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
+	@State var gpsEnGPIO = 0
 
 	var body: some View {
 		VStack {
@@ -122,6 +123,18 @@ struct DeviceConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					Picker("GPS EN GPIO", selection: $gpsEnGPIO) {
+						ForEach(0..<46) {
+							if $0 == 0 {
+								Text("unset")
+							} else {
+								Text("Pin \($0)")
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("(Re)define PIN_GPS_EN for your board.")
+						.font(.caption)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.deviceConfig == nil)
@@ -206,6 +219,8 @@ struct DeviceConfig: View {
 							dc.debugLogEnabled = debugLogEnabled
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
+						
+							//dc.gpsEnGpio = UInt32(gpsEnGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 							dc.isManaged = isManaged
@@ -267,6 +282,11 @@ struct DeviceConfig: View {
 				if newBuzzerGPIO != node!.deviceConfig!.buttonGpio { hasChanges = true }
 			}
 		}
+		.onChange(of: gpsEnGPIO) { newgpsEnGpio in
+			if node != nil && node?.deviceConfig != nil {
+				if newgpsEnGpio != node!.deviceConfig!.gpsEnGpio { hasChanges = true }
+			}
+		}
 		.onChange(of: rebroadcastMode) { newRebroadcastMode in
 			if node != nil && node?.deviceConfig != nil {
 				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
@@ -289,6 +309,7 @@ struct DeviceConfig: View {
 		self.debugLogEnabled = node?.deviceConfig?.debugLogEnabled ?? false
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
+		self.gpsEnGPIO = Int(node?.deviceConfig?.gpsEnGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
