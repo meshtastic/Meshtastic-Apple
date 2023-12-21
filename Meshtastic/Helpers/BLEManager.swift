@@ -664,8 +664,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if hopNode != nil {
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
+							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) -->"
 						}
+						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
@@ -676,8 +677,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							print("💥 Error Updating Core Data TraceRouteHOp: \(nsError)")
 						}
-						
-						routeString += "\(decodedInfo.packet.from)"
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
 					}
