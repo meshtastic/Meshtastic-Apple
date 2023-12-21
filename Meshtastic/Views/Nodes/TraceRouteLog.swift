@@ -64,7 +64,7 @@ struct TraceRouteLog: View {
 							return hop.coordinate ?? LocationHelper.DefaultLocation
 						})
 						if selectedRoute?.response ?? false  {
-							if selectedRoute?.coordinate != nil && (selectedRoute?.node?.positions?.count ?? 0 > 0 || false ) {
+							if selectedRoute?.hasPositions ?? false {
 								Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 									Annotation("You", coordinate: selectedRoute?.coordinate ?? LocationHelper.DefaultLocation) {
 										ZStack {
