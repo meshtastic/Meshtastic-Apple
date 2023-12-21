@@ -258,13 +258,7 @@ struct UserMessageList: View {
 				Button {
 					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
 					sendPositionWithMessage = true
-
-					if UserDefaults.meshtasticUsername.count > 0 {
-						typingMessage =  "📍 " + UserDefaults.meshtasticUsername + " has shared their position with you from node " + userLongName + " and requested a response with your position."
-					} else {
-						typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
-					}
-
+					typingMessage =  "📍 " + userLongName + " has shared their position and requested a response with your position."
 				} label: {
 					Text("share.position")
 					Image(systemName: "mappin.and.ellipse")

@@ -219,7 +219,6 @@ struct DeviceConfig: View {
 							dc.debugLogEnabled = debugLogEnabled
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
-						
 							//dc.gpsEnGpio = UInt32(gpsEnGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
