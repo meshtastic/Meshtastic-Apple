@@ -70,6 +70,27 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.lostandfound".localized
 		}
 	}
+	
+	var systemName: String {
+		switch self {
+		case .client:
+			return "iphone.gen3.radiowaves.left.and.right"
+		case .clientMute:
+			return "speaker.slash"
+		case .router, .routerClient, .repeater:
+			return "wifi.router"
+		case .tracker:
+			return "mappin.and.ellipse.circle"
+		case .sensor:
+			return "sensor"
+		case .tak:
+			return "shield.checkered"
+		case .clientHidden:
+			return "eye.slash"
+		case .lostAndFound:
+			return "map"
+		}
+	}
 	func protoEnumValue() -> Config.DeviceConfig.Role {
 
 		switch self {

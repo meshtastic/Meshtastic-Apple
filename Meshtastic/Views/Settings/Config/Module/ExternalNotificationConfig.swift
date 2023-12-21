@@ -30,6 +30,7 @@ struct ExternalNotificationConfig: View {
 	@State var outputVibra = 0
 	@State var outputMilliseconds = 0
 	@State var nagTimeout = 0
+	@State var useI2SAsBuzzer = false
 
 	var body: some View {
 		VStack {
@@ -78,6 +79,12 @@ struct ExternalNotificationConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
+						.font(.caption)
+					Toggle(isOn: $useI2SAsBuzzer) {
+						Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
 						.font(.caption)
 				}
 				Section(header: Text("Advanced GPIO Options")) {
@@ -199,6 +206,7 @@ struct ExternalNotificationConfig: View {
 					enc.outputVibra = UInt32(outputVibra)
 					enc.outputMs = UInt32(outputMilliseconds)
 					enc.usePwm = usePWM
+					enc.useI2SAsBuzzer = useI2SAsBuzzer
 					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -300,6 +308,11 @@ struct ExternalNotificationConfig: View {
 				if newNagTimeout != node!.externalNotificationConfig!.nagTimeout { hasChanges = true }
 			}
 		}
+		.onChange(of: useI2SAsBuzzer) { newUseI2SAsBuzzer in
+			if node != nil && node!.externalNotificationConfig != nil {
+				if newUseI2SAsBuzzer != node!.externalNotificationConfig!.useI2SAsBuzzer { hasChanges = true }
+			}
+		}
 	}
 	func setExternalNotificationValues() {
 		self.enabled = node?.externalNotificationConfig?.enabled ?? false
@@ -316,6 +329,7 @@ struct ExternalNotificationConfig: View {
 		self.outputMilliseconds = Int(node?.externalNotificationConfig?.outputMilliseconds ?? 0)
 		self.nagTimeout = Int(node?.externalNotificationConfig?.nagTimeout ?? 0)
 		self.usePWM = node?.externalNotificationConfig?.usePWM ?? false
+		self.useI2SAsBuzzer = node?.externalNotificationConfig?.useI2SAsBuzzer ?? false
 		self.hasChanges = false
 	}
 }

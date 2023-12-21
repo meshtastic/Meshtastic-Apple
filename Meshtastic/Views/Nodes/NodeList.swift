@@ -83,6 +83,16 @@ struct NodeList: View {
 								Label("Trace Route", systemImage: "signpost.right.and.left")
 							}
 						}
+						if bleManager.connectedPeripheral != nil {
+							Button (role: .destructive) {
+								let success = bleManager.removeNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+								if !success {
+									print("Failed to delete node \(node.user?.longName ?? "unknown".localized)")
+								}
+							} label: {
+								Label("Delete Node", systemImage: "trash")
+							}
+						}
 					}
 				}
 				.alert(

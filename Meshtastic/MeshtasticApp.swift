@@ -60,7 +60,8 @@ struct MeshtasticAppleApp: App {
 					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
 				}
 				
-				if UserDefaults.mapUseLegacy {
+				/// Only do the map tiles stuff if it is enabled
+				if UserDefaults.enableOfflineMapsMBTiles {
 					/// we are expecting a .mbtiles map file that contains raster data
 					/// save it to the documents directory, and name it offline_map.mbtiles
 					let fileManager = FileManager.default

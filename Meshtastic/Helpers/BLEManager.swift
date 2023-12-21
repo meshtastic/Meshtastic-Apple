@@ -416,6 +416,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						traceRoute.altitude = mostRecent.altitude
 						traceRoute.latitudeI = mostRecent.latitudeI
 						traceRoute.longitudeI = mostRecent.longitudeI
+						traceRoute.hasPositions = true
 					}
 				}
 				do {
@@ -456,6 +457,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			let binaryData: Data = try! toRadio.serializedData()
 			connectedPeripheral!.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			// Either Read the config complete value or from num notify value
+			guard connectedPeripheral != nil else { return }
 			connectedPeripheral!.peripheral.readValue(for: FROMRADIO_characteristic)
 		}
 	}
@@ -646,23 +648,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} else {
 						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
-//						for node in routingMessage.route {
-//							let hopNode = getNodeInfo(id: Int64(node), context: context!)
-//							let traceRouteHop = TraceRouteHopEntity(context: context!)
-//							traceRouteHop.time = Date()
-//							let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
-//							if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
-//								traceRouteHop.altitude = mostRecent.altitude
-//								traceRouteHop.latitudeI = mostRecent.latitudeI
-//								traceRouteHop.longitudeI = mostRecent.longitudeI
-//								traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-//							}
-//							traceRouteHop.num = hopNode?.num ?? 0
-//							if hopNode != nil {
-//								hopNodes.append(traceRouteHop)
-//							}
-//							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
-//						}
+						for node in routingMessage.route {
+							let hopNode = getNodeInfo(id: Int64(node), context: context!)
+							let traceRouteHop = TraceRouteHopEntity(context: context!)
+							traceRouteHop.time = Date()
+							if hopNode?.hasPositions ?? false {
+								let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
+								if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+									traceRouteHop.altitude = mostRecent.altitude
+									traceRouteHop.latitudeI = mostRecent.latitudeI
+									traceRouteHop.longitudeI = mostRecent.longitudeI
+									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+								} else {
+									traceRoute?.hasPositions = false
+								}
+							} else {
+								traceRoute?.hasPositions = false
+							}
+							traceRouteHop.num = hopNode?.num ?? 0
+							if hopNode != nil {
+								hopNodes.append(traceRouteHop)
+							}
+							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) -->"
+						}
+						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
@@ -673,8 +682,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let nsError = error as NSError
 							print("💥 Error Updating Core Data TraceRouteHOp: \(nsError)")
 						}
-						
-						routeString += "\(decodedInfo.packet.from)"
 						let logString = String.localizedStringWithFormat("mesh.log.traceroute.received.route %@".localized, routeString)
 						MeshLogger.log("🪧 \(logString)")
 					}
@@ -946,9 +953,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
-		
+
 		if #available(iOS 17.0, macOS 14.0, *) {
-			if fromNodeNum <= 0 {
+			
+			/// Throw out crappy locations and only send a position if we are connected to a device
+			if fromNodeNum <= 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy < 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy > 100 {
 				return false
 			}
 			positionPacket.latitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.latitude * 1e7)
@@ -1004,7 +1013,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 			success = true
 			let logString = String.localizedStringWithFormat("mesh.log.sharelocation %@".localized, String(fromNodeNum))
-			MeshLogger.log("📍 \(logString)")
+			print("📍 \(logString)")
 		}
 		return success
 	}
@@ -1280,6 +1289,38 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			return Int64(meshPacket.id)
 		}
 		return 0
+	}
+	
+	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeByNodenum = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected{
+			do {
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				context!.delete(node)
+				try context!.save()
+				return true
+			} catch {
+				context!.rollback()
+				let nsError = error as NSError
+				print("💥 Error deleting node from core data: \(nsError)")
+			}
+		}
+		return false
 	}
 	
 	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {

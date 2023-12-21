@@ -38,6 +38,7 @@ struct PositionConfig: View {
 	@State var deviceGpsEnabled = true
 	@State var rxGpio = 0
 	@State var txGpio = 0
+	@State var gpsEnGpio = 0
 	@State var fixedPosition = false
 	@State var positionBroadcastSeconds = 0
 	@State var broadcastSmartMinimumDistance = 0
@@ -231,6 +232,18 @@ struct PositionConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+						Picker("GPS EN GPIO", selection: $gpsEnGpio) {
+							ForEach(0..<46) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("(Re)define PIN_GPS_EN for your board.")
+							.font(.caption)
 					} else {
 						Toggle(isOn: $fixedPosition) {
 							Label("Fixed Position", systemImage: "location.square.fill")
@@ -277,6 +290,7 @@ struct PositionConfig: View {
 						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
 						pc.rxGpio = UInt32(rxGpio)
 						pc.txGpio = UInt32(txGpio)
+						pc.gpsEnGpio = UInt32(gpsEnGpio)
 						var pf: PositionFlags = []
 						if includeAltitude { pf.insert(.Altitude) }
 						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
@@ -336,6 +350,11 @@ struct PositionConfig: View {
 		.onChange(of: txGpio) { newTxGpio in
 			if node != nil && node!.positionConfig != nil {
 				if newTxGpio != node!.positionConfig!.txGpio { hasChanges = true }
+			}
+		}
+		.onChange(of: txGpio) { newGpsEnGpio in
+			if node != nil && node!.positionConfig != nil {
+				if newGpsEnGpio != node!.positionConfig!.gpsEnGpio { hasChanges = true }
 			}
 		}
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
@@ -424,6 +443,7 @@ struct PositionConfig: View {
 		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
 		self.rxGpio = Int(node?.positionConfig?.rxGpio ?? 0)
 		self.txGpio = Int(node?.positionConfig?.txGpio ?? 0)
+		self.gpsEnGpio = Int(node?.positionConfig?.gpsEnGpio ?? 0)
 		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
 		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
 		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)

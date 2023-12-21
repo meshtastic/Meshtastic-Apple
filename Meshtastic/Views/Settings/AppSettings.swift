@@ -10,7 +10,6 @@ struct AppSettings: View {
 	@ObservedObject var tileManager = OfflineTileManager.shared
 	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
-	@State var meshtasticUsername: String = UserDefaults.meshtasticUsername
 	@State var provideLocation: Bool = UserDefaults.provideLocation
 	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
 	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
@@ -20,16 +19,6 @@ struct AppSettings: View {
 	var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("user.details")) {
-					HStack {
-						Label("Name", systemImage: "person.crop.rectangle.fill")
-						TextField("Username", text: $meshtasticUsername)
-							.foregroundColor(.gray)
-					}
-					.keyboardType(.asciiCapable)
-					.disableAutocorrection(true)
-					.listRowSeparator(.visible)
-				}
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $blockRangeTest) {
@@ -146,9 +135,6 @@ struct AppSettings: View {
 		}
 		.onChange(of: blockRangeTest) { newBlockRangeTest in
 			UserDefaults.blockRangeTest = newBlockRangeTest
-		}
-		.onChange(of: (meshtasticUsername)) { newMeshtasticUsername in
-			UserDefaults.meshtasticUsername = newMeshtasticUsername
 		}
 		.onChange(of: provideLocation) { newProvideLocation in
 			UserDefaults.provideLocation = newProvideLocation

@@ -316,8 +316,8 @@ struct Settings: View {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context
 				}
-				self.preferredNodeNum = UserDefaults.preferredPeripheralNum// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-				selectedNode = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+				self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+				self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")

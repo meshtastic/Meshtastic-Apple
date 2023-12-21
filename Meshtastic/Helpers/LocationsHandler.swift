@@ -16,6 +16,8 @@ import CoreLocation
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
+	var locationsArray: [CLLocation]
+	var enableSmartPosition: Bool
 	
 	@Published var lastLocation = CLLocation()
 	@Published var isStationary = false
@@ -36,6 +38,9 @@ import CoreLocation
 	
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
+		locationsArray = [CLLocation]()
+		enableSmartPosition = true
+		self.manager.distanceFilter = 5
 	}
 	
 	func startLocationUpdates() {
@@ -53,7 +58,16 @@ import CoreLocation
 						self.lastLocation = loc
 						self.isStationary = update.isStationary
 						self.count += 1
-						//print("Location \(self.count): \(self.lastLocation)")
+						var locationAdded: Bool
+						if enableSmartPosition {
+							locationAdded = addLocation(loc)
+						} else {
+							locationsArray.append(loc)
+							locationAdded = true
+						}
+						if !locationAdded {
+							print("Bad Location \(self.count): \(loc)")
+						}
 					}
 				}
 			} catch {
@@ -66,6 +80,21 @@ import CoreLocation
 	func stopLocationUpdates() {
 		print("Stopping location updates")
 		self.updatesStarted = false
+	}
+	
+	func addLocation(_ location: CLLocation) -> Bool {
+		let age = -location.timestamp.timeIntervalSinceNow
+		if age > 10 {
+			return false
+		}
+		if location.horizontalAccuracy < 0 {
+			return false
+		}
+		if location.horizontalAccuracy > 100 {
+			return false
+		}
+		locationsArray.append(location)
+		return true
 	}
 	
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
