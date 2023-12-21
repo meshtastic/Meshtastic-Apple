@@ -1291,6 +1291,39 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
+	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeByNodenum = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected{
+			do {
+				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				context!.delete(node)
+				try context!.save()
+				return true
+			} catch {
+				context!.rollback()
+				let nsError = error as NSError
+				print("💥 Error inserting new core data MessageEntity: \(nsError)")
+			}
+		}
+		return false
+		
+	}
+	
 	public func saveLicensedUser(ham: HamParameters, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setHamMode = ham
