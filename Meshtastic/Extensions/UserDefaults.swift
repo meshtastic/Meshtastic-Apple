@@ -10,7 +10,6 @@ import Foundation
 extension UserDefaults {
 	enum Keys: String, CaseIterable {
 		case enableRangeTest
-		case meshtasticUsername
 		case preferredPeripheralId
 		case preferredPeripheralNum
 		case provideLocation
@@ -38,14 +37,6 @@ extension UserDefaults {
 			UserDefaults.standard.bool(forKey: "blockRangeTest") 
 		} set {
 			UserDefaults.standard.set(newValue, forKey: "blockRangeTest")
-		}
-	}
-	static var meshtasticUsername: String {
-		get {
-			UserDefaults.standard.string(forKey: "meshtasticUsername") ?? ""
-		}
-		set {
-			UserDefaults.standard.set(newValue, forKey: "meshtasticUsername")
 		}
 	}
 	static var preferredPeripheralId: String {

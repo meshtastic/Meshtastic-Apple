@@ -647,23 +647,25 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					} else {
 						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
-//						for node in routingMessage.route {
-//							let hopNode = getNodeInfo(id: Int64(node), context: context!)
-//							let traceRouteHop = TraceRouteHopEntity(context: context!)
-//							traceRouteHop.time = Date()
-//							let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
-//							if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
-//								traceRouteHop.altitude = mostRecent.altitude
-//								traceRouteHop.latitudeI = mostRecent.latitudeI
-//								traceRouteHop.longitudeI = mostRecent.longitudeI
-//								traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
-//							}
-//							traceRouteHop.num = hopNode?.num ?? 0
-//							if hopNode != nil {
-//								hopNodes.append(traceRouteHop)
-//							}
-//							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
-//						}
+						for node in routingMessage.route {
+							let hopNode = getNodeInfo(id: Int64(node), context: context!)
+							let traceRouteHop = TraceRouteHopEntity(context: context!)
+							traceRouteHop.time = Date()
+							if hopNode?.hasPositions ?? false {
+								let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
+								if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+									traceRouteHop.altitude = mostRecent.altitude
+									traceRouteHop.latitudeI = mostRecent.latitudeI
+									traceRouteHop.longitudeI = mostRecent.longitudeI
+									traceRouteHop.name = hopNode?.user?.longName ?? "unknown".localized
+								}
+							}
+							traceRouteHop.num = hopNode?.num ?? 0
+							if hopNode != nil {
+								hopNodes.append(traceRouteHop)
+							}
+							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
+						}
 						traceRoute?.routeText = routeString
 						traceRoute?.hops = NSOrderedSet(array: hopNodes)
 						do {
