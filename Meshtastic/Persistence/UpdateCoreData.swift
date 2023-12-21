@@ -588,6 +588,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
 				newPositionConfig.rxGpio = Int32(config.rxGpio)
 				newPositionConfig.txGpio = Int32(config.txGpio)
+				newPositionConfig.gpsEnGpio = Int32(config.gpsEnGpio)
 				newPositionConfig.fixedPosition = config.fixedPosition
 				newPositionConfig.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
 				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
@@ -599,6 +600,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
 				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
 				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
+				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(config.gpsEnGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
