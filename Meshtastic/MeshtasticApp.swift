@@ -8,9 +8,18 @@ import TipKit
 
 @main
 struct MeshtasticAppleApp: App {
+	
+	private static var documentsFolder: URL {
+		do {
+			return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+		} catch {
+			fatalError("Can't find documents directory.")
+		}
+	}
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager()
+
 	@Environment(\.scenePhase) var scenePhase
 
 	@State var saveChannels = false

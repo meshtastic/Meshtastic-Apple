@@ -123,6 +123,11 @@ struct NodeListItem: View {
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 							}
+							if node.hasTraceRoutes {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+							}
 						}
 						.padding(.top, 3)
 					}

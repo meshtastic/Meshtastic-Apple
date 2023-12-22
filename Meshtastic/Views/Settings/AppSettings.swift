@@ -33,44 +33,7 @@ struct AppSettings: View {
 				}
 				Section(header: Text("phone.gps")) {
 					if #available(iOS 17.0, macOS 14.0, *) {
-						let horizontalAccuracy = Measurement(value: LocationsHandler.shared.lastLocation.horizontalAccuracy, unit: UnitLength.meters)
-						let verticalAccuracy = Measurement(value: LocationsHandler.shared.lastLocation.verticalAccuracy, unit: UnitLength.meters)
-						let altitiude = Measurement(value: LocationsHandler.shared.lastLocation.altitude, unit: UnitLength.meters)
-						let speed = Measurement(value: LocationsHandler.shared.lastLocation.speed, unit: UnitSpeed.kilometersPerHour)
-						let speedAccuracy = Measurement(value: LocationsHandler.shared.lastLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
-						Label("Coordinate \(String(format: "%.5f", LocationsHandler.shared.lastLocation.coordinate.latitude)), \(String(format: "%.5f", LocationsHandler.shared.lastLocation.coordinate.longitude))", systemImage: "mappin")
-							.font(.footnote)
-							.textSelection(.enabled)
-						HStack {
-							Label("Accuracy \(horizontalAccuracy.formatted())", systemImage: "scope")
-								.font(.footnote)
-							Label("Sats \(LocationsHandler.satsInView)", systemImage: "sparkles")
-								.font(.footnote)
-						}
-						HStack {
-							if LocationsHandler.shared.lastLocation.verticalAccuracy > 0 {
-								Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-									.font(.footnote)
-							}
-							Label("Accuracy \(verticalAccuracy.formatted())", systemImage: "lines.measurement.vertical")
-								.font(.footnote)
-						}
-						if LocationsHandler.shared.lastLocation.courseAccuracy > 0 {
-							let degrees = Angle.degrees(Double(LocationsHandler.shared.lastLocation.course))
-							Label {
-								let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-								Text("Heading: \(heading.formatted())")
-							} icon: {
-								Image(systemName: "location.north")
-									.symbolRenderingMode(.hierarchical)
-									.rotationEffect(degrees)
-							}
-							.font(.footnote)
-						}
-						if LocationsHandler.shared.lastLocation.speedAccuracy > 0 {
-							Label("Speed \(speed.formatted())", systemImage: "speedometer")
-								.font(.footnote)
-						}
+						GPSStatus()
 					} else {
 						let accuracy = Measurement(value: locationHelper.locationManager.location?.horizontalAccuracy ?? 300, unit: UnitLength.meters)
 						let altitiude = Measurement(value: locationHelper.locationManager.location?.altitude ?? 0, unit: UnitLength.meters)
