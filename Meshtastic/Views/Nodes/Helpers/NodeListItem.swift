@@ -52,6 +52,14 @@ struct NodeListItem: View {
 							LastHeardText(lastHeard: node.lastHeard)
 								.font(.callout)
 						}
+						HStack {
+							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
+							Image(systemName: role?.systemName ?? "figure")
+								.font(.callout)
+								.symbolRenderingMode(.hierarchical)
+							Text("Role: \(role?.name ?? "unknown".localized)")
+								.font(.callout)
+						}
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
 								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
@@ -89,7 +97,6 @@ struct NodeListItem: View {
 									.font(.callout)
 							}
 						}
-						
 						if !connected {
 							HStack {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
