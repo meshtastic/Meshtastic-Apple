@@ -84,7 +84,7 @@ import CoreLocation
 	func addLocation(_ location: CLLocation) -> Bool {
 		let age = -location.timestamp.timeIntervalSinceNow
 		if age > 10 {
-			print("Bad Location \(self.count): Too Old \(location)")
+			print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 			return false
 		}
 		if location.horizontalAccuracy < 0 {

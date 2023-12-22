@@ -156,7 +156,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			// Update an existing node
 			fetchedNode[0].id = Int64(packet.from)
 			fetchedNode[0].num = Int64(packet.from)
-			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			if packet.rxTime > 0 {
+				fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 
@@ -268,7 +270,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
 					fetchedNode[0].num = Int64(packet.from)
-					fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					if positionMessage.time > 0 {
+						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.time)))
+					} else if packet.rxTime > 0 {
+						fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
+					}
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
