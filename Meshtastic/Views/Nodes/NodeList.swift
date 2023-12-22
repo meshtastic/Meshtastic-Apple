@@ -12,6 +12,7 @@ struct NodeList: View {
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var isPresentingDeleteNodeAlert = false
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
@@ -85,6 +86,7 @@ struct NodeList: View {
 						}
 						if bleManager.connectedPeripheral != nil {
 							Button (role: .destructive) {
+								//isPresentingDeleteNodeAlert 
 								let success = bleManager.removeNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
 								if !success {
 									print("Failed to delete node \(node.user?.longName ?? "unknown".localized)")
