@@ -600,6 +600,8 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
+				newPositionConfig.gpsAttemptTime = 900
+				newPositionConfig.gpsUpdateInterval = 120
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
@@ -611,6 +613,8 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
+				fetchedNode[0].positionConfig?.gpsAttemptTime = 900
+				fetchedNode[0].positionConfig?.gpsUpdateInterval = 120
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {
