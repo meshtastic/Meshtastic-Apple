@@ -46,9 +46,14 @@ struct TraceRouteLog: View {
 				VStack {
 					if selectedRoute != nil {
 						if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 > 0 {
-							Text("Received by \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
-							Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
-								.font(.title3)
+
+							Label {
+								Text("Route: \(selectedRoute?.routeText ?? "unknown".localized)")
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.hierarchical)
+							}
+							.font(.title2)
 						} else if selectedRoute?.response ?? false {
 							Label {
 								Text("Trace route received directly by \(selectedRoute?.node?.user?.longName ?? "unknown".localized)")
@@ -56,7 +61,7 @@ struct TraceRouteLog: View {
 								Image(systemName: "signpost.right.and.left")
 									.symbolRenderingMode(.hierarchical)
 							}
-							.font(.title3)
+							.font(.title2)
 						}
 						
 						let hopsArray = selectedRoute?.hops?.array as? [TraceRouteHopEntity] ?? []
@@ -128,15 +133,6 @@ struct TraceRouteLog: View {
 										.symbolRenderingMode(.hierarchical)
 								}
 								.font(.title3)
-								Divider()
-								Label {
-									Text("\(selectedRoute?.time?.formatted() ?? "") - No response")
-										
-								} icon: {
-									Image(systemName: "person.slash")
-										.symbolRenderingMode(.hierarchical)
-								}
-								.font(.callout)
 								Spacer()
 							}
 						}

@@ -8,9 +8,11 @@ import TipKit
 
 @main
 struct MeshtasticAppleApp: App {
+	
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager()
+
 	@Environment(\.scenePhase) var scenePhase
 
 	@State var saveChannels = false

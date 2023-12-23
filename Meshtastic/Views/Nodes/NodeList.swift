@@ -12,6 +12,8 @@ struct NodeList: View {
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var isPresentingDeleteNodeAlert = false
+	@State private var deleteNodeId: Int64 = 0
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
@@ -85,10 +87,8 @@ struct NodeList: View {
 						}
 						if bleManager.connectedPeripheral != nil {
 							Button (role: .destructive) {
-								let success = bleManager.removeNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
-								if !success {
-									print("Failed to delete node \(node.user?.longName ?? "unknown".localized)")
-								}
+								deleteNodeId = node.num
+								isPresentingDeleteNodeAlert = true
 							} label: {
 								Label("Delete Node", systemImage: "trash")
 							}
@@ -107,7 +107,25 @@ struct NodeList: View {
 			.searchable(text: nodesQuery, prompt: "Find a node")
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
-			
+			.confirmationDialog(
+
+				"are.you.sure",
+				isPresented: $isPresentingDeleteNodeAlert,
+				titleVisibility: .visible
+			) {
+				Button("Delete Node") {
+					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
+					if connectedNode != nil {
+						
+					}
+					if deleteNode != nil {
+						let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
+						if !success {
+							print("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+						}
+					}
+				}
+			}
 			.navigationSplitViewColumnWidth(min: 100, ideal: 250, max: 500)
 			.navigationBarItems(leading:
 				MeshtasticLogo(),

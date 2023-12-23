@@ -40,7 +40,6 @@ import CoreLocation
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		locationsArray = [CLLocation]()
 		enableSmartPosition = true
-		self.manager.distanceFilter = 5
 	}
 	
 	func startLocationUpdates() {
@@ -66,7 +65,7 @@ import CoreLocation
 							locationAdded = true
 						}
 						if !locationAdded {
-							print("Bad Location \(self.count): \(loc)")
+							//print("Bad Location \(self.count): \(loc)")
 						}
 					}
 				}
@@ -85,12 +84,15 @@ import CoreLocation
 	func addLocation(_ location: CLLocation) -> Bool {
 		let age = -location.timestamp.timeIntervalSinceNow
 		if age > 10 {
+			print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
 			return false
 		}
 		if location.horizontalAccuracy < 0 {
+			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 			return false
 		}
 		if location.horizontalAccuracy > 100 {
+			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 			return false
 		}
 		locationsArray.append(location)
