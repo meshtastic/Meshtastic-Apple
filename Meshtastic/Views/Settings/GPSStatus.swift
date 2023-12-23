@@ -12,9 +12,7 @@ import CoreLocation
 struct GPSStatus: View {
 	
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
-	
 	var body: some View {
-
 		let horizontalAccuracy = Measurement(value: locationsHandler.lastLocation.horizontalAccuracy, unit: UnitLength.meters)
 		let verticalAccuracy = Measurement(value: locationsHandler.lastLocation.verticalAccuracy, unit: UnitLength.meters)
 		let altitiude = Measurement(value: locationsHandler.lastLocation.altitude, unit: UnitLength.meters)
