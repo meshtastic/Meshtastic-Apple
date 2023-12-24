@@ -39,7 +39,7 @@ import CoreLocation
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		locationsArray = [CLLocation]()
-		enableSmartPosition = false
+		enableSmartPosition = true
 	}
 	
 	func startLocationUpdates() {
