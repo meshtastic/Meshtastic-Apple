@@ -52,8 +52,16 @@ struct AppSettings: View {
 								.font(.footnote)
 						}
 						if locationHelper.locationManager.location?.courseAccuracy ?? 0 > 0 {
-							Label("Heading \(String(format: "%.2f", locationHelper.locationManager.location?.course ?? 0))°", systemImage: "location.circle")
-								.font(.footnote)
+							let degrees = Angle.degrees(locationHelper.locationManager.location?.course ?? 0)
+							Label {
+								let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+								Text("Heading: \(heading.formatted(.measurement(width: .narrow)))")
+							} icon: {
+								Image(systemName: "location.north")
+									.symbolRenderingMode(.hierarchical)
+									.rotationEffect(degrees)
+							}
+							.font(.footnote)
 						}
 						if locationHelper.locationManager.location?.speedAccuracy ?? 0 > 0 {
 							Label("Speed \(speed.formatted())", systemImage: "speedometer")

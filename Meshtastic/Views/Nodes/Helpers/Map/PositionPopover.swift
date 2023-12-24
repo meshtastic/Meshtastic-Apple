@@ -111,20 +111,18 @@ struct PositionPopover: View {
 					let degrees = Angle.degrees(Double(position.heading))
 					Label {
 						let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-						Text("Heading: \(heading.formatted())")
-							.foregroundColor(.primary)
+						Text("Heading: \(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 					} icon: {
 						Image(systemName: "location.north")
-							.symbolRenderingMode(.hierarchical)
-							.frame(width: 35)
-							.rotationEffect(degrees)
+							 .symbolRenderingMode(.hierarchical)
+							 .frame(width: 35)
+							 .rotationEffect(degrees)
 					}
 					.padding(.bottom, 5)
 					/// Speed
-					let formatter = MeasurementFormatter()
+					let speed = Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)
 					Label {
-						Text("Speed: \(formatter.string(from: Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)))")
-						//		.font(.footnote)
+						Text("Speed: \(speed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))")
 							.foregroundColor(.primary)
 					} icon: {
 						Image(systemName: "gauge.with.dots.needle.33percent")
@@ -132,17 +130,18 @@ struct PositionPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
-					
-					/// Distance
-					if locationsHandler.lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-						let metersAway = position.coordinate.distance(from:CLLocationCoordinate2D(latitude: locationsHandler.lastLocation.coordinate.latitude, longitude: locationsHandler.lastLocation.coordinate.longitude))
-						Label {
-							Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
-								.foregroundColor(.primary)
-						} icon: {
-							Image(systemName: "lines.measurement.horizontal")
-								.symbolRenderingMode(.hierarchical)
-								.frame(width: 35)
+					if let lastLocation = locationsHandler.locationsArray.last {
+						/// Distance
+						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
+							let metersAway = position.coordinate.distance(from:CLLocationCoordinate2D(latitude: lastLocation.coordinate.latitude, longitude: lastLocation.coordinate.longitude))
+							Label {
+								Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway)))")
+									.foregroundColor(.primary)
+							} icon: {
+								Image(systemName: "lines.measurement.horizontal")
+									.symbolRenderingMode(.hierarchical)
+									.frame(width: 35)
+							}
 						}
 					}
 					Spacer()

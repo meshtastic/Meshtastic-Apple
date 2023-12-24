@@ -64,16 +64,17 @@ struct NodeListItem: View {
 							HStack {
 								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
 								if #available(iOS 17.0, macOS 14.0, *) {
-									let myCoord = CLLocation(latitude: LocationsHandler.shared.lastLocation.coordinate.latitude, longitude: LocationsHandler.shared.lastLocation.coordinate.longitude)
-									if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
-										let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
-										let metersAway = nodeCoord.distance(from: myCoord)
-										Image(systemName: "lines.measurement.horizontal")
-											.font(.callout)
-											.symbolRenderingMode(.hierarchical)
-										DistanceText(meters: metersAway).font(.callout)
+									if let currentLocation = LocationsHandler.shared.locationsArray.last {
+										let myCoord = CLLocation(latitude:  currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+										if lastPostion.nodeCoordinate != nil && myCoord.coordinate.longitude != LocationsHandler.DefaultLocation.longitude && myCoord.coordinate.latitude != LocationsHandler.DefaultLocation.latitude {
+											let nodeCoord = CLLocation(latitude: lastPostion.nodeCoordinate!.latitude, longitude: lastPostion.nodeCoordinate!.longitude)
+											let metersAway = nodeCoord.distance(from: myCoord)
+											Image(systemName: "lines.measurement.horizontal")
+												.font(.callout)
+												.symbolRenderingMode(.hierarchical)
+											DistanceText(meters: metersAway).font(.callout)
+										}
 									}
-									
 								} else {
 									
 									let myCoord = CLLocation(latitude: LocationHelper.currentLocation.latitude, longitude: LocationHelper.currentLocation.longitude)

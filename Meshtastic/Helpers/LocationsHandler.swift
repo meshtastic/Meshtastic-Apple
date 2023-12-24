@@ -19,7 +19,7 @@ import CoreLocation
 	var locationsArray: [CLLocation]
 	var enableSmartPosition: Bool
 	
-	@Published var lastLocation = CLLocation()
+	//@Published var lastLocation = CLLocation()
 	@Published var isStationary = false
 	@Published var count = 0
 	
@@ -59,9 +59,9 @@ import CoreLocation
 						var locationAdded: Bool
 						if enableSmartPosition {
 							locationAdded = addLocation(loc)
+							//print("Added Location \(self.count): \(loc)")
 						} else {
 							locationsArray.append(loc)
-							self.lastLocation = loc
 							locationAdded = true
 						}
 						if !locationAdded {
@@ -96,32 +96,33 @@ import CoreLocation
 			return false
 		}
 		locationsArray.append(location)
-		lastLocation = location
 		return true
 	}
 	
 	static let DefaultLocation = CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090)
 	
 	static var satsInView: Int {
-		// If we have a position we have a sat
-		var sats = 1
-		if shared.lastLocation.verticalAccuracy > 0 {
-			sats = 4
-			if 0...5 ~= shared.lastLocation.horizontalAccuracy {
-				sats = 12
-			} else if 6...15 ~= shared.lastLocation.horizontalAccuracy {
-				sats = 10
-			} else if 16...30 ~= shared.lastLocation.horizontalAccuracy {
-				sats = 9
-			} else if 31...45 ~= shared.lastLocation.horizontalAccuracy {
-				sats = 7
-			} else if 46...60 ~= shared.lastLocation.horizontalAccuracy {
-				sats = 5
+		var sats = 0
+		if let newLocation = shared.locationsArray.last{
+			sats = 1
+			if newLocation.verticalAccuracy > 0 {
+				sats = 4
+				if 0...5 ~= newLocation.horizontalAccuracy {
+					sats = 12
+				} else if 6...15 ~= newLocation.horizontalAccuracy {
+					sats = 10
+				} else if 16...30 ~= newLocation.horizontalAccuracy {
+					sats = 9
+				} else if 31...45 ~= newLocation.horizontalAccuracy {
+					sats = 7
+				} else if 46...60 ~= newLocation.horizontalAccuracy {
+					sats = 5
+				}
+			} else if newLocation.verticalAccuracy < 0 && 60...300 ~= newLocation.horizontalAccuracy {
+				sats = 3
+			} else if newLocation.verticalAccuracy < 0 && newLocation.horizontalAccuracy > 300 {
+				sats = 2
 			}
-		} else if shared.lastLocation.verticalAccuracy < 0 && 60...300 ~= shared.lastLocation.horizontalAccuracy {
-			sats = 3
-		} else if shared.lastLocation.verticalAccuracy < 0 && shared.lastLocation.horizontalAccuracy > 300 {
-			sats = 2
 		}
 		return sats
 	}
