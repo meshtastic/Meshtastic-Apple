@@ -39,7 +39,7 @@ import CoreLocation
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		locationsArray = [CLLocation]()
-		enableSmartPosition = true
+		enableSmartPosition = false
 	}
 	
 	func startLocationUpdates() {
@@ -54,7 +54,6 @@ import CoreLocation
 				for try await update in updates {
 					if !self.updatesStarted { break }  // End location updates by breaking out of the loop.
 					if let loc = update.location {
-						self.lastLocation = loc
 						self.isStationary = update.isStationary
 						self.count += 1
 						var locationAdded: Bool
@@ -62,6 +61,7 @@ import CoreLocation
 							locationAdded = addLocation(loc)
 						} else {
 							locationsArray.append(loc)
+							self.lastLocation = loc
 							locationAdded = true
 						}
 						if !locationAdded {
@@ -96,6 +96,7 @@ import CoreLocation
 			return false
 		}
 		locationsArray.append(location)
+		lastLocation = location
 		return true
 	}
 	
