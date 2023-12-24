@@ -18,11 +18,8 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 		UNUserNotificationCenter.current().delegate = self
 		if #available(iOS 17.0, macOS 14.0, *) {
 			let locationsHandler = LocationsHandler.shared
-			
-			// If location updates were previously active, restart them after the background launch.
-			if locationsHandler.updatesStarted {
-				locationsHandler.startLocationUpdates()
-			}
+			locationsHandler.startLocationUpdates()
+
 			// If a background activity session was previously active, reinstantiate it after the background launch.
 			if locationsHandler.backgroundActivity {
 				locationsHandler.backgroundActivity = true
