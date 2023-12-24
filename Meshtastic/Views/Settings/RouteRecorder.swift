@@ -123,40 +123,43 @@ struct RouteRecorder: View {
 							.padding()
 							Divider()
 							VStack(alignment: .leading) {
-								let horizontalAccuracy = Measurement(value: locationsHandler.lastLocation.horizontalAccuracy, unit: UnitLength.meters)
-								let verticalAccuracy = Measurement(value: locationsHandler.lastLocation.verticalAccuracy, unit: UnitLength.meters)
-								let altitiude = Measurement(value: locationsHandler.lastLocation.altitude, unit: UnitLength.meters)
-								let speed = Measurement(value: locationsHandler.lastLocation.speed, unit: UnitSpeed.kilometersPerHour)
-								List {
-									Label("Coordinate \(String(format: "%.5f", locationsHandler.lastLocation.coordinate.latitude)), \(String(format: "%.5f", locationsHandler.lastLocation.coordinate.longitude))", systemImage: "mappin")
-										.textSelection(.enabled)
-									Label("Horizontal Accuracy \(horizontalAccuracy.formatted())", systemImage: "scope")
-									if locationsHandler.lastLocation.verticalAccuracy > 0 {
-										Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-									}
-									Label("Vertical Accuracy \(verticalAccuracy.formatted())", systemImage: "lines.measurement.vertical")
-									Label("Satellites Estimate \(LocationHelper.satsInView)", systemImage: "sparkles")
-									Label("\(locationsHandler.isStationary ? "Moving" : "Stationary")", systemImage: locationsHandler.isStationary ? "figure.walk.motion" : "figure.stand")
-									if locationsHandler.lastLocation.speedAccuracy > 0 {
-										Label("Speed \(speed.formatted())", systemImage: "speedometer")
-									}
-									if locationsHandler.lastLocation.courseAccuracy > 0 {
-										/// Heading
-										let degrees = Angle.degrees(Double(locationsHandler.lastLocation.course))
-										Label {
-											let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-											/// Text("Heading: \(heading.formatted())")
-											Text("Heading \(String(format: "%.2f", locationsHandler.lastLocation.course))°")
-												.foregroundColor(.primary)
-										} icon: {
-											Image(systemName: "location.circle")
-												.symbolRenderingMode(.hierarchical)
-												.frame(width: 35)
-												.rotationEffect(degrees)
+								if let lastLocation = locationsHandler.locationsArray.last {
+									
+									let horizontalAccuracy = Measurement(value: lastLocation.horizontalAccuracy, unit: UnitLength.meters)
+									let verticalAccuracy = Measurement(value: lastLocation.verticalAccuracy, unit: UnitLength.meters)
+									let altitiude = Measurement(value: lastLocation.altitude, unit: UnitLength.meters)
+									let speed = Measurement(value: lastLocation.speed, unit: UnitSpeed.kilometersPerHour)
+									List {
+										Label("Coordinate \(String(format: "%.5f", lastLocation.coordinate.latitude)), \(String(format: "%.5f", lastLocation.coordinate.longitude))", systemImage: "mappin")
+											.textSelection(.enabled)
+										Label("Horizontal Accuracy \(horizontalAccuracy.formatted())", systemImage: "scope")
+										if lastLocation.verticalAccuracy > 0 {
+											Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
+										}
+										Label("Vertical Accuracy \(verticalAccuracy.formatted())", systemImage: "lines.measurement.vertical")
+										Label("Satellites Estimate \(LocationHelper.satsInView)", systemImage: "sparkles")
+										Label("\(locationsHandler.isStationary ? "Moving" : "Stationary")", systemImage: locationsHandler.isStationary ? "figure.walk.motion" : "figure.stand")
+										if lastLocation.speedAccuracy > 0 {
+											Label("Speed \(speed.formatted())", systemImage: "speedometer")
+										}
+										if lastLocation.courseAccuracy > 0 {
+											/// Heading
+											let degrees = Angle.degrees(Double(lastLocation.course))
+											Label {
+												let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+												/// Text("Heading: \(heading.formatted())")
+												Text("Heading \(String(format: "%.2f", lastLocation.course))°")
+													.foregroundColor(.primary)
+											} icon: {
+												Image(systemName: "location.circle")
+													.symbolRenderingMode(.hierarchical)
+													.frame(width: 35)
+													.rotationEffect(degrees)
+											}
 										}
 									}
+									.listStyle(.plain)
 								}
-								.listStyle(.plain)
 							}
 						}
 					}

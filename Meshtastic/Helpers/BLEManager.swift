@@ -969,25 +969,30 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		if #available(iOS 17.0, macOS 14.0, *) {
 			
-			/// Throw out crappy locations and only send a position if we are connected to a device
-			if fromNodeNum <= 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy < 0 || LocationsHandler.shared.lastLocation.horizontalAccuracy > 100 {
-				return false
+			if let lastLocation = LocationsHandler.shared.locationsArray.last {
+				
+				/// Throw out crappy locations and only send a position if we are connected to a device
+				if fromNodeNum <= 0 || lastLocation.horizontalAccuracy < 0 || lastLocation.horizontalAccuracy > 100 {
+					return false
+				}
+				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+				let timestamp = lastLocation.timestamp
+				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+				positionPacket.altitude = Int32(lastLocation.altitude)
+				positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+				let currentSpeed = lastLocation.speed
+				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+					positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+				}
+				let currentHeading = lastLocation.course
+				if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+					positionPacket.groundTrack = UInt32(currentHeading)
+				}
+				
 			}
-			positionPacket.latitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.latitude * 1e7)
-			positionPacket.longitudeI = Int32(LocationsHandler.shared.lastLocation.coordinate.longitude * 1e7)
-			let timestamp = LocationsHandler.shared.lastLocation.timestamp
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(LocationsHandler.shared.lastLocation.altitude)
-			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-			let currentSpeed = LocationsHandler.shared.lastLocation.speed
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-			}
-			let currentHeading  = LocationsHandler.shared.lastLocation.course
-			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
+
 		} else {
 			if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 				return false
