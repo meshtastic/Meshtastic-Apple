@@ -16,12 +16,16 @@ import CoreLocation
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
-	var locationsArray: [CLLocation]
 	var enableSmartPosition: Bool
 	
-	//@Published var lastLocation = CLLocation()
+	@Published var locationsArray: [CLLocation]
 	@Published var isStationary = false
 	@Published var count = 0
+	@Published var isRecording = false
+	@Published var isRecordingPaused = false
+	@Published var recordingStarted: Date?
+	@Published var distanceTraveled = 0.0
+	@Published var elevationGain = 0.0
 	
 	@Published
 	var updatesStarted: Bool = UserDefaults.standard.bool(forKey: "liveUpdatesStarted") {
@@ -95,6 +99,16 @@ import CoreLocation
 			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 			return false
 		}
+		if isRecording {
+			if let lastLocation = locationsArray.last {
+				let distance = location.distance(from: lastLocation)
+				let gain = location.altitude - lastLocation.altitude
+				distanceTraveled += distance
+				if gain > 0 {
+					elevationGain += gain
+				}
+			}
+		}
 		locationsArray.append(location)
 		return true
 	}
@@ -103,7 +117,7 @@ import CoreLocation
 	
 	static var satsInView: Int {
 		var sats = 0
-		if let newLocation = shared.locationsArray.last{
+		if let newLocation = shared.locationsArray.last {
 			sats = 1
 			if newLocation.verticalAccuracy > 0 {
 				sats = 4

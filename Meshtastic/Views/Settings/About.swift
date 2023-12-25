@@ -17,11 +17,32 @@ struct AboutMeshtastic: View {
 
 			List {
 				Section(header: Text("What is Meshtastic?")) {
-					Text("An open source, off-grid, decentralized, mesh network built to run on affordable, low-power devices.")
+					Text("An open source, off-grid, decentralized, mesh network that runs on affordable, low-power radios.")
 						.font(.title3)
 
 				}
 				Section(header: Text("Apple Apps")) {
+					
+					if locale.region?.identifier ?? "US" == "US" {
+						HStack {
+							Image("SOLAR_NODE")
+								.resizable()
+								.aspectRatio(contentMode: .fit)
+								.frame(width: 75)
+								.cornerRadius(5)
+								.padding()
+							VStack(alignment: .leading) {
+								Link("Buy Complete Radios", destination: URL(string: "http://garthvh.com")!)
+									.font(.title2)
+								Text("Get custom waterproof solar and detection sensor router nodes, aluminium desktop nodes and rugged handsets.")
+									.font(.callout)
+							}
+						}
+					}
+					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
+						.font(.title2)
+					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
+						.font(.title2)
 					Button("Review the app") {
 						if let scene = UIApplication.shared.connectedScenes
 							.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
@@ -29,17 +50,8 @@ struct AboutMeshtastic: View {
 						}
 					}
 					.font(.title2)
-					Link("Sponsor App Development", destination: URL(string: "https://github.com/sponsors/garthvh")!)
-						.font(.title2)
-					Link("GitHub Repository", destination: URL(string: "https://github.com/meshtastic/Meshtastic-Apple")!)
-						.font(.title2)
 				}
-				if locale.region?.identifier ?? "no locale" == "US" {
-					Section(header: Text("Get Devices")) {
-						Link("Buy Complete Radios", destination: URL(string: "http://garthvh.com")!)
-							.font(.title2)
-					}
-				}
+
 				Section(header: Text("Project information")) {
 					Link("Website", destination: URL(string: "https://meshtastic.org")!)
 						.font(.title2)

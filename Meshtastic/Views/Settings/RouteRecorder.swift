@@ -30,142 +30,209 @@ struct TimerDisplayObject {
 @available(iOS 17.0, macOS 14.0, *)
 struct RouteRecorder: View {
 	
-	@ObservedObject var locationsHandler = LocationsHandler.shared
+	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
-	@State var isTimerRunning = false
 	@State var isShowingDetails = false
-	@State var timer: Timer?
 	@Namespace var namespace
 	@Namespace var routerecorderscope
-	@State var timeElapsed: TimerDisplayObject = TimerDisplayObject()
-	@State var timerDisplay = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 	
 	var body: some View {
 		VStack {
 			VStack {
-				VStack {
-					Map(position: $position, scope: routerecorderscope) {
-						UserAnnotation()
+				Map(position: $position, scope: routerecorderscope) {
+					UserAnnotation()
 //						ForEach(locations, id: \.id) { location in
 //							Marker(location.name, systemImage: location.icon, coordinate: location.location)
 //								.tint(location.colour)
 //						}
-					}
 				}
-				.mapScope(routerecorderscope)
-				.mapControls {
-					MapUserLocationButton()
-					MapCompass()
-					MapScaleView()
-					MapPitchToggle()
-				}
-				.mapStyle(.hybrid(elevation: .realistic, showsTraffic: true))
-				.transition(.slide)
-				.mapControlVisibility(.visible)
-				.safeAreaInset(edge: .bottom) {
-					ZStack {
-						VStack {
-							HStack(spacing: 10) {
-								Spacer()
-								if isTimerRunning {
-									Button {
-										isShowingDetails = true
-										isTimerRunning = false
-									} label: {
-										Image(systemName: "pause.fill")
-											.frame(width: 60, height: 60)
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.circle)
-									.matchedGeometryEffect(id: "Pause Button", in: namespace)
-								} else {
-									Button {
-										isShowingDetails = true
-										isTimerRunning = true
-										timeElapsed.seconds -= 1
-									} label: {
-										Image(systemName: "play.fill")
-											.frame(width: 60, height: 60)
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.circle)
-									.matchedGeometryEffect(id: "Play Button", in: namespace)
-								}
-								Spacer()
+			}
+			.mapScope(routerecorderscope)
+			.mapControls {
+				MapUserLocationButton()
+				MapCompass()
+				MapScaleView()
+				MapPitchToggle()
+			}
+			.mapStyle(.hybrid(elevation: .realistic, showsTraffic: true))
+			.transition(.slide)
+			.mapControlVisibility(.visible)
+			.safeAreaInset(edge: .bottom) {
+				ZStack {
+					VStack {
+						HStack(spacing: 10) {
+							Spacer()
+
+							Button {
+								isShowingDetails = true
+							} label: {
+								Image(systemName: locationsHandler.isRecording ? "record.circle.fill" : "record.circle")
+									.font(.system(size: 72))
+									.symbolRenderingMode(.multicolor)
+									.foregroundColor(.red)
 							}
-						}
-						.onReceive(timerDisplay) { _ in
-							if isTimerRunning {
-								timeElapsed.seconds += 1
-								if timeElapsed.seconds == 60 {
-									timeElapsed.seconds = 0
-									timeElapsed.minutes += 1
-									if timeElapsed.minutes == 60 {
-										timeElapsed.minutes = 0
-										timeElapsed.hours += 1
-									}
-								}
-							}
+							.buttonStyle(.bordered)
+							.foregroundColor(.red)
+							.buttonBorderShape(.circle)
+							.matchedGeometryEffect(id: "Details Button", in: namespace)
+
+							Spacer()
 						}
 					}
-					.padding()
 				}
-				.sheet(isPresented: $isShowingDetails) {
-					NavigationStack {
-						VStack {
-							HStack {
-								Text(timeElapsed.display)
-									.font(.largeTitle)
-								Text("Time Elapseed")
-									.font(.callout)
+				.padding()
+			}
+			.sheet(isPresented: $isShowingDetails) {
+				NavigationStack {
+					VStack {
+						if locationsHandler.isRecording {
+							HStack (alignment: .center) {
+								Image(systemName: "record.circle.fill")
+									.symbolRenderingMode(.multicolor)
+									.font(.title3)
+									.foregroundColor(.red)
+								Text("Recording route - \(locationsHandler.count) locations")
+									.font(.title3)
 							}
-							.padding()
+							.padding(.top)
+						} else if locationsHandler.isRecordingPaused {
+							HStack (alignment: .center) {
+								
+								Image(systemName: "playpause")
+									.symbolRenderingMode(.multicolor)
+									.font(.title3)
+									.foregroundColor(.red)
+								Text("Route recording paused")
+									.font(.title3)
+							}
+							.padding(.top)
+						}
+						
+						
+						if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
 							Divider()
-							VStack(alignment: .leading) {
-								if let lastLocation = locationsHandler.locationsArray.last {
-									
-									let horizontalAccuracy = Measurement(value: lastLocation.horizontalAccuracy, unit: UnitLength.meters)
-									let verticalAccuracy = Measurement(value: lastLocation.verticalAccuracy, unit: UnitLength.meters)
-									let altitiude = Measurement(value: lastLocation.altitude, unit: UnitLength.meters)
-									let speed = Measurement(value: lastLocation.speed, unit: UnitSpeed.kilometersPerHour)
-									List {
-										Label("Coordinate \(String(format: "%.5f", lastLocation.coordinate.latitude)), \(String(format: "%.5f", lastLocation.coordinate.longitude))", systemImage: "mappin")
-											.textSelection(.enabled)
-										Label("Horizontal Accuracy \(horizontalAccuracy.formatted())", systemImage: "scope")
-										if lastLocation.verticalAccuracy > 0 {
-											Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-										}
-										Label("Vertical Accuracy \(verticalAccuracy.formatted())", systemImage: "lines.measurement.vertical")
-										Label("Satellites Estimate \(LocationHelper.satsInView)", systemImage: "sparkles")
-										Label("\(locationsHandler.isStationary ? "Moving" : "Stationary")", systemImage: locationsHandler.isStationary ? "figure.walk.motion" : "figure.stand")
-										if lastLocation.speedAccuracy > 0 {
-											Label("Speed \(speed.formatted())", systemImage: "speedometer")
-										}
-										if lastLocation.courseAccuracy > 0 {
-											/// Heading
-											let degrees = Angle.degrees(Double(lastLocation.course))
-											Label {
-												let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-												/// Text("Heading: \(heading.formatted())")
-												Text("Heading \(String(format: "%.2f", lastLocation.course))°")
-													.foregroundColor(.primary)
-											} icon: {
-												Image(systemName: "location.circle")
-													.symbolRenderingMode(.hierarchical)
-													.frame(width: 35)
-													.rotationEffect(degrees)
-											}
-										}
-									}
-									.listStyle(.plain)
+							HStack {
+								VStack {
+									Text(locationsHandler.recordingStarted ?? Date(), style: .timer)
+										.font(.largeTitle)
+										.fixedSize()
+									Text("Time")
+										.font(.callout)
+										.fixedSize()
 								}
+								.padding(.horizontal)
+								Divider()
+								VStack {
+									let distance = Measurement(value: locationsHandler.distanceTraveled, unit: UnitLength.meters)
+									Text("\(distance.formatted())")
+										.font(.largeTitle)
+										.fixedSize()
+									Text("Distance")
+										.font(.callout)
+										.fixedSize()
+								}
+								.padding(.horizontal)
+								Divider()
+								VStack {
+									let gain = Measurement(value: locationsHandler.elevationGain, unit: UnitLength.meters)
+									Text(gain.formatted())
+										.font(.largeTitle)
+									Text("Elev. Gain")
+										.font(.callout)
+								}
+								.padding(.horizontal)
+								
+							}
+							.frame(maxHeight: 90)
+						}
+						Divider()
+						VStack(alignment: .leading) {
+							List {
+								GPSStatus(largeFont: .body, smallFont: .callout)
+							}
+							.listStyle(.plain)
+							HStack {
+								Spacer()
+								if !locationsHandler.isRecording && !locationsHandler.isRecordingPaused {
+									/// We are not recording or paused, show start recording button a new recording
+									Button {
+										locationsHandler.isRecording = true
+										locationsHandler.count = 0
+										locationsHandler.distanceTraveled = 0.0
+										locationsHandler.elevationGain = 0.0
+										locationsHandler.locationsArray.removeAll()
+										locationsHandler.recordingStarted = Date()
+									} label: {
+										Label("start", systemImage: "start")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+									
+								} else if locationsHandler.isRecording {
+									/// We are recording show pause button
+									Button {
+										locationsHandler.isRecording = false
+										locationsHandler.isRecordingPaused = true
+									} label: {
+										Label("pause", systemImage: "pause")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+								} else if locationsHandler.isRecordingPaused {
+									/// We are recording show pause button
+									Button {
+										locationsHandler.isRecording = true
+										locationsHandler.isRecordingPaused = false
+									} label: {
+										Label("resume", systemImage: "playpause")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+								}
+								
+								if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
+									
+									/// We are recording show pause button
+									Button {
+										locationsHandler.isRecording = false
+										locationsHandler.isRecordingPaused = false
+										locationsHandler.distanceTraveled = 0.0
+										locationsHandler.elevationGain = 0.0
+										locationsHandler.locationsArray.removeAll()
+										locationsHandler.recordingStarted = nil
+									} label: {
+										Label("finish", systemImage: "flag.checkered")
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.large)
+									.padding(.bottom)
+								}
+		
+								Button(role: .cancel) {
+									isShowingDetails = false
+								} label: {
+									Label("close", systemImage: "xmark")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.bottom)
+								Spacer()
 							}
 						}
 					}
-					.presentationDetents([.fraction(0.6)])
-					.presentationDragIndicator(.visible)
 				}
+				.presentationDetents([.fraction(0.65)])
+				.presentationDragIndicator(.hidden)
+				.interactiveDismissDisabled()
 			}
 		}
 	}
