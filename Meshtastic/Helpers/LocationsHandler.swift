@@ -8,11 +8,10 @@
 import SwiftUI
 import CoreLocation
 
-
 // Shared state that manages the `CLLocationManager` and `CLBackgroundActivitySession`.
 @available(iOS 17.0, macOS 14.0, *)
 @MainActor class LocationsHandler: ObservableObject {
-	
+
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?

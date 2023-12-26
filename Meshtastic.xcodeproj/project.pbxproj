@@ -180,6 +180,7 @@
 		DDF6B2482A9AEBF500BA6931 /* StoreForward.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF6B2472A9AEBF500BA6931 /* StoreForward.swift */; };
 		DDF924CA26FBB953009FE055 /* ConnectedDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF924C926FBB953009FE055 /* ConnectedDevice.swift */; };
 		DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */; };
+		DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFFA7462B3A7F3C004730DB /* Bundle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -421,6 +422,7 @@
 		DDF6B24B2A9C2FC800BA6931 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDF924C926FBB953009FE055 /* ConnectedDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevice.swift; sourceTree = "<group>"; };
 		DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentConditionsCompact.swift; sourceTree = "<group>"; };
+		DDFFA7462B3A7F3C004730DB /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -905,6 +907,7 @@
 				DDB75A0E2A05920E006ED576 /* FileManager.swift */,
 				DDB75A102A059258006ED576 /* Url.swift */,
 				DD1933772B084F4200771CD5 /* Measurement.swift */,
+				DDFFA7462B3A7F3C004730DB /* Bundle.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1123,6 +1126,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDDB444829F8A9C900EE2349 /* String.swift in Sources */,
+				DDFFA7472B3A7F3C004730DB /* Bundle.swift in Sources */,
 				DD5E520C298EE33B00D21B61 /* portnums.pb.swift in Sources */,
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
@@ -1486,7 +1490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.17;
+				MARKETING_VERSION = 2.2.18;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1520,7 +1524,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.17;
+				MARKETING_VERSION = 2.2.18;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
@@ -1642,7 +1646,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.17;
+				MARKETING_VERSION = 2.2.18;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1675,7 +1679,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.17;
+				MARKETING_VERSION = 2.2.18;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

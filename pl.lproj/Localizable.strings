@@ -86,6 +86,7 @@
 "encrypted"="Zaszyfrowany";
 "external.notification"="Zewnętrzne Powiadomienie";
 "external.notification.config"="Konfiguracja Zewnętrznego Powiadomienia";
+"finish"="Finish";
 "firmware.version"="Wersja Oprogramowania";
 "firmware.version.unsupported"="Wykryto nieobsługiwany wersję oprogramowania, brak możliwości połączenia z urządzeniem.";
 "gas"="Gaz";
@@ -214,6 +215,7 @@
 "on.boot"="Tylko przy uruchomieniu";
 "options"="Opcje";
 "password"="Hasło";
+"pause"="Pause";
 "phone.gps"="GPS telefonu";
 "phone.gps.interval.description"="Jak często Twój telefon będzie wysyłał swoją lokalizację do urządzenia, aktualizacje lokalizacji w sieci są zarządzane przez urządzenie.";
 "position"="Pozycja";
@@ -229,8 +231,10 @@
 "reboot.node"="Uruchomić ponownie węzeł?";
 "received.ack"="Odebrano potwierdzenie";
 "received.ack.real"="Odbiorca potwierdzenia";
+"resume"="Resume";
 "ringtone"="Dzwonek";
 "ringtone.config"="Konfiguracja dzwonka";
+"route.recorder"="Route Recorder";
 "routes"="Routes";
 "routing.acknowledged"="Potwierdzono";
 "routing.noroute"="Brak trasy";
@@ -265,6 +269,7 @@
 "set.region"="Ustaw region LoRa";
 "standard"="Standardowy";
 "standard.muted"="Standardowy wyłączony";
+"start"="Start";
 "storeforward"="Store & Forward";
 "storeforward.config"="Store & Forward Config";
 "storeforward.heartbeat"="Send Heartbeat";

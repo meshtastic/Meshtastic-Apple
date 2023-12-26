@@ -84,6 +84,7 @@
 "encrypted"="加密";
 "external.notification"="外部通知";
 "external.notification.config"="外部通知配置";
+"finish"="Finish";
 "firmware.version"="固件版本";
 "firmware.version.unsupported"="检测到不支持的固件版本，无法连接到电台。";
 "gas"="Gas";
@@ -213,6 +214,7 @@
 "on.boot"="仅在启动时";
 "options"="选项";
 "password"="密码";
+"pause"="Pause";
 "phone.gps"="手机 GPS";
 "phone.gps.interval.description"="电台通过手机获取定位的时间间隔，但是向 Mesh 网络中刷新定位的时间间隔由电台控制。";
 "position"="定位";
@@ -228,8 +230,10 @@
 "reboot.node"="重启节点？";
 "received.ack"="收到确认";
 "received.ack.real"="收件人确认";
+"resume"="Resume";
 "ringtone"="铃声";
 "ringtone.config"="铃声设置";
+"route.recorder"="Route Recorder";
 "routes"="Routes";
 "routing.acknowledged"="确认";
 "routing.noroute"="找不到目标";
@@ -264,6 +268,7 @@
 "set.region"="设置 LoRa 区域";
 "standard"="标准";
 "standard.muted"="标准静音";
+"start"="Start";
 "ssid"="SSID";
 "storeforward"="储存 & 转发";
 "storeforward.config"="储存 & 转发设置";
