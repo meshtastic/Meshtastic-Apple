@@ -135,6 +135,7 @@ struct Routes: View {
 							}
 						}
 					}
+					.badge(route.locations?.count ?? 0)
 					.swipeActions {
 						Button(role: .destructive) {
 							context.delete(route)
@@ -147,6 +148,7 @@ struct Routes: View {
 							Label("delete", systemImage: "trash")
 						}
 					}
+					
 				}
 				.listStyle(.plain)
 			}

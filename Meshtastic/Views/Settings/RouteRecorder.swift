@@ -23,6 +23,7 @@ struct RouteRecorder: View {
 	@Namespace var namespace
 	@Namespace var routerecorderscope
 	@State var recording: RouteEntity?
+	@State var color: Color = .blue
 	
 	var body: some View {
 		VStack {
@@ -33,8 +34,9 @@ struct RouteRecorder: View {
 					let lineCoords = locationsHandler.locationsArray.compactMap({(position) -> CLLocationCoordinate2D in
 						return position.coordinate
 					})
+					
 					let gradient = LinearGradient(
-						colors: [.blue],
+						colors: [color],
 						startPoint: .leading, endPoint: .trailing
 					)
 					let dashed = StrokeStyle(
@@ -49,13 +51,6 @@ struct RouteRecorder: View {
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.mapScope(routerecorderscope)
-//			.mapControls {
-//				MapScaleView(scope: routerecorderscope)
-//				MapUserLocationButton(scope: routerecorderscope)
-//				MapPitchToggle(scope: routerecorderscope)
-//				MapCompass(scope: routerecorderscope)
-//			}
-			.transition(.slide)
 			.safeAreaInset(edge: .bottom) {
 				ZStack {
 					VStack {
@@ -164,11 +159,12 @@ struct RouteRecorder: View {
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = Date()
 										let newRoute = RouteEntity(context: context)
-										newRoute.name = String("Route Recording - \(Date().formatted())")
+										newRoute.name = String("Route Recording")
 										newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 										newRoute.color = Int64(UIColor.random.hex)
 										newRoute.date = Date()
-										newRoute.enabled = true
+										newRoute.enabled = false
+										color = Color(UIColor(hex: UInt32(newRoute.color)))
 										self.recording = newRoute
 										do {
 											try context.save()
@@ -221,6 +217,19 @@ struct RouteRecorder: View {
 										locationsHandler.elevationGain = 0.0
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = nil
+										if let rec = recording {
+											rec.enabled = true
+											context.refresh(rec, mergeChanges:true)
+										}
+										
+										do {
+											try context.save()
+											print("💾 Saved a route finish")
+										} catch {
+											context.rollback()
+											let nsError = error as NSError
+											print("💥 Error Saving RouteEntity from the Route Recorder \(nsError)")
+										}
 									} label: {
 										Label("finish", systemImage: "flag.checkered")
 									}

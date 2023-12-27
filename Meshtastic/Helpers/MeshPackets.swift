@@ -194,7 +194,6 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			}
 			if fetchedNode.count > 0 {
 				let newMetadata = DeviceMetadataEntity(context: context)
-				newMetadata.firmwareVersion = metadata.firmwareVersion
 				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
 				newMetadata.canShutdown = metadata.canShutdown
 				newMetadata.hasWifi = metadata.hasWifi_p

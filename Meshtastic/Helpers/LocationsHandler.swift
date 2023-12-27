@@ -58,7 +58,7 @@ import CoreLocation
 					if !self.updatesStarted { break }  // End location updates by breaking out of the loop.
 					if let loc = update.location {
 						self.isStationary = update.isStationary
-						self.count += 1
+					
 						var locationAdded: Bool
 						if enableSmartPosition {
 							locationAdded = addLocation(loc)
@@ -67,8 +67,8 @@ import CoreLocation
 							locationsArray.append(loc)
 							locationAdded = true
 						}
-						if !locationAdded {
-							//print("Bad Location \(self.count): \(loc)")
+						if locationAdded {
+							self.count += 1
 						}
 					}
 				}
