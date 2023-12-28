@@ -314,6 +314,11 @@ struct LoRaConfig: View {
 				if newTxPower != node!.loRaConfig!.txPower { hasChanges = true }
 			}
 		}
+		.onChange(of: txEnabled) { newTxEnabled in
+			if node != nil && node!.loRaConfig != nil {
+				if newTxEnabled != node!.loRaConfig!.txEnabled { hasChanges = true }
+			}
+		}
 	}
 	func setLoRaValues() {
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
