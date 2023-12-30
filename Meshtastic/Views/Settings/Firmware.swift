@@ -18,12 +18,13 @@ struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	var node: NodeInfoEntity?
-	@State var minimumVersion = "2.1.0"
+	@State var minimumVersion = "2.2.16"
 	@State var version = ""
-	@State private var firmwareReleaseData: FirmwareRelease = FirmwareRelease()
+	//var currentDevice: DeviceHardware
+
 	var body: some View {
 		// NavigationSplitView {
-		NavigationStack {
+		VStack {
 			let hwModel: HardwareModels = HardwareModels.allCases.first(where: { $0.rawValue == node?.user?.hwModel ?? "UNSET" }) ?? HardwareModels.UNSET
 			VStack(alignment: .leading) {
 				Text("Current Version: \(bleManager.connectedVersion)")
@@ -91,166 +92,163 @@ struct Firmware: View {
 					Text(hwModel.platform().description)
 						.font(.title3)
 				}
-			}.padding()
+			}
+			Spacer()
 			VStack(alignment: .leading) {
 				Text("Firmware Releases")
 					.font(.title3)
 					.padding([.leading, .trailing])
-				List {
-					Section(header: Text("Stable")) {
-						ForEach(firmwareReleaseData.releases?.stable ?? [], id: \.id) { fr in
-							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-								HStack {
-									Text(fr.title ?? "Unknown")
-										.font(.caption)
-									Spacer()
-									Image(systemName: "square.and.arrow.down")
-										.font(.title3)
-								}
-							}
-						}
-					}
-					Section("Alpha") {
-						ForEach(firmwareReleaseData.releases?.alpha ?? [], id: \.id) { fr in
-							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-								HStack {
-									Text(fr.title ?? "Unknown")
-										.font(.caption)
-									Spacer()
-									Image(systemName: "square.and.arrow.down")
-										.font(.title3)
-								}
-							}
-						}
-					}
-					Section("Pull Requests") {
-						ForEach(firmwareReleaseData.pullRequests ?? [], id: \.id) { fr in
-							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-								HStack {
-									Text(fr.title ?? "Unknown")
-										.font(.caption)
-									Spacer()
-									Image(systemName: "square.and.arrow.down")
-										.font(.title3)
-								}
-							}
+//				List {
+//					Section(header: Text("Stable")) {
+//						ForEach(firmwareReleaseData.releases?.stable ?? [], id: \.id) { fr in
+//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+//								HStack {
+//									Text(fr.title ?? "Unknown")
+//										.font(.caption)
+//									Spacer()
+//									Image(systemName: "square.and.arrow.down")
+//										.font(.title3)
+//								}
+//							}
+//						}
+//					}
+//					Section("Alpha") {
+//						ForEach(firmwareReleaseData.releases?.alpha ?? [], id: \.id) { fr in
+//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+//								HStack {
+//									Text(fr.title ?? "Unknown")
+//										.font(.caption)
+//									Spacer()
+//									Image(systemName: "square.and.arrow.down")
+//										.font(.title3)
+//								}
+//							}
+//						}
+//					}
+//					Section("Pull Requests") {
+//						ForEach(firmwareReleaseData.pullRequests ?? [], id: \.id) { fr in
+//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
+//								HStack {
+//									Text(fr.title ?? "Unknown")
+//										.font(.caption)
+//									Spacer()
+//									Image(systemName: "square.and.arrow.down")
+//										.font(.title3)
+//								}
+//							}
+//						}
+//					}
+//				}
+			}
+			.padding(.bottom, 5)
+			.onAppear() {
+				Api().loadDeviceHardwareData { (hw) in
+					for device in hw {
+						if device.hwModelSlug == node?.user?.hwModel ?? "UNSET" {
+							print("Selected: \(device)")
 						}
 					}
 				}
+//				Api().loadFirmwareReleaseData { (bks) in
+//					//sel = bks
+//				}
 			}
-			.padding(.bottom, 5)
-			.onAppear(perform: loadData)
 			.navigationTitle("Firmware Updates")
 			.navigationBarTitleDisplayMode(.inline)
 		}
 	}
-	func loadData() {
-		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
-			return
-		}
-		let request = URLRequest(url: url)
-		URLSession.shared.dataTask(with: request) { data, _, _ in
-			if let data = data {
-				if let response_obj = try? JSONDecoder().decode(FirmwareRelease.self, from: data) {
-					DispatchQueue.main.async {
-						self.firmwareReleaseData = response_obj
-					}
-				}
-			}
-		}.resume()
-	}
 }
 
-struct FirmwareRelease: Codable {
-	var releases: Releases?       = Releases()
-	var pullRequests: [PullRequests]? = []
-	enum CodingKeys: String, CodingKey {
-		case releases     = "Releases"
-		case pullRequests = "Pull Requests"
-	}
-	init(from decoder: Decoder) throws {
-		let values = try decoder.container(keyedBy: CodingKeys.self)
-		releases     = try values.decodeIfPresent(Releases.self, forKey: .releases     )
-		pullRequests = try values.decodeIfPresent([PullRequests].self, forKey: .pullRequests )
-	}
-	init() {
-	}
-}
-
-struct Releases: Codable {
-	var stable: [Stable]? = []
-	var alpha: [Alpha]?  = []
-	enum CodingKeys: String, CodingKey {
-		case stable = "Stable"
-		case alpha  = "Alpha"
-	}
-	init(from decoder: Decoder) throws {
-		let values = try decoder.container(keyedBy: CodingKeys.self)
-		stable = try values.decodeIfPresent([Stable].self, forKey: .stable )
-		alpha  = try values.decodeIfPresent([Alpha].self, forKey: .alpha  )
-	}
-	init() {}
-}
-
-struct Alpha: Codable {
-	var id: String?
-	var title: String?
-	var pageUrl: String?
-	var zipUrl: String?
-	enum CodingKeys: String, CodingKey {
-		case id      = "id"
-		case title   = "title"
-		case pageUrl = "page_url"
-		case zipUrl  = "zip_url"
-	}
-	init(from decoder: Decoder) throws {
-		let values = try decoder.container(keyedBy: CodingKeys.self)
-		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-	}
-	init() {}
-}
-
-struct Stable: Codable {
-	var id: String?
-	var title: String?
-	var pageUrl: String?
-	var zipUrl: String?
-	enum CodingKeys: String, CodingKey {
-		case id      = "id"
-		case title   = "title"
-		case pageUrl = "page_url"
-		case zipUrl  = "zip_url"
-	}
-	init(from decoder: Decoder) throws {
-		let values = try decoder.container(keyedBy: CodingKeys.self)
-		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-	}
-	init() {}
-}
-
-struct PullRequests: Codable {
-	var id: String?
-	var title: String?
-	var pageUrl: String?
-	var zipUrl: String?
-	enum CodingKeys: String, CodingKey {
-		case id      = "id"
-		case title   = "title"
-		case pageUrl = "page_url"
-		case zipUrl  = "zip_url"
-	}
-	init(from decoder: Decoder) throws {
-		let values = try decoder.container(keyedBy: CodingKeys.self)
-		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-	}
-	init() {}
-}
+//struct FirmwareRelease: Codable {
+//	var releases: Releases?       = Releases()
+//	var pullRequests: [PullRequests]? = []
+//	enum CodingKeys: String, CodingKey {
+//		case releases     = "Releases"
+//		case pullRequests = "Pull Requests"
+//	}
+//	init(from decoder: Decoder) throws {
+//		let values = try decoder.container(keyedBy: CodingKeys.self)
+//		releases     = try values.decodeIfPresent(Releases.self, forKey: .releases     )
+//		pullRequests = try values.decodeIfPresent([PullRequests].self, forKey: .pullRequests )
+//	}
+//	init() {
+//	}
+//}
+//
+//struct Releases: Codable {
+//	var stable: [Stable]? = []
+//	var alpha: [Alpha]?  = []
+//	enum CodingKeys: String, CodingKey {
+//		case stable = "Stable"
+//		case alpha  = "Alpha"
+//	}
+//	init(from decoder: Decoder) throws {
+//		let values = try decoder.container(keyedBy: CodingKeys.self)
+//		stable = try values.decodeIfPresent([Stable].self, forKey: .stable )
+//		alpha  = try values.decodeIfPresent([Alpha].self, forKey: .alpha  )
+//	}
+//	init() {}
+//}
+//
+//struct Alpha: Codable {
+//	var id: String?
+//	var title: String?
+//	var pageUrl: String?
+//	var zipUrl: String?
+//	enum CodingKeys: String, CodingKey {
+//		case id      = "id"
+//		case title   = "title"
+//		case pageUrl = "page_url"
+//		case zipUrl  = "zip_url"
+//	}
+//	init(from decoder: Decoder) throws {
+//		let values = try decoder.container(keyedBy: CodingKeys.self)
+//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
+//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
+//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
+//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
+//	}
+//	init() {}
+//}
+//
+//struct Stable: Codable {
+//	var id: String?
+//	var title: String?
+//	var pageUrl: String?
+//	var zipUrl: String?
+//	enum CodingKeys: String, CodingKey {
+//		case id      = "id"
+//		case title   = "title"
+//		case pageUrl = "page_url"
+//		case zipUrl  = "zip_url"
+//	}
+//	init(from decoder: Decoder) throws {
+//		let values = try decoder.container(keyedBy: CodingKeys.self)
+//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
+//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
+//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
+//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
+//	}
+//	init() {}
+//}
+//
+//struct PullRequests: Codable {
+//	var id: String?
+//	var title: String?
+//	var pageUrl: String?
+//	var zipUrl: String?
+//	enum CodingKeys: String, CodingKey {
+//		case id      = "id"
+//		case title   = "title"
+//		case pageUrl = "page_url"
+//		case zipUrl  = "zip_url"
+//	}
+//	init(from decoder: Decoder) throws {
+//		let values = try decoder.container(keyedBy: CodingKeys.self)
+//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
+//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
+//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
+//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
+//	}
+//	init() {}
+//}

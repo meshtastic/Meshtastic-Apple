@@ -309,6 +309,7 @@
         <attribute name="echo" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="enabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="mode" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="overrideConsoleSerialPort" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="rxd" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timeout" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="txd" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

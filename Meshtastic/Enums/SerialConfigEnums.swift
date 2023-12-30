@@ -111,6 +111,7 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 	case proto = 2
 	case txtmsg = 3
 	case nmea = 4
+	case caltopo = 5
 
 	var id: Int { self.rawValue }
 	var description: String {
@@ -125,6 +126,8 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 			return "serial.mode.txtmsg".localized
 		case .nmea:
 			return "serial.mode.nmea".localized
+		case .caltopo:
+			return "serial.mode.caltopo".localized
 		}
 	}
 	func protoEnumValue() -> ModuleConfig.SerialConfig.Serial_Mode {
@@ -141,6 +144,8 @@ enum SerialModeTypes: Int, CaseIterable, Identifiable {
 			return ModuleConfig.SerialConfig.Serial_Mode.textmsg
 		case .nmea:
 			return ModuleConfig.SerialConfig.Serial_Mode.nmea
+		case .caltopo:
+			return ModuleConfig.SerialConfig.Serial_Mode.caltopo
 		}
 	}
 }
