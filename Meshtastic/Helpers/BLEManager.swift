@@ -1011,7 +1011,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 
 		var meshPacket = MeshPacket()
-		meshPacket.to = UInt32(destNum)
+		if destNum < 9 {
+			meshPacket.to = emptyNodeNum
+		} else {
+			meshPacket.to = UInt32(destNum)
+		}
 		meshPacket.from	= UInt32(fromNodeNum)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
