@@ -958,7 +958,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
+	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
@@ -1011,11 +1011,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 
 		var meshPacket = MeshPacket()
-		if destNum < 9 {
-			meshPacket.to = emptyNodeNum
-		} else {
-			meshPacket.to = UInt32(destNum)
-		}
+		meshPacket.to = UInt32(destNum)
+		meshPacket.channel = UInt32(channel)
 		meshPacket.from	= UInt32(fromNodeNum)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
@@ -1040,7 +1037,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if UserDefaults.provideLocation {
-				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
+				let _ = sendPosition(channel: 0, destNum: connectedPeripheral.num, wantResponse: false)
 			}
 		}
 	}
