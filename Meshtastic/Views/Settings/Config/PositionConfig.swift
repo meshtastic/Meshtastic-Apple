@@ -213,7 +213,7 @@ struct PositionConfig: View {
 					if deviceGpsEnabled {
 						
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -223,7 +223,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS Transmit GPIO", selection: $txGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -233,7 +233,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS EN GPIO", selection: $gpsEnGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -276,7 +276,7 @@ struct PositionConfig: View {
 				Button(buttonText) {
 
 					if fixedPosition {
-						_ = bleManager.sendPosition(destNum: node!.num, wantResponse: true)
+						_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 					}
 					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 
@@ -324,10 +324,10 @@ struct PositionConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 			setPositionValues()
-
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")

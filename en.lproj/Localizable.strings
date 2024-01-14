@@ -88,6 +88,7 @@
 "encrypted"="Encrypted";
 "external.notification"="External Notification";
 "external.notification.config"="External Notification Config";
+"finish"="Finish";
 "firmware.version"="Firmware Version";
 "firmware.version.unsupported"="Unsupported Firmware Version Detected, unable to connect to device.";
 "gas"="Gas";
@@ -217,6 +218,7 @@
 "on.boot"="On Boot Only";
 "options"="Options";
 "password"="Password";
+"pause"="Pause";
 "phone.gps"="Phone GPS";
 "phone.gps.interval.description"="How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.";
 "position"="Position";
@@ -232,8 +234,10 @@
 "reboot.node"="Reboot node?";
 "received.ack"="Received Ack";
 "received.ack.real"="Recipient Ack";
+"resume"="Resume";
 "ringtone"="Ringtone";
 "ringtone.config"="Ringtone Config";
+"route.recorder"="Route Recorder";
 "routes"="Routes";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
@@ -268,6 +272,7 @@
 "set.region"="Set LoRa Region";
 "standard"="Standard";
 "standard.muted"="Standard Muted";
+"start"="Start";
 "storeforward"="Store & Forward";
 "storeforward.config"="Store & Forward Config";
 "storeforward.heartbeat"="Send Heartbeat";

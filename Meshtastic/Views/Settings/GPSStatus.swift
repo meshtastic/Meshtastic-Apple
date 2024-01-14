@@ -11,33 +11,37 @@ import CoreLocation
 @available(iOS 17.0, macOS 14.0, *)
 struct GPSStatus: View {
 	
+	var largeFont: Font = .footnote
+	var smallFont: Font = .caption2
+	
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	var body: some View {
 		
 		if let newLocation = locationsHandler.locationsArray.last {
-			let horizontalAccuracy = Measurement(value: newLocation.horizontalAccuracy, unit: UnitLength.meters)
-			let verticalAccuracy = Measurement(value: newLocation.verticalAccuracy, unit: UnitLength.meters)
-			let altitiude = Measurement(value: newLocation.altitude, unit: UnitLength.meters)
-			let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.kilometersPerHour)
-			let speedAccuracy = Measurement(value: newLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
-			let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit:  UnitAngle.degrees)
+		let horizontalAccuracy = Measurement(value: newLocation.horizontalAccuracy, unit: UnitLength.meters)
+		let verticalAccuracy = Measurement(value: newLocation.verticalAccuracy, unit: UnitLength.meters)
+		let altitiude = Measurement(value: newLocation.altitude, unit: UnitLength.meters)
+		let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.kilometersPerHour)
+		let speedAccuracy = Measurement(value: newLocation.speedAccuracy, unit: UnitSpeed.metersPerSecond)
+		let courseAccuracy = Measurement(value: newLocation.courseAccuracy, unit:  UnitAngle.degrees)
+
 			Label("Coordinate \(String(format: "%.5f", newLocation.coordinate.latitude)), \(String(format: "%.5f", newLocation.coordinate.longitude))", systemImage: "mappin")
-				.font(.footnote)
+				.font(largeFont)
 				.textSelection(.enabled)
 			HStack {
 				Label("Accuracy \(horizontalAccuracy.formatted())", systemImage: "scope")
-					.font(.footnote)
+					.font(largeFont)
 				Label("Sats Estimate \(LocationsHandler.satsInView)", systemImage: "sparkles")
-					.font(.footnote)
+					.font(largeFont)
 				
 			}
 			HStack {
 				if newLocation.verticalAccuracy > 0 {
 					Label("Altitude \(altitiude.formatted())", systemImage: "mountain.2")
-						.font(.footnote)
+						.font(largeFont)
 				}
 				Label("Accuracy \(verticalAccuracy.formatted())", systemImage: "lines.measurement.vertical")
-					.font(.caption2)
+					.font(smallFont)
 			}
 			HStack {
 				let degrees = Angle.degrees(newLocation.course)
@@ -49,15 +53,15 @@ struct GPSStatus: View {
 						.symbolRenderingMode(.hierarchical)
 						.rotationEffect(degrees)
 				}
-				.font(.footnote)
+				.font(largeFont)
 				Label("Accuracy \(courseAccuracy.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))", systemImage: "safari")
-					.font(.caption2)
+					.font(smallFont)
 			}
 			HStack {
 				Label("Speed \(speed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))", systemImage: "speedometer")
-					.font(.footnote)
+					.font(largeFont)
 				Label("Accuracy \(speedAccuracy.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))", systemImage: "gauge.with.dots.needle.bottom.50percent.badge.plus")
-					.font(.caption2)
+					.font(smallFont)
 			}
 		}
 	}

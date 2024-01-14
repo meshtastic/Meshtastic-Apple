@@ -194,7 +194,6 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			}
 			if fetchedNode.count > 0 {
 				let newMetadata = DeviceMetadataEntity(context: context)
-				newMetadata.firmwareVersion = metadata.firmwareVersion
 				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
 				newMetadata.canShutdown = metadata.canShutdown
 				newMetadata.hasWifi = metadata.hasWifi_p
@@ -290,7 +289,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
 				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.speed = Int32(nodeInfo.position.groundSpeed)
+				position.speed = Int32(nodeInfo.position.groundSpeed * UInt32(3.6)) 
 				position.heading = Int32(nodeInfo.position.groundTrack)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				var newPostions = [PositionEntity]()

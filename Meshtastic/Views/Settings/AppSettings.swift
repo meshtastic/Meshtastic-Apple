@@ -143,7 +143,13 @@ struct AppSettings: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			self.bleManager.context = context
+			if provideLocationInterval <= 0 {
+				provideLocationInterval = 30
+				UserDefaults.provideLocationInterval = provideLocationInterval
+			}
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		}
 		.onChange(of: blockRangeTest) { newBlockRangeTest in
 			UserDefaults.blockRangeTest = newBlockRangeTest

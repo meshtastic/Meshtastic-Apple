@@ -297,7 +297,9 @@ struct Connect: View {
 			}
 		}
 		.onAppear(perform: {
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		})
 	}
 	#if canImport(ActivityKit)

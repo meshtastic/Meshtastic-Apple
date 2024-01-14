@@ -204,6 +204,16 @@ struct ModuleConfig {
     set {payloadVariant = .detectionSensor(newValue)}
   }
 
+  ///
+  /// TODO: REPLACE
+  var paxcounter: ModuleConfig.PaxcounterConfig {
+    get {
+      if case .paxcounter(let v)? = payloadVariant {return v}
+      return ModuleConfig.PaxcounterConfig()
+    }
+    set {payloadVariant = .paxcounter(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -245,6 +255,9 @@ struct ModuleConfig {
     ///
     /// TODO: REPLACE
     case detectionSensor(ModuleConfig.DetectionSensorConfig)
+    ///
+    /// TODO: REPLACE
+    case paxcounter(ModuleConfig.PaxcounterConfig)
 
   #if !swift(>=4.1)
     static func ==(lhs: ModuleConfig.OneOf_PayloadVariant, rhs: ModuleConfig.OneOf_PayloadVariant) -> Bool {
@@ -298,6 +311,10 @@ struct ModuleConfig {
       }()
       case (.detectionSensor, .detectionSensor): return {
         guard case .detectionSensor(let l) = lhs, case .detectionSensor(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.paxcounter, .paxcounter): return {
+        guard case .paxcounter(let l) = lhs, case .paxcounter(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -547,6 +564,24 @@ struct ModuleConfig {
       }
 
     }
+
+    init() {}
+  }
+
+  ///
+  /// Config for the Paxcounter Module
+  struct PaxcounterConfig {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Enable the Paxcounter Module
+    var enabled: Bool = false
+
+    var paxcounterUpdateInterval: UInt32 = 0
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
   }
@@ -1177,6 +1212,7 @@ extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
 extension ModuleConfig.DetectionSensorConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig: @unchecked Sendable {}
 extension ModuleConfig.AudioConfig.Audio_Baud: @unchecked Sendable {}
+extension ModuleConfig.PaxcounterConfig: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig.Serial_Baud: @unchecked Sendable {}
 extension ModuleConfig.SerialConfig.Serial_Mode: @unchecked Sendable {}
@@ -1217,6 +1253,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     10: .standard(proto: "neighbor_info"),
     11: .standard(proto: "ambient_lighting"),
     12: .standard(proto: "detection_sensor"),
+    13: .same(proto: "paxcounter"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1381,6 +1418,19 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .detectionSensor(v)
         }
       }()
+      case 13: try {
+        var v: ModuleConfig.PaxcounterConfig?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .paxcounter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .paxcounter(v)
+        }
+      }()
       default: break
       }
     }
@@ -1439,6 +1489,10 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .detectionSensor?: try {
       guard case .detectionSensor(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .paxcounter?: try {
+      guard case .paxcounter(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
     }()
     case nil: break
     }
@@ -1768,6 +1822,44 @@ extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding
     7: .same(proto: "CODEC2_700"),
     8: .same(proto: "CODEC2_700B"),
   ]
+}
+
+extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".PaxcounterConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "enabled"),
+    2: .standard(proto: "paxcounter_update_interval"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.paxcounterUpdateInterval) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.enabled != false {
+      try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
+    }
+    if self.paxcounterUpdateInterval != 0 {
+      try visitor.visitSingularUInt32Field(value: self.paxcounterUpdateInterval, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.PaxcounterConfig, rhs: ModuleConfig.PaxcounterConfig) -> Bool {
+    if lhs.enabled != rhs.enabled {return false}
+    if lhs.paxcounterUpdateInterval != rhs.paxcounterUpdateInterval {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

@@ -99,7 +99,7 @@ struct ExternalNotificationConfig: View {
 							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 								.font(.caption)
 							Picker("Output pin GPIO", selection: $output) {
-								ForEach(0..<46) {
+								ForEach(0..<48) {
 									if $0 == 0 {
 										Text("unset")
 									} else {
@@ -147,7 +147,7 @@ struct ExternalNotificationConfig: View {
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 							Picker("Output pin buzzer GPIO ", selection: $outputBuzzer) {
-								ForEach(0..<46) {
+								ForEach(0..<48) {
 									if $0 == 0 {
 										Text("unset")
 									} else {
@@ -157,7 +157,7 @@ struct ExternalNotificationConfig: View {
 							}
 							.pickerStyle(DefaultPickerStyle())
 							Picker("Output pin vibra GPIO", selection: $outputVibra) {
-								ForEach(0..<46) {
+								ForEach(0..<48) {
 									if $0 == 0 {
 										Text("unset")
 									} else {
@@ -226,9 +226,10 @@ struct ExternalNotificationConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 			setExternalNotificationValues()
-
 			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.externalNotificationConfig == nil {
 				print("empty external notification module config")

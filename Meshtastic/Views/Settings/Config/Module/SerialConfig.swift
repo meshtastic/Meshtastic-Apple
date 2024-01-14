@@ -23,7 +23,10 @@ struct SerialConfig: View {
 	@State var txd = 0
 	@State var baudRate = 0
 	@State var timeout = 0
+	@State var overrideConsoleSerialPort = false
 	@State var mode = 0
+	
+
 
 	var body: some View {
 		VStack {
@@ -96,7 +99,7 @@ struct SerialConfig: View {
 				Section(header: Text("GPIO")) {
 
 					Picker("Receive data (rxd) GPIO pin", selection: $rxd) {
-						ForEach(0..<46) {
+						ForEach(0..<48) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -107,7 +110,7 @@ struct SerialConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
-						ForEach(0..<46) {
+						ForEach(0..<48) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -153,6 +156,7 @@ struct SerialConfig: View {
 						sc.txd = UInt32(txd)
 						sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
 						sc.timeout = UInt32(timeout)
+						sc.overrideConsoleSerialPort = overrideConsoleSerialPort
 						sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 
 						let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -176,8 +180,9 @@ struct SerialConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-
-				self.bleManager.context = context
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
 				setSerialValues()
 				// Need to request a SerialModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.serialConfig == nil {
@@ -231,6 +236,13 @@ struct SerialConfig: View {
 					if newTimeout != node!.serialConfig!.timeout { hasChanges = true	}
 				}
 			}
+			.onChange(of: overrideConsoleSerialPort) { newOverrideConsoleSerialPort in
+
+				if node != nil && node!.serialConfig != nil {
+
+					if newOverrideConsoleSerialPort != node!.serialConfig!.overrideConsoleSerialPort { hasChanges = true	}
+				}
+			}
 			.onChange(of: mode) { newMode in
 
 				if node != nil && node!.serialConfig != nil {
@@ -248,6 +260,7 @@ struct SerialConfig: View {
 		self.baudRate = Int(node?.serialConfig?.baudRate ?? 0)
 		self.timeout = Int(node?.serialConfig?.timeout ?? 0)
 		self.mode = Int(node?.serialConfig?.mode ?? 0)
+		self.overrideConsoleSerialPort = false // node?.serialConfig?.overrideConsoleSerialPort ?? false
 		self.hasChanges = false
 	}
 }

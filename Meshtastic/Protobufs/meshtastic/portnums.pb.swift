@@ -119,6 +119,11 @@ enum PortNum: SwiftProtobuf.Enum {
   case ipTunnelApp // = 33
 
   ///
+  /// Paxcounter lib included in the firmware
+  /// ENCODING: protobuf
+  case paxcounterApp // = 34
+
+  ///
   /// Provides a hardware serial interface to send and receive from the Meshtastic network.
   /// Connect to the RX/TX pins of a device with 38400 8N1. Packets received from the Meshtastic
   /// network is forwarded to the RX pin while sending a packet to TX will go out to the Mesh network.
@@ -206,6 +211,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 10: self = .detectionSensorApp
     case 32: self = .replyApp
     case 33: self = .ipTunnelApp
+    case 34: self = .paxcounterApp
     case 64: self = .serialApp
     case 65: self = .storeForwardApp
     case 66: self = .rangeTestApp
@@ -236,6 +242,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .detectionSensorApp: return 10
     case .replyApp: return 32
     case .ipTunnelApp: return 33
+    case .paxcounterApp: return 34
     case .serialApp: return 64
     case .storeForwardApp: return 65
     case .rangeTestApp: return 66
@@ -271,6 +278,7 @@ extension PortNum: CaseIterable {
     .detectionSensorApp,
     .replyApp,
     .ipTunnelApp,
+    .paxcounterApp,
     .serialApp,
     .storeForwardApp,
     .rangeTestApp,
@@ -308,6 +316,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     10: .same(proto: "DETECTION_SENSOR_APP"),
     32: .same(proto: "REPLY_APP"),
     33: .same(proto: "IP_TUNNEL_APP"),
+    34: .same(proto: "PAXCOUNTER_APP"),
     64: .same(proto: "SERIAL_APP"),
     65: .same(proto: "STORE_FORWARD_APP"),
     66: .same(proto: "RANGE_TEST_APP"),

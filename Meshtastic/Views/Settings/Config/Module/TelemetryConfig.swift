@@ -132,9 +132,10 @@ struct TelemetryConfig: View {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 			.onAppear {
-				self.bleManager.context = context
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
 				setTelemetryValues()
-
 				// Need to request a TelemetryModuleConfig from the remote node before allowing changes
 				if bleManager.connectedPeripheral != nil && node?.telemetryConfig == nil {
 					print("empty telemetry module config")

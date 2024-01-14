@@ -532,7 +532,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					tryClearExistingChannels()
 				}
 				// NodeInfo
-				if decodedInfo.nodeInfo.num > 0 && !invalidVersion {
+				if decodedInfo.nodeInfo.num > 0 {// && !invalidVersion {
 					nowKnown = true
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
 					
@@ -690,6 +690,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
 					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \(neighborInfo)")
 				}
+			case .paxcounterApp:
+				MeshLogger.log("🕸️ MESH PACKET received for PAX Counter App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
@@ -757,18 +759,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Use context to pass the radio name with the timer
 				// Use a RunLoop to prevent the timer from running on the main UI thread
 				if UserDefaults.provideLocation {
-					let interval = UserDefaults.provideLocationInterval > 0 ? UserDefaults.provideLocationInterval : 30
-					if positionTimer != nil {
-					}
+					let interval = UserDefaults.provideLocationInterval >= 10 ? UserDefaults.provideLocationInterval : 30
 					positionTimer = Timer.scheduledTimer(timeInterval: TimeInterval(interval), target: self, selector: #selector(positionTimerFired), userInfo: context, repeats: true)
 					if positionTimer != nil {
 						RunLoop.current.add(positionTimer!, forMode: .common)
 					}
 				}
-
 				return
 			}
-
 			
 		case FROMNUM_UUID:
 			print("🗞️ BLE (Notify) characteristic, value will be read next")
@@ -962,7 +960,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(destNum: Int64, wantResponse: Bool) -> Bool {
+	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
@@ -1016,6 +1014,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
+		meshPacket.channel = UInt32(channel)
 		meshPacket.from	= UInt32(fromNodeNum)
 		var dataMessage = DataMessage()
 		dataMessage.payload = try! positionPacket.serializedData()
@@ -1040,7 +1039,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if connectedPeripheral != nil {
 			// Send a position out to the mesh if "share location with the mesh" is enabled in settings
 			if UserDefaults.provideLocation {
-				let _ = sendPosition(destNum: connectedPeripheral.num, wantResponse: false)
+				let _ = sendPosition(channel: 0, destNum: connectedPeripheral.num, wantResponse: false)
 			}
 		}
 	}

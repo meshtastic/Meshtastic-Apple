@@ -103,7 +103,7 @@ struct DeviceConfig: View {
 				}
 				Section(header: Text("GPIO")) {
 					Picker("Button GPIO", selection: $buttonGPIO) {
-						ForEach(0..<46) {
+						ForEach(0..<48) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -113,7 +113,7 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					Picker("Buzzer GPIO", selection: $buzzerGPIO) {
-						ForEach(0..<46) {
+						ForEach(0..<48) {
 							if $0 == 0 {
 								Text("unset")
 							} else {
@@ -232,7 +232,9 @@ struct DeviceConfig: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			self.bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 			setDeviceValues()
 			// Need to request a LoRaConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.deviceConfig == nil {

@@ -256,6 +256,17 @@ struct LocalModuleConfig {
   mutating func clearDetectionSensor() {_uniqueStorage()._detectionSensor = nil}
 
   ///
+  /// Paxcounter Config
+  var paxcounter: ModuleConfig.PaxcounterConfig {
+    get {return _storage._paxcounter ?? ModuleConfig.PaxcounterConfig()}
+    set {_uniqueStorage()._paxcounter = newValue}
+  }
+  /// Returns true if `paxcounter` has been explicitly set.
+  var hasPaxcounter: Bool {return _storage._paxcounter != nil}
+  /// Clears the value of `paxcounter`. Subsequent reads from it will return its default value.
+  mutating func clearPaxcounter() {_uniqueStorage()._paxcounter = nil}
+
+  ///
   /// A version integer used to invalidate old save files when we make
   /// incompatible changes This integer is set at build time and is private to
   /// NodeDB.cpp in the device code.
@@ -419,6 +430,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     11: .standard(proto: "neighbor_info"),
     12: .standard(proto: "ambient_lighting"),
     13: .standard(proto: "detection_sensor"),
+    14: .same(proto: "paxcounter"),
     8: .same(proto: "version"),
   ]
 
@@ -435,6 +447,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _neighborInfo: ModuleConfig.NeighborInfoConfig? = nil
     var _ambientLighting: ModuleConfig.AmbientLightingConfig? = nil
     var _detectionSensor: ModuleConfig.DetectionSensorConfig? = nil
+    var _paxcounter: ModuleConfig.PaxcounterConfig? = nil
     var _version: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
@@ -454,6 +467,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _neighborInfo = source._neighborInfo
       _ambientLighting = source._ambientLighting
       _detectionSensor = source._detectionSensor
+      _paxcounter = source._paxcounter
       _version = source._version
     }
   }
@@ -486,6 +500,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 11: try { try decoder.decodeSingularMessageField(value: &_storage._neighborInfo) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._ambientLighting) }()
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._detectionSensor) }()
+        case 14: try { try decoder.decodeSingularMessageField(value: &_storage._paxcounter) }()
         default: break
         }
       }
@@ -537,6 +552,9 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       try { if let v = _storage._detectionSensor {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       } }()
+      try { if let v = _storage._paxcounter {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -558,6 +576,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._neighborInfo != rhs_storage._neighborInfo {return false}
         if _storage._ambientLighting != rhs_storage._ambientLighting {return false}
         if _storage._detectionSensor != rhs_storage._detectionSensor {return false}
+        if _storage._paxcounter != rhs_storage._paxcounter {return false}
         if _storage._version != rhs_storage._version {return false}
         return true
       }

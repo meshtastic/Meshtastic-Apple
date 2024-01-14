@@ -47,12 +47,12 @@ struct PositionLog: View {
 						}
 						TableColumn("Speed") { position in
 							let speed = Measurement(value: Double(position.speed), unit: UnitSpeed.kilometersPerHour)
-							Text(speed.formatted())
+							Text(speed.formatted(.measurement(width: .abbreviated, numberFormatStyle: .number.precision(.fractionLength(0)))))
 						}
 						TableColumn("Heading") { position in
 							let degrees = Angle.degrees(Double(position.heading))
 							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
-							Text("\(heading.formatted())")
+							Text(heading.formatted(.measurement(width: .narrow, numberFormatStyle: .number.precision(.fractionLength(0)))))
 						}
 						TableColumn("SNR") { position in
 							Text("\(String(format: "%.2f", position.snr)) dB")

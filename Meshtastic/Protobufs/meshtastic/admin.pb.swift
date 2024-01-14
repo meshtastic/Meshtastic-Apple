@@ -225,6 +225,17 @@ struct AdminMessage {
   }
 
   ///
+  /// Enter (UF2) DFU mode
+  /// Only implemented on NRF52 currently
+  var enterDfuModeRequest: Bool {
+    get {
+      if case .enterDfuModeRequest(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .enterDfuModeRequest(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   var setOwner: User {
     get {
@@ -445,6 +456,10 @@ struct AdminMessage {
     /// Respond with the mesh's nodes with their available gpio pins for RemoteHardware module use
     case getNodeRemoteHardwarePinsResponse(NodeRemoteHardwarePinsResponse)
     ///
+    /// Enter (UF2) DFU mode
+    /// Only implemented on NRF52 currently
+    case enterDfuModeRequest(Bool)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -577,6 +592,10 @@ struct AdminMessage {
       }()
       case (.getNodeRemoteHardwarePinsResponse, .getNodeRemoteHardwarePinsResponse): return {
         guard case .getNodeRemoteHardwarePinsResponse(let l) = lhs, case .getNodeRemoteHardwarePinsResponse(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.enterDfuModeRequest, .enterDfuModeRequest): return {
+        guard case .enterDfuModeRequest(let l) = lhs, case .enterDfuModeRequest(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.setOwner, .setOwner): return {
@@ -763,6 +782,10 @@ struct AdminMessage {
     ///
     /// TODO: REPLACE
     case detectionsensorConfig // = 11
+
+    ///
+    /// TODO: REPLACE
+    case paxcounterConfig // = 12
     case UNRECOGNIZED(Int)
 
     init() {
@@ -783,6 +806,7 @@ struct AdminMessage {
       case 9: self = .neighborinfoConfig
       case 10: self = .ambientlightingConfig
       case 11: self = .detectionsensorConfig
+      case 12: self = .paxcounterConfig
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -801,6 +825,7 @@ struct AdminMessage {
       case .neighborinfoConfig: return 9
       case .ambientlightingConfig: return 10
       case .detectionsensorConfig: return 11
+      case .paxcounterConfig: return 12
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -840,6 +865,7 @@ extension AdminMessage.ModuleConfigType: CaseIterable {
     .neighborinfoConfig,
     .ambientlightingConfig,
     .detectionsensorConfig,
+    .paxcounterConfig,
   ]
 }
 
@@ -926,6 +952,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     18: .standard(proto: "set_ham_mode"),
     19: .standard(proto: "get_node_remote_hardware_pins_request"),
     20: .standard(proto: "get_node_remote_hardware_pins_response"),
+    21: .standard(proto: "enter_dfu_mode_request"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
@@ -1139,6 +1166,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .getNodeRemoteHardwarePinsResponse(v)
+        }
+      }()
+      case 21: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .enterDfuModeRequest(v)
         }
       }()
       case 32: try {
@@ -1368,6 +1403,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       guard case .getNodeRemoteHardwarePinsResponse(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
     }()
+    case .enterDfuModeRequest?: try {
+      guard case .enterDfuModeRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 21)
+    }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 32)
@@ -1466,6 +1505,7 @@ extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
     9: .same(proto: "NEIGHBORINFO_CONFIG"),
     10: .same(proto: "AMBIENTLIGHTING_CONFIG"),
     11: .same(proto: "DETECTIONSENSOR_CONFIG"),
+    12: .same(proto: "PAXCOUNTER_CONFIG"),
   ]
 }
 
