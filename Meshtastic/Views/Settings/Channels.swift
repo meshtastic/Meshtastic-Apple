@@ -285,7 +285,9 @@ struct Channels: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			bleManager.context = context
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
 		}
 	}
 }

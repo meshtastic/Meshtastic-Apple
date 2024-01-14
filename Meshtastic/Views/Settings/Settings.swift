@@ -313,16 +313,15 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-				if self.bleManager.context == nil {
-					self.bleManager.context = context
-				}
 				self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-				self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
+				if selectedNode == 0 {
+					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
+				}
 			}
 			.listStyle(GroupedListStyle())
 			.navigationTitle("settings")
 			.navigationBarItems(leading:
-									MeshtasticLogo()
+				MeshtasticLogo()
 			)
 		}
 		detail: {
