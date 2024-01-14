@@ -387,10 +387,7 @@ struct Config {
     var gpsUpdateInterval: UInt32 = 0
 
     ///
-    /// How long should we try to get our position during each gps_update_interval attempt?  (in seconds)
-    /// Or if zero, use the default of 30 seconds.
-    /// If we don't get a new gps fix in that time, the gps will be put into sleep until  the next gps_update_rate
-    /// window.
+    /// Deprecated in favor of using smart / regular broadcast intervals as implicit attempt time
     var gpsAttemptTime: UInt32 = 0
 
     ///
@@ -1115,6 +1112,14 @@ struct Config {
       ///
       /// Ukraine 868mhz
       case ua868 // = 15
+
+      ///
+      /// Malaysia 433mhz
+      case my433 // = 16
+
+      ///
+      /// Malaysia 919mhz
+      case my919 // = 17
       case UNRECOGNIZED(Int)
 
       init() {
@@ -1139,6 +1144,8 @@ struct Config {
         case 13: self = .lora24
         case 14: self = .ua433
         case 15: self = .ua868
+        case 16: self = .my433
+        case 17: self = .my919
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -1161,6 +1168,8 @@ struct Config {
         case .lora24: return 13
         case .ua433: return 14
         case .ua868: return 15
+        case .my433: return 16
+        case .my919: return 17
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1420,6 +1429,8 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
     .lora24,
     .ua433,
     .ua868,
+    .my433,
+    .my919,
   ]
 }
 
@@ -2325,6 +2336,8 @@ extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "LORA_24"),
     14: .same(proto: "UA_433"),
     15: .same(proto: "UA_868"),
+    16: .same(proto: "MY_433"),
+    17: .same(proto: "MY_919"),
   ]
 }
 
