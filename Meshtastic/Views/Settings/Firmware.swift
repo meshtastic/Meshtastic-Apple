@@ -2,15 +2,9 @@
 //  Firmware.swift
 //  Meshtastic
 //
-//  Created by Garth Vander Houwen on 3/10/23.
+//   Copyright(c) by Garth Vander Houwen on 3/10/23.
 //
 
-//
-//  About.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 10/6/22.
-//
 import SwiftUI
 import StoreKit
 
@@ -20,27 +14,30 @@ struct Firmware: View {
 	var node: NodeInfoEntity?
 	@State var minimumVersion = "2.2.16"
 	@State var version = ""
-	//var currentDevice: DeviceHardware
+	@State private var currentDevice: DeviceHardware?
 
 	var body: some View {
-		// NavigationSplitView {
 		VStack {
-			let hwModel: HardwareModels = HardwareModels.allCases.first(where: { $0.rawValue == node?.user?.hwModel ?? "UNSET" }) ?? HardwareModels.UNSET
 			VStack(alignment: .leading) {
-				Text("Current Version: \(bleManager.connectedVersion)")
-					.font(.largeTitle)
-				Text("Your device supports the following firmware: ")
-					.font(.callout)
-				HStack {
-					ForEach(hwModel.firmwareStrings, id: \.self) { fs in
-						Text(fs).font(.callout)
-					}
-				}
-				.padding(.bottom)
+				let deviceString = currentDevice?.hwModelSlug.replacingOccurrences(of: "_", with: "")
 
-				if hwModel.platform() == HardwarePlatforms.nrf52 {
+				Text("Your Device Model: \(currentDevice?.displayName ?? "Unknown")")
+					.font(.largeTitle)
+				
+				VStack {
+					Image(deviceString ?? "UNSET")
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.frame(width: 200, height: 200)
+						.cornerRadius(5)
+				}
+				Text("Current Firmware Version: \(bleManager.connectedVersion)")
+					.font(.title)
+
+				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
-						if hwModel == HardwareModels.RAK4631 {
+						/// RAK 4631
+						if currentDevice?.hwModel == 9 {
 							Text("nRF OTA Device Firmware Update App")
 								.font(.title3)
 							Text("You can update your Meshtastic device over bluetooth using the Nordic DFU app.  This currently works for RAK NRF devices.")
@@ -54,13 +51,13 @@ struct Firmware: View {
 								.font(.callout)
 						}
 					}
-				} else if hwModel.platform() == HardwarePlatforms.esp32 {
+				} else if currentDevice?.architecture == Meshtastic.Architecture.esp32 {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
 						Text("Currently the reccomended way to update ESP32 devices is using the web flasher from a chrome based browser. It does not work on mobile devices or over BLE.")
 							.font(.caption)
-						Link("Web Flasher", destination: URL(string: "https://flasher.meshtastic.org")!)
+						Link("Web Flasher", destination: URL(string: "https://flash.meshtastic.org")!)
 							.font(.callout)
 							.padding(.bottom)
 						Text("ESP 32 OTA update is a work in progress, click the button below to sent your device a reboot into ota admin message.")
@@ -89,11 +86,11 @@ struct Firmware: View {
 						.font(.title3)
 					Text(node?.user?.hwModel ?? "UNSET")
 						.font(.title3)
-					Text(hwModel.platform().description)
-						.font(.title3)
+				//	Text(hwModel.platform().description)
+				//		.font(.title3)
 				}
 			}
-			Spacer()
+				.padding()
 			VStack(alignment: .leading) {
 				Text("Firmware Releases")
 					.font(.title3)
@@ -144,8 +141,12 @@ struct Firmware: View {
 			.onAppear() {
 				Api().loadDeviceHardwareData { (hw) in
 					for device in hw {
-						if device.hwModelSlug == node?.user?.hwModel ?? "UNSET" {
+					print(device)
+						let currentHardware = node?.user?.hwModel ?? "UNSET"
+						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+						if deviceString == currentHardware  {
 							print("Selected: \(device)")
+							currentDevice = device
 						}
 					}
 				}
