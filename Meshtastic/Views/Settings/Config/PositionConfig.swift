@@ -213,7 +213,7 @@ struct PositionConfig: View {
 					if deviceGpsEnabled {
 						
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -223,7 +223,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS Transmit GPIO", selection: $txGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -233,7 +233,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS EN GPIO", selection: $gpsEnGpio) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {

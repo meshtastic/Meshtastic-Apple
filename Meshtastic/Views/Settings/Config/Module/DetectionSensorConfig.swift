@@ -139,7 +139,7 @@ struct DetectionSensorConfig: View {
 							.listRowSeparator(.visible)
 							.offset(y: -10)
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
-							ForEach(0..<46) {
+							ForEach(0..<48) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
