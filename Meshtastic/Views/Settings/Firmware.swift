@@ -46,9 +46,14 @@ struct Firmware: View {
 				
 				if supportedVersion {
 					Text("Your Firmware is up to date")
-						.font(.title)
-					Text("Current Firmware Version: \(bleManager.connectedVersion)")
+						.fixedSize(horizontal: false, vertical: true)
+						.foregroundStyle(.green)
 						.font(.title2)
+						.padding(.bottom)
+					Text("Current Firmware Version: \(bleManager.connectedVersion)")
+						.fixedSize(horizontal: false, vertical: true)
+						.font(.title3)
+						.padding(.bottom)
 				} else {
 					Text("Your Firmware is out of date")
 						.fixedSize(horizontal: false, vertical: true)
@@ -60,35 +65,45 @@ struct Firmware: View {
 						.font(.title3)
 						.padding(.bottom)
 				}
-				
+				Divider()
+				Text("How to update Firmware")
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.title2)
+					.padding(.bottom)
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
+						
+						Text("Drag & Drop is the reccomended way to update firmware for NRF devices.")
+							.fixedSize(horizontal: false, vertical: true)
+							.foregroundStyle(.gray)
+							.font(.caption)
+						Link("Drag & Drop Firmware Update", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
+							.font(.callout)
+						
+						Button {
+							let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+							if connectedNode != nil {
+								if !bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
+									print("Enter DFU Failed")
+								}
+							}
+						} label: {
+							Label("Enter DFU Mode", systemImage: "square.and.arrow.down")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.regular)
+						.padding(5)
+						Spacer()
 						/// RAK 4631
 						if currentDevice?.hwModel == 9 {
-							Text("You can update your Meshtastic device over bluetooth using the Nordic DFU app.")
+							Text("You can also update your Meshtastic device over bluetooth using the Nordic DFU app.")
 								.fixedSize(horizontal: false, vertical: true)
-								.font(.callout)
+								.foregroundStyle(.gray)
+								.font(.caption)
 							Link("Get NRF DFU from the App Store", destination: URL(string: "https://apps.apple.com/us/app/nrf-device-firmware-update/id1624454660")!)
 								.font(.callout)
 								.padding(.bottom)
-							Link("Drag & Drop Firmware Update", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
-								.font(.callout)
-							
-							Button {
-								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-								if connectedNode != nil {
-									if !bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
-										print("Enter DFU Failed")
-									}
-								}
-							} label: {
-								Label("Enter DFU Mode", systemImage: "square.and.arrow.down")
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.regular)
-							.padding(5)
-							Spacer()
 						} else {
 							Text("OTA Updates are not supported on the this NRF Device.")
 								.font(.title3)
@@ -193,9 +208,9 @@ struct Firmware: View {
 						}
 					}
 				}
-				//Api().loadFirmwareReleaseData { (bks) in
-				//sel = bks
-				//}
+				Api().loadFirmwareReleaseData { (fw) in
+					
+				}
 			}
 			.navigationTitle("Firmware Updates")
 			.navigationBarTitleDisplayMode(.inline)
