@@ -17,23 +17,42 @@ struct Firmware: View {
 	@State private var currentDevice: DeviceHardware?
 
 	var body: some View {
+		
+		let supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 		VStack {
 			VStack(alignment: .leading) {
 				let deviceString = currentDevice?.hwModelSlug.replacingOccurrences(of: "_", with: "")
 
-				Text("Your Device Model: \(currentDevice?.displayName ?? "Unknown")")
-					.font(.largeTitle)
-				
+				HStack {
+					VStack {
+						Image(systemName: currentDevice?.activelySupported ?? false ? "checkmark.seal.fill" : "x.circle")
+							.font(.largeTitle)
+							.foregroundStyle(currentDevice?.activelySupported ?? false ? .green : .red)
+						Text( currentDevice?.activelySupported ?? false ? "Supported" : "Unsupported")
+							.foregroundStyle(.gray)
+							.font(.caption2)
+					}
+					Text("Device Model: \(currentDevice?.displayName ?? "Unknown")")
+						.font(.largeTitle)
+				}
 				VStack {
 					Image(deviceString ?? "UNSET")
 						.resizable()
 						.aspectRatio(contentMode: .fit)
-						.frame(width: 200, height: 200)
+						.frame(width: 300, height: 300)
 						.cornerRadius(5)
 				}
-				Text("Current Firmware Version: \(bleManager.connectedVersion)")
-					.font(.title)
-
+				if supportedVersion {
+					Text("Your Firmware is up to date")
+						.font(.title)
+					Text("Current Firmware Version: \(bleManager.connectedVersion)")
+						.font(.title2)
+				} else {
+					Text("Your Firmware is out of date")
+						.font(.title)
+					Text("Current Firmware Version: \(bleManager.connectedVersion), Minimium Firmware Version: \(minimumVersion)")
+						.font(.title2)
+				}
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
 						/// RAK 4631
@@ -141,115 +160,19 @@ struct Firmware: View {
 			.onAppear() {
 				Api().loadDeviceHardwareData { (hw) in
 					for device in hw {
-					print(device)
 						let currentHardware = node?.user?.hwModel ?? "UNSET"
 						let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
 						if deviceString == currentHardware  {
-							print("Selected: \(device)")
 							currentDevice = device
 						}
 					}
 				}
-//				Api().loadFirmwareReleaseData { (bks) in
-//					//sel = bks
-//				}
+				Api().loadFirmwareReleaseData { (bks) in
+					//sel = bks
+				}
 			}
 			.navigationTitle("Firmware Updates")
 			.navigationBarTitleDisplayMode(.inline)
 		}
 	}
 }
-
-//struct FirmwareRelease: Codable {
-//	var releases: Releases?       = Releases()
-//	var pullRequests: [PullRequests]? = []
-//	enum CodingKeys: String, CodingKey {
-//		case releases     = "Releases"
-//		case pullRequests = "Pull Requests"
-//	}
-//	init(from decoder: Decoder) throws {
-//		let values = try decoder.container(keyedBy: CodingKeys.self)
-//		releases     = try values.decodeIfPresent(Releases.self, forKey: .releases     )
-//		pullRequests = try values.decodeIfPresent([PullRequests].self, forKey: .pullRequests )
-//	}
-//	init() {
-//	}
-//}
-//
-//struct Releases: Codable {
-//	var stable: [Stable]? = []
-//	var alpha: [Alpha]?  = []
-//	enum CodingKeys: String, CodingKey {
-//		case stable = "Stable"
-//		case alpha  = "Alpha"
-//	}
-//	init(from decoder: Decoder) throws {
-//		let values = try decoder.container(keyedBy: CodingKeys.self)
-//		stable = try values.decodeIfPresent([Stable].self, forKey: .stable )
-//		alpha  = try values.decodeIfPresent([Alpha].self, forKey: .alpha  )
-//	}
-//	init() {}
-//}
-//
-//struct Alpha: Codable {
-//	var id: String?
-//	var title: String?
-//	var pageUrl: String?
-//	var zipUrl: String?
-//	enum CodingKeys: String, CodingKey {
-//		case id      = "id"
-//		case title   = "title"
-//		case pageUrl = "page_url"
-//		case zipUrl  = "zip_url"
-//	}
-//	init(from decoder: Decoder) throws {
-//		let values = try decoder.container(keyedBy: CodingKeys.self)
-//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-//	}
-//	init() {}
-//}
-//
-//struct Stable: Codable {
-//	var id: String?
-//	var title: String?
-//	var pageUrl: String?
-//	var zipUrl: String?
-//	enum CodingKeys: String, CodingKey {
-//		case id      = "id"
-//		case title   = "title"
-//		case pageUrl = "page_url"
-//		case zipUrl  = "zip_url"
-//	}
-//	init(from decoder: Decoder) throws {
-//		let values = try decoder.container(keyedBy: CodingKeys.self)
-//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-//	}
-//	init() {}
-//}
-//
-//struct PullRequests: Codable {
-//	var id: String?
-//	var title: String?
-//	var pageUrl: String?
-//	var zipUrl: String?
-//	enum CodingKeys: String, CodingKey {
-//		case id      = "id"
-//		case title   = "title"
-//		case pageUrl = "page_url"
-//		case zipUrl  = "zip_url"
-//	}
-//	init(from decoder: Decoder) throws {
-//		let values = try decoder.container(keyedBy: CodingKeys.self)
-//		id      = try values.decodeIfPresent(String.self, forKey: .id      )
-//		title   = try values.decodeIfPresent(String.self, forKey: .title   )
-//		pageUrl = try values.decodeIfPresent(String.self, forKey: .pageUrl )
-//		zipUrl  = try values.decodeIfPresent(String.self, forKey: .zipUrl  )
-//	}
-//	init() {}
-//}

@@ -7,14 +7,6 @@
 
 import Foundation
 
-//struct DeviceHardware: Codable {
-//	var hwModel: Int
-//	var hwModelSlug: String
-//	var platformioTarget: String
-//	var activelySupported: Bool
-//	var displayName: String
-//}
-
 struct DeviceHardware: Codable {
 	let hwModel: Int
 	let hwModelSlug, platformioTarget: String
@@ -31,9 +23,30 @@ enum Architecture: String, Codable {
 	case rp2040 = "rp2040"
 }
 
+struct FirmwareReleases: Codable {
+	let releases: Releases
+	let pullRequests: [PullRequest]
+}
+
+struct PullRequest: Codable {
+	let id, title: String
+	let pageURL: String
+	let zipURL: String
+
+	enum CodingKeys: String, CodingKey {
+		case id, title
+		case pageURL = "page_url"
+		case zipURL = "zip_url"
+	}
+}
+
+// MARK: - Releases
+struct Releases: Codable {
+	let stable, alpha: [PullRequest]
+}
+
 class Api : ObservableObject{
-//	@Published var devices = [DeviceHardware]()
-	
+
 	func loadDeviceHardwareData(completion:@escaping ([DeviceHardware]) -> ()) {
 		guard let url = URL(string: "https://api.meshtastic.org/resource/deviceHardware") else {
 			print("Invalid url...")
@@ -47,17 +60,18 @@ class Api : ObservableObject{
 			}
 		}.resume()
 	}
-//	func loadFirmwareReleaseData(completion:@escaping ([FirmwareRelease]) -> ()) {
-//		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
-//			print("Invalid url...")
-//			return
-//		}
-//		URLSession.shared.dataTask(with: url) { data, response, error in
-//			let deviceHardware = try! JSONDecoder().decode([FirmwareRelease].self, from: data!)
-//			print(deviceHardware)
-//			DispatchQueue.main.async {
-//				completion(deviceHardware)
-//			}
-//		}.resume()
-//	}
+	
+	func loadFirmwareReleaseData(completion:@escaping (FirmwareReleases) -> ()) {
+		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
+			print("Invalid url...")
+			return
+		}
+		URLSession.shared.dataTask(with: url) { data, response, error in
+			let firmwareReleases = try! JSONDecoder().decode(FirmwareReleases.self, from: data!)
+			print(firmwareReleases)
+			DispatchQueue.main.async {
+				completion(firmwareReleases)
+			}
+		}.resume()
+	}
 }

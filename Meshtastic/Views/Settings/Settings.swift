@@ -69,15 +69,14 @@ struct Settings: View {
 						Text("routes")
 					}
 					.tag(SettingsSidebar.routes)
-					
-//					NavigationLink {
-//						RouteRecorder()
-//					} label: {
-//						Image(systemName: "record.circle")
-//							.symbolRenderingMode(.hierarchical)
-//						Text("route.recorder")
-//					}
-//					.tag(SettingsSidebar.routeRecorder)
+					NavigationLink {
+						RouteRecorder()
+					} label: {
+						Image(systemName: "record.circle")
+							.symbolRenderingMode(.hierarchical)
+						Text("route.recorder")
+					}
+					.tag(SettingsSidebar.routeRecorder)
 				}
 				
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
@@ -299,17 +298,17 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.adminMessageLog)
 					}
-//					Section(header: Text("Firmware")) {
-//						NavigationLink {
-//							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
-//						} label: {
-//							Image(systemName: "arrow.up.arrow.down.square")
-//								.symbolRenderingMode(.hierarchical)					
-//							Text("Firmware Updates")
-//						}
-//						.tag(SettingsSidebar.about)
-//						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-//					}
+					Section(header: Text("Firmware")) {
+						NavigationLink {
+							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
+						} label: {
+							Image(systemName: "arrow.up.arrow.down.square")
+								.symbolRenderingMode(.hierarchical)					
+							Text("Firmware Updates")
+						}
+						.tag(SettingsSidebar.about)
+						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+					}
 				}
 			}
 			.onAppear {
