@@ -25,10 +25,10 @@ enum Architecture: String, Codable {
 
 struct FirmwareReleases: Codable {
 	let releases: Releases
-	let pullRequests: [PullRequest]
+	let pullRequests: [FirmwareRelease]
 }
 
-struct PullRequest: Codable {
+struct FirmwareRelease: Codable {
 	let id, title: String
 	let pageURL: String
 	let zipURL: String
@@ -42,7 +42,7 @@ struct PullRequest: Codable {
 
 // MARK: - Releases
 struct Releases: Codable {
-	let stable, alpha: [PullRequest]
+	let stable, alpha: [FirmwareRelease]
 }
 
 class Api : ObservableObject{
@@ -68,7 +68,6 @@ class Api : ObservableObject{
 		}
 		URLSession.shared.dataTask(with: url) { data, response, error in
 			let firmwareReleases = try! JSONDecoder().decode(FirmwareReleases.self, from: data!)
-			print(firmwareReleases)
 			DispatchQueue.main.async {
 				completion(firmwareReleases)
 			}

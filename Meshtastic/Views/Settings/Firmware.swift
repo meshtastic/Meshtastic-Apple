@@ -15,6 +15,8 @@ struct Firmware: View {
 	@State var minimumVersion = "2.2.17"
 	@State var version = ""
 	@State private var currentDevice: DeviceHardware?
+	@State private var latestStable: FirmwareRelease?
+	@State private var latestAlpha: FirmwareRelease?
 	
 	var body: some View {
 		
@@ -70,30 +72,55 @@ struct Firmware: View {
 					.fixedSize(horizontal: false, vertical: true)
 					.font(.title2)
 					.padding(.bottom)
+				
+				Text("Get the latest stable firmware")
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.callout)
+				Link("\(latestStable?.title ?? "unknown".localized)", destination: URL(string: "\(latestStable?.zipURL ?? "https://meshtastic.org")")!)
+					.font(.caption)
+				Link("Release Notes", destination: URL(string: "\(latestStable?.pageURL ?? "https://meshtastic.org")")!)
+					.font(.caption)
+					.padding(.bottom)
+				
+				Text("Get the latest alpha firmware")
+					.fixedSize(horizontal: false, vertical: true)
+					.font(.callout)
+				Link("\(latestAlpha?.title ?? "unknown".localized)", destination: URL(string: "\(latestAlpha?.zipURL ?? "https://meshtastic.org")")!)
+					.font(.caption)
+				Link("Release Notes", destination: URL(string: "\(latestAlpha?.pageURL ?? "https://meshtastic.org")")!)
+					.font(.caption)
+					.padding(.bottom)
+				
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
 						
-						Text("Drag & Drop is the reccomended way to update firmware for NRF devices.")
+						Text("Drag & Drop is the reccomended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor.")
 							.fixedSize(horizontal: false, vertical: true)
 							.foregroundStyle(.gray)
 							.font(.caption)
-						Link("Drag & Drop Firmware Update", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
-							.font(.callout)
-						
-						Button {
-							let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-							if connectedNode != nil {
-								if !bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
-									print("Enter DFU Failed")
+						Link("Drag & Drop Firmware Update Documentation", destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/nrf52/drag-n-drop")!)
+							.font(.caption)
+							.padding(.bottom)
+						VStack {
+							Text("If it is hard to access your device's reset button enter DFU mode here.")
+								.fixedSize(horizontal: false, vertical: true)
+								.foregroundStyle(.gray)
+								.font(.caption)
+							Button {
+								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+								if connectedNode != nil {
+									if !bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
+										print("Enter DFU Failed")
+									}
 								}
+							} label: {
+								Label("Enter DFU Mode", systemImage: "square.and.arrow.down")
 							}
-						} label: {
-							Label("Enter DFU Mode", systemImage: "square.and.arrow.down")
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.regular)
+							.padding(5)
 						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.regular)
-						.padding(5)
 						Spacer()
 						/// RAK 4631
 						if currentDevice?.hwModel == 9 {
@@ -115,7 +142,7 @@ struct Firmware: View {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
-						Text("Currently the reccomended way to update ESP32 devices is using the web flasher from a chrome based browser. It does not work on mobile devices or over BLE.")
+						Text("Currently the reccomended way to update ESP32 devices is using the web flasher on a desktop computer from a chrome based browser. It does not work on mobile devices or over BLE.")
 							.font(.caption)
 						Link("Web Flasher", destination: URL(string: "https://flash.meshtastic.org")!)
 							.font(.callout)
@@ -151,52 +178,6 @@ struct Firmware: View {
 				}
 			}
 			.padding()
-			VStack(alignment: .leading) {
-				//				Text("Firmware Releases")
-				//					.font(.title3)
-				//					.padding([.leading, .trailing])
-				//				List {
-				//					Section(header: Text("Stable")) {
-				//						ForEach(firmwareReleaseData.releases?.stable ?? [], id: \.id) { fr in
-				//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-				//								HStack {
-				//									Text(fr.title ?? "Unknown")
-				//										.font(.caption)
-				//									Spacer()
-				//									Image(systemName: "square.and.arrow.down")
-				//										.font(.title3)
-				//								}
-				//							}
-				//						}
-				//					}
-				//					Section("Alpha") {
-				//						ForEach(firmwareReleaseData.releases?.alpha ?? [], id: \.id) { fr in
-				//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-				//								HStack {
-				//									Text(fr.title ?? "Unknown")
-				//										.font(.caption)
-				//									Spacer()
-				//									Image(systemName: "square.and.arrow.down")
-				//										.font(.title3)
-				//								}
-				//							}
-				//						}
-				//					}
-				//					Section("Pull Requests") {
-				//						ForEach(firmwareReleaseData.pullRequests ?? [], id: \.id) { fr in
-				//							Link(destination: URL(string: fr.zipUrl ?? "")!) {
-				//								HStack {
-				//									Text(fr.title ?? "Unknown")
-				//										.font(.caption)
-				//									Spacer()
-				//									Image(systemName: "square.and.arrow.down")
-				//										.font(.title3)
-				//								}
-				//							}
-				//						}
-				//					}
-				//				}
-			}
 			.padding(.bottom, 5)
 			.onAppear() {
 				Api().loadDeviceHardwareData { (hw) in
@@ -209,7 +190,8 @@ struct Firmware: View {
 					}
 				}
 				Api().loadFirmwareReleaseData { (fw) in
-					
+					latestStable = fw.releases.stable.first
+					latestAlpha = fw.releases.alpha.first
 				}
 			}
 			.navigationTitle("Firmware Updates")
