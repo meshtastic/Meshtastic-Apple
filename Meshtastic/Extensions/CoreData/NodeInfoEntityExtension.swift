@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 extension NodeInfoEntity {
 	
@@ -37,4 +38,22 @@ extension NodeInfoEntity {
 		}
 		return false
 	}
+
+}
+
+public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {
+	
+	let newNode = NodeInfoEntity(context: context)
+	newNode.id = Int64(num)
+	newNode.num = Int64(num)
+	let newUser = UserEntity(context: context)
+	newUser.num = Int64(num)
+	let userId = String(format:"%2X", num)
+	newUser.userId = "!\(userId)"
+	let last4 = String(userId.suffix(4))
+	newUser.longName = "Meshtastic \(last4)"
+	newUser.shortName = last4
+	newUser.hwModel = "UNSET"
+	newNode.user = newUser
+	return newNode
 }

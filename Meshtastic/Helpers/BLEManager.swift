@@ -649,7 +649,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						var routeString = "You --> "
 						var hopNodes: [TraceRouteHopEntity] = []
 						for node in routingMessage.route {
-							let hopNode = getNodeInfo(id: Int64(node), context: context!)
+							var hopNode = getNodeInfo(id: Int64(node), context: context!)
+							if hopNode == nil {
+								hopNode = createNodeInfo(num: Int64(node), context: context!)
+							}
 							let traceRouteHop = TraceRouteHopEntity(context: context!)
 							traceRouteHop.time = Date()
 							if hopNode?.hasPositions ?? false {

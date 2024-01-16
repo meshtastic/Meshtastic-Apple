@@ -208,19 +208,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			if fetchedNode.count > 0 {
 				fetchedNode[0].metadata = newMetadata
 			} else {
-				
-				let newNode = NodeInfoEntity(context: context)
-				newNode.id = Int64(fromNum)
-				newNode.num = Int64(fromNum)
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(fromNum)
-				let userId = String(format:"%2X", fromNum)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
-				newNode.user = newUser
+				let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 				newNode.metadata = newMetadata
 			}
 			do {
