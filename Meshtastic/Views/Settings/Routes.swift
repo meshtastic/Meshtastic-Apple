@@ -18,6 +18,8 @@ struct Routes: View {
 	@State private var selectedRoute: RouteEntity?
 	@State private var importing = false
 	@State private var isShowingBadFileAlert = false
+	@State var isExporting = false
+	@State var exportString = ""
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "enabled", ascending: false), NSSortDescriptor(key: "name", ascending: true), NSSortDescriptor(key: "date", ascending: false)], animation: .default)
 	
@@ -33,7 +35,7 @@ struct Routes: View {
 			.padding()
 	
 			.alert(isPresented: $isShowingBadFileAlert) {
-				Alert(title: Text("Not a valid route file"), message: Text("Your route file must have both Latitude and Longitude."), dismissButton: .default(Text("OK")))
+				Alert(title: Text("Not a valid route file"), message: Text("Your route file must have both Latitude and Longitude columns and headers."), dismissButton: .default(Text("OK")))
 			}
 			.fileImporter(
 				isPresented: $importing,
@@ -187,8 +189,36 @@ struct Routes: View {
 							.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: dashed)
 					}
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+						Button {
+							exportString = routeToCsvFile(locations: selectedRoute!.locations!.array as? [LocationEntity] ?? [])
+							isExporting = true
+						} label: {
+							Label("save", systemImage: "square.and.arrow.down")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding(.bottom)
+						.padding(.leading)
+					}
+					
 				}
 			}.navigationTitle(" \(selectedRoute?.name ?? "Unknown Route") \(selectedRoute?.locations?.count ?? 0) points")
 		}
+		.fileExporter(
+			isPresented: $isExporting,
+			document: CsvDocument(emptyCsv: exportString),
+			contentType: .commaSeparatedText,
+			defaultFilename: String("\(selectedRoute?.name ?? "Route") Log"),
+			onCompletion: { result in
+				if case .success = result {
+					print("Route log download succeeded.")
+					self.isExporting = false
+				} else {
+					print("Route log download failed: \(result).")
+				}
+			}
+		)
 	}
 }

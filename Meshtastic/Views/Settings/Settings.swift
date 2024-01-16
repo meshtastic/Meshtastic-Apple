@@ -313,7 +313,11 @@ struct Settings: View {
 			}
 			.onAppear {
 				self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-				if selectedNode == 0 {
+				if nodes.count > 1 {
+					if selectedNode == 0 {
+						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
+					}
+				} else {
 					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
 				}
 			}
