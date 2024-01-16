@@ -109,7 +109,13 @@ struct Firmware: View {
 							Button {
 								let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
 								if connectedNode != nil {
-									if !bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
+									
+									if bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
+										DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+											bleManager.automaticallyReconnect = false
+											bleManager.disconnectPeripheral()
+										}
+									} else {
 										print("Enter DFU Failed")
 									}
 								}
