@@ -52,10 +52,6 @@ struct AboutMeshtastic: View {
 					.font(.title2)
 					
 					Text("Version: \(Bundle.main.appVersionLong) (\(Bundle.main.appBuild)) ")
-
-					Text(Bundle.main.copyright)
-						.font(.system(size: 10, weight: .thin))
-						.multilineTextAlignment(.center)
 				}
 
 				Section(header: Text("Project information")) {

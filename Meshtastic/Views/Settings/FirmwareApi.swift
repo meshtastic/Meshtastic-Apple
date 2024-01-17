@@ -7,14 +7,7 @@
 
 import Foundation
 
-//struct DeviceHardware: Codable {
-//	var hwModel: Int
-//	var hwModelSlug: String
-//	var platformioTarget: String
-//	var activelySupported: Bool
-//	var displayName: String
-//}
-
+/// Device Hardware API
 struct DeviceHardware: Codable {
 	let hwModel: Int
 	let hwModelSlug, platformioTarget: String
@@ -22,7 +15,6 @@ struct DeviceHardware: Codable {
 	let activelySupported: Bool
 	let displayName: String
 }
-
 enum Architecture: String, Codable {
 	case esp32 = "esp32"
 	case esp32C3 = "esp32-c3"
@@ -31,9 +23,28 @@ enum Architecture: String, Codable {
 	case rp2040 = "rp2040"
 }
 
+/// Firmware Release Lists
+struct FirmwareReleases: Codable {
+	let releases: Releases
+	let pullRequests: [FirmwareRelease]
+}
+struct Releases: Codable {
+	let stable, alpha: [FirmwareRelease]
+}
+struct FirmwareRelease: Codable {
+	let id, title: String
+	let pageURL: String
+	let zipURL: String
+
+	enum CodingKeys: String, CodingKey {
+		case id, title
+		case pageURL = "page_url"
+		case zipURL = "zip_url"
+	}
+}
+
 class Api : ObservableObject{
-//	@Published var devices = [DeviceHardware]()
-	
+
 	func loadDeviceHardwareData(completion:@escaping ([DeviceHardware]) -> ()) {
 		guard let url = URL(string: "https://api.meshtastic.org/resource/deviceHardware") else {
 			print("Invalid url...")
@@ -41,23 +52,22 @@ class Api : ObservableObject{
 		}
 		URLSession.shared.dataTask(with: url) { data, response, error in
 			let deviceHardware = try! JSONDecoder().decode([DeviceHardware].self, from: data!)
-			//print(deviceHardware)
 			DispatchQueue.main.async {
 				completion(deviceHardware)
 			}
 		}.resume()
 	}
-//	func loadFirmwareReleaseData(completion:@escaping ([FirmwareRelease]) -> ()) {
-//		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
-//			print("Invalid url...")
-//			return
-//		}
-//		URLSession.shared.dataTask(with: url) { data, response, error in
-//			let deviceHardware = try! JSONDecoder().decode([FirmwareRelease].self, from: data!)
-//			print(deviceHardware)
-//			DispatchQueue.main.async {
-//				completion(deviceHardware)
-//			}
-//		}.resume()
-//	}
+	
+	func loadFirmwareReleaseData(completion:@escaping (FirmwareReleases) -> ()) {
+		guard let url = URL(string: "https://api.meshtastic.org/github/firmware/list") else {
+			print("Invalid url...")
+			return
+		}
+		URLSession.shared.dataTask(with: url) { data, response, error in
+			let firmwareReleases = try! JSONDecoder().decode(FirmwareReleases.self, from: data!)
+			DispatchQueue.main.async {
+				completion(firmwareReleases)
+			}
+		}.resume()
+	}
 }

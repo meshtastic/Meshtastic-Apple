@@ -192,29 +192,31 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			guard let fetchedNode = try context.fetch(fetchedNodeRequest) as? [NodeInfoEntity] else {
 				return
 			}
+			let newMetadata = DeviceMetadataEntity(context: context)
+			newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
+			newMetadata.canShutdown = metadata.canShutdown
+			newMetadata.hasWifi = metadata.hasWifi_p
+			newMetadata.hasBluetooth = metadata.hasBluetooth_p
+			newMetadata.hasEthernet	= metadata.hasEthernet_p
+			newMetadata.role = Int32(metadata.role.rawValue)
+			newMetadata.positionFlags = Int32(metadata.positionFlags)
+			// Swift does strings weird, this does work to get the version without the github hash
+			let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
+			var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
+			version = version.dropLast()
+			newMetadata.firmwareVersion = String(version)
 			if fetchedNode.count > 0 {
-				let newMetadata = DeviceMetadataEntity(context: context)
-				newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
-				newMetadata.canShutdown = metadata.canShutdown
-				newMetadata.hasWifi = metadata.hasWifi_p
-				newMetadata.hasBluetooth = metadata.hasBluetooth_p
-				newMetadata.hasEthernet	= metadata.hasEthernet_p
-				newMetadata.role = Int32(metadata.role.rawValue)
-				newMetadata.positionFlags = Int32(metadata.positionFlags)
-				// Swift does strings weird, this does work to get the version without the github hash
-				let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
-				var version = metadata.firmwareVersion[...(lastDotIndex ?? String.Index(utf16Offset: 6, in: metadata.firmwareVersion))]
-				version = version.dropLast()
-				newMetadata.firmwareVersion = String(version)
 				fetchedNode[0].metadata = newMetadata
-
-				do {
-					try context.save()
-				} catch {
-					print("Failed to save device metadata")
-				}
-				print("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
+			} else {
+				let newNode = createNodeInfo(num: Int64(fromNum), context: context)
+				newNode.metadata = newMetadata
 			}
+			do {
+				try context.save()
+			} catch {
+				print("Failed to save device metadata")
+			}
+			print("💾 Updated Device Metadata from Admin App Packet For: \(fromNum)")
 		} catch {
 			context.rollback()
 			let nsError = error as NSError

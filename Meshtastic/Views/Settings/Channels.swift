@@ -37,7 +37,7 @@ struct Channels: View {
 
 	var body: some View {
 
-		NavigationStack {
+		VStack {
 			List {
 				if node != nil && node?.myInfo != nil {
 					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
@@ -167,16 +167,17 @@ struct Channels: View {
 						HStack(alignment: .top) {
 							Text("Key")
 							Spacer()
-							TextField(
-								"",
-								text: $channelKey,
-								axis: .vertical
-							)
-							.foregroundColor(Color.gray)
-							.disabled(true)
-
+							Text(channelKey)
+								.foregroundColor(Color.gray)
+								.textSelection(.enabled)
+//							TextField(
+//								"",
+//								text: $channelKey,
+//								axis: .vertical
+//							)
+//							.foregroundColor(Color.gray)
+//							.disabled(true)
 						}
-						.textSelection(.enabled)
 						Picker("Channel Role", selection: $channelRole) {
 							if channelRole == 1 {
 								Text("Primary").tag(1)
@@ -192,9 +193,6 @@ struct Channels: View {
 						Toggle("Downlink Enabled", isOn: $downlink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					// .onSubmit {
-						// validate(name: channelName)
-					// }
 					.onChange(of: channelName) { _ in
 						hasChanges = true
 					}

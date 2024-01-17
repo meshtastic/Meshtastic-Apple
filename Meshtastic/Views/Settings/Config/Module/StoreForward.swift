@@ -44,7 +44,7 @@ struct StoreForwardConfig: View {
 						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
 							.font(.title3)
 							.onAppear {
-								setDetectionSensorValues()
+								setStoreAndForwardValues()
 							}
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
@@ -140,13 +140,13 @@ struct StoreForwardConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			setDetectionSensorValues()
+			setStoreAndForwardValues()
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.detectionSensorConfig == nil {
+			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
 				print("empty store and forward module config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
-					_ = bleManager.requestDetectionSensorModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
 		}
@@ -176,7 +176,7 @@ struct StoreForwardConfig: View {
 			}
 		}
 	}
-	func setDetectionSensorValues() {
+	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)

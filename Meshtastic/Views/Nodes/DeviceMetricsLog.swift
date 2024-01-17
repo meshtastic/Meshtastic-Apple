@@ -33,9 +33,7 @@ struct DeviceMetricsLog: View {
 					GroupBox(label: Label("\(deviceMetrics.count) Readings Total", systemImage: "chart.xyaxis.line")) {
 
 						Chart {
-
 							ForEach(chartData, id: \.self) { point in
-
 								Plot {
 									LineMark(
 										x: .value("x", point.time!),
@@ -45,7 +43,7 @@ struct DeviceMetricsLog: View {
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 								.foregroundStyle(batteryChartColor)
-								.interpolationMethod(.catmullRom(alpha: 1.0))
+								.interpolationMethod(.cardinal)
 
 								Plot {
 									PointMark(
