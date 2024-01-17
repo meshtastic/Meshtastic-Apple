@@ -49,7 +49,6 @@ struct RouteRecorder: View {
 				}
 				.mapStyle(mapStyle)
 			}
-			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 			.mapScope(routerecorderscope)
 			.safeAreaInset(edge: .bottom) {
 				ZStack {
@@ -285,5 +284,6 @@ struct RouteRecorder: View {
 				}
 			}
 		}
+		.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
 	}
 }
