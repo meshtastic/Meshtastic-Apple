@@ -96,7 +96,7 @@ struct RtttlConfig: View {
 
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 					if connectedNode != nil {
-						let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						let adminMessageId =  bleManager.saveRtttlConfig(ringtone: ringtone.trimmingCharacters(in: .whitespacesAndNewlines), fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
 							// for now just disable the button after a successful save
