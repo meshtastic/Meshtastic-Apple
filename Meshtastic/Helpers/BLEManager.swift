@@ -215,7 +215,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected",
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription
+							content: e.localizedDescription,
+							target: "bluetooth",
+							path: "meshtastic://bluetooth"
 						)
 					]
 					manager.schedule()
@@ -233,7 +235,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected",
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription
+							content: e.localizedDescription,
+							target: "bluetooth",
+							path: "meshtastic://bluetooth"
 						)
 					]
 					manager.schedule()

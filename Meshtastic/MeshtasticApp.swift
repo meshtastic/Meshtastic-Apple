@@ -153,4 +153,5 @@ class AppState: ObservableObject {
 	@Published var unreadChannelMessages: Int = 0
 	@Published var firmwareVersion: String = "0.0.0"
 	@Published var connectedNode: NodeInfoEntity?
+	@Published var navigationPath: String?
 }

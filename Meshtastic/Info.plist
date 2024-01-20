@@ -31,6 +31,21 @@
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLIconFile</key>
+			<string>alpha</string>
+			<key>CFBundleURLName</key>
+			<string>org.meshtastic</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>meshtastic</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>INIntentsSupported</key>
@@ -52,17 +67,17 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used to connect an iPhone to a user&apos;s meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<string>Bluetooth is used to connect an iPhone to a user's meshtastic device to allow text messaging and location data for the mesh network.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to share channels using a QR Code</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device. Route Recording uses location in the background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinatess to send to the connected device. Route Recording uses location in the background.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>Privacy – Bluetooth Always Usage Description</key>
@@ -71,20 +86,6 @@
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<true/>
-		<key>UISceneConfigurations</key>
-		<dict>
-			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneClassName</key>
-					<string>CPTemplateApplicationScene</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(SWIFT_MODULE_NAME).CarPlaySceneDelegate</string>
-					<key>UISceneConfigurationName</key>
-					<string>CarPlay scene</string>
-				</dict>
-			</array>
-		</dict>
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
