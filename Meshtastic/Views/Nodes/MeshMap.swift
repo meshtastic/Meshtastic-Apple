@@ -95,32 +95,33 @@ struct MeshMap: View {
 							let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 							Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
 								LazyVStack {
-								//ZStack {
-									let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-									if position.nodePosition?.isOnline ?? false {
-										Circle()
-											.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-											.scaleEffect(scale)
-											.animation(
-												Animation.easeInOut(duration: 0.6)
-												   .repeatForever().delay(delay), value: scale
-											)
-											.onAppear {
-												self.scale = 1
-											}
-											.frame(width: 60, height: 60)
-									}
-									if position.nodePosition?.hasDetectionSensorMetrics ?? false {
-										Image(systemName: "sensor.fill")
-											.symbolRenderingMode(.palette)
-											.symbolEffect(.variableColor)
-											.padding()
-											.foregroundStyle(.white)
-											.background(Color(nodeColor))
-											.clipShape(Circle())
-									} else {
-										CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+									ZStack {
+										let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+										if position.nodePosition?.isOnline ?? false {
+											Circle()
+												.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+												.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+												.scaleEffect(scale)
+												.animation(
+													Animation.easeInOut(duration: 0.6)
+														.repeatForever().delay(delay), value: scale
+												)
+												.onAppear {
+													self.scale = 1
+												}
+												.frame(width: 60, height: 60)
+										}
+										if position.nodePosition?.hasDetectionSensorMetrics ?? false {
+											Image(systemName: "sensor.fill")
+												.symbolRenderingMode(.palette)
+												.symbolEffect(.variableColor)
+												.padding()
+												.foregroundStyle(.white)
+												.background(Color(nodeColor))
+												.clipShape(Circle())
+										} else {
+											CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+										}
 									}
 								}
 								.onTapGesture { location in
@@ -183,7 +184,7 @@ struct MeshMap: View {
 											let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 											let headingDegrees = Angle.degrees(Double(mappin.heading))
 											Annotation("", coordinate: mappin.coordinate) {
-												ZStack {
+												LazyVStack {
 													if pf.contains(.Heading) {
 														Image(systemName: "location.north.circle")
 															.resizable()
