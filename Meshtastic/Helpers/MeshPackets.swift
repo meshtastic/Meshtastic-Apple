@@ -895,7 +895,7 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
-							path: "meshtastic://map/waypoint/\(waypoint.id)"
+							path: "meshtastic://open-waypoint?id=\(waypoint.id)"
 						)
 					]
 					manager.schedule()

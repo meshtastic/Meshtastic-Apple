@@ -334,6 +334,29 @@ struct MeshMap: View {
 			case .offline:
 				mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 			}
+			if ((appState.navigationPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
+				guard let url = URL(string: appState.navigationPath ?? "NONE") else {
+					print("Invalid URL")
+					return
+				}
+				guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+				  print("Invalid URL Components")
+				  return
+				}
+				guard let action = components.host, action == "open-waypoint" else {
+				  print("Unknown waypoint URL action")
+				  return
+				}
+				guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+				  print("Waypoint name not found")
+				  return
+				}
+				guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+				  print("Waypoint name not found")
+				  return
+				}
+				position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 150, heading: 0, pitch: 60))
+			}
 		}
 		.onDisappear(perform: {
 			UIApplication.shared.isIdleTimerDisabled = false
