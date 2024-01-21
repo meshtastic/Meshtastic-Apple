@@ -150,12 +150,12 @@ struct MeshMap: View {
 									}
 								}
 								.annotationTitles(.automatic)
-								let dashed = StrokeStyle(
+								let solid = StrokeStyle(
 									lineWidth: 3,
-									lineCap: .round, lineJoin: .round, dash: [7, 10]
+									lineCap: .round, lineJoin: .round
 								)
 								MapPolyline(coordinates: routeCoords)
-									.stroke(Color(UIColor(hex: UInt32(route.color))), style: dashed)
+									.stroke(Color(UIColor(hex: UInt32(route.color))), style: solid)
 								
 							}
 							/// Node Route Lines
@@ -275,7 +275,8 @@ struct MeshMap: View {
 					  print("Waypoint not found")
 					  return
 					}
-					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 150, heading: 0, pitch: 60))
+					showWaypoints = true
+					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 300, heading: 0, pitch: 60))
 				}
 			}
 			.onChange(of: (selectedMapLayer)) { newMapLayer in

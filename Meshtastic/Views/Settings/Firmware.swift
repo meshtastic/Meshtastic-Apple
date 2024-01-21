@@ -112,8 +112,7 @@ struct Firmware: View {
 									
 									if bleManager.sendEnterDfuMode(fromUser: connectedNode!.user!, toUser: node!.user!) {
 										DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-											bleManager.automaticallyReconnect = false
-											bleManager.disconnectPeripheral()
+											bleManager.disconnectPeripheral(reconnect: false)
 										}
 									} else {
 										print("Enter DFU Failed")

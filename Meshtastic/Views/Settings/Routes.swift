@@ -181,12 +181,12 @@ struct Routes: View {
 							}
 						}
 						.annotationTitles(.automatic)
-						let dashed = StrokeStyle(
+						let solid = StrokeStyle(
 							lineWidth: 3,
-							lineCap: .round, lineJoin: .round, dash: [7, 10]
+							lineCap: .round, lineJoin: .round
 						)
 						MapPolyline(coordinates: lineCoords)
-							.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: dashed)
+							.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: solid)
 					}
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
 					.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {

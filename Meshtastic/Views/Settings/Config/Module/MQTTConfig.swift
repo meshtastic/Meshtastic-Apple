@@ -24,6 +24,8 @@ struct MQTTConfig: View {
 	@State var tlsEnabled = true
 	@State var root = "msh"
 	@State var mqttConnected: Bool = false
+	
+	
 
 	var body: some View {
 		VStack {
@@ -250,7 +252,7 @@ struct MQTTConfig: View {
 		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:
 			ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
 		})
 		.onAppear {
 			if self.bleManager.context == nil {

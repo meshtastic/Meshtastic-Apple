@@ -18,6 +18,7 @@ import CoreLocation
 	var enableSmartPosition: Bool
 	
 	@Published var locationsArray: [CLLocation]
+	@Published var lastLocation: CLLocation
 	@Published var isStationary = false
 	@Published var count = 0
 	@Published var isRecording = false
@@ -42,6 +43,7 @@ import CoreLocation
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
 		locationsArray = [CLLocation]()
+		lastLocation = CLLocation()
 		enableSmartPosition = true
 	}
 	
@@ -64,7 +66,11 @@ import CoreLocation
 							locationAdded = addLocation(loc)
 							//print("Added Location \(self.count): \(loc)")
 						} else {
-							locationsArray.append(loc)
+							if !isRecording {
+								lastLocation = loc
+							} else {
+								locationsArray.append(loc)
+							}
 							locationAdded = true
 						}
 						if locationAdded {
@@ -99,16 +105,14 @@ import CoreLocation
 			return false
 		}
 		if isRecording {
-			if let lastLocation = locationsArray.last {
-				let distance = location.distance(from: lastLocation)
-				let gain = location.altitude - lastLocation.altitude
-				distanceTraveled += distance
-				if gain > 0 {
-					elevationGain += gain
-				}
+			let distance = location.distance(from: lastLocation)
+			let gain = location.altitude - lastLocation.altitude
+			distanceTraveled += distance
+			if gain > 0 {
+				elevationGain += gain
 			}
+			locationsArray.append(location)
 		}
-		locationsArray.append(location)
 		return true
 	}
 	
@@ -116,26 +120,23 @@ import CoreLocation
 	
 	static var satsInView: Int {
 		var sats = 0
-		if let newLocation = shared.locationsArray.last {
-			sats = 1
-			if newLocation.verticalAccuracy > 0 {
-				sats = 4
-				if 0...5 ~= newLocation.horizontalAccuracy {
-					sats = 12
-				} else if 6...15 ~= newLocation.horizontalAccuracy {
-					sats = 10
-				} else if 16...30 ~= newLocation.horizontalAccuracy {
-					sats = 9
-				} else if 31...45 ~= newLocation.horizontalAccuracy {
-					sats = 7
-				} else if 46...60 ~= newLocation.horizontalAccuracy {
-					sats = 5
-				}
-			} else if newLocation.verticalAccuracy < 0 && 60...300 ~= newLocation.horizontalAccuracy {
-				sats = 3
-			} else if newLocation.verticalAccuracy < 0 && newLocation.horizontalAccuracy > 300 {
-				sats = 2
+		if shared.lastLocation.verticalAccuracy > 0 {
+			sats = 4
+			if 0...5 ~= shared.lastLocation.horizontalAccuracy {
+				sats = 12
+			} else if 6...15 ~= shared.lastLocation.horizontalAccuracy {
+				sats = 10
+			} else if 16...30 ~= shared.lastLocation.horizontalAccuracy {
+				sats = 9
+			} else if 31...45 ~= shared.lastLocation.horizontalAccuracy {
+				sats = 7
+			} else if 46...60 ~= shared.lastLocation.horizontalAccuracy {
+				sats = 5
 			}
+		} else if shared.lastLocation.verticalAccuracy < 0 && 60...300 ~= shared.lastLocation.horizontalAccuracy {
+			sats = 3
+		} else if shared.lastLocation.verticalAccuracy < 0 && shared.lastLocation.horizontalAccuracy > 300 {
+			sats = 2
 		}
 		return sats
 	}
