@@ -1044,6 +1044,10 @@ struct Config {
     /// in ignore_incoming will have packets they send dropped on receive (by router.cpp)
     var ignoreIncoming: [UInt32] = []
 
+    ///
+    /// If true, the device will not process any packets received via LoRa that passed via MQTT anywhere on the path towards it.
+    var ignoreMqtt: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     enum RegionCode: SwiftProtobuf.Enum {
@@ -2220,6 +2224,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     13: .standard(proto: "sx126x_rx_boosted_gain"),
     14: .standard(proto: "override_frequency"),
     103: .standard(proto: "ignore_incoming"),
+    104: .standard(proto: "ignore_mqtt"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2243,6 +2248,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 13: try { try decoder.decodeSingularBoolField(value: &self.sx126XRxBoostedGain) }()
       case 14: try { try decoder.decodeSingularFloatField(value: &self.overrideFrequency) }()
       case 103: try { try decoder.decodeRepeatedUInt32Field(value: &self.ignoreIncoming) }()
+      case 104: try { try decoder.decodeSingularBoolField(value: &self.ignoreMqtt) }()
       default: break
       }
     }
@@ -2294,6 +2300,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if !self.ignoreIncoming.isEmpty {
       try visitor.visitPackedUInt32Field(value: self.ignoreIncoming, fieldNumber: 103)
     }
+    if self.ignoreMqtt != false {
+      try visitor.visitSingularBoolField(value: self.ignoreMqtt, fieldNumber: 104)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2313,6 +2322,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.sx126XRxBoostedGain != rhs.sx126XRxBoostedGain {return false}
     if lhs.overrideFrequency != rhs.overrideFrequency {return false}
     if lhs.ignoreIncoming != rhs.ignoreIncoming {return false}
+    if lhs.ignoreMqtt != rhs.ignoreMqtt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -33,24 +33,27 @@ struct ChannelSet {
 
   ///
   /// Channel list with settings
-  var settings: [ChannelSettings] = []
+  var settings: [ChannelSettings] {
+    get {return _storage._settings}
+    set {_uniqueStorage()._settings = newValue}
+  }
 
   ///
   /// LoRa config
   var loraConfig: Config.LoRaConfig {
-    get {return _loraConfig ?? Config.LoRaConfig()}
-    set {_loraConfig = newValue}
+    get {return _storage._loraConfig ?? Config.LoRaConfig()}
+    set {_uniqueStorage()._loraConfig = newValue}
   }
   /// Returns true if `loraConfig` has been explicitly set.
-  var hasLoraConfig: Bool {return self._loraConfig != nil}
+  var hasLoraConfig: Bool {return _storage._loraConfig != nil}
   /// Clears the value of `loraConfig`. Subsequent reads from it will return its default value.
-  mutating func clearLoraConfig() {self._loraConfig = nil}
+  mutating func clearLoraConfig() {_uniqueStorage()._loraConfig = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _loraConfig: Config.LoRaConfig? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -68,36 +71,70 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     2: .standard(proto: "lora_config"),
   ]
 
+  fileprivate class _StorageClass {
+    var _settings: [ChannelSettings] = []
+    var _loraConfig: Config.LoRaConfig? = nil
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _settings = source._settings
+      _loraConfig = source._loraConfig
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.settings) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._loraConfig) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeRepeatedMessageField(value: &_storage._settings) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._loraConfig) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.settings.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.settings, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._settings.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._settings, fieldNumber: 1)
+      }
+      try { if let v = _storage._loraConfig {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
     }
-    try { if let v = self._loraConfig {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ChannelSet, rhs: ChannelSet) -> Bool {
-    if lhs.settings != rhs.settings {return false}
-    if lhs._loraConfig != rhs._loraConfig {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._settings != rhs_storage._settings {return false}
+        if _storage._loraConfig != rhs_storage._loraConfig {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
