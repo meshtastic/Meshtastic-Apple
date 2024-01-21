@@ -71,7 +71,7 @@ struct MeshMap: View {
 						if waypoints.count > 0 && showWaypoints {
 							ForEach(Array(waypoints), id: \.id) { waypoint in
 								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-									ZStack {
+									LazyVStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
 											.onTapGesture(perform: { location in
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
@@ -94,7 +94,8 @@ struct MeshMap: View {
 							/// Node color from node.num
 							let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 							Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
-								ZStack {
+								LazyVStack {
+								//ZStack {
 									let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 									if position.nodePosition?.isOnline ?? false {
 										Circle()
@@ -178,32 +179,32 @@ struct MeshMap: View {
 							/// Node History
 							ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 								if showNodeHistory {
-									if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
-										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
-										let headingDegrees = Angle.degrees(Double(mappin.heading))
-										Annotation("", coordinate: mappin.coordinate) {
-											ZStack {
-												if pf.contains(.Heading) {
-													Image(systemName: "location.north.circle")
-														.resizable()
-														.scaledToFit()
-														.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
-														.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-														.clipShape(Circle())
-														.rotationEffect(headingDegrees)
-														.frame(width: 16, height: 16)
-													
-												} else {
-													Circle()
-														.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-														.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
-														.frame(width: 12, height: 12)
+										if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
+											let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
+											let headingDegrees = Angle.degrees(Double(mappin.heading))
+											Annotation("", coordinate: mappin.coordinate) {
+												ZStack {
+													if pf.contains(.Heading) {
+														Image(systemName: "location.north.circle")
+															.resizable()
+															.scaledToFit()
+															.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
+															.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+															.clipShape(Circle())
+															.rotationEffect(headingDegrees)
+															.frame(width: 16, height: 16)
+														
+													} else {
+														Circle()
+															.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+															.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+															.frame(width: 12, height: 12)
+													}
 												}
 											}
+											.annotationTitles(.hidden)
+											.annotationSubtitles(.hidden)
 										}
-										.annotationTitles(.hidden)
-										.annotationSubtitles(.hidden)
-									}
 								}
 							}
 						}
@@ -276,7 +277,7 @@ struct MeshMap: View {
 					  return
 					}
 					showWaypoints = true
-					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 300, heading: 0, pitch: 60))
+					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 				}
 			}
 			.onChange(of: (selectedMapLayer)) { newMapLayer in
