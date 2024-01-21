@@ -198,8 +198,10 @@
 "mode"="模式";
 "module.configuration"="模块配置";
 "mqtt"="MQTT";
+"mqtt.connect"="Connect to MQTT";
 "mqtt.config"="MQTT 配置";
 "mqtt.clientproxy"="MQTT 客户端代理";
+"mqtt.disconnect"="Disconnect from MQTT";
 "mqtt.username"="用户名称";
 "name"="名称";
 "network"="网络";

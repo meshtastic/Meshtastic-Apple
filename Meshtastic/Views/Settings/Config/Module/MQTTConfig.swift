@@ -23,6 +23,7 @@ struct MQTTConfig: View {
 	@State var jsonEnabled = false
 	@State var tlsEnabled = true
 	@State var root = "msh"
+	@State var mqttConnected: Bool = false
 
 	var body: some View {
 		VStack {
@@ -54,6 +55,7 @@ struct MQTTConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
+					
 					Toggle(isOn: $enabled) {
 						
 						Label("enabled", systemImage: "dot.radiowaves.right")
@@ -64,7 +66,13 @@ struct MQTTConfig: View {
 						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If both MQTT and the client proxy are enabled your mobile device will utalize an available network connection to connect to the specified MQTT server.")
+					if enabled && proxyToClientEnabled {
+						Toggle(isOn: $mqttConnected) {
+							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					Text("If both MQTT and the client proxy are enabled your mobile device will utilize an available network connection to connect to the specified MQTT server.")
 						.font(.caption2)
 					
 					Toggle(isOn: $encryptionEnabled) {
@@ -314,6 +322,17 @@ struct MQTTConfig: View {
 				if newTlsEnabled != node!.mqttConfig!.tlsEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: mqttConnected) { newMqttConnected in
+			if newMqttConnected == false {
+				if bleManager.mqttProxyConnected {
+					bleManager.mqttManager.disconnect()
+				}
+			} else {
+				if !bleManager.mqttProxyConnected && node != nil {
+					bleManager.mqttManager.connectFromConfigSettings(node: node!)
+				}
+			}
+		}
 	}
 	func setMqttValues() {
 		self.enabled = (node?.mqttConfig?.enabled ?? false)
@@ -325,6 +344,7 @@ struct MQTTConfig: View {
 		self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
 		self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
 		self.tlsEnabled = (node?.mqttConfig?.tlsEnabled ?? false)
+		self.mqttConnected = bleManager.mqttProxyConnected
 		self.hasChanges = false
 	}
 }
