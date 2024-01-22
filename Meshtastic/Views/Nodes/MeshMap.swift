@@ -43,9 +43,9 @@ struct MeshMap: View {
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
-	
+	/// && time >= %@
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-				  predicate: NSPredicate(format: "nodePosition != nil && latest == true && time >= %@", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
+				  predicate: NSPredicate(format: "nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
@@ -67,19 +67,6 @@ struct MeshMap: View {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						/// Waypoint Annotations
-						if waypoints.count > 0 && showWaypoints {
-							ForEach(Array(waypoints), id: \.id) { waypoint in
-								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-									LazyVStack {
-										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
-											.onTapGesture(perform: { location in
-												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-											})
-									}
-								}
-							}
-						}
 						/// Convex Hull
 						if showConvexHull {
 							if lineCoords.count > 0 {
@@ -206,6 +193,20 @@ struct MeshMap: View {
 											.annotationTitles(.hidden)
 											.annotationSubtitles(.hidden)
 										}
+								}
+							}
+						}
+						
+						/// Waypoint Annotations
+						if waypoints.count > 0 && showWaypoints {
+							ForEach(Array(waypoints), id: \.id) { waypoint in
+								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+									LazyVStack {
+										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
+											.onTapGesture(perform: { location in
+												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+											})
+									}
 								}
 							}
 						}
