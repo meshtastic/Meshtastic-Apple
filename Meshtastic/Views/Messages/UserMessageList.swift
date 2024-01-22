@@ -167,6 +167,20 @@ struct UserMessageList: View {
 																.fixedSize()
 																.padding(.bottom, 1)
 														}
+														.onAppear {
+															if !tapback.read {
+																tapback.read = true
+																do {
+																	try context.save()
+																	print("📖 Read tapback \(tapback.messageId) ")
+																	appState.unreadDirectMessages = user.unreadMessages
+																	UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+
+																} catch {
+																	print("Failed to read tapback \(tapback.messageId)")
+																}
+															}
+														}
 													}
 												}
 												.padding(10)
