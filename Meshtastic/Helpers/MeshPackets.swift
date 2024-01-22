@@ -796,7 +796,7 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText,
 								target: "message",
-								path: "meshtastic://messages/dm/user/\(newMessage.fromUser?.num ?? 0)/message/\(newMessage.messageId)"
+								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
 							)
 						]
 						manager.schedule()

@@ -257,6 +257,12 @@ struct RouteRecorder: View {
 				.presentationDetents([.fraction(0.30), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)
+				.onAppear {
+					UIApplication.shared.isIdleTimerDisabled = true
+				}
+				.onDisappear(perform: {
+					UIApplication.shared.isIdleTimerDisabled = false
+				})
 				.onChange(of: locationsHandler.locationsArray.last) { newLoc in
 					if locationsHandler.isRecording {
 						if let loc = newLoc {
