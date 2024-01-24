@@ -172,6 +172,7 @@ struct Channels: View {
 								"Key",
 								text: $channelKey
 							)
+							.padding(4)
 							.disableAutocorrection(true)
 							.keyboardType(.alphabet)
 							.foregroundColor(Color.gray)
@@ -195,13 +196,6 @@ struct Channels: View {
 								hasChanges = true
 							})
 							.disabled(channelKeySize <= 0)
-//							TextField(
-//								"",
-//								text: $channelKey,
-//								axis: .vertical
-//							)
-//							.foregroundColor(Color.gray)
-//							.disabled(true)
 						}
 						Picker("Channel Role", selection: $channelRole) {
 							if channelRole == 1 {
