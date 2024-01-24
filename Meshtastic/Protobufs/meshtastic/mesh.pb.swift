@@ -221,6 +221,16 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case ebyteEsp32S3 // = 54
 
   ///
+  /// Waveshare ESP32-S3-PICO with PICO LoRa HAT and 2.9inch e-Ink
+  case esp32S3Pico // = 55
+
+  ///
+  /// CircuitMess Chatter 2 LLCC68 Lora Module and ESP32 Wroom
+  /// Lora module can be swapped out for a Heltec RA-62 which is "almost" pin compatible
+  /// with one cut and one jumper Meshtastic works
+  case chatter2 // = 56
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -280,6 +290,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 52: self = .picomputerS3
     case 53: self = .heltecHt62
     case 54: self = .ebyteEsp32S3
+    case 55: self = .esp32S3Pico
+    case 56: self = .chatter2
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -334,6 +346,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .picomputerS3: return 52
     case .heltecHt62: return 53
     case .ebyteEsp32S3: return 54
+    case .esp32S3Pico: return 55
+    case .chatter2: return 56
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -393,6 +407,8 @@ extension HardwareModel: CaseIterable {
     .picomputerS3,
     .heltecHt62,
     .ebyteEsp32S3,
+    .esp32S3Pico,
+    .chatter2,
     .privateHw,
   ]
 }
@@ -1498,6 +1514,13 @@ struct MeshPacket {
     set {_uniqueStorage()._delayed = newValue}
   }
 
+  ///
+  /// Describes whether this packet passed via MQTT somewhere along the path it currently took.
+  var viaMqtt: Bool {
+    get {return _storage._viaMqtt}
+    set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_PayloadVariant: Equatable {
@@ -2570,6 +2593,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     52: .same(proto: "PICOMPUTER_S3"),
     53: .same(proto: "HELTEC_HT62"),
     54: .same(proto: "EBYTE_ESP32_S3"),
+    55: .same(proto: "ESP32_S3_PICO"),
+    56: .same(proto: "CHATTER_2"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -3285,6 +3310,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     11: .same(proto: "priority"),
     12: .standard(proto: "rx_rssi"),
     13: .same(proto: "delayed"),
+    14: .standard(proto: "via_mqtt"),
   ]
 
   fileprivate class _StorageClass {
@@ -3300,6 +3326,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _priority: MeshPacket.Priority = .unset
     var _rxRssi: Int32 = 0
     var _delayed: MeshPacket.Delayed = .noDelay
+    var _viaMqtt: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -3318,6 +3345,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _priority = source._priority
       _rxRssi = source._rxRssi
       _delayed = source._delayed
+      _viaMqtt = source._viaMqtt
     }
   }
 
@@ -3368,6 +3396,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 11: try { try decoder.decodeSingularEnumField(value: &_storage._priority) }()
         case 12: try { try decoder.decodeSingularInt32Field(value: &_storage._rxRssi) }()
         case 13: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
+        case 14: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
         default: break
         }
       }
@@ -3424,6 +3453,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._delayed != .noDelay {
         try visitor.visitSingularEnumField(value: _storage._delayed, fieldNumber: 13)
       }
+      if _storage._viaMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3445,6 +3477,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._priority != rhs_storage._priority {return false}
         if _storage._rxRssi != rhs_storage._rxRssi {return false}
         if _storage._delayed != rhs_storage._delayed {return false}
+        if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
         return true
       }
       if !storagesAreEqual {return false}

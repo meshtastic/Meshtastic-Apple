@@ -43,6 +43,7 @@ struct LoRaConfig: View {
 	@State var codingRate = 0
 	@State var rxBoostedGain = false
 	@State var overrideFrequency: Float = 0.0
+	@State var ignoreMqtt = false
 
 	let floatFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
@@ -111,6 +112,11 @@ struct LoRaConfig: View {
 					}
 				}
 				Section(header: Text("Advanced")) {
+					
+					Toggle(isOn: $ignoreMqtt) {
+						Label("Ignore MQTT", systemImage: "server.rack")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $txEnabled) {
 						Label("Transmit Enabled", systemImage: "waveform.path")
@@ -227,6 +233,7 @@ struct LoRaConfig: View {
 						lc.spreadFactor = UInt32(spreadFactor)
 						lc.sx126XRxBoostedGain = rxBoostedGain
 						lc.overrideFrequency = overrideFrequency
+						lc.ignoreMqtt = ignoreMqtt
 						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -319,6 +326,11 @@ struct LoRaConfig: View {
 				if newTxEnabled != node!.loRaConfig!.txEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: ignoreMqtt) { newIgnoreMqtt in
+			if node != nil && node!.loRaConfig != nil {
+				if newIgnoreMqtt != node!.loRaConfig!.ignoreMqtt { hasChanges = true }
+			}
+		}
 	}
 	func setLoRaValues() {
 		self.hopLimit = Int(node?.loRaConfig?.hopLimit ?? 3)
@@ -333,6 +345,7 @@ struct LoRaConfig: View {
 		self.spreadFactor = Int(node?.loRaConfig?.spreadFactor ?? 0)
 		self.rxBoostedGain = node?.loRaConfig?.sx126xRxBoostedGain ?? false
 		self.overrideFrequency = node?.loRaConfig?.overrideFrequency ?? 0.0
+		self.ignoreMqtt = node?.loRaConfig?.ignoreMqtt ?? false
 		self.hasChanges = false
 	}
 }

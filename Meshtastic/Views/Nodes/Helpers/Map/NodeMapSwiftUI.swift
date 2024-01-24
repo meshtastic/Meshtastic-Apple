@@ -86,7 +86,7 @@ struct NodeMapSwiftUI: View {
 						if waypoints.count > 0 && showWaypoints {
 							ForEach(Array(waypoints), id: \.id) { waypoint in
 								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-									ZStack {
+									LazyVStack {
 										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
 											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
 												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
@@ -100,47 +100,49 @@ struct NodeMapSwiftUI: View {
 							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
-								ZStack {
+								LazyVStack {
 									if position.latest {
-										Circle()
-											.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-											.frame(width: 50, height: 50)
-										if pf.contains(.Heading) {
-											Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
-												.symbolEffect(.pulse.byLayer)
-												.padding(5)
-												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-												.background(Color(nodeColor.darker()))
-												.clipShape(Circle())
-												.rotationEffect(headingDegrees)
-												.onTapGesture {
-													selectedPosition = (selectedPosition == position ? nil : position)
-												}
-												.popover(item: $selectedPosition) { selection in
-													PositionPopover(position: selection)
-														.padding()
-														.opacity(0.8)
-														.presentationCompactAdaptation(.popover)
-												}
-											
-										} else {
-											Image(systemName: "flipphone")
-												.symbolEffect(.pulse.byLayer)
-												.padding(5)
-												.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-												.background(Color(UIColor(hex: UInt32(node.num)).darker()))
-												.clipShape(Circle())
-												.onTapGesture {
-													selectedPosition = (selectedPosition == position ? nil : position)
-												}
-												.popover(item: $selectedPosition) { selection in
-													PositionPopover(position: selection)
-														.padding()
-														.opacity(0.8)
-														.presentationCompactAdaptation(.popover)
-												}
-											
+										ZStack {
+											Circle()
+												.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+												.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+												.frame(width: 50, height: 50)
+											if pf.contains(.Heading) {
+												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
+													.symbolEffect(.pulse.byLayer)
+													.padding(5)
+													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+													.background(Color(nodeColor.darker()))
+													.clipShape(Circle())
+													.rotationEffect(headingDegrees)
+													.onTapGesture {
+														selectedPosition = (selectedPosition == position ? nil : position)
+													}
+													.popover(item: $selectedPosition) { selection in
+														PositionPopover(position: selection)
+															.padding()
+															.opacity(0.8)
+															.presentationCompactAdaptation(.popover)
+													}
+												
+											} else {
+												Image(systemName: "flipphone")
+													.symbolEffect(.pulse.byLayer)
+													.padding(5)
+													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+													.background(Color(UIColor(hex: UInt32(node.num)).darker()))
+													.clipShape(Circle())
+													.onTapGesture {
+														selectedPosition = (selectedPosition == position ? nil : position)
+													}
+													.popover(item: $selectedPosition) { selection in
+														PositionPopover(position: selection)
+															.padding()
+															.opacity(0.8)
+															.presentationCompactAdaptation(.popover)
+													}
+												
+											}
 										}
 									} else {
 										if showNodeHistory {

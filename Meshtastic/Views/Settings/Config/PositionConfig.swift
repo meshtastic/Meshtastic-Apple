@@ -154,17 +154,6 @@ struct PositionConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-					if includeAltitude {
-						Toggle(isOn: $includeAltitudeMsl) {
-							Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Toggle(isOn: $includeGeoidalSeparation) {
-							Label("Altitude Geoidal Separation", systemImage: "globe.americas")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					}
-
 					Toggle(isOn: $includeSatsinview) {
 						Label("Number of satellites", systemImage: "skew")
 					}
@@ -192,6 +181,17 @@ struct PositionConfig: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Advanced Position Flags")) {
+					
+					if includeAltitude {
+						Toggle(isOn: $includeAltitudeMsl) {
+							Label("Altitude is Mean Sea Level", systemImage: "arrow.up.to.line.compact")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $includeGeoidalSeparation) {
+							Label("Altitude Geoidal Separation", systemImage: "globe.americas")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
 
 					Toggle(isOn: $includeDop) {
 						Text("Dilution of precision (DOP) PDOP used by default")
@@ -213,7 +213,7 @@ struct PositionConfig: View {
 					if deviceGpsEnabled {
 						
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
-							ForEach(0..<48) {
+							ForEach(0..<49) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -223,7 +223,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS Transmit GPIO", selection: $txGpio) {
-							ForEach(0..<48) {
+							ForEach(0..<49) {
 								if $0 == 0 {
 									Text("unset")
 								} else {
@@ -233,7 +233,7 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Picker("GPS EN GPIO", selection: $gpsEnGpio) {
-							ForEach(0..<48) {
+							ForEach(0..<49) {
 								if $0 == 0 {
 									Text("unset")
 								} else {

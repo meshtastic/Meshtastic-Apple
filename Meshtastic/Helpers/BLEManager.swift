@@ -215,7 +215,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected",
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription
+							content: e.localizedDescription,
+							target: "bluetooth",
+							path: "meshtastic://bluetooth"
 						)
 					]
 					manager.schedule()
@@ -233,7 +235,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							id: (peripheral.identifier.uuidString),
 							title: "Radio Disconnected",
 							subtitle: "\(peripheral.name ?? "unknown".localized)",
-							content: e.localizedDescription
+							content: e.localizedDescription,
+							target: "bluetooth",
+							path: "meshtastic://bluetooth"
 						)
 					]
 					manager.schedule()
@@ -548,17 +552,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Channels
 				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
 					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: connectedPeripheral.num, context: context!)
+					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context!)
 				}
 				// Config
 				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+					localConfig(config: decodedInfo.config, context: context!, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
 				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0{
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: self.connectedPeripheral.num, nodeLongName: self.connectedPeripheral.longName)
+					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)

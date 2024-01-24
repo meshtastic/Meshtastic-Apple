@@ -198,8 +198,10 @@
 "mode"="Modus";
 "module.configuration"="Modul Konfiguration";
 "mqtt"="MQTT";
+"mqtt.connect"="Connect to MQTT";
 "mqtt.config"="MQTT Config";
 "mqtt.clientproxy"="MQTT Client Proxy";
+"mqtt.disconnect"="Disconnect from MQTT";
 "mqtt.username"="Benutzername";
 "name"="Name";
 "network"="Netzwerk";

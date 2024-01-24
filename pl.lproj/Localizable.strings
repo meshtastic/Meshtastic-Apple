@@ -200,8 +200,10 @@
 "mode"="Tryb";
 "module.configuration"="Konfiguracja modułu";
 "mqtt"="MQTT";
+"mqtt.connect"="Connect to MQTT";
 "mqtt.config"="Konfiguracja MQTT";
 "mqtt.clientproxy"="Klient Proxy MQTT";
+"mqtt.disconnect"="Disconnect from MQTT";
 "mqtt.username"="Nazwa użytkownika";
 "name"="Nazwa";
 "network"="Sieć";

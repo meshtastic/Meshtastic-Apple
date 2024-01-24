@@ -190,6 +190,20 @@ struct ChannelMessageList: View {
 															.fixedSize()
 															.padding(.bottom, 1)
 													}
+													.onAppear {
+														if !tapback.read {
+															tapback.read = true
+															do {
+																try context.save()
+																print("📖 Read message \(message.messageId) ")
+																appState.unreadChannelMessages = myInfo.unreadMessages
+																UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
+																context.refresh(myInfo, mergeChanges: true)
+															} catch {
+																print("Failed to read tapback \(tapback.messageId)")
+															}
+														}
+													}
 												}
 											}
 											.padding(10)
@@ -199,6 +213,7 @@ struct ChannelMessageList: View {
 											)
 										}
 									}
+					
 									HStack {
 										if currentUser && message.receivedACK {
 											// Ack Received

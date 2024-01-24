@@ -660,23 +660,37 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 5 {
-					let content = UNMutableNotificationContent()
-					content.title = "Critically Low Battery!"
-					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
-					content.userInfo["target"] = "node"
-					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-					let uuidString = UUID().uuidString
-					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
-					let notificationCenter = UNUserNotificationCenter.current()
-					notificationCenter.add(request) { (error) in
-						if error != nil {
-							// Handle any errors.
-							print("Error creating local low battery notification: \(error?.localizedDescription ?? "no description")")
-						} else {
-							print("Created local low battery notification.")
-						}
-					}
+				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+					let manager = LocalNotificationManager()
+					manager.notifications = [
+						Notification(
+							id: ("notification.id.\(UUID().uuidString)"),
+							title: "Critically Low Battery!",
+							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
+							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
+							target: "nodes",
+							path: "meshtastic://nodes/\(telemetry.nodeTelemetry?.num ?? 0)/devicetelemetrylog"
+						)
+					]
+					manager.schedule()
+	
+//					let content = UNMutableNotificationContent()
+//					content.title = "Critically Low Battery!"
+//					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
+//					content.userInfo["target"] = "node"
+//					content.userInfo["path"] = "meshtastic://node/\(telemetry.nodeTelemetry?.num ?? 0)"
+//					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+//					let uuidString = UUID().uuidString
+//					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
+//					let notificationCenter = UNUserNotificationCenter.current()
+//					notificationCenter.add(request) { (error) in
+//						if error != nil {
+//							// Handle any errors.
+//							print("Error creating local low battery notification: \(error?.localizedDescription ?? "no description")")
+//						} else {
+//							print("Created local low battery notification.")
+//						}
+//					}
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
@@ -781,7 +795,8 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText,
-								target: "message"
+								target: "message",
+								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
 							)
 						]
 						manager.schedule()
@@ -812,7 +827,8 @@ func textMessageAppPacket(packet: MeshPacket, blockRangeTest: Bool, connectedNod
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText,
-												target: "message")
+												target: "message",
+												path: "meshtastic://messages/channel/\(newMessage.messageId)")
 										]
 										manager.schedule()
 										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -878,7 +894,8 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							title: "New Waypoint Received",
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
-							target: "map"
+							target: "map",
+							path: "meshtastic://open-waypoint?id=\(waypoint.id)"
 						)
 					]
 					manager.schedule()

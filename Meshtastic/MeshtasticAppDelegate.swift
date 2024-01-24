@@ -33,6 +33,8 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		let userInfo = response.notification.request.content.userInfo
 		let targetValue = userInfo["target"] as? String
+		AppState.shared.navigationPath = userInfo["path"] as? String
+		print("\(AppState.shared.navigationPath ?? "EMPTY")")
 		if targetValue == "map" {
 			AppState.shared.tabSelection = Tab.map
 		} else if targetValue == "message" {

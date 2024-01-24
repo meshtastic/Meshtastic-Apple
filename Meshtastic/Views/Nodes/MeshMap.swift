@@ -43,10 +43,9 @@ struct MeshMap: View {
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
-	
-	/// "time >= %@ && nodePosition != nil && latest == true"
+	/// && time >= %@
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "time", ascending: true)],
-				  predicate: NSPredicate(format: "nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -30, to: Date())! as NSDate), animation: .none)
+				  predicate: NSPredicate(format: "nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate), animation: .none)
 	private var positions: FetchedResults<PositionEntity>
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
@@ -68,19 +67,6 @@ struct MeshMap: View {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						/// Waypoint Annotations
-						if waypoints.count > 0 && showWaypoints {
-							ForEach(Array(waypoints), id: \.id) { waypoint in
-								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-									ZStack {
-										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
-											.onTapGesture(perform: { location in
-												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-											})
-									}
-								}
-							}
-						}
 						/// Convex Hull
 						if showConvexHull {
 							if lineCoords.count > 0 {
@@ -95,32 +81,34 @@ struct MeshMap: View {
 							/// Node color from node.num
 							let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
 							Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
-								ZStack {
-									let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
-									if position.nodePosition?.isOnline ?? false {
-										Circle()
-											.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-											.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-											.scaleEffect(scale)
-											.animation(
-												Animation.easeInOut(duration: 0.6)
-												   .repeatForever().delay(delay), value: scale
-											)
-											.onAppear {
-												self.scale = 1
-											}
-											.frame(width: 60, height: 60)
-									}
-									if position.nodePosition?.hasDetectionSensorMetrics ?? false {
-										Image(systemName: "sensor.fill")
-											.symbolRenderingMode(.palette)
-											.symbolEffect(.variableColor)
-											.padding()
-											.foregroundStyle(.white)
-											.background(Color(nodeColor))
-											.clipShape(Circle())
-									} else {
-										CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+								LazyVStack {
+									ZStack {
+										let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+										if position.nodePosition?.isOnline ?? false {
+											Circle()
+												.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+												.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+												.scaleEffect(scale)
+												.animation(
+													Animation.easeInOut(duration: 0.6)
+														.repeatForever().delay(delay), value: scale
+												)
+												.onAppear {
+													self.scale = 1
+												}
+												.frame(width: 60, height: 60)
+										}
+										if position.nodePosition?.hasDetectionSensorMetrics ?? false {
+											Image(systemName: "sensor.fill")
+												.symbolRenderingMode(.palette)
+												.symbolEffect(.variableColor)
+												.padding()
+												.foregroundStyle(.white)
+												.background(Color(nodeColor))
+												.clipShape(Circle())
+										} else {
+											CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 40)
+										}
 									}
 								}
 								.onTapGesture { location in
@@ -151,12 +139,12 @@ struct MeshMap: View {
 									}
 								}
 								.annotationTitles(.automatic)
-								let dashed = StrokeStyle(
+								let solid = StrokeStyle(
 									lineWidth: 3,
-									lineCap: .round, lineJoin: .round, dash: [7, 10]
+									lineCap: .round, lineJoin: .round
 								)
 								MapPolyline(coordinates: routeCoords)
-									.stroke(Color(UIColor(hex: UInt32(route.color))), style: dashed)
+									.stroke(Color(UIColor(hex: UInt32(route.color))), style: solid)
 								
 							}
 							/// Node Route Lines
@@ -179,31 +167,45 @@ struct MeshMap: View {
 							/// Node History
 							ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
 								if showNodeHistory {
-									if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
-										let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
-										let headingDegrees = Angle.degrees(Double(mappin.heading))
-										Annotation("", coordinate: mappin.coordinate) {
-											ZStack {
-												if pf.contains(.Heading) {
-													Image(systemName: "location.north.circle")
-														.resizable()
-														.scaledToFit()
-														.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
-														.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-														.clipShape(Circle())
-														.rotationEffect(headingDegrees)
-														.frame(width: 16, height: 16)
-													
-												} else {
-													Circle()
-														.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-														.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
-														.frame(width: 12, height: 12)
+										if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
+											let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
+											let headingDegrees = Angle.degrees(Double(mappin.heading))
+											Annotation("", coordinate: mappin.coordinate) {
+												LazyVStack {
+													if pf.contains(.Heading) {
+														Image(systemName: "location.north.circle")
+															.resizable()
+															.scaledToFit()
+															.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
+															.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+															.clipShape(Circle())
+															.rotationEffect(headingDegrees)
+															.frame(width: 16, height: 16)
+														
+													} else {
+														Circle()
+															.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+															.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+															.frame(width: 12, height: 12)
+													}
 												}
 											}
+											.annotationTitles(.hidden)
+											.annotationSubtitles(.hidden)
 										}
-										.annotationTitles(.hidden)
-										.annotationSubtitles(.hidden)
+								}
+							}
+						}
+						
+						/// Waypoint Annotations
+						if waypoints.count > 0 && showWaypoints {
+							ForEach(Array(waypoints), id: \.id) { waypoint in
+								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
+									LazyVStack {
+										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
+											.onTapGesture(perform: { location in
+												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+											})
 									}
 								}
 							}
@@ -252,6 +254,33 @@ struct MeshMap: View {
 			}
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+			}
+			.onChange(of: (appState.navigationPath)) { newPath in
+				
+				if ((newPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
+					guard let url = URL(string: appState.navigationPath ?? "NONE") else {
+						print("Invalid URL")
+						return
+					}
+					guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+					  print("Invalid URL Components")
+					  return
+					}
+					guard let action = components.host, action == "open-waypoint" else {
+					  print("Unknown waypoint URL action")
+					  return
+					}
+					guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+					  print("Waypoint id not found")
+					  return
+					}
+					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+					  print("Waypoint not found")
+					  return
+					}
+					showWaypoints = true
+					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
+				}
 			}
 			.onChange(of: (selectedMapLayer)) { newMapLayer in
 				switch selectedMapLayer {
