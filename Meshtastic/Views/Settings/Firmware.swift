@@ -143,7 +143,7 @@ struct Firmware: View {
 								.font(.callout)
 						}
 					}
-				} else if currentDevice?.architecture == Meshtastic.Architecture.esp32 {
+				} else if currentDevice?.architecture == Meshtastic.Architecture.esp32 || currentDevice?.architecture == Meshtastic.Architecture.esp32S3 || currentDevice?.architecture == Meshtastic.Architecture.esp32C3 {
 					VStack(alignment: .leading) {
 						Text("ESP32 Device Firmware Update")
 							.font(.title3)
