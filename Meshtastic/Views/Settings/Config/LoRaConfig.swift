@@ -176,7 +176,7 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .channelNum)
 					}
-					Text("This determines the actual frequency you are transmitting on in the band.")
+					Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
 						.font(.caption)
 					Toggle(isOn: $rxBoostedGain) {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
