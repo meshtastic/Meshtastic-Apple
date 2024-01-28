@@ -594,7 +594,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: UserDefaults.blockRangeTest, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -620,8 +620,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
 				}
 			case .rangeTestApp:
-				if wantRangeTestPackets && !UserDefaults.blockRangeTest {
-					textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: false, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				if wantRangeTestPackets {
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
 					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")

@@ -11,7 +11,6 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
 	@State var provideLocation: Bool = UserDefaults.provideLocation
-	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
 	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -20,12 +19,6 @@ struct AppSettings: View {
 		VStack {
 			Form {
 				Section(header: Text("options")) {
-					
-					Toggle(isOn: $blockRangeTest) {
-						Label("range.test.blocked", systemImage: "x.circle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $useLegacyMap) {
 						Label("map.use.legacy", systemImage: "map")
 					}
@@ -150,9 +143,6 @@ struct AppSettings: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-		}
-		.onChange(of: blockRangeTest) { newBlockRangeTest in
-			UserDefaults.blockRangeTest = newBlockRangeTest
 		}
 		.onChange(of: provideLocation) { newProvideLocation in
 			UserDefaults.provideLocation = newProvideLocation
