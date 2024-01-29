@@ -69,14 +69,14 @@ struct Settings: View {
 						Text("routes")
 					}
 					.tag(SettingsSidebar.routes)
-//					NavigationLink {
-//						RouteRecorder()
-//					} label: {
-//						Image(systemName: "record.circle")
-//							.symbolRenderingMode(.hierarchical)
-//						Text("route.recorder")
-//					}
-//					.tag(SettingsSidebar.routeRecorder)
+					NavigationLink {
+						RouteRecorder()
+					} label: {
+						Image(systemName: "record.circle")
+							.symbolRenderingMode(.hierarchical)
+						Text("route.recorder")
+					}
+					.tag(SettingsSidebar.routeRecorder)
 				}
 				
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
@@ -312,13 +312,15 @@ struct Settings: View {
 				}
 			}
 			.onAppear {
-				self.preferredNodeNum = UserDefaults.preferredPeripheralNum
-				if nodes.count > 1 {
-					if selectedNode == 0 {
+				if self.preferredNodeNum == 0 {
+					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
+					if nodes.count > 1 {
+						if selectedNode == 0 {
+							self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
+						}
+					} else {
 						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
 					}
-				} else {
-					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? UserDefaults.preferredPeripheralNum : 0)
 				}
 			}
 			.listStyle(GroupedListStyle())
