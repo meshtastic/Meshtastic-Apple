@@ -166,7 +166,7 @@
 "mesh.log.devicemetadata %@"="Requesting Device Metadata for %@";
 "mesh.log.device.metadata.received %@"="Device Metadata admin message received from: %@";
 "mesh.log.detectionsensor.config %@"="Detection Sensor module config received: %@";
-"mesh.log.externalnotification.config %@"="External Notifiation module config received: %@";
+"mesh.log.externalnotification.config %@"="External Notification module config received: %@";
 "mesh.log.lora.config %@"="LoRa config received: %@";
 "mesh.log.lora.config.sent %@"="Sent a LoRa.Config for: %@";
 "mesh.log.mqtt.config %@"="MQTT module config received: %@";
