@@ -223,7 +223,7 @@ struct NodeMap: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([UserDefaults.enableOfflineMaps || UserDefaults.enableOverlayServer ? .large : .medium])
+				.presentationDetents([enableOfflineMaps || enableOverlayServer ? .large : .medium])
 				.presentationDragIndicator(.visible)
 			}
 		}
