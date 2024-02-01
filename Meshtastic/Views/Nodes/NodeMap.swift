@@ -86,7 +86,7 @@ struct NodeMap: View {
 						Section(header: Text("Map Options")) {
 							Picker(selection: $selectedMapLayer, label: Text("")) {
 								ForEach(MapLayer.allCases, id: \.self) { layer in
-									if layer == MapLayer.offline && UserDefaults.enableOfflineMaps {
+									if layer == MapLayer.offline && enableOfflineMaps {
 										Text(layer.localized)
 									} else if layer != MapLayer.offline {
 										Text(layer.localized)
