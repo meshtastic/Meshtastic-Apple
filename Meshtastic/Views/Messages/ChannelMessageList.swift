@@ -224,6 +224,11 @@ struct ChannelMessageList: View {
 								}
 								.padding(.bottom)
 								.id(channel.allPrivateMessages.firstIndex(of: message))
+
+								if currentUser && message.ackError > 0 {
+									RetryButton(message: message)
+								}
+
 								if !currentUser {
 									Spacer(minLength: 50)
 								}
