@@ -67,6 +67,7 @@ class PersistenceController {
 				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 } catch let error {
 				 print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
+				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 }
 
 		} catch let error {
