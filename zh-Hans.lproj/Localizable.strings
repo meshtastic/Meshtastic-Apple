@@ -60,6 +60,7 @@
 "current"="当前";
 "default"="默认";
 "delete"="删除";
+"detection.sensor"="Detection Sensor";
 "device"="电台";
 "device.config"="电台配置";
 "device.metrics.delete"="删除所有电台指标?";

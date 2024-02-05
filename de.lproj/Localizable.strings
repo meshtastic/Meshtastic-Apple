@@ -60,6 +60,7 @@
 "current"="Current";
 "default"="Standard";
 "delete"="Löschen";
+"detection.sensor"="Detection Sensor";
 "device"="Gerät";
 "device.config"="Gerätekonfiguration";
 "device.metrics.delete"="Delete all device metrics?";
