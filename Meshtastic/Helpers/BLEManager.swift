@@ -2372,6 +2372,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			// Request Response
 			switch storeAndForwardMessage.rr {
 			case .unset:
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerError:
 				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
@@ -2382,7 +2383,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					/// send a request for ClientHistory with a time period matching the heartbeat
 					var sfPacket = StoreAndForward()
 					sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
-					sfPacket.history.window = 18000000 // storeAndForwardMessage.heartbeat.period
+					sfPacket.history.window = 120 // storeAndForwardMessage.heartbeat.period
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(packet.from)
 					meshPacket.from	= UInt32(connectedNodeNum)
@@ -2428,6 +2429,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .clientAbort:
 				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .UNRECOGNIZED:
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			}
 		}
