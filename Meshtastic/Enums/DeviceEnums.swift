@@ -12,22 +12,22 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 
 	case client = 0
 	case clientMute = 1
-	case router = 2
-	case routerClient = 3
-	case repeater = 4
+	case clientHidden = 8
 	case tracker = 5
+	case lostAndFound = 9
 	case sensor = 6
 	case tak = 7
-	case clientHidden = 8
-	case lostAndFound = 9
-
+	case repeater = 4
+	case router = 2
+	case routerClient = 3
+	
 	var id: Int { self.rawValue }
 	var name: String {
 		switch self {
 		case .client:
 			return "Client"
 		case .clientMute:
-			return "Muted Client"
+			return "Client Mute"
 		case .router:
 			return "Router"
 		case .routerClient:
