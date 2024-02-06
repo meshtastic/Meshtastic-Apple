@@ -38,7 +38,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
 	var lastPosition: CLLocationCoordinate2D?
-	let emptyNodeNum: UInt32 = 4294967295
+	static let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
 	var wantStoreAndForwardPackets = false
@@ -865,7 +865,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					if toUserNum > 0 {
 						meshPacket.to = UInt32(toUserNum)
 					} else {
-						meshPacket.to = emptyNodeNum
+						meshPacket.to = Self.emptyNodeNum
 					}
 					meshPacket.channel = UInt32(channel)
 					meshPacket.from	= UInt32(fromUserNum)
@@ -912,7 +912,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = UInt32(connectedPeripheral.num)
 		var meshPacket = MeshPacket()
-		meshPacket.to = emptyNodeNum
+		meshPacket.to = Self.emptyNodeNum
 		meshPacket.from	= fromNodeNum
 		meshPacket.wantAck = true
 		var dataMessage = DataMessage()
