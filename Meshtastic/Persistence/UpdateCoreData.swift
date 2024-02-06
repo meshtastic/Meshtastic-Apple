@@ -598,6 +598,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				let newPositionConfig = PositionConfigEntity(context: context)
 				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
+				newPositionConfig.gpsMode = Int32(config.gpsMode.rawValue)
 				newPositionConfig.rxGpio = Int32(config.rxGpio)
 				newPositionConfig.txGpio = Int32(config.txGpio)
 				newPositionConfig.gpsEnGpio = Int32(config.gpsEnGpio)
@@ -607,11 +608,12 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
 				newPositionConfig.gpsAttemptTime = 900
-				newPositionConfig.gpsUpdateInterval = 120
+				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
+				fetchedNode[0].positionConfig?.gpsMode = Int32(config.gpsMode.rawValue)
 				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
 				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(config.gpsEnGpio)
@@ -620,7 +622,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = 900
-				fetchedNode[0].positionConfig?.gpsUpdateInterval = 120
+				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {
