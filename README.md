@@ -6,7 +6,7 @@
 
 ## Overview
 
-SwiftUI client applicaitons for iOS, iPadOS and macOS.
+SwiftUI client applications for iOS, iPadOS and macOS.
 
 ## OS Requirements
 
