@@ -279,6 +279,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
+					fetchedNode[0].viaMqtt = packet.viaMqtt
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 					do {
