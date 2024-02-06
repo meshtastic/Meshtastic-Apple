@@ -100,6 +100,9 @@
 "gpsformat.mgrs"="Military Grid Reference System";
 "gpsformat.olc"="Open Location Code (aka Plus Codes)";
 "gpsformat.osgr"="Ordnance Survey Grid Reference";
+"gpsmode.disabled"="Disabled";
+"gpsmode.enabled"="Enabled";
+"gpsmode.notPresent"="Not Present";
 "heard"="Heard";
 "heard.last"="Last Heard";
 "hybrid"="Hybrid";

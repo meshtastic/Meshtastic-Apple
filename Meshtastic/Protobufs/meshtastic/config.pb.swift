@@ -415,6 +415,10 @@ struct Config {
     /// (Re)define PIN_GPS_EN for your board.
     var gpsEnGpio: UInt32 = 0
 
+    ///
+    /// Set where GPS is enabled, disabled, or not present
+    var gpsMode: Config.PositionConfig.GpsMode = .disabled
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -510,6 +514,46 @@ struct Config {
         case .timestamp: return 128
         case .heading: return 256
         case .speed: return 512
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+    }
+
+    enum GpsMode: SwiftProtobuf.Enum {
+      typealias RawValue = Int
+
+      ///
+      /// GPS is present but disabled
+      case disabled // = 0
+
+      ///
+      /// GPS is present and enabled
+      case enabled // = 1
+
+      ///
+      /// GPS is not present on the device
+      case notPresent // = 2
+      case UNRECOGNIZED(Int)
+
+      init() {
+        self = .disabled
+      }
+
+      init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .disabled
+        case 1: self = .enabled
+        case 2: self = .notPresent
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      var rawValue: Int {
+        switch self {
+        case .disabled: return 0
+        case .enabled: return 1
+        case .notPresent: return 2
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1366,6 +1410,15 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
   ]
 }
 
+extension Config.PositionConfig.GpsMode: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [Config.PositionConfig.GpsMode] = [
+    .disabled,
+    .enabled,
+    .notPresent,
+  ]
+}
+
 extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   static var allCases: [Config.NetworkConfig.AddressMode] = [
@@ -1471,6 +1524,7 @@ extension Config.DeviceConfig.Role: @unchecked Sendable {}
 extension Config.DeviceConfig.RebroadcastMode: @unchecked Sendable {}
 extension Config.PositionConfig: @unchecked Sendable {}
 extension Config.PositionConfig.PositionFlags: @unchecked Sendable {}
+extension Config.PositionConfig.GpsMode: @unchecked Sendable {}
 extension Config.PowerConfig: @unchecked Sendable {}
 extension Config.NetworkConfig: @unchecked Sendable {}
 extension Config.NetworkConfig.AddressMode: @unchecked Sendable {}
@@ -1776,6 +1830,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     10: .standard(proto: "broadcast_smart_minimum_distance"),
     11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
     12: .standard(proto: "gps_en_gpio"),
+    13: .standard(proto: "gps_mode"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1796,6 +1851,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 10: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumDistance) }()
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumIntervalSecs) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.gpsEnGpio) }()
+      case 13: try { try decoder.decodeSingularEnumField(value: &self.gpsMode) }()
       default: break
       }
     }
@@ -1838,6 +1894,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.gpsEnGpio != 0 {
       try visitor.visitSingularUInt32Field(value: self.gpsEnGpio, fieldNumber: 12)
     }
+    if self.gpsMode != .disabled {
+      try visitor.visitSingularEnumField(value: self.gpsMode, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1854,6 +1913,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.broadcastSmartMinimumDistance != rhs.broadcastSmartMinimumDistance {return false}
     if lhs.broadcastSmartMinimumIntervalSecs != rhs.broadcastSmartMinimumIntervalSecs {return false}
     if lhs.gpsEnGpio != rhs.gpsEnGpio {return false}
+    if lhs.gpsMode != rhs.gpsMode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1872,6 +1932,14 @@ extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding
     128: .same(proto: "TIMESTAMP"),
     256: .same(proto: "HEADING"),
     512: .same(proto: "SPEED"),
+  ]
+}
+
+extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "DISABLED"),
+    1: .same(proto: "ENABLED"),
+    2: .same(proto: "NOT_PRESENT"),
   ]
 }
 

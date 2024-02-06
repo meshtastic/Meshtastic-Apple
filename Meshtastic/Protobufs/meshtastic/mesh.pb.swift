@@ -127,6 +127,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case senseloraS3 // = 28
 
   ///
+  /// Canary Radio Company - CanaryOne: https://canaryradio.io/products/canaryone
+  case canaryone // = 29
+
+  ///
   /// ---------------------------------------------------------------------------
   /// Less common/prototype boards listed here (needs one more byte over the air)
   /// ---------------------------------------------------------------------------
@@ -231,6 +235,14 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case chatter2 // = 56
 
   ///
+  /// Heltec Wireless Paper, With ESP32-S3 CPU and E-Ink display
+  /// Older "V1.0" Variant, has no "version sticker"
+  /// E-Ink model is DEPG0213BNS800
+  /// Tab on the screen protector is RED
+  /// Flex connector marking is FPC-7528B
+  case heltecWirelessPaperV10 // = 57
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -267,6 +279,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 26: self = .rak11310
     case 27: self = .senseloraRp2040
     case 28: self = .senseloraS3
+    case 29: self = .canaryone
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -292,6 +305,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 54: self = .ebyteEsp32S3
     case 55: self = .esp32S3Pico
     case 56: self = .chatter2
+    case 57: self = .heltecWirelessPaperV10
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -323,6 +337,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .rak11310: return 26
     case .senseloraRp2040: return 27
     case .senseloraS3: return 28
+    case .canaryone: return 29
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -348,6 +363,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .ebyteEsp32S3: return 54
     case .esp32S3Pico: return 55
     case .chatter2: return 56
+    case .heltecWirelessPaperV10: return 57
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -384,6 +400,7 @@ extension HardwareModel: CaseIterable {
     .rak11310,
     .senseloraRp2040,
     .senseloraS3,
+    .canaryone,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -409,6 +426,7 @@ extension HardwareModel: CaseIterable {
     .ebyteEsp32S3,
     .esp32S3Pico,
     .chatter2,
+    .heltecWirelessPaperV10,
     .privateHw,
   ]
 }
@@ -2570,6 +2588,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     26: .same(proto: "RAK11310"),
     27: .same(proto: "SENSELORA_RP2040"),
     28: .same(proto: "SENSELORA_S3"),
+    29: .same(proto: "CANARYONE"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
@@ -2595,6 +2614,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     54: .same(proto: "EBYTE_ESP32_S3"),
     55: .same(proto: "ESP32_S3_PICO"),
     56: .same(proto: "CHATTER_2"),
+    57: .same(proto: "HELTEC_WIRELESS_PAPER_V1_0"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

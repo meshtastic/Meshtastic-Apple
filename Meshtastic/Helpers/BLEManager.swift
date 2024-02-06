@@ -976,10 +976,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			
 			if let lastLocation = LocationsHandler.shared.locationsArray.last {
 				
-				/// Throw out crappy locations and only send a position if we are connected to a device
-				if fromNodeNum <= 0 || lastLocation.horizontalAccuracy < 0 || lastLocation.horizontalAccuracy > 100 {
-					return false
-				}
 				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
 				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
 				let timestamp = lastLocation.timestamp

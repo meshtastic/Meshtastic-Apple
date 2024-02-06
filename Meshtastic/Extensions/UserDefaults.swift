@@ -26,6 +26,7 @@ extension UserDefaults {
 		case mapUseLegacy
 		case enableDetectionNotifications
 		case detectionSensorRole
+		case enableSmartPosition
 	}
 
 	func reset() {
@@ -191,6 +192,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue.rawValue, forKey: "detectionSensorRole")
+		}
+	}
+	static var enableSmartPosition: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableSmartPosition")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableSmartPosition")
 		}
 	}
 }

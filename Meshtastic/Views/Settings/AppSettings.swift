@@ -11,6 +11,7 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
 	@State var provideLocation: Bool = UserDefaults.provideLocation
+	@State var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -65,6 +66,10 @@ struct AppSettings: View {
 				Section(header: Text("Location Settings")) {
 					Toggle(isOn: $provideLocation) {
 						Label("provide.location", systemImage: "location.circle.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $enableSmartPosition) {
+						Label("appsettings.enablesmartposition", systemImage: "brain.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if UserDefaults.provideLocation {
