@@ -30,6 +30,15 @@ struct MQTTConfig: View {
 	var body: some View {
 		VStack {
 			Form {
+				if node != nil && node?.loRaConfig != nil {
+					let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+					if rc?.dutyCycle ?? 0 <= 10 {
+						Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffice will quickly overwhelm your LoRa mesh.")
+							.font(.callout)
+							.foregroundColor(.red)
+					}
+				}
+					
 				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
 					Text("There has been no response to a request for device metadata over the admin channel for this node.")
 						.font(.callout)
@@ -88,7 +97,7 @@ struct MQTTConfig: View {
 						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("JSON mode is a limited, unencrypted MQTT output.")
+					Text("JSON mode is a limited, unencrypted MQTT output that can crash your node it should not be enabled unless you are locally integrating with home assistant")
 						.font(.caption2)
 					
 					Toggle(isOn: $tlsEnabled) {
@@ -304,19 +313,11 @@ struct MQTTConfig: View {
 		.onChange(of: encryptionEnabled) { newEncryptionEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newEncryptionEnabled != node!.mqttConfig!.encryptionEnabled { hasChanges = true }
-				if newEncryptionEnabled {
-					jsonEnabled = false
-				}
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
-				
-				if newJsonEnabled {
-					encryptionEnabled = false
-					proxyToClientEnabled = false
-				}
 			}
 		}
 		.onChange(of: tlsEnabled) { newTlsEnabled in
