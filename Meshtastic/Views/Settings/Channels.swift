@@ -29,7 +29,7 @@ struct Channels: View {
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State private var channelIndex: Int32 = 0
 	@State private var channelName = ""
-	@State private var channelKeySize = 32
+	@State private var channelKeySize = 16
 	@State private var channelKey = "AQ=="
 	@State private var channelRole = 0
 	@State private var uplink = false
@@ -89,7 +89,7 @@ struct Channels: View {
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let key = generateChannelKey(size: 32)
+					let key = generateChannelKey(size: 16)
 					channelName = ""
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
