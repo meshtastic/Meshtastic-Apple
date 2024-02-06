@@ -229,6 +229,7 @@
         <attribute name="peripheralId" optional="YES" attributeType="String"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="viaMqtt" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
         <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
         <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>

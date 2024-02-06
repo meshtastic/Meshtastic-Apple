@@ -129,6 +129,13 @@ struct NodeListItem: View {
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 							}
+							if node.viaMqtt {
+								Image(systemName: "network")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+								Text("mqtt")
+									.font(.caption)
+							}
 						}
 						.padding(.top, 3)
 					}
