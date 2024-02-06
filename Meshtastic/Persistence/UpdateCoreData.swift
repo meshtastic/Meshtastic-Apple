@@ -880,7 +880,7 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
 			}
 		} else {
-			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notifiation Module Config")
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save External Notification Module Config")
 		}
 	} catch {
 		let nsError = error as NSError
