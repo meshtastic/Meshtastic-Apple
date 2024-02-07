@@ -65,14 +65,14 @@ struct AppSettings: View {
 				}
 				Section(header: Text("Location Settings")) {
 					Toggle(isOn: $provideLocation) {
-						Label("provide.location", systemImage: "location.circle.fill")
+						Label("appsettings.provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle(isOn: $enableSmartPosition) {
-						Label("appsettings.enablesmartposition", systemImage: "brain.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if UserDefaults.provideLocation {
+					if provideLocation {
+						Toggle(isOn: $enableSmartPosition) {
+							Label("appsettings.smartposition", systemImage: "brain.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						VStack {
 							Picker("update.interval", selection: $provideLocationInterval) {
 								ForEach(LocationUpdateInterval.allCases) { lu in
@@ -135,7 +135,7 @@ struct AppSettings: View {
 				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 			})
 		}
-		.navigationTitle("app.settings")
+		.navigationTitle("appsettings")
 		.navigationBarItems(trailing:
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")

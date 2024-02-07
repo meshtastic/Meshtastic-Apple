@@ -14,7 +14,9 @@
 "always.on"="常亮";
 "ambient.lighting"="Ambient Lighting";
 "ambient.lighting.config"="Ambient Lighting Config";
-"app.settings"="通用设置";
+"appsettings"="通用设置";
+"appsettings.provide.location"="提供定位到 Mesh 网络";
+"appsettings.smartposition"="Smart Position";
 "are.you.sure"="是否确认？";
 "ascii.capable"="ASCII Capable";
 "available.radios"="可以连接的电台";
@@ -223,7 +225,6 @@
 "position"="定位";
 "position.config"="定位配置";
 "preferred.radio"="首选电台";
-"provide.location"="提供定位到 Mesh 网络";
 "radio.configuration"="电台配置";
 "range.test"="拉距测试";
 "range.test.blocked"="区块范围测试";

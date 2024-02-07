@@ -91,7 +91,7 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 		case .twentyFourHours:
 			return "interval.twentyfour.hours".localized
 		case .maxInt32:
-			return "on.boot"
+			return "on.boot".localized
 		}
 	}
 }

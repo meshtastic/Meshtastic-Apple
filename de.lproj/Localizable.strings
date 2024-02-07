@@ -14,7 +14,9 @@
 "always.on"="Immer an";
 "ambient.lighting"="Ambient Lighting";
 "ambient.lighting.config"="Ambient Lighting Config";
-"app.settings"="App Einstellungen";
+"appsettings"="App Einstellungen";
+"appsettings.provide.location"="Standort im Mesh veröffentlichen";
+"appsettings.smartposition"="Smart Position";
 "are.you.sure"="Bist Du sicher?";
 "ascii.capable"="ASCII fähig";
 "available.radios"="Geräte in der Nähe";
@@ -223,7 +225,6 @@
 "position"="Position";
 "position.config"="Positionseinstellungen";
 "preferred.radio"="Bevorzugtes Gerät";
-"provide.location"="Standort im Mesh veröffentlichen";
 "radio.configuration"="Geräteeinstellungen";
 "range.test"="Entfernungstest";
 "range.test.blocked"="Block Range Test";

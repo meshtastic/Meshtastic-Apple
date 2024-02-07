@@ -16,7 +16,9 @@
 "always.on"="Zawsze włączone";
 "ambient.lighting"="Ambient Lighting";
 "ambient.lighting.config"="Ambient Lighting Config";
-"app.settings"="Ustawienia aplikacji";
+"appsettings"="Ustawienia aplikacji";
+"appsettings.provide.location"="Udostępnij lokalizację";
+"appsettings.smartposition"="Smart Position";
 "are.you.sure"="Jesteś pewny?";
 "ascii.capable"="Zgodny z ASCII";
 "available.radios"="Dostępne radia";
@@ -224,7 +226,6 @@
 "position"="Pozycja";
 "position.config"="Konfiguracja pozycji";
 "preferred.radio"="Preferowane radio";
-"provide.location"="Udostępnij lokalizację";
 "radio.configuration"="Konfiguracja radia";
 "range.test"="Test zasięgu";
 "range.test.blocked"="Block Range Test";

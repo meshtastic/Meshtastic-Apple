@@ -57,7 +57,7 @@ struct Settings: View {
 				} label: {
 					Image(systemName: "gearshape")
 						.symbolRenderingMode(.hierarchical)
-					Text("app.settings")
+					Text("appsettings")
 				}
 				.tag(SettingsSidebar.appSettings)
 				if #available(iOS 17.0, macOS 14.0, *) {

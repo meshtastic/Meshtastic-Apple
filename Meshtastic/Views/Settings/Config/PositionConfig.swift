@@ -156,7 +156,6 @@ struct PositionConfig: View {
 					.padding(.top, 5)
 					.padding(.bottom, 5)
 					
-					
 					if gpsMode == 1 {
 						Picker("Update Interval", selection: $gpsUpdateInterval) {
 							ForEach(GpsUpdateIntervals.allCases) { ui in
