@@ -9,7 +9,6 @@ import Foundation
 
 extension UserDefaults {
 	enum Keys: String, CaseIterable {
-		case enableRangeTest
 		case preferredPeripheralId
 		case preferredPeripheralNum
 		case provideLocation
@@ -27,17 +26,11 @@ extension UserDefaults {
 		case mapUseLegacy
 		case enableDetectionNotifications
 		case detectionSensorRole
+		case enableSmartPosition
 	}
 
 	func reset() {
 		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
-	}
-	static var blockRangeTest: Bool {
-		get {
-			UserDefaults.standard.bool(forKey: "blockRangeTest") 
-		} set {
-			UserDefaults.standard.set(newValue, forKey: "blockRangeTest")
-		}
 	}
 	static var preferredPeripheralId: String {
 		get {
@@ -199,6 +192,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue.rawValue, forKey: "detectionSensorRole")
+		}
+	}
+	static var enableSmartPosition: Bool {
+		get {
+			UserDefaults.standard.bool(forKey: "enableSmartPosition")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "enableSmartPosition")
 		}
 	}
 }

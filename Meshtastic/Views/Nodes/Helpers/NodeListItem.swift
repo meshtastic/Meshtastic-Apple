@@ -89,12 +89,19 @@ struct NodeListItem: View {
 								}
 							}
 						}
-						if node.channel > 0 {
-							HStack {
+						HStack {
+							if node.channel > 0 {
 								Image(systemName: "fibrechannel")
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 								Text("Channel: \(node.channel)")
+									.font(.callout)
+							}
+							if node.viaMqtt && connectedNode != node.num {
+								Image(systemName: "network")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+								Text("Via MQTT")
 									.font(.callout)
 							}
 						}

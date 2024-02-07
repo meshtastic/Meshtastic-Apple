@@ -209,21 +209,18 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
-							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone. The app may close.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 
 								Button("Connect to new radio?", role: .destructive) {
-									bleManager.stopScanning()
-									bleManager.connectedPeripheral = nil
-									UserDefaults.preferredPeripheralId = ""
+									UserDefaults.preferredPeripheralId = selectedPeripherialId
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-
-									clearCoreDataDatabase(context: context)
-									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId})
-									bleManager.connectTo(peripheral: radio!.peripheral)
-									presentingSwitchPreferredPeripheral = false
-									selectedPeripherialId = ""
+									PersistenceController.shared.clearDatabase()
+									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
+									if radio != nil {
+										bleManager.connectTo(peripheral: radio!.peripheral)
+									}
 								}
 							}
 							.textCase(nil)

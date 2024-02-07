@@ -24,6 +24,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case th = 12
 	case ua433 = 14
 	case ua868 = 15
+	case my_433 = 16
+	case my_919 = 17
 	case lora24 = 13
 
 	var id: Int { self.rawValue }
@@ -61,9 +63,52 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Ukraine 868mhz"
 		case .lora24:
 			return "2.4 GHZ"
+		case .my_433:
+			return "Malaysia 433mhz"
+		case .my_919:
+			return "Malaysia 919mhz"
 		}
 	}
-
+	var dutyCycle: Int {
+		switch self {
+		case .unset:
+			return 0
+		case .us:
+			return 100
+		case .eu433:
+			return 10
+		case .eu868:
+			return 10
+		case .cn:
+			return 100
+		case .jp:
+			return 100
+		case .anz:
+			return 100
+		case .kr:
+			return 100
+		case .tw:
+			return 100
+		case .ru:
+			return 100
+		case .in:
+			return 100
+		case .nz865:
+			return 100
+		case .th:
+			return 100
+		case .ua433:
+			return 10
+		case .ua868:
+			return 10
+		case .lora24:
+			return 100
+		case .my_433:
+			return 100
+		case .my_919:
+			return 100
+		}
+	}
 	func protoEnumValue() -> Config.LoRaConfig.RegionCode {
 
 		switch self {
@@ -99,6 +144,10 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.ua868
 		case .lora24:
 			return Config.LoRaConfig.RegionCode.lora24
+		case .my_433:
+			return Config.LoRaConfig.RegionCode.my433
+		case .my_919:
+			return Config.LoRaConfig.RegionCode.my919
 		}
 	}
 }

@@ -61,8 +61,14 @@ class PersistenceController {
 		 do {
 
 			 try persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
-			 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 print("💥 CoreData database truncated.  All app data has been erased.")
+			 
+			 do {
+				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+			 } catch let error {
+				 print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
+				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+			 }
 
 		} catch let error {
 			print("💣 Failed to destroy CoreData database, delete the app and re-install to clear data. Attempted to clear persistent store: " + error.localizedDescription)

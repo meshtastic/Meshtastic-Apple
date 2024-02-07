@@ -594,7 +594,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: UserDefaults.blockRangeTest, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -620,8 +620,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					MeshLogger.log("🕸️ MESH PACKET received for Store and Forward App - Store and Forward is disabled.")
 				}
 			case .rangeTestApp:
-				if wantRangeTestPackets && !UserDefaults.blockRangeTest {
-					textMessageAppPacket(packet: decodedInfo.packet, blockRangeTest: false, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				if wantRangeTestPackets {
+					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
 					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
@@ -976,10 +976,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			
 			if let lastLocation = LocationsHandler.shared.locationsArray.last {
 				
-				/// Throw out crappy locations and only send a position if we are connected to a device
-				if fromNodeNum <= 0 || lastLocation.horizontalAccuracy < 0 || lastLocation.horizontalAccuracy > 100 {
-					return false
-				}
 				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
 				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
 				let timestamp = lastLocation.timestamp
@@ -2386,7 +2382,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					/// send a request for ClientHistory with a time period matching the heartbeat
 					var sfPacket = StoreAndForward()
 					sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
-					sfPacket.history.window = 18000000 // storeAndForwardMessage.heartbeat.period
+					sfPacket.history.window = 120 // storeAndForwardMessage.heartbeat.period
 					var meshPacket: MeshPacket = MeshPacket()
 					meshPacket.to = UInt32(packet.from)
 					meshPacket.from	= UInt32(connectedNodeNum)
@@ -2432,6 +2428,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .clientAbort:
 				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .UNRECOGNIZED:
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			}
 		}

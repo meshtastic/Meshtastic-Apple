@@ -36,14 +36,16 @@ struct PositionConfig: View {
 
 	@State var smartPositionEnabled = true
 	@State var deviceGpsEnabled = true
+	@State var gpsMode = 0
 	@State var rxGpio = 0
 	@State var txGpio = 0
 	@State var gpsEnGpio = 0
 	@State var fixedPosition = false
+	@State var gpsUpdateInterval = 0
 	@State var positionBroadcastSeconds = 0
 	@State var broadcastSmartMinimumDistance = 0
 	@State var broadcastSmartMinimumIntervalSecs = 0
-	@State var positionFlags = 3
+	@State var positionFlags = 811
 
 	/// Position Flags
 	/// Altitude value - 1
@@ -143,6 +145,34 @@ struct PositionConfig: View {
 						.font(.caption)
 					}
 				}
+				Section(header: Text("Device GPS")) {
+					Picker("", selection: $gpsMode) {
+						ForEach(GpsMode.allCases, id: \.self) { at in
+							Text(at.description)
+								.tag(at.id)
+						}
+					}
+					.pickerStyle(SegmentedPickerStyle())
+					.padding(.top, 5)
+					.padding(.bottom, 5)
+					
+					if gpsMode == 1 {
+						Picker("Update Interval", selection: $gpsUpdateInterval) {
+							ForEach(GpsUpdateIntervals.allCases) { ui in
+								Text(ui.description)
+							}
+						}
+						Text("How often should we try to get a GPS position.")
+							.font(.caption)
+					} else {
+						Toggle(isOn: $fixedPosition) {
+							Label("Fixed Position", systemImage: "location.square.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed positon will always use the most recent position the device has.")
+							.font(.caption)
+					}
+				}
 				Section(header: Text("Position Flags")) {
 
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
@@ -205,13 +235,9 @@ struct PositionConfig: View {
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
-				Section(header: Text("Device GPS")) {
-					Toggle(isOn: $deviceGpsEnabled) {
-						Label("Device GPS Enabled", systemImage: "location")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if deviceGpsEnabled {
-						
+				
+				if gpsMode == 1 {
+					Section(header: Text("Advanced Device GPS")) {
 						Picker("GPS Receive GPIO", selection: $rxGpio) {
 							ForEach(0..<49) {
 								if $0 == 0 {
@@ -243,13 +269,6 @@ struct PositionConfig: View {
 						}
 						.pickerStyle(DefaultPickerStyle())
 						Text("(Re)define PIN_GPS_EN for your board.")
-							.font(.caption)
-					} else {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If enabled your current location will be set as a fixed position.")
 							.font(.caption)
 					}
 				}
@@ -283,8 +302,10 @@ struct PositionConfig: View {
 					if connectedNode != nil {
 						var pc = Config.PositionConfig()
 						pc.positionBroadcastSmartEnabled = smartPositionEnabled
-						pc.gpsEnabled = deviceGpsEnabled
+						pc.gpsEnabled = gpsMode == 1
+						pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
 						pc.fixedPosition = fixedPosition
+						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
 						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
 						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
 						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
@@ -342,6 +363,11 @@ struct PositionConfig: View {
 				if newDeviceGps != node!.positionConfig!.deviceGpsEnabled { hasChanges = true }
 			}
 		}
+		.onChange(of: gpsMode) { newGpsMode in
+			if node != nil && node!.positionConfig != nil {
+				if newGpsMode != node!.positionConfig!.gpsMode { hasChanges = true }
+			}
+		}
 		.onChange(of: rxGpio) { newRxGpio in
 			if node != nil && node!.positionConfig != nil {
 				if newRxGpio != node!.positionConfig!.rxGpio { hasChanges = true }
@@ -380,6 +406,11 @@ struct PositionConfig: View {
 		.onChange(of: broadcastSmartMinimumDistance) { newBroadcastSmartMinimumDistance in
 			if node != nil && node!.positionConfig != nil {
 				if newBroadcastSmartMinimumDistance != node!.positionConfig!.broadcastSmartMinimumDistance { hasChanges = true }
+			}
+		}
+		.onChange(of: gpsUpdateInterval) { newGpsUpdateInterval in
+			if node != nil && node!.positionConfig != nil {
+				if newGpsUpdateInterval != node!.positionConfig!.gpsUpdateInterval { hasChanges = true }
 			}
 		}
 		.onChange(of: includeAltitude) { altFlag in
@@ -440,11 +471,16 @@ struct PositionConfig: View {
 	}
 	func setPositionValues() {
 		self.smartPositionEnabled = node?.positionConfig?.smartPositionEnabled ?? true
-		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? true
+		self.deviceGpsEnabled = node?.positionConfig?.deviceGpsEnabled ?? false
+		self.gpsMode = Int(node?.positionConfig?.gpsMode ?? 0)
+		if node?.positionConfig?.deviceGpsEnabled ?? false && gpsMode != 1 {
+			self.gpsMode = 1
+		}
 		self.rxGpio = Int(node?.positionConfig?.rxGpio ?? 0)
 		self.txGpio = Int(node?.positionConfig?.txGpio ?? 0)
 		self.gpsEnGpio = Int(node?.positionConfig?.gpsEnGpio ?? 0)
 		self.fixedPosition = node?.positionConfig?.fixedPosition ?? false
+		self.gpsUpdateInterval = Int(node?.positionConfig?.gpsUpdateInterval ?? 30)
 		self.positionBroadcastSeconds = Int(node?.positionConfig?.positionBroadcastSeconds ?? 900)
 		self.broadcastSmartMinimumIntervalSecs = Int(node?.positionConfig?.broadcastSmartMinimumIntervalSecs ?? 30)
 		self.broadcastSmartMinimumDistance = Int(node?.positionConfig?.broadcastSmartMinimumDistance ?? 50)

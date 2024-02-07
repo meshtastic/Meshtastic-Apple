@@ -11,7 +11,7 @@ struct AppSettings: View {
 	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
 	@State var provideLocation: Bool = UserDefaults.provideLocation
-	@State var blockRangeTest: Bool = UserDefaults.blockRangeTest
+	@State var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -20,12 +20,6 @@ struct AppSettings: View {
 		VStack {
 			Form {
 				Section(header: Text("options")) {
-					
-					Toggle(isOn: $blockRangeTest) {
-						Label("range.test.blocked", systemImage: "x.circle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
 					Toggle(isOn: $useLegacyMap) {
 						Label("map.use.legacy", systemImage: "map")
 					}
@@ -71,10 +65,14 @@ struct AppSettings: View {
 				}
 				Section(header: Text("Location Settings")) {
 					Toggle(isOn: $provideLocation) {
-						Label("provide.location", systemImage: "location.circle.fill")
+						Label("appsettings.provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if UserDefaults.provideLocation {
+					if provideLocation {
+						Toggle(isOn: $enableSmartPosition) {
+							Label("appsettings.smartposition", systemImage: "brain.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						VStack {
 							Picker("update.interval", selection: $provideLocationInterval) {
 								ForEach(LocationUpdateInterval.allCases) { lu in
@@ -106,8 +104,8 @@ struct AppSettings: View {
 						Button("Erase all app data?", role: .destructive) {
 							bleManager.disconnectPeripheral()
 							clearCoreDataDatabase(context: context)
+							context.refreshAllObjects()
 							UserDefaults.standard.reset()
-							UserDefaults.standard.synchronize()
 						}
 					}
 				}
@@ -137,7 +135,7 @@ struct AppSettings: View {
 				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 			})
 		}
-		.navigationTitle("app.settings")
+		.navigationTitle("appsettings")
 		.navigationBarItems(trailing:
 								ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
@@ -150,9 +148,6 @@ struct AppSettings: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-		}
-		.onChange(of: blockRangeTest) { newBlockRangeTest in
-			UserDefaults.blockRangeTest = newBlockRangeTest
 		}
 		.onChange(of: provideLocation) { newProvideLocation in
 			UserDefaults.provideLocation = newProvideLocation

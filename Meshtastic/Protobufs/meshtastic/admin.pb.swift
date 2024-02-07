@@ -236,6 +236,16 @@ struct AdminMessage {
   }
 
   ///
+  /// Delete the file by the specified path from the device
+  var deleteFileRequest: String {
+    get {
+      if case .deleteFileRequest(let v)? = payloadVariant {return v}
+      return String()
+    }
+    set {payloadVariant = .deleteFileRequest(newValue)}
+  }
+
+  ///
   /// Set the owner for this node
   var setOwner: User {
     get {
@@ -460,6 +470,9 @@ struct AdminMessage {
     /// Only implemented on NRF52 currently
     case enterDfuModeRequest(Bool)
     ///
+    /// Delete the file by the specified path from the device
+    case deleteFileRequest(String)
+    ///
     /// Set the owner for this node
     case setOwner(User)
     ///
@@ -596,6 +609,10 @@ struct AdminMessage {
       }()
       case (.enterDfuModeRequest, .enterDfuModeRequest): return {
         guard case .enterDfuModeRequest(let l) = lhs, case .enterDfuModeRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.deleteFileRequest, .deleteFileRequest): return {
+        guard case .deleteFileRequest(let l) = lhs, case .deleteFileRequest(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.setOwner, .setOwner): return {
@@ -953,6 +970,7 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     19: .standard(proto: "get_node_remote_hardware_pins_request"),
     20: .standard(proto: "get_node_remote_hardware_pins_response"),
     21: .standard(proto: "enter_dfu_mode_request"),
+    22: .standard(proto: "delete_file_request"),
     32: .standard(proto: "set_owner"),
     33: .standard(proto: "set_channel"),
     34: .standard(proto: "set_config"),
@@ -1174,6 +1192,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if let v = v {
           if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
           self.payloadVariant = .enterDfuModeRequest(v)
+        }
+      }()
+      case 22: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .deleteFileRequest(v)
         }
       }()
       case 32: try {
@@ -1406,6 +1432,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .enterDfuModeRequest?: try {
       guard case .enterDfuModeRequest(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 21)
+    }()
+    case .deleteFileRequest?: try {
+      guard case .deleteFileRequest(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 22)
     }()
     case .setOwner?: try {
       guard case .setOwner(let v)? = self.payloadVariant else { preconditionFailure() }

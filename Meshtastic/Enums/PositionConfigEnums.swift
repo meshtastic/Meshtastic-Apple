@@ -52,3 +52,77 @@ enum GpsFormats: Int, CaseIterable, Identifiable {
 		}
 	}
 }
+
+enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
+
+	case thirtySeconds = 30
+	case oneMinute = 60
+	case fiveMinutes = 300
+	case tenMinutes = 600
+	case fifteenMinutes = 900
+	case thirtyMinutes = 1800
+	case oneHour = 3600
+	case sixHours = 21600
+	case twelveHours = 43200
+	case twentyFourHours = 86400
+	case maxInt32 = 2147483647
+
+	var id: Int { self.rawValue }
+	var description: String {
+		switch self {
+		case .thirtySeconds:
+			return "interval.thirty.seconds".localized
+		case .oneMinute:
+			return "interval.one.minute".localized
+		case .fiveMinutes:
+			return "interval.five.minutes".localized
+		case .tenMinutes:
+			return "interval.ten.minutes".localized
+		case .fifteenMinutes:
+			return "interval.fifteen.minutes".localized
+		case .thirtyMinutes:
+			return "interval.thirty.minutes".localized
+		case .oneHour:
+			return "interval.one.hour".localized
+		case .sixHours:
+			return "interval.six.hours".localized
+		case .twelveHours:
+			return "interval.twelve.hours".localized
+		case .twentyFourHours:
+			return "interval.twentyfour.hours".localized
+		case .maxInt32:
+			return "on.boot".localized
+		}
+	}
+}
+
+enum GpsMode: Int, CaseIterable, Equatable {
+	case disabled = 0
+	case enabled = 1
+	case notPresent = 2
+	
+	var id: Int { self.rawValue }
+	
+	var description: String {
+		switch self {
+		case .disabled:
+			return "gpsmode.disabled".localized
+		case .enabled:
+			return "gpsmode.enabled".localized
+		case .notPresent:
+			return "gpsmode.notPresent".localized
+		}
+	}
+	func protoEnumValue() -> Config.PositionConfig.GpsMode {
+
+		switch self {
+
+		case .enabled:
+			return Config.PositionConfig.GpsMode.enabled
+		case .disabled:
+			return Config.PositionConfig.GpsMode.disabled
+		case .notPresent:
+			return Config.PositionConfig.GpsMode.notPresent
+		}
+	}
+}

@@ -118,6 +118,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
+			newNode.viaMqtt = packet.viaMqtt
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
 				print(packet.channel)
@@ -161,6 +162,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
+			fetchedNode[0].viaMqtt = packet.viaMqtt
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
@@ -277,6 +279,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
+					fetchedNode[0].viaMqtt = packet.viaMqtt
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 					do {
@@ -492,6 +495,7 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 				newLoRaConfig.txEnabled = config.txEnabled
 				newLoRaConfig.channelNum = Int32(config.channelNum)
 				newLoRaConfig.sx126xRxBoostedGain = config.sx126XRxBoostedGain
+				newLoRaConfig.ignoreMqtt = config.ignoreMqtt
 				fetchedNode[0].loRaConfig = newLoRaConfig
 			} else {
 				fetchedNode[0].loRaConfig?.regionCode = Int32(config.region.rawValue)
@@ -507,6 +511,8 @@ func upsertLoRaConfigPacket(config: Meshtastic.Config.LoRaConfig, nodeNum: Int64
 				fetchedNode[0].loRaConfig?.txPower = Int32(config.txPower)
 				fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled
 				fetchedNode[0].loRaConfig?.channelNum = Int32(config.channelNum)
+				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
+				fetchedNode[0].loRaConfig?.ignoreMqtt = config.ignoreMqtt
 				fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 			}
 			do {
@@ -592,6 +598,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				let newPositionConfig = PositionConfigEntity(context: context)
 				newPositionConfig.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				newPositionConfig.deviceGpsEnabled = config.gpsEnabled
+				newPositionConfig.gpsMode = Int32(config.gpsMode.rawValue)
 				newPositionConfig.rxGpio = Int32(config.rxGpio)
 				newPositionConfig.txGpio = Int32(config.txGpio)
 				newPositionConfig.gpsEnGpio = Int32(config.gpsEnGpio)
@@ -601,11 +608,12 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				newPositionConfig.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				newPositionConfig.positionFlags = Int32(config.positionFlags)
 				newPositionConfig.gpsAttemptTime = 900
-				newPositionConfig.gpsUpdateInterval = 120
+				newPositionConfig.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig = newPositionConfig
 			} else {
 				fetchedNode[0].positionConfig?.smartPositionEnabled = config.positionBroadcastSmartEnabled
 				fetchedNode[0].positionConfig?.deviceGpsEnabled = config.gpsEnabled
+				fetchedNode[0].positionConfig?.gpsMode = Int32(config.gpsMode.rawValue)
 				fetchedNode[0].positionConfig?.rxGpio = Int32(config.rxGpio)
 				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(config.gpsEnGpio)
@@ -614,7 +622,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = 900
-				fetchedNode[0].positionConfig?.gpsUpdateInterval = 120
+				fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(config.gpsUpdateInterval)
 				fetchedNode[0].positionConfig?.positionFlags = Int32(config.positionFlags)
 			}
 			do {

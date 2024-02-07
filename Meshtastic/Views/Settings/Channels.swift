@@ -1,6 +1,6 @@
 //
-//  ShareChannel.swift
-//  MeshtasticApple
+//  Channels.swift
+//  Meshtastic Apple
 //
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
@@ -25,12 +25,11 @@ struct Channels: View {
 	var node: NodeInfoEntity?
 
 	@State var hasChanges = false
-	@State var hasValidKey = false
 	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State private var channelIndex: Int32 = 0
 	@State private var channelName = ""
-	@State private var channelKeySize = 32
+	@State private var channelKeySize = 16
 	@State private var channelKey = "AQ=="
 	@State private var channelRole = 0
 	@State private var uplink = false
@@ -90,7 +89,7 @@ struct Channels: View {
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let key = generateChannelKey(size: 32)
+					let key = generateChannelKey(size: 16)
 					channelName = ""
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
@@ -168,34 +167,16 @@ struct Channels: View {
 						HStack(alignment: .top) {
 							Text("Key")
 							Spacer()
-							TextField(
-								"Key",
-								text: $channelKey
-							)
-							.padding(4)
-							.disableAutocorrection(true)
-							.keyboardType(.alphabet)
-							.foregroundColor(Color.gray)
-							.textSelection(.enabled)
-							.background(
-								RoundedRectangle(cornerRadius: 25.0)
-									.stroke(
-										hasValidKey ?
-										Color.green :
-										Color.red
-										, lineWidth: 2.0)
-							)
-							.onChange(of: channelKey, perform: { _ in
-								let tempKey = Data(base64Encoded: channelKey) ?? Data()
-								if tempKey.count == channelKeySize || channelKeySize == -1{
-									hasValidKey = true
-								}
-								else {
-									hasValidKey = false
-								}
-								hasChanges = true
-							})
-							.disabled(channelKeySize <= 0)
+							Text(channelKey)
+								.foregroundColor(Color.gray)
+								.textSelection(.enabled)
+//							TextField(
+//								"",
+//								text: $channelKey,
+//								axis: .vertical
+//							)
+//							.foregroundColor(Color.gray)
+//							.disabled(true)
 						}
 						Picker("Channel Role", selection: $channelRole) {
 							if channelRole == 1 {
@@ -275,7 +256,7 @@ struct Channels: View {
 						} label: {
 							Label("save", systemImage: "square.and.arrow.down")
 						}
-						.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !hasValidKey)
+						.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.large)

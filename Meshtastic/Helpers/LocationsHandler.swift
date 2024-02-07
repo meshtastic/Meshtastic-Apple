@@ -15,7 +15,7 @@ import CoreLocation
 	static let shared = LocationsHandler()  // Create a single, shared instance of the object.
 	private let manager: CLLocationManager
 	private var background: CLBackgroundActivitySession?
-	var enableSmartPosition: Bool
+	var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
 	
 	@Published var locationsArray: [CLLocation]
 	@Published var isStationary = false
@@ -41,8 +41,8 @@ import CoreLocation
 	
 	private init() {
 		self.manager = CLLocationManager()  // Creating a location manager instance is safe to call here in `MainActor`.
+		self.manager.allowsBackgroundLocationUpdates = true
 		locationsArray = [CLLocation]()
-		enableSmartPosition = true
 	}
 	
 	func startLocationUpdates() {
@@ -55,7 +55,7 @@ import CoreLocation
 				self.updatesStarted = true
 				let updates = CLLocationUpdate.liveUpdates()
 				for try await update in updates {
-					if !self.updatesStarted { break }  // End location updates by breaking out of the loop.
+					if !self.updatesStarted { break } 
 					if let loc = update.location {
 						self.isStationary = update.isStationary
 					
