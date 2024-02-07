@@ -2372,7 +2372,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			// Request Response
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerError:
 				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
