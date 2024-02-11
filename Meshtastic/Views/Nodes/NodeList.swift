@@ -12,6 +12,7 @@ struct NodeList: View {
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
+	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	
@@ -84,6 +85,17 @@ struct NodeList: View {
 							} label: {
 								Label("Trace Route", systemImage: "signpost.right.and.left")
 							}
+							if true {//node?.storeForwardConfig != nil && node.storeForwardConfig?.isRouter ?? false {
+
+								Button {
+									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser:  node.user!)
+									if success {
+										isPresentingClientHistorySentAlert = true
+									}
+								} label: {
+									Label("Client History", systemImage: "envelope.arrow.triangle.branch")
+								}
+							}
 						}
 						if bleManager.connectedPeripheral != nil {
 							Button (role: .destructive) {
@@ -102,6 +114,14 @@ struct NodeList: View {
 					Button("OK", role: .cancel) { }
 				} message: {
 					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
+				}
+				.alert(
+					"Store and Forward Client Hitory Request Sent",
+					isPresented: $isPresentingClientHistorySentAlert
+				) {
+					Button("OK", role: .cancel) { }
+				} message: {
+					Text("Any messages you have missed will be delivered again.")
 				}
 			}
 			.searchable(text: nodesQuery, prompt: "Find a node")

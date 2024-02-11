@@ -177,6 +177,11 @@ enum PortNum: SwiftProtobuf.Enum {
   case neighborinfoApp // = 71
 
   ///
+  /// ATAK Plugin
+  /// Portnum for payloads from the official Meshtastic ATAK plugin
+  case atakPlugin // = 72
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
@@ -220,6 +225,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 69: self = .simulatorApp
     case 70: self = .tracerouteApp
     case 71: self = .neighborinfoApp
+    case 72: self = .atakPlugin
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -251,6 +257,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .simulatorApp: return 69
     case .tracerouteApp: return 70
     case .neighborinfoApp: return 71
+    case .atakPlugin: return 72
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -287,6 +294,7 @@ extension PortNum: CaseIterable {
     .simulatorApp,
     .tracerouteApp,
     .neighborinfoApp,
+    .atakPlugin,
     .privateApp,
     .atakForwarder,
     .max,
@@ -325,6 +333,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     69: .same(proto: "SIMULATOR_APP"),
     70: .same(proto: "TRACEROUTE_APP"),
     71: .same(proto: "NEIGHBORINFO_APP"),
+    72: .same(proto: "ATAK_PLUGIN"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),

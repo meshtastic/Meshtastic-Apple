@@ -26,6 +26,7 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case ua868 = 15
 	case my_433 = 16
 	case my_919 = 17
+	case sg_923 = 18
 	case lora24 = 13
 
 	var id: Int { self.rawValue }
@@ -67,6 +68,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return "Malaysia 433mhz"
 		case .my_919:
 			return "Malaysia 919mhz"
+		case .sg_923:
+			return "Singapore 923mhz"
 		}
 	}
 	var dutyCycle: Int {
@@ -106,6 +109,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 		case .my_433:
 			return 100
 		case .my_919:
+			return 100
+		case .sg_923:
 			return 100
 		}
 	}
@@ -148,6 +153,8 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return Config.LoRaConfig.RegionCode.my433
 		case .my_919:
 			return Config.LoRaConfig.RegionCode.my919
+		case .sg_923:
+			return Config.LoRaConfig.RegionCode.sg923
 		}
 	}
 }

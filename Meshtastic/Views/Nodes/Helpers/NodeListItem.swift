@@ -95,14 +95,16 @@ struct NodeListItem: View {
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 								Text("Channel: \(node.channel)")
-									.font(.callout)
+									.foregroundColor(.gray)
+									.font(.caption)
 							}
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "network")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 								Text("Via MQTT")
-									.font(.callout)
+									.foregroundColor(.gray)
+									.font(.caption)
 							}
 						}
 						if !connected {
