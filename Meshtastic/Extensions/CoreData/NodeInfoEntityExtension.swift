@@ -31,6 +31,10 @@ extension NodeInfoEntity {
 		return traceRoutes?.count ?? 0 > 0
 	}
 	
+	var isStoreForwardRouter: Bool {
+		return storeForwardConfig?.isRouter ?? false
+	}
+	
 	var isOnline: Bool {
 		let fifteenMinutesAgo = Calendar.current.date(byAdding: .minute, value: -15, to: Date())
 		if lastHeard?.compare(fifteenMinutesAgo!) == .orderedDescending {

@@ -60,6 +60,16 @@ struct NodeListItem: View {
 							Text("Role: \(role?.name ?? "unknown".localized)")
 								.font(.callout)
 						}
+						if node.isStoreForwardRouter {
+							HStack {
+								Image(systemName: "envelope.arrow.triangle.branch")
+									.font(.callout)
+									.symbolRenderingMode(.hierarchical)
+								Text("storeforward".localized)
+									.font(.callout)
+							}
+						}
+						
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
 								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
