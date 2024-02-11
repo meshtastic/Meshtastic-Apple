@@ -33,13 +33,15 @@ struct LoRaSignalStrengthMeter: View {
 				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
 				} currentValueLabel: {
 					Image(systemName: "dot.radiowaves.left.and.right")
-						.font(.callout)
+						.font(.caption)
 					Text("Signal \(signalStrength.description)")
-						.font(.callout)
+						.font(.caption)
+						.foregroundColor(.gray)
 				}
 				.gaugeStyle(.accessoryLinear)
 				.tint(gradient)
 				.font(.caption)
+				
 			}
 		}
 	}

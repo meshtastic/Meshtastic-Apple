@@ -62,12 +62,15 @@ struct BatteryLevelCompact: View {
 				}
 				if batteryLevel > 100 {
 					Text("PWD")
+						.foregroundStyle(.gray)
 						.font(font)
 				} else if batteryLevel == 100 {
 					Text("CHG")
+						.foregroundStyle(.gray)
 						.font(font)
 				} else {
 					Text("\(batteryLevel)%")
+						.foregroundStyle(.gray)
 						.font(font)
 				}
 			}
