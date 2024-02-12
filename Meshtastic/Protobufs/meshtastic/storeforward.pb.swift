@@ -66,13 +66,13 @@ struct StoreAndForward {
   }
 
   ///
-  /// Empty Payload
-  var empty: Bool {
+  /// Text from history message.
+  var text: Data {
     get {
-      if case .empty(let v)? = variant {return v}
-      return false
+      if case .text(let v)? = variant {return v}
+      return Data()
     }
-    set {variant = .empty(newValue)}
+    set {variant = .text(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -90,8 +90,8 @@ struct StoreAndForward {
     /// TODO: REPLACE
     case heartbeat(StoreAndForward.Heartbeat)
     ///
-    /// Empty Payload
-    case empty(Bool)
+    /// Text from history message.
+    case text(Data)
 
   #if !swift(>=4.1)
     static func ==(lhs: StoreAndForward.OneOf_Variant, rhs: StoreAndForward.OneOf_Variant) -> Bool {
@@ -111,8 +111,8 @@ struct StoreAndForward {
         guard case .heartbeat(let l) = lhs, case .heartbeat(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.empty, .empty): return {
-        guard case .empty(let l) = lhs, case .empty(let r) = rhs else { preconditionFailure() }
+      case (.text, .text): return {
+        guard case .text(let l) = lhs, case .text(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -268,11 +268,11 @@ struct StoreAndForward {
     var heartbeat: Bool = false
 
     ///
-    /// Is the heartbeat enabled on the server?
+    /// Maximum number of messages the server will return.
     var returnMax: UInt32 = 0
 
     ///
-    /// Is the heartbeat enabled on the server?
+    /// Maximum history window in minutes the server will return messages from.
     var returnWindow: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -296,7 +296,8 @@ struct StoreAndForward {
     var window: UInt32 = 0
 
     ///
-    /// The window of messages that was used to filter the history client requested
+    /// Index in the packet history of the last message sent in a previous request to the server.
+    /// Will be sent to the client before sending the history and can be set in a subsequent request to avoid getting packets the server already sent to the client.
     var lastRequest: UInt32 = 0
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -312,7 +313,7 @@ struct StoreAndForward {
     // methods supported on all messages.
 
     ///
-    /// Number of that will be sent to the client
+    /// Period in seconds that the heartbeat is sent out that will be sent to the client
     var period: UInt32 = 0
 
     ///
@@ -371,7 +372,7 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     2: .same(proto: "stats"),
     3: .same(proto: "history"),
     4: .same(proto: "heartbeat"),
-    5: .same(proto: "empty"),
+    5: .same(proto: "text"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -421,11 +422,11 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
         }
       }()
       case 5: try {
-        var v: Bool?
-        try decoder.decodeSingularBoolField(value: &v)
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
         if let v = v {
           if self.variant != nil {try decoder.handleConflictingOneOf()}
-          self.variant = .empty(v)
+          self.variant = .text(v)
         }
       }()
       default: break
@@ -454,9 +455,9 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       guard case .heartbeat(let v)? = self.variant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     }()
-    case .empty?: try {
-      guard case .empty(let v)? = self.variant else { preconditionFailure() }
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    case .text?: try {
+      guard case .text(let v)? = self.variant else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 5)
     }()
     case nil: break
     }

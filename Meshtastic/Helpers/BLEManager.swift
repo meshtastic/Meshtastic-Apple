@@ -2374,7 +2374,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		/// send a request for ClientHistory with a time period matching the heartbeat
 		var sfPacket = StoreAndForward()
 		sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
-		sfPacket.history.window = 120 // storeAndForwardMessage.heartbeat.period
+		sfPacket.history.window = UInt32(toUser.userNode?.storeForwardConfig?.historyReturnWindow ?? 120)
+		sfPacket.history.lastRequest = UInt32(toUser.userNode?.storeForwardConfig?.lastRequest?.timeIntervalSince1970 ?? Date().timeIntervalSince1970)
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2401,7 +2402,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-			// Request Response
+			
+			// Handle the text variant as a text message packet
+			if storeAndForwardMessage.variant == StoreAndForward.OneOf_Variant.text(packet.decoded.payload) {
+				MeshLogger.log("📮 Store and Forward history text message received \(storeAndForwardMessage)")
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
+				return
+			}
+			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
@@ -2424,6 +2432,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						newConfig.enabled = true
 						newConfig.isRouter = storeAndForwardMessage.heartbeat.secondary == 0
 						newConfig.lastHeartbeat = Date()
+						routerNode.storeForwardConfig = newConfig
 					}
 					
 					do {
@@ -2441,6 +2450,24 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .routerBusy:
 				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerHistory:
+				/// Set the Router History Last Request Value
+				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
+					return
+				}
+				if routerNode.storeForwardConfig != nil {
+					routerNode.storeForwardConfig?.lastRequest = Date(timeIntervalSince1970: TimeInterval(storeAndForwardMessage.history.lastRequest))
+				} else {
+					let newConfig = StoreForwardConfigEntity(context: context)
+					newConfig.lastRequest = Date(timeIntervalSince1970: TimeInterval(storeAndForwardMessage.history.lastRequest))
+					routerNode.storeForwardConfig = newConfig
+				}
+				
+				do {
+					try context.save()
+				} catch {
+					context.rollback()
+					print("💥 Save Store and Forward Router Error")
+				}
 				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerStats:
 				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")

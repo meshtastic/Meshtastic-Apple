@@ -131,6 +131,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case canaryone // = 29
 
   ///
+  /// Waveshare RP2040 LoRa - https://www.waveshare.com/rp2040-lora.htm
+  case rp2040Lora // = 30
+
+  ///
   /// ---------------------------------------------------------------------------
   /// Less common/prototype boards listed here (needs one more byte over the air)
   /// ---------------------------------------------------------------------------
@@ -280,6 +284,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 27: self = .senseloraRp2040
     case 28: self = .senseloraS3
     case 29: self = .canaryone
+    case 30: self = .rp2040Lora
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -338,6 +343,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .senseloraRp2040: return 27
     case .senseloraS3: return 28
     case .canaryone: return 29
+    case .rp2040Lora: return 30
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -401,6 +407,7 @@ extension HardwareModel: CaseIterable {
     .senseloraRp2040,
     .senseloraS3,
     .canaryone,
+    .rp2040Lora,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -2589,6 +2596,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     27: .same(proto: "SENSELORA_RP2040"),
     28: .same(proto: "SENSELORA_S3"),
     29: .same(proto: "CANARYONE"),
+    30: .same(proto: "RP2040_LORA"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
