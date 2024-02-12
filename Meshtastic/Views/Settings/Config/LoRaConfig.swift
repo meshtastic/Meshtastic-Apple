@@ -161,9 +161,9 @@ struct LoRaConfig: View {
 						.font(.caption)
 
 					HStack {
-						Text("LoRa Channel Number")
+						Text("LoRa Frequency Slot")
 							.fixedSize()
-						TextField("Channel Number", value: $channelNum, formatter: formatter)
+						TextField("Frequency Slot", value: $channelNum, formatter: formatter)
 							.toolbar {
 								ToolbarItemGroup(placement: .keyboard) {
 									Button("dismiss.keyboard") {
