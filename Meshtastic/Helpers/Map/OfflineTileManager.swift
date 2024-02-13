@@ -110,7 +110,7 @@ class OfflineTileManager: ObservableObject {
 		if fileManager.fileExists(atPath: tilesUrl.path) {
 			return tilesUrl
 		} else {
-			if UserDefaults.enableOfflineMaps { // Get and persist newTile
+			if UserDefaults.enableOfflineMaps, UserDefaults.mapTileServer.zoomRange.contains(path.z) { // Get and persist newTile
 				return persistLocally(path: path)
 			} else { // Else display empty tile (transparent over Maps tiles)
 				return Bundle.main.url(forResource: "alpha", withExtension: "png")!
@@ -148,8 +148,9 @@ class OfflineTileManager: ObservableObject {
 			try data.write(to: filename)
 		} catch {
 			print("💀 Save Tile Error = \(error)")
+			return url
 		}
-		return url
+		return filename
 	}
 	private func filterTilesAlreadyExisting(paths: [MKTileOverlayPath]) -> [MKTileOverlayPath] {
 		paths.filter {
