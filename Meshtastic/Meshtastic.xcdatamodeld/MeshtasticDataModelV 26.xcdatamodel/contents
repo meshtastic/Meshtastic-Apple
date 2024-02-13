@@ -325,7 +325,7 @@
         <attribute name="historyReturnWindow" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isRouter" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastHeartbeat" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="lastRequest" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastRequest" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="records" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="storeForwardConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="storeForwardConfig" inverseEntity="NodeInfoEntity"/>
     </entity>

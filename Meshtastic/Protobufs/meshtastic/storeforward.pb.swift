@@ -161,6 +161,14 @@ struct StoreAndForward {
     case routerStats // = 7
 
     ///
+    /// Router sends a text message from its history that was a direct message.
+    case routerTextDirect // = 8
+
+    ///
+    /// Router sends a text message from its history that was a broadcast.
+    case routerTextBroadcast // = 9
+
+    ///
     /// Client is an in error state.
     case clientError // = 64
 
@@ -200,6 +208,8 @@ struct StoreAndForward {
       case 5: self = .routerBusy
       case 6: self = .routerHistory
       case 7: self = .routerStats
+      case 8: self = .routerTextDirect
+      case 9: self = .routerTextBroadcast
       case 64: self = .clientError
       case 65: self = .clientHistory
       case 66: self = .clientStats
@@ -220,6 +230,8 @@ struct StoreAndForward {
       case .routerBusy: return 5
       case .routerHistory: return 6
       case .routerStats: return 7
+      case .routerTextDirect: return 8
+      case .routerTextBroadcast: return 9
       case .clientError: return 64
       case .clientHistory: return 65
       case .clientStats: return 66
@@ -341,6 +353,8 @@ extension StoreAndForward.RequestResponse: CaseIterable {
     .routerBusy,
     .routerHistory,
     .routerStats,
+    .routerTextDirect,
+    .routerTextBroadcast,
     .clientError,
     .clientHistory,
     .clientStats,
@@ -482,6 +496,8 @@ extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
     5: .same(proto: "ROUTER_BUSY"),
     6: .same(proto: "ROUTER_HISTORY"),
     7: .same(proto: "ROUTER_STATS"),
+    8: .same(proto: "ROUTER_TEXT_DIRECT"),
+    9: .same(proto: "ROUTER_TEXT_BROADCAST"),
     64: .same(proto: "CLIENT_ERROR"),
     65: .same(proto: "CLIENT_HISTORY"),
     66: .same(proto: "CLIENT_STATS"),

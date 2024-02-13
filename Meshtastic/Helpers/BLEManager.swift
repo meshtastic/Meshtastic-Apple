@@ -2375,7 +2375,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var sfPacket = StoreAndForward()
 		sfPacket.rr = StoreAndForward.RequestResponse.clientHistory
 		sfPacket.history.window = UInt32(toUser.userNode?.storeForwardConfig?.historyReturnWindow ?? 120)
-		sfPacket.history.lastRequest = UInt32(toUser.userNode?.storeForwardConfig?.lastRequest?.timeIntervalSince1970 ?? Date().timeIntervalSince1970)
+		sfPacket.history.lastRequest = UInt32(toUser.userNode?.storeForwardConfig?.lastRequest ?? 0)
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(toUser.num)
 		meshPacket.from	= UInt32(fromUser.num)
@@ -2456,10 +2456,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					return
 				}
 				if routerNode.storeForwardConfig != nil {
-					routerNode.storeForwardConfig?.lastRequest = Date(timeIntervalSince1970: TimeInterval(storeAndForwardMessage.history.lastRequest))
+					routerNode.storeForwardConfig?.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
 				} else {
 					let newConfig = StoreForwardConfigEntity(context: context)
-					newConfig.lastRequest = Date(timeIntervalSince1970: TimeInterval(storeAndForwardMessage.history.lastRequest))
+					newConfig.lastRequest = Int32(storeAndForwardMessage.history.lastRequest)
 					routerNode.storeForwardConfig = newConfig
 				}
 				
@@ -2487,6 +2487,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .UNRECOGNIZED:
 				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerTextDirect:
+				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+			case .routerTextBroadcast:
+				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			}
 		}
 	}

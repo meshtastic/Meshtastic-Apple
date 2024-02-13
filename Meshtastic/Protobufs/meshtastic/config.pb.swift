@@ -198,64 +198,63 @@ struct Config {
       typealias RawValue = Int
 
       ///
-      /// Client device role
+      /// Description: App connected or stand alone messaging device.
+      /// Technical Details: Default Role
       case client // = 0
 
       ///
-      /// Client Mute device role
-      ///   Same as a client except packets will not hop over this node, does not contribute to routing packets for mesh.
+      ///  Description: Device that does not forward packets from other devices.
       case clientMute // = 1
 
       ///
-      /// Router device role.
-      ///   Mesh packets will prefer to be routed over this node. This node will not be used by client apps.
-      ///   The wifi/ble radios and the oled screen will be put to sleep.
+      /// Description: Infrastructure node for extending network coverage by relaying messages. Visible in Nodes list.
+      /// Technical Details: Mesh packets will prefer to be routed over this node. This node will not be used by client apps.
+      ///   The wifi radio and the oled screen will be put to sleep.
       ///   This mode may still potentially have higher power usage due to it's preference in message rebroadcasting on the mesh.
       case router // = 2
 
       ///
-      /// Router Client device role
-      ///   Mesh packets will prefer to be routed over this node. The Router Client can be used as both a Router and an app connected Client.
+      /// Description: Combination of both ROUTER and CLIENT. Not for mobile devices.
       case routerClient // = 3
 
       ///
-      /// Repeater device role
-      ///   Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
+      /// Description: Infrastructure node for extending network coverage by relaying messages with minimal overhead. Not visible in Nodes list.
+      /// Technical Details: Mesh packets will simply be rebroadcasted over this node. Nodes configured with this role will not originate NodeInfo, Position, Telemetry
       ///   or any other packet type. They will simply rebroadcast any mesh packets on the same frequency, channel num, spread factor, and coding rate.
       case repeater // = 4
 
       ///
-      /// Tracker device role
-      ///   Position Mesh packets will be prioritized higher and sent more frequently by default.
+      /// Description: Broadcasts GPS position packets as priority.
+      /// Technical Details: Position Mesh packets will be prioritized higher and sent more frequently by default.
       ///   When used in conjunction with power.is_power_saving = true, nodes will wake up, 
       ///   send position, and then sleep for position.position_broadcast_secs seconds.
       case tracker // = 5
 
       ///
-      /// Sensor device role
-      ///   Telemetry Mesh packets will be prioritized higher and sent more frequently by default.
+      /// Description: Broadcasts telemetry packets as priority.
+      /// Technical Details: Telemetry Mesh packets will be prioritized higher and sent more frequently by default.
       ///   When used in conjunction with power.is_power_saving = true, nodes will wake up, 
       ///   send environment telemetry, and then sleep for telemetry.environment_update_interval seconds.
       case sensor // = 6
 
       ///
-      /// TAK device role
-      ///    Used for nodes dedicated for connection to an ATAK EUD.
+      /// Description: Optimized for ATAK system communication, reduces routine broadcasts.
+      /// Technical Details: Used for nodes dedicated for connection to an ATAK EUD.
       ///    Turns off many of the routine broadcasts to favor CoT packet stream
       ///    from the Meshtastic ATAK plugin -> IMeshService -> Node
       case tak // = 7
 
       ///
-      /// Client Hidden device role
-      ///    Used for nodes that "only speak when spoken to"
+      /// Description: Device that only broadcasts as needed for stealth or power savings.
+      /// Technical Details: Used for nodes that "only speak when spoken to"
       ///    Turns all of the routine broadcasts but allows for ad-hoc communication
       ///    Still rebroadcasts, but with local only rebroadcast mode (known meshes only)
       ///    Can be used for clandestine operation or to dramatically reduce airtime / power consumption 
       case clientHidden // = 8
 
       ///
-      /// Lost and Found device role
-      ///    Used to automatically send a text message to the mesh 
+      /// Description: Broadcasts location as message to default channel regularly for to assist with device recovery.
+      /// Technical Details: Used to automatically send a text message to the mesh 
       ///    with the current position of the device on a frequent interval:
       ///    "I'm lost! Position: lat / long"
       case lostAndFound // = 9
@@ -418,6 +417,10 @@ struct Config {
     ///
     /// Set where GPS is enabled, disabled, or not present
     var gpsMode: Config.PositionConfig.GpsMode = .disabled
+
+    ///
+    /// Set GPS precision in bits per channel, or 0 for disabled
+    var channelPrecision: [UInt32] = []
 
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1838,6 +1841,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
     12: .standard(proto: "gps_en_gpio"),
     13: .standard(proto: "gps_mode"),
+    14: .standard(proto: "channel_precision"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1859,6 +1863,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumIntervalSecs) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.gpsEnGpio) }()
       case 13: try { try decoder.decodeSingularEnumField(value: &self.gpsMode) }()
+      case 14: try { try decoder.decodeRepeatedUInt32Field(value: &self.channelPrecision) }()
       default: break
       }
     }
@@ -1904,6 +1909,9 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.gpsMode != .disabled {
       try visitor.visitSingularEnumField(value: self.gpsMode, fieldNumber: 13)
     }
+    if !self.channelPrecision.isEmpty {
+      try visitor.visitPackedUInt32Field(value: self.channelPrecision, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1921,6 +1929,7 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.broadcastSmartMinimumIntervalSecs != rhs.broadcastSmartMinimumIntervalSecs {return false}
     if lhs.gpsEnGpio != rhs.gpsEnGpio {return false}
     if lhs.gpsMode != rhs.gpsMode {return false}
+    if lhs.channelPrecision != rhs.channelPrecision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

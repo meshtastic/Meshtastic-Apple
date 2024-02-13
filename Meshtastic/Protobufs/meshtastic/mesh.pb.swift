@@ -202,7 +202,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
 
   ///
   /// Heltec Wireless Tracker with ESP32-S3 CPU, built-in GPS, and TFT
-  case heltecWirelessTracker // = 48
+  /// Newer V1.1, version is written on the PCB near the display.
+  case heltecWirelessTrackerV11 // = 48
 
   ///
   /// Heltec Wireless Paper with ESP32-S3 CPU and E-Ink display
@@ -245,6 +246,11 @@ enum HardwareModel: SwiftProtobuf.Enum {
   /// Tab on the screen protector is RED
   /// Flex connector marking is FPC-7528B
   case heltecWirelessPaperV10 // = 57
+
+  ///
+  /// Heltec Wireless Tracker with ESP32-S3 CPU, built-in GPS, and TFT
+  /// Older "V1.0" Variant
+  case heltecWirelessTrackerV10 // = 58
 
   ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -301,7 +307,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 45: self = .betafpv2400Tx
     case 46: self = .betafpv900NanoTx
     case 47: self = .rpiPico
-    case 48: self = .heltecWirelessTracker
+    case 48: self = .heltecWirelessTrackerV11
     case 49: self = .heltecWirelessPaper
     case 50: self = .tDeck
     case 51: self = .tWatchS3
@@ -311,6 +317,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 55: self = .esp32S3Pico
     case 56: self = .chatter2
     case 57: self = .heltecWirelessPaperV10
+    case 58: self = .heltecWirelessTrackerV10
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -360,7 +367,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .betafpv2400Tx: return 45
     case .betafpv900NanoTx: return 46
     case .rpiPico: return 47
-    case .heltecWirelessTracker: return 48
+    case .heltecWirelessTrackerV11: return 48
     case .heltecWirelessPaper: return 49
     case .tDeck: return 50
     case .tWatchS3: return 51
@@ -370,6 +377,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .esp32S3Pico: return 55
     case .chatter2: return 56
     case .heltecWirelessPaperV10: return 57
+    case .heltecWirelessTrackerV10: return 58
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -424,7 +432,7 @@ extension HardwareModel: CaseIterable {
     .betafpv2400Tx,
     .betafpv900NanoTx,
     .rpiPico,
-    .heltecWirelessTracker,
+    .heltecWirelessTrackerV11,
     .heltecWirelessPaper,
     .tDeck,
     .tWatchS3,
@@ -434,6 +442,7 @@ extension HardwareModel: CaseIterable {
     .esp32S3Pico,
     .chatter2,
     .heltecWirelessPaperV10,
+    .heltecWirelessTrackerV10,
     .privateHw,
   ]
 }
@@ -2613,7 +2622,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     45: .same(proto: "BETAFPV_2400_TX"),
     46: .same(proto: "BETAFPV_900_NANO_TX"),
     47: .same(proto: "RPI_PICO"),
-    48: .same(proto: "HELTEC_WIRELESS_TRACKER"),
+    48: .same(proto: "HELTEC_WIRELESS_TRACKER_V1_1"),
     49: .same(proto: "HELTEC_WIRELESS_PAPER"),
     50: .same(proto: "T_DECK"),
     51: .same(proto: "T_WATCH_S3"),
@@ -2623,6 +2632,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     55: .same(proto: "ESP32_S3_PICO"),
     56: .same(proto: "CHATTER_2"),
     57: .same(proto: "HELTEC_WIRELESS_PAPER_V1_0"),
+    58: .same(proto: "HELTEC_WIRELESS_TRACKER_V1_0"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
