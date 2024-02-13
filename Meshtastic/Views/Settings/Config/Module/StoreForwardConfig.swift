@@ -61,7 +61,7 @@ struct StoreForwardConfig: View {
 					
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
-						Text("Enables the store and forward module.")
+						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
 							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -77,6 +77,15 @@ struct StoreForwardConfig: View {
 							.pickerStyle(SegmentedPickerStyle())
 							.padding(.top, 5)
 							.padding(.bottom, 5)
+						}
+					}
+					VStack {
+						if isRouter {
+							Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
+								.font(.caption)
+						} else {
+							Text("Store and forward clients can request history from routers on the network.")
+								.font(.caption)
 						}
 					}
 				}
@@ -110,6 +119,7 @@ struct StoreForwardConfig: View {
 							Text("Fifteen Minutes").tag(900)
 							Text("Thirty Minutes").tag(1800)
 							Text("One Hour").tag(3600)
+							Text("Two Hours").tag(7200)
 						}
 						.pickerStyle(DefaultPickerStyle())
 					}
@@ -178,7 +188,7 @@ struct StoreForwardConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			setStoreAndForwardValues()
+			
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
 				print("empty store and forward module config")
@@ -187,10 +197,16 @@ struct StoreForwardConfig: View {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
+			setStoreAndForwardValues()
 		}
 		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newEnabled != node!.detectionSensorConfig!.enabled { hasChanges = true }
+			if node != nil && node?.storeForwardConfig != nil {
+				if newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
+			}
+		}
+		.onChange(of: isRouter) { newIsRouter in
+			if node != nil && node?.storeForwardConfig != nil {
+				if newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
 			}
 		}
 		.onChange(of: heartbeat) { newHeartbeat in
@@ -220,7 +236,7 @@ struct StoreForwardConfig: View {
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)
 		self.historyReturnMax = Int(node?.storeForwardConfig?.historyReturnMax ?? 100)
-		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 300)
+		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 7200)
 		self.hasChanges = false
 	}
 }

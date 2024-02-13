@@ -2489,8 +2489,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerTextDirect:
 				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 			case .routerTextBroadcast:
 				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 			}
 		}
 	}

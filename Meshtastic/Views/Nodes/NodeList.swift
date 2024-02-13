@@ -116,12 +116,12 @@ struct NodeList: View {
 					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 				}
 				.alert(
-					"Store and Forward Client Hitory Request Sent",
+					"Client History Request Sent",
 					isPresented: $isPresentingClientHistorySentAlert
 				) {
 					Button("OK", role: .cancel) { }
 				} message: {
-					Text("Any messages you have missed will be delivered again.")
+					Text("Any missed messages will be delivered again.")
 				}
 			}
 			.searchable(text: nodesQuery, prompt: "Find a node")
