@@ -85,7 +85,7 @@ struct NodeList: View {
 							} label: {
 								Label("Trace Route", systemImage: "signpost.right.and.left")
 							}
-							if node.isStoreForwardRouter {
+							if true {//node.isStoreForwardRouter {
 
 								Button {
 									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser:  node.user!)

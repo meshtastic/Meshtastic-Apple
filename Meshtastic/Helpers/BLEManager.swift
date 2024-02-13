@@ -2403,18 +2403,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func storeAndForwardPacket(packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
-			
-			// Handle the text variant as a text message packet
-			if storeAndForwardMessage.variant == StoreAndForward.OneOf_Variant.text(packet.decoded.payload) {
-				MeshLogger.log("📮 Store and Forward history text message received \(storeAndForwardMessage)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
-				return
-			}
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 			case .routerError:
 				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerHeartbeat:
@@ -2486,14 +2478,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .clientAbort:
 				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .UNRECOGNIZED:
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
 			case .routerTextDirect:
 				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			case .routerTextBroadcast:
 				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, context: context)
+				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			}
 		}
 	}
