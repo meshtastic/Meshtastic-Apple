@@ -9,27 +9,18 @@ import SwiftUI
 import CoreData
 
 struct ChannelMessageList: View {
-
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 
-	enum Field: Hashable {
-		case messageText
-	}
-
 	// Keyboard State
-	@State var typingMessage: String = ""
-	@State private var totalBytes = 0
-	var maxbytes = 228
-	@FocusState var focusedField: Field?
+	@FocusState var messageFieldFocused: Bool
 
 	@ObservedObject var myInfo: MyInfoEntity
 	@ObservedObject var channel: ChannelEntity
 	@State var showDeleteMessageAlert = false
 	@State private var deleteMessageId: Int64 = 0
 	@State private var replyMessageId: Int64 = 0
-	@State private var sendPositionWithMessage: Bool = false
 	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
 
 	var body: some View {
@@ -115,7 +106,7 @@ struct ChannelMessageList: View {
 											}
 											Button(action: {
 												self.replyMessageId = message.messageId
-												self.focusedField = .messageText
+												self.messageFieldFocused = true
 												print("I want to reply to \(message.messageId)")
 											}) {
 												Text("reply")
@@ -288,134 +279,14 @@ struct ChannelMessageList: View {
 					}
 				})
 			}
-			#if targetEnvironment(macCatalyst)
-			HStack {
-				Spacer()
-				Button {
-					let bell = "🔔 Alert Bell Character! \u{7}"
-					print(bell)
-					typingMessage += bell
-
-				} label: {
-					Text("Alert Bell")
-					Image(systemName: "bell.fill")
-						.symbolRenderingMode(.hierarchical)
-						.imageScale(.large).foregroundColor(.accentColor)
-				}
-				Spacer()
-				Button {
-					let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
-					sendPositionWithMessage = true
-					typingMessage +=  "📍 " + userLongName + " has shared their position with you."
-				} label: {
-					Text("share.position")
-					Image(systemName: "mappin.and.ellipse")
-						.symbolRenderingMode(.hierarchical)
-						.imageScale(.large).foregroundColor(.accentColor)
-				}
-				ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
-					.frame(width: 130)
-					.padding(5)
-					.font(.subheadline)
-					.accentColor(.accentColor)
-					.padding(.trailing)
+			
+			TextMessageField(
+				destination: .channel(channel.index),
+				replyMessageId: $replyMessageId,
+				isFocused: $messageFieldFocused
+			) {
+				context.refresh(channel, mergeChanges: true)
 			}
-			#endif
-			HStack(alignment: .top) {
-
-				ZStack {
-					TextField("message", text: $typingMessage, axis: .vertical)
-						.onChange(of: typingMessage, perform: { value in
-							totalBytes = value.utf8.count
-							// Only mess with the value if it is too big
-							if totalBytes > maxbytes {
-								let firstNBytes = Data(typingMessage.utf8.prefix(maxbytes))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the message back to the last place where it was the right size
-									typingMessage = maxBytesString
-								} else {
-									print("not a valid UTF-8 sequence")
-								}
-							}
-						})
-						.keyboardType(.default)
-						.toolbar {
-							ToolbarItemGroup(placement: .keyboard) {
-								Button("dismiss.keyboard") {
-									focusedField = nil
-								}
-								.font(.subheadline)
-								Spacer()
-								Button {
-									let bell = "🔔 Alert Bell Character! \u{7}"
-									print(bell)
-									typingMessage += bell
-
-								} label: {
-									Text("Alert")
-									Image(systemName: "bell.fill")
-										.symbolRenderingMode(.hierarchical)
-										.imageScale(.large).foregroundColor(.accentColor)
-								}
-								Spacer()
-								Button {
-									let userLongName = bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral.longName : "Unknown"
-									sendPositionWithMessage = true
-									typingMessage =  "📍 " + userLongName + " has shared their position with you."
-
-								} label: {
-									Image(systemName: "mappin.and.ellipse")
-										.symbolRenderingMode(.hierarchical)
-										.imageScale(.large).foregroundColor(.accentColor)
-								}
-
-								ProgressView("\("bytes".localized): \(totalBytes) / \(maxbytes)", value: Double(totalBytes), total: Double(maxbytes))
-									.frame(width: 130)
-									.padding(5)
-									.font(.subheadline)
-									.accentColor(.accentColor)
-							}
-						}
-						.padding(.horizontal, 8)
-						.focused($focusedField, equals: .messageText)
-						.multilineTextAlignment(.leading)
-						.frame(minHeight: 50)
-						.keyboardShortcut(.defaultAction)
-						.onSubmit {
-						#if targetEnvironment(macCatalyst)
-							if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
-								typingMessage = ""
-								focusedField = nil
-								replyMessageId = 0
-								if sendPositionWithMessage {
-									if bleManager.sendPosition(channel: Int32(channel.index), destNum: Int64(bleManager.emptyNodeNum), wantResponse: false) {
-										print("Location Sent")
-									}
-								}
-							}
-						#endif
-						}
-					Text(typingMessage).opacity(0).padding(.all, 0)
-				}
-				.overlay(RoundedRectangle(cornerRadius: 20).stroke(.tertiary, lineWidth: 1))
-				.padding(.bottom, 15)
-				Button(action: {
-					if bleManager.sendMessage(message: typingMessage, toUserNum: 0, channel: channel.index, isEmoji: false, replyID: replyMessageId) {
-						typingMessage = ""
-						focusedField = nil
-						replyMessageId = 0
-						if sendPositionWithMessage {
-							if bleManager.sendPosition(channel: Int32(channel.index), destNum: Int64(bleManager.emptyNodeNum), wantResponse: false) {
-								print("Location Sent")
-							}
-						}
-					}
-				}) {
-					Image(systemName: "arrow.up.circle.fill").font(.largeTitle).foregroundColor(.accentColor)
-				}
-				
-			}
-			.padding(.all, 15)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
