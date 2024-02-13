@@ -57,17 +57,14 @@ class PersistenceController {
 		guard let url = self.container.persistentStoreDescriptions.first?.url else { return }
 
 		let persistentStoreCoordinator = self.container.persistentStoreCoordinator
-
 		 do {
-
 			 try persistentStoreCoordinator.destroyPersistentStore(at: url, ofType: NSSQLiteStoreType, options: nil)
 			 print("💥 CoreData database truncated.  All app data has been erased.")
-			 
+			
 			 do {
 				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 } catch let error {
 				 print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
-				 try persistentStoreCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
 			 }
 
 		} catch let error {
