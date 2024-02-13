@@ -148,8 +148,9 @@ class OfflineTileManager: ObservableObject {
 			try data.write(to: filename)
 		} catch {
 			print("💀 Save Tile Error = \(error)")
+			return url
 		}
-		return url
+		return filename
 	}
 	private func filterTilesAlreadyExisting(paths: [MKTileOverlayPath]) -> [MKTileOverlayPath] {
 		paths.filter {
