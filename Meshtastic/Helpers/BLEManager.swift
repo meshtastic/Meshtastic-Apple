@@ -695,7 +695,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .neighborinfoApp:
 				if let neighborInfo = try? NeighborInfo(serializedData: decodedInfo.packet.decoded.payload) {
-					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App App UNHANDLED \(neighborInfo)")
+					MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED")
+				//	MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
 			case .paxcounterApp:
 				MeshLogger.log("🕸️ MESH PACKET received for PAX Counter App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
@@ -715,7 +716,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				peripherals.removeAll(where: { $0.peripheral.state == CBPeripheralState.disconnected })
 				// Config conplete returns so we don't read the characteristic again
 				
-				/// MQTT Client Proxy and RangeTest interest
+				/// MQTT Client Proxy and RangeTest and Store and Forward interest
 				if connectedPeripheral.num > 0 {
 					
 					let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")

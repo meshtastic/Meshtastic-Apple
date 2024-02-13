@@ -723,10 +723,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 
 func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
 
-	//let storeForwardMessage = packet.decoded.payload.text/// String(bytes: packet.decoded.payload.text, encoding: .utf8)
-	
-	
-
 	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")

@@ -10,6 +10,7 @@ struct RequestPositionButton: View {
 				.imageScale(.large)
 				.foregroundColor(.accentColor)
 		}
+		.padding(.trailing)
 	}
 }
 
