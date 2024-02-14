@@ -202,6 +202,11 @@ struct UserMessageList: View {
 									}
 									.padding(.bottom)
 									.id(user.messageList.firstIndex(of: message))
+
+									if currentUser && message.ackError > 0 {
+										RetryButton(message: message)
+									}
+
 									if !currentUser {
 										Spacer(minLength: 50)
 									}
