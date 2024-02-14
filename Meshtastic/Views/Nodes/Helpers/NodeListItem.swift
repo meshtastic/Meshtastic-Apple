@@ -50,7 +50,8 @@ struct NodeListItem: View {
 								.symbolRenderingMode(.hierarchical)
 								.foregroundColor(node.isOnline ? .green : .orange)
 							LastHeardText(lastHeard: node.lastHeard)
-								.font(.callout)
+								.font(.caption)
+								.foregroundColor(.gray)
 						}
 						HStack {
 							let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
@@ -58,8 +59,20 @@ struct NodeListItem: View {
 								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
 							Text("Role: \(role?.name ?? "unknown".localized)")
-								.font(.callout)
+								.font(.caption)
+								.foregroundColor(.gray)
 						}
+						if node.isStoreForwardRouter {
+							HStack {
+								Image(systemName: "envelope.arrow.triangle.branch")
+									.font(.callout)
+									.symbolRenderingMode(.hierarchical)
+								Text("storeforward".localized)
+									.font(.caption)
+									.foregroundColor(.gray)
+							}
+						}
+						
 						if node.positions?.count ?? 0 > 0 && connectedNode != node.num {
 							HStack {
 								let lastPostion = node.positions!.reversed()[0] as! PositionEntity
@@ -72,7 +85,8 @@ struct NodeListItem: View {
 											Image(systemName: "lines.measurement.horizontal")
 												.font(.callout)
 												.symbolRenderingMode(.hierarchical)
-											DistanceText(meters: metersAway).font(.callout)
+											DistanceText(meters: metersAway).font(.caption)
+												.foregroundColor(.gray)
 										}
 									}
 								} else {
@@ -84,7 +98,8 @@ struct NodeListItem: View {
 										Image(systemName: "lines.measurement.horizontal")
 											.font(.callout)
 											.symbolRenderingMode(.hierarchical)
-										DistanceText(meters: metersAway).font(.callout)
+										DistanceText(meters: metersAway).font(.caption)
+											.foregroundColor(.gray)
 									}
 								}
 							}
@@ -95,14 +110,16 @@ struct NodeListItem: View {
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 								Text("Channel: \(node.channel)")
-									.font(.callout)
+									.foregroundColor(.gray)
+									.font(.caption)
 							}
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "network")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 								Text("Via MQTT")
-									.font(.callout)
+									.foregroundColor(.gray)
+									.font(.caption)
 							}
 						}
 						if !connected {

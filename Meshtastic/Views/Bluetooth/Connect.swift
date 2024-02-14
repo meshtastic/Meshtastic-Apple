@@ -216,7 +216,14 @@ struct Connect: View {
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-									PersistenceController.shared.clearDatabase()
+									context.reset()
+									do {
+										PersistenceController.shared.clearDatabase()
+										
+									} catch let error {
+										print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
+									}
+									
 									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 									if radio != nil {
 										bleManager.connectTo(peripheral: radio!.peripheral)

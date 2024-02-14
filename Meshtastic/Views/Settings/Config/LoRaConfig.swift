@@ -161,9 +161,9 @@ struct LoRaConfig: View {
 						.font(.caption)
 
 					HStack {
-						Text("LoRa Channel Number")
+						Text("Frequency Slot")
 							.fixedSize()
-						TextField("Channel Number", value: $channelNum, formatter: formatter)
+						TextField("Frequency Slot", value: $channelNum, formatter: formatter)
 							.toolbar {
 								ToolbarItemGroup(placement: .keyboard) {
 									Button("dismiss.keyboard") {
@@ -175,6 +175,7 @@ struct LoRaConfig: View {
 							.keyboardType(.decimalPad)
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .channelNum)
+							.disabled(overrideFrequency > 0.0)
 					}
 					Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
 						.font(.caption)

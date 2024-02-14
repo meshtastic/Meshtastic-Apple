@@ -721,9 +721,20 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSManagedObjectContext) {
+func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
 
-	if let messageText = String(bytes: packet.decoded.payload, encoding: .utf8) {
+	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
+	var storeForwardBroadcast = false
+	if storeForward {
+		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
+			messageText = String(bytes:  storeAndForwardMessage.text, encoding: .utf8)
+			if storeAndForwardMessage.rr == .routerTextBroadcast {
+				storeForwardBroadcast = true
+			}
+		}
+	}
+	
+	if messageText?.count ?? 0 > 0 {
 
 		MeshLogger.log("💬 \("mesh.log.textmessage.received".localized)")
 
@@ -753,13 +764,15 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 			}
 
 			if fetchedUsers.first(where: { $0.num == packet.to }) != nil && packet.to != 4294967295 {
-				newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				if !storeForwardBroadcast {
+					newMessage.toUser = fetchedUsers.first(where: { $0.num == packet.to })
+				}
 			}
 			if fetchedUsers.first(where: { $0.num == packet.from }) != nil {
 				newMessage.fromUser = fetchedUsers.first(where: { $0.num == packet.from })
 			}
 			newMessage.messagePayload = messageText
-			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText)
+			newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: messageText!)
 			if packet.to != 4294967295 && newMessage.fromUser != nil {
 				newMessage.fromUser?.lastMessage = Date()
 			}
@@ -790,7 +803,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 								id: ("notification.id.\(newMessage.messageId)"),
 								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-								content: messageText,
+								content: messageText!,
 								target: "message",
 								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
 							)
@@ -822,7 +835,7 @@ func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, context: NSM
 												id: ("notification.id.\(newMessage.messageId)"),
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-												content: messageText,
+												content: messageText!,
 												target: "message",
 												path: "meshtastic://messages/channel/\(newMessage.messageId)")
 										]

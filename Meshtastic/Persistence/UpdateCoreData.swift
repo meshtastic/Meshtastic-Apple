@@ -119,6 +119,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
+			newNode.channel = Int32(packet.channel)
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
 				print(packet.channel)
@@ -163,6 +164,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
+			fetchedNode[0].channel = Int32(packet.channel)
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
@@ -280,6 +282,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].snr = packet.rxSnr
 					fetchedNode[0].rssi = packet.rxRssi
 					fetchedNode[0].viaMqtt = packet.viaMqtt
+					fetchedNode[0].channel = Int32(packet.channel)
 					fetchedNode[0].positions = mutablePositions.copy() as? NSOrderedSet
 
 					do {
@@ -369,7 +372,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				newDeviceConfig.buttonGpio = Int32(config.buttonGpio)
 				newDeviceConfig.buzzerGpio =  Int32(config.buzzerGpio)
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
-				newDeviceConfig.nodeInfoBroadcastSecs = Int32(config.nodeInfoBroadcastSecs)
+				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
 				newDeviceConfig.isManaged = config.isManaged
 				fetchedNode[0].deviceConfig = newDeviceConfig
@@ -380,7 +383,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				fetchedNode[0].deviceConfig?.buttonGpio = Int32(config.buttonGpio)
 				fetchedNode[0].deviceConfig?.buzzerGpio = Int32(config.buzzerGpio)
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
-				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(config.nodeInfoBroadcastSecs)
+				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 			}
@@ -618,7 +621,7 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 				fetchedNode[0].positionConfig?.txGpio = Int32(config.txGpio)
 				fetchedNode[0].positionConfig?.gpsEnGpio = Int32(config.gpsEnGpio)
 				fetchedNode[0].positionConfig?.fixedPosition = config.fixedPosition
-				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(config.positionBroadcastSecs)
+				fetchedNode[0].positionConfig?.positionBroadcastSeconds = Int32(truncatingIfNeeded: config.positionBroadcastSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumIntervalSecs = Int32(config.broadcastSmartMinimumIntervalSecs)
 				fetchedNode[0].positionConfig?.broadcastSmartMinimumDistance = Int32(config.broadcastSmartMinimumDistance)
 				fetchedNode[0].positionConfig?.gpsAttemptTime = 900

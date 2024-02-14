@@ -108,7 +108,9 @@ struct PositionConfig: View {
 
 					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
 						ForEach(UpdateIntervals.allCases) { at in
-							Text(at.description)
+							if at.rawValue >= 900 {
+								Text(at.description)
+							}
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())

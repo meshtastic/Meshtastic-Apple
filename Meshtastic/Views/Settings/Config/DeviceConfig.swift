@@ -25,6 +25,7 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
+	@State var nodeInfoBroadcastSecs = 900
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
 
@@ -77,6 +78,15 @@ struct DeviceConfig: View {
 					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
 						.foregroundColor(.gray)
 						.font(.caption)
+					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
+						ForEach(UpdateIntervals.allCases) { ui in
+							if ui.rawValue >= 3600 {
+								Text(ui.description)
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					.padding(.top, 10)
 					Toggle(isOn: $doubleTapAsButtonPress) {
 						Label("Double Tap as Button", systemImage: "hand.tap")
 					}
@@ -206,8 +216,8 @@ struct DeviceConfig: View {
 							dc.debugLogEnabled = debugLogEnabled
 							dc.buttonGpio = UInt32(buttonGPIO)
 							dc.buzzerGpio = UInt32(buzzerGPIO)
-							//dc.gpsEnGpio = UInt32(gpsEnGPIO)
 							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 							dc.isManaged = isManaged
 							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
@@ -275,6 +285,11 @@ struct DeviceConfig: View {
 				if newRebroadcastMode != node!.deviceConfig!.rebroadcastMode { hasChanges = true }
 			}
 		}
+		.onChange(of: nodeInfoBroadcastSecs) { newNodeInfoBroadcastSecs in
+			if node != nil && node?.deviceConfig != nil {
+				if newNodeInfoBroadcastSecs != node!.deviceConfig!.nodeInfoBroadcastSecs { hasChanges = true }
+			}
+		}
 		.onChange(of: doubleTapAsButtonPress) { newDoubleTapAsButtonPress in
 			if node != nil && node?.deviceConfig != nil {
 				if newDoubleTapAsButtonPress != node!.deviceConfig!.doubleTapAsButtonPress { hasChanges = true }
@@ -293,6 +308,7 @@ struct DeviceConfig: View {
 		self.buttonGPIO = Int(node?.deviceConfig?.buttonGpio ?? 0)
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
+		self.nodeInfoBroadcastSecs = Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 900)
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false

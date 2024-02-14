@@ -17,6 +17,8 @@ struct StoreForwardConfig: View {
 	@State var hasChanges: Bool = false
 	/// Enable the Store and Forward Module
 	@State var enabled = false
+	/// Is a S&F Router
+	@State var isRouter = false
 	/// Send a Heartbeat
 	@State var heartbeat: Bool = false
 	/// Number of Records
@@ -56,38 +58,71 @@ struct StoreForwardConfig: View {
 						.foregroundColor(.orange)
 				}
 				Section(header: Text("options")) {
+					
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
+						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
+							.font(.caption)
 					}
-					Toggle(isOn: $heartbeat) {
-						Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					if enabled {
+						HStack {
+							Picker(selection: $isRouter, label: Text("Role")) {
+								Text("Client")
+									.tag(false)
+								Text("Router")
+									.tag(true)
+							}
+							.pickerStyle(SegmentedPickerStyle())
+							.padding(.top, 5)
+							.padding(.bottom, 5)
+						}
 					}
-					Picker("Number of records", selection: $records) {
-						Text("unset").tag(0)
-						Text("25").tag(25)
-						Text("50").tag(50)
-						Text("75").tag(75)
-						Text("100").tag(100)
+					VStack {
+						if isRouter {
+							Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
+								.font(.caption)
+						} else {
+							Text("Store and forward clients can request history from routers on the network.")
+								.font(.caption)
+						}
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Picker("History Return Max", selection: $historyReturnMax ) {
-						Text("unset").tag(0)
-						Text("25").tag(25)
-						Text("50").tag(50)
-						Text("75").tag(75)
-						Text("100").tag(100)
+				}
+				
+				if isRouter {
+					Section(header: Text("options")) {
+						Toggle(isOn: $heartbeat) {
+							Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
+						}
+						Picker("Number of records", selection: $records) {
+							Text("unset").tag(0)
+							Text("25").tag(25)
+							Text("50").tag(50)
+							Text("75").tag(75)
+							Text("100").tag(100)
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Picker("History Return Max", selection: $historyReturnMax ) {
+							Text("unset").tag(0)
+							Text("25").tag(25)
+							Text("50").tag(50)
+							Text("75").tag(75)
+							Text("100").tag(100)
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Picker("History Return Window", selection: $historyReturnWindow ) {
+							Text("unset").tag(0)
+							Text("One Minute").tag(60)
+							Text("Five Minutes").tag(300)
+							Text("Ten Minutes").tag(600)
+							Text("Fifteen Minutes").tag(900)
+							Text("Thirty Minutes").tag(1800)
+							Text("One Hour").tag(3600)
+							Text("Two Hours").tag(7200)
+						}
+						.pickerStyle(DefaultPickerStyle())
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Picker("History Return Window", selection: $historyReturnWindow ) {
-						Text("unset").tag(0)
-						Text("One Minute").tag(60)
-						Text("Five Minutes").tag(300)
-						Text("Ten Minutes").tag(600)
-						Text("Fifteen Minutes").tag(900)
-						Text("Thirty Minutes").tag(1800)
-						Text("One Hour").tag(3600)
-					}
-					.pickerStyle(DefaultPickerStyle())
 				}
 			}
 			.scrollDismissesKeyboard(.interactively)
@@ -113,6 +148,18 @@ struct StoreForwardConfig: View {
 				let nodeName = node?.user?.longName ?? "unknown".localized
 				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
 				Button(buttonText) {
+					
+					/// Let the user set isRouter for the connected node, for nodes on the mesh set isRouter based
+					/// on receipt of a primary heartbeat
+					if connectedNode?.num ?? 0 == node?.num ?? -1 {
+						connectedNode?.storeForwardConfig?.isRouter = isRouter
+						do {
+							try context.save()
+						} catch {
+							print("Failed to save isRouter")
+						}
+					}
+					
 					var sfc = ModuleConfig.StoreForwardConfig()
 					sfc.enabled = self.enabled
 					sfc.heartbeat = self.heartbeat
@@ -125,7 +172,8 @@ struct StoreForwardConfig: View {
 						// for now just disable the button after a successful save
 						hasChanges = false
 						goBack()
-					}				}
+					}
+				}
 			}
 		}
 		message: {
@@ -140,7 +188,7 @@ struct StoreForwardConfig: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-			setStoreAndForwardValues()
+			
 			// Need to request a Detection Sensor Module Config from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.storeForwardConfig == nil {
 				print("empty store and forward module config")
@@ -149,10 +197,16 @@ struct StoreForwardConfig: View {
 					_ = bleManager.requestStoreAndForwardModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				}
 			}
+			setStoreAndForwardValues()
 		}
 		.onChange(of: enabled) { newEnabled in
-			if node != nil && node?.detectionSensorConfig != nil {
-				if newEnabled != node!.detectionSensorConfig!.enabled { hasChanges = true }
+			if node != nil && node?.storeForwardConfig != nil {
+				if newEnabled != node!.storeForwardConfig!.enabled { hasChanges = true }
+			}
+		}
+		.onChange(of: isRouter) { newIsRouter in
+			if node != nil && node?.storeForwardConfig != nil {
+				if newIsRouter != node!.storeForwardConfig!.isRouter { hasChanges = true }
 			}
 		}
 		.onChange(of: heartbeat) { newHeartbeat in
@@ -178,10 +232,11 @@ struct StoreForwardConfig: View {
 	}
 	func setStoreAndForwardValues() {
 		self.enabled = (node?.storeForwardConfig?.enabled ?? false)
+		self.isRouter = (node?.storeForwardConfig?.isRouter ?? false)
 		self.heartbeat = (node?.storeForwardConfig?.heartbeat ?? true)
 		self.records = Int(node?.storeForwardConfig?.records ?? 50)
 		self.historyReturnMax = Int(node?.storeForwardConfig?.historyReturnMax ?? 100)
-		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 300)
+		self.historyReturnWindow = Int(node?.storeForwardConfig?.historyReturnWindow ?? 7200)
 		self.hasChanges = false
 	}
 }
