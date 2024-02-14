@@ -203,7 +203,7 @@ struct UserMessageList: View {
 									.padding(.bottom)
 									.id(user.messageList.firstIndex(of: message))
 
-									if currentUser && (message.ackError == 5 || message.ackError == 3) {
+									if currentUser && (message.receivedACK && !message.realACK) {
 										RetryButton(message: message)
 									}
 
