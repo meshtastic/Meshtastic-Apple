@@ -103,20 +103,26 @@ class OfflineTileManager: ObservableObject {
 			}
 		}
 	}
-	func getTileOverlay(for path: MKTileOverlayPath) -> URL {
-		let file = "\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y).png"
-		// Check is tile is already available
-		let tilesUrl = documentsDirectory.appendingPathComponent("tiles").appendingPathComponent(file)
-		if fileManager.fileExists(atPath: tilesUrl.path) {
-			return tilesUrl
-		} else {
-			if UserDefaults.enableOfflineMaps, UserDefaults.mapTileServer.zoomRange.contains(path.z) { // Get and persist newTile
-				return persistLocally(path: path)
-			} else { // Else display empty tile (transparent over Maps tiles)
-				return Bundle.main.url(forResource: "alpha", withExtension: "png")!
-			}
+
+	func loadAndCacheTileOverlay(for path: MKTileOverlayPath) throws -> Data {
+		guard UserDefaults.enableOfflineMaps, UserDefaults.mapTileServer.zoomRange.contains(path.z) else {
+			return try Data(contentsOf: Bundle.main.url(forResource: "alpha", withExtension: "png")!)
+		}
+
+		let tilesUrl = documentsDirectory
+			.appendingPathComponent("tiles")
+			.appendingPathComponent("\(UserDefaults.mapTileServer.id)-z\(path.z)x\(path.x)y\(path.y)")
+			.appendingPathExtension("png")
+
+		do {
+			return try Data(contentsOf: tilesUrl)
+		} catch let error as NSError where error.code == NSFileReadNoSuchFileError {
+			let data = try Data(contentsOf: overlay.url(forTilePath: path))
+			try data.write(to: tilesUrl)
+			return data
 		}
 	}
+
 	// MARK: Private methods
 	private func computeTileOverlayPaths(boundingBox box: MKMapRect, maxZ: Int = 17) -> [MKTileOverlayPath] {
 		var paths = [MKTileOverlayPath]()
