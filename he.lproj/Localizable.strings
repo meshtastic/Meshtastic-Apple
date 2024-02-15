@@ -199,7 +199,7 @@
 "mesh.log.traceroute.received.direct %@"="בקשת בדיקת מסלול נשלחה למכשיר: %@ התקבל ישירות.";
 "mesh.log.traceroute.received.route %@"="בקשת בדיקת מסלול הצליחה: %@";
 "mesh.log.traceroute.sent %@"="נשלחה בקשת בדיקת מסלול למכשיר: %@";
-"mesh.log.wantconfig %@"="Issuing Want Config to %@";
+"mesh.log.wantconfig %@"="שולח בקשת הגדרות ל-%@";
 "mesh.log.waypoint.sent %@"="נשלחה נקודת ציון מ-%@";
 "mesh.log.waypoint.received %@"="נקודת ציון התקבלה מ-%@";
 "message"="הודעה";
