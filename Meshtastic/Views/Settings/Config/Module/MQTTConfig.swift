@@ -33,7 +33,7 @@ struct MQTTConfig: View {
 				if node != nil && node?.loRaConfig != nil {
 					let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
 					if rc?.dutyCycle ?? 0 <= 10 {
-						Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffice will quickly overwhelm your LoRa mesh.")
+						Text("Your region has a \(rc?.dutyCycle ?? 0)% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh.")
 							.font(.callout)
 							.foregroundColor(.red)
 					}

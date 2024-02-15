@@ -28,15 +28,16 @@ struct LoRaSignalStrengthMeter: View {
 						.foregroundColor(getRssiColor(rssi: rssi))
 						.font(.caption2)
 				}
-				.padding(.bottom, 2)
 			} else {
 				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
 				} currentValueLabel: {
 					Image(systemName: "dot.radiowaves.left.and.right")
-						.font(.caption)
+						.font(.callout)
+						.frame(width: 30)
 					Text("Signal \(signalStrength.description)")
-						.font(.caption)
+						.font(.callout)
 						.foregroundColor(.gray)
+						.fixedSize()
 				}
 				.gaugeStyle(.accessoryLinear)
 				.tint(gradient)

@@ -21,7 +21,9 @@ struct NodeListItem: View {
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
-						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 65)
+						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
+							.padding(.trailing, 5)
+						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
 					VStack(alignment: .leading) {
@@ -41,7 +43,10 @@ struct NodeListItem: View {
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
 									.foregroundColor(.green)
-								Text("connected").font(.callout)
+									.frame(width: 30, height: 15)
+								Text("connected")
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+									.foregroundColor(.gray)
 							}
 						}
 						HStack {
@@ -49,8 +54,9 @@ struct NodeListItem: View {
 								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
 								.foregroundColor(node.isOnline ? .green : .orange)
+								.frame(width: 30, height: 20)
 							LastHeardText(lastHeard: node.lastHeard)
-								.font(.caption)
+								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								.foregroundColor(.gray)
 						}
 						HStack {
@@ -58,8 +64,9 @@ struct NodeListItem: View {
 							Image(systemName: role?.systemName ?? "figure")
 								.font(.callout)
 								.symbolRenderingMode(.hierarchical)
+								.frame(width: 30, height: 20)
 							Text("Role: \(role?.name ?? "unknown".localized)")
-								.font(.caption)
+								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								.foregroundColor(.gray)
 						}
 						if node.isStoreForwardRouter {
@@ -67,8 +74,9 @@ struct NodeListItem: View {
 								Image(systemName: "envelope.arrow.triangle.branch")
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
+									.frame(width: 30, height: 20)
 								Text("storeforward".localized)
-									.font(.caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 									.foregroundColor(.gray)
 							}
 						}
@@ -85,7 +93,9 @@ struct NodeListItem: View {
 											Image(systemName: "lines.measurement.horizontal")
 												.font(.callout)
 												.symbolRenderingMode(.hierarchical)
-											DistanceText(meters: metersAway).font(.caption)
+												.frame(width: 30, height: 20)
+											DistanceText(meters: metersAway)
+												.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 												.foregroundColor(.gray)
 										}
 									}
@@ -98,7 +108,9 @@ struct NodeListItem: View {
 										Image(systemName: "lines.measurement.horizontal")
 											.font(.callout)
 											.symbolRenderingMode(.hierarchical)
-										DistanceText(meters: metersAway).font(.caption)
+											.frame(width: 30, height: 20)
+										DistanceText(meters: metersAway)
+											.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 											.foregroundColor(.gray)
 									}
 								}
@@ -109,6 +121,7 @@ struct NodeListItem: View {
 								Image(systemName: "fibrechannel")
 									.font(.callout)
 									.symbolRenderingMode(.hierarchical)
+									.frame(width: 30, height: 20)
 								Text("Channel: \(node.channel)")
 									.foregroundColor(.gray)
 									.font(.caption)
@@ -117,44 +130,62 @@ struct NodeListItem: View {
 								Image(systemName: "network")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
+									.frame(width: 30, height: 20)
 								Text("Via MQTT")
 									.foregroundColor(.gray)
 									.font(.caption)
 							}
 						}
+						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
+							HStack {
+								Image(systemName: "scroll")
+									.symbolRenderingMode(.hierarchical)
+									.font(.callout)
+									.frame(width: 30, height: 20)
+								Text("Logs:")
+									.foregroundColor(.gray)
+									.font(.callout)
+								if node.hasDeviceMetrics {
+									Image(systemName: "flipphone")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
+										.frame(width: 30, height: 20)
+								}
+								if node.hasPositions {
+									Image(systemName: "mappin.and.ellipse")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
+										.frame(width: 30, height: 20)
+								}
+								if node.hasEnvironmentMetrics {
+									Image(systemName: "cloud.sun.rain")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
+										.frame(width: 30, height: 20)
+								}
+								if node.hasDetectionSensorMetrics {
+									Image(systemName: "sensor")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
+										.frame(width: 30, height: 20)
+								}
+								if node.hasTraceRoutes {
+									Image(systemName: "signpost.right.and.left")
+										.symbolRenderingMode(.hierarchical)
+										.font(.callout)
+										.frame(width: 30, height: 20)
+								}
+							}
+							.padding(.top)
+						}
 						if !connected {
 							HStack {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
-									.padding(.top, 2)
+									
 							}
+							.padding(.top)
 						}
-						HStack {
-							BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
-
-							if node.hasPositions {
-								Image(systemName: "mappin.and.ellipse")
-									.symbolRenderingMode(.hierarchical)
-									.font(.callout)
-
-							}
-							if node.hasEnvironmentMetrics {
-								Image(systemName: "cloud.sun.rain")
-									.symbolRenderingMode(.hierarchical)
-									.font(.callout)
-							}
-							if node.hasDetectionSensorMetrics {
-								Image(systemName: "sensor")
-									.symbolRenderingMode(.hierarchical)
-									.font(.callout)
-							}
-							if node.hasTraceRoutes {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.hierarchical)
-									.font(.callout)
-							}
-						}
-						.padding(.top, 3)
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)
 				}
