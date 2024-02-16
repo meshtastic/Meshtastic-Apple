@@ -209,17 +209,19 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
-							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone. The app may close.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone and will reset all app settings.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 
 								Button("Connect to new radio?", role: .destructive) {
 									UserDefaults.preferredPeripheralId = selectedPeripherialId
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-									context.reset()
+									
 									do {
+										clearCoreDataDatabase(context: context)
 										PersistenceController.shared.clearDatabase()
-										
+										context.reset()
+										UserDefaults.standard.reset()
 									} catch let error {
 										print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
 									}
