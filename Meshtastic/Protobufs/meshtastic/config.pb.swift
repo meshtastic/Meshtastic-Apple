@@ -238,7 +238,7 @@ struct Config {
       case sensor // = 6
 
       ///
-      /// Description: Optimized for ATAK system communication, reduces routine broadcasts.
+      /// Description: Optimized for ATAK system communication and reduces routine broadcasts.
       /// Technical Details: Used for nodes dedicated for connection to an ATAK EUD.
       ///    Turns off many of the routine broadcasts to favor CoT packet stream
       ///    from the Meshtastic ATAK plugin -> IMeshService -> Node
@@ -258,6 +258,13 @@ struct Config {
       ///    with the current position of the device on a frequent interval:
       ///    "I'm lost! Position: lat / long"
       case lostAndFound // = 9
+
+      ///
+      /// Description: Enables automatic TAK PLI broadcasts and reduces routine broadcasts.
+      /// Technical Details: Turns off many of the routine broadcasts to favor ATAK CoT packet stream
+      ///    and automatic TAK PLI (position location information) broadcasts.
+      ///    Uses position module configuration to determine TAK PLI broadcast interval.
+      case takTracker // = 10
       case UNRECOGNIZED(Int)
 
       init() {
@@ -276,6 +283,7 @@ struct Config {
         case 7: self = .tak
         case 8: self = .clientHidden
         case 9: self = .lostAndFound
+        case 10: self = .takTracker
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -292,6 +300,7 @@ struct Config {
         case .tak: return 7
         case .clientHidden: return 8
         case .lostAndFound: return 9
+        case .takTracker: return 10
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -1389,6 +1398,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
     .tak,
     .clientHidden,
     .lostAndFound,
+    .takTracker,
   ]
 }
 
@@ -1813,6 +1823,7 @@ extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
     7: .same(proto: "TAK"),
     8: .same(proto: "CLIENT_HIDDEN"),
     9: .same(proto: "LOST_AND_FOUND"),
+    10: .same(proto: "TAK_TRACKER"),
   ]
 }
 
