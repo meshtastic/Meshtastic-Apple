@@ -213,18 +213,12 @@ struct Connect: View {
 
 								Button("Connect to new radio?", role: .destructive) {
 									UserDefaults.preferredPeripheralId = selectedPeripherialId
+									UserDefaults.preferredPeripheralNum = 0
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-									
-									do {
-										clearCoreDataDatabase(context: context)
-										PersistenceController.shared.clearDatabase()
-										context.reset()
-										UserDefaults.standard.reset()
-									} catch let error {
-										print("💣 Failed to re-create CoreData database: " + error.localizedDescription)
-									}
+									clearCoreDataDatabase(context: context)
+									UserDefaults.standard.reset()
 									
 									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 									if radio != nil {
