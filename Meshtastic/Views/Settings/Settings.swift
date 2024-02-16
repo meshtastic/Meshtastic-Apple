@@ -311,8 +311,17 @@ struct Settings: View {
 					}
 				}
 			}
+			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
+				if nodes.count > 1 {
+					if selectedNode == 0 {
+						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode : 0)
+					}
+				} else {
+					self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode: 0)
+				}
+			}
 			.onAppear {
-				if self.preferredNodeNum == 0 {
+				if self.preferredNodeNum <= 0 {
 					self.preferredNodeNum = UserDefaults.preferredPeripheralNum
 					if nodes.count > 1 {
 						if selectedNode == 0 {
