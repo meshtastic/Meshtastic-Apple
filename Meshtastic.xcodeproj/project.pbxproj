@@ -14,6 +14,7 @@
 		B3E905B12B71F7F300654D07 /* TextMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E905B02B71F7F300654D07 /* TextMessageField.swift */; };
 		C9697F9D279336B700250207 /* LocalMBTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */; };
 		C9697FA527933B8C00250207 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C9697FA427933B8C00250207 /* SQLite */; };
+		D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */; };
 		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
 		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
 		D9C983A22B79D1A600BDBE6A /* RequestPositionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */; };
@@ -234,6 +235,7 @@
 		B399E8A32B6F486400E4488E /* RetryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryButton.swift; sourceTree = "<group>"; };
 		B3E905B02B71F7F300654D07 /* TextMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageField.swift; sourceTree = "<group>"; };
 		C9697F9C279336B700250207 /* LocalMBTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalMBTileOverlay.swift; sourceTree = "<group>"; };
+		D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileDownloadStatus.swift; sourceTree = "<group>"; };
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
 		D9C983A12B79D1A600BDBE6A /* RequestPositionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPositionButton.swift; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 				DD964FC32974767D007C176F /* MapViewFitExtension.swift */,
 				DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */,
 				DDDB443529F6287000EE2349 /* MapButtons.swift */,
+				D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */,
 			);
 			path = Custom;
 			sourceTree = "<group>";
@@ -1253,6 +1256,7 @@
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
+				D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
 				DD5E5202298EE33B00D21B61 /* admin.pb.swift in Sources */,
 				DDC1B81A2AB5377B00C71E39 /* MessagesTips.swift in Sources */,

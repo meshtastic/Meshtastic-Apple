@@ -13,7 +13,6 @@ import CoreData
 struct NodeMap: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@ObservedObject var tileManager = OfflineTileManager.shared
 	@StateObject var appState = AppState.shared
 	@State var selectedMapLayer: MapLayer = UserDefaults.mapLayer
 	@State var enableMapRecentering: Bool = UserDefaults.enableMapRecentering
@@ -71,6 +70,9 @@ struct NodeMap: View {
 							.padding(.top, 16)
 					}
 					Spacer()
+					TileDownloadStatus()
+						.padding(.trailing, 16)
+						.padding(.bottom, 20)
 				}
 			}
 			.ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
