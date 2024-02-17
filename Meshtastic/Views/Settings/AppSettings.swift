@@ -73,6 +73,9 @@ struct AppSettings: View {
 							Label("appsettings.smartposition", systemImage: "brain.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onChange(of: (enableSmartPosition)) { newEnableSmartPosition in
+							UserDefaults.enableSmartPosition = newEnableSmartPosition
+						}
 						VStack {
 							Picker("update.interval", selection: $provideLocationInterval) {
 								ForEach(LocationUpdateInterval.allCases) { lu in
