@@ -4,6 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 4/8/22.
 //
+
 import SwiftUI
 import CoreData
 
@@ -25,6 +26,7 @@ struct Channels: View {
 	var node: NodeInfoEntity?
 
 	@State var hasChanges = false
+	@State var hasValidKey = true
 	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State private var channelIndex: Int32 = 0
@@ -89,7 +91,7 @@ struct Channels: View {
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let key = generateChannelKey(size: 16)
+					let key = generateChannelKey(size: 32)
 					channelName = ""
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
@@ -164,19 +166,38 @@ struct Channels: View {
 							.buttonBorderShape(.capsule)
 							.controlSize(.small)
 						}
-						HStack(alignment: .top) {
+						HStack(alignment: .center) {
 							Text("Key")
 							Spacer()
-							Text(channelKey)
-								.foregroundColor(Color.gray)
-								.textSelection(.enabled)
-//							TextField(
-//								"",
-//								text: $channelKey,
-//								axis: .vertical
-//							)
-//							.foregroundColor(Color.gray)
-//							.disabled(true)
+							TextField(
+								"Key",
+								text: $channelKey
+							)
+							.padding(6)
+							.disableAutocorrection(true)
+							.keyboardType(.alphabet)
+							.foregroundColor(Color.gray)
+							.textSelection(.enabled)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(
+										hasValidKey ?
+										Color.clear :
+										Color.red
+										, lineWidth: 2.0)
+									
+							)
+							.onChange(of: channelKey, perform: { _ in
+								let tempKey = Data(base64Encoded: channelKey) ?? Data()
+								if tempKey.count == channelKeySize || channelKeySize == -1{
+									hasValidKey = true
+								}
+								else {
+									hasValidKey = false
+								}
+								hasChanges = true
+							})
+							.disabled(channelKeySize <= 0)
 						}
 						Picker("Channel Role", selection: $channelRole) {
 							if channelRole == 1 {
@@ -192,6 +213,15 @@ struct Channels: View {
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Toggle("Downlink Enabled", isOn: $downlink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					}
+					.onAppear {
+						let tempKey = Data(base64Encoded: channelKey) ?? Data()
+						if tempKey.count == channelKeySize || channelKeySize == -1{
+							hasValidKey = true
+						}
+						else {
+							hasValidKey = false
+						}
 					}
 					.onChange(of: channelName) { _ in
 						hasChanges = true
@@ -256,7 +286,7 @@ struct Channels: View {
 						} label: {
 							Label("save", systemImage: "square.and.arrow.down")
 						}
-						.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
+						.disabled(bleManager.connectedPeripheral == nil || !hasChanges || !hasValidKey)
 						.buttonStyle(.bordered)
 						.buttonBorderShape(.capsule)
 						.controlSize(.large)
