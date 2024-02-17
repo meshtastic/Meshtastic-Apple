@@ -38,7 +38,7 @@ struct ContactsTip: Tip {
    }
    var message: Text? {
 	   //Text("tip.messages.contacts.message")
-	   Text("Each node shows as an available contact. Nodes with recent messages and favorites show up at the top of the list. Select a node to send or view messages. Long press to favorite or mute the node, send a trace route or delete the conversation.")
+	   Text("Each node is an available contact. Contacts with recent messages or marked as favorites show up at the top of the list. Select a contact to send or view messages. Long press to favorite or mute the contact or delete the conversation.")
    }
    var image: Image? {
 	   Image(systemName: "person.circle")

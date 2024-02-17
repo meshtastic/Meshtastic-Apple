@@ -299,7 +299,7 @@
 "tip.bluetooth.connect.title"="Connected Radio";
 "tip.bluetooth.connect.message"="Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
 "tip.channels.create.title"="Manage Channels";
-"tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
+"tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/tips/)";
 "tip.channels.share.title"="Sharing Meshtastic Channels";
 "tip.channels.share.message"="A Meshtastic QR code contains the LoRa config and channel values needed to communicate. Most mesh activity takes place on the required Primary channel. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. Other channels are for private groups, each with its own key.";
 "tip.messages.title"="Messages";
