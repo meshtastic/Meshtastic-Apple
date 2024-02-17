@@ -94,7 +94,7 @@ import CoreLocation
 			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 			return false
 		}
-		if location.horizontalAccuracy > 100 {
+		if location.horizontalAccuracy > 25 {
 			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
 			return false
 		}
