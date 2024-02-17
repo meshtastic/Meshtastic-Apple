@@ -297,8 +297,9 @@
 "timeout"="זמן קצוב";
 "timestamp"="שעה/תאריך";
 "tip.bluetooth.connect.title"="מכשיר מחובר";
-מראה מידע אודות מכשיר המשטסטיק המחובר כעת לבלוטוס. ניתן לגרור שמאלה להתנתקות או לחיצה ארוכה לראות סטטיסטיקה או להתחיל פעילות.
 "tip.bluetooth.connect.message"="מראה מידע אודות מכשיר המשטסטיק המחובר כעת לבלוטוס. ניתן לגרור שמאלה להתנתקות או לחיצה ארוכה לראות סטטיסטיקה או להתחיל פעילות.";
+"tip.channels.create.title"="Manage Channels";
+"tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="משתף ערוצי משטסטיק";
 "tip.channels.share.message"="במשטסטיק יש עד 8 ערוצים. הראשון הינו הראשי והינו היכן שרוב הפעילות מתבצעת והכרחי. אם לא תשתף את הערוץ הראשי שלך הערוץ הראשון שלך נהיה הערוץ הראשי ברשת השניה. הוא מדבר בערוץ הראשי שלו במשני שלך. ערוץ בעל השם 'admin' הינו לשליטה מרחוק. ערוצים נוספים הינם לקבוצות פרטיות, כל אחת עם מפתח הצפנה משלה.";
 "tip.messages.title"="הודעות";
