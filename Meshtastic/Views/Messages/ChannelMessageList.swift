@@ -52,13 +52,20 @@ struct ChannelMessageList: View {
 								}
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
-									MessageText(
-										message: message,
-										tapBackDestination: .channel(channel),
-										isCurrentUser: currentUser
-									) {
-										self.replyMessageId = message.messageId
-										self.messageFieldFocused = true
+
+									HStack {
+										MessageText(
+											message: message,
+											tapBackDestination: .channel(channel),
+											isCurrentUser: currentUser
+										) {
+											self.replyMessageId = message.messageId
+											self.messageFieldFocused = true
+										}
+
+										if currentUser && message.canRetry {
+											RetryButton(message: message)
+										}
 									}
 
 									TapbackResponses(message: message) {
@@ -86,10 +93,6 @@ struct ChannelMessageList: View {
 								}
 								.padding(.bottom)
 								.id(channel.allPrivateMessages.firstIndex(of: message))
-
-								if currentUser && message.canRetry {
-									RetryButton(message: message)
-								}
 
 								if !currentUser {
 									Spacer(minLength: 50)

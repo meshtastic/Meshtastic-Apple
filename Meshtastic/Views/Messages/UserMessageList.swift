@@ -46,13 +46,19 @@ struct UserMessageList: View {
 								HStack(alignment: .top) {
 									if currentUser { Spacer(minLength: 50) }
 									VStack(alignment: currentUser ? .trailing : .leading) {
-										MessageText(
-											message: message,
-											tapBackDestination: .user(user),
-											isCurrentUser: currentUser
-										) {
-											self.replyMessageId = message.messageId
-											self.messageFieldFocused = true
+										HStack {
+											MessageText(
+												message: message,
+												tapBackDestination: .user(user),
+												isCurrentUser: currentUser
+											) {
+												self.replyMessageId = message.messageId
+												self.messageFieldFocused = true
+											}
+
+											if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
+												RetryButton(message: message)
+											}
 										}
 
 										TapbackResponses(message: message) {
@@ -80,10 +86,6 @@ struct UserMessageList: View {
 									}
 									.padding(.bottom)
 									.id(user.messageList.firstIndex(of: message))
-
-									if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
-										RetryButton(message: message)
-									}
 
 									if !currentUser {
 										Spacer(minLength: 50)
