@@ -38,6 +38,7 @@ struct NodeMapSwiftUI: View {
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
 	@State var selectedWaypoint: WaypointEntity?
+	@State var isMeshMap = false
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
@@ -207,7 +208,7 @@ struct NodeMapSwiftUI: View {
 							.padding()
 					}
 					.sheet(isPresented: $isEditingSettings) {
-						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 							.onChange(of: (selectedMapLayer)) { newMapLayer in
 								switch selectedMapLayer {
 								case .standard:

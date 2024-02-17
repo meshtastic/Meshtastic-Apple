@@ -19,6 +19,7 @@ struct MapSettingsForm: View {
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
+	@Binding var meshMap: Bool
 
 	var body: some View {
 		
@@ -38,21 +39,23 @@ struct MapSettingsForm: View {
 					.onChange(of: mapLayer) { newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
-					Toggle(isOn: $nodeHistory) {
-						Label("Node History", systemImage: "building.columns.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.nodeHistory.toggle()
-						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
-					}
-					Toggle(isOn: $routeLines) {
-						Label("Route Lines", systemImage: "road.lanes")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						self.routeLines.toggle()
-						UserDefaults.enableMapRouteLines = self.routeLines
+					if !meshMap {
+						Toggle(isOn: $nodeHistory) {
+							Label("Node History", systemImage: "building.columns.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.nodeHistory.toggle()
+							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+						}
+						Toggle(isOn: $routeLines) {
+							Label("Route Lines", systemImage: "road.lanes")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							self.routeLines.toggle()
+							UserDefaults.enableMapRouteLines = self.routeLines
+						}
 					}
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
