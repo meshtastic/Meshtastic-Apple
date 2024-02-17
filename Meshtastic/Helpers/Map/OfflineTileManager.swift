@@ -11,6 +11,14 @@ import MapKit
 class OfflineTileManager: ObservableObject {
 	static let shared = OfflineTileManager()
 
+	// MARK: - Public properties
+
+	@Published var status: DownloadStatus = .downloaded
+
+	enum DownloadStatus {
+		case downloaded, downloading
+	}
+
 	init() {
 		print("Documents Directory = \(documentsDirectory)")
 		createDirectoriesIfNecessary()
@@ -46,6 +54,10 @@ class OfflineTileManager: ObservableObject {
 		do {
 			return try Data(contentsOf: tilesUrl)
 		} catch let error as NSError where error.code == NSFileReadNoSuchFileError {
+			DispatchQueue.main.async { self.status = .downloading }
+			defer {
+				DispatchQueue.main.async { self.status = .downloaded }
+			}
 			let data = try Data(contentsOf: overlay.url(forTilePath: path))
 			try data.write(to: tilesUrl)
 			return data
