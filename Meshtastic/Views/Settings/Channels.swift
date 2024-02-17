@@ -171,7 +171,8 @@ struct Channels: View {
 							Spacer()
 							TextField(
 								"Key",
-								text: $channelKey
+								text: $channelKey,
+								axis: .vertical
 							)
 							.padding(6)
 							.disableAutocorrection(true)
