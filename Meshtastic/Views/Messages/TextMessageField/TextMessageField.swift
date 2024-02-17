@@ -4,15 +4,10 @@ struct TextMessageField: View {
 	static let maxbytes = 228
 	@EnvironmentObject var bleManager: BLEManager
 	
-	let destination: Destination
+	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
 	@FocusState.Binding var isFocused: Bool
 	let onSubmit: () -> Void
-
-	enum Destination {
-		case user(Int64)
-		case channel(Int32)
-	}
 	
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -125,7 +120,7 @@ struct TextMessageField: View {
 	}
 }
 
-private extension TextMessageField.Destination {
+private extension MessageDestination {
 	var positionShareMessage: String {
 		switch self {
 		case .user: return "has shared their position and requested a response with your position"
@@ -133,23 +128,9 @@ private extension TextMessageField.Destination {
 		}
 	}
 	
-	var userNum: Int64 {
-		switch self {
-		case let .user(num): return num
-		case .channel: return 0
-		}
-	}
-	
-	var channelNum: Int32 {
-		switch self {
-		case .user: return 0
-		case let .channel(num): return num
-		}
-	}
-	
 	var positionDestNum: Int64 {
 		switch self {
-		case let .user(num): return num
+		case let .user(user): return user.num
 		case .channel: return Int64(BLEManager.emptyNodeNum)
 		}
 	}
