@@ -200,16 +200,20 @@ struct Channels: View {
 							})
 							.disabled(channelKeySize <= 0)
 						}
-						Picker("Channel Role", selection: $channelRole) {
-							if channelRole == 1 {
-								Text("Primary").tag(1)
-							} else {
-								Text("Disabled").tag(0)
-								Text("Secondary").tag(2)
+						HStack {
+							Text("Role")
+							Spacer()
+							Picker("Channel Role", selection: $channelRole) {
+								if channelRole == 1 {
+									Text("Primary").tag(1)
+								} else {
+									Text("Disabled").tag(0)
+									Text("Secondary").tag(2)
+								}
 							}
+							.pickerStyle(.segmented)
+							.disabled(channelRole == 1)
 						}
-						.pickerStyle(DefaultPickerStyle())
-						.disabled(channelRole == 1)
 						Toggle("Uplink Enabled", isOn: $uplink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Toggle("Downlink Enabled", isOn: $downlink)
