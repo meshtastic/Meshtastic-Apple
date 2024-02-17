@@ -176,7 +176,6 @@ struct NodeListItem: View {
 										.frame(width: 30)
 								}
 							}
-							.padding(.top)
 						}
 						if !connected {
 							HStack {

@@ -2406,9 +2406,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			// Handle each of the store and forward request / response messages
 			switch storeAndForwardMessage.rr {
 			case .unset:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerHeartbeat:
 				/// When we get a router heartbeat we know there is a store and forward node on the network
 				/// Check if it is the primary S&F Router and save the timestamp of the last heartbeat so that we can show the request message history menu item on node long press if the router has been seen recently
@@ -2436,13 +2436,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						print("💥 Save Store and Forward Router Error")
 					}
 				}
-				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("💓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerBusy:
-				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🐝 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerHistory:
 				/// Set the Router History Last Request Value
 				guard let routerNode = getNodeInfo(id: Int64(packet.from), context: context) else {
@@ -2462,28 +2462,28 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					context.rollback()
 					print("💥 Save Store and Forward Router Error")
 				}
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientError:
-				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("☠️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientHistory:
-				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📜 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientStats:
-				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📊 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientPing:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientPong:
-				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🏓 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .clientAbort:
-				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("🛑 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .UNRECOGNIZED:
-				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerTextDirect:
-				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			case .routerTextBroadcast:
-				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received \(storeAndForwardMessage)")
+				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			}
 		}
