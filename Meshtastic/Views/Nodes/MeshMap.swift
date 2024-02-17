@@ -40,6 +40,7 @@ struct MeshMap: View {
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var newWaypointCoord :CLLocationCoordinate2D?
+	@State var isMeshMap = true
 	
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
@@ -147,54 +148,6 @@ struct MeshMap: View {
 									.stroke(Color(UIColor(hex: UInt32(route.color))), style: solid)
 								
 							}
-							/// Node Route Lines
-							if showRouteLines {
-								let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
-								let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
-									return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
-								})
-								let gradient = LinearGradient(
-									colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
-									startPoint: .leading, endPoint: .trailing
-								)
-								let dashed = StrokeStyle(
-									lineWidth: 3,
-									lineCap: .round, lineJoin: .round, dash: [10, 10]
-								)
-								MapPolyline(coordinates: routeCoords)
-									.stroke(gradient, style: dashed)
-							}
-							/// Node History
-							ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-								if showNodeHistory {
-										if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
-											let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
-											let headingDegrees = Angle.degrees(Double(mappin.heading))
-											Annotation("", coordinate: mappin.coordinate) {
-												LazyVStack {
-													if pf.contains(.Heading) {
-														Image(systemName: "location.north.circle")
-															.resizable()
-															.scaledToFit()
-															.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
-															.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-															.clipShape(Circle())
-															.rotationEffect(headingDegrees)
-															.frame(width: 16, height: 16)
-														
-													} else {
-														Circle()
-															.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
-															.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
-															.frame(width: 12, height: 12)
-													}
-												}
-											}
-											.annotationTitles(.hidden)
-											.annotationSubtitles(.hidden)
-										}
-								}
-							}
 						}
 						
 						/// Waypoint Annotations
@@ -216,8 +169,6 @@ struct MeshMap: View {
 					.mapControls {
 						MapScaleView(scope: mapScope)
 							.mapControlVisibility(.automatic)
-						MapUserLocationButton(scope: mapScope)
-							.mapControlVisibility(showUserLocation ? .visible : .hidden)
 						MapPitchToggle(scope: mapScope)
 							.mapControlVisibility(.automatic)
 						MapCompass(scope: mapScope)
@@ -253,7 +204,7 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(isPresented: $isEditingSettings) {
-				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer)
+				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.onChange(of: (appState.navigationPath)) { newPath in
 				
