@@ -55,43 +55,11 @@ struct UserMessageList: View {
 											self.messageFieldFocused = true
 										}
 
-										let tapbacks = message.value(forKey: "tapbacks") as? [MessageEntity] ?? []
-										if tapbacks.count > 0 {
-											VStack(alignment: .trailing) {
-												HStack {
-													ForEach( tapbacks ) { (tapback: MessageEntity) in
-														VStack {
-															let image = tapback.messagePayload!.image(fontSize: 20)
-															Image(uiImage: image!).font(.caption)
-															Text("\(tapback.fromUser?.shortName ?? "?")")
-																.font(.caption2)
-																.foregroundColor(.gray)
-																.fixedSize()
-																.padding(.bottom, 1)
-														}
-														.onAppear {
-															if !tapback.read {
-																tapback.read = true
-																do {
-																	try context.save()
-																	print("📖 Read tapback \(tapback.messageId) ")
-																	appState.unreadDirectMessages = user.unreadMessages
-																	UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
-
-																} catch {
-																	print("Failed to read tapback \(tapback.messageId)")
-																}
-															}
-														}
-													}
-												}
-												.padding(10)
-												.overlay(
-													RoundedRectangle(cornerRadius: 18)
-														.stroke(Color.gray, lineWidth: 1)
-												)
-											}
+										TapbackResponses(message: message) {
+											appState.unreadDirectMessages = user.unreadMessages
+											UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 										}
+
 										HStack {
 											let ackErrorVal = RoutingError(rawValue: Int(message.ackError))
 											if currentUser && message.receivedACK {
