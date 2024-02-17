@@ -7,6 +7,9 @@
 
 import SwiftUI
 import CoreData
+#if canImport(TipKit)
+import TipKit
+#endif
 
 func generateChannelKey(size: Int) -> String {
 	var keyData = Data(count: size)
@@ -40,7 +43,11 @@ struct Channels: View {
 	var body: some View {
 
 		VStack {
+		
 			List {
+				if #available(iOS 17.0, macOS 14.0, *) {
+					TipView(CreateChannelsTip(), arrowEdge: .bottom)
+				}
 				if node != nil && node?.myInfo != nil {
 					ForEach(node?.myInfo?.channels?.array as? [ChannelEntity] ?? [], id: \.self) { (channel: ChannelEntity) in
 						Button(action: {
@@ -91,7 +98,9 @@ struct Channels: View {
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let key = generateChannelKey(size: 32)
+					channelKeySize = 16
+					let key = generateChannelKey(size: channelKeySize)
+					
 					channelName = ""
 					channelIndex = Int32(node!.myInfo!.channels!.array.count)
 					channelRole = 2
@@ -201,18 +210,21 @@ struct Channels: View {
 							.disabled(channelKeySize <= 0)
 						}
 						HStack {
-							Text("Role")
-							Spacer()
-							Picker("Channel Role", selection: $channelRole) {
-								if channelRole == 1 {
+							if channelRole == 1 {
+								Picker("Channel Role", selection: $channelRole) {
 									Text("Primary").tag(1)
-								} else {
-									Text("Disabled").tag(0)
-									Text("Secondary").tag(2)
 								}
+								.pickerStyle(.automatic)
+								.disabled(true)
+							} else {
+								Text("Channel Role")
+								Spacer()
+								Picker("Channel Role", selection: $channelRole) {
+										Text("Disabled").tag(0)
+										Text("Secondary").tag(2)
+								}
+								.pickerStyle(.segmented)
 							}
-							.pickerStyle(.segmented)
-							.disabled(channelRole == 1)
 						}
 						Toggle("Uplink Enabled", isOn: $uplink)
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))

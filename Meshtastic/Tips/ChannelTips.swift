@@ -25,3 +25,20 @@
 		Image(systemName: "qrcode")
 	}
  }
+
+@available(iOS 17.0, macOS 14.0, *)
+struct CreateChannelsTip: Tip {
+
+   var id: String {
+	   return "tip.channels.create"
+   }
+   var title: Text {
+	   Text("tip.channels.create.title")
+   }
+   var message: Text? {
+	   Text("tip.channels.create.message")
+   }
+   var image: Image? {
+	   Image(systemName: "fibrechannel")
+   }
+}

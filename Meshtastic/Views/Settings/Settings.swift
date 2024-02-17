@@ -117,27 +117,10 @@ struct Settings: View {
 								}
 							}
 						} else {
-							Text("Configuring Node \(node?.user?.longName ?? "unknown".localized)")
+							Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
 						}
 					}
 					Section("radio.configuration") {
-						NavigationLink {
-							ShareChannels(node: nodes.first(where: { $0.num == preferredNodeNum }))
-						} label: {
-							Image(systemName: "qrcode")
-								.symbolRenderingMode(.hierarchical)
-							Text("share.channels")
-						}
-						.tag(SettingsSidebar.shareChannels)
-						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
-						NavigationLink {
-							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
-						} label: {
-							Image(systemName: "person.crop.rectangle.fill")
-								.symbolRenderingMode(.hierarchical)
-							Text("user")
-						}
-						.tag(SettingsSidebar.userConfig)
 						NavigationLink {
 							LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
@@ -155,6 +138,25 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.channelConfig)
 						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+						NavigationLink {
+							ShareChannels(node: nodes.first(where: { $0.num == preferredNodeNum }))
+						} label: {
+							Image(systemName: "qrcode")
+								.symbolRenderingMode(.hierarchical)
+							Text("share.channels")
+						}
+						.tag(SettingsSidebar.shareChannels)
+						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
+					}
+					Section("device.configuration") {
+						NavigationLink {
+							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						} label: {
+							Image(systemName: "person.crop.rectangle.fill")
+								.symbolRenderingMode(.hierarchical)
+							Text("user")
+						}
+						.tag(SettingsSidebar.userConfig)
 						NavigationLink {
 							BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {

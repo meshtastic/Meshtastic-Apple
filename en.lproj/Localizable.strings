@@ -81,7 +81,7 @@
 "device.role.routerclient"="Combination of both ROUTER and CLIENT. Not for mobile devices.";
 "direct.messages"="Direct Messages";
 "dismiss.keyboard"="Dismiss";
-"display"="Display (Device Screen)";
+"display"="Display";
 "display.config"="Display Config";
 "distance"="Distance";
 "disconnect"="Disconnect";
@@ -270,7 +270,7 @@
 "serial.mode.txtmsg"="Text Message";
 "serial.mode.nmea"="NMEA Positions";
 "settings"="Settings";
-"share.channels"="Share Channels QR Code";
+"share.channels"="Share QR Code";
 "share.position"="Share Position";
 "subscribed"="Subscribed to mesh";
 "select.contact"="Select a Contact";
@@ -297,9 +297,11 @@
 "timeout"="Timeout";
 "timestamp"="Timestamp";
 "tip.bluetooth.connect.title"="Connected Radio";
-"tip.bluetooth.connect.message"="Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.bluetooth.connect.message"="Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channels.create.title"="Manage Channels";
+"tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="Sharing Meshtastic Channels";
-"tip.channels.share.message"="In a Meshtastic LoRa Mesh there are up to 8 channels. The first one is the Primary channel where most activity happens and is required. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. It talks on its primary and your secondary channel. A channel with the name 'admin' controls nodes remotely. Other channels are for private groups, each with its own key.";
+"tip.channels.share.message"="A Meshtastic QR code contains the LoRa config and channel values needed to communicate. Most mesh activity takes place on the required Primary channel. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. Other channels are for private groups, each with its own key.";
 "tip.messages.title"="Messages";
 "tip.messages.message"="You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.";
 "twitter"="Twitter";

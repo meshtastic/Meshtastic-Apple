@@ -19,7 +19,28 @@ struct AppSettings: View {
 	var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("options")) {
+				Section(header: Text("Location Settings")) {
+					Toggle(isOn: $provideLocation) {
+						Label("appsettings.provide.location", systemImage: "location.circle.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					if provideLocation {
+						Toggle(isOn: $enableSmartPosition) {
+							Label("appsettings.smartposition", systemImage: "brain.fill")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						VStack {
+							Picker("update.interval", selection: $provideLocationInterval) {
+								ForEach(LocationUpdateInterval.allCases) { lu in
+									Text(lu.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("phone.gps.interval.description")
+								.font(.caption2)
+								.foregroundColor(.gray)
+						}
+					}
 					Toggle(isOn: $useLegacyMap) {
 						Label("map.use.legacy", systemImage: "map")
 					}
@@ -60,35 +81,6 @@ struct AppSettings: View {
 						if locationHelper.locationManager.location?.speedAccuracy ?? 0 > 0 {
 							Label("Speed \(speed.formatted())", systemImage: "speedometer")
 								.font(.footnote)
-						}
-					}
-				}
-				Section(header: Text("Location Settings")) {
-					Toggle(isOn: $provideLocation) {
-						Label("appsettings.provide.location", systemImage: "location.circle.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if provideLocation {
-						Toggle(isOn: $enableSmartPosition) {
-							Label("appsettings.smartposition", systemImage: "brain.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onChange(of: (enableSmartPosition)) { newEnableSmartPosition in
-							UserDefaults.enableSmartPosition = newEnableSmartPosition
-						}
-						VStack {
-							Picker("update.interval", selection: $provideLocationInterval) {
-								ForEach(LocationUpdateInterval.allCases) { lu in
-									Text(lu.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
-								UserDefaults.provideLocationInterval = newProvideLocationInterval
-							}
-							Text("phone.gps.interval.description")
-								.font(.caption2)
-								.foregroundColor(.gray)
 						}
 					}
 				}
@@ -157,6 +149,12 @@ struct AppSettings: View {
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}
+		}
+		.onChange(of: enableSmartPosition) { newEnableSmartPosition in
+			UserDefaults.enableSmartPosition = newEnableSmartPosition
+		}
+		.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
+			UserDefaults.provideLocationInterval = newProvideLocationInterval
 		}
 		.onChange(of: useLegacyMap) { newMapUseLegacy in
 			UserDefaults.mapUseLegacy = newMapUseLegacy

@@ -91,7 +91,7 @@ struct StoreForwardConfig: View {
 				}
 				
 				if isRouter {
-					Section(header: Text("options")) {
+					Section(header: Text("Router Options")) {
 						Toggle(isOn: $heartbeat) {
 							Label("storeforward.heartbeat", systemImage: "waveform.path.ecg")
 						}
