@@ -124,7 +124,7 @@ struct NodeListItem: View {
 									.frame(width: 30)
 								Text("Channel: \(node.channel)")
 									.foregroundColor(.gray)
-									.font(.caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 							}
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "network")
@@ -133,7 +133,7 @@ struct NodeListItem: View {
 									.frame(width: 30)
 								Text("Via MQTT")
 									.foregroundColor(.gray)
-									.font(.caption)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 							}
 						}
 						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
@@ -144,7 +144,7 @@ struct NodeListItem: View {
 									.frame(width: 30)
 								Text("Logs:")
 									.foregroundColor(.gray)
-									.font(.callout)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								if node.hasDeviceMetrics {
 									Image(systemName: "flipphone")
 										.symbolRenderingMode(.hierarchical)
@@ -183,7 +183,6 @@ struct NodeListItem: View {
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
 									
 							}
-							.padding(.top)
 						}
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)

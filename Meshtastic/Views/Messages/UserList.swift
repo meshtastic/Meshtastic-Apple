@@ -87,9 +87,6 @@ struct UserList: View {
 											.foregroundColor(.secondary)
 									}
 								}
-								//								Image(systemName: "chevron.forward")
-								//									.font(.caption)
-								//									.foregroundColor(.secondary)
 							}
 							
 							if user.messageList.count > 0 {

@@ -21,6 +21,8 @@ struct ChannelList: View {
 
 	@State private var isPresentingTraceRouteSentAlert = false
 	
+	var restrictedChannels = ["admin", "gpio", "mqtt", "serial"]
+	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
@@ -29,7 +31,7 @@ struct ChannelList: View {
 			// Display Contacts for the rest of the non admin channels
 			if node != nil && node!.myInfo != nil && node!.myInfo!.channels != nil {
 				List(node!.myInfo!.channels!.array as! [ChannelEntity], id: \.self, selection: $channelSelection) { (channel: ChannelEntity) in
-					if channel.name?.lowercased() ?? "" != "admin" && channel.name?.lowercased() ?? "" != "gpio" && channel.name?.lowercased() ?? "" != "serial" {
+					if !restrictedChannels.contains(channel.name?.lowercased() ?? "") {
 
 						NavigationLink(destination: ChannelMessageList(myInfo: node!.myInfo!, channel: channel)) {
 
@@ -85,9 +87,6 @@ struct ChannelList: View {
 												.foregroundColor(.secondary)
 										}
 									}
-//										Image(systemName: "chevron.forward")
-//											.font(.caption)
-//											.foregroundColor(.secondary)
 								}
 								
 								if channel.allPrivateMessages.count > 0 {
