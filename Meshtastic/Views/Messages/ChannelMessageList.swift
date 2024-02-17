@@ -119,7 +119,7 @@ struct ChannelMessageList: View {
 								.padding(.bottom)
 								.id(channel.allPrivateMessages.firstIndex(of: message))
 
-								if currentUser && (message.ackError == 9 || message.ackError == 5 || message.ackError == 3) {
+								if currentUser && message.canRetry {
 									RetryButton(message: message)
 								}
 
