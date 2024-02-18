@@ -147,54 +147,34 @@ struct ExternalNotificationConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.externalNotificationConfig == nil)
 		}
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					var enc = ModuleConfig.ExternalNotificationConfig()
-					enc.enabled = enabled
-					enc.alertBell = alertBell
-					enc.alertBellBuzzer = alertBellBuzzer
-					enc.alertBellVibra = alertBellVibra
-					enc.alertMessage = alertMessage
-					enc.alertMessageBuzzer = alertMessageBuzzer
-					enc.alertMessageVibra = alertMessageVibra
-					enc.active = active
-					enc.output = UInt32(output)
-					enc.nagTimeout = UInt32(nagTimeout)
-					enc.outputBuzzer = UInt32(outputBuzzer)
-					enc.outputVibra = UInt32(outputVibra)
-					enc.outputMs = UInt32(outputMilliseconds)
-					enc.usePwm = usePWM
-					enc.useI2SAsBuzzer = useI2SAsBuzzer
-					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+				var enc = ModuleConfig.ExternalNotificationConfig()
+				enc.enabled = enabled
+				enc.alertBell = alertBell
+				enc.alertBellBuzzer = alertBellBuzzer
+				enc.alertBellVibra = alertBellVibra
+				enc.alertMessage = alertMessage
+				enc.alertMessageBuzzer = alertMessageBuzzer
+				enc.alertMessageVibra = alertMessageVibra
+				enc.active = active
+				enc.output = UInt32(output)
+				enc.nagTimeout = UInt32(nagTimeout)
+				enc.outputBuzzer = UInt32(outputBuzzer)
+				enc.outputVibra = UInt32(outputVibra)
+				enc.outputMs = UInt32(outputMilliseconds)
+				enc.usePwm = usePWM
+				enc.useI2SAsBuzzer = useI2SAsBuzzer
+				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("external.notification.config")
 		.navigationBarItems(trailing:

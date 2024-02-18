@@ -63,44 +63,24 @@ struct TelemetryConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.telemetryConfig == nil)
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges || node!.telemetryConfig == nil)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
+
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 				if connectedNode != nil {
-					let nodeName = node?.user?.longName ?? "unknown".localized
-					let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-					Button(buttonText) {
-						var tc = ModuleConfig.TelemetryConfig()
-						tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
-						tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
-						tc.environmentMeasurementEnabled = environmentMeasurementEnabled
-						tc.environmentScreenEnabled = environmentScreenEnabled
-						tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
-						let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+					var tc = ModuleConfig.TelemetryConfig()
+					tc.deviceUpdateInterval = UInt32(deviceUpdateInterval)
+					tc.environmentUpdateInterval = UInt32(environmentUpdateInterval)
+					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
+					tc.environmentScreenEnabled = environmentScreenEnabled
+					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 			.navigationTitle("telemetry.config")
 			.navigationBarItems(trailing:

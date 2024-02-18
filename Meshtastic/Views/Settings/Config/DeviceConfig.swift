@@ -16,9 +16,7 @@ struct DeviceConfig: View {
 
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
-	@State private var isPresentingSaveConfirm = false
 	@State var hasChanges = false
-
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
@@ -167,49 +165,28 @@ struct DeviceConfig: View {
 				}
 			}
 			HStack {
-				Button {
-					isPresentingSaveConfirm = true
-				} label: {
-					Label("save", systemImage: "square.and.arrow.down")
-				}
-				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"are.you.sure",
-					isPresented: $isPresentingSaveConfirm,
-					titleVisibility: .visible
-				) {
-					let nodeName = node?.user?.longName ?? "unknown".localized
-					let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-					Button(buttonText) {
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						if connectedNode != nil {
-							var dc = Config.DeviceConfig()
-							dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-							dc.serialEnabled = serialEnabled
-							dc.debugLogEnabled = debugLogEnabled
-							dc.buttonGpio = UInt32(buttonGPIO)
-							dc.buzzerGpio = UInt32(buzzerGPIO)
-							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
-							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
-							dc.isManaged = isManaged
-							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-							if adminMessageId > 0 {
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode != nil {
+						var dc = Config.DeviceConfig()
+						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+						dc.serialEnabled = serialEnabled
+						dc.debugLogEnabled = debugLogEnabled
+						dc.buttonGpio = UInt32(buttonGPIO)
+						dc.buzzerGpio = UInt32(buzzerGPIO)
+						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
+						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+						dc.isManaged = isManaged
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
 						}
 					}
 				}
-			message: {
-				Text("config.save.confirm")
-			}
 			}
 			Spacer()
 		}

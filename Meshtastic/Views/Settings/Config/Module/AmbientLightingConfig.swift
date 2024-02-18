@@ -57,48 +57,27 @@ struct AmbientLightingConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.ambientLightingConfig == nil)
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(self.bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
 
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil {
-						var al = ModuleConfig.AmbientLightingConfig()
-						al.ledState = ledState
-						al.current = UInt32(current)
-						if let components {
-							al.red = UInt32(components.red * 255)
-							al.green = UInt32(components.green * 255)
-							al.blue = UInt32(components.blue * 255)
-						}
+				if connectedNode != nil {
+					var al = ModuleConfig.AmbientLightingConfig()
+					al.ledState = ledState
+					al.current = UInt32(current)
+					if let components {
+						al.red = UInt32(components.red * 255)
+						al.green = UInt32(components.green * 255)
+						al.blue = UInt32(components.blue * 255)
+					}
 
-						let adminMessageId =  bleManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+					let adminMessageId =  bleManager.saveAmbientLightingModuleConfig(config: al, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 			.navigationTitle("ambient.lighting.config")
 			.navigationBarItems(trailing:

@@ -15,9 +15,7 @@ struct DisplayConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
-
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
 	@State var gpsFormat = 0
@@ -114,53 +112,31 @@ struct DisplayConfig: View {
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
 
-		Button {
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
+			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+			if connectedNode != nil {
+				var dc = Config.DisplayConfig()
+				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+				dc.screenOnSecs = UInt32(screenOnSeconds)
+				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+				dc.compassNorthTop = compassNorthTop
+				dc.wakeOnTapOrMotion = wakeOnTapOrMotion
+				dc.flipScreen = flipScreen
+				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
+				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-			isPresentingSaveConfirm = true
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
 
-		} label: {
-
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm
-		) {
-			let nodeName = node?.user?.longName ?? "unknown".localized
-			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-			Button(buttonText) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
-					var dc = Config.DisplayConfig()
-					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
-					dc.screenOnSecs = UInt32(screenOnSeconds)
-					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
-					dc.compassNorthTop = compassNorthTop
-					dc.wakeOnTapOrMotion = wakeOnTapOrMotion
-					dc.flipScreen = flipScreen
-					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
-					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
-					dc.units = Units(rawValue: units)!.protoEnumValue()
-
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
 		}
-		message: {
-			Text("config.save.confirm")
-		}
+
 		.navigationTitle("display.config")
 		.navigationBarItems(trailing:
 			ZStack {

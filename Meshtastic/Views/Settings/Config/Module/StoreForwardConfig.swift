@@ -104,56 +104,35 @@ struct StoreForwardConfig: View {
 			.scrollDismissesKeyboard(.interactively)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.storeForwardConfig == nil)
 		}
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					
-					/// Let the user set isRouter for the connected node, for nodes on the mesh set isRouter based
-					/// on receipt of a primary heartbeat
-					if connectedNode?.num ?? 0 == node?.num ?? -1 {
-						connectedNode?.storeForwardConfig?.isRouter = isRouter
-						do {
-							try context.save()
-						} catch {
-							print("Failed to save isRouter")
-						}
-					}
-					
-					var sfc = ModuleConfig.StoreForwardConfig()
-					sfc.enabled = self.enabled
-					sfc.heartbeat = self.heartbeat
-					sfc.records = UInt32(self.records)
-					sfc.historyReturnMax = UInt32(self.historyReturnMax)
-					sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
-					let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
+				/// Let the user set isRouter for the connected node, for nodes on the mesh set isRouter based
+				/// on receipt of a primary heartbeat
+				if connectedNode?.num ?? 0 == node?.num ?? -1 {
+					connectedNode?.storeForwardConfig?.isRouter = isRouter
+					do {
+						try context.save()
+					} catch {
+						print("Failed to save isRouter")
 					}
 				}
+				
+				var sfc = ModuleConfig.StoreForwardConfig()
+				sfc.enabled = self.enabled
+				sfc.heartbeat = self.heartbeat
+				sfc.records = UInt32(self.records)
+				sfc.historyReturnMax = UInt32(self.historyReturnMax)
+				sfc.historyReturnWindow = UInt32(self.historyReturnWindow)
+				let adminMessageId = bleManager.saveStoreForwardModuleConfig(config: sfc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
+				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("storeforward.config")
 		.navigationBarItems(trailing:

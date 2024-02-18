@@ -49,43 +49,22 @@ struct RangeTestConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
 
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil {
-						var rtc = ModuleConfig.RangeTestConfig()
-						rtc.enabled = enabled
-						rtc.save = save
-						rtc.sender = UInt32(sender)
-						let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+				if connectedNode != nil {
+					var rtc = ModuleConfig.RangeTestConfig()
+					rtc.enabled = enabled
+					rtc.save = save
+					rtc.sender = UInt32(sender)
+					let adminMessageId =  bleManager.saveRangeTestModuleConfig(config: rtc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 			.navigationTitle("range.test.config")
 			.navigationBarItems(trailing:

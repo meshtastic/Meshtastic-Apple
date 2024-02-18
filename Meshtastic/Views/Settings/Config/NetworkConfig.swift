@@ -15,7 +15,6 @@ struct NetworkConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges: Bool = false
 	@State var wifiEnabled = false
 	@State var wifiSsid = ""
@@ -95,44 +94,25 @@ struct NetworkConfig: View {
 			}
 			.scrollDismissesKeyboard(.interactively)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.networkConfig == nil)
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil {
-						var network = Config.NetworkConfig()
-						network.wifiEnabled = self.wifiEnabled
-						network.wifiSsid = self.wifiSsid
-						network.wifiPsk = self.wifiPsk
-						network.ethEnabled = self.ethEnabled
-						// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
 
-						let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode != nil {
+					var network = Config.NetworkConfig()
+					network.wifiEnabled = self.wifiEnabled
+					network.wifiSsid = self.wifiSsid
+					network.wifiPsk = self.wifiPsk
+					network.ethEnabled = self.ethEnabled
+					// network.addressMode = Config.NetworkConfig.AddressMode.dhcp
+
+					let adminMessageId =  bleManager.saveNetworkConfig(config: network, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			} message: {
-				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("network.config")

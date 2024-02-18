@@ -101,53 +101,28 @@ struct SerialConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.serialConfig == nil)
 
-			Button {
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if connectedNode != nil {
+					var sc = ModuleConfig.SerialConfig()
+					sc.enabled = enabled
+					sc.echo = echo
+					sc.rxd = UInt32(rxd)
+					sc.txd = UInt32(txd)
+					sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
+					sc.timeout = UInt32(timeout)
+					sc.overrideConsoleSerialPort = overrideConsoleSerialPort
+					sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
 
-				isPresentingSaveConfirm = true
+					let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 
-			} label: {
-
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-					if connectedNode != nil {
-						var sc = ModuleConfig.SerialConfig()
-						sc.enabled = enabled
-						sc.echo = echo
-						sc.rxd = UInt32(rxd)
-						sc.txd = UInt32(txd)
-						sc.baud = SerialBaudRates(rawValue: baudRate)!.protoEnumValue()
-						sc.timeout = UInt32(timeout)
-						sc.overrideConsoleSerialPort = overrideConsoleSerialPort
-						sc.mode	= SerialModeTypes(rawValue: mode)!.protoEnumValue()
-
-						let adminMessageId =  bleManager.saveSerialModuleConfig(config: sc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 			.navigationTitle("serial.config")
 			.navigationBarItems(trailing:

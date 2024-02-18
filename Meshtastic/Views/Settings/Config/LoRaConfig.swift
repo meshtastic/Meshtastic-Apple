@@ -29,7 +29,6 @@ struct LoRaConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
 	@State var region: Int = 0
 	@State var modemPreset = 0
@@ -55,7 +54,7 @@ struct LoRaConfig: View {
 		VStack {
 			Form {
 				ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
-				
+
 				Section(header: Text("Options")) {
 
 					Picker("Region", selection: $region ) {
@@ -176,51 +175,31 @@ struct LoRaConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-					if connectedNode != nil {
-						var lc = Config.LoRaConfig()
-						lc.hopLimit = UInt32(hopLimit)
-						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-						lc.usePreset = usePreset
-						lc.txEnabled = txEnabled
-						lc.txPower = Int32(txPower)
-						lc.channelNum = UInt32(channelNum)
-						lc.bandwidth = UInt32(bandwidth)
-						lc.codingRate = UInt32(codingRate)
-						lc.spreadFactor = UInt32(spreadFactor)
-						lc.sx126XRxBoostedGain = rxBoostedGain
-						lc.overrideFrequency = overrideFrequency
-						lc.ignoreMqtt = ignoreMqtt
-						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				if connectedNode != nil {
+					var lc = Config.LoRaConfig()
+					lc.hopLimit = UInt32(hopLimit)
+					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+					lc.usePreset = usePreset
+					lc.txEnabled = txEnabled
+					lc.txPower = Int32(txPower)
+					lc.channelNum = UInt32(channelNum)
+					lc.bandwidth = UInt32(bandwidth)
+					lc.codingRate = UInt32(codingRate)
+					lc.spreadFactor = UInt32(spreadFactor)
+					lc.sx126XRxBoostedGain = rxBoostedGain
+					lc.overrideFrequency = overrideFrequency
+					lc.ignoreMqtt = ignoreMqtt
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			} message: {
-				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("lora.config")

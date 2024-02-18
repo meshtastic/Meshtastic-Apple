@@ -30,7 +30,6 @@ struct PositionConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
 
@@ -250,66 +249,44 @@ struct PositionConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
 
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				if fixedPosition {
+					_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
+				}
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 
-					if fixedPosition {
-						_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
-					}
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-
-					if connectedNode != nil {
-						var pc = Config.PositionConfig()
-						pc.positionBroadcastSmartEnabled = smartPositionEnabled
-						pc.gpsEnabled = gpsMode == 1
-						pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
-						pc.fixedPosition = fixedPosition
-						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
-						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
-						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
-						pc.rxGpio = UInt32(rxGpio)
-						pc.txGpio = UInt32(txGpio)
-						pc.gpsEnGpio = UInt32(gpsEnGpio)
-						var pf: PositionFlags = []
-						if includeAltitude { pf.insert(.Altitude) }
-						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
-						if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
-						if includeDop { pf.insert(.Dop) }
-						if includeHvdop { pf.insert(.Hvdop) }
-						if includeSatsinview { pf.insert(.Satsinview) }
-						if includeSeqNo { pf.insert(.SeqNo) }
-						if includeTimestamp { pf.insert(.Timestamp) }
-						if includeSpeed { pf.insert(.Speed) }
-						if includeHeading { pf.insert(.Heading) }
-						pc.positionFlags = UInt32(pf.rawValue)
-						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+				if connectedNode != nil {
+					var pc = Config.PositionConfig()
+					pc.positionBroadcastSmartEnabled = smartPositionEnabled
+					pc.gpsEnabled = gpsMode == 1
+					pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
+					pc.fixedPosition = fixedPosition
+					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
+					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+					pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
+					pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
+					pc.rxGpio = UInt32(rxGpio)
+					pc.txGpio = UInt32(txGpio)
+					pc.gpsEnGpio = UInt32(gpsEnGpio)
+					var pf: PositionFlags = []
+					if includeAltitude { pf.insert(.Altitude) }
+					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
+					if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
+					if includeDop { pf.insert(.Dop) }
+					if includeHvdop { pf.insert(.Hvdop) }
+					if includeSatsinview { pf.insert(.Satsinview) }
+					if includeSeqNo { pf.insert(.SeqNo) }
+					if includeTimestamp { pf.insert(.Timestamp) }
+					if includeSpeed { pf.insert(.Speed) }
+					if includeHeading { pf.insert(.Heading) }
+					pc.positionFlags = UInt32(pf.rawValue)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("position.config")
