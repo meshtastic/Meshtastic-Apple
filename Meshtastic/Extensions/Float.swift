@@ -11,7 +11,9 @@ extension Float {
 
 	func formattedTemperature() -> String {
 		let temperature = Measurement<UnitTemperature>(value: Double(self), unit: .celsius)
-		return temperature.formatted(.measurement(width: .narrow, usage: .weather))
+		let mf = MeasurementFormatter()
+		mf.numberFormatter.maximumFractionDigits = 0
+		return mf.string(from: temperature)
 	}
 	func localeTemperature() -> Double {
 		let temperature = Measurement<UnitTemperature>(value: Double(self), unit: .celsius)

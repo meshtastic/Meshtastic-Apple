@@ -81,19 +81,19 @@ struct EnvironmentMetricsLog: View {
 								Text(em.temperature.formattedTemperature())
 							}
 							TableColumn("Humidity") { em in
-								Text("\(String(format: "%.2f", em.relativeHumidity))%")
+								Text("\(String(format: "%.0f", em.relativeHumidity))%")
 							}
 							TableColumn("Barometric Pressure") { em in
-								Text("\(String(format: "%.2f", em.barometricPressure)) hPa")
+								Text("\(String(format: "%.1f", em.barometricPressure)) hPa")
 							}
 							TableColumn("gas.resistance") { em in
-								Text("\(String(format: "%.2f", em.gasResistance)) ohms")
+								Text("\(String(format: "%.1f", em.gasResistance)) ohms")
 							}
 							TableColumn("current") { em in
-								Text("\(String(format: "%.2f", em.current))")
+								Text("\(String(format: "%.1f", em.current))")
 							}
 							TableColumn("voltage") { em in
-								Text("\(String(format: "%.2f", em.voltage))")
+								Text("\(String(format: "%.1f", em.voltage))")
 							}
 							TableColumn("timestamp") { em in
 								Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
@@ -134,11 +134,11 @@ struct EnvironmentMetricsLog: View {
 										
 										Text(em.temperature.formattedTemperature())
 											.font(.caption)
-										Text("\(String(format: "%.2f", em.relativeHumidity))%")
+										Text("\(String(format: "%.0f", em.relativeHumidity))%")
 											.font(.caption)
-										Text("\(String(format: "%.2f", em.barometricPressure))")
+										Text("\(String(format: "%.1f", em.barometricPressure))")
 											.font(.caption)
-										Text("\(String(format: "%.2f", em.gasResistance))")
+										Text("\(String(format: "%.1f", em.gasResistance))")
 											.font(.caption)
 										Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 											.font(.caption)
