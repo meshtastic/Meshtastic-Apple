@@ -314,6 +314,7 @@ struct Settings: View {
 				}
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { newConnectedNode in
+				preferredNodeNum = newConnectedNode
 				if nodes.count > 1 {
 					if selectedNode == 0 {
 						self.selectedNode = Int(bleManager.connectedPeripheral != nil ? newConnectedNode : 0)
