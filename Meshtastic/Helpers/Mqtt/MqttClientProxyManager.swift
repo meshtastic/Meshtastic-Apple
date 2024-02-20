@@ -31,8 +31,10 @@ class MqttClientProxyManager {
 		if host == nil || host!.isEmpty {
 			host = defaultServerAddress
 		} else if host != nil && host!.contains(":") {
-			host = host!.components(separatedBy: ":")[0]
-			defaultServerPort = Int(host!.components(separatedBy: ":")[1])!
+			if let fullHost = host {
+				host = fullHost.components(separatedBy: ":")[0]
+				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? 1883
+			}
 		}
 		if let host = host {
 			let port = defaultServerPort

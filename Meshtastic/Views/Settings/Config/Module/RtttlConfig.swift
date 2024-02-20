@@ -41,7 +41,6 @@ struct RtttlConfig: View {
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
 				} else {
 					Text("Please connect to a radio to configure settings.")
 						.font(.callout)

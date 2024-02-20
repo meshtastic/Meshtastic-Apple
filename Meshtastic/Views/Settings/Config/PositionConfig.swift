@@ -97,7 +97,6 @@ struct PositionConfig: View {
 					}
 				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
 				} else {
 					Text("Please connect to a radio to configure settings.")
 						.font(.callout)
@@ -106,7 +105,7 @@ struct PositionConfig: View {
 
 				Section(header: Text("Position Packet")) {
 
-					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
+					Picker("Interval", selection: $positionBroadcastSeconds) {
 						ForEach(UpdateIntervals.allCases) { at in
 							if at.rawValue >= 900 {
 								Text(at.description)
@@ -114,11 +113,10 @@ struct PositionConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("The maximum interval that can elapse without a node sending a position")
+					Text("The maximum interval that can elapse without a node broadcasting a position")
 						.font(.caption)
 					Toggle(isOn: $smartPositionEnabled) {
-
-						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
+						Label("Smart Position", systemImage: "location.fill.viewfinder")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if smartPositionEnabled {
@@ -171,7 +169,7 @@ struct PositionConfig: View {
 							Label("Fixed Position", systemImage: "location.square.fill")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed positon will always use the most recent position the device has.")
+						Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
 							.font(.caption)
 					}
 				}
