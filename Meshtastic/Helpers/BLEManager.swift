@@ -1513,7 +1513,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		return 0
 	}
-	
+
+	public func savePowerConfig(config: Config.PowerConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.power = config
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Power Config for \(toUser.longName ?? "unknown".localized)"
+
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertPowerConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+
+		return 0
+	}
+
 	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
@@ -2067,7 +2095,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return false
 	}
-	
+
+	public func requestPowerConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.powerConfig
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested Power Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+
 	public func requestAmbientLightingConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()

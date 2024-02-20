@@ -185,6 +185,7 @@
 "mesh.log.nodeinfo.received %@"="Node info received for: %@";
 "mesh.log.position.config %@"="Positon config received: %@";
 "mesh.log.position.received %@"="Position Packet received from node: %@";
+"mesh.log.power.config %@"="Power config received: %@";
 "mesh.log.rangetest.config %@"="Range Test module config received: %@";
 "mesh.log.ringtone.config %@"="RTTTL Ringtone config received: %@";
 "mesh.log.routing.message %@ %@"="Routing received for RequestID: %@ Ack Status: %@";
@@ -231,6 +232,16 @@
 "phone.gps.interval.description"="How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.";
 "position"="Position";
 "position.config"="Position Config";
+"power"="Power";
+"power.adc.override"="ADC Override";
+"power.adc.multiplier"="Multiplier";
+"power.config"="Power Config";
+"power.ls.secs"="Light Sleep Interval";
+"power.min.wake.secs"="Minimum Wake Interval";
+"power.save"="Power Save";
+"power.shutdown.on.power.loss"="Shutdown on Power Loss";
+"power.shutdown.after.secs"="After";
+"power.wait.bluetooth.secs"="Bluetooth Off After";
 "preferred.radio"="Preferred Radio";
 "radio.configuration"="Radio Configuration";
 "range.test"="Range Test";

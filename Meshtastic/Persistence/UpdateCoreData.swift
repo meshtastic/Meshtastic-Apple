@@ -645,6 +645,55 @@ func upsertPositionConfigPacket(config: Meshtastic.Config.PositionConfig, nodeNu
 	}
 }
 
+func upsertPowerConfigPacket(config: Meshtastic.Config.PowerConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+	let logString = String.localizedStringWithFormat("mesh.log.power.config %@".localized, String(nodeNum))
+	MeshLogger.log("🗺️ \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save Power Config
+		if !fetchedNode.isEmpty {
+			if fetchedNode[0].powerConfig == nil {
+				let newPowerConfig = PowerConfigEntity(context: context)
+				newPowerConfig.adcMultiplierOverride = config.adcMultiplierOverride
+				newPowerConfig.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
+				newPowerConfig.isPowerSaving = config.isPowerSaving
+				newPowerConfig.lsSecs = Int32(config.lsSecs)
+				newPowerConfig.minWakeSecs = Int32(config.minWakeSecs)
+				newPowerConfig.onBatteryShutdownAfterSecs = Int32(config.onBatteryShutdownAfterSecs)
+				newPowerConfig.waitBluetoothSecs = Int32(config.waitBluetoothSecs)
+				fetchedNode[0].powerConfig = newPowerConfig
+			} else {
+				fetchedNode[0].powerConfig?.adcMultiplierOverride = config.adcMultiplierOverride
+				fetchedNode[0].powerConfig?.deviceBatteryInaAddress = Int32(config.deviceBatteryInaAddress)
+				fetchedNode[0].powerConfig?.isPowerSaving = config.isPowerSaving
+				fetchedNode[0].powerConfig?.lsSecs = Int32(config.lsSecs)
+				fetchedNode[0].powerConfig?.minWakeSecs = Int32(config.minWakeSecs)
+				fetchedNode[0].powerConfig?.onBatteryShutdownAfterSecs = Int32(config.onBatteryShutdownAfterSecs)
+				fetchedNode[0].powerConfig?.waitBluetoothSecs = Int32(config.waitBluetoothSecs)
+			}
+			do {
+				try context.save()
+				print("💾 Updated Power Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data PowerConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save Power Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data PowerConfigEntity failed: \(nsError)")
+	}
+}
+
 func upsertAmbientLightingModuleConfigPacket(config: Meshtastic.ModuleConfig.AmbientLightingConfig, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ambientlighting.config %@".localized, String(nodeNum))
