@@ -98,12 +98,15 @@ struct Channels: View {
 
 				Button {
 					let lastChannel = node?.myInfo?.channels?.lastObject as? ChannelEntity
-					var lastChannelIndex = lastChannel?.index ?? 0
+					
+					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
+						return (ch as AnyObject).index
+					})
+					var firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 					channelKeySize = 16
 					let key = generateChannelKey(size: channelKeySize)
-					
 					channelName = ""
-					channelIndex = Int32(lastChannelIndex + 1)
+					channelIndex = Int32(firstChannelIndex)
 					channelRole = 2
 					channelKey = key
 					uplink = false
@@ -364,4 +367,13 @@ struct Channels: View {
 			}
 		}
 	}
+}
+
+func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
+	for element in 1...indexes.count {
+		if !indexes.contains(element) {
+			return element
+		}
+	}
+	return indexes.count + 1
 }
