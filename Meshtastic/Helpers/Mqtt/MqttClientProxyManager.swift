@@ -33,7 +33,7 @@ class MqttClientProxyManager {
 		} else if host != nil && host!.contains(":") {
 			if let fullHost = host {
 				host = fullHost.components(separatedBy: ":")[0]
-				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? 1883
+				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
 		if let host = host {

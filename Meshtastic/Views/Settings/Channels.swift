@@ -43,7 +43,6 @@ struct Channels: View {
 	var body: some View {
 
 		VStack {
-		
 			List {
 				if #available(iOS 17.0, macOS 14.0, *) {
 					TipView(CreateChannelsTip(), arrowEdge: .bottom)
@@ -98,16 +97,18 @@ struct Channels: View {
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
+					let lastChannel = node?.myInfo?.channels?.lastObject as? ChannelEntity
+					var lastChannelIndex = lastChannel?.index ?? 0
 					channelKeySize = 16
 					let key = generateChannelKey(size: channelKeySize)
 					
 					channelName = ""
-					channelIndex = Int32(node!.myInfo!.channels!.array.count)
+					channelIndex = Int32(lastChannelIndex + 1)
 					channelRole = 2
 					channelKey = key
 					uplink = false
 					downlink = false
-					hasChanges = false
+					hasChanges = true
 					isPresentingEditView = true
 
 				} label: {
@@ -270,11 +271,38 @@ struct Channels: View {
 							channel.index = channelIndex
 							channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
 							if channel.role != Channel.Role.disabled {
-								channel.settings.id = UInt32(channelIndex)
+								channel.index = channelIndex
 								channel.settings.name = channelName
 								channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 								channel.settings.uplinkEnabled = uplink
 								channel.settings.downlinkEnabled = downlink
+								
+								let newChannel = ChannelEntity(context: context)
+								newChannel.id = Int32(channel.index)
+								newChannel.index = Int32(channel.index)
+								newChannel.uplinkEnabled = channel.settings.uplinkEnabled
+								newChannel.downlinkEnabled = channel.settings.downlinkEnabled
+								newChannel.name = channel.settings.name
+								newChannel.role = Int32(channel.role.rawValue)
+								newChannel.psk = channel.settings.psk
+								guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
+									return
+								}
+								if mutableChannels.contains(newChannel) {
+									mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+								} else {
+									mutableChannels.add(newChannel)
+								}
+								node!.myInfo!.channels = mutableChannels.copy() as? NSOrderedSet
+								context.refresh(newChannel, mergeChanges: true)
+								do {
+									try context.save()
+									print("💾 Saved Channel: \(channel.settings.name)")
+								} catch {
+									context.rollback()
+									let nsError = error as NSError
+									print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
+								}
 							} else {
 								if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
 									guard let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as? ChannelEntity else {
@@ -297,6 +325,7 @@ struct Channels: View {
 							if adminMessageId > 0 {
 								self.isPresentingEditView = false
 								channelName = ""
+								channelRole	= 2
 								hasChanges = false
 								_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 							}

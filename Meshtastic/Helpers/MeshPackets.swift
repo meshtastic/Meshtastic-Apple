@@ -162,6 +162,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				if newChannel.name?.lowercased() == "admin" {
 					fetchedMyInfo[0].adminIndex = newChannel.index
 				}
+				context.refresh(newChannel, mergeChanges: true)
 				do {
 					try context.save()
 				} catch {

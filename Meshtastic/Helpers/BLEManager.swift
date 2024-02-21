@@ -409,7 +409,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
 				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
-				
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
@@ -524,7 +523,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				var nowKnown = false
 				
 				// MyInfo from initial connection
-				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+				if context != nil && decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
 					if myInfo != nil {
@@ -660,6 +659,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let traceRouteHop = TraceRouteHopEntity(context: context!)
 							traceRouteHop.time = Date()
 							if hopNode?.hasPositions ?? false {
+								traceRoute?.hasPositions = true
 								let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
 								if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
