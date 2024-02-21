@@ -5,6 +5,7 @@ struct RetryButton: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	let message: MessageEntity
+	let destination: MessageDestination
 	@State var isShowingConfirmation = false
 
 	var body: some View {
@@ -46,6 +47,16 @@ struct RetryButton: View {
 				) {
 					// Best effort, unlikely since we already checked BLE state
 					print("Failed to resend message \(messageID)")
+				} else {
+					switch destination {
+					case .user:
+						break
+					case let .channel(channel):
+						// We must refresh the channel to trigger a view update since its relationship
+						// to messages is via a weak fetched property which is not updated by
+						// `bleManager.sendMessage` unlike the user entity.
+						context.refresh(channel, mergeChanges: true)
+					}
 				}
 			}
 			Button("Cancel", role: .cancel) {}
