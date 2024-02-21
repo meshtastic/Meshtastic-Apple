@@ -532,7 +532,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 					}
-					tryClearExistingChannels()
+					//tryClearExistingChannels()
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {// && !invalidVersion {

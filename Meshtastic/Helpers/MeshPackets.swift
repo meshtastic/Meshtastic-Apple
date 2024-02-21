@@ -154,7 +154,10 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 					return
 				}
 				if mutableChannels.contains(newChannel) {
-					mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+					let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as! ChannelEntity
+					newChannel.mute = oldChannel.mute
+					let index = mutableChannels.index(of: oldChannel as Any)
+					mutableChannels.replaceObject(at: index, with: newChannel)
 				} else {
 					mutableChannels.add(newChannel)
 				}
