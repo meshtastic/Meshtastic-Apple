@@ -41,16 +41,19 @@ struct CannedMessagesConfig: View {
 				ConfigHeader(title: "Canned messages", config: \.cannedMessageConfig, node: node, onAppear: setCannedMessagesValues)
 				
 				Section(header: Text("options")) {
+			
 					Toggle(isOn: $enabled) {
 
 						Label("enabled", systemImage: "list.bullet.rectangle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $sendBell) {
 
 						Label("Send Bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Picker("Configuration Presets", selection: $configPreset ) {
 						ForEach(ConfigPresets.allCases) { cp in
 							Text(cp.description)
@@ -99,42 +102,51 @@ struct CannedMessagesConfig: View {
 				}
 				.disabled(configPreset > 0)
 				Section(header: Text("Inputs")) {
-					Picker("Pin A", selection: $inputbrokerPinA) {
-						ForEach(0..<49) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
+					VStack(alignment: .leading) {
+						Picker("Pin A", selection: $inputbrokerPinA) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("GPIO pin for rotary encoder A port.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("GPIO pin for rotary encoder A port.")
-						.font(.caption)
-					Picker("Pin B", selection: $inputbrokerPinB) {
-						ForEach(0..<49) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
+					VStack(alignment: .leading) {
+						Picker("Pin B", selection: $inputbrokerPinB) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("GPIO pin for rotary encoder B port.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("GPIO pin for rotary encoder B port.")
-						.font(.caption)
-					Picker("Press Pin", selection: $inputbrokerPinPress) {
-						ForEach(0..<49) {
-							if $0 == 0 {
-								Text("unset")
-							} else {
-								Text("Pin \($0)")
+					VStack(alignment: .leading) {
+						Picker("Press Pin", selection: $inputbrokerPinPress) {
+							ForEach(0..<49) {
+								if $0 == 0 {
+									Text("unset")
+								} else {
+									Text("Pin \($0)")
+								}
 							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("GPIO pin for rotary encoder Press port.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("GPIO pin for rotary encoder Press port.")
-						.font(.caption)
 				}
 				.disabled(configPreset > 0)
 				Section(header: Text("Key Mapping")) {

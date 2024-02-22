@@ -34,20 +34,26 @@ struct TelemetryConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
 					Text("How often device metrics are sent out over the mesh. Default is 15 minutes.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
+						.listRowSeparator(.visible)
 					Picker("Sensor Metrics", selection: $environmentUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							Text(ui.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
 					Text("How often sensor metrics are sent out over the mesh. Default is 15 minutes.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				Section(header: Text("Sensor Options")) {
 					Text("Supported I2C Connected sensors will be detected automatically, sensors are BMP280, BME280, BME680, MCP9808, INA219, INA260, LPS22 and SHTC3.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
 					Toggle(isOn: $environmentMeasurementEnabled) {
 						Label("enabled", systemImage: "chart.xyaxis.line")
 					}

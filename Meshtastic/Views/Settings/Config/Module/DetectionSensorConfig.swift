@@ -50,10 +50,9 @@ struct DetectionSensorConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "dot.radiowaves.right")
 						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
-							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
+
 					if enabled {
 						HStack {
 							Picker(selection: $role, label: Text("Role")) {
@@ -73,9 +72,7 @@ struct DetectionSensorConfig: View {
 						Toggle(isOn: $detectionNotificationsEnabled) {
 							Label("Enable Notifications", systemImage: "bell.badge")
 							Text("Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge.")
-								.font(.caption)
 						}
-						.listRowSeparator(.visible)
 					}
 				}
 				if enabled && role == .sensor {
@@ -83,10 +80,9 @@ struct DetectionSensorConfig: View {
 						Toggle(isOn: $sendBell) {
 							Label("Send Bell", systemImage: "bell")
 							Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
+
 						HStack {
 							Label("Name", systemImage: "signature")
 							TextField("Friendly name", text: $name, axis: .vertical)
@@ -106,14 +102,12 @@ struct DetectionSensorConfig: View {
 										}
 									}
 								})
-								.foregroundColor(.gray)
 						}
 						.listRowSeparator(.hidden)
 						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
-							.listRowSeparator(.visible)
-							.offset(y: -10)
+						
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
 							ForEach(0..<49) {
 								if $0 == 0 {
@@ -124,17 +118,16 @@ struct DetectionSensorConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+						
 						Toggle(isOn: $detectionTriggeredHigh) {
 							Label("Detection trigger High", systemImage: "dial.high")
 							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 							Text(" Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
@@ -147,7 +140,7 @@ struct DetectionSensorConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						.listRowSeparator(.hidden)
 						Text("Mininum time between detection broadcasts. Default is 45 seconds.")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
 							.listRowSeparator(.visible)
 						Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
@@ -159,7 +152,7 @@ struct DetectionSensorConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						.listRowSeparator(.hidden)
 						Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
 					}
 				}

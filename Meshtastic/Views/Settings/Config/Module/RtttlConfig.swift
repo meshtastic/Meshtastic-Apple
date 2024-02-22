@@ -46,8 +46,10 @@ struct RtttlConfig: View {
 							.foregroundColor(.gray)
 					}
 					.keyboardType(.default)
+					.listRowSeparator(.hidden)
 					Text("Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rtttlConfig == nil)

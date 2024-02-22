@@ -63,13 +63,13 @@ struct LoRaConfig: View {
 								Text(r.description)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						.fixedSize()
-						
 						Text("The region where you will be using your radios.")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
@@ -86,7 +86,7 @@ struct LoRaConfig: View {
 							.fixedSize()
 							Text("Available modem presets, default is Long Fast.")
 								.foregroundColor(.gray)
-								.font(.caption)
+								.font(.callout)
 						}
 					}
 				}
@@ -135,11 +135,12 @@ struct LoRaConfig: View {
 									.tag($0 == 0 ? 3 : $0)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
 					VStack(alignment: .leading) {
 						HStack {
 							Text("Frequency Slot")
@@ -160,12 +161,14 @@ struct LoRaConfig: View {
 						}
 						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
+					
 					Toggle(isOn: $rxBoostedGain) {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					HStack {
 						Label("Frequency Override", systemImage: "waveform.path.ecg")
 						Spacer()
@@ -174,6 +177,7 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .frequencyOverride)
 					}
+					
 					HStack {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.foregroundColor(.accentColor)

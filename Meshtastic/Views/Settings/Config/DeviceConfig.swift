@@ -39,22 +39,24 @@ struct DeviceConfig: View {
 								Text(dr.name)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
 					VStack(alignment: .leading) {
 						Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
 							ForEach(RebroadcastModes.allCases) { rm in
 								Text(rm.name)
 							}
 						}
-						.pickerStyle(DefaultPickerStyle())
 						Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 3600 {
@@ -63,24 +65,17 @@ struct DeviceConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					VStack(alignment: .leading) {
-						Toggle(isOn: $doubleTapAsButtonPress) {
-							Label("Double Tap as Button", systemImage: "hand.tap")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Toggle(isOn: $doubleTapAsButtonPress) {
+						Label("Double Tap as Button", systemImage: "hand.tap")
 						Text("Treat double tap on supported accelerometers as a user button press.")
-							.foregroundColor(.gray)
-							.font(.caption)
 					}
-					VStack(alignment: .leading) {
-						Toggle(isOn: $isManaged) {
-							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					Toggle(isOn: $isManaged) {
+						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
 						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
-							.foregroundColor(.gray)
-							.font(.caption)
 					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Section(header: Text("Debug")) {
 					Toggle(isOn: $serialEnabled) {

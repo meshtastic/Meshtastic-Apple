@@ -28,6 +28,9 @@
 		DD007BAE2AA4E91200F5FA12 /* MyInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */; };
 		DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */; };
 		DD0D3D222A55CEB10066DB71 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = DD0D3D212A55CEB10066DB71 /* CocoaMQTT */; };
+		DD0E20FC2B87090400F2D100 /* atak.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20F92B87090400F2D100 /* atak.pb.swift */; };
+		DD0E20FD2B87090400F2D100 /* clientonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */; };
+		DD0E20FE2B87090400F2D100 /* paxcount.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
@@ -257,6 +260,9 @@
 		DD007BAD2AA4E91200F5FA12 /* MyInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD007BAF2AA5981000F5FA12 /* NodeInfoEntityExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeInfoEntityExtension.swift; sourceTree = "<group>"; };
 		DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 26.xcdatamodel"; sourceTree = "<group>"; };
+		DD0E20F92B87090400F2D100 /* atak.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = atak.pb.swift; sourceTree = "<group>"; };
+		DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = clientonly.pb.swift; sourceTree = "<group>"; };
+		DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = paxcount.pb.swift; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionPopover.swift; sourceTree = "<group>"; };
@@ -609,6 +615,9 @@
 		DD5E51EF298EE33B00D21B61 /* meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				DD0E20F92B87090400F2D100 /* atak.pb.swift */,
+				DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */,
+				DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */,
 				DD5E51F0298EE33B00D21B61 /* admin.pb.swift */,
 				DD5E51F1298EE33B00D21B61 /* config.pb.swift */,
 				DD5E51F2298EE33B00D21B61 /* xmodem.pb.swift */,
@@ -1185,6 +1194,7 @@
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
+				DD0E20FD2B87090400F2D100 /* clientonly.pb.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
@@ -1258,6 +1268,7 @@
 				DDD43FE32A78C8900083A3E9 /* MqttClientProxyManager.swift in Sources */,
 				DD007BB02AA5981000F5FA12 /* NodeInfoEntityExtension.swift in Sources */,
 				DDDB26422AABF655003AFCB7 /* NodeListItem.swift in Sources */,
+				DD0E20FC2B87090400F2D100 /* atak.pb.swift in Sources */,
 				DDDB444629F8A96500EE2349 /* Character.swift in Sources */,
 				DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */,
 				DDB6ABDB28B0AC6000384BA1 /* DistanceText.swift in Sources */,
@@ -1267,6 +1278,7 @@
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
 				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
+				DD0E20FE2B87090400F2D100 /* paxcount.pb.swift in Sources */,
 				DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
 				DD964FC42974767D007C176F /* MapViewFitExtension.swift in Sources */,

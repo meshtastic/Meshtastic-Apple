@@ -28,20 +28,18 @@ struct PowerConfig: View {
 			ConfigHeader(title: "Power", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				
 				Toggle(isOn: $isPowerSaving) {
-					Text("power.solar")
+					Label("Power Saving", systemImage: "bolt")
+					Text("For use when powered from a low-current source in addition to the battery, minimizes power consumption as much as possible even if the deviced appears to be powered.")
+
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("For use when powered from a low-current source in addition to the battery, minimizes power consumption as much as possible even if the deviced appears to be powered.")
-					.foregroundColor(.gray)
-					.font(.caption)
 
 				Toggle(isOn: $shutdownOnPowerLoss) {
-					Text("power.shutdown.on.power.loss")
+					Label("power.shutdown.on.power.loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
+				
 				if shutdownOnPowerLoss {
 					Picker("power.shutdown.after.secs", selection: $shutdownAfterSecs) {
 						ForEach(PowerIntervals.allCases) { at in

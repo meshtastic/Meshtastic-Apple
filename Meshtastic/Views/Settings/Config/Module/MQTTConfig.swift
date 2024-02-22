@@ -44,45 +44,41 @@ struct MQTTConfig: View {
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
-						
 						Label("enabled", systemImage: "dot.radiowaves.right")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $proxyToClientEnabled) {
 						
 						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
+						Text("If both MQTT and the client proxy are enabled your mobile device will utilize an available network connection to connect to the specified MQTT server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					if enabled && proxyToClientEnabled {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
-					Text("If both MQTT and the client proxy are enabled your mobile device will utilize an available network connection to connect to the specified MQTT server.")
-						.font(.caption2)
 					
 					Toggle(isOn: $encryptionEnabled) {
-						
 						Label("Encryption Enabled", systemImage: "lock.icloud")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $jsonEnabled) {
-						
 						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
+						Text("JSON mode is a limited, unencrypted MQTT output that can crash your node it should not be enabled unless you are locally integrating with home assistant")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("JSON mode is a limited, unencrypted MQTT output that can crash your node it should not be enabled unless you are locally integrating with home assistant")
-						.font(.caption2)
 					
 					Toggle(isOn: $tlsEnabled) {
-						
 						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+						Text("Your MQTT Server must support TLS.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Your MQTT Server must support TLS.")
-						.font(.caption2)
+
 				}
 				Section(header: Text("Custom Server")) {
 					HStack {
@@ -103,7 +99,6 @@ struct MQTTConfig: View {
 								}
 								hasChanges = true
 							})
-							.foregroundColor(.gray)
 							.keyboardType(.default)
 					}
 					.autocorrectionDisabled()
@@ -183,7 +178,8 @@ struct MQTTConfig: View {
 					.scrollDismissesKeyboard(.interactively)
 					.disableAutocorrection(true)
 					Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
-						.font(.caption2)
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				Text("You can set uplink and downlink for each channel.")
 					.font(.callout)

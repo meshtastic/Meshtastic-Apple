@@ -31,15 +31,13 @@ struct NetworkConfig: View {
 				
 				if (node != nil && node?.metadata?.hasWifi ?? false) {
 					Section(header: Text("WiFi Options")) {
-						VStack(alignment: .leading) {
-							Toggle(isOn: $wifiEnabled) {
-								Label("enabled", systemImage: "wifi")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						
+						Toggle(isOn: $wifiEnabled) {
+							Label("enabled", systemImage: "wifi")
 							Text("Enabling WiFi will disable the bluetooth connection to the app.")
-								.foregroundColor(.gray)
-								.font(.caption)
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						
 						HStack {
 							Label("ssid", systemImage: "network")
 							TextField("ssid", text: $wifiSsid)
@@ -86,16 +84,11 @@ struct NetworkConfig: View {
 				}
 				if (node != nil && node?.metadata?.hasEthernet ?? false) {
 					Section(header: Text("Ethernet Options")) {
-						
-						VStack(alignment: .leading) {
-							Toggle(isOn: $ethEnabled) {
-								Label("enabled", systemImage: "network")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Toggle(isOn: $ethEnabled) {
+							Label("enabled", systemImage: "network")
 							Text("Enabling Ethernet will disable the bluetooth connection to the app.")
-								.foregroundColor(.gray)
-								.font(.caption)
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 			}

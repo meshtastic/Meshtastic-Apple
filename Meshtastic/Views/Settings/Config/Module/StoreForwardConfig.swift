@@ -38,7 +38,6 @@ struct StoreForwardConfig: View {
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "envelope.arrow.triangle.branch")
 						Text("Enables the store and forward module. Store and forward must be enabled on both client and router devices.")
-							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
@@ -54,14 +53,16 @@ struct StoreForwardConfig: View {
 							.padding(.top, 5)
 							.padding(.bottom, 5)
 						}
-					}
-					VStack {
-						if isRouter {
-							Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
-								.font(.caption)
-						} else {
-							Text("Store and forward clients can request history from routers on the network.")
-								.font(.caption)
+						VStack {
+							if isRouter {
+								Text("Store and forward router devices must also be in the router or router client device role and requires a ESP32 device with PSRAM.")
+									.foregroundColor(.gray)
+									.font(.callout)
+							} else {
+								Text("Store and forward clients can request history from routers on the network.")
+									.foregroundColor(.gray)
+									.font(.callout)
+							}
 						}
 					}
 				}

@@ -38,30 +38,33 @@ struct ExternalNotificationConfig: View {
 				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
 
 				Section(header: Text("options")) {
+					
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $alertBell) {
 						Label("Alert when receiving a bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $alertMessage) {
 						Label("Alert when receiving a message", systemImage: "message")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $usePWM) {
 						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
+						Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
-						.font(.caption)
+					
 					Toggle(isOn: $useI2SAsBuzzer) {
 						Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
+						Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
-						.font(.caption)
 				}
 				Section(header: Text("Advanced GPIO Options")) {
 					Section(header: Text("Primary GPIO")
@@ -70,10 +73,10 @@ struct ExternalNotificationConfig: View {
 						.textCase(.uppercase)) {
 							Toggle(isOn: $active) {
 								Label("Active", systemImage: "togglepower")
+								Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
-								.font(.caption)
+							
 							Picker("Output pin GPIO", selection: $output) {
 								ForEach(0..<49) {
 									if $0 == 0 {
@@ -84,22 +87,30 @@ struct ExternalNotificationConfig: View {
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.visible)
+							
 							Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
 								ForEach(OutputIntervals.allCases) { oi in
 									Text(oi.description)
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.hidden)
 							Text("When using in GPIO mode, keep the output on for this long. ")
-								.font(.caption)
+								.foregroundColor(.gray)
+								.font(.callout)
+								.listRowSeparator(.visible)
+							
 							Picker("Nag timeout", selection: $nagTimeout ) {
 								ForEach(OutputIntervals.allCases) { oi in
 									Text(oi.description)
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.hidden)
 							Text("Specifies how long the monitored GPIO should output.")
-								.font(.caption)
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
 					
 					Section(header: Text("Optional GPIO")

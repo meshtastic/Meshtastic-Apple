@@ -26,8 +26,6 @@ struct SerialConfig: View {
 	@State var overrideConsoleSerialPort = false
 	@State var mode = 0
 	
-
-
 	var body: some View {
 		VStack {
 			Form {
@@ -36,18 +34,15 @@ struct SerialConfig: View {
 				Section(header: Text("options")) {
 
 					Toggle(isOn: $enabled) {
-
 						Label("enabled", systemImage: "terminal")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $echo) {
-
 						Label("echo", systemImage: "repeat")
+						Text("If set, any packets you send will be echoed back to your device.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("If set, any packets you send will be echoed back to your device.")
-						.font(.caption)
 
 					Picker("Baud", selection: $baudRate ) {
 						ForEach(SerialBaudRates.allCases) { sbr in
@@ -55,15 +50,17 @@ struct SerialConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-
+					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
 					Picker("timeout", selection: $timeout ) {
 						ForEach(SerialTimeoutIntervals.allCases) { sti in
 							Text(sti.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
 					Text("The amount of time to wait before we consider your packet as done.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
 
 					Picker("mode", selection: $mode ) {
 						ForEach(SerialModeTypes.allCases) { smt in
@@ -84,6 +81,7 @@ struct SerialConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.visible)
 
 					Picker("Transmit data (txd) GPIO pin", selection: $txd) {
 						ForEach(0..<49) {
@@ -95,8 +93,10 @@ struct SerialConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
 					Text("Set the GPIO pins for RXD and TXD.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.serialConfig == nil)

@@ -68,7 +68,7 @@ struct UserConfig: View {
 						}
 						Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 						
 					}
 					VStack(alignment: .leading) {
@@ -93,7 +93,7 @@ struct UserConfig: View {
 						.disableAutocorrection(true)
 						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
-							.font(.caption)
+							.font(.callout)
 					}
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {

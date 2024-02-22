@@ -37,43 +37,29 @@ struct DisplayConfig: View {
 							Text(dm.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
+					
 					Text("Override automatic OLED screen detection.")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
-				VStack(alignment: .leading) {
-					
-					Toggle(isOn: $compassNorthTop) {
-						
-						Label("Always point north", systemImage: "location.north.circle")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				.pickerStyle(DefaultPickerStyle())
+				Toggle(isOn: $compassNorthTop) {
+					Label("Always point north", systemImage: "location.north.circle")
 					Text("The compass heading on the screen outside of the circle will always point north.")
-						.foregroundColor(.gray)
-						.font(.caption)
 				}
-				
-				VStack(alignment: .leading) {
-					Toggle(isOn: $wakeOnTapOrMotion) {
-						Label("Wake Screen on tap or motion", systemImage: "gyroscope")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Requires that there be an accelerometer on your device.")
-						.foregroundColor(.gray)
-						.font(.caption)
-				}
-				
-				VStack(alignment: .leading) {
-					Toggle(isOn: $flipScreen) {
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-						Label("Flip Screen", systemImage: "pip.swap")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Flip screen vertically")
-						.foregroundColor(.gray)
-						.font(.caption)
+				Toggle(isOn: $wakeOnTapOrMotion) {
+					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
+					Text("Requires that there be an accelerometer on your device.")
 				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				
+				Toggle(isOn: $flipScreen) {
+					Label("Flip Screen", systemImage: "pip.swap")
+					Text("Flip screen vertically")
+				}
+				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				
 				VStack(alignment: .leading) {
 					Picker("OLED Type", selection: $oledType ) {
@@ -81,11 +67,11 @@ struct DisplayConfig: View {
 							Text(ot.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("Override automatic OLED screen detection.")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
 			}
 			Section(header: Text("Timing & Format")) {
 				VStack(alignment: .leading) {
@@ -94,45 +80,48 @@ struct DisplayConfig: View {
 							Text(soi.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("How long the screen remains on after the user button is pressed or messages are received.")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
+				
 				VStack(alignment: .leading) {
 					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
 						ForEach(ScreenCarouselIntervals.allCases) { sci in
 							Text(sci.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
+					
 					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
+				
 				VStack(alignment: .leading) {
 					Picker("GPS Format", selection: $gpsFormat ) {
 						ForEach(GpsFormats.allCases) { lu in
 							Text(lu.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
-					
 					Text("The format used to display GPS coordinates on the device screen.")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
+				
 				VStack(alignment: .leading) {
 					Picker("Display Units", selection: $units ) {
 						ForEach(Units.allCases) { un in
 							Text(un.description)
 						}
 					}
-					.pickerStyle(DefaultPickerStyle())
 					Text("Units displayed on the device screen")
 						.foregroundColor(.gray)
-						.font(.caption)
+						.font(.callout)
 				}
+				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)

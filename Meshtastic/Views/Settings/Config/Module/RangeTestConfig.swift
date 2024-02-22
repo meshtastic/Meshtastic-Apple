@@ -27,25 +27,28 @@ struct RangeTestConfig: View {
 				
 				Section(header: Text("options")) {
 					Toggle(isOn: $enabled) {
-
 						Label("enabled", systemImage: "figure.walk")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
 					Picker("Sender Interval", selection: $sender ) {
 						ForEach(SenderIntervals.allCases) { sci in
 							Text(sci.description)
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
 					Text("This device will send out range test messages on the selected interval.")
-						.font(.caption)
+						.foregroundColor(.gray)
+						.font(.callout)
+					
 					Toggle(isOn: $save) {
 						Label("save", systemImage: "square.and.arrow.down.fill")
+						Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(!(node != nil && node?.metadata?.hasWifi ?? false))
-					Text("Saves a CSV with the range test message details, currently only available on ESP32 devices with a web server.")
-						.font(.caption)
+					
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.rangeTestConfig == nil)
