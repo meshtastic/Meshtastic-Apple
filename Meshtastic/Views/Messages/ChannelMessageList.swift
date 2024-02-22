@@ -64,7 +64,7 @@ struct ChannelMessageList: View {
 										}
 
 										if currentUser && message.canRetry {
-											RetryButton(message: message)
+											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
 
