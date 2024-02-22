@@ -31,83 +31,108 @@ struct DisplayConfig: View {
 			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
 
 			Section(header: Text("Device Screen")) {
-				Picker("Display Mode", selection: $displayMode ) {
-					ForEach(DisplayModes.allCases) { dm in
-						Text(dm.description)
+				VStack(alignment: .leading) {
+					Picker("Display Mode", selection: $displayMode ) {
+						ForEach(DisplayModes.allCases) { dm in
+							Text(dm.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Override automatic OLED screen detection.")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Override automatic OLED screen detection.")
-					.font(.caption)
-
-				Toggle(isOn: $compassNorthTop) {
-
-					Label("Always point north", systemImage: "location.north.circle")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("The compass heading on the screen outside of the circle will always point north.")
-					.font(.caption)
-				Toggle(isOn: $wakeOnTapOrMotion) {
-					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Requires that there be an accelerometer on your device.")
-					.font(.caption)
-				Toggle(isOn: $flipScreen) {
-
-					Label("Flip Screen", systemImage: "pip.swap")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Flip screen vertically")
-					.font(.caption)
-
-				Picker("OLED Type", selection: $oledType ) {
-					ForEach(OledTypes.allCases) { ot in
-						Text(ot.description)
+				VStack(alignment: .leading) {
+					
+					Toggle(isOn: $compassNorthTop) {
+						
+						Label("Always point north", systemImage: "location.north.circle")
 					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("The compass heading on the screen outside of the circle will always point north.")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Override automatic OLED screen detection.")
-					.font(.caption)
+				
+				VStack(alignment: .leading) {
+					Toggle(isOn: $wakeOnTapOrMotion) {
+						Label("Wake Screen on tap or motion", systemImage: "gyroscope")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Requires that there be an accelerometer on your device.")
+						.foregroundColor(.gray)
+						.font(.caption)
+				}
+				
+				VStack(alignment: .leading) {
+					Toggle(isOn: $flipScreen) {
+
+						Label("Flip Screen", systemImage: "pip.swap")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Flip screen vertically")
+						.foregroundColor(.gray)
+						.font(.caption)
+				}
+				
+				VStack(alignment: .leading) {
+					Picker("OLED Type", selection: $oledType ) {
+						ForEach(OledTypes.allCases) { ot in
+							Text(ot.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Override automatic OLED screen detection.")
+						.foregroundColor(.gray)
+						.font(.caption)
+				}
 			}
 			Section(header: Text("Timing & Format")) {
-				Picker("Screen on for", selection: $screenOnSeconds ) {
-					ForEach(ScreenOnIntervals.allCases) { soi in
-						Text(soi.description)
+				VStack(alignment: .leading) {
+					Picker("Screen on for", selection: $screenOnSeconds ) {
+						ForEach(ScreenOnIntervals.allCases) { soi in
+							Text(soi.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("How long the screen remains on after the user button is pressed or messages are received.")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("How long the screen remains on after the user button is pressed or messages are received.")
-					.font(.caption)
-
-				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
-					ForEach(ScreenCarouselIntervals.allCases) { sci in
-						Text(sci.description)
+				VStack(alignment: .leading) {
+					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
+						ForEach(ScreenCarouselIntervals.allCases) { sci in
+							Text(sci.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
-					.font(.caption)
-
-				Picker("GPS Format", selection: $gpsFormat ) {
-					ForEach(GpsFormats.allCases) { lu in
-						Text(lu.description)
+				VStack(alignment: .leading) {
+					Picker("GPS Format", selection: $gpsFormat ) {
+						ForEach(GpsFormats.allCases) { lu in
+							Text(lu.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
+					Text("The format used to display GPS coordinates on the device screen.")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-
-				Text("The format used to display GPS coordinates on the device screen.")
-					.font(.caption)
-					.listRowSeparator(.visible)
-				
-				Picker("Display Units", selection: $units ) {
-					ForEach(Units.allCases) { un in
-						Text(un.description)
+				VStack(alignment: .leading) {
+					Picker("Display Units", selection: $units ) {
+						ForEach(Units.allCases) { un in
+							Text(un.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					Text("Units displayed on the device screen")
+						.foregroundColor(.gray)
+						.font(.caption)
 				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Units displayed on the device screen")
-					.font(.caption)
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)

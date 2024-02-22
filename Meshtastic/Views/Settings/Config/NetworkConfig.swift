@@ -31,10 +31,15 @@ struct NetworkConfig: View {
 				
 				if (node != nil && node?.metadata?.hasWifi ?? false) {
 					Section(header: Text("WiFi Options")) {
-						Toggle(isOn: $wifiEnabled) {
-							Label("enabled", systemImage: "wifi")
+						VStack(alignment: .leading) {
+							Toggle(isOn: $wifiEnabled) {
+								Label("enabled", systemImage: "wifi")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Text("Enabling WiFi will disable the bluetooth connection to the app.")
+								.foregroundColor(.gray)
+								.font(.caption)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						HStack {
 							Label("ssid", systemImage: "network")
 							TextField("ssid", text: $wifiSsid)
@@ -77,18 +82,20 @@ struct NetworkConfig: View {
 								.foregroundColor(.gray)
 						}
 						.keyboardType(.default)
-						Text("Enabling WiFi will disable the bluetooth connection to the app.")
-							.font(.callout)
 					}
 				}
 				if (node != nil && node?.metadata?.hasEthernet ?? false) {
 					Section(header: Text("Ethernet Options")) {
-						Toggle(isOn: $ethEnabled) {
-							Label("enabled", systemImage: "network")
+						
+						VStack(alignment: .leading) {
+							Toggle(isOn: $ethEnabled) {
+								Label("enabled", systemImage: "network")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Text("Enabling Ethernet will disable the bluetooth connection to the app.")
+								.foregroundColor(.gray)
+								.font(.caption)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("Enabling Ethernet will disable the bluetooth connection to the app.")
-							.font(.callout)
 					}
 				}
 			}

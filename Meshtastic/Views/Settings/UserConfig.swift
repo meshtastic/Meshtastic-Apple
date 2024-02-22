@@ -42,53 +42,59 @@ struct UserConfig: View {
 		VStack {
 			Form {
 				Section(header: Text("User Details")) {
-					HStack {
-						Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
+					
+					VStack(alignment: .leading) {
+						HStack {
+							Label(isLicensed ? "Call Sign" : "Long Name", systemImage: "person.crop.rectangle.fill")
+							
+							TextField("Long Name", text: $longName)
+								.onChange(of: longName, perform: { _ in
+									let totalBytes = longName.utf8.count
+									// Only mess with the value if it is too big
+									if totalBytes > (isLicensed ? 6 : 36) {
+										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
+										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+											// Set the longName back to the last place where it was the right size
+											longName = maxBytesString
+										}
+									}
+								})
+						}
+						.keyboardType(.default)
+						.disableAutocorrection(true)
+						if longName.isEmpty && isLicensed {
+							Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
+								.foregroundColor(.red)
+						}
+						Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
+							.foregroundColor(.gray)
+							.font(.caption)
 						
-						TextField("Long Name", text: $longName)
-							.onChange(of: longName, perform: { _ in
-								let totalBytes = longName.utf8.count
-								// Only mess with the value if it is too big
-								if totalBytes > (isLicensed ? 6 : 36) {
-									let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the longName back to the last place where it was the right size
-										longName = maxBytesString
+					}
+					VStack(alignment: .leading) {
+						HStack {
+							Label("Short Name", systemImage: "circlebadge.fill")
+							TextField("Short Name", text: $shortName)
+								.foregroundColor(.gray)
+								.onChange(of: shortName, perform: { _ in
+									let totalBytes = shortName.utf8.count
+									// Only mess with the value if it is too big
+									if totalBytes > 4 {
+										let firstNBytes = Data(shortName.utf8.prefix(4))
+										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+											// Set the shortName back to the last place where it was the right size
+											shortName = maxBytesString
+										}
 									}
-								}
-							})
-					}
-					.keyboardType(.default)
-					.disableAutocorrection(true)
-					if longName.isEmpty && isLicensed {
-						Label("Call Sign must not be empty", systemImage: "exclamationmark.square")
-							.foregroundColor(.red)
-					}
-					Text("\(String(isLicensed ? "Call Sign" : "Long Name")) can be up to \(isLicensed ? "8" : "36") bytes long.")
-							.font(.caption2)
-
-					HStack {
-						Label("Short Name", systemImage: "circlebadge.fill")
-						TextField("Short Name", text: $shortName)
+								})
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.disableAutocorrection(true)
+						Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 							.foregroundColor(.gray)
-							.onChange(of: shortName, perform: { _ in
-								let totalBytes = shortName.utf8.count
-								// Only mess with the value if it is too big
-								if totalBytes > 4 {
-									let firstNBytes = Data(shortName.utf8.prefix(4))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the shortName back to the last place where it was the right size
-										shortName = maxBytesString
-									}
-								}
-							})
-							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.keyboardType(.default)
-					.disableAutocorrection(true)
-					Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
-						.font(.caption2)
-
 					// Only manage ham mode for the locally connected node
 					if node?.num ?? 0 > 0 && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
 						Toggle(isOn: $isLicensed) {

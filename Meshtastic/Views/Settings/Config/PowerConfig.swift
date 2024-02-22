@@ -17,7 +17,9 @@ struct PowerConfig: View {
 	@State private var waitBluetoothSecs = 60
 	@State private var lsSecs = 300
 	@State private var minWakeSecs = 10
-
+	
+	@State private var currentDevice: DeviceHardware?
+	
 	@State private var hasChanges: Bool = false
 	@FocusState private var isFocused: Bool
 
@@ -25,14 +27,16 @@ struct PowerConfig: View {
 		Form {
 			ConfigHeader(title: "Power", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
-			Section(header: Text("power")) {
+			Section {
+				
 				Toggle(isOn: $isPowerSaving) {
-					Text("power.save")
+					Text("power.solar")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-			}
+				Text("For use when powered from a low-current source in addition to the battery, minimizes power consumption as much as possible even if the deviced appears to be powered.")
+					.foregroundColor(.gray)
+					.font(.caption)
 
-			Section {
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Text("power.shutdown.on.power.loss")
 				}
@@ -47,53 +51,56 @@ struct PowerConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			} header: {
-				Text("Shutdown")
+				Text("power")
 			}
+			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
+				
+				Section {
+					Toggle(isOn: $adcOverride) {
+						Text("power.adc.override")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
-			Section {
-				Toggle(isOn: $adcOverride) {
-					Text("power.adc.override")
-				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
-				if adcOverride {
-					HStack {
-						Text("power.adc.multiplier")
-						Spacer()
-						FloatField(title: "power.adc.multiplier", number: $adcMultiplier) {
-							(2.0 ... 6.0).contains($0)
+					if adcOverride {
+						HStack {
+							Text("power.adc.multiplier")
+							Spacer()
+							FloatField(title: "power.adc.multiplier", number: $adcMultiplier) {
+								(2.0 ... 6.0).contains($0)
+							}
+							.focused($isFocused)
+							Spacer()
 						}
-						.focused($isFocused)
-						Spacer()
 					}
+				} header: {
+					Text("Battery")
 				}
-			} header: {
-				Text("Battery")
-			}
-
-			Section {
-				Picker("power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-					ForEach(PowerIntervals.allCases) {
-						Text($0.description)
+			
+				Section {
+					Picker("power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
 					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-
-				Picker("power.ls.secs", selection: $lsSecs) {
-					ForEach(PowerIntervals.allCases) {
-						Text($0.description)
+					.pickerStyle(DefaultPickerStyle())
+					
+					Picker("power.ls.secs", selection: $lsSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
 					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-
-				Picker("power.min.wake.secs", selection: $minWakeSecs) {
-					ForEach(PowerIntervals.allCases) {
-						Text($0.description)
+					.pickerStyle(DefaultPickerStyle())
+					
+					Picker("power.min.wake.secs", selection: $minWakeSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
 					}
+					.pickerStyle(DefaultPickerStyle())
+					
+				} header: {
+					Text("Sleep")
 				}
-				.pickerStyle(DefaultPickerStyle())
-			} header: {
-				Text("Sleep")
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
@@ -117,6 +124,16 @@ struct PowerConfig: View {
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
+			}
+			
+			Api().loadDeviceHardwareData { (hw) in
+				for device in hw {
+					let currentHardware = node?.user?.hwModel ?? "UNSET"
+					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")
+					if deviceString == currentHardware  {
+						currentDevice = device
+					}
+				}
 			}
 			setPowerValues()
 

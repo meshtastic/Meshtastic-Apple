@@ -79,44 +79,55 @@ struct PositionConfig: View {
 
 				Section(header: Text("Position Packet")) {
 
-					Picker("Interval", selection: $positionBroadcastSeconds) {
-						ForEach(UpdateIntervals.allCases) { at in
-							if at.rawValue >= 900 {
-								Text(at.description)
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("The maximum interval that can elapse without a node broadcasting a position")
-						.font(.caption)
-					Toggle(isOn: $smartPositionEnabled) {
-						Label("Smart Position", systemImage: "location.fill.viewfinder")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if smartPositionEnabled {
-						Picker("Minimum Broadcast Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+					VStack(alignment: .leading) {
+						Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
 							ForEach(UpdateIntervals.allCases) { at in
-								Text(at.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
-							.font(.caption)
-						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-							ForEach(10..<151) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									if $0.isMultiple(of: 5) {
-										Text("\($0)")
-											.tag($0)
-									}
+								if at.rawValue >= 900 {
+									Text(at.description)
 								}
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Text("The minimum distance change in meters to be considered for a smart position broadcast.")
-						.font(.caption)
+						Text("The maximum interval that can elapse without a node broadcasting a position")
+							.foregroundColor(.gray)
+							.font(.caption)
+					}
+					
+					Toggle(isOn: $smartPositionEnabled) {
+						Label("Smart Position", systemImage: "brain")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					if smartPositionEnabled {
+						VStack(alignment: .leading) {
+							Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+								ForEach(UpdateIntervals.allCases) { at in
+									Text(at.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
+								.foregroundColor(.gray)
+								.font(.caption)
+						}
+						VStack(alignment: .leading) {
+							Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
+								ForEach(10..<151) {
+									if $0 == 0 {
+										Text("unset")
+									} else {
+										if $0.isMultiple(of: 5) {
+											Text("\($0)")
+												.tag($0)
+										}
+									}
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("The minimum distance change in meters to be considered for a smart position broadcast.")
+								.foregroundColor(.gray)
+								.font(.caption)
+						}
 					}
 				}
 				Section(header: Text("Device GPS")) {
@@ -131,27 +142,33 @@ struct PositionConfig: View {
 					.padding(.bottom, 5)
 					
 					if gpsMode == 1 {
-						Picker("Update Interval", selection: $gpsUpdateInterval) {
-							ForEach(GpsUpdateIntervals.allCases) { ui in
-								Text(ui.description)
+						VStack(alignment: .leading) {
+							Picker("Update Interval", selection: $gpsUpdateInterval) {
+								ForEach(GpsUpdateIntervals.allCases) { ui in
+									Text(ui.description)
+								}
 							}
+							Text("How often should we try to get a GPS position.")
+								.foregroundColor(.gray)
+								.font(.caption)
 						}
-						Text("How often should we try to get a GPS position.")
-							.font(.caption)
 					} else {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
+						VStack(alignment: .leading) {
+							Toggle(isOn: $fixedPosition) {
+								Label("Fixed Position", systemImage: "location.square.fill")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
+								.foregroundColor(.gray)
+								.font(.caption)
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
-							.font(.caption)
 					}
 				}
 				Section(header: Text("Position Flags")) {
 
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
+						.foregroundColor(.gray)
 						.font(.caption)
-						.listRowSeparator(.visible)
 
 					Toggle(isOn: $includeAltitude) {
 						Label("Altitude", systemImage: "arrow.up")

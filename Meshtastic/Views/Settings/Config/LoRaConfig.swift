@@ -57,32 +57,37 @@ struct LoRaConfig: View {
 
 				Section(header: Text("Options")) {
 
-					Picker("Region", selection: $region ) {
-						ForEach(RegionCodes.allCases) { r in
-							Text(r.description)
+					VStack(alignment: .leading) {
+						Picker("Region", selection: $region ) {
+							ForEach(RegionCodes.allCases) { r in
+								Text(r.description)
+							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						.fixedSize()
+						
+						Text("The region where you will be using your radios.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.fixedSize()
-
-					Text("The region where you will be using your radios.")
-						.font(.caption)
-
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					if usePreset {
-						Picker("Presets", selection: $modemPreset ) {
-							ForEach(ModemPresets.allCases) { m in
-								Text(m.description)
+						VStack(alignment: .leading) {
+							Picker("Presets", selection: $modemPreset ) {
+								ForEach(ModemPresets.allCases) { m in
+									Text(m.description)
+								}
 							}
+							.pickerStyle(DefaultPickerStyle())
+							.fixedSize()
+							Text("Available modem presets, default is Long Fast.")
+								.foregroundColor(.gray)
+								.font(.caption)
 						}
-						.pickerStyle(DefaultPickerStyle())
-						.fixedSize()
-						Text("Available modem presets, default is Long Fast.")
-							.font(.caption)
 					}
 				}
 				Section(header: Text("Advanced")) {
@@ -123,36 +128,40 @@ struct LoRaConfig: View {
 							 }
 						 }
 					}
-
-					Picker("Number of hops", selection: $hopLimit) {
-						ForEach(1..<8) {
-							Text("\($0)")
-								.tag($0 == 0 ? 3 : $0)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
-						.font(.caption)
-
-					HStack {
-						Text("Frequency Slot")
-							.fixedSize()
-						TextField("Frequency Slot", value: $channelNum, formatter: formatter)
-							.toolbar {
-								ToolbarItemGroup(placement: .keyboard) {
-									Button("dismiss.keyboard") {
-										focusedField = nil
-									}
-									.font(.subheadline)
-								}
+					VStack(alignment: .leading) {
+						Picker("Number of hops", selection: $hopLimit) {
+							ForEach(1..<8) {
+								Text("\($0)")
+									.tag($0 == 0 ? 3 : $0)
 							}
-							.keyboardType(.decimalPad)
-							.scrollDismissesKeyboard(.immediately)
-							.focused($focusedField, equals: .channelNum)
-							.disabled(overrideFrequency > 0.0)
+						}
+						.pickerStyle(DefaultPickerStyle())
+						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
-						.font(.caption)
+					VStack(alignment: .leading) {
+						HStack {
+							Text("Frequency Slot")
+								.fixedSize()
+							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
+								.toolbar {
+									ToolbarItemGroup(placement: .keyboard) {
+										Button("dismiss.keyboard") {
+											focusedField = nil
+										}
+										.font(.subheadline)
+									}
+								}
+								.keyboardType(.decimalPad)
+								.scrollDismissesKeyboard(.immediately)
+								.focused($focusedField, equals: .channelNum)
+								.disabled(overrideFrequency > 0.0)
+						}
+						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
+							.foregroundColor(.gray)
+							.font(.caption)
+					}
 					Toggle(isOn: $rxBoostedGain) {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}

@@ -33,26 +33,28 @@ struct DeviceConfig: View {
 				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
 
 				Section(header: Text("options")) {
-					Picker("Device Role", selection: $deviceRole ) {
-						ForEach(DeviceRoles.allCases) { dr in
-							Text(dr.name)
+					VStack(alignment: .leading) {
+						Picker("Device Role", selection: $deviceRole ) {
+							ForEach(DeviceRoles.allCases) { dr in
+								Text(dr.name)
+							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
-						.foregroundColor(.gray)
-						.font(.caption)
-					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
-						ForEach(RebroadcastModes.allCases) { rm in
-							Text(rm.name)
+					VStack(alignment: .leading) {
+						Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
+							ForEach(RebroadcastModes.allCases) { rm in
+								Text(rm.name)
+							}
 						}
+						.pickerStyle(DefaultPickerStyle())
+						Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
-						.foregroundColor(.gray)
-						.font(.caption)
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 3600 {
@@ -61,20 +63,24 @@ struct DeviceConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					Toggle(isOn: $doubleTapAsButtonPress) {
-						Label("Double Tap as Button", systemImage: "hand.tap")
+					VStack(alignment: .leading) {
+						Toggle(isOn: $doubleTapAsButtonPress) {
+							Label("Double Tap as Button", systemImage: "hand.tap")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("Treat double tap on supported accelerometers as a user button press.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Treat double tap on supported accelerometers as a user button press.")
-						.font(.caption)
-
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+					VStack(alignment: .leading) {
+						Toggle(isOn: $isManaged) {
+							Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
+							.foregroundColor(.gray)
+							.font(.caption)
 					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
-						.font(.caption)
 				}
 				Section(header: Text("Debug")) {
 					Toggle(isOn: $serialEnabled) {
