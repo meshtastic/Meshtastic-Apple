@@ -129,7 +129,7 @@ struct Settings: View {
 					Section("radio.configuration") {
 						if node != nil && node?.loRaConfig != nil {
 							let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-							if rc?.dutyCycle ?? 0 < 1 {
+							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100  {
 								
 								Label {
 									Text("Hourly Duty Cycle")
@@ -144,7 +144,6 @@ struct Settings: View {
 								Text("Limit all periodic broadcasts intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
 									.font(.caption2)
 									.foregroundColor(.gray)
-									
 							}
 						}
 						NavigationLink {

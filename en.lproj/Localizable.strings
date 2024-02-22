@@ -67,6 +67,7 @@
 "detection.sensor.log"="Detection Sensor Log";
 "device"="Device";
 "device.config"="Device Config";
+"device.configuration"="Device Configuration";
 "device.metrics.delete"="Delete all device metrics?";
 "device.metrics.log"="Device Metrics Log";
 "device.role.client"="App connected or stand alone messaging device.";

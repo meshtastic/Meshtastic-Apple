@@ -65,6 +65,7 @@
 "detection.sensor"="Detection Sensor";
 "device"="Gerät";
 "device.config"="Gerätekonfiguration";
+"device.configuration"="Device Configuration";
 "device.metrics.delete"="Delete all device metrics?";
 "device.metrics.log"="Device Metrics Log";
 "device.role.client"="Client (Standard) - Mit App verbundener Client.";

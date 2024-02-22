@@ -65,6 +65,7 @@
 "detection.sensor"="Detection Sensor";
 "device"="电台";
 "device.config"="电台配置";
+"device.configuration"="Device Configuration";
 "device.metrics.delete"="删除所有电台指标?";
 "device.metrics.log"="电台指标日志";
 "device.role.client"="标准模式 - App 可以连接到电台进行收发操作，并且会自动转发 Mesh 网络中其他节点的消息。";

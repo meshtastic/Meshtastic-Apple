@@ -67,6 +67,7 @@
 "detection.sensor.log"="יומן חיישן זיהוי";
 "device"="מכשיר";
 "device.config"="הגדרות מכשיר";
+"device.configuration"="Device Configuration";
 "device.metrics.delete"="נקה יומן מכשיר?";
 "device.metrics.log"="יומן מכשיר";
 "device.role.client"="אפליקציה מחוברת או מכשיר תקשורת עצמאי.";

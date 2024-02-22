@@ -67,6 +67,7 @@
 "detection.sensor"="Detection Sensor";
 "device"="Urządzenie";
 "device.config"="Konfiguracja urządzenia";
+"device.configuration"="Device Configuration";
 "device.metrics.delete"="Usunąć wszystkie metryki urządzenia?";
 "device.metrics.log"="Dziennik metryk urządzenia";
 "device.role.client"="Klient (domyślnie) - Klient połączony z aplikacją.";

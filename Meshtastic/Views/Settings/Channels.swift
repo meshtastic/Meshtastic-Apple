@@ -95,6 +95,7 @@ struct Channels: View {
 				}
 			}
 			.sheet(isPresented: $isPresentingEditView) {
+				
 				#if targetEnvironment(macCatalyst)
 				Text("channel")
 					.font(.largeTitle)
@@ -324,17 +325,16 @@ struct Channels: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([.medium, .large])
+				.presentationDetents([.fraction(0.45), .fraction(0.55), .fraction(0.65)])
+				.presentationDragIndicator(.visible)
 			}
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 
 				Button {
-					let lastChannel = node?.myInfo?.channels?.lastObject as? ChannelEntity
-					
 					let channelIndexes = node?.myInfo?.channels?.compactMap({(ch) -> Int in
 						return (ch as AnyObject).index
 					})
-					var firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
+					let firstChannelIndex = firstMissingChannelIndex(channelIndexes ?? [])
 					channelKeySize = 16
 					let key = generateChannelKey(size: channelKeySize)
 					channelName = ""
