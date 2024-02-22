@@ -38,32 +38,9 @@ struct MQTTConfig: View {
 							.foregroundColor(.red)
 					}
 				}
-					
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-					
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.mqttConfig == nil {
-						Text("MQTT config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setMqttValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+
+				ConfigHeader(title: "MQTT", config: \.mqttConfig, node: node, onAppear: setMqttValues)
+
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
@@ -214,48 +191,28 @@ struct MQTTConfig: View {
 			.scrollDismissesKeyboard(.interactively)
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.mqttConfig == nil)
 		}
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					var mqtt = ModuleConfig.MQTTConfig()
-					mqtt.enabled = self.enabled
-					mqtt.proxyToClientEnabled = self.proxyToClientEnabled
-					mqtt.address = self.address
-					mqtt.username = self.username
-					mqtt.password = self.password
-					mqtt.root = self.root
-					mqtt.encryptionEnabled = self.encryptionEnabled
-					mqtt.jsonEnabled = self.jsonEnabled
-					mqtt.tlsEnabled = self.tlsEnabled
-					let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+				var mqtt = ModuleConfig.MQTTConfig()
+				mqtt.enabled = self.enabled
+				mqtt.proxyToClientEnabled = self.proxyToClientEnabled
+				mqtt.address = self.address
+				mqtt.username = self.username
+				mqtt.password = self.password
+				mqtt.root = self.root
+				mqtt.encryptionEnabled = self.encryptionEnabled
+				mqtt.jsonEnabled = self.jsonEnabled
+				mqtt.tlsEnabled = self.tlsEnabled
+				let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:

@@ -51,6 +51,8 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 		upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -478,6 +480,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse

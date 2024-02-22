@@ -165,3 +165,5 @@ enum UpdateIntervals: Int, CaseIterable, Identifiable {
 		}
 	}
 }
+
+typealias PowerIntervals = UpdateIntervals

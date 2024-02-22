@@ -18,6 +18,9 @@
 		D93068D52B812B700066FBC8 /* MessageDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D42B812B700066FBC8 /* MessageDestination.swift */; };
 		D93068D72B8146690066FBC8 /* MessageText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D62B8146690066FBC8 /* MessageText.swift */; };
 		D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068D82B81509C0066FBC8 /* TapbackResponses.swift */; };
+		D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */; };
+		D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */; };
+		D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93069072B81DF040066FBC8 /* SaveConfigButton.swift */; };
 		D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */; };
 		D9C9839D2B79CFD700BDBE6A /* TextMessageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */; };
 		D9C983A02B79D0E800BDBE6A /* AlertButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */; };
@@ -243,6 +246,10 @@
 		D93068D42B812B700066FBC8 /* MessageDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDestination.swift; sourceTree = "<group>"; };
 		D93068D62B8146690066FBC8 /* MessageText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageText.swift; sourceTree = "<group>"; };
 		D93068D82B81509C0066FBC8 /* TapbackResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapbackResponses.swift; sourceTree = "<group>"; };
+		D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerConfig.swift; sourceTree = "<group>"; };
+		D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigHeader.swift; sourceTree = "<group>"; };
+		D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
+		D93069072B81DF040066FBC8 /* SaveConfigButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveConfigButton.swift; sourceTree = "<group>"; };
 		D9BC22DA2B7DE8E2006A37D5 /* TileDownloadStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileDownloadStatus.swift; sourceTree = "<group>"; };
 		D9C9839C2B79CFD700BDBE6A /* TextMessageSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMessageSize.swift; sourceTree = "<group>"; };
 		D9C9839F2B79D0E800BDBE6A /* AlertButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertButton.swift; sourceTree = "<group>"; };
@@ -636,12 +643,15 @@
 		DD61937A2863876A00E59241 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				D93068DC2B81CA820066FBC8 /* ConfigHeader.swift */,
+				D93069072B81DF040066FBC8 /* SaveConfigButton.swift */,
 				DDB6ABD528AE742000384BA1 /* BluetoothConfig.swift */,
 				DD41582528582E9B009B0E59 /* DeviceConfig.swift */,
 				DD8EBF42285058FA00426DCA /* DisplayConfig.swift */,
 				DD2553562855B02500E55709 /* LoRaConfig.swift */,
 				DD2553582855B52700E55709 /* PositionConfig.swift */,
 				DD8ED9C42898D51F00B3B0AB /* NetworkConfig.swift */,
+				D93068DA2B81C85E0066FBC8 /* PowerConfig.swift */,
 				DD61937B2863877A00E59241 /* Module */,
 			);
 			path = Config;
@@ -1175,6 +1185,7 @@
 				DD457188293C7E63000C49FB /* BLESignalStrengthIndicator.swift in Sources */,
 				DDFEB3BB29900C1200EE7472 /* CurrentConditionsCompact.swift in Sources */,
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
+				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
@@ -1254,6 +1265,7 @@
 				DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */,
 				DD964FC2297272AE007C176F /* WaypointEntityExtension.swift in Sources */,
 				6DA39D8E2A92DC52007E311C /* MeshtasticAppDelegate.swift in Sources */,
+				D93068DB2B81C85E0066FBC8 /* PowerConfig.swift in Sources */,
 				D93068D32B8129510066FBC8 /* MessageContextMenuItems.swift in Sources */,
 				DD5E520A298EE33B00D21B61 /* channel.pb.swift in Sources */,
 				DD8EBF43285058FA00426DCA /* DisplayConfig.swift in Sources */,
@@ -1268,6 +1280,7 @@
 				DDDB444029F79AB000EE2349 /* UserDefaults.swift in Sources */,
 				DDB6ABE028B13AC700384BA1 /* DeviceEnums.swift in Sources */,
 				DD86D40C287F401000BAEB7A /* SaveChannelQRCode.swift in Sources */,
+				D93068DD2B81CA820066FBC8 /* ConfigHeader.swift in Sources */,
 				DDA1C48E28DB49D3009933EC /* ChannelRoles.swift in Sources */,
 				D9BC22DB2B7DE8E2006A37D5 /* TileDownloadStatus.swift in Sources */,
 				DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */,
@@ -1845,6 +1858,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */,
 				DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */,
 				DD23D9AB2B7133F6003F5CBE /* MeshtasticDataModelV 25.xcdatamodel */,
 				DDB234392B5CA9B000DA6FB1 /* MeshtasticDataModelV 24.xcdatamodel */,
@@ -1872,7 +1886,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD05296F2B77F454008E44CD /* MeshtasticDataModelV 26.xcdatamodel */;
+			currentVersion = D93069062B81D8900066FBC8 /* MeshtasticDataModelV 27.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

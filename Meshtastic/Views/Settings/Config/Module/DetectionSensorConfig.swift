@@ -43,31 +43,8 @@ struct DetectionSensorConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-					
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.detectionSensorConfig == nil {
-						Text("Detection Sensor config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setDetectionSensorValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+				ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
+				
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
@@ -191,47 +168,26 @@ struct DetectionSensorConfig: View {
 		.scrollDismissesKeyboard(.interactively)
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
 
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					var dsc = ModuleConfig.DetectionSensorConfig()
-					dsc.enabled = self.enabled
-					dsc.sendBell = self.sendBell
-					dsc.name = self.name
-					dsc.monitorPin = UInt32(self.monitorPin)
-					dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
-					dsc.usePullup = self.usePullup
-					dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
-					dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
-					let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+				var dsc = ModuleConfig.DetectionSensorConfig()
+				dsc.enabled = self.enabled
+				dsc.sendBell = self.sendBell
+				dsc.name = self.name
+				dsc.monitorPin = UInt32(self.monitorPin)
+				dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
+				dsc.usePullup = self.usePullup
+				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
+				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
+				let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("detection.sensor.config")
 		.navigationBarItems(trailing:
