@@ -31,7 +31,7 @@ struct PowerConfig: View {
 				if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 					Toggle(isOn: $isPowerSaving) {
 						Label("Power Saving", systemImage: "bolt")
-						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps.")
+						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -71,32 +71,31 @@ struct PowerConfig: View {
 				} header: {
 					Text("Battery")
 				}
-			
-				Section {
-					Picker("power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Picker("power.ls.secs", selection: $lsSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Picker("power.min.wake.secs", selection: $minWakeSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-				} header: {
-					Text("Sleep")
-				}
+//				Section {
+//					Picker("power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//					Picker("power.ls.secs", selection: $lsSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//					Picker("power.min.wake.secs", selection: $minWakeSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//				} header: {
+//					Text("Sleep")
+//				}
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)

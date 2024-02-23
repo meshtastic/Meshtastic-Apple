@@ -155,8 +155,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
-				if mutableChannels.contains(newChannel) {
-					let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as! ChannelEntity
+				if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
 					newChannel.mute = oldChannel.mute
 					let index = mutableChannels.index(of: oldChannel as Any)
 					mutableChannels.replaceObject(at: index, with: newChannel)
