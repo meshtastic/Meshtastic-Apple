@@ -28,18 +28,17 @@ struct PowerConfig: View {
 			ConfigHeader(title: "Power", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				Toggle(isOn: $isPowerSaving) {
-					Label("Power Saving", systemImage: "bolt")
-					Text("For use when powered from a low-current source in addition to the battery, minimizes power consumption as much as possible even if the deviced appears to be powered.")
-
+				if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
+					Toggle(isOn: $isPowerSaving) {
+						Label("Power Saving", systemImage: "bolt")
+						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps.")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
 				Toggle(isOn: $shutdownOnPowerLoss) {
 					Label("power.shutdown.on.power.loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				
 				if shutdownOnPowerLoss {
 					Picker("power.shutdown.after.secs", selection: $shutdownAfterSecs) {
 						ForEach(PowerIntervals.allCases) { at in
@@ -52,7 +51,6 @@ struct PowerConfig: View {
 				Text("power")
 			}
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
-				
 				Section {
 					Toggle(isOn: $adcOverride) {
 						Text("power.adc.override")

@@ -239,7 +239,7 @@
 "power.config"="Power Config";
 "power.ls.secs"="Light Sleep Interval";
 "power.min.wake.secs"="Minimum Wake Interval";
-"power.solar"="Solar Powered";
+"power.saving"="Power Saving";
 "power.shutdown.on.power.loss"="Shutdown on Power Loss";
 "power.shutdown.after.secs"="After";
 "power.wait.bluetooth.secs"="Bluetooth Off After";
