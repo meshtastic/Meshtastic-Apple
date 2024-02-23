@@ -16,9 +16,7 @@ struct DeviceConfig: View {
 
 	@State private var isPresentingNodeDBResetConfirm = false
 	@State private var isPresentingFactoryResetConfirm = false
-	@State private var isPresentingSaveConfirm = false
 	@State var hasChanges = false
-
 	@State var deviceRole = 0
 	@State var buzzerGPIO = 0
 	@State var buttonGPIO = 0
@@ -32,52 +30,33 @@ struct DeviceConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.deviceConfig == nil {
-						Text("Device config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setDeviceValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+				ConfigHeader(title: "Device", config: \.deviceConfig, node: node, onAppear: setDeviceValues)
+
 				Section(header: Text("options")) {
-					Picker("Device Role", selection: $deviceRole ) {
-						ForEach(DeviceRoles.allCases) { dr in
-							Text(dr.name)
+					VStack(alignment: .leading) {
+						Picker("Device Role", selection: $deviceRole ) {
+							ForEach(DeviceRoles.allCases) { dr in
+								Text(dr.name)
+							}
 						}
+						Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					Text(DeviceRoles(rawValue: deviceRole)?.description ?? "")
-						.foregroundColor(.gray)
-						.font(.caption)
-					Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
-						ForEach(RebroadcastModes.allCases) { rm in
-							Text(rm.name)
+					
+					VStack(alignment: .leading) {
+						Picker("Rebroadcast Mode", selection: $rebroadcastMode ) {
+							ForEach(RebroadcastModes.allCases) { rm in
+								Text(rm.name)
+							}
 						}
+						Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
-					Text(RebroadcastModes(rawValue: rebroadcastMode)?.description ?? "")
-						.foregroundColor(.gray)
-						.font(.caption)
+					
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 3600 {
@@ -86,20 +65,17 @@ struct DeviceConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
-					.padding(.top, 10)
 					Toggle(isOn: $doubleTapAsButtonPress) {
 						Label("Double Tap as Button", systemImage: "hand.tap")
+						Text("Treat double tap on supported accelerometers as a user button press.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Treat double tap on supported accelerometers as a user button press.")
-						.font(.caption)
-
+					
 					Toggle(isOn: $isManaged) {
 						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
-						.font(.caption)
 				}
 				Section(header: Text("Debug")) {
 					Toggle(isOn: $serialEnabled) {
@@ -190,49 +166,28 @@ struct DeviceConfig: View {
 				}
 			}
 			HStack {
-				Button {
-					isPresentingSaveConfirm = true
-				} label: {
-					Label("save", systemImage: "square.and.arrow.down")
-				}
-				.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-				.buttonStyle(.bordered)
-				.buttonBorderShape(.capsule)
-				.controlSize(.large)
-				.padding()
-				.confirmationDialog(
-					"are.you.sure",
-					isPresented: $isPresentingSaveConfirm,
-					titleVisibility: .visible
-				) {
-					let nodeName = node?.user?.longName ?? "unknown".localized
-					let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-					Button(buttonText) {
-						let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-						if connectedNode != nil {
-							var dc = Config.DeviceConfig()
-							dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
-							dc.serialEnabled = serialEnabled
-							dc.debugLogEnabled = debugLogEnabled
-							dc.buttonGpio = UInt32(buttonGPIO)
-							dc.buzzerGpio = UInt32(buzzerGPIO)
-							dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-							dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
-							dc.doubleTapAsButtonPress = doubleTapAsButtonPress
-							dc.isManaged = isManaged
-							let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-							if adminMessageId > 0 {
-								// Should show a saved successfully alert once I know that to be true
-								// for now just disable the button after a successful save
-								hasChanges = false
-								goBack()
-							}
+				SaveConfigButton(node: node, hasChanges: $hasChanges) {
+					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+					if connectedNode != nil {
+						var dc = Config.DeviceConfig()
+						dc.role = DeviceRoles(rawValue: deviceRole)!.protoEnumValue()
+						dc.serialEnabled = serialEnabled
+						dc.debugLogEnabled = debugLogEnabled
+						dc.buttonGpio = UInt32(buttonGPIO)
+						dc.buzzerGpio = UInt32(buzzerGPIO)
+						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
+						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
+						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
+						dc.isManaged = isManaged
+						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+						if adminMessageId > 0 {
+							// Should show a saved successfully alert once I know that to be true
+							// for now just disable the button after a successful save
+							hasChanges = false
+							goBack()
 						}
 					}
 				}
-			message: {
-				Text("config.save.confirm")
-			}
 			}
 			Spacer()
 		}

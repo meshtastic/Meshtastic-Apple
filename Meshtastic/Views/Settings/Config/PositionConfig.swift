@@ -30,7 +30,6 @@ struct PositionConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
 	@State var hasFlagChanges = false
 
@@ -74,77 +73,61 @@ struct PositionConfig: View {
 	@State var includeHeading = false
 
 	var body: some View {
-
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.positionConfig == nil {
-						Text("Position config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setPositionValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+				ConfigHeader(title: "Position", config: \.positionConfig, node: node, onAppear: setPositionValues)
 
 				Section(header: Text("Position Packet")) {
 
-					Picker("Position Broadcast Interval", selection: $positionBroadcastSeconds) {
-						ForEach(UpdateIntervals.allCases) { at in
-							if at.rawValue >= 900 {
-								Text(at.description)
-							}
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					Text("The maximum interval that can elapse without a node sending a position")
-						.font(.caption)
-					Toggle(isOn: $smartPositionEnabled) {
-
-						Label("Smart Position Broadcast", systemImage: "location.fill.viewfinder")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					if smartPositionEnabled {
-						Picker("Minimum Broadcast Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+					VStack(alignment: .leading) {
+						Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
 							ForEach(UpdateIntervals.allCases) { at in
-								Text(at.description)
-							}
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
-							.font(.caption)
-						Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
-							ForEach(10..<151) {
-								if $0 == 0 {
-									Text("unset")
-								} else {
-									if $0.isMultiple(of: 5) {
-										Text("\($0)")
-											.tag($0)
-									}
+								if at.rawValue >= 900 {
+									Text(at.description)
 								}
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
-						Text("The minimum distance change in meters to be considered for a smart position broadcast.")
-						.font(.caption)
+						Text("The maximum interval that can elapse without a node broadcasting a position")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
+					
+					Toggle(isOn: $smartPositionEnabled) {
+						Label("Smart Position", systemImage: "brain")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
+					if smartPositionEnabled {
+						VStack(alignment: .leading) {
+							Picker("Minimum Interval", selection: $broadcastSmartMinimumIntervalSecs) {
+								ForEach(UpdateIntervals.allCases) { at in
+									Text(at.description)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("The fastest that position updates will be sent if the minimum distance has been satisfied")
+								.foregroundColor(.gray)
+								.font(.callout)
+						}
+						VStack(alignment: .leading) {
+							Picker("Minimum Distance", selection: $broadcastSmartMinimumDistance) {
+								ForEach(10..<151) {
+									if $0 == 0 {
+										Text("unset")
+									} else {
+										if $0.isMultiple(of: 5) {
+											Text("\($0)")
+												.tag($0)
+										}
+									}
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Text("The minimum distance change in meters to be considered for a smart position broadcast.")
+								.foregroundColor(.gray)
+								.font(.callout)
+						}
 					}
 				}
 				Section(header: Text("Device GPS")) {
@@ -159,27 +142,31 @@ struct PositionConfig: View {
 					.padding(.bottom, 5)
 					
 					if gpsMode == 1 {
-						Picker("Update Interval", selection: $gpsUpdateInterval) {
-							ForEach(GpsUpdateIntervals.allCases) { ui in
-								Text(ui.description)
+						VStack(alignment: .leading) {
+							Picker("Update Interval", selection: $gpsUpdateInterval) {
+								ForEach(GpsUpdateIntervals.allCases) { ui in
+									Text(ui.description)
+								}
 							}
+							Text("How often should we try to get a GPS position.")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
-						Text("How often should we try to get a GPS position.")
-							.font(.caption)
 					} else {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
+						VStack(alignment: .leading) {
+							Toggle(isOn: $fixedPosition) {
+								Label("Fixed Position", systemImage: "location.square.fill")
+								Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed positon will always use the most recent position the device has.")
-							.font(.caption)
 					}
 				}
 				Section(header: Text("Position Flags")) {
 
 					Text("Optional fields to include when assembling position messages. the more fields are included, the larger the message will be - leading to longer airtime and a higher risk of packet loss")
-						.font(.caption)
-						.listRowSeparator(.visible)
+						.foregroundColor(.gray)
+						.font(.callout)
 
 					Toggle(isOn: $includeAltitude) {
 						Label("Altitude", systemImage: "arrow.up")
@@ -277,66 +264,44 @@ struct PositionConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
 
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				if fixedPosition {
+					_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
+				}
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 
-					if fixedPosition {
-						_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
-					}
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-
-					if connectedNode != nil {
-						var pc = Config.PositionConfig()
-						pc.positionBroadcastSmartEnabled = smartPositionEnabled
-						pc.gpsEnabled = gpsMode == 1
-						pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
-						pc.fixedPosition = fixedPosition
-						pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
-						pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
-						pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
-						pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
-						pc.rxGpio = UInt32(rxGpio)
-						pc.txGpio = UInt32(txGpio)
-						pc.gpsEnGpio = UInt32(gpsEnGpio)
-						var pf: PositionFlags = []
-						if includeAltitude { pf.insert(.Altitude) }
-						if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
-						if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
-						if includeDop { pf.insert(.Dop) }
-						if includeHvdop { pf.insert(.Hvdop) }
-						if includeSatsinview { pf.insert(.Satsinview) }
-						if includeSeqNo { pf.insert(.SeqNo) }
-						if includeTimestamp { pf.insert(.Timestamp) }
-						if includeSpeed { pf.insert(.Speed) }
-						if includeHeading { pf.insert(.Heading) }
-						pc.positionFlags = UInt32(pf.rawValue)
-						let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+				if connectedNode != nil {
+					var pc = Config.PositionConfig()
+					pc.positionBroadcastSmartEnabled = smartPositionEnabled
+					pc.gpsEnabled = gpsMode == 1
+					pc.gpsMode = Config.PositionConfig.GpsMode(rawValue: gpsMode) ?? Config.PositionConfig.GpsMode.notPresent
+					pc.fixedPosition = fixedPosition
+					pc.gpsUpdateInterval = UInt32(gpsUpdateInterval)
+					pc.positionBroadcastSecs = UInt32(positionBroadcastSeconds)
+					pc.broadcastSmartMinimumIntervalSecs = UInt32(broadcastSmartMinimumIntervalSecs)
+					pc.broadcastSmartMinimumDistance = UInt32(broadcastSmartMinimumDistance)
+					pc.rxGpio = UInt32(rxGpio)
+					pc.txGpio = UInt32(txGpio)
+					pc.gpsEnGpio = UInt32(gpsEnGpio)
+					var pf: PositionFlags = []
+					if includeAltitude { pf.insert(.Altitude) }
+					if includeAltitudeMsl { pf.insert(.AltitudeMsl) }
+					if includeGeoidalSeparation { pf.insert(.GeoidalSeparation) }
+					if includeDop { pf.insert(.Dop) }
+					if includeHvdop { pf.insert(.Hvdop) }
+					if includeSatsinview { pf.insert(.Satsinview) }
+					if includeSeqNo { pf.insert(.SeqNo) }
+					if includeTimestamp { pf.insert(.Timestamp) }
+					if includeSpeed { pf.insert(.Speed) }
+					if includeHeading { pf.insert(.Heading) }
+					pc.positionFlags = UInt32(pf.rawValue)
+					let adminMessageId =  bleManager.savePositionConfig(config: pc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			}
-			message: {
-				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("position.config")

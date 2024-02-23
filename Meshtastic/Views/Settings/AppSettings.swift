@@ -26,7 +26,7 @@ struct AppSettings: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if provideLocation {
 						Toggle(isOn: $enableSmartPosition) {
-							Label("appsettings.smartposition", systemImage: "brain.fill")
+							Label("appsettings.smartposition", systemImage: "brain")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						VStack {

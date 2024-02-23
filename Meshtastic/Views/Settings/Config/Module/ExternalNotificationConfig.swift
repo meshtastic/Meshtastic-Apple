@@ -35,57 +35,36 @@ struct ExternalNotificationConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-					
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.externalNotificationConfig == nil {
-						Text("External notification config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setExternalNotificationValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+				ConfigHeader(title: "External notification", config: \.externalNotificationConfig, node: node, onAppear: setExternalNotificationValues)
+
 				Section(header: Text("options")) {
+					
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "megaphone")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $alertBell) {
 						Label("Alert when receiving a bell", systemImage: "bell")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $alertMessage) {
 						Label("Alert when receiving a message", systemImage: "message")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Toggle(isOn: $usePWM) {
 						Label("Use PWM Buzzer", systemImage: "light.beacon.max.fill")
+						Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Use a PWM output (like the RAK Buzzer) for tunes instead of an on/off output. This will ignore the output, output duration and active settings and use the device config buzzer GPIO option instead.")
-						.font(.caption)
+					
 					Toggle(isOn: $useI2SAsBuzzer) {
 						Label("Use I2S As Buzzer", systemImage: "light.beacon.max.fill")
+						Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer. T-Watch S3 and T-Deck for example have this capability.")
-						.font(.caption)
 				}
 				Section(header: Text("Advanced GPIO Options")) {
 					Section(header: Text("Primary GPIO")
@@ -94,10 +73,10 @@ struct ExternalNotificationConfig: View {
 						.textCase(.uppercase)) {
 							Toggle(isOn: $active) {
 								Label("Active", systemImage: "togglepower")
+								Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							Text("If enabled, the 'output' Pin will be pulled active high, disabled means active low.")
-								.font(.caption)
+							
 							Picker("Output pin GPIO", selection: $output) {
 								ForEach(0..<49) {
 									if $0 == 0 {
@@ -108,22 +87,30 @@ struct ExternalNotificationConfig: View {
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.visible)
+							
 							Picker("GPIO Output Duration", selection: $outputMilliseconds ) {
 								ForEach(OutputIntervals.allCases) { oi in
 									Text(oi.description)
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.hidden)
 							Text("When using in GPIO mode, keep the output on for this long. ")
-								.font(.caption)
+								.foregroundColor(.gray)
+								.font(.callout)
+								.listRowSeparator(.visible)
+							
 							Picker("Nag timeout", selection: $nagTimeout ) {
 								ForEach(OutputIntervals.allCases) { oi in
 									Text(oi.description)
 								}
 							}
 							.pickerStyle(DefaultPickerStyle())
+							.listRowSeparator(.hidden)
 							Text("Specifies how long the monitored GPIO should output.")
-								.font(.caption)
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
 					
 					Section(header: Text("Optional GPIO")
@@ -171,54 +158,34 @@ struct ExternalNotificationConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.externalNotificationConfig == nil)
 		}
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					var enc = ModuleConfig.ExternalNotificationConfig()
-					enc.enabled = enabled
-					enc.alertBell = alertBell
-					enc.alertBellBuzzer = alertBellBuzzer
-					enc.alertBellVibra = alertBellVibra
-					enc.alertMessage = alertMessage
-					enc.alertMessageBuzzer = alertMessageBuzzer
-					enc.alertMessageVibra = alertMessageVibra
-					enc.active = active
-					enc.output = UInt32(output)
-					enc.nagTimeout = UInt32(nagTimeout)
-					enc.outputBuzzer = UInt32(outputBuzzer)
-					enc.outputVibra = UInt32(outputVibra)
-					enc.outputMs = UInt32(outputMilliseconds)
-					enc.usePwm = usePWM
-					enc.useI2SAsBuzzer = useI2SAsBuzzer
-					let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+				var enc = ModuleConfig.ExternalNotificationConfig()
+				enc.enabled = enabled
+				enc.alertBell = alertBell
+				enc.alertBellBuzzer = alertBellBuzzer
+				enc.alertBellVibra = alertBellVibra
+				enc.alertMessage = alertMessage
+				enc.alertMessageBuzzer = alertMessageBuzzer
+				enc.alertMessageVibra = alertMessageVibra
+				enc.active = active
+				enc.output = UInt32(output)
+				enc.nagTimeout = UInt32(nagTimeout)
+				enc.outputBuzzer = UInt32(outputBuzzer)
+				enc.outputVibra = UInt32(outputVibra)
+				enc.outputMs = UInt32(outputMilliseconds)
+				enc.usePwm = usePWM
+				enc.useI2SAsBuzzer = useI2SAsBuzzer
+				let adminMessageId =  bleManager.saveExternalNotificationModuleConfig(config: enc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("external.notification.config")
 		.navigationBarItems(trailing:

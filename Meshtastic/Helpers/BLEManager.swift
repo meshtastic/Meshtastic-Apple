@@ -409,7 +409,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
 				let connectedNode = fetchedNodes.first(where: { $0.num == self.connectedPeripheral.num })
-				
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
@@ -524,7 +523,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				var nowKnown = false
 				
 				// MyInfo from initial connection
-				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+				if context != nil && decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
 					if myInfo != nil {
@@ -533,7 +532,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 					}
-					tryClearExistingChannels()
+					//tryClearExistingChannels()
 				}
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {// && !invalidVersion {
@@ -660,6 +659,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							let traceRouteHop = TraceRouteHopEntity(context: context!)
 							traceRouteHop.time = Date()
 							if hopNode?.hasPositions ?? false {
+								traceRoute?.hasPositions = true
 								let mostRecent = hopNode?.positions?.lastObject as! PositionEntity
 								if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
 									traceRouteHop.altitude = mostRecent.altitude
@@ -1513,7 +1513,35 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		
 		return 0
 	}
-	
+
+	public func savePowerConfig(config: Config.PowerConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+
+		var adminPacket = AdminMessage()
+		adminPacket.setConfig.power = config
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛟 Saved Power Config for \(toUser.longName ?? "unknown".localized)"
+
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertPowerConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+
+		return 0
+	}
+
 	public func saveNetworkConfig(config: Config.NetworkConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
@@ -2067,7 +2095,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return false
 	}
-	
+
+	public func requestPowerConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+
+		var adminPacket = AdminMessage()
+		adminPacket.getConfigRequest = AdminMessage.ConfigType.powerConfig
+
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+
+		meshPacket.decoded = dataMessage
+
+		let messageDescription = "🛎️ Requested Power Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+
 	public func requestAmbientLightingConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()

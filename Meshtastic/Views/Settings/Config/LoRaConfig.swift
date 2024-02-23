@@ -29,7 +29,6 @@ struct LoRaConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State var isPresentingSaveConfirm = false
 	@State var hasChanges = false
 	@State var region: Int = 0
 	@State var modemPreset = 0
@@ -52,63 +51,43 @@ struct LoRaConfig: View {
 	}()
 
 	var body: some View {
-
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
+				ConfigHeader(title: "LoRa", config: \.loRaConfig, node: node, onAppear: setLoRaValues)
 
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.loRaConfig == nil {
-						Text("LoRa config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setLoRaValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
 				Section(header: Text("Options")) {
 
-					Picker("Region", selection: $region ) {
-						ForEach(RegionCodes.allCases) { r in
-							Text(r.description)
+					VStack(alignment: .leading) {
+						Picker("Region", selection: $region ) {
+							ForEach(RegionCodes.allCases) { r in
+								Text(r.description)
+							}
 						}
+						.fixedSize()
+						Text("The region where you will be using your radios.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					.fixedSize()
-
-					Text("The region where you will be using your radios.")
-						.font(.caption)
-
+					
 					Toggle(isOn: $usePreset) {
 						Label("Use Preset", systemImage: "list.bullet.rectangle")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					if usePreset {
-						Picker("Presets", selection: $modemPreset ) {
-							ForEach(ModemPresets.allCases) { m in
-								Text(m.description)
+						VStack(alignment: .leading) {
+							Picker("Presets", selection: $modemPreset ) {
+								ForEach(ModemPresets.allCases) { m in
+									Text(m.description)
+								}
 							}
+							.pickerStyle(DefaultPickerStyle())
+							.fixedSize()
+							Text("Available modem presets, default is Long Fast.")
+								.foregroundColor(.gray)
+								.font(.callout)
 						}
-						.pickerStyle(DefaultPickerStyle())
-						.fixedSize()
-						Text("Available modem presets, default is Long Fast.")
-							.font(.caption)
 					}
 				}
 				Section(header: Text("Advanced")) {
@@ -149,40 +128,47 @@ struct LoRaConfig: View {
 							 }
 						 }
 					}
-
-					Picker("Number of hops", selection: $hopLimit) {
-						ForEach(1..<8) {
-							Text("\($0)")
-								.tag($0 == 0 ? 3 : $0)
+					VStack(alignment: .leading) {
+						Picker("Number of hops", selection: $hopLimit) {
+							ForEach(1..<8) {
+								Text("\($0)")
+									.tag($0 == 0 ? 3 : $0)
+							}
 						}
+						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
 					.pickerStyle(DefaultPickerStyle())
-					Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
-						.font(.caption)
-
-					HStack {
-						Text("Frequency Slot")
-							.fixedSize()
-						TextField("Frequency Slot", value: $channelNum, formatter: formatter)
-							.toolbar {
-								ToolbarItemGroup(placement: .keyboard) {
-									Button("dismiss.keyboard") {
-										focusedField = nil
+					
+					VStack(alignment: .leading) {
+						HStack {
+							Text("Frequency Slot")
+								.fixedSize()
+							TextField("Frequency Slot", value: $channelNum, formatter: formatter)
+								.toolbar {
+									ToolbarItemGroup(placement: .keyboard) {
+										Button("dismiss.keyboard") {
+											focusedField = nil
+										}
+										.font(.subheadline)
 									}
-									.font(.subheadline)
 								}
-							}
-							.keyboardType(.decimalPad)
-							.scrollDismissesKeyboard(.immediately)
-							.focused($focusedField, equals: .channelNum)
-							.disabled(overrideFrequency > 0.0)
+								.keyboardType(.decimalPad)
+								.scrollDismissesKeyboard(.immediately)
+								.focused($focusedField, equals: .channelNum)
+								.disabled(overrideFrequency > 0.0)
+						}
+						Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
+							.foregroundColor(.gray)
+							.font(.callout)
 					}
-					Text("This determines the actual frequency you are transmitting on in the band. If set to 0 this value will be calculated automatically based on the primary channel name.")
-						.font(.caption)
+					
 					Toggle(isOn: $rxBoostedGain) {
 						Label("RX Boosted Gain", systemImage: "waveform.badge.plus")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					HStack {
 						Label("Frequency Override", systemImage: "waveform.path.ecg")
 						Spacer()
@@ -191,6 +177,7 @@ struct LoRaConfig: View {
 							.scrollDismissesKeyboard(.immediately)
 							.focused($focusedField, equals: .frequencyOverride)
 					}
+					
 					HStack {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.foregroundColor(.accentColor)
@@ -201,51 +188,31 @@ struct LoRaConfig: View {
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.loRaConfig == nil)
 
-			Button {
-				isPresentingSaveConfirm = true
-			} label: {
-				Label("save", systemImage: "square.and.arrow.down")
-			}
-			.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.large)
-			.padding()
-			.confirmationDialog(
-				"are.you.sure",
-				isPresented: $isPresentingSaveConfirm,
-				titleVisibility: .visible
-			) {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
-					if connectedNode != nil {
-						var lc = Config.LoRaConfig()
-						lc.hopLimit = UInt32(hopLimit)
-						lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
-						lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
-						lc.usePreset = usePreset
-						lc.txEnabled = txEnabled
-						lc.txPower = Int32(txPower)
-						lc.channelNum = UInt32(channelNum)
-						lc.bandwidth = UInt32(bandwidth)
-						lc.codingRate = UInt32(codingRate)
-						lc.spreadFactor = UInt32(spreadFactor)
-						lc.sx126XRxBoostedGain = rxBoostedGain
-						lc.overrideFrequency = overrideFrequency
-						lc.ignoreMqtt = ignoreMqtt
-						let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-						if adminMessageId > 0 {
-							// Should show a saved successfully alert once I know that to be true
-							// for now just disable the button after a successful save
-							hasChanges = false
-							goBack()
-						}
+			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? 0, context: context)
+				if connectedNode != nil {
+					var lc = Config.LoRaConfig()
+					lc.hopLimit = UInt32(hopLimit)
+					lc.region = RegionCodes(rawValue: region)!.protoEnumValue()
+					lc.modemPreset = ModemPresets(rawValue: modemPreset)!.protoEnumValue()
+					lc.usePreset = usePreset
+					lc.txEnabled = txEnabled
+					lc.txPower = Int32(txPower)
+					lc.channelNum = UInt32(channelNum)
+					lc.bandwidth = UInt32(bandwidth)
+					lc.codingRate = UInt32(codingRate)
+					lc.spreadFactor = UInt32(spreadFactor)
+					lc.sx126XRxBoostedGain = rxBoostedGain
+					lc.overrideFrequency = overrideFrequency
+					lc.ignoreMqtt = ignoreMqtt
+					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+					if adminMessageId > 0 {
+						// Should show a saved successfully alert once I know that to be true
+						// for now just disable the button after a successful save
+						hasChanges = false
+						goBack()
 					}
 				}
-			} message: {
-				Text("config.save.confirm")
 			}
 		}
 		.navigationTitle("lora.config")

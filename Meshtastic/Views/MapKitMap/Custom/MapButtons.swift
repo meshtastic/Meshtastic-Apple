@@ -49,16 +49,16 @@ struct MapButtons: View {
 }
 
 // MARK: Previews
-struct MapControl_Previews: PreviewProvider {
-	@State static var tracking: UserTrackingModes = .none
-	@State static var isPresentingInfoSheet = false
-	static var previews: some View {
-		Group {
-			MapButtons(tracking: $tracking, isPresentingInfoSheet: $isPresentingInfoSheet)
-				.environment(\.colorScheme, .light)
-			MapButtons(tracking: $tracking, isPresentingInfoSheet: $isPresentingInfoSheet)
-				.environment(\.colorScheme, .dark)
-		}
-		.previewLayout(.fixed(width: 60, height: 100))
-	}
-}
+//struct MapControl_Previews: PreviewProvider {
+//	@State static var tracking: UserTrackingModes = .none
+//	@State static var isPresentingInfoSheet = false
+//	static var previews: some View {
+//		Group {
+//			MapButtons(tracking: $tracking, isPresentingInfoSheet: $isPresentingInfoSheet)
+//				.environment(\.colorScheme, .light)
+//			MapButtons(tracking: $tracking, isPresentingInfoSheet: $isPresentingInfoSheet)
+//				.environment(\.colorScheme, .dark)
+//		}
+//		.previewLayout(.fixed(width: 60, height: 100))
+//	}
+//}

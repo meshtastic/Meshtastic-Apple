@@ -57,7 +57,7 @@ struct UserMessageList: View {
 											}
 
 											if currentUser && message.canRetry || (message.receivedACK && !message.realACK) {
-												RetryButton(message: message)
+												RetryButton(message: message, destination: .user(user))
 											}
 										}
 

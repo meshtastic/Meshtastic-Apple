@@ -43,41 +43,16 @@ struct DetectionSensorConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					Text("There has been no response to a request for device metadata over the admin channel for this node.")
-						.font(.callout)
-						.foregroundColor(.orange)
-					
-				} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-					// Let users know what is going on if they are using remote admin and don't have the config yet
-					if node?.detectionSensorConfig == nil {
-						Text("Detection Sensor config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-							.font(.callout)
-							.foregroundColor(.orange)
-					} else {
-						Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-							.font(.title3)
-							.onAppear {
-								setDetectionSensorValues()
-							}
-					}
-				} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-					Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-				} else {
-					Text("Please connect to a radio to configure settings.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				}
+				ConfigHeader(title: "Detection Sensor", config: \.detectionSensorConfig, node: node, onAppear: setDetectionSensorValues)
+				
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
 						Label("enabled", systemImage: "dot.radiowaves.right")
 						Text("Enables the detection sensor module, it needs to be enabled on both the node with the sensor, and any nodes that you want to receive detection sensor text messages or view the detection sensor log and chart.")
-							.font(.caption)
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.listRowSeparator(.visible)
+
 					if enabled {
 						HStack {
 							Picker(selection: $role, label: Text("Role")) {
@@ -97,9 +72,7 @@ struct DetectionSensorConfig: View {
 						Toggle(isOn: $detectionNotificationsEnabled) {
 							Label("Enable Notifications", systemImage: "bell.badge")
 							Text("Detection sensor messages are received as text messages.  If you enable notifications you will recieve a notification for each detection message received and a corresponding unread message badge.")
-								.font(.caption)
 						}
-						.listRowSeparator(.visible)
 					}
 				}
 				if enabled && role == .sensor {
@@ -107,10 +80,9 @@ struct DetectionSensorConfig: View {
 						Toggle(isOn: $sendBell) {
 							Label("Send Bell", systemImage: "bell")
 							Text("Send ASCII bell with alert message. Useful for triggering external notification on bell.")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
+
 						HStack {
 							Label("Name", systemImage: "signature")
 							TextField("Friendly name", text: $name, axis: .vertical)
@@ -130,14 +102,12 @@ struct DetectionSensorConfig: View {
 										}
 									}
 								})
-								.foregroundColor(.gray)
 						}
 						.listRowSeparator(.hidden)
 						Text("Friendly name used to format message sent to mesh. Example: A name \"Motion\" would result in a message \"Motion detected\"")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
-							.listRowSeparator(.visible)
-							.offset(y: -10)
+						
 						Picker("GPIO Pin to monitor", selection: $monitorPin) {
 							ForEach(0..<49) {
 								if $0 == 0 {
@@ -148,17 +118,16 @@ struct DetectionSensorConfig: View {
 							}
 						}
 						.pickerStyle(DefaultPickerStyle())
+						
 						Toggle(isOn: $detectionTriggeredHigh) {
 							Label("Detection trigger High", systemImage: "dial.high")
 							Text("Whether or not the GPIO pin state detection is triggered on HIGH (1) or LOW (0)")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						
 						Toggle(isOn: $usePullup) {
 							Label("Uses pullup resistor", systemImage: "arrow.up.to.line")
 							Text(" Whether or not use INPUT_PULLUP mode for GPIO pin. Only applicable if the board uses pull-up resistors on the pin")
-								.font(.caption)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
@@ -171,7 +140,7 @@ struct DetectionSensorConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						.listRowSeparator(.hidden)
 						Text("Mininum time between detection broadcasts. Default is 45 seconds.")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
 							.listRowSeparator(.visible)
 						Picker("State Broadcast Interval", selection: $stateBroadcastSecs) {
@@ -183,7 +152,7 @@ struct DetectionSensorConfig: View {
 						.pickerStyle(DefaultPickerStyle())
 						.listRowSeparator(.hidden)
 						Text("How often to send detection sensor state to mesh regardless of detection. Default is Never.")
-							.font(.caption)
+							.font(.callout)
 							.foregroundStyle(.gray)
 					}
 				}
@@ -192,47 +161,26 @@ struct DetectionSensorConfig: View {
 		.scrollDismissesKeyboard(.interactively)
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.detectionSensorConfig == nil)
 
-		Button {
-			isPresentingSaveConfirm = true
-		} label: {
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm,
-			titleVisibility: .visible
-		) {
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
 			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral?.num ?? -1, context: context)
 			if connectedNode != nil {
-				let nodeName = node?.user?.longName ?? "unknown".localized
-				let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-				Button(buttonText) {
-					var dsc = ModuleConfig.DetectionSensorConfig()
-					dsc.enabled = self.enabled
-					dsc.sendBell = self.sendBell
-					dsc.name = self.name
-					dsc.monitorPin = UInt32(self.monitorPin)
-					dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
-					dsc.usePullup = self.usePullup
-					dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
-					dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
-					let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+				var dsc = ModuleConfig.DetectionSensorConfig()
+				dsc.enabled = self.enabled
+				dsc.sendBell = self.sendBell
+				dsc.name = self.name
+				dsc.monitorPin = UInt32(self.monitorPin)
+				dsc.detectionTriggeredHigh = self.detectionTriggeredHigh
+				dsc.usePullup = self.usePullup
+				dsc.minimumBroadcastSecs = UInt32(self.minimumBroadcastSecs)
+				dsc.stateBroadcastSecs = UInt32(self.stateBroadcastSecs)
+				let adminMessageId = bleManager.saveDetectionSensorModuleConfig(config: dsc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
-		}
-		message: {
-			Text("config.save.confirm")
 		}
 		.navigationTitle("detection.sensor.config")
 		.navigationBarItems(trailing:

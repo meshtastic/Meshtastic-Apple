@@ -28,6 +28,7 @@ struct Settings: View {
 		case displayConfig
 		case networkConfig
 		case positionConfig
+		case powerConfig
 		case ambientLightingConfig
 		case cannedMessagesConfig
 		case detectionSensorConfig
@@ -81,46 +82,71 @@ struct Settings: View {
 				
 				let node = nodes.first(where: { $0.num == preferredNodeNum })
 				let hasAdmin = node?.myInfo?.adminIndex ?? 0 > 0 ? true : false
+				
+				
 				if !(node?.deviceConfig?.isManaged ?? false) {
-					Section("Configure") {
-						if hasAdmin {
-							Picker("Configuring Node", selection: $selectedNode) {
-								if selectedNode == 0 {
-									Text("Connect to a Node").tag(0)
-								}
-								ForEach(nodes) { node in
-									if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-										Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
-											.tag(Int(node.num))
-									} else if node.metadata != nil {
-										Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
-											.tag(Int(node.num))
-									} else if hasAdmin {
-										Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
-											.tag(Int(node.num))
+					if bleManager.connectedPeripheral != nil {
+						Section("Configure") {
+							if hasAdmin {
+								Picker("Configuring Node", selection: $selectedNode) {
+									if selectedNode == 0 {
+										Text("Connect to a Node").tag(0)
 									}
-								}
-							}
-							.pickerStyle(.automatic)
-							.labelsHidden()
-							.onChange(of: selectedNode) { newValue in
-								if selectedNode > 0 {
-									let node = nodes.first(where: { $0.num == newValue })
-									let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
-									preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
-									if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
-										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
-										if adminMessageId > 0 {
-											print("Sent node metadata request from node details")
+									ForEach(nodes) { node in
+										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+											Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
+												.tag(Int(node.num))
+										} else if node.metadata != nil {
+											Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
+												.tag(Int(node.num))
+										} else if hasAdmin {
+											Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+												.tag(Int(node.num))
 										}
 									}
 								}
+								.pickerStyle(.automatic)
+								.labelsHidden()
+								.onChange(of: selectedNode) { newValue in
+									if selectedNode > 0 {
+										let node = nodes.first(where: { $0.num == newValue })
+										let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
+										preferredNodeNum = Int(connectedNode?.num ?? 0)// Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
+										if connectedNode != nil && connectedNode?.user != nil && connectedNode?.myInfo != nil && node?.user != nil && node?.metadata == nil {
+											let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+											if adminMessageId > 0 {
+												print("Sent node metadata request from node details")
+											}
+										}
+									}
+								}
+							} else {
+								if bleManager.connectedPeripheral != nil {
+									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
+								}
 							}
-						} else {
-							Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
 						}
 					}
 					Section("radio.configuration") {
+						if node != nil && node?.loRaConfig != nil {
+							let rc = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
+							if rc?.dutyCycle ?? 0 > 0 && rc?.dutyCycle ?? 0 < 100  {
+								
+								Label {
+									Text("Hourly Duty Cycle")
+								} icon: {
+									Image(systemName: "clock.arrow.circlepath")
+										.symbolRenderingMode(.hierarchical)
+										.foregroundColor(.red)
+								}
+								Text("Your region has a \(rc?.dutyCycle ?? 0)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
+									.foregroundColor(.orange)
+									.font(.caption)
+								Text("Limit all periodic broadcasts intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
+									.font(.caption2)
+									.foregroundColor(.gray)
+							}
+						}
 						NavigationLink {
 							LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
@@ -197,6 +223,15 @@ struct Settings: View {
 							Text("position")
 						}
 						.tag(SettingsSidebar.positionConfig)
+
+//						NavigationLink {
+//							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
+//						} label: {
+//							Image(systemName: "bolt.fill")
+//								.symbolRenderingMode(.hierarchical)
+//							Text("power")
+//						}
+//						.tag(SettingsSidebar.powerConfig)
 					}
 					Section("module.configuration") {
 						if #available(iOS 17.0, macOS 14.0, *) {

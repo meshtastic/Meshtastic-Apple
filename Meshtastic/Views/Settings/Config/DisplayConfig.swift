@@ -15,9 +15,7 @@ struct DisplayConfig: View {
 
 	var node: NodeInfoEntity?
 
-	@State private var isPresentingSaveConfirm: Bool = false
 	@State var hasChanges = false
-
 	@State var screenOnSeconds = 0
 	@State var screenCarouselInterval = 0
 	@State var gpsFormat = 0
@@ -29,163 +27,130 @@ struct DisplayConfig: View {
 	@State var units = 0
 
 	var body: some View {
-
 		Form {
-			if node != nil && node?.metadata == nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				Text("There has been no response to a request for device metadata over the admin channel for this node.")
-					.font(.callout)
-					.foregroundColor(.orange)
+			ConfigHeader(title: "Display", config: \.displayConfig, node: node, onAppear: setDisplayValues)
 
-			} else if node != nil && node?.num ?? 0 != bleManager.connectedPeripheral?.num ?? 0 {
-				// Let users know what is going on if they are using remote admin and don't have the config yet
-				if node?.displayConfig == nil {
-					Text("Display config data was requested over the admin channel but no response has been returned from the remote node. You can check the status of admin message requests in the admin message log.")
-						.font(.callout)
-						.foregroundColor(.orange)
-				} else {
-					Text("Remote administration for: \(node?.user?.longName ?? "Unknown")")
-						.font(.title3)
-						.onAppear {
-							setDisplayValues()
-						}
-				}
-			} else if node != nil && node?.num ?? 0 == bleManager.connectedPeripheral?.num ?? 0 {
-				Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
-					.font(.title3)
-			} else {
-				Text("Please connect to a radio to configure settings.")
-					.font(.callout)
-					.foregroundColor(.orange)
-			}
 			Section(header: Text("Device Screen")) {
-				Picker("Display Mode", selection: $displayMode ) {
-					ForEach(DisplayModes.allCases) { dm in
-						Text(dm.description)
+				VStack(alignment: .leading) {
+					Picker("Display Mode", selection: $displayMode ) {
+						ForEach(DisplayModes.allCases) { dm in
+							Text(dm.description)
+						}
 					}
+					
+					Text("Override automatic OLED screen detection.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				Text("Override automatic OLED screen detection.")
-					.font(.caption)
-
 				Toggle(isOn: $compassNorthTop) {
-
 					Label("Always point north", systemImage: "location.north.circle")
+					Text("The compass heading on the screen outside of the circle will always point north.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("The compass heading on the screen outside of the circle will always point north.")
-					.font(.caption)
+
 				Toggle(isOn: $wakeOnTapOrMotion) {
 					Label("Wake Screen on tap or motion", systemImage: "gyroscope")
+					Text("Requires that there be an accelerometer on your device.")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Requires that there be an accelerometer on your device.")
-					.font(.caption)
+				
 				Toggle(isOn: $flipScreen) {
-
 					Label("Flip Screen", systemImage: "pip.swap")
+					Text("Flip screen vertically")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-				Text("Flip screen vertically")
-					.font(.caption)
-
-				Picker("OLED Type", selection: $oledType ) {
-					ForEach(OledTypes.allCases) { ot in
-						Text(ot.description)
+				
+				VStack(alignment: .leading) {
+					Picker("OLED Type", selection: $oledType ) {
+						ForEach(OledTypes.allCases) { ot in
+							Text(ot.description)
+						}
 					}
+					Text("Override automatic OLED screen detection.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				Text("Override automatic OLED screen detection.")
-					.font(.caption)
 			}
 			Section(header: Text("Timing & Format")) {
-				Picker("Screen on for", selection: $screenOnSeconds ) {
-					ForEach(ScreenOnIntervals.allCases) { soi in
-						Text(soi.description)
+				VStack(alignment: .leading) {
+					Picker("Screen on for", selection: $screenOnSeconds ) {
+						ForEach(ScreenOnIntervals.allCases) { soi in
+							Text(soi.description)
+						}
 					}
+					Text("How long the screen remains on after the user button is pressed or messages are received.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				Text("How long the screen remains on after the user button is pressed or messages are received.")
-					.font(.caption)
-
-				Picker("Carousel Interval", selection: $screenCarouselInterval ) {
-					ForEach(ScreenCarouselIntervals.allCases) { sci in
-						Text(sci.description)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-				Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
-					.font(.caption)
-
-				Picker("GPS Format", selection: $gpsFormat ) {
-					ForEach(GpsFormats.allCases) { lu in
-						Text(lu.description)
-					}
-				}
-				.pickerStyle(DefaultPickerStyle())
-
-				Text("The format used to display GPS coordinates on the device screen.")
-					.font(.caption)
-					.listRowSeparator(.visible)
 				
-				Picker("Display Units", selection: $units ) {
-					ForEach(Units.allCases) { un in
-						Text(un.description)
+				VStack(alignment: .leading) {
+					Picker("Carousel Interval", selection: $screenCarouselInterval ) {
+						ForEach(ScreenCarouselIntervals.allCases) { sci in
+							Text(sci.description)
+						}
 					}
+					
+					Text("Automatically toggles to the next page on the screen like a carousel, based the specified interval.")
+						.foregroundColor(.gray)
+						.font(.callout)
 				}
 				.pickerStyle(DefaultPickerStyle())
-				Text("Units displayed on the device screen")
-					.font(.caption)
+				
+				VStack(alignment: .leading) {
+					Picker("GPS Format", selection: $gpsFormat ) {
+						ForEach(GpsFormats.allCases) { lu in
+							Text(lu.description)
+						}
+					}
+					Text("The format used to display GPS coordinates on the device screen.")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+				.pickerStyle(DefaultPickerStyle())
+				
+				VStack(alignment: .leading) {
+					Picker("Display Units", selection: $units ) {
+						ForEach(Units.allCases) { un in
+							Text(un.description)
+						}
+					}
+					Text("Units displayed on the device screen")
+						.foregroundColor(.gray)
+						.font(.callout)
+				}
+				.pickerStyle(DefaultPickerStyle())
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.displayConfig == nil)
 
-		Button {
+		SaveConfigButton(node: node, hasChanges: $hasChanges) {
+			let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+			if connectedNode != nil {
+				var dc = Config.DisplayConfig()
+				dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
+				dc.screenOnSecs = UInt32(screenOnSeconds)
+				dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
+				dc.compassNorthTop = compassNorthTop
+				dc.wakeOnTapOrMotion = wakeOnTapOrMotion
+				dc.flipScreen = flipScreen
+				dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
+				dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
+				dc.units = Units(rawValue: units)!.protoEnumValue()
 
-			isPresentingSaveConfirm = true
+				let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				if adminMessageId > 0 {
 
-		} label: {
-
-			Label("save", systemImage: "square.and.arrow.down")
-		}
-		.disabled(bleManager.connectedPeripheral == nil || !hasChanges)
-		.buttonStyle(.bordered)
-		.buttonBorderShape(.capsule)
-		.controlSize(.large)
-		.padding()
-		.confirmationDialog(
-			"are.you.sure",
-			isPresented: $isPresentingSaveConfirm
-		) {
-			let nodeName = node?.user?.longName ?? "unknown".localized
-			let buttonText = String.localizedStringWithFormat("save.config %@".localized, nodeName)
-			Button(buttonText) {
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if connectedNode != nil {
-					var dc = Config.DisplayConfig()
-					dc.gpsFormat = GpsFormats(rawValue: gpsFormat)!.protoEnumValue()
-					dc.screenOnSecs = UInt32(screenOnSeconds)
-					dc.autoScreenCarouselSecs = UInt32(screenCarouselInterval)
-					dc.compassNorthTop = compassNorthTop
-					dc.wakeOnTapOrMotion = wakeOnTapOrMotion
-					dc.flipScreen = flipScreen
-					dc.oled = OledTypes(rawValue: oledType)!.protoEnumValue()
-					dc.displaymode = DisplayModes(rawValue: displayMode)!.protoEnumValue()
-					dc.units = Units(rawValue: units)!.protoEnumValue()
-
-					let adminMessageId =  bleManager.saveDisplayConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-					if adminMessageId > 0 {
-
-						// Should show a saved successfully alert once I know that to be true
-						// for now just disable the button after a successful save
-						hasChanges = false
-						goBack()
-					}
+					// Should show a saved successfully alert once I know that to be true
+					// for now just disable the button after a successful save
+					hasChanges = false
+					goBack()
 				}
 			}
 		}
-		message: {
-			Text("config.save.confirm")
-		}
+
 		.navigationTitle("display.config")
 		.navigationBarItems(trailing:
 			ZStack {

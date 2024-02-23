@@ -51,6 +51,8 @@ func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int6
 		upsertNetworkConfigPacket(config: config.network, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 		upsertPositionConfigPacket(config: config.position, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+		upsertPowerConfigPacket(config: config.power, nodeNum: nodeNum, context: context)
 	}
 }
 
@@ -153,8 +155,10 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
-				if mutableChannels.contains(newChannel) {
-					mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+				if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
+					newChannel.mute = oldChannel.mute
+					let index = mutableChannels.index(of: oldChannel as Any)
+					mutableChannels.replaceObject(at: index, with: newChannel)
 				} else {
 					mutableChannels.add(newChannel)
 				}
@@ -162,6 +166,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				if newChannel.name?.lowercased() == "admin" {
 					fetchedMyInfo[0].adminIndex = newChannel.index
 				}
+				context.refresh(newChannel, mergeChanges: true)
 				do {
 					try context.save()
 				} catch {
@@ -474,6 +479,8 @@ func adminAppPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 				upsertNetworkConfigPacket(config: config.network, nodeNum: Int64(packet.from), context: context)
 			} else if config.payloadVariant == Config.OneOf_PayloadVariant.position(config.position) {
 				upsertPositionConfigPacket(config: config.position, nodeNum: Int64(packet.from), context: context)
+			} else if config.payloadVariant == Config.OneOf_PayloadVariant.power(config.power) {
+				upsertPowerConfigPacket(config: config.power, nodeNum: Int64(packet.from), context: context)
 			}
 		} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getModuleConfigResponse(adminMessage.getModuleConfigResponse) {
 			let moduleConfig = adminMessage.getModuleConfigResponse
