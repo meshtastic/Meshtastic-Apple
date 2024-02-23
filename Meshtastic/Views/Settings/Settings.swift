@@ -224,14 +224,14 @@ struct Settings: View {
 						}
 						.tag(SettingsSidebar.positionConfig)
 
-//						NavigationLink {
-//							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
-//						} label: {
-//							Image(systemName: "bolt.fill")
-//								.symbolRenderingMode(.hierarchical)
-//							Text("power")
-//						}
-//						.tag(SettingsSidebar.powerConfig)
+						NavigationLink {
+							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
+						} label: {
+							Image(systemName: "bolt.fill")
+								.symbolRenderingMode(.hierarchical)
+							Text("power")
+						}
+						.tag(SettingsSidebar.powerConfig)
 					}
 					Section("module.configuration") {
 						if #available(iOS 17.0, macOS 14.0, *) {
