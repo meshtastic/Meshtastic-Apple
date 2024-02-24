@@ -72,6 +72,14 @@
         <attribute name="serialEnabled" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="deviceConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="deviceConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
+    <entity name="DeviceHardwareEntity" representedClassName="DeviceHardwareEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="activelySupported" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="architecture" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="displayName" optional="YES" attributeType="String"/>
+        <attribute name="hwModel" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="hwModelSlug" optional="YES" attributeType="String"/>
+        <attribute name="platformioTarget" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="DeviceMetadataEntity" representedClassName="DeviceMetadataEntity" syncable="YES" codeGenerationType="class">
         <attribute name="canShutdown" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="deviceStateVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

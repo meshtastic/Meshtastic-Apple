@@ -228,9 +228,10 @@ struct Channels: View {
 					}
 					
 					Section(header: Text("position")) {
+						
 						VStack(alignment: .leading) {
 							Toggle(isOn: $positionsEnabled) {
-								Label("Positions Enabled", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
+								Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 							.disabled(!supportedVersion)

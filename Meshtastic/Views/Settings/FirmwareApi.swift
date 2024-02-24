@@ -46,10 +46,13 @@ struct FirmwareRelease: Codable {
 class Api : ObservableObject{
 
 	func loadDeviceHardwareData(completion:@escaping ([DeviceHardware]) -> ()) {
-		guard let url = URL(string: "https://api.meshtastic.org/resource/deviceHardware") else {
-			print("Invalid url...")
+
+		/// List from https://api.meshtastic.org/resource/deviceHardware
+		guard let url = Bundle.main.url(forResource: "DeviceHardware.json", withExtension: nil) else {
+			print("Couldn't find DeviceHardware.json in main bundle.")
 			return
 		}
+		
 		URLSession.shared.dataTask(with: url) { data, response, error in
 			let deviceHardware = try! JSONDecoder().decode([DeviceHardware].self, from: data!)
 			DispatchQueue.main.async {

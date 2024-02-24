@@ -122,6 +122,7 @@ struct PowerConfig: View {
 			}
 			
 			Api().loadDeviceHardwareData { (hw) in
+				
 				for device in hw {
 					let currentHardware = node?.user?.hwModel ?? "UNSET"
 					let deviceString = device.hwModelSlug.replacingOccurrences(of: "_", with: "")

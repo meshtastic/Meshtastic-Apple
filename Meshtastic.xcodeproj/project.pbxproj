@@ -31,6 +31,7 @@
 		DD0E20FC2B87090400F2D100 /* atak.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20F92B87090400F2D100 /* atak.pb.swift */; };
 		DD0E20FD2B87090400F2D100 /* clientonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */; };
 		DD0E20FE2B87090400F2D100 /* paxcount.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */; };
+		DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */ = {isa = PBXBuildFile; fileRef = DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */; };
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
@@ -264,6 +265,7 @@
 		DD0E20FA2B87090400F2D100 /* clientonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = clientonly.pb.swift; sourceTree = "<group>"; };
 		DD0E20FB2B87090400F2D100 /* paxcount.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = paxcount.pb.swift; sourceTree = "<group>"; };
 		DD0E20FF2B892E1300F2D100 /* MeshtasticDataModelV 28.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 28.xcdatamodel"; sourceTree = "<group>"; };
+		DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DeviceHardware.json; sourceTree = "<group>"; };
 		DD0E9C222A30CE3A00580CBB /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminMessageList.swift; sourceTree = "<group>"; };
 		DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionPopover.swift; sourceTree = "<group>"; };
@@ -865,6 +867,7 @@
 			children = (
 				DDB75A192A05EB67006ED576 /* alpha.png */,
 				DDC2E15B26CE248F0042C5E4 /* Assets.xcassets */,
+				DD0E21002B8A6BC500F2D100 /* DeviceHardware.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -1137,6 +1140,7 @@
 				DDDE5A1329AFEAB900490C6C /* Assets.xcassets in Resources */,
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
+				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
