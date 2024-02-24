@@ -80,12 +80,12 @@ struct Channels: View {
 							downlink = channel.downlinkEnabled
 							hasChanges = false
 							if !supportedVersion && channelRole == 1 {
-								positionPrecision = 0
+								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
 								
 							} else if !supportedVersion && channelRole == 2 {
-								positionPrecision = 32
+								positionPrecision = 0
 								preciseLocation = false
 								positionsEnabled = false
 							}
@@ -331,6 +331,7 @@ struct Channels: View {
 							channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
+							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
 							
 							let newChannel = ChannelEntity(context: context)
 							newChannel.id = Int32(channel.index)
@@ -340,6 +341,7 @@ struct Channels: View {
 							newChannel.name = channel.settings.name
 							newChannel.role = Int32(channel.role.rawValue)
 							newChannel.psk = channel.settings.psk
+							newChannel.positionPrecision = Int32(positionPrecision)
 
 							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
@@ -421,6 +423,8 @@ struct Channels: View {
 					channelIndex = Int32(firstChannelIndex)
 					channelRole = 2
 					channelKey = key
+					positionsEnabled = false
+					positionPrecision = 0
 					uplink = false
 					downlink = false
 					hasChanges = true

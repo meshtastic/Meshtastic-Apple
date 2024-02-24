@@ -135,6 +135,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case rp2040Lora // = 30
 
   ///
+  /// B&Q Consulting Station G2: https://wiki.uniteng.com/en/meshtastic/station-g2
+  case stationG2 // = 31
+
+  ///
   /// ---------------------------------------------------------------------------
   /// Less common/prototype boards listed here (needs one more byte over the air)
   /// ---------------------------------------------------------------------------
@@ -291,6 +295,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 28: self = .senseloraS3
     case 29: self = .canaryone
     case 30: self = .rp2040Lora
+    case 31: self = .stationG2
     case 32: self = .loraRelayV1
     case 33: self = .nrf52840Dk
     case 34: self = .ppr
@@ -351,6 +356,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .senseloraS3: return 28
     case .canaryone: return 29
     case .rp2040Lora: return 30
+    case .stationG2: return 31
     case .loraRelayV1: return 32
     case .nrf52840Dk: return 33
     case .ppr: return 34
@@ -416,6 +422,7 @@ extension HardwareModel: CaseIterable {
     .senseloraS3,
     .canaryone,
     .rp2040Lora,
+    .stationG2,
     .loraRelayV1,
     .nrf52840Dk,
     .ppr,
@@ -801,6 +808,13 @@ struct Position {
   var seqNumber: UInt32 {
     get {return _storage._seqNumber}
     set {_uniqueStorage()._seqNumber = newValue}
+  }
+
+  ///
+  /// Indicates the bits of precision set by the sending node
+  var precisionBits: UInt32 {
+    get {return _storage._precisionBits}
+    set {_uniqueStorage()._precisionBits = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1414,7 +1428,6 @@ struct MeshPacket {
   /// The sending node number.
   /// Note: Our crypto implementation uses this field as well.
   /// See [crypto](/docs/overview/encryption) for details.
-  /// FIXME - really should be fixed32 instead, this encoding only hurts the ble link though.
   var from: UInt32 {
     get {return _storage._from}
     set {_uniqueStorage()._from = newValue}
@@ -1475,8 +1488,6 @@ struct MeshPacket {
   /// any ACK or the completion of a mesh broadcast flood).
   /// Note: Our crypto implementation uses this id as well.
   /// See [crypto](/docs/overview/encryption) for details.
-  /// FIXME - really should be fixed32 instead, this encoding only
-  /// hurts the ble link though.
   var id: UInt32 {
     get {return _storage._id}
     set {_uniqueStorage()._id = newValue}
@@ -2606,6 +2617,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     28: .same(proto: "SENSELORA_S3"),
     29: .same(proto: "CANARYONE"),
     30: .same(proto: "RP2040_LORA"),
+    31: .same(proto: "STATION_G2"),
     32: .same(proto: "LORA_RELAY_V1"),
     33: .same(proto: "NRF52840DK"),
     34: .same(proto: "PPR"),
@@ -2686,6 +2698,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     20: .standard(proto: "sensor_id"),
     21: .standard(proto: "next_update"),
     22: .standard(proto: "seq_number"),
+    23: .standard(proto: "precision_bits"),
   ]
 
   fileprivate class _StorageClass {
@@ -2711,6 +2724,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _sensorID: UInt32 = 0
     var _nextUpdate: UInt32 = 0
     var _seqNumber: UInt32 = 0
+    var _precisionBits: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -2739,6 +2753,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _sensorID = source._sensorID
       _nextUpdate = source._nextUpdate
       _seqNumber = source._seqNumber
+      _precisionBits = source._precisionBits
     }
   }
 
@@ -2779,6 +2794,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._sensorID) }()
         case 21: try { try decoder.decodeSingularUInt32Field(value: &_storage._nextUpdate) }()
         case 22: try { try decoder.decodeSingularUInt32Field(value: &_storage._seqNumber) }()
+        case 23: try { try decoder.decodeSingularUInt32Field(value: &_storage._precisionBits) }()
         default: break
         }
       }
@@ -2853,6 +2869,9 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._seqNumber != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._seqNumber, fieldNumber: 22)
       }
+      if _storage._precisionBits != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._precisionBits, fieldNumber: 23)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2884,6 +2903,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._sensorID != rhs_storage._sensorID {return false}
         if _storage._nextUpdate != rhs_storage._nextUpdate {return false}
         if _storage._seqNumber != rhs_storage._seqNumber {return false}
+        if _storage._precisionBits != rhs_storage._precisionBits {return false}
         return true
       }
       if !storagesAreEqual {return false}

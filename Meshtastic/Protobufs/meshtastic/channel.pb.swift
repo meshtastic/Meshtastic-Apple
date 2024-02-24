@@ -91,6 +91,35 @@ struct ChannelSettings {
   /// If true, messages seen on the internet will be forwarded to the local mesh.
   var downlinkEnabled: Bool = false
 
+  ///
+  /// Per-channel module settings.
+  var moduleSettings: ModuleSettings {
+    get {return _moduleSettings ?? ModuleSettings()}
+    set {_moduleSettings = newValue}
+  }
+  /// Returns true if `moduleSettings` has been explicitly set.
+  var hasModuleSettings: Bool {return self._moduleSettings != nil}
+  /// Clears the value of `moduleSettings`. Subsequent reads from it will return its default value.
+  mutating func clearModuleSettings() {self._moduleSettings = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _moduleSettings: ModuleSettings? = nil
+}
+
+///
+/// This message is specifically for modules to store per-channel configuration data.
+struct ModuleSettings {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Bits of precision for the location sent in position packets.
+  var positionPrecision: UInt32 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -197,6 +226,7 @@ extension Channel.Role: CaseIterable {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ChannelSettings: @unchecked Sendable {}
+extension ModuleSettings: @unchecked Sendable {}
 extension Channel: @unchecked Sendable {}
 extension Channel.Role: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -214,6 +244,7 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     4: .same(proto: "id"),
     5: .standard(proto: "uplink_enabled"),
     6: .standard(proto: "downlink_enabled"),
+    7: .standard(proto: "module_settings"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -228,12 +259,17 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       case 4: try { try decoder.decodeSingularFixed32Field(value: &self.id) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self.uplinkEnabled) }()
       case 6: try { try decoder.decodeSingularBoolField(value: &self.downlinkEnabled) }()
+      case 7: try { try decoder.decodeSingularMessageField(value: &self._moduleSettings) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.channelNum != 0 {
       try visitor.visitSingularUInt32Field(value: self.channelNum, fieldNumber: 1)
     }
@@ -252,6 +288,9 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if self.downlinkEnabled != false {
       try visitor.visitSingularBoolField(value: self.downlinkEnabled, fieldNumber: 6)
     }
+    try { if let v = self._moduleSettings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -262,6 +301,39 @@ extension ChannelSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.id != rhs.id {return false}
     if lhs.uplinkEnabled != rhs.uplinkEnabled {return false}
     if lhs.downlinkEnabled != rhs.downlinkEnabled {return false}
+    if lhs._moduleSettings != rhs._moduleSettings {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ModuleSettings"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "position_precision"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.positionPrecision != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleSettings, rhs: ModuleSettings) -> Bool {
+    if lhs.positionPrecision != rhs.positionPrecision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
