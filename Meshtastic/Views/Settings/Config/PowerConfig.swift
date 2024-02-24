@@ -28,7 +28,7 @@ struct PowerConfig: View {
 			ConfigHeader(title: "Power", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
-				if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
+				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6))  {
 					Toggle(isOn: $isPowerSaving) {
 						Label("Power Saving", systemImage: "bolt")
 						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
