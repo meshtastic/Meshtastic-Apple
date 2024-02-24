@@ -44,8 +44,14 @@ struct Channels: View {
 	@State private var positionPrecision = 32.0
 	@State private var preciseLocation = true
 	@State private var positionsEnabled = true
+	
+	/// Minimum Version for granular position configuration
+	@State var minimumVersion = "2.2.20"
+	
 
 	var body: some View {
+		
+		let supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 
 		VStack {
 			List {
@@ -73,6 +79,16 @@ struct Channels: View {
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
 							hasChanges = false
+							if !supportedVersion && channelRole == 1 {
+								positionPrecision = 0
+								preciseLocation = true
+								positionsEnabled = true
+								
+							} else if !supportedVersion && channelRole == 2 {
+								positionPrecision = 32
+								preciseLocation = false
+								positionsEnabled = false
+							}
 							isPresentingEditView = true
 						}) {
 							VStack(alignment: .leading) {
@@ -217,25 +233,27 @@ struct Channels: View {
 								Label("Positions Enabled", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.disabled(!supportedVersion)
 						}
 						
 						if positionsEnabled {
 							VStack(alignment: .leading) {
 								Toggle(isOn: $preciseLocation) {
-									Label("Precise Location", systemImage: "location.circle")
+									Label("Precise Location", systemImage: "scope")
 								}
 								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
 								.onChange(of: preciseLocation) { pl in
 									if pl == false {
-										positionPrecision = 16
+										positionPrecision = 13
 									}
 								}
 							}
 							
 							if !preciseLocation {
 								VStack(alignment: .leading) {
-									Label("Position Precision", systemImage: "scope")
+									Label("Reduce Precision", systemImage: "location.viewfinder")
 									Slider(
 										value: $positionPrecision,
 										in: 11...16,
@@ -321,6 +339,7 @@ struct Channels: View {
 							newChannel.name = channel.settings.name
 							newChannel.role = Int32(channel.role.rawValue)
 							newChannel.psk = channel.settings.psk
+
 							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
 							}

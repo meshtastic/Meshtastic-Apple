@@ -152,6 +152,7 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
+				//newChannel.precisionBits = channel.settings.precisionBits
 				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}

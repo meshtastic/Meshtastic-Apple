@@ -34,7 +34,7 @@
         <attribute name="index" attributeType="Integer 32" minValueString="0" maxValueString="13" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="mute" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="precisionBits" optional="YES" attributeType="Integer 32" defaultValueString="32" usesScalarValueType="YES"/>
+        <attribute name="positionPrecision" optional="YES" attributeType="Integer 32" defaultValueString="32" usesScalarValueType="YES"/>
         <attribute name="psk" optional="YES" attributeType="Binary"/>
         <attribute name="role" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="uplinkEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -282,6 +282,7 @@
         <attribute name="latest" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="latitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="longitudeI" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="precisionBits" optional="YES" attributeType="Integer 32" defaultValueString="32" usesScalarValueType="YES"/>
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="satsInView" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="seqNo" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
