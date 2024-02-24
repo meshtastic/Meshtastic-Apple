@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import MapKit
 #if canImport(TipKit)
 import TipKit
 #endif
@@ -39,6 +40,10 @@ struct Channels: View {
 	@State private var channelRole = 0
 	@State private var uplink = false
 	@State private var downlink = false
+	
+	@State private var positionPrecision = 32.0
+	@State private var preciseLocation = true
+	@State private var positionsEnabled = true
 
 	var body: some View {
 
@@ -102,111 +107,166 @@ struct Channels: View {
 					.padding()
 				#endif
 				Form {
-					HStack {
-						Text("name")
-						Spacer()
-						TextField(
-							"Channel Name",
-							text: $channelName
-						)
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundColor(Color.gray)
-						.onChange(of: channelName, perform: { _ in
-							channelName = channelName.replacing(" ", with: "")
-							let totalBytes = channelName.utf8.count
-							// Only mess with the value if it is too big
-							if totalBytes > 11 {
-								let firstNBytes = Data(channelName.utf8.prefix(11))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the channelName back to the last place where it was the right size
-									channelName = maxBytesString
-								}
-							}
-							hasChanges = true
-						})
-					}
-					HStack {
-						Picker("Key Size", selection: $channelKeySize) {
-							Text("Empty").tag(0)
-							Text("Default").tag(-1)
-							Text("1 byte").tag(1)
-							Text("128 bit").tag(16)
-							Text("192 bit").tag(24)
-							Text("256 bit").tag(32)
-						}
-						.pickerStyle(DefaultPickerStyle())
-						Spacer()
-						Button {
-							if channelKeySize == -1 {
-								channelKey = "AQ=="
-							} else {
-								let key = generateChannelKey(size: channelKeySize)
-								channelKey = key
-							}
-						} label: {
-							Image(systemName: "lock.rotation")
-								.font(.title)
-						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.small)
-					}
-					HStack(alignment: .center) {
-						Text("Key")
-						Spacer()
-						TextField(
-							"Key",
-							text: $channelKey,
-							axis: .vertical
-						)
-						.padding(6)
-						.disableAutocorrection(true)
-						.keyboardType(.alphabet)
-						.foregroundColor(Color.gray)
-						.textSelection(.enabled)
-						.background(
-							RoundedRectangle(cornerRadius: 10.0)
-								.stroke(
-									hasValidKey ?
-									Color.clear :
-									Color.red
-									, lineWidth: 2.0)
-								
-						)
-						.onChange(of: channelKey, perform: { _ in
-							let tempKey = Data(base64Encoded: channelKey) ?? Data()
-							if tempKey.count == channelKeySize || channelKeySize == -1{
-								hasValidKey = true
-							}
-							else {
-								hasValidKey = false
-							}
-							hasChanges = true
-						})
-						.disabled(channelKeySize <= 0)
-					}
-					HStack {
-						if channelRole == 1 {
-							Picker("Channel Role", selection: $channelRole) {
-								Text("Primary").tag(1)
-							}
-							.pickerStyle(.automatic)
-							.disabled(true)
-						} else {
-							Text("Channel Role")
+					Section(header: Text("channel details")) {
+						HStack {
+							Text("name")
 							Spacer()
-							Picker("Channel Role", selection: $channelRole) {
+							TextField(
+								"Channel Name",
+								text: $channelName
+							)
+							.disableAutocorrection(true)
+							.keyboardType(.alphabet)
+							.foregroundColor(Color.gray)
+							.onChange(of: channelName, perform: { _ in
+								channelName = channelName.replacing(" ", with: "")
+								let totalBytes = channelName.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > 11 {
+									let firstNBytes = Data(channelName.utf8.prefix(11))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the channelName back to the last place where it was the right size
+										channelName = maxBytesString
+									}
+								}
+								hasChanges = true
+							})
+						}
+						HStack {
+							Picker("Key Size", selection: $channelKeySize) {
+								Text("Empty").tag(0)
+								Text("Default").tag(-1)
+								Text("1 byte").tag(1)
+								Text("128 bit").tag(16)
+								Text("192 bit").tag(24)
+								Text("256 bit").tag(32)
+							}
+							.pickerStyle(DefaultPickerStyle())
+							Spacer()
+							Button {
+								if channelKeySize == -1 {
+									channelKey = "AQ=="
+								} else {
+									let key = generateChannelKey(size: channelKeySize)
+									channelKey = key
+								}
+							} label: {
+								Image(systemName: "lock.rotation")
+									.font(.title)
+							}
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.small)
+						}
+						HStack(alignment: .center) {
+							Text("Key")
+							Spacer()
+							TextField(
+								"Key",
+								text: $channelKey,
+								axis: .vertical
+							)
+							.padding(6)
+							.disableAutocorrection(true)
+							.keyboardType(.alphabet)
+							.foregroundColor(Color.gray)
+							.textSelection(.enabled)
+							.background(
+								RoundedRectangle(cornerRadius: 10.0)
+									.stroke(
+										hasValidKey ?
+										Color.clear :
+											Color.red
+										, lineWidth: 2.0)
+								
+							)
+							.onChange(of: channelKey, perform: { _ in
+								let tempKey = Data(base64Encoded: channelKey) ?? Data()
+								if tempKey.count == channelKeySize || channelKeySize == -1{
+									hasValidKey = true
+								}
+								else {
+									hasValidKey = false
+								}
+								hasChanges = true
+							})
+							.disabled(channelKeySize <= 0)
+						}
+						HStack {
+							if channelRole == 1 {
+								Picker("Channel Role", selection: $channelRole) {
+									Text("Primary").tag(1)
+								}
+								.pickerStyle(.automatic)
+								.disabled(true)
+							} else {
+								Text("Channel Role")
+								Spacer()
+								Picker("Channel Role", selection: $channelRole) {
 									Text("Disabled").tag(0)
 									Text("Secondary").tag(2)
+								}
+								.pickerStyle(.segmented)
 							}
-							.pickerStyle(.segmented)
 						}
 					}
-					Toggle("Uplink Enabled", isOn: $uplink)
+					
+					Section(header: Text("position")) {
+						VStack(alignment: .leading) {
+							Toggle(isOn: $positionsEnabled) {
+								Label("Positions Enabled", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						}
+						
+						if positionsEnabled {
+							VStack(alignment: .leading) {
+								Toggle(isOn: $preciseLocation) {
+									Label("Precise Location", systemImage: "location.circle")
+								}
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+								.listRowSeparator(.visible)
+								.onChange(of: preciseLocation) { pl in
+									if pl == false {
+										positionPrecision = 16
+									}
+								}
+							}
+							
+							if !preciseLocation {
+								VStack(alignment: .leading) {
+									Label("Position Precision", systemImage: "scope")
+									Slider(
+										value: $positionPrecision,
+										in: 11...16,
+										step: 1
+									)
+									{
+									} minimumValueLabel: {
+										Image(systemName: "minus")
+									} maximumValueLabel: {
+										Image(systemName: "plus")
+									}
+									Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
+										.foregroundColor(.gray)
+										.font(.callout)
+								}
+							}
+						}
+					}
+					Section(header: Text("mqtt")) {
+						Toggle(isOn: $uplink) {
+							Label("Uplink Enabled", systemImage: "arrowshape.up")
+						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Toggle("Downlink Enabled", isOn: $downlink)
+						.listRowSeparator(.visible)
+
+						Toggle(isOn: $downlink) {
+							Label("Downlink Enabled", systemImage: "arrowshape.down")
+						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.listRowSeparator(.visible)
+					}
 				}
 				.onAppear {
 					let tempKey = Data(base64Encoded: channelKey) ?? Data()
@@ -325,7 +385,7 @@ struct Channels: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([.fraction(0.45), .fraction(0.55), .fraction(0.65)])
+				.presentationDetents([.fraction(0.85), .large])
 				.presentationDragIndicator(.visible)
 			}
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
@@ -375,4 +435,54 @@ func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
 		}
 	}
 	return indexes.count + 1
+}
+
+
+enum PositionPrecision: Int, CaseIterable, Identifiable {
+
+	case eleven = 11
+	case twelve = 12
+	case thirteen = 13
+	case fourteen = 14
+	case fifteen = 15
+	case sixteen = 16
+
+	var id: Int { self.rawValue }
+	
+	var precisionMeters: Double {
+		switch self {
+
+		case .eleven:
+			return 11672.736900000944
+		case .twelve:
+			return 5836.362884000802
+		case .thirteen:
+			return 2918.1758760007315
+		case .fourteen:
+			return 1459.0823719999053
+		case .fifteen:
+			return 729.5356200010741
+		case .sixteen:
+			return 364.7622440000765
+		}
+	}
+	
+	var description: String {
+		let distanceFormatter = MKDistanceFormatter()
+		switch self {
+
+		case .eleven:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		case .twelve:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		case .thirteen:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		case .fourteen:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		case .fifteen:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		case .sixteen:
+			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
+		}
+	}
 }

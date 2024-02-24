@@ -233,6 +233,7 @@
 "phone.gps.interval.description"="How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.";
 "position"="Position";
 "position.config"="Position Config";
+"position.precision %@"="Within %@";
 "power"="Power";
 "power.adc.override"="ADC Override";
 "power.adc.multiplier"="Multiplier";
