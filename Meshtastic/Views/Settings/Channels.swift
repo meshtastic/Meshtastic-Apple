@@ -88,6 +88,20 @@ struct Channels: View {
 								positionPrecision = 0
 								preciseLocation = false
 								positionsEnabled = false
+							} else {
+								positionPrecision = Double(channel.positionPrecision)
+								if positionPrecision == 32 {
+									preciseLocation = true
+									positionsEnabled = true
+								} else {
+									preciseLocation = false
+								}
+								
+								if positionPrecision == 0 {
+									positionsEnabled = false
+								} else {
+									positionsEnabled = true
+								}
 							}
 							isPresentingEditView = true
 						}) {
@@ -314,6 +328,28 @@ struct Channels: View {
 				.onChange(of: channelRole) { _ in
 					hasChanges = true
 				}
+				.onChange(of: preciseLocation) { loc in
+					if loc {
+						positionPrecision = 32
+					} else {
+						positionPrecision = 14
+					}
+					hasChanges = true
+					
+				}
+				.onChange(of: positionPrecision) { _ in
+					hasChanges = true
+				}
+				.onChange(of: positionsEnabled) { pe in
+					if pe {
+						if positionPrecision == 0 {
+							positionPrecision = 32
+						}
+					} else {
+						positionPrecision = 0
+					}
+					hasChanges = true
+				}
 				.onChange(of: uplink) { _ in
 					hasChanges = true
 				}
@@ -385,7 +421,7 @@ struct Channels: View {
 							channelName = ""
 							channelRole	= 2
 							hasChanges = false
-							_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
+							//_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 						}
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
