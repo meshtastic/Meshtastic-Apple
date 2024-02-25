@@ -681,10 +681,10 @@
 				DD2160AE28C5552500C17253 /* MQTTConfig.swift */,
 				DD41582928585C32009B0E59 /* RangeTestConfig.swift */,
 				DDC94FCD29CF55310082EA6E /* RtttlConfig.swift */,
+				DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
 				DD6193782863875F00E59241 /* SerialConfig.swift */,
 				DDF6B2472A9AEBF500BA6931 /* StoreForwardConfig.swift */,
 				DD415827285859C4009B0E59 /* TelemetryConfig.swift */,
-				DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */,
 			);
 			path = Module;
 			sourceTree = "<group>";

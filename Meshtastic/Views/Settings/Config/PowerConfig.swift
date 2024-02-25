@@ -25,22 +25,22 @@ struct PowerConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "Power", config: \.powerConfig, node: node, onAppear: setPowerValues)
+			ConfigHeader(title: "config.power.title", config: \.powerConfig, node: node, onAppear: setPowerValues)
 
 			Section {
 				if (currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3) || (currentDevice?.architecture == .nrf52840 && (node?.deviceConfig?.role ?? 0 == 5 || node?.deviceConfig?.role ?? 0 == 6))  {
 					Toggle(isOn: $isPowerSaving) {
-						Label("Power Saving", systemImage: "bolt")
-						Text("Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.")
+						Label("config.power.saving", systemImage: "bolt")
+						Text("config.power.saving.description")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				Toggle(isOn: $shutdownOnPowerLoss) {
-					Label("power.shutdown.on.power.loss", systemImage: "power")
+					Label("config.power.shutdown.on.power.loss", systemImage: "power")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				if shutdownOnPowerLoss {
-					Picker("power.shutdown.after.secs", selection: $shutdownAfterSecs) {
+					Picker("config.power.shutdown.after.secs", selection: $shutdownAfterSecs) {
 						ForEach(PowerIntervals.allCases) { at in
 							Text(at.description)
 						}
@@ -48,20 +48,20 @@ struct PowerConfig: View {
 					.pickerStyle(DefaultPickerStyle())
 				}
 			} header: {
-				Text("power")
+				Text("config.power.settings")
 			}
 			if currentDevice?.architecture == .esp32 || currentDevice?.architecture == .esp32S3 {
 				Section {
 					Toggle(isOn: $adcOverride) {
-						Text("power.adc.override")
+						Text("config.power.adc.override")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					if adcOverride {
 						HStack {
-							Text("power.adc.multiplier")
+							Text("config.power.adc.multiplier")
 							Spacer()
-							FloatField(title: "power.adc.multiplier", number: $adcMultiplier) {
+							FloatField(title: "config.power.adc.multiplier", number: $adcMultiplier) {
 								(2.0 ... 6.0).contains($0)
 							}
 							.focused($isFocused)
@@ -69,37 +69,37 @@ struct PowerConfig: View {
 						}
 					}
 				} header: {
-					Text("Battery")
+					Text("config.power.section.battery")
 				}
-//				Section {
-//					Picker("power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("power.ls.secs", selection: $lsSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//					Picker("power.min.wake.secs", selection: $minWakeSecs) {
-//						ForEach(PowerIntervals.allCases) {
-//							Text($0.description)
-//						}
-//					}
-//					.pickerStyle(DefaultPickerStyle())
-//					
-//				} header: {
-//					Text("Sleep")
-//				}
+				Section {
+					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					
+					Picker("config.power.ls.secs", selection: $lsSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					
+					Picker("config.power.min.wake.secs", selection: $minWakeSecs) {
+						ForEach(PowerIntervals.allCases) {
+							Text($0.description)
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					
+				} header: {
+					Text("config.power.section.sleep")
+				}
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
-		.navigationTitle("power.config")
+		.navigationTitle("config.power.title")
 		.navigationBarItems(trailing: ZStack {
 			ConnectedDevice(
 				bluetoothOn: bleManager.isSwitchedOn,

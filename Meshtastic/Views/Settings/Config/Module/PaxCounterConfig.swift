@@ -20,7 +20,7 @@ struct PaxCounterConfig: View {
 
 	var body: some View {
 		Form {
-			ConfigHeader(title: "paxcounter", config: \.powerConfig, node: node, onAppear: setPaxValues)
+			ConfigHeader(title: "config.module.paxcounter.title", config: \.powerConfig, node: node, onAppear: setPaxValues)
 
 			Section {
 				Toggle(isOn: $enabled) {

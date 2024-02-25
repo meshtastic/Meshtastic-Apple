@@ -231,7 +231,7 @@ struct Settings: View {
 						} label: {
 							Image(systemName: "bolt.fill")
 								.symbolRenderingMode(.hierarchical)
-							Text("power")
+							Text("config.power.settings")
 						}
 						.tag(SettingsSidebar.powerConfig)
 					}
