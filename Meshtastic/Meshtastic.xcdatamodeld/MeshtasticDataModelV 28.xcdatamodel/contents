@@ -251,7 +251,7 @@
         <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
-        <relationship name="pax" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PaxCountrerEntity" inverseName="paxNode" inverseEntity="PaxCountrerEntity"/>
+        <relationship name="pax" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PaxCounterEntity" inverseName="paxNode" inverseEntity="PaxCounterEntity"/>
         <relationship name="paxCounterConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PaxCounterConfigEntity" inverseName="paxCounterConfigNode" inverseEntity="PaxCounterConfigEntity"/>
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
@@ -275,7 +275,7 @@
         <attribute name="paxcounterUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="paxCounterConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="paxCounterConfig" inverseEntity="NodeInfoEntity"/>
     </entity>
-    <entity name="PaxCountrerEntity" representedClassName="PaxCountrerEntity" syncable="YES" codeGenerationType="class">
+    <entity name="PaxCounterEntity" representedClassName="PaxCounterEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ble" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="uptime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

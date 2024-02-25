@@ -545,6 +545,43 @@ func adminResponseAck (packet: MeshPacket, context: NSManagedObjectContext) {
 		print("Failed to fetch admin message by requestID")
 	}
 }
+func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
+	
+	let logString = String.localizedStringWithFormat("mesh.log.paxcounter %@".localized, String(packet.from))
+	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(packet.from))
+	
+	do {
+		let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity]
+		
+		if let paxMessage = try? Paxcount(serializedData: packet.decoded.payload) {
+			
+			let newPax = PaxCounterEntity(context: context)
+			newPax.ble = Int32(truncatingIfNeeded: paxMessage.ble)
+			newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
+			newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
+			newPax.time = Date()
+			
+			if (fetchedNode?.count ?? 0 > 0) {
+				guard let mutablePax = fetchedNode?[0].pax!.mutableCopy() as? NSMutableOrderedSet else {
+					return
+				}
+				mutablePax.add(newPax)
+				do {
+					try context.save()
+				} catch {
+					print("Failed to save pax")
+				}
+			} else {
+				// Node Info Not Found
+			}
+		}
+	} catch {
+		
+	}
+}
 
 func routingPacket (packet: MeshPacket, connectedNodeNum: Int64, context: NSManagedObjectContext) {
 

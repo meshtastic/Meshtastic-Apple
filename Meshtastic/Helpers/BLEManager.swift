@@ -699,7 +699,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				//	MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
 			case .paxcounterApp:
-				MeshLogger.log("🕸️ MESH PACKET received for PAX Counter App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				paxCounterPacket(packet: decodedInfo.packet, context: context!)
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:

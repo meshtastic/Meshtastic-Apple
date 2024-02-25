@@ -35,6 +35,7 @@
 		DD0F791B28713C8A00A6FDAD /* AdminMessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */; };
 		DD13AA492AB73BF400BA0C98 /* PositionPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */; };
 		DD15E4F32B8BA56E00654F61 /* PaxCounterConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */; };
+		DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */; };
 		DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */; };
 		DD1925B928CDA93900720036 /* SerialConfigEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1925B828CDA93900720036 /* SerialConfigEnums.swift */; };
 		DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */; };
@@ -272,6 +273,7 @@
 		DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionPopover.swift; sourceTree = "<group>"; };
 		DD14E72C2A80738F006E39BC /* MeshtasticDataModelV15.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV15.xcdatamodel; sourceTree = "<group>"; };
 		DD15E4F22B8BA56E00654F61 /* PaxCounterConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterConfig.swift; sourceTree = "<group>"; };
+		DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaxCounterLog.swift; sourceTree = "<group>"; };
 		DD1925B628CDA5A400720036 /* CannedMessagesConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfigEnums.swift; sourceTree = "<group>"; };
 		DD1925B828CDA93900720036 /* SerialConfigEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfigEnums.swift; sourceTree = "<group>"; };
 		DD1933752B0835D500771CD5 /* PositionAltitudeChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAltitudeChart.swift; sourceTree = "<group>"; };
@@ -580,6 +582,7 @@
 				DD73FD1028750779000852D6 /* PositionLog.swift */,
 				DD4F23CC28779A3C001D37CB /* EnvironmentMetricsLog.swift */,
 				6DEDA5592A957B8E00321D2E /* DetectionSensorLog.swift */,
+				DD15E4F42B8BFC8E00654F61 /* PaxCounterLog.swift */,
 				DDE5B4032B2279A700FCDD05 /* TraceRouteLog.swift */,
 			);
 			path = Nodes;
@@ -1341,6 +1344,7 @@
 				DDB6CCFB2AAF805100945AF6 /* NodeMapSwiftUI.swift in Sources */,
 				DD73FD1128750779000852D6 /* PositionLog.swift in Sources */,
 				DD5E5206298EE33B00D21B61 /* localonly.pb.swift in Sources */,
+				DD15E4F52B8BFC8E00654F61 /* PaxCounterLog.swift in Sources */,
 				DD3CC6C028E7A60700FA9159 /* MessagingEnums.swift in Sources */,
 				DD97E96628EFD9820056DDA4 /* MeshtasticLogo.swift in Sources */,
 				DD5E523A298EFA5300D21B61 /* TelemetryWeather.swift in Sources */,

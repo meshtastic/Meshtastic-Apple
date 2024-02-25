@@ -64,6 +64,10 @@
 "config.power.shutdown.on.power.loss"="Shutdown on Power Loss";
 "config.power.shutdown.after.secs"="After";
 "config.power.wait.bluetooth.secs"="Bluetooth Off After";
+"config.ringtone"="RTTTL Ringtone";
+"config.ringtone.title"="Ringtone Config";
+"config.ringtone.label"="Ringtone Transfer Language";
+"config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
 "config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
