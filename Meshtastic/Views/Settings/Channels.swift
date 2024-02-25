@@ -46,7 +46,7 @@ struct Channels: View {
 	@State private var positionsEnabled = true
 	
 	/// Minimum Version for granular position configuration
-	@State var minimumVersion = "2.2.20"
+	@State var minimumVersion = "2.2.24"
 	
 
 	var body: some View {
@@ -424,6 +424,7 @@ struct Channels: View {
 					channelRole = 2
 					channelKey = key
 					positionsEnabled = false
+					preciseLocation = false
 					positionPrecision = 0
 					uplink = false
 					downlink = false

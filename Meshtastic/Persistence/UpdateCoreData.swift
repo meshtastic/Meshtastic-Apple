@@ -265,11 +265,14 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
-					if mutablePositions.count > 0 {
+					if mutablePositions.count > 0 && position.precisionBits == 32 {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 10 {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 15 {
 							mutablePositions.remove(mostRecent)
 						}
+					} else if mutablePositions.count > 0 && 11...16 ~= position.precisionBits {
+						/// Don't store any history for reduced accuracy positions, we will just show a circle
+						mutablePositions.removeAllObjects()
 					}
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)

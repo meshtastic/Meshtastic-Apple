@@ -214,6 +214,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 			if fetchedNode.count > 0 {
 				fetchedNode[0].metadata = newMetadata
 			} else {
+				
 				let newNode = createNodeInfo(num: Int64(fromNum), context: context)
 				newNode.metadata = newMetadata
 			}
