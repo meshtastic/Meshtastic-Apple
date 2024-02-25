@@ -122,7 +122,7 @@ struct MeshMap: View {
 								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
 								if radius > 0.0 {
 									MapCircle(center: position.coordinate, radius: radius)
-									.foregroundStyle(Color(nodeColor).opacity(0.60))
+										.foregroundStyle(Color(nodeColor).opacity(0.25))
 								}
 							}
 							/// Routes

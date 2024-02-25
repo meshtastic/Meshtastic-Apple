@@ -335,7 +335,6 @@ struct Channels: View {
 						positionPrecision = 14
 					}
 					hasChanges = true
-					
 				}
 				.onChange(of: positionPrecision) { _ in
 					hasChanges = true

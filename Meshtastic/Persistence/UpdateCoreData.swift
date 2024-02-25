@@ -256,6 +256,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.satsInView = Int32(positionMessage.satsInView)
 					position.speed = Int32(positionMessage.groundSpeed * UInt32(3.6))
 					position.heading = Int32(positionMessage.groundTrack)
+					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
 					} else {
