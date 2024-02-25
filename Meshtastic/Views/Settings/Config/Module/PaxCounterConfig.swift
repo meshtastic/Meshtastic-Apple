@@ -32,7 +32,7 @@ struct PaxCounterConfig: View {
 				if enabled {
 					Picker("config.module.paxcounter.updateinterval", selection: $paxcounterUpdateInterval) {
 						ForEach(UpdateIntervals.allCases) { at in
-							if at.rawValue >= 5 {
+							if at.rawValue >= 300 {
 								Text(at.description)
 							}
 						}
