@@ -1704,6 +1704,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
+	public func savePaxcounterModuleConfig(config: ModuleConfig.PaxcounterConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.paxcounter = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛟 Saved PAX Counter Module Config for \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
 	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
@@ -2198,6 +2225,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		meshPacket.decoded = dataMessage
 		
 		let messageDescription = "🛎️ Requested External Notificaiton Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+	
+	public func requestPaxCounterModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.paxcounterConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested PAX Counter Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
 		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
 			return true
 		}

@@ -27,6 +27,7 @@ struct Settings: View {
 		case deviceConfig
 		case displayConfig
 		case networkConfig
+		case paxCounterConfig
 		case positionConfig
 		case powerConfig
 		case ambientLightingConfig
@@ -37,6 +38,7 @@ struct Settings: View {
 		case rangeTestConfig
 		case ringtoneConfig
 		case serialConfig
+		case storeAndForwardConfig
 		case telemetryConfig
 		case meshLog
 		case adminMessageLog
@@ -283,6 +285,17 @@ struct Settings: View {
 								.symbolRenderingMode(.hierarchical)
 							Text("range.test")
 						}
+						.tag(SettingsSidebar.rangeTestConfig)
+						if node?.metadata?.hasWifi ?? false {
+							NavigationLink {
+								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
+							} label: {
+								Image(systemName: "figure.walk.departure")
+									.symbolRenderingMode(.hierarchical)
+								Text("config.module.paxcounter.settings")
+							}
+							.tag(SettingsSidebar.paxCounterConfig)
+						}
 						NavigationLink {
 							RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
@@ -306,7 +319,7 @@ struct Settings: View {
 								.symbolRenderingMode(.hierarchical)
 							Text("storeforward")
 						}
-						.tag(SettingsSidebar.serialConfig)
+						.tag(SettingsSidebar.storeAndForwardConfig)
 						NavigationLink {
 							TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {

@@ -68,6 +68,8 @@ func moduleConfig (config: ModuleConfig, context: NSManagedObjectContext, nodeNu
 		upsertExternalNotificationModuleConfigPacket(config: config.externalNotification, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.mqtt(config.mqtt) {
 		upsertMqttModuleConfigPacket(config: config.mqtt, nodeNum: nodeNum, context: context)
+	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.paxcounter(config.paxcounter) {
+		upsertPaxCounterModuleConfigPacket(config: config.paxcounter, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.rangeTest(config.rangeTest) {
 		upsertRangeTestModuleConfigPacket(config: config.rangeTest, nodeNum: nodeNum, context: context)
 	} else if config.payloadVariant == ModuleConfig.OneOf_PayloadVariant.serial(config.serial) {
@@ -247,7 +249,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			return nil
 		}
 		// Not Found Insert
-		if fetchedNode.isEmpty {
+		if fetchedNode.isEmpty && nodeInfo.num > 0 {
 
 			let newNode = NodeInfoEntity(context: context)
 			newNode.id = Int64(nodeInfo.num)

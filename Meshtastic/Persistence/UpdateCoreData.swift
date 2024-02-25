@@ -949,6 +949,51 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	}
 }
 
+func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
+	MeshLogger.log("📣 \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save PAX Counter Config
+		if !fetchedNode.isEmpty {
+
+			if fetchedNode[0].paxCounterConfig == nil {
+				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
+				newPaxCounterConfig.enabled = config.enabled
+				newPaxCounterConfig.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+				
+				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
+
+			} else {
+				fetchedNode[0].paxCounterConfig?.enabled = config.enabled
+				fetchedNode[0].paxCounterConfig?.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+			}
+
+			do {
+				try context.save()
+				print("💾 Updated PAX Counter Module Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save PAX Counter Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data PaxCounterConfigEntity failed: \(nsError)")
+	}
+}
+
 func upsertRtttlConfigPacket(ringtone: String, nodeNum: Int64, context: NSManagedObjectContext) {
 
 	let logString = String.localizedStringWithFormat("mesh.log.ringtone.config %@".localized, String(nodeNum))

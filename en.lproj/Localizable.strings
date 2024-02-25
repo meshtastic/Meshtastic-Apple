@@ -51,6 +51,11 @@
 "clear.app.data"="Clear App Data";
 "clear.log"="Clear";
 "close"="Close";
+"config.module.paxcounter.settings"="PAX Counter";
+"config.module.paxcounter.title"="PAX Counter Config";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth.";
+"config.module.paxcounter.updateinterval"="Update Interval";
+"config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="After config values save the node will reboot.";
 "communicating"="Communicating with device. .";
 "connected.radio"="Connected Radio";

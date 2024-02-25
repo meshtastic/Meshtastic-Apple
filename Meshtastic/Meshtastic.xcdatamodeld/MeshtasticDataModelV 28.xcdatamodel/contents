@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23E5196e" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23E5205c" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AmbientLightingConfigEntity" representedClassName="AmbientLightingConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="blue" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="current" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -251,6 +251,8 @@
         <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
         <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
+        <relationship name="pax" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PaxCountrerEntity" inverseName="paxNode" inverseEntity="PaxCountrerEntity"/>
+        <relationship name="paxCounterConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PaxCounterConfigEntity" inverseName="paxCounterConfigNode" inverseEntity="PaxCounterConfigEntity"/>
         <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
         <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
         <relationship name="powerConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PowerConfigEntity" inverseName="powerConfigNode" inverseEntity="PowerConfigEntity"/>
@@ -267,6 +269,18 @@
                 <constraint value="num"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
+    </entity>
+    <entity name="PaxCounterConfigEntity" representedClassName="PaxCounterConfigEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="enabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="paxcounterUpdateInterval" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="paxCounterConfigNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="paxCounterConfig" inverseEntity="NodeInfoEntity"/>
+    </entity>
+    <entity name="PaxCountrerEntity" representedClassName="PaxCountrerEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="ble" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="uptime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="wifi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="paxNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="pax" inverseEntity="NodeInfoEntity"/>
     </entity>
     <entity name="PositionConfigEntity" representedClassName="PositionConfigEntity" syncable="YES" codeGenerationType="class">
         <attribute name="broadcastSmartMinimumDistance" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
