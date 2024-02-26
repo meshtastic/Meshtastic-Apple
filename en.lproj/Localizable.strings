@@ -251,6 +251,13 @@
 "options"="Options";
 "password"="Password";
 "pause"="Pause";
+"paxcounter.ble"="BLE";
+"paxcounter.delete"="Delete all pax data?";
+"paxcounter.wifi"="WiFi";
+"paxcounter.uptime"="Uptime";
+"paxcounter.content.unavailable"="No PAX Counter Logs";
+"paxcounter.log"="PAX Counter Log";
+"paxcounter.total"="Total PAX";
 "phone.gps"="Phone GPS";
 "phone.gps.interval.description"="How frequently your phone will send your location to the device, location updates to the mesh are managed by the device.";
 "position"="Position";

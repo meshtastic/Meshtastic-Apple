@@ -569,6 +569,7 @@ func paxCounterPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 					return
 				}
 				mutablePax.add(newPax)
+				fetchedNode![0].pax = mutablePax
 				do {
 					try context.save()
 				} catch {

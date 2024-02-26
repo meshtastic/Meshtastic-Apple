@@ -24,7 +24,7 @@ struct PaxCounterConfig: View {
 
 			Section {
 				Toggle(isOn: $enabled) {
-					Label("enabled", systemImage: "figure.walk.departure")
+					Label("enabled", systemImage: "figure.walk.motion")
 					Text("config.module.paxcounter.enabled.description")
 				}
 				.toggleStyle(SwitchToggleStyle(tint: .accentColor))

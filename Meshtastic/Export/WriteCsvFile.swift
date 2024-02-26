@@ -68,6 +68,27 @@ func detectionsToCsv(detections: [MessageEntity]) -> String {
 	return csvString
 }
 
+func paxToCsvFile(pax: [PaxCounterEntity]) -> String {
+	var csvString: String = ""
+	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+	// Create PAX Header
+	csvString = "BLE, WiFi, Total Pax, Uptime, \("timestamp".localized)"
+	for p in pax {
+		csvString += "\n"
+		csvString += String(p.ble)
+		csvString += ", "
+		csvString += String(p.wifi)
+		csvString += ", "
+		csvString += String(p.ble + p.wifi)
+		csvString += ", "
+		csvString += String(p.uptime)
+		csvString += ", "
+		csvString += p.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
+	}
+	return csvString
+}
+
 func positionToCsvFile(positions: [PositionEntity]) -> String {
 	var csvString: String = ""
 	let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)

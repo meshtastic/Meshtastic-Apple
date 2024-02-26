@@ -290,7 +290,7 @@ struct Settings: View {
 							NavigationLink {
 								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 							} label: {
-								Image(systemName: "figure.walk.departure")
+								Image(systemName: "figure.walk.motion")
 									.symbolRenderingMode(.hierarchical)
 								Text("config.module.paxcounter.settings")
 							}
