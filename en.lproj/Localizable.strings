@@ -207,6 +207,7 @@
 "mesh.log.network.config %@"="Network config received: %@";
 "mesh.log.nodeinfo.received %@"="Node info received for: %@";
 "mesh.log.paxcounter %@"="PAX Counter message received from: %@";
+"mesh.log.paxcounter.config %@"="PAX Counter config received: %@";
 "mesh.log.position.config %@"="Positon config received: %@";
 "mesh.log.position.received %@"="Position Packet received from node: %@";
 "mesh.log.power.config %@"="Power config received: %@";

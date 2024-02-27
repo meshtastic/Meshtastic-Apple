@@ -71,31 +71,31 @@ struct PowerConfig: View {
 				} header: {
 					Text("config.power.section.battery")
 				}
-				Section {
-					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Picker("config.power.ls.secs", selection: $lsSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-					Picker("config.power.min.wake.secs", selection: $minWakeSecs) {
-						ForEach(PowerIntervals.allCases) {
-							Text($0.description)
-						}
-					}
-					.pickerStyle(DefaultPickerStyle())
-					
-				} header: {
-					Text("config.power.section.sleep")
-				}
+//				Section {
+//					Picker("config.power.wait.bluetooth.secs", selection: $waitBluetoothSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//					Picker("config.power.ls.secs", selection: $lsSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//					Picker("config.power.min.wake.secs", selection: $minWakeSecs) {
+//						ForEach(PowerIntervals.allCases) {
+//							Text($0.description)
+//						}
+//					}
+//					.pickerStyle(DefaultPickerStyle())
+//					
+//				} header: {
+//					Text("config.power.section.sleep")
+//				}
 			}
 		}
 		.disabled(self.bleManager.connectedPeripheral == nil || node?.powerConfig == nil)
