@@ -184,6 +184,7 @@
 "mesh.log.myinfo %@"="MyInfo התקבל: %@";
 "mesh.log.network.config %@"="הגדרות רשת התקבלו: %@";
 "mesh.log.nodeinfo.received %@"="מידע אודות מכשיר התקבל: %@";
+"mesh.log.paxcounter %@"="PAX Counter packet received for: %@";
 "mesh.log.position.config %@"="הגדרות מיקום התקבלו: %@";
 "mesh.log.position.received %@"="הודעת מיקום התקבלו מ-%@";
 "mesh.log.rangetest.config %@"="הגדרות מודולת בדיקת טווח התקבלו: %@";

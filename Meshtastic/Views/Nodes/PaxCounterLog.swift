@@ -75,8 +75,8 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"BLE": .blue,
-							"WiFi": .orange,
+							"paxcounter.ble": .blue,
+							"paxcounter.wifi": .orange,
 							"paxcounter.total".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
@@ -174,7 +174,7 @@ struct PaxCounterLog: View {
 						titleVisibility: .visible
 					) {
 						Button("paxcounter.delete", role: .destructive) {
-							if clearTelemetry(destNum: node.num, metricsType: 0, context: context) {
+							if clearPax(destNum: node.num, context: context) {
 								print("Cleared Pax Counter for \(node.num)")
 							} else {
 								print("Clear Pax Counter Log Failed")

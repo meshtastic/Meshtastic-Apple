@@ -6,6 +6,31 @@
 
 import CoreData
 
+public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+
+	do {
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return false
+		}
+		let newPax = [PaxCounterLog]()
+		fetchedNode[0].pax? = NSOrderedSet(array: newPax)
+		do {
+			try context.save()
+			return true
+
+		} catch {
+			context.rollback()
+			return false
+		}
+	} catch {
+		print("💥 Fetch NodeInfoEntity Error")
+		return false
+	}
+}
+
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")

@@ -179,6 +179,7 @@
 "mesh.log.myinfo %@"="Otrzymano Moje Informacje: %@";
 "mesh.log.network.config %@"="Odebrano konfigurację sieci: %@";
 "mesh.log.nodeinfo.received %@"="Odebrano informacje o węźle dla: %@";
+"mesh.log.paxcounter %@"="PAX Counter packet received for: %@";
 "mesh.log.position.config %@"="Odebrano konfigurację pozycji: %@";
 "mesh.log.position.received %@"="Odebrano pakiet pozycji od węzła: %@";
 "mesh.log.rangetest.config %@"="Odebrano konfigurację modułu testu zasięgu: %@";

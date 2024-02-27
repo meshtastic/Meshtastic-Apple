@@ -31,7 +31,7 @@ struct StoreForwardConfig: View {
 	var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "Store and forward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
+				ConfigHeader(title: "storeforward", config: \.storeForwardConfig, node: node, onAppear: setStoreAndForwardValues)
 				
 				Section(header: Text("options")) {
 					

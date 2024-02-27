@@ -177,6 +177,7 @@
 "mesh.log.myinfo %@"="MyInfo received: %@";
 "mesh.log.network.config %@"="Netzwerk onfiguration empfangen: %@";
 "mesh.log.nodeinfo.received %@"="Node info empfangen für: %@";
+"mesh.log.paxcounter %@"="PAX Counter message received for: %@";
 "mesh.log.position.config %@"="Positions Konfiguration empfangen: %@";
 "mesh.log.position.received %@"="Positionspaket empfangen von Node: %@";
 "mesh.log.rangetest.config %@"="Range Test Modul konfiguration empfangen: %@";

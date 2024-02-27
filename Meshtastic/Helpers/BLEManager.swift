@@ -593,7 +593,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -620,7 +620,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .rangeTestApp:
 				if wantRangeTestPackets {
-					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+					textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: true, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
 					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
@@ -653,7 +653,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						var hopNodes: [TraceRouteHopEntity] = []
 						for node in routingMessage.route {
 							var hopNode = getNodeInfo(id: Int64(node), context: context!)
-							if hopNode == nil {
+							if hopNode == nil && hopNode?.num ?? 0 > 0 {
 								hopNode = createNodeInfo(num: Int64(node), context: context!)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context!)
@@ -2590,10 +2590,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerTextDirect:
 				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			case .routerTextBroadcast:
 				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			}
 		}
 	}

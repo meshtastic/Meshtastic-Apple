@@ -401,6 +401,10 @@ struct Channels: View {
 								guard let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as? ChannelEntity else {
 									return
 								}
+								let objects = channelEntity.allPrivateMessages
+								for object in objects {
+									context.delete(object)
+								}								
 								context.delete(channelEntity)
 								do {
 									try context.save()

@@ -217,8 +217,10 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 				fetchedNode[0].metadata = newMetadata
 			} else {
 				
-				let newNode = createNodeInfo(num: Int64(fromNum), context: context)
-				newNode.metadata = newMetadata
+				if fromNum > 0 {
+					let newNode = createNodeInfo(num: Int64(fromNum), context: context)
+					newNode.metadata = newMetadata
+				}
 			}
 			do {
 				try context.save()
@@ -770,9 +772,12 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 	}
 }
 
-func textMessageAppPacket(packet: MeshPacket, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
+func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
 
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
+	if !wantRangeTestPackets && ((messageText?.starts(with: "seq ")) != nil) {
+		return
+	}
 	var storeForwardBroadcast = false
 	if storeForward {
 		if let storeAndForwardMessage = try? StoreAndForward(serializedData: packet.decoded.payload) {
