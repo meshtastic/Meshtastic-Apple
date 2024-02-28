@@ -101,12 +101,22 @@ struct NodeMapSwiftUI: View {
 							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
 							/// Reduced Precision Map Circle
-							if position.latest && 11...16 ~= position.precisionBits {
-								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
-								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
-								if radius > 0.0 {
-									MapCircle(center: position.coordinate, radius: radius)
-										.foregroundStyle(Color(nodeColor).opacity(0.25))
+//							if position.latest && 11...16 ~= position.precisionBits {
+//								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+//								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+//								if radius > 0.0 {
+//									MapCircle(center: position.coordinate, radius: radius)
+//										.foregroundStyle(Color(nodeColor).opacity(0.25))
+//								}
+//							}
+							if position.latest {
+								if 11...16 ~= position.precisionBits {
+									let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+									let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+									if radius > 0.0 {
+										MapCircle(center: position.coordinate, radius: radius)
+											.foregroundStyle(Color(nodeColor).opacity(0.25))
+									}
 								}
 							}
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
