@@ -974,49 +974,65 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
+		
+		let fetchChannelRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "ChannelEntity")
+		fetchChannelRequest.predicate = NSPredicate(format: "index == %lld", channel)
 
-		if #available(iOS 17.0, macOS 14.0, *) {
-			
-			if let lastLocation = LocationsHandler.shared.locationsArray.last {
+		do {
+			guard let fetchedChannel = try context!.fetch(fetchChannelRequest) as? [ChannelEntity] else {
+				return false
+			}
+			if #available(iOS 17.0, macOS 14.0, *) {
 				
-				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-				let timestamp = lastLocation.timestamp
+				if let lastLocation = LocationsHandler.shared.locationsArray.last {
+					
+					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+					positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+					let timestamp = lastLocation.timestamp
+					positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+					positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+					positionPacket.altitude = Int32(lastLocation.altitude)
+					positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+					positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
+					let currentSpeed = lastLocation.speed
+					if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+						positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+					}
+					let currentHeading = lastLocation.course
+					if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+						positionPacket.groundTrack = UInt32(currentHeading)
+					}
+					
+				}
+
+			} else {
+				if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+					return false
+				}
+				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+				let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
 				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.altitude = Int32(lastLocation.altitude)
-				positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-				let currentSpeed = lastLocation.speed
+				positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+				positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+				positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
+				let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
 				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
 					positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
 				}
-				let currentHeading = lastLocation.course
+				let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
 				if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
 					positionPacket.groundTrack = UInt32(currentHeading)
 				}
-				
 			}
-
-		} else {
-			if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-				return false
-			}
-			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-			}
-			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
+			
+		} catch {
+			return false
 		}
+		return false
+
+
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
