@@ -34,7 +34,7 @@ struct NodeInfoItem: View {
 						.font(.caption2).fixedSize()
 				}
 			}
-			if node.snr != 0 {
+			if node.snr != 0 && !node.viaMqtt {
 				Divider()
 				VStack(alignment: .center) {
 					let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
