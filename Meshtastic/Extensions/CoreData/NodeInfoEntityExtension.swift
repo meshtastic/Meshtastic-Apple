@@ -31,6 +31,11 @@ extension NodeInfoEntity {
 		return traceRoutes?.count ?? 0 > 0
 	}
 	
+	var hasPax: Bool {
+		return pax?.count ?? 0 > 0
+	}
+	
+	
 	var isStoreForwardRouter: Bool {
 		return storeForwardConfig?.isRouter ?? false
 	}

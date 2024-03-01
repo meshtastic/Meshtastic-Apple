@@ -68,6 +68,7 @@ struct NodeListItem: View {
 							Text("Role: \(role?.name ?? "unknown".localized)")
 								.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								.foregroundColor(.gray)
+							
 						}
 						if node.isStoreForwardRouter {
 							HStack {

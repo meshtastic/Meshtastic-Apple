@@ -427,10 +427,6 @@ struct Config {
     /// Set where GPS is enabled, disabled, or not present
     var gpsMode: Config.PositionConfig.GpsMode = .disabled
 
-    ///
-    /// Set GPS precision in bits per channel, or 0 for disabled
-    var channelPrecision: [UInt32] = []
-
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1852,7 +1848,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     11: .standard(proto: "broadcast_smart_minimum_interval_secs"),
     12: .standard(proto: "gps_en_gpio"),
     13: .standard(proto: "gps_mode"),
-    14: .standard(proto: "channel_precision"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1874,7 +1869,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 11: try { try decoder.decodeSingularUInt32Field(value: &self.broadcastSmartMinimumIntervalSecs) }()
       case 12: try { try decoder.decodeSingularUInt32Field(value: &self.gpsEnGpio) }()
       case 13: try { try decoder.decodeSingularEnumField(value: &self.gpsMode) }()
-      case 14: try { try decoder.decodeRepeatedUInt32Field(value: &self.channelPrecision) }()
       default: break
       }
     }
@@ -1920,9 +1914,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.gpsMode != .disabled {
       try visitor.visitSingularEnumField(value: self.gpsMode, fieldNumber: 13)
     }
-    if !self.channelPrecision.isEmpty {
-      try visitor.visitPackedUInt32Field(value: self.channelPrecision, fieldNumber: 14)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1940,7 +1931,6 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.broadcastSmartMinimumIntervalSecs != rhs.broadcastSmartMinimumIntervalSecs {return false}
     if lhs.gpsEnGpio != rhs.gpsEnGpio {return false}
     if lhs.gpsMode != rhs.gpsMode {return false}
-    if lhs.channelPrecision != rhs.channelPrecision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

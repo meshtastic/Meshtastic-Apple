@@ -593,7 +593,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Log any other unknownApp calls
 				if !nowKnown { MeshLogger.log("🕸️ MESH PACKET received for Unknown App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")") }
 			case .textMessageApp, .detectionSensorApp:
-				textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .remoteHardwareApp:
 				MeshLogger.log("🕸️ MESH PACKET received for Remote Hardware App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
 			case .positionApp:
@@ -620,7 +620,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .rangeTestApp:
 				if wantRangeTestPackets {
-					textMessageAppPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
+					textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: true, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 				}
 				else {
 					MeshLogger.log("🕸️ MESH PACKET received for Range Test App Range testing is disabled.")
@@ -653,7 +653,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						var hopNodes: [TraceRouteHopEntity] = []
 						for node in routingMessage.route {
 							var hopNode = getNodeInfo(id: Int64(node), context: context!)
-							if hopNode == nil {
+							if hopNode == nil && hopNode?.num ?? 0 > 0 {
 								hopNode = createNodeInfo(num: Int64(node), context: context!)
 							}
 							let traceRouteHop = TraceRouteHopEntity(context: context!)
@@ -676,7 +676,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							if hopNode != nil {
 								hopNodes.append(traceRouteHop)
 							}
-							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) --> "
+							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
 						}
 						routeString += traceRoute?.node?.user?.longName ?? "unknown".localized
 						traceRoute?.routeText = routeString
@@ -699,7 +699,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				//	MeshLogger.log("🕸️ MESH PACKET received for Neighbor Info App UNHANDLED \(neighborInfo)")
 				}
 			case .paxcounterApp:
-				MeshLogger.log("🕸️ MESH PACKET received for PAX Counter App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				paxCounterPacket(packet: decodedInfo.packet, context: context!)
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
@@ -974,49 +974,65 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var success = false
 		let fromNodeNum = connectedPeripheral.num
 		var positionPacket = Position()
+		
+		let fetchChannelRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "ChannelEntity")
+		fetchChannelRequest.predicate = NSPredicate(format: "index == %lld", channel)
 
-		if #available(iOS 17.0, macOS 14.0, *) {
-			
-			if let lastLocation = LocationsHandler.shared.locationsArray.last {
+		do {
+			guard let fetchedChannel = try context!.fetch(fetchChannelRequest) as? [ChannelEntity] else {
+				return false
+			}
+			if #available(iOS 17.0, macOS 14.0, *) {
 				
-				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-				let timestamp = lastLocation.timestamp
+				if let lastLocation = LocationsHandler.shared.locationsArray.last {
+					
+					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+					positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+					let timestamp = lastLocation.timestamp
+					positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+					positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+					positionPacket.altitude = Int32(lastLocation.altitude)
+					positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+					positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
+					let currentSpeed = lastLocation.speed
+					if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+						positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+					}
+					let currentHeading = lastLocation.course
+					if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+						positionPacket.groundTrack = UInt32(currentHeading)
+					}
+					
+				}
+
+			} else {
+				if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+					return false
+				}
+				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+				let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
 				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.altitude = Int32(lastLocation.altitude)
-				positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-				let currentSpeed = lastLocation.speed
+				positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+				positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+				positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
+				let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
 				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
 					positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
 				}
-				let currentHeading = lastLocation.course
+				let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
 				if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
 					positionPacket.groundTrack = UInt32(currentHeading)
 				}
-				
 			}
-
-		} else {
-			if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-				return false
-			}
-			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-				positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-			}
-			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-			if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-				positionPacket.groundTrack = UInt32(currentHeading)
-			}
+			
+		} catch {
+			return false
 		}
+		return false
+
+
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
@@ -1704,6 +1720,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
+	public func savePaxcounterModuleConfig(config: ModuleConfig.PaxcounterConfig, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.setModuleConfig.paxcounter = config
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛟 Saved PAX Counter Module Config for \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			upsertPaxCounterModuleConfigPacket(config: config, nodeNum: toUser.num, context: context!)
+			return Int64(meshPacket.id)
+		}
+		
+		return 0
+	}
+	
 	public func saveRtttlConfig(ringtone: String, fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Int64 {
 		
 		var adminPacket = AdminMessage()
@@ -2204,6 +2247,33 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return false
 	}
 	
+	public func requestPaxCounterModuleConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
+		
+		var adminPacket = AdminMessage()
+		adminPacket.getModuleConfigRequest = AdminMessage.ModuleConfigType.paxcounterConfig
+		
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(toUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.channel = UInt32(adminIndex)
+		meshPacket.wantAck = true
+		
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		dataMessage.wantResponse = true
+		
+		meshPacket.decoded = dataMessage
+		
+		let messageDescription = "🛎️ Requested PAX Counter Module Config on admin channel \(adminIndex) for node: \(toUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: toUser) {
+			return true
+		}
+		return false
+	}
+	
 	public func requestRtttlConfig(fromUser: UserEntity, toUser: UserEntity, adminIndex: Int32) -> Bool {
 		
 		var adminPacket = AdminMessage()
@@ -2536,10 +2606,10 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				MeshLogger.log("📮 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
 			case .routerTextDirect:
 				MeshLogger.log("💬 Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			case .routerTextBroadcast:
 				MeshLogger.log("✉️ Store and Forward \(storeAndForwardMessage.rr) message received from \(packet.from)")
-				textMessageAppPacket(packet: packet, connectedNode: connectedNodeNum, storeForward: true, context: context)
+				textMessageAppPacket(packet: packet, wantRangeTestPackets: false, connectedNode: connectedNodeNum, storeForward: true, context: context)
 			}
 		}
 	}

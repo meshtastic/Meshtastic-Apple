@@ -116,6 +116,15 @@ struct MeshMap: View {
 									selectedPosition = (selectedPosition == position ? nil : position)
 								}
 							}
+							/// Reduced Precision Map Circles
+							if 11...16 ~= position.precisionBits {
+								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+								if radius > 0.0 {
+									MapCircle(center: position.coordinate, radius: radius)
+										.foregroundStyle(Color(nodeColor).opacity(0.25))
+								}
+							}
 							/// Routes
 							ForEach(Array(routes), id: \.id) { route in
 								let routeLocations = Array(route.locations!) as! [LocationEntity]

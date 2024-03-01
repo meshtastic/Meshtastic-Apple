@@ -469,7 +469,7 @@ struct PLI {
 
   ///
   /// Altitude (ATAK prefers HAE)
-  var altitude: UInt32 = 0
+  var altitude: Int32 = 0
 
   ///
   /// Speed
@@ -796,7 +796,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
       case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.altitude) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.speed) }()
       case 5: try { try decoder.decodeSingularUInt32Field(value: &self.course) }()
       default: break
@@ -812,7 +812,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
       try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 2)
     }
     if self.altitude != 0 {
-      try visitor.visitSingularUInt32Field(value: self.altitude, fieldNumber: 3)
+      try visitor.visitSingularInt32Field(value: self.altitude, fieldNumber: 3)
     }
     if self.speed != 0 {
       try visitor.visitSingularUInt32Field(value: self.speed, fieldNumber: 4)

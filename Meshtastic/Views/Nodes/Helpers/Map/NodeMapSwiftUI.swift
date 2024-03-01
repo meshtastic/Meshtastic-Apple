@@ -100,6 +100,15 @@ struct NodeMapSwiftUI: View {
 						ForEach(positionArray, id: \.id) { position in
 							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
+							/// Reduced Precision Map Circle
+							if position.latest && 11...16 ~= position.precisionBits {
+								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+								if radius > 0.0 {
+									MapCircle(center: position.coordinate, radius: radius)
+										.foregroundStyle(Color(nodeColor).opacity(0.25))
+								}
+							}
 							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 								LazyVStack {
 									if position.latest {
@@ -256,7 +265,7 @@ struct NodeMapSwiftUI: View {
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
 						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 150, heading: 0, pitch: 60))
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 5000, heading: 0, pitch: 60))
 						}
 						if self.scene == nil {
 							Task {
@@ -322,13 +331,6 @@ struct NodeMapSwiftUI: View {
 								.foregroundColor(.accentColor)
 								.buttonStyle(.borderedProminent)
 							}
-#if targetEnvironment(macCatalyst)
-							/// Hide non fuctional catalyst controls
-							//							MapZoomStepper(scope: mapScope)
-							//								.mapControlVisibility(.visible)
-							//							MapPitchSlider(scope: mapScope)
-							//								.mapControlVisibility(.visible)
-#endif
 						}
 						.controlSize(.regular)
 						.padding(5)

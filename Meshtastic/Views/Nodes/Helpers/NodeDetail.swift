@@ -81,18 +81,6 @@ struct NodeDetail: View {
 							}
 							.disabled(!node.hasEnvironmentMetrics)
 							Divider()
-							NavigationLink {
-								DetectionSensorLog(node: node)
-							} label: {
-								Image(systemName: "sensor")
-									.symbolRenderingMode(.hierarchical)
-									.font(.title)
-								
-								Text("Detection Sensor Log")
-									.font(.title3)
-							}
-							.disabled(!node.hasDetectionSensorMetrics)
-							Divider()
 							if #available(iOS 17.0, macOS 14.0, *) {
 								NavigationLink {
 									TraceRouteLog(node: node)
@@ -105,6 +93,32 @@ struct NodeDetail: View {
 										.font(.title3)
 								}
 								.disabled(node.traceRoutes?.count ?? 0 == 0)
+								Divider()
+							}
+							NavigationLink {
+								DetectionSensorLog(node: node)
+							} label: {
+								Image(systemName: "sensor")
+									.symbolRenderingMode(.hierarchical)
+									.font(.title)
+								
+								Text("Detection Sensor Log")
+									.font(.title3)
+							}
+							.disabled(!node.hasDetectionSensorMetrics)
+							Divider()
+							if node.hasPax {
+								NavigationLink {
+									PaxCounterLog(node: node)
+								} label: {
+									Image(systemName: "figure.walk.motion")
+										.symbolRenderingMode(.hierarchical)
+										.font(.title)
+									
+									Text("paxcounter.log")
+										.font(.title3)
+								}
+								.disabled(!node.hasPax)
 								Divider()
 							}
 						}

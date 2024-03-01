@@ -21,12 +21,12 @@ struct RtttlConfig: View {
     var body: some View {
 		VStack {
 			Form {
-				ConfigHeader(title: "RTTTL Ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
+				ConfigHeader(title: "ringtone", config: \.rtttlConfig, node: node, onAppear: setRtttLConfigValue)
 				
 				Section(header: Text("options")) {
 					HStack {
 						Label("ringtone", systemImage: "music.quarternote.3")
-						TextField("Ringtone Transfer Language", text: $ringtone, axis: .vertical)
+						TextField("config.ringtone.label", text: $ringtone, axis: .vertical)
 							.foregroundColor(.gray)
 							.autocapitalization(.none)
 							.disableAutocorrection(true)
@@ -47,7 +47,7 @@ struct RtttlConfig: View {
 					}
 					.keyboardType(.default)
 					.listRowSeparator(.hidden)
-					Text("Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.")
+					Text("config.ringtone.description")
 						.foregroundColor(.gray)
 						.font(.callout)
 				}
@@ -66,7 +66,7 @@ struct RtttlConfig: View {
 					}
 				}
 			}
-			.navigationTitle("ringtone.config")
+			.navigationTitle("config.ringtone.title")
 			.navigationBarItems(trailing:
 				ZStack {
 					ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")

@@ -6,6 +6,31 @@
 
 import CoreData
 
+public func clearPax(destNum: Int64, context: NSManagedObjectContext) -> Bool {
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(destNum))
+
+	do {
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return false
+		}
+		let newPax = [PaxCounterLog]()
+		fetchedNode[0].pax? = NSOrderedSet(array: newPax)
+		do {
+			try context.save()
+			return true
+
+		} catch {
+			context.rollback()
+			return false
+		}
+	} catch {
+		print("💥 Fetch NodeInfoEntity Error")
+		return false
+	}
+}
+
 public func clearPositions(destNum: Int64, context: NSManagedObjectContext) -> Bool {
 
 	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
@@ -256,6 +281,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.satsInView = Int32(positionMessage.satsInView)
 					position.speed = Int32(positionMessage.groundSpeed * UInt32(3.6))
 					position.heading = Int32(positionMessage.groundTrack)
+					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
 					} else {
@@ -265,11 +291,14 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
-					if mutablePositions.count > 0 {
+					if mutablePositions.count > 0 && position.precisionBits == 32 {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 10 {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 15 {
 							mutablePositions.remove(mostRecent)
 						}
+					} else if mutablePositions.count > 0 && 11...16 ~= position.precisionBits {
+						/// Don't store any history for reduced accuracy positions, we will just show a circle
+						mutablePositions.removeAllObjects()
 					}
 					mutablePositions.add(position)
 					fetchedNode[0].id = Int64(packet.from)
@@ -942,6 +971,51 @@ func upsertExternalNotificationModuleConfigPacket(config: Meshtastic.ModuleConfi
 	} catch {
 		let nsError = error as NSError
 		print("💥 Fetching node for core data ExternalNotificationConfigEntity failed: \(nsError)")
+	}
+}
+
+func upsertPaxCounterModuleConfigPacket(config: Meshtastic.ModuleConfig.PaxcounterConfig, nodeNum: Int64, context: NSManagedObjectContext) {
+
+	let logString = String.localizedStringWithFormat("mesh.log.paxcounter.config %@".localized, String(nodeNum))
+	MeshLogger.log("🧑‍🤝‍🧑 \(logString)")
+
+	let fetchNodeInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "NodeInfoEntity")
+	fetchNodeInfoRequest.predicate = NSPredicate(format: "num == %lld", Int64(nodeNum))
+
+	do {
+
+		guard let fetchedNode = try context.fetch(fetchNodeInfoRequest) as? [NodeInfoEntity] else {
+			return
+		}
+		// Found a node, save PAX Counter Config
+		if !fetchedNode.isEmpty {
+
+			if fetchedNode[0].paxCounterConfig == nil {
+				let newPaxCounterConfig = PaxCounterConfigEntity(context: context)
+				newPaxCounterConfig.enabled = config.enabled
+				newPaxCounterConfig.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+				
+				fetchedNode[0].paxCounterConfig = newPaxCounterConfig
+
+			} else {
+				fetchedNode[0].paxCounterConfig?.enabled = config.enabled
+				fetchedNode[0].paxCounterConfig?.paxcounterUpdateInterval = Int32(config.paxcounterUpdateInterval)
+			}
+
+			do {
+				try context.save()
+				print("💾 Updated PAX Counter Module Config for node number: \(String(nodeNum))")
+			} catch {
+				context.rollback()
+				let nsError = error as NSError
+				print("💥 Error Updating Core Data ExternalNotificationConfigEntity: \(nsError)")
+			}
+		} else {
+			print("💥 No Nodes found in local database matching node number \(nodeNum) unable to save PAX Counter Module Config")
+		}
+	} catch {
+		let nsError = error as NSError
+		print("💥 Fetching node for core data PaxCounterConfigEntity failed: \(nsError)")
 	}
 }
 

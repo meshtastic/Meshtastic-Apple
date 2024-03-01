@@ -82,7 +82,7 @@ struct PositionConfig: View {
 					VStack(alignment: .leading) {
 						Picker("Broadcast Interval", selection: $positionBroadcastSeconds) {
 							ForEach(UpdateIntervals.allCases) { at in
-								if at.rawValue >= 900 {
+								if at.rawValue >= 300 {
 									Text(at.description)
 								}
 							}
