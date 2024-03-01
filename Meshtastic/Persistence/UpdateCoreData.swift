@@ -147,11 +147,23 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.channel = Int32(packet.channel)
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
-				print(packet.channel)
-				print("Channel From Message\(nodeInfoMessage.channel)")
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
-				let newUser = UserEntity(context: context)
+				
+				if newUserMessage.id.isEmpty {
+					let newUser = UserEntity(context: context)
+					newUser.num = Int64(packet.from)
+					let userId = String(format:"%2X", packet.from)
+					newUser.userId = "!\(userId)"
+					let last4 = String(userId.suffix(4))
+					newUser.longName = "Meshtastic \(last4)"
+					newUser.shortName = last4
+					newUser.hwModel = "UNSET"
+					newNode.user = newUser
+					
+				} else {
+					
+					let newUser = UserEntity(context: context)
 					newUser.userId = newUserMessage.id
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
@@ -159,6 +171,17 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
+				}
+			} else {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(packet.from)
+				let userId = String(format:"%2X", packet.from)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				newNode.user = newUser
 			}
 			
 			if newNode.user == nil {
@@ -177,7 +200,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			//newNode.objectWillChange.send()
 			
 		} else {
 			// Update an existing node
@@ -211,19 +233,18 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-				} else {
-					if (fetchedNode[0].user == nil) {
-						let newUser = UserEntity(context: context)
-						newUser.num = Int64(nodeInfoMessage.num)
-						let userId = String(format:"%2X", nodeInfoMessage.num)
-						newUser.userId = "!\(userId)"
-						let last4 = String(userId.suffix(4))
-						newUser.longName = "Meshtastic \(last4)"
-						newUser.shortName = last4
-						newUser.hwModel = "UNSET"
-						fetchedNode[0].user! = newUser
-					}
 				}
+			}
+			if (fetchedNode[0].user == nil) {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(packet.from)
+				let userId = String(format:"%2X", packet.from)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				fetchedNode[0].user! = newUser
 			}
 			do {
 				try context.save()
