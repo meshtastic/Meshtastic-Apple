@@ -36,6 +36,7 @@ struct NodeList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
+	@State private var isPresentingPositionSentAlert = false
 	@State private var deleteNodeId: Int64 = 0
 	@State private var searchState = NodeSearchState()
 	
@@ -89,7 +90,21 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
-						if connectedNodeNum != node.num {
+						if bleManager.connectedPeripheral != nil {
+							Button {
+								let positionSent = bleManager.sendPosition(
+									channel: node.channel,
+									destNum: node.num,
+									wantResponse: true
+								)
+								if positionSent {
+									isPresentingPositionSentAlert = true
+								}
+							} label: {
+								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
+							}
+						}
+						if bleManager.connectedPeripheral != nil && connectedNodeNum != node.num {
 							Button {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
@@ -119,6 +134,14 @@ struct NodeList: View {
 							}
 						}
 					}
+				}
+				.alert(
+					"Position Sent",
+					isPresented: $isPresentingPositionSentAlert
+				) {
+					Button("OK", role: .cancel) { }
+				} message: {
+					Text("Your position has been sent with a request for a response with their position.")
 				}
 				.alert(
 					"Trace Route Sent",
@@ -214,10 +237,10 @@ struct NodeList: View {
 		}
 		.navigationSplitViewStyle(.balanced)
 		.onChange(of: searchState.searchText) { _ in
-			runSearch()
+			searchNodeList()
 		}
 		.onChange(of: searchState.searchScope) { _ in
-			runSearch()
+			searchNodeList()
 		}
 		.onAppear {
 			if self.bleManager.context == nil {
@@ -226,9 +249,9 @@ struct NodeList: View {
 		}
 	}
 	
-	private func runSearch() {
+	private func searchNodeList() {
 		/// Case Insensitive Search Text Predicates
-		var searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
+		let searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchState.searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR

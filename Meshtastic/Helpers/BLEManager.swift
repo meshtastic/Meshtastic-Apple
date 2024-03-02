@@ -1039,9 +1039,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} catch {
 			return false
 		}
-		return false
-
-
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)
