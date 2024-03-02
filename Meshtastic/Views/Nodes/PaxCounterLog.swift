@@ -75,8 +75,8 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"paxcounter.ble": .blue,
-							"paxcounter.wifi": .orange,
+							"paxcounter.ble".localized: .blue,
+							"paxcounter.wifi".localized: .orange,
 							"paxcounter.total".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)

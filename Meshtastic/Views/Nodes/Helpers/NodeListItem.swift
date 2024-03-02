@@ -170,11 +170,13 @@ struct NodeListItem: View {
 										.font(.callout)
 										.frame(width: 30)
 								}
-								if node.hasTraceRoutes {
-									Image(systemName: "signpost.right.and.left")
-										.symbolRenderingMode(.hierarchical)
-										.font(.callout)
-										.frame(width: 30)
+								if #available(iOS 17.0, macOS 14.0, *) {
+									if node.hasTraceRoutes {
+										Image(systemName: "signpost.right.and.left")
+											.symbolRenderingMode(.hierarchical)
+											.font(.callout)
+											.frame(width: 30)
+									}
 								}
 							}
 						}

@@ -230,8 +230,7 @@
     <entity name="NodeInfoEntity" representedClassName="NodeInfoEntity" syncable="YES" codeGenerationType="class">
         <attribute name="bleName" optional="YES" attributeType="String"/>
         <attribute name="channel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="detection" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="environment" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="hopsAway" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastHeard" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="num" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -239,31 +238,31 @@
         <attribute name="rssi" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="snr" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="viaMqtt" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
-        <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
-        <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
-        <relationship name="detectionSensorConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DetectionSensorConfigEntity" inverseName="detectionSensorConfigNode" inverseEntity="DetectionSensorConfigEntity"/>
-        <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
-        <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
-        <relationship name="externalNotificationConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExternalNotificationConfigEntity" inverseName="externalNotificationConfigNode" inverseEntity="ExternalNotificationConfigEntity"/>
-        <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
-        <relationship name="metadata" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DeviceMetadataEntity" inverseName="metadataNode" inverseEntity="DeviceMetadataEntity"/>
-        <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
+        <relationship name="ambientLightingConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="AmbientLightingConfigEntity" inverseName="ambientLightingConfigNode" inverseEntity="AmbientLightingConfigEntity"/>
+        <relationship name="bluetoothConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="BluetoothConfigEntity" inverseName="bluetoothConfigNode" inverseEntity="BluetoothConfigEntity"/>
+        <relationship name="cannedMessageConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="CannedMessageConfigEntity" inverseName="cannedMessagesConfigNode" inverseEntity="CannedMessageConfigEntity"/>
+        <relationship name="detectionSensorConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DetectionSensorConfigEntity" inverseName="detectionSensorConfigNode" inverseEntity="DetectionSensorConfigEntity"/>
+        <relationship name="deviceConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DeviceConfigEntity" inverseName="deviceConfigNode" inverseEntity="DeviceConfigEntity"/>
+        <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DisplayConfigEntity" inverseName="displayConfigNode" inverseEntity="DisplayConfigEntity"/>
+        <relationship name="externalNotificationConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ExternalNotificationConfigEntity" inverseName="externalNotificationConfigNode" inverseEntity="ExternalNotificationConfigEntity"/>
+        <relationship name="loRaConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="LoRaConfigEntity" inverseName="loRaConfigNode" inverseEntity="LoRaConfigEntity"/>
+        <relationship name="metadata" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DeviceMetadataEntity" inverseName="metadataNode" inverseEntity="DeviceMetadataEntity"/>
+        <relationship name="mqttConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MQTTConfigEntity" inverseName="mqttConfigNode" inverseEntity="MQTTConfigEntity"/>
         <relationship name="myInfo" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MyInfoEntity" inverseName="myInfoNode" inverseEntity="MyInfoEntity"/>
-        <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
-        <relationship name="pax" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PaxCounterEntity" inverseName="paxNode" inverseEntity="PaxCounterEntity"/>
-        <relationship name="paxCounterConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PaxCounterConfigEntity" inverseName="paxCounterConfigNode" inverseEntity="PaxCounterConfigEntity"/>
-        <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
-        <relationship name="positions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
-        <relationship name="powerConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PowerConfigEntity" inverseName="powerConfigNode" inverseEntity="PowerConfigEntity"/>
-        <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
-        <relationship name="rtttlConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RTTTLConfigEntity" inverseName="rtttlConfigNode" inverseEntity="RTTTLConfigEntity"/>
-        <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
-        <relationship name="storeForwardConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="StoreForwardConfigEntity" inverseName="storeForwardConfigNode" inverseEntity="StoreForwardConfigEntity"/>
-        <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
-        <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
-        <relationship name="traceRoutes" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="TraceRouteEntity" inverseName="node" inverseEntity="TraceRouteEntity"/>
-        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
+        <relationship name="networkConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="NetworkConfigEntity" inverseName="networkConfigNode" inverseEntity="NetworkConfigEntity"/>
+        <relationship name="pax" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PaxCounterEntity" inverseName="paxNode" inverseEntity="PaxCounterEntity"/>
+        <relationship name="paxCounterConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="PaxCounterConfigEntity" inverseName="paxCounterConfigNode" inverseEntity="PaxCounterConfigEntity"/>
+        <relationship name="positionConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="PositionConfigEntity" inverseName="positionConfigNode" inverseEntity="PositionConfigEntity"/>
+        <relationship name="positions" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PositionEntity" inverseName="nodePosition" inverseEntity="PositionEntity"/>
+        <relationship name="powerConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="PowerConfigEntity" inverseName="powerConfigNode" inverseEntity="PowerConfigEntity"/>
+        <relationship name="rangeTestConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="RangeTestConfigEntity" inverseName="rangeTestConfigNode" inverseEntity="RangeTestConfigEntity"/>
+        <relationship name="rtttlConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="RTTTLConfigEntity" inverseName="rtttlConfigNode" inverseEntity="RTTTLConfigEntity"/>
+        <relationship name="serialConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="SerialConfigEntity" inverseName="serialConfigNode" inverseEntity="SerialConfigEntity"/>
+        <relationship name="storeForwardConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="StoreForwardConfigEntity" inverseName="storeForwardConfigNode" inverseEntity="StoreForwardConfigEntity"/>
+        <relationship name="telemetries" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="TelemetryEntity" inverseName="nodeTelemetry" inverseEntity="TelemetryEntity"/>
+        <relationship name="telemetryConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="TelemetryConfigEntity" inverseName="telemetryConfigNode" inverseEntity="TelemetryConfigEntity"/>
+        <relationship name="traceRoutes" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="TraceRouteEntity" inverseName="node" inverseEntity="TraceRouteEntity"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="UserEntity" inverseName="userNode" inverseEntity="UserEntity"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="num"/>
@@ -422,8 +421,8 @@
         <attribute name="shortName" attributeType="String"/>
         <attribute name="userId" attributeType="String"/>
         <attribute name="vip" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
-        <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
+        <relationship name="receivedMessages" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="MessageEntity" inverseName="toUser" inverseEntity="MessageEntity"/>
+        <relationship name="sentMessages" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="MessageEntity" inverseName="fromUser" inverseEntity="MessageEntity"/>
         <relationship name="userNode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="NodeInfoEntity" inverseName="user" inverseEntity="NodeInfoEntity"/>
         <fetchedProperty name="adminMessages" optional="YES">
             <fetchRequest name="fetchedPropertyFetchRequest" entity="MessageEntity" predicateString="(fromUser.num == $FETCH_SOURCE.num) AND isEmoji == false AND admin = true"/>
