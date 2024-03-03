@@ -23,6 +23,16 @@ struct NodeListItem: View {
 					VStack(alignment: .leading) {
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
+						if node.hopsAway == 0 {
+							HStack {
+								Image(systemName: "hare")
+									.font(.callout)
+									.symbolRenderingMode(.hierarchical)
+								Image(systemName: "\(node.hopsAway).square")
+									.font(.title2)
+									.symbolRenderingMode(.hierarchical)
+							}
+						}
 						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -118,6 +128,7 @@ struct NodeListItem: View {
 							}
 						}
 						HStack {
+
 							if node.channel > 0 {
 								Image(systemName: "fibrechannel")
 									.font(.callout)
@@ -180,12 +191,12 @@ struct NodeListItem: View {
 								}
 							}
 						}
-						if !connected {
-							HStack {
+						if !node.viaMqtt && connectedNode != node.num {
+							HStack (alignment: .bottom) {
 								let preset = ModemPresets(rawValue: Int(modemPreset))
 								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
-									
 							}
+							.padding(.top)
 						}
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)
