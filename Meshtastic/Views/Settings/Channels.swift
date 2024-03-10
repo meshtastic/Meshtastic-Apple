@@ -68,6 +68,8 @@ struct Channels: View {
 								channelKeySize = 0
 							} else if channelKey == "AQ==" {
 								channelKeySize = -1
+							} else if channelKey.count == 4 {
+								channelKeySize = 1
 							} else if channelKey.count == 24 {
 								channelKeySize = 16
 							} else if channelKey.count == 32 {
@@ -303,7 +305,7 @@ struct Channels: View {
 				}
 				.onAppear {
 					let tempKey = Data(base64Encoded: channelKey) ?? Data()
-					if tempKey.count == channelKeySize || channelKeySize == -1{
+					if tempKey.count == channelKeySize || channelKeySize == -1 {
 						hasValidKey = true
 					}
 					else {
