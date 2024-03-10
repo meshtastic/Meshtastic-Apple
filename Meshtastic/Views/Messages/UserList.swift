@@ -157,7 +157,7 @@ struct UserList: View {
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
 			.searchable(text: usersQuery, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
-			.disableAutocorrection(true)
+				.disableAutocorrection(true)
 		}
 	}
 }

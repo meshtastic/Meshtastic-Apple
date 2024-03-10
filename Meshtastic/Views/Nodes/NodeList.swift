@@ -160,7 +160,7 @@ struct NodeList: View {
 				}
 			}
 			.searchable(text: $searchState.searchText, placement: nodes.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a node")
-			.disableAutocorrection(true)
+				.disableAutocorrection(true)
 			.searchScopes($searchState.searchScope) {
 				ForEach(NodeSearchState.SearchScopes.allCases) { scope in
 					Text(scope.title).tag(scope)
