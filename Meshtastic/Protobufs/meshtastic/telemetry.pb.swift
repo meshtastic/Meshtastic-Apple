@@ -84,6 +84,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// INA3221 3 Channel Voltage / Current Sensor
   case ina3221 // = 14
+
+  ///
+  /// BMP085/BMP180 High accuracy temperature and pressure (older Version of BMP280)
+  case bmp085 // = 15
   case UNRECOGNIZED(Int)
 
   init() {
@@ -107,6 +111,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 12: self = .sht31
     case 13: self = .pmsa003I
     case 14: self = .ina3221
+    case 15: self = .bmp085
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -128,6 +133,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .sht31: return 12
     case .pmsa003I: return 13
     case .ina3221: return 14
+    case .bmp085: return 15
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -154,6 +160,7 @@ extension TelemetrySensorType: CaseIterable {
     .sht31,
     .pmsa003I,
     .ina3221,
+    .bmp085,
   ]
 }
 
@@ -450,6 +457,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     12: .same(proto: "SHT31"),
     13: .same(proto: "PMSA003I"),
     14: .same(proto: "INA3221"),
+    15: .same(proto: "BMP085"),
   ]
 }
 

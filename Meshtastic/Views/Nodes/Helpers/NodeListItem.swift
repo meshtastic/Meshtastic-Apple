@@ -21,18 +21,9 @@ struct NodeListItem: View {
 			LazyVStack(alignment: .leading) {
 				HStack {
 					VStack(alignment: .leading) {
+
 						CircleText(text: node.user?.shortName ?? "?", color: Color(UIColor(hex: UInt32(node.num))), circleSize: 70)
 							.padding(.trailing, 5)
-						if node.hopsAway == 0 {
-							HStack {
-								Image(systemName: "hare")
-									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
-								Image(systemName: "\(node.hopsAway).square")
-									.font(.title2)
-									.symbolRenderingMode(.hierarchical)
-							}
-						}
 						BatteryLevelCompact(node: node, font: .caption, iconFont: .callout, color: .accentColor)
 							.padding(.trailing, 5)
 					}
@@ -128,24 +119,40 @@ struct NodeListItem: View {
 							}
 						}
 						HStack {
-
-							if node.channel > 0 {
-								Image(systemName: "fibrechannel")
-									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
-									.frame(width: 30)
-								Text("Channel: \(node.channel)")
-									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+							if node.channel >= 0 {
+								HStack {
+									Image(systemName: "\(node.channel).circle.fill")
+										.font(.title2)
+										.symbolRenderingMode(.hierarchical)
+										.frame(width: 30)
+										.foregroundColor(.accentColor)
+									Text("Channel")
+										.foregroundColor(.gray)
+										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+								}
 							}
+
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "network")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 									.frame(width: 30)
-								Text("Via MQTT")
+								Text("MQTT")
 									.foregroundColor(.gray)
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+							}
+						}
+						if node.hopsAway > 0 {
+							HStack {
+								Image(systemName: "hare")
+									.font(.callout)
+									.symbolRenderingMode(.hierarchical)
+								Text("Hops Away:")
+									.foregroundColor(.gray)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+								Image(systemName: "\(node.hopsAway).square")
+									.font(.title2)
+									.symbolRenderingMode(.hierarchical)
 							}
 						}
 						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {

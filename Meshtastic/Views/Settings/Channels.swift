@@ -268,7 +268,7 @@ struct Channels: View {
 							
 							if !preciseLocation {
 								VStack(alignment: .leading) {
-									Label("Reduce Precision", systemImage: "location.viewfinder")
+									Label("Approximate Location", systemImage: "location.slash.circle.fill")
 									Slider(
 										value: $positionPrecision,
 										in: 11...16,

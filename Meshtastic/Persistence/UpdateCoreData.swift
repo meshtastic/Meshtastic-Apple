@@ -147,6 +147,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.channel = Int32(packet.channel)
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.channel = Int32(nodeInfoMessage.channel)
+				newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				
@@ -215,6 +216,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
+				fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
 					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
