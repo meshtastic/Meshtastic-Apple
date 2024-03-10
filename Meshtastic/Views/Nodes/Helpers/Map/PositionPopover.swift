@@ -130,6 +130,19 @@ struct PositionPopover: View {
 							.frame(width: 35)
 					}
 					.padding(.bottom, 5)
+					if position.nodePosition?.viaMqtt ?? false {
+						
+						Label {
+							let heading = Measurement(value: degrees.degrees, unit: UnitAngle.degrees)
+							Text("MQTT")
+						} icon: {
+							Image(systemName: "network")
+								 .symbolRenderingMode(.hierarchical)
+								 .frame(width: 35)
+								 .rotationEffect(degrees)
+						}
+						.padding(.bottom, 5)
+					}
 					if let lastLocation = locationsHandler.locationsArray.last {
 						/// Distance
 						if lastLocation.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
@@ -181,8 +194,7 @@ struct PositionPopover: View {
 						}
 						BatteryGauge(node: position.nodePosition!)
 					}
-					let mpInt = Int(position.nodePosition?.loRaConfig?.modemPreset ?? 0)
-					LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: mpInt) ?? ModemPresets.longFast, compact: false)
+					LoRaSignalStrengthMeter(snr: position.nodePosition?.snr ?? 0.0, rssi: position.nodePosition?.rssi ?? 0, preset: ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast, compact: false)
 					Spacer()
 				}
 			}
@@ -202,7 +214,7 @@ struct PositionPopover: View {
 #endif
 			}
 		}
-		.presentationDetents([.fraction(0.45), .fraction(0.55), .fraction(0.65)])
+		.presentationDetents([.fraction(0.55), .fraction(0.65), .fraction(0.75)])
 		.presentationDragIndicator(.visible)
 	}
 }
