@@ -89,7 +89,7 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
-						if bleManager.connectedPeripheral != nil {
+						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
 							Button {
 								let positionSent = bleManager.sendPosition(
 									channel: node.channel,

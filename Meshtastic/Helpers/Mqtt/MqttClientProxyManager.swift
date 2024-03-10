@@ -21,7 +21,7 @@ class MqttClientProxyManager {
 	private static let defaultKeepAliveInterval: Int32 = 60
 	weak var delegate: MqttClientProxyManagerDelegate?
 	var mqttClientProxy: CocoaMQTT?
-	var topic = "msh/2/c"
+	var topic = "msh/2/e"
 	var debugLog = false
 	func connectFromConfigSettings(node: NodeInfoEntity) {
 		let defaultServerAddress = "mqtt.meshtastic.org"
@@ -41,7 +41,7 @@ class MqttClientProxyManager {
 			let username = node.mqttConfig?.username
 			let password = node.mqttConfig?.password
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
-			let prefix = root! + "/2/c"
+			let prefix = root! + "/2/e"
 			topic = prefix + "/#"
 			let qos = CocoaMQTTQoS(rawValue: UInt8(1))!
 			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
