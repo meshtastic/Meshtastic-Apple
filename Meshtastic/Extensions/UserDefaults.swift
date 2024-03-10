@@ -27,6 +27,7 @@ extension UserDefaults {
 		case enableDetectionNotifications
 		case detectionSensorRole
 		case enableSmartPosition
+		case modemPreset
 	}
 
 	func reset() {
@@ -200,6 +201,14 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "enableSmartPosition")
+		}
+	}
+	static var modemPreset: Int {
+		get {
+			UserDefaults.standard.integer(forKey: "modemPreset")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "modemPreset")
 		}
 	}
 }

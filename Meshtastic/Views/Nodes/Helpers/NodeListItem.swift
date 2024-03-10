@@ -13,7 +13,6 @@ struct NodeListItem: View {
 	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool
 	var connectedNode: Int64
-	var modemPreset: Int
 	
 	var body: some View {
 		
@@ -119,7 +118,7 @@ struct NodeListItem: View {
 							}
 						}
 						HStack {
-							if node.channel >= 0 {
+							if node.channel > 0 {
 								HStack {
 									Image(systemName: "\(node.channel).circle.fill")
 										.font(.title2)
@@ -197,13 +196,6 @@ struct NodeListItem: View {
 									}
 								}
 							}
-						}
-						if !node.viaMqtt && connectedNode != node.num {
-							HStack (alignment: .bottom) {
-								let preset = ModemPresets(rawValue: Int(modemPreset))
-								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: preset ?? ModemPresets.longFast, compact: true)
-							}
-							.padding(.top)
 						}
 					}
 					.frame(maxWidth: .infinity, alignment: .leading)

@@ -205,6 +205,9 @@ struct LoRaConfig: View {
 					lc.sx126XRxBoostedGain = rxBoostedGain
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
+					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
+						UserDefaults.modemPreset = modemPreset
+					}
 					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true

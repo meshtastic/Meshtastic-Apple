@@ -62,8 +62,7 @@ struct NodeList: View {
 				
 				NodeListItem(node: node, 
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1),
-							 modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
 					if node.user != nil {
 						Button {
