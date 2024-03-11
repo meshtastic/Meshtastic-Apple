@@ -582,6 +582,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
 						appState.firmwareVersion = connectedVersion
+						UserDefaults.firmwareVersion = connectedVersion
 					}
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
