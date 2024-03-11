@@ -58,25 +58,25 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// The built-in position messaging app.
-  /// Payload is a [Position](/docs/developers/protobufs/api#position) message
+  /// Payload is a Position message.
   /// ENCODING: Protobuf
   case positionApp // = 3
 
   ///
   /// The built-in user info app.
-  /// Payload is a [User](/docs/developers/protobufs/api#user) message
+  /// Payload is a User message.
   /// ENCODING: Protobuf
   case nodeinfoApp // = 4
 
   ///
   /// Protocol control packets for mesh protocol use.
-  /// Payload is a [Routing](/docs/developers/protobufs/api#routing) message
+  /// Payload is a Routing message.
   /// ENCODING: Protobuf
   case routingApp // = 5
 
   ///
   /// Admin control packets.
-  /// Payload is a [AdminMessage](/docs/developers/protobufs/api#adminmessage) message
+  /// Payload is a AdminMessage message.
   /// ENCODING: Protobuf
   case adminApp // = 6
 
@@ -90,7 +90,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
   ///
   /// Waypoint payloads.
-  /// Payload is a [Waypoint](/docs/developers/protobufs/api#waypoint) message
+  /// Payload is a Waypoint message.
   /// ENCODING: Protobuf
   case waypointApp // = 8
 

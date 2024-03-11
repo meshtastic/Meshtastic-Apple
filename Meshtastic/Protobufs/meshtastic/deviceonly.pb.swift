@@ -254,6 +254,20 @@ struct NodeInfoLite {
     set {_uniqueStorage()._channel = newValue}
   }
 
+  ///
+  /// True if we witnessed the node over MQTT instead of LoRA transport
+  var viaMqtt: Bool {
+    get {return _storage._viaMqtt}
+    set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
+  ///
+  /// Number of hops away from us this node is (0 if adjacent)
+  var hopsAway: UInt32 {
+    get {return _storage._hopsAway}
+    set {_uniqueStorage()._hopsAway = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -583,6 +597,8 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     5: .standard(proto: "last_heard"),
     6: .standard(proto: "device_metrics"),
     7: .same(proto: "channel"),
+    8: .standard(proto: "via_mqtt"),
+    9: .standard(proto: "hops_away"),
   ]
 
   fileprivate class _StorageClass {
@@ -593,6 +609,8 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _lastHeard: UInt32 = 0
     var _deviceMetrics: DeviceMetrics? = nil
     var _channel: UInt32 = 0
+    var _viaMqtt: Bool = false
+    var _hopsAway: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -606,6 +624,8 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _lastHeard = source._lastHeard
       _deviceMetrics = source._deviceMetrics
       _channel = source._channel
+      _viaMqtt = source._viaMqtt
+      _hopsAway = source._hopsAway
     }
   }
 
@@ -631,6 +651,8 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
         case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
         default: break
         }
       }
@@ -664,6 +686,12 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       if _storage._channel != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._channel, fieldNumber: 7)
       }
+      if _storage._viaMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
+      }
+      if _storage._hopsAway != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -680,6 +708,8 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._lastHeard != rhs_storage._lastHeard {return false}
         if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
         if _storage._channel != rhs_storage._channel {return false}
+        if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
+        if _storage._hopsAway != rhs_storage._hopsAway {return false}
         return true
       }
       if !storagesAreEqual {return false}

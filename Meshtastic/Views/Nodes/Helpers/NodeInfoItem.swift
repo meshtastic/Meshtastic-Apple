@@ -12,6 +12,7 @@ import MapKit
 struct NodeInfoItem: View {
 
 	@ObservedObject var node: NodeInfoEntity
+	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 
 	var body: some View {
 		
@@ -37,11 +38,11 @@ struct NodeInfoItem: View {
 			if node.snr != 0 && !node.viaMqtt {
 				Divider()
 				VStack(alignment: .center) {
-					let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: ModemPresets.longModerate)
+					let signalStrength = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: modemPreset)
 					LoRaSignalStrengthIndicator(signalStrength: signalStrength)
 					Text("Signal \(signalStrength.description)").font(.footnote)
 					Text("SNR \(String(format: "%.2f", node.snr))dB")
-						.foregroundColor(getSnrColor(snr: node.snr, preset: ModemPresets.longModerate))
+						.foregroundColor(getSnrColor(snr: node.snr, preset: modemPreset))
 						.font(.caption2)
 					Text("RSSI \(node.rssi)dB")
 						.foregroundColor(getRssiColor(rssi: node.rssi))

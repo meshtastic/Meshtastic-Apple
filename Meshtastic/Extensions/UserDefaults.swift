@@ -27,6 +27,8 @@ extension UserDefaults {
 		case enableDetectionNotifications
 		case detectionSensorRole
 		case enableSmartPosition
+		case modemPreset
+		case firmwareVersion
 	}
 
 	func reset() {
@@ -200,6 +202,22 @@ extension UserDefaults {
 		}
 		set {
 			UserDefaults.standard.set(newValue, forKey: "enableSmartPosition")
+		}
+	}
+	static var modemPreset: Int {
+		get {
+			UserDefaults.standard.integer(forKey: "modemPreset")
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "modemPreset")
+		}
+	}
+	static var firmwareVersion: String {
+		get {
+			UserDefaults.standard.string(forKey: "firmwareVersion") ?? "0.0.0"
+		}
+		set {
+			UserDefaults.standard.set(newValue, forKey: "firmwareVersion")
 		}
 	}
 }

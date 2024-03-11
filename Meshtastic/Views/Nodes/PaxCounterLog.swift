@@ -75,8 +75,8 @@ struct PaxCounterLog: View {
 						.chartXAxis(.automatic)
 						.chartYScale(domain: 0...maxValue)
 						.chartForegroundStyleScale([
-							"paxcounter.ble": .blue,
-							"paxcounter.wifi": .orange,
+							"paxcounter.ble".localized: .blue,
+							"paxcounter.wifi".localized: .orange,
 							"paxcounter.total".localized: .green
 						])
 						.chartLegend(position: .automatic, alignment: .bottom)
@@ -111,11 +111,11 @@ struct PaxCounterLog: View {
 				} else {
 					ScrollView {
 						let columns = [
-							GridItem(.flexible(minimum: 20, maximum: 55), spacing: 0.1),
-							GridItem(.flexible(minimum: 20, maximum: 55), spacing: 0.1),
-							GridItem(.flexible(minimum: 20, maximum: 55), spacing: 0.1),
-							GridItem(.flexible(minimum: 60, maximum: 100), spacing: 0.1),
-							GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
+							GridItem(.flexible(minimum: 20, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 60, maximum: 140), spacing: 0.1),
+							GridItem(.flexible(minimum: 100, maximum: 160), spacing: 0.1)
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 							GridRow {

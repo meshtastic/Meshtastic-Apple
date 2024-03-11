@@ -582,6 +582,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
 						appState.firmwareVersion = connectedVersion
+						UserDefaults.firmwareVersion = connectedVersion
 					}
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
@@ -607,11 +608,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context!)
 			case .replyApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Reply App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
+				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .ipTunnelApp:
-				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 			case .serialApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
 			case .storeForwardApp:
 				if wantStoreAndForwardPackets {
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
@@ -628,17 +632,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 			case .textMessageCompressedApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
 			case .zpsApp:
-				MeshLogger.log("🕸️ MESH PACKET received for ZPS App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				// MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
 			case .privateApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 			case .atakForwarder:
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
 			case .simulatorApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 			case .audioApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context!)
@@ -1030,9 +1040,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		} catch {
 			return false
 		}
-		return false
-
-
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)

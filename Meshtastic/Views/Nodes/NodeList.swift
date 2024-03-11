@@ -7,6 +7,28 @@
 import SwiftUI
 import CoreLocation
 
+struct NodeSearchState {
+	var searchText = ""
+	var searchScope = SearchScopes.all
+	var predicate: NSPredicate = .init()
+	
+	enum SearchScopes: CaseIterable, Identifiable {
+		case all
+		case lora
+		case mqtt
+		
+		var id: Self { self }
+		
+		var title: LocalizedStringKey {
+			switch self {
+			case .all: return "All"
+			case .lora: return "LoRa"
+			case .mqtt: return "MQTT"
+			}
+		}
+	}
+}
+
 struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
@@ -14,19 +36,13 @@ struct NodeList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
+	@State private var isPresentingPositionSentAlert = false
 	@State private var deleteNodeId: Int64 = 0
+	@State private var searchState = NodeSearchState()
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 	
 	@State private var searchText = ""
-	var nodesQuery: Binding<String> {
-		 Binding {
-			 searchText
-		 } set: { newValue in
-			 searchText = newValue
-			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS[c] %@ OR user.shortName CONTAINS[c] %@", newValue, newValue)
-		 }
-	 }
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -37,8 +53,6 @@ struct NodeList: View {
 
 	var nodes: FetchedResults<NodeInfoEntity>
 	
-
-
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			
@@ -48,8 +62,7 @@ struct NodeList: View {
 				
 				NodeListItem(node: node, 
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1),
-							 modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
 					if node.user != nil {
 						Button {
@@ -76,7 +89,21 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
-						if connectedNodeNum != node.num {
+						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
+							Button {
+								let positionSent = bleManager.sendPosition(
+									channel: node.channel,
+									destNum: node.num,
+									wantResponse: true
+								)
+								if positionSent {
+									isPresentingPositionSentAlert = true
+								}
+							} label: {
+								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
+							}
+						}
+						if bleManager.connectedPeripheral != nil && connectedNodeNum != node.num {
 							Button {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
@@ -108,6 +135,14 @@ struct NodeList: View {
 					}
 				}
 				.alert(
+					"Position Sent",
+					isPresented: $isPresentingPositionSentAlert
+				) {
+					Button("OK", role: .cancel) { }
+				} message: {
+					Text("Your position has been sent with a request for a response with their position.")
+				}
+				.alert(
 					"Trace Route Sent",
 					isPresented: $isPresentingTraceRouteSentAlert
 				) {
@@ -124,7 +159,14 @@ struct NodeList: View {
 					Text("Any missed messages will be delivered again.")
 				}
 			}
-			.searchable(text: nodesQuery, prompt: "Find a node")
+			.searchable(text: $searchState.searchText, placement: nodes.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a node")
+				.disableAutocorrection(true)
+				.scrollDismissesKeyboard(.immediately)
+			.searchScopes($searchState.searchScope) {
+				ForEach(NodeSearchState.SearchScopes.allCases) { scope in
+					Text(scope.title).tag(scope)
+				}
+			}
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
 			.confirmationDialog(
@@ -195,33 +237,51 @@ struct NodeList: View {
 			
 		}
 		.navigationSplitViewStyle(.balanced)
-//		.onChange(of: selectedNode) { _ in
-//			if selectedNode == nil {
-//				columnVisibility = .all
-//			} else {
-//				columnVisibility = .doubleColumn
-//			}
-//		}
+		.onChange(of: searchState.searchText) { _ in
+			searchNodeList()
+		}
+		.onChange(of: searchState.searchScope) { _ in
+			searchNodeList()
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
 		}
-
-//		} detail: {
-//			VStack {
-//				Button("Detail Only") {
-//					columnVisibility = .detailOnly
-//				}
-//
-//				Button("Content and Detail") {
-//					columnVisibility = .doubleColumn
-//				}
-//
-//				Button("Show All") {
-//					columnVisibility = .all
-//				}
-//			}
-//		}
+	}
+	
+	private func searchNodeList() {
+		/// Case Insensitive Search Text Predicates
+		let searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
+			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchState.searchText)
+		}
+		/// Create a compound predicate using each text search preicate as an OR
+		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+		
+		/// Set the predicate to nil if the search string is empty
+		if searchState.searchText.isEmpty {
+			nodes.nsPredicate = nil
+			return
+		}
+		
+		/// Add a predicate for the search scope if selected
+		if searchState.searchScope != .all {
+			
+			if searchState.searchScope == .lora {
+				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
+				let scopePredicate = NSCompoundPredicate(type: .and, subpredicates: [loraPredicate])
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, scopePredicate])
+				return
+				
+			} else if searchState.searchScope == .mqtt {
+				let mqttPredicate = NSPredicate(format: "viaMqtt == YES")
+				let scopePredicate = NSCompoundPredicate(type: .and, subpredicates: [mqttPredicate])
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, scopePredicate])
+				return
+			}
+		} else {
+			/// Use the text search predicate
+			nodes.nsPredicate = textSearchPredicate
+		}
 	}
 }

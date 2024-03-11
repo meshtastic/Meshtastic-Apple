@@ -60,14 +60,10 @@ import CoreLocation
 						self.isStationary = update.isStationary
 					
 						var locationAdded: Bool
-						if enableSmartPosition {
-							locationAdded = addLocation(loc)
-							//print("Added Location \(self.count): \(loc)")
-						} else {
-							locationsArray.append(loc)
-							locationAdded = true
-						}
-						if locationAdded {
+						locationAdded = addLocation(loc, smartPostion: enableSmartPosition)
+						if !isRecording && locationAdded {
+							self.count = 1
+						} else if locationAdded && isRecording {
 							self.count += 1
 						}
 					}
@@ -84,19 +80,21 @@ import CoreLocation
 		self.updatesStarted = false
 	}
 	
-	func addLocation(_ location: CLLocation) -> Bool {
-		let age = -location.timestamp.timeIntervalSinceNow
-		if age > 10 {
-			print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
-			return false
-		}
-		if location.horizontalAccuracy < 0 {
-			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
-			return false
-		}
-		if location.horizontalAccuracy > 25 {
-			print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
-			return false
+	func addLocation(_ location: CLLocation, smartPostion: Bool) -> Bool {
+		if smartPostion {
+			let age = -location.timestamp.timeIntervalSinceNow
+			if age > 10 {
+				print("Bad Location \(self.count): Too Old \(age) seconds ago \(location)")
+				return false
+			}
+			if location.horizontalAccuracy < 0 {
+				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				return false
+			}
+			if location.horizontalAccuracy > 25 {
+				print("Bad Location \(self.count): Horizontal Accuracy: \(location.horizontalAccuracy) \(location)")
+				return false
+			}
 		}
 		if isRecording {
 			if let lastLocation = locationsArray.last {
@@ -107,8 +105,10 @@ import CoreLocation
 					elevationGain += gain
 				}
 			}
+			locationsArray.append(location)
+		} else {
+			locationsArray = [location]
 		}
-		locationsArray.append(location)
 		return true
 	}
 	

@@ -144,7 +144,7 @@ struct Settings: View {
 								Text("Your region has a \(rc?.dutyCycle ?? 0)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
 									.foregroundColor(.orange)
 									.font(.caption)
-								Text("Limit all periodic broadcasts intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
+								Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
 									.font(.caption2)
 									.foregroundColor(.gray)
 							}

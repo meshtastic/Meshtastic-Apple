@@ -24,9 +24,15 @@ struct AppSettings: View {
 						Label("appsettings.provide.location", systemImage: "location.circle.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					Text("Use your phone's gps to provide a location to your node. Must have location access and precise location enabled for Meshtastic in Settings.")
+						.font(.caption2)
+						.foregroundColor(.gray)
 					if provideLocation {
 						Toggle(isOn: $enableSmartPosition) {
 							Label("appsettings.smartposition", systemImage: "brain")
+							Text("Will only send a position to the phone if it is recent and of high horizontal accuracy.")
+								.font(.caption2)
+								.foregroundColor(.gray)
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						VStack {

@@ -775,7 +775,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
 
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
-	if !wantRangeTestPackets && ((messageText?.starts(with: "seq ")) != nil) {
+	if !wantRangeTestPackets && (String(messageText ?? "seq ").starts(with: "seq ")) {
 		return
 	}
 	var storeForwardBroadcast = false
