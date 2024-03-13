@@ -204,6 +204,5 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 4)
 		.padding(.bottom, 4)
-		//.padding([.top, .bottom])
 	}
 }
