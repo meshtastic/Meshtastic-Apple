@@ -43,7 +43,7 @@ struct DeviceMetricsLog: View {
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 								.foregroundStyle(batteryChartColor)
-								.interpolationMethod(.cardinal)
+								.interpolationMethod(.linear)
 
 								Plot {
 									PointMark(

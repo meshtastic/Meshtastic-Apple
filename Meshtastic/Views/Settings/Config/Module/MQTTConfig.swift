@@ -166,8 +166,8 @@ struct MQTTConfig: View {
 							.onChange(of: root, perform: { _ in
 								let totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
-								if totalBytes > 15 {
-									let firstNBytes = Data(root.utf8.prefix(15))
+								if totalBytes > 30 {
+									let firstNBytes = Data(root.utf8.prefix(30))
 									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
 										// Set the shortName back to the last place where it was the right size
 										root = maxBytesString

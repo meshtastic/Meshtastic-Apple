@@ -94,8 +94,22 @@ struct DeviceProfile {
   fileprivate var _moduleConfig: LocalModuleConfig? = nil
 }
 
+/// 
+/// A heartbeat message is sent by a node to indicate that it is still alive.
+/// This is currently only needed to keep serial connections alive.
+struct Heartbeat {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension DeviceProfile: @unchecked Sendable {}
+extension Heartbeat: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -157,6 +171,25 @@ extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._channelURL != rhs._channelURL {return false}
     if lhs._config != rhs._config {return false}
     if lhs._moduleConfig != rhs._moduleConfig {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Heartbeat"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
