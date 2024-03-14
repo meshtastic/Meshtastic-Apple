@@ -34,18 +34,16 @@ struct DeviceMetricsLog: View {
 
 						Chart {
 							ForEach(chartData, id: \.self) { point in
-								if point.batteryLevel != 101 { // Filter out magic charging value
-									Plot {
-										LineMark(
-											x: .value("x", point.time!),
-											y: .value("y", point.batteryLevel)
-										)
-									}
-									.accessibilityLabel("Line Series")
-									.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
-									.foregroundStyle(batteryChartColor)
-									.interpolationMethod(.linear)
+								Plot {
+									LineMark(
+										x: .value("x", point.time!),
+										y: .value("y", point.batteryLevel)
+									)
 								}
+								.accessibilityLabel("Line Series")
+								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
+								.foregroundStyle(batteryChartColor)
+								.interpolationMethod(.linear)
 
 								Plot {
 									PointMark(
