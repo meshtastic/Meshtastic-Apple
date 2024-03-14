@@ -710,12 +710,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context!)
+			case .mapReportApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Map Report App UNHANDLED\(try! decodedInfo.packet.jsonString())")
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
 				print("MAX PORT NUM OF 511")
 			case .atakPlugin:
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+		
 			}
 			
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
