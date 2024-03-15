@@ -10,7 +10,6 @@ import CoreLocation
 #if canImport(MapKit)
 import MapKit
 #endif
-import WeatherKit
 
 @available(iOS 17.0, macOS 14.0, *)
 struct NodeMapSwiftUI: View {
@@ -60,6 +59,15 @@ struct NodeMapSwiftUI: View {
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						/// Node Color from node.num
 						let nodeColor = UIColor(hex: UInt32(node.num))
+						/// Convex Hull
+						if showConvexHull {
+							if lineCoords.count > 0 {
+								let hull = lineCoords.getConvexHull()
+								MapPolygon(coordinates: hull)
+									.stroke(Color(nodeColor.darker()), lineWidth: 3)
+									.foregroundStyle(Color(nodeColor).opacity(0.4))
+							}
+						}
 						/// Route Lines
 						if showRouteLines  {
 							let gradient = LinearGradient(
@@ -73,114 +81,96 @@ struct NodeMapSwiftUI: View {
 							MapPolyline(coordinates: lineCoords)
 								.stroke(gradient, style: dashed)
 						}
-						/// Convex Hull
-						if showConvexHull {
-							if lineCoords.count > 0 {
-								let hull = lineCoords.getConvexHull()
-								MapPolygon(coordinates: hull)
-									.stroke(Color(nodeColor.darker()), lineWidth: 3)
-									.foregroundStyle(Color(nodeColor).opacity(0.4))
-							}
-						}
-						
-						/// Waypoint Annotations
-						if waypoints.count > 0 && showWaypoints {
-							ForEach(Array(waypoints), id: \.id) { waypoint in
-								Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
-									LazyVStack {
-										CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 35)
-											.onTapGesture(coordinateSpace: .named("nodemap")) { location in
-												selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-											}
-									}
-								}
-							}
-						}
+
+
+
 						/// Node Annotations
 						ForEach(positionArray, id: \.id) { position in
 							let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(position.heading))
-							/// Reduced Precision Map Circle
-							if position.latest && 11...16 ~= position.precisionBits {
-								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
-								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
-								if radius > 0.0 {
-									MapCircle(center: position.coordinate, radius: radius)
-										.foregroundStyle(Color(nodeColor).opacity(0.25))
-										.stroke(.white, lineWidth: 2)
+//							/// Reduced Precision Map Circle
+//							if position.latest && 11...16 ~= position.precisionBits {
+//								let pp = PositionPrecision(rawValue: Int(position.precisionBits))
+//								let radius : CLLocationDistance = pp?.precisionMeters ?? 0
+//								if radius > 0.0 {
+//									MapCircle(center: position.coordinate, radius: radius)
+//										.foregroundStyle(Color(nodeColor).opacity(0.25))
+//										.stroke(.white, lineWidth: 2)
+//								}
+//							}
+//							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
+//								LazyVStack {
+//									if position.latest {
+//										ZStack {
+//											Circle()
+//												.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
+//												.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
+//												.frame(width: 50, height: 50)
+//											if pf.contains(.Heading) {
+//												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
+//													.symbolEffect(.pulse.byLayer)
+//													.padding(5)
+//													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+//													.background(Color(nodeColor.darker()))
+//													.clipShape(Circle())
+//													.rotationEffect(headingDegrees)
+//													.onTapGesture {
+//														selectedPosition = (selectedPosition == position ? nil : position)
+//													}
+//													.popover(item: $selectedPosition) { selection in
+//														PositionPopover(position: selection)
+//															.padding()
+//															.opacity(0.8)
+//															.presentationCompactAdaptation(.popover)
+//													}
+//												
+//											} else {
+//												Image(systemName: "flipphone")
+//													.symbolEffect(.pulse.byLayer)
+//													.padding(5)
+//													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
+//													.background(Color(UIColor(hex: UInt32(node.num)).darker()))
+//													.clipShape(Circle())
+//													.onTapGesture {
+//														selectedPosition = (selectedPosition == position ? nil : position)
+//													}
+//													.popover(item: $selectedPosition) { selection in
+//														PositionPopover(position: selection)
+//															.padding()
+//															.opacity(0.8)
+//															.presentationCompactAdaptation(.popover)
+//													}
+//												
+//											}
+//										}
+//									} else {
+//										if showNodeHistory {
+//											if pf.contains(.Heading) {
+//												Image(systemName: "location.north.circle")
+//													.resizable()
+//													.scaledToFit()
+//													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
+//													.background(Color(UIColor(hex: UInt32(node.num))))
+//													.clipShape(Circle())
+//													.rotationEffect(headingDegrees)
+//													.frame(width: 16, height: 16)
+//												
+//											} else {
+//												Circle()
+//													.fill(Color(UIColor(hex: UInt32(node.num))))
+//													.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
+//													.frame(width: 12, height: 12)
+//											}
+//										}
+//									}
+							
+							
 								}
-							}
-							Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
-								LazyVStack {
-									if position.latest {
-										ZStack {
-											Circle()
-												.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
-												.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-												.frame(width: 50, height: 50)
-											if pf.contains(.Heading) {
-												Image(systemName: pf.contains(.Speed) && position.speed > 1 ? "location.north" : "octagon")
-													.symbolEffect(.pulse.byLayer)
-													.padding(5)
-													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-													.background(Color(nodeColor.darker()))
-													.clipShape(Circle())
-													.rotationEffect(headingDegrees)
-													.onTapGesture {
-														selectedPosition = (selectedPosition == position ? nil : position)
-													}
-													.popover(item: $selectedPosition) { selection in
-														PositionPopover(position: selection)
-															.padding()
-															.opacity(0.8)
-															.presentationCompactAdaptation(.popover)
-													}
-												
-											} else {
-												Image(systemName: "flipphone")
-													.symbolEffect(.pulse.byLayer)
-													.padding(5)
-													.foregroundStyle(Color(nodeColor).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num)).darker()))
-													.clipShape(Circle())
-													.onTapGesture {
-														selectedPosition = (selectedPosition == position ? nil : position)
-													}
-													.popover(item: $selectedPosition) { selection in
-														PositionPopover(position: selection)
-															.padding()
-															.opacity(0.8)
-															.presentationCompactAdaptation(.popover)
-													}
-												
-											}
-										}
-									} else {
-										if showNodeHistory {
-											if pf.contains(.Heading) {
-												Image(systemName: "location.north.circle")
-													.resizable()
-													.scaledToFit()
-													.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
-													.background(Color(UIColor(hex: UInt32(node.num))))
-													.clipShape(Circle())
-													.rotationEffect(headingDegrees)
-													.frame(width: 16, height: 16)
-												
-											} else {
-												Circle()
-													.fill(Color(UIColor(hex: UInt32(node.num))))
-													.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
-													.frame(width: 12, height: 12)
-											}
-										}
-									}
-								}
-							}
-							.tag(position.time)
-							.annotationTitles(.automatic)
-							.annotationSubtitles(.automatic)
-						}
+//							}
+//							.tag(position.time)
+//							.annotationTitles(.automatic)
+//							.annotationSubtitles(.automatic)
+//						}
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)

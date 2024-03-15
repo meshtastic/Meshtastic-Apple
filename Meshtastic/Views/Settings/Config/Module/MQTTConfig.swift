@@ -26,7 +26,9 @@ struct MQTTConfig: View {
 	@State var root = "msh"
 	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
+	@State var defaultTopic = "msh/US"
 	@State var nearbyTopics = [String]()
+	let locale = Locale.current
 
 	var body: some View {
 		VStack {
@@ -315,6 +317,8 @@ struct MQTTConfig: View {
 			nearbyTopics = []
 			let geocoder = CLGeocoder()
 			if LocationsHandler.shared.locationsArray.count > 0 {
+				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
+				defaultTopic = "msh/" + (region ?? "UNSET")
 				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) -> Void in
 					if error != nil {
 						print("Failed to reverse geocode location")
@@ -322,27 +326,29 @@ struct MQTTConfig: View {
 					}
 					
 					if let placemarks = placemarks, let placemark = placemarks.first {
-						
+						let cc = locale.region?.identifier ?? "UNK"
 						/// Country Topic unless you are US
-						if  placemark.isoCountryCode ?? "unknown" != "US" {
-							let countryTopic = root + "/" + (placemark.isoCountryCode ?? "")
+						if  placemark.isoCountryCode ?? "unknown" != cc {
+							let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
 							if !countryTopic.isEmpty {
 								nearbyTopics.append(countryTopic)
 							}
 						}
-						let stateTopic = root + "/" + (placemark.administrativeArea ?? "")
+						let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
 						if !stateTopic.isEmpty {
 							nearbyTopics.append(stateTopic)
 						}
-						let countyTopic = root + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						let countyTopic = defaultTopic + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
 						if !countyTopic.isEmpty {
 							nearbyTopics.append(countyTopic)
 						}
-						let cityTopic = root + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						let cityTopic = defaultTopic + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
 						if !cityTopic.isEmpty {
 							nearbyTopics.append(cityTopic)
 						}
-						let neightborhoodTopic = root + "/" + (placemark.subLocality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						let neightborhoodTopic = defaultTopic + "/" + (placemark.subLocality?.lowercased()
+							.replacingOccurrences(of: " ", with: "")
+							.replacingOccurrences(of: "'", with: "") ?? "")
 						if !neightborhoodTopic.isEmpty {
 							nearbyTopics.append(neightborhoodTopic)
 						}

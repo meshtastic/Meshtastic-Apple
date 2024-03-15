@@ -185,13 +185,13 @@ struct TelemetryConfig: View {
 		}
 	}
 	func setTelemetryValues() {
-		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 0)
-		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 0)
+		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 900)
+		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 900)
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
 		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
-		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 0)
+		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 900)
 		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
 		self.hasChanges = false
 	}
