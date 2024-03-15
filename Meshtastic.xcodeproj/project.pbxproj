@@ -110,6 +110,7 @@
 		DD8ED9C8289CE4B900B3B0AB /* RoutingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */; };
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
+		DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */; };
 		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */; };
@@ -360,6 +361,7 @@
 		DD90860A26F645B700DC5189 /* Meshtastic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Meshtastic.entitlements; sourceTree = "<group>"; };
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
+		DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
 		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
 		DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormMapKit.swift; sourceTree = "<group>"; };
@@ -748,6 +750,7 @@
 		DDAD49EB2AFAE82500B4425D /* Map */ = {
 			isa = PBXGroup;
 			children = (
+				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
@@ -1365,6 +1368,7 @@
 				DD5E5205298EE33B00D21B61 /* mesh.pb.swift in Sources */,
 				DDF6B2482A9AEBF500BA6931 /* StoreForwardConfig.swift in Sources */,
 				DD8169F9271F1A6100F4AB02 /* MeshLogger.swift in Sources */,
+				DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */,
 				DD41582A28585C32009B0E59 /* RangeTestConfig.swift in Sources */,
 				DD1925B728CDA5A400720036 /* CannedMessagesConfigEnums.swift in Sources */,
 				DDDB444429F8A8DD00EE2349 /* Float.swift in Sources */,

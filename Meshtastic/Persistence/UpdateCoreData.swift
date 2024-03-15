@@ -144,9 +144,10 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
-			newNode.channel = Int32(packet.channel)
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				newNode.channel = Int32(packet.channel)
+			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				newNode.channel = Int32(nodeInfoMessage.channel)
 				newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
@@ -212,7 +213,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
-			fetchedNode[0].channel = Int32(packet.channel)
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				fetchedNode[0].channel = Int32(packet.channel)
+			}
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
