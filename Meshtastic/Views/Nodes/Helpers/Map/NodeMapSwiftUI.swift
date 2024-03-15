@@ -39,6 +39,8 @@ struct NodeMapSwiftUI: View {
 	@State var selectedWaypoint: WaypointEntity?
 	@State var isMeshMap = false
 	
+	@State private var mapRegion = MKCoordinateRegion.init()
+	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
 				  predicate: NSPredicate(
 					format: "expire == nil || expire >= %@", Date() as NSDate
@@ -46,12 +48,7 @@ struct NodeMapSwiftUI: View {
 	private var waypoints: FetchedResults<WaypointEntity>
 	
 	var body: some View {
-		
-		let positionArray = node.positions?.array as? [PositionEntity] ?? []
 		var mostRecent = node.positions?.lastObject as? PositionEntity
-		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-		})
 		
 		if node.hasPositions {
 			ZStack {
@@ -119,7 +116,7 @@ struct NodeMapSwiftUI: View {
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
 						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 150, heading: 0, pitch: 60))
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 8000, heading: 0, pitch: 60))
 						}
 						if let mostRecent {
 							Task {
@@ -143,7 +140,7 @@ struct NodeMapSwiftUI: View {
 						if node.positions?.count ?? 0 > 1 {
 							position = .automatic
 						} else {
-							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 5000, heading: 0, pitch: 60))
+							position = .camera(MapCamera(centerCoordinate: mostRecent!.coordinate, distance: 8000, heading: 0, pitch: 60))
 						}
 						if self.scene == nil {
 							Task {
