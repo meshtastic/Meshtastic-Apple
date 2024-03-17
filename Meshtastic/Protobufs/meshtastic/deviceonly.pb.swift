@@ -140,6 +140,7 @@ struct DeviceState {
   ///
   /// Used only during development.
   /// Indicates developer is testing and changes should never be saved to flash.
+  /// Deprecated in 2.3.1
   var noSave: Bool {
     get {return _storage._noSave}
     set {_uniqueStorage()._noSave = newValue}
