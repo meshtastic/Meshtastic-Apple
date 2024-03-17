@@ -111,6 +111,7 @@
 		DD90860E26F69BAE00DC5189 /* NodeMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD90860D26F69BAE00DC5189 /* NodeMap.swift */; };
 		DD913639270DFF4C00D7ACF3 /* LocalNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */; };
 		DD93800B2BA3F968008BEC06 /* NodeMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */; };
+		DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */; };
 		DD94B7402ACCE3BE00DCD1D1 /* MapSettingsForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */; };
 		DD964FBD296E6B01007C176F /* EmojiOnlyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */; };
 		DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */; };
@@ -362,6 +363,7 @@
 		DD90860D26F69BAE00DC5189 /* NodeMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMap.swift; sourceTree = "<group>"; };
 		DD913638270DFF4C00D7ACF3 /* LocalNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationManager.swift; sourceTree = "<group>"; };
 		DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeMapContent.swift; sourceTree = "<group>"; };
+		DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelForm.swift; sourceTree = "<group>"; };
 		DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSettingsForm.swift; sourceTree = "<group>"; };
 		DD964FBC296E6B01007C176F /* EmojiOnlyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiOnlyTextField.swift; sourceTree = "<group>"; };
 		DD964FBE296E76EF007C176F /* WaypointFormMapKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFormMapKit.swift; sourceTree = "<group>"; };
@@ -560,21 +562,6 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
-		DD2100802B0E676E00F2F116 /* Routes */ = {
-			isa = PBXGroup;
-			children = (
-				DD2100832B0E67AD00F2F116 /* RouteMap */,
-			);
-			path = Routes;
-			sourceTree = "<group>";
-		};
-		DD2100832B0E67AD00F2F116 /* RouteMap */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = RouteMap;
-			sourceTree = "<group>";
-		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -604,7 +591,7 @@
 		DD4A911C2708C57100501B7E /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				DD2100802B0E676E00F2F116 /* Routes */,
+				DD93800C2BA74CE3008BEC06 /* Channels */,
 				DD97E96728EFE9A00056DDA4 /* About.swift */,
 				DD0F791A28713C8A00A6FDAD /* AdminMessageList.swift */,
 				DD4A911D2708C65400501B7E /* AppSettings.swift */,
@@ -745,6 +732,14 @@
 				DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DD93800C2BA74CE3008BEC06 /* Channels */ = {
+			isa = PBXGroup;
+			children = (
+				DD93800D2BA74D0C008BEC06 /* ChannelForm.swift */,
+			);
+			path = Channels;
 			sourceTree = "<group>";
 		};
 		DDAD49EB2AFAE82500B4425D /* Map */ = {
@@ -1229,6 +1224,7 @@
 				DDB75A0F2A05920E006ED576 /* FileManager.swift in Sources */,
 				DD1933782B084F4200771CD5 /* Measurement.swift in Sources */,
 				DD4F23CD28779A3C001D37CB /* EnvironmentMetricsLog.swift in Sources */,
+				DD93800E2BA74D0C008BEC06 /* ChannelForm.swift in Sources */,
 				DD41A61529AB0035003C5A37 /* NodeWeatherForecast.swift in Sources */,
 				DDB6ABD628AE742000384BA1 /* BluetoothConfig.swift in Sources */,
 				DD4640202AFF10F4002A5ECB /* WaypointForm.swift in Sources */,
