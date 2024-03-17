@@ -28,7 +28,47 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 	case my_919 = 17
 	case sg_923 = 18
 	case lora24 = 13
-
+	var topic: String { 
+		switch self {
+		case .unset:
+			"UNSET"
+		case .us:
+			"US"
+		case .eu433:
+			"EU_433"
+		case .eu868:
+			"EU_868"
+		case .cn:
+			"CN"
+		case .jp:
+			"JP"
+		case .anz:
+			"ANZ"
+		case .kr:
+			"KR"
+		case .tw:
+			"TW"
+		case .ru:
+			"RU"
+		case .in:
+			"IN"
+		case .nz865:
+			"NZ_865"
+		case .th:
+			"TH"
+		case .ua433:
+			"UA_433"
+		case .ua868:
+			"UA_868"
+		case .my_433:
+			"MY_433"
+		case .my_919:
+			"MY_919"
+		case .sg_923:
+			"SG_923"
+		case .lora24:
+			"LORA_24"
+		} }
 	var id: Int { self.rawValue }
 	var description: String {
 		switch self {

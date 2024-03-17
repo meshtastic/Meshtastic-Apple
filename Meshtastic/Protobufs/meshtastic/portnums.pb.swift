@@ -182,6 +182,10 @@ enum PortNum: SwiftProtobuf.Enum {
   case atakPlugin // = 72
 
   ///
+  /// Provides unencrypted information about a node for consumption by a map via MQTT
+  case mapReportApp // = 73
+
+  ///
   /// Private applications should use portnums >= 256.
   /// To simplify initial development and testing you can use "PRIVATE_APP"
   /// in your code without needing to rebuild protobuf files (via [regen-protos.sh](https://github.com/meshtastic/firmware/blob/master/bin/regen-protos.sh))
@@ -226,6 +230,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case 70: self = .tracerouteApp
     case 71: self = .neighborinfoApp
     case 72: self = .atakPlugin
+    case 73: self = .mapReportApp
     case 256: self = .privateApp
     case 257: self = .atakForwarder
     case 511: self = .max
@@ -258,6 +263,7 @@ enum PortNum: SwiftProtobuf.Enum {
     case .tracerouteApp: return 70
     case .neighborinfoApp: return 71
     case .atakPlugin: return 72
+    case .mapReportApp: return 73
     case .privateApp: return 256
     case .atakForwarder: return 257
     case .max: return 511
@@ -295,6 +301,7 @@ extension PortNum: CaseIterable {
     .tracerouteApp,
     .neighborinfoApp,
     .atakPlugin,
+    .mapReportApp,
     .privateApp,
     .atakForwarder,
     .max,
@@ -334,6 +341,7 @@ extension PortNum: SwiftProtobuf._ProtoNameProviding {
     70: .same(proto: "TRACEROUTE_APP"),
     71: .same(proto: "NEIGHBORINFO_APP"),
     72: .same(proto: "ATAK_PLUGIN"),
+    73: .same(proto: "MAP_REPORT_APP"),
     256: .same(proto: "PRIVATE_APP"),
     257: .same(proto: "ATAK_FORWARDER"),
     511: .same(proto: "MAX"),

@@ -144,9 +144,10 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
-			newNode.channel = Int32(packet.channel)
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				newNode.channel = Int32(packet.channel)
+			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				newNode.channel = Int32(nodeInfoMessage.channel)
 				newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
@@ -212,7 +213,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
-			fetchedNode[0].channel = Int32(packet.channel)
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				fetchedNode[0].channel = Int32(packet.channel)
+			}
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
@@ -1317,6 +1320,9 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+				newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
+				newTelemetryConfig.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 
 			} else {
@@ -1325,6 +1331,9 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+				fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
+				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
 
 			do {

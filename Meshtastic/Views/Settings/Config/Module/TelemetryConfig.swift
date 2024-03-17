@@ -21,6 +21,10 @@ struct TelemetryConfig: View {
 	@State var environmentMeasurementEnabled = false
 	@State var environmentScreenEnabled = false
 	@State var environmentDisplayFahrenheit = false
+	@State var powerMeasurementEnabled = false
+	@State var powerUpdateInterval = 0
+	@State var powerScreenEnabled = false
+	
 
 	var body: some View {
 		VStack {
@@ -30,7 +34,9 @@ struct TelemetryConfig: View {
 				Section(header: Text("update.interval")) {
 					Picker("Device Metrics", selection: $deviceUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
-							Text(ui.description)
+							if ui.rawValue >= 900 {
+								Text(ui.description)
+							}
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
@@ -41,7 +47,9 @@ struct TelemetryConfig: View {
 						.listRowSeparator(.visible)
 					Picker("Sensor Metrics", selection: $environmentUpdateInterval ) {
 						ForEach(UpdateIntervals.allCases) { ui in
-							Text(ui.description)
+							if ui.rawValue >= 900 {
+								Text(ui.description)
+							}
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
@@ -67,6 +75,30 @@ struct TelemetryConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
+				Section(header: Text("Power Options")) {
+					Toggle(isOn: $powerMeasurementEnabled) {
+						Label("enabled", systemImage: "bolt")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					Picker("Power Metrics", selection: $powerUpdateInterval ) {
+						ForEach(UpdateIntervals.allCases) { ui in
+							if ui.rawValue >= 900 {
+								Text(ui.description)
+							}
+						}
+					}
+					.pickerStyle(DefaultPickerStyle())
+					.listRowSeparator(.hidden)
+					Text("How often power metrics are sent out over the mesh. Default is 15 minutes.")
+						.foregroundColor(.gray)
+						.font(.callout)
+					.listRowSeparator(.visible)
+					Toggle(isOn: $powerScreenEnabled) {
+						Label("Power Screen", systemImage: "tv")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.telemetryConfig == nil)
 
@@ -79,6 +111,9 @@ struct TelemetryConfig: View {
 					tc.environmentMeasurementEnabled = environmentMeasurementEnabled
 					tc.environmentScreenEnabled = environmentScreenEnabled
 					tc.environmentDisplayFahrenheit = environmentDisplayFahrenheit
+					tc.powerMeasurementEnabled = powerMeasurementEnabled
+					tc.powerUpdateInterval = UInt32(powerUpdateInterval)
+					tc.powerScreenEnabled = powerScreenEnabled
 					let adminMessageId = bleManager.saveTelemetryModuleConfig(config: tc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true
@@ -132,14 +167,32 @@ struct TelemetryConfig: View {
 					if newEnvDisplayF != node!.telemetryConfig!.environmentDisplayFahrenheit { hasChanges = true	}
 				}
 			}
+			.onChange(of: powerMeasurementEnabled) { newPowerMeasurementEnabled in
+				if node != nil && node?.telemetryConfig != nil {
+					if newPowerMeasurementEnabled != node!.telemetryConfig!.powerMeasurementEnabled { hasChanges = true	}
+				}
+			}
+			.onChange(of: powerUpdateInterval) { newPowerUpdateInterval in
+				if node != nil && node?.telemetryConfig != nil {
+					if newPowerUpdateInterval != node!.telemetryConfig!.powerUpdateInterval { hasChanges = true	}
+				}
+			}		
+			.onChange(of: powerScreenEnabled) { newPowerScreenEnabled in
+				if node != nil && node?.telemetryConfig != nil {
+					if newPowerScreenEnabled != node!.telemetryConfig!.powerScreenEnabled { hasChanges = true	}
+				}
+			}
 		}
 	}
 	func setTelemetryValues() {
-		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 0)
-		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 0)
+		self.deviceUpdateInterval = Int(node?.telemetryConfig?.deviceUpdateInterval ?? 900)
+		self.environmentUpdateInterval = Int(node?.telemetryConfig?.environmentUpdateInterval ?? 900)
 		self.environmentMeasurementEnabled = node?.telemetryConfig?.environmentMeasurementEnabled ?? false
 		self.environmentScreenEnabled = node?.telemetryConfig?.environmentScreenEnabled ?? false
 		self.environmentDisplayFahrenheit = node?.telemetryConfig?.environmentDisplayFahrenheit ?? false
+		self.powerMeasurementEnabled = node?.telemetryConfig?.powerMeasurementEnabled ?? false
+		self.powerUpdateInterval = Int(node?.telemetryConfig?.powerUpdateInterval ?? 900)
+		self.powerScreenEnabled = node?.telemetryConfig?.powerScreenEnabled ?? false
 		self.hasChanges = false
 	}
 }

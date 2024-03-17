@@ -23,7 +23,7 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
-	@State var nodeInfoBroadcastSecs = 900
+	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
 
@@ -268,6 +268,9 @@ struct DeviceConfig: View {
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.nodeInfoBroadcastSecs = Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 900)
+		if nodeInfoBroadcastSecs < 3600 {
+			nodeInfoBroadcastSecs = 3600
+		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false

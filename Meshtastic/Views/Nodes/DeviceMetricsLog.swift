@@ -43,13 +43,14 @@ struct DeviceMetricsLog: View {
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.batteryLevel)")
 								.foregroundStyle(batteryChartColor)
-								.interpolationMethod(.cardinal)
+								.interpolationMethod(.linear)
 
 								Plot {
 									PointMark(
 										x: .value("x", point.time!),
 										y: .value("y", point.channelUtilization)
 									)
+									.symbolSize(25)
 								}
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.channelUtilization)")
@@ -64,6 +65,7 @@ struct DeviceMetricsLog: View {
 										x: .value("x", point.time!),
 										y: .value("y", point.airUtilTx)
 									)
+									.symbolSize(25)
 								}
 								.accessibilityLabel("Line Series")
 								.accessibilityValue("X: \(point.time!), Y: \(point.airUtilTx)")

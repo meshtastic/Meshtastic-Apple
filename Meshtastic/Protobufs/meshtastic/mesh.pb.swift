@@ -2388,6 +2388,16 @@ struct ToRadio {
     set {payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
+  ///
+  /// Heartbeat message (used to keep the device connection awake on serial)
+  var heartbeat: Heartbeat {
+    get {
+      if case .heartbeat(let v)? = payloadVariant {return v}
+      return Heartbeat()
+    }
+    set {payloadVariant = .heartbeat(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2415,6 +2425,9 @@ struct ToRadio {
     ///
     /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
     case mqttClientProxyMessage(MqttClientProxyMessage)
+    ///
+    /// Heartbeat message (used to keep the device connection awake on serial)
+    case heartbeat(Heartbeat)
 
   #if !swift(>=4.1)
     static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
@@ -2440,6 +2453,10 @@ struct ToRadio {
       }()
       case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
         guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.heartbeat, .heartbeat): return {
+        guard case .heartbeat(let l) = lhs, case .heartbeat(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2581,6 +2598,19 @@ struct DeviceMetadata {
   init() {}
 }
 
+/// 
+/// A heartbeat message is sent to the node from the client to keep the connection alive.
+/// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
+struct Heartbeat {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
@@ -2614,6 +2644,7 @@ extension Compressed: @unchecked Sendable {}
 extension NeighborInfo: @unchecked Sendable {}
 extension Neighbor: @unchecked Sendable {}
 extension DeviceMetadata: @unchecked Sendable {}
+extension Heartbeat: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -4198,6 +4229,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     4: .same(proto: "disconnect"),
     5: .same(proto: "xmodemPacket"),
     6: .same(proto: "mqttClientProxyMessage"),
+    7: .same(proto: "heartbeat"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4261,6 +4293,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .mqttClientProxyMessage(v)
         }
       }()
+      case 7: try {
+        var v: Heartbeat?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .heartbeat(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .heartbeat(v)
+        }
+      }()
       default: break
       }
     }
@@ -4291,6 +4336,10 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     case .mqttClientProxyMessage?: try {
       guard case .mqttClientProxyMessage(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .heartbeat?: try {
+      guard case .heartbeat(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     }()
     case nil: break
     }
@@ -4523,6 +4572,25 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Heartbeat"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
