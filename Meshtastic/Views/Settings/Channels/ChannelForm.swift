@@ -23,11 +23,8 @@ struct ChannelForm: View {
 	@Binding var positionPrecision: Double
 	@Binding var preciseLocation: Bool
 	@Binding var positionsEnabled: Bool
-	
 	@Binding var hasChanges: Bool
 	@Binding var hasValidKey: Bool
-	
-	/// Minimum Version for granular position configuration
 	@Binding var supportedVersion: Bool
 	
 	var body: some View {
