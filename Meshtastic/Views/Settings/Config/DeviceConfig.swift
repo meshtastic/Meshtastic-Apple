@@ -176,9 +176,6 @@ struct DeviceConfig: View {
 						dc.buttonGpio = UInt32(buttonGPIO)
 						dc.buzzerGpio = UInt32(buzzerGPIO)
 						dc.rebroadcastMode = RebroadcastModes(rawValue: rebroadcastMode)?.protoEnumValue() ?? RebroadcastModes.all.protoEnumValue()
-						if nodeInfoBroadcastSecs < 0 {
-							nodeInfoBroadcastSecs = 10800
-						}
 						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 						dc.isManaged = isManaged
@@ -271,6 +268,9 @@ struct DeviceConfig: View {
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.nodeInfoBroadcastSecs = Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 900)
+		if nodeInfoBroadcastSecs < 3600 {
+			nodeInfoBroadcastSecs = 3600
+		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false

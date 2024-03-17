@@ -130,12 +130,12 @@ struct LoRaConfig: View {
 					}
 					VStack(alignment: .leading) {
 						Picker("Number of hops", selection: $hopLimit) {
-							ForEach(1..<8) {
+							ForEach(0..<8) {
 								Text("\($0)")
-									.tag($0 == 0 ? 3 : $0)
+									.tag($0)
 							}
 						}
-						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
+						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
