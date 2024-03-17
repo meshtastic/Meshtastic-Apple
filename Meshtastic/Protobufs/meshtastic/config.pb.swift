@@ -380,7 +380,9 @@ struct Config {
 
     ///
     /// If set, this node is at a fixed position.
-    /// We will generate GPS position updates at the regular interval, but use whatever the last lat/lon/alt we have for the node.
+    /// We will generate GPS position updates at the regular interval, and use either
+    /// A postion can be entered manually
+	/// Or whatever the last lat/lon/alt we have for the node.
     /// The lat/lon/alt can be set by an internal GPS or with the help of the app.
     var fixedPosition: Bool = false
 
