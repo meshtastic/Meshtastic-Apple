@@ -148,7 +148,9 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
+				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				
@@ -218,8 +220,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
-				fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfoMessage.hopsAway)
+
+				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
 					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
@@ -231,6 +233,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
+					fetchedNode[0].user!.vip = nodeInfoMessage.isFavorite
 					/// Seeing Some crashes here ?
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
@@ -239,6 +242,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
 				}
+			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if (fetchedNode[0].user == nil) {
 				let newUser = UserEntity(context: context)
@@ -317,9 +322,9 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
-					if mutablePositions.count > 0 && position.precisionBits == 32 {
+					if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 15 {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
 							mutablePositions.remove(mostRecent)
 						}
 					} else if mutablePositions.count > 0 && 11...16 ~= position.precisionBits {

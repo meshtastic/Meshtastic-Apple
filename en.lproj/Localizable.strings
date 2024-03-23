@@ -326,6 +326,7 @@
 "tapback.exclamation"="Exclamation Mark";
 "tapback.question"="Question Mark";
 "tapback.poop"="Poop";
+"tapback.wave"="Wave";
 "telemetry"="Telemetry (Sensors)";
 "telemetry.config"="Telemetry Config";
 "timeout"="Timeout";

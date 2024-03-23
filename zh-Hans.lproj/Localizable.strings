@@ -309,6 +309,7 @@
 "tapback.exclamation"="感叹号";
 "tapback.question"="问号";
 "tapback.poop"="便便";
+"tapback.wave"="Wave";
 "telemetry"="遥测（传感器）";
 "telemetry.config"="遥测配置";
 "timeout"="超时";

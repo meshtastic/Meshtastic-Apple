@@ -1861,6 +1861,14 @@ struct NodeInfo {
     set {_uniqueStorage()._hopsAway = newValue}
   }
 
+  ///
+  /// True if node is in our favorites list
+  /// Persists between NodeDB internal clean ups
+  var isFavorite: Bool {
+    get {return _storage._isFavorite}
+    set {_uniqueStorage()._isFavorite = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -3647,6 +3655,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     7: .same(proto: "channel"),
     8: .standard(proto: "via_mqtt"),
     9: .standard(proto: "hops_away"),
+    10: .standard(proto: "is_favorite"),
   ]
 
   fileprivate class _StorageClass {
@@ -3659,6 +3668,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _channel: UInt32 = 0
     var _viaMqtt: Bool = false
     var _hopsAway: UInt32 = 0
+    var _isFavorite: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -3674,6 +3684,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _channel = source._channel
       _viaMqtt = source._viaMqtt
       _hopsAway = source._hopsAway
+      _isFavorite = source._isFavorite
     }
   }
 
@@ -3701,6 +3712,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
         case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         default: break
         }
       }
@@ -3740,6 +3752,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._hopsAway != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
       }
+      if _storage._isFavorite != false {
+        try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3758,6 +3773,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._channel != rhs_storage._channel {return false}
         if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
         if _storage._hopsAway != rhs_storage._hopsAway {return false}
+        if _storage._isFavorite != rhs_storage._isFavorite {return false}
         return true
       }
       if !storagesAreEqual {return false}

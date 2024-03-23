@@ -292,6 +292,7 @@
 "tapback.exclamation"="Point d'exclamation";
 "tapback.question"="Point d'interrogation";
 "tapback.poop"="Caca";
+"tapback.wave"="Wave";
 "telemetry"="Télémetrie (Capteurs)";
 "telemetry.config"="Configuration de télémetrie";
 "timeout"="Délai d'expiration";

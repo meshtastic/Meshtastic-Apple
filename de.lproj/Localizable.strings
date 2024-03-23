@@ -309,6 +309,7 @@
 "tapback.exclamation"="Ausrufezeichen";
 "tapback.question"="Fragezeichen";
 "tapback.poop"="Kacke";
+"tapback.wave"="Wave";
 "telemetry"="Telemetrie (Sensoren)";
 "telemetry.config"="Telemetrie Einstellungen";
 "timeout"="Zeitlimit erreicht";

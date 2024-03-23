@@ -724,24 +724,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						)
 					]
 					manager.schedule()
-	
-//					let content = UNMutableNotificationContent()
-//					content.title = "Critically Low Battery!"
-//					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
-//					content.userInfo["target"] = "node"
-//					content.userInfo["path"] = "meshtastic://node/\(telemetry.nodeTelemetry?.num ?? 0)"
-//					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-//					let uuidString = UUID().uuidString
-//					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
-//					let notificationCenter = UNUserNotificationCenter.current()
-//					notificationCenter.add(request) { (error) in
-//						if error != nil {
-//							// Handle any errors.
-//							print("Error creating local low battery notification: \(error?.localizedDescription ?? "no description")")
-//						} else {
-//							print("Created local low battery notification.")
-//						}
-//					}
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)

@@ -310,6 +310,7 @@
 "tapback.exclamation"="Wykrzyknik";
 "tapback.question"="Znak zapytania";
 "tapback.poop"="Kupa";
+"tapback.wave"="Wave";
 "telemetry"="Telemetria (czujniki)";
 "telemetry.config"="Konfiguracja telemetrii";
 "timeout"="Limit czasu";

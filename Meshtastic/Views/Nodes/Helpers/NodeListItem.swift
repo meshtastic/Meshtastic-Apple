@@ -130,7 +130,7 @@ struct NodeListItem: View {
 										.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 								}
 							}
-
+							
 							if node.viaMqtt && connectedNode != node.num {
 								Image(systemName: "network")
 									.symbolRenderingMode(.hierarchical)

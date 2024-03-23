@@ -185,6 +185,7 @@
 		DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444F29F8AC9C00EE2349 /* UIImage.swift */; };
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
+		DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDC22372BA92344002C44F1 /* MeshMapContent.swift */; };
 		DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
@@ -456,6 +457,7 @@
 		DDDB445329F8AD1600EE2349 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		DDDC22312BA76701002C44F1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDDC22322BA76961002C44F1 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
 		DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
@@ -747,7 +749,7 @@
 		DDAD49EB2AFAE82500B4425D /* Map */ = {
 			isa = PBXGroup;
 			children = (
-				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
+				DDDC22362BA9232C002C44F1 /* MapContent */,
 				DD94B73F2ACCE3BE00DCD1D1 /* MapSettingsForm.swift */,
 				DDB6CCFA2AAF805100945AF6 /* NodeMapSwiftUI.swift */,
 				DD13AA482AB73BF400BA0C98 /* PositionPopover.swift */,
@@ -986,6 +988,15 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		DDDC22362BA9232C002C44F1 /* MapContent */ = {
+			isa = PBXGroup;
+			children = (
+				DDDC22372BA92344002C44F1 /* MeshMapContent.swift */,
+				DD93800A2BA3F968008BEC06 /* NodeMapContent.swift */,
+			);
+			path = MapContent;
+			sourceTree = "<group>";
+		};
 		DDDE59F729AF163D00490C6C /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
@@ -1214,6 +1225,7 @@
 				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
+				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,
 				DDDB443629F6287000EE2349 /* MapButtons.swift in Sources */,
 				DD5D0A9C2931B9F200F7EA61 /* EthernetModes.swift in Sources */,
 				6DEDA55A2A957B8E00321D2E /* DetectionSensorLog.swift in Sources */,
