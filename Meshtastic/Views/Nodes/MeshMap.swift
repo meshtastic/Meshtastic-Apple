@@ -29,11 +29,11 @@ struct MeshMap: View {
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
-	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
+	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
-	@State var position = MapCameraPosition.automatic
+	@State var position = MapCameraPosition.camera(MapCamera(centerCoordinate: LocationHelper.currentLocation, distance: 2500000, heading: 0, pitch: 0))
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
@@ -42,7 +42,6 @@ struct MeshMap: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 	
-	/// && time >= %@
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
 	var positions: FetchedResults<PositionEntity>
 	
