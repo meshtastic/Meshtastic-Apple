@@ -26,13 +26,6 @@ struct MeshMapContent: MapContent {
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
 	// Map Configuration
-	///@Namespace var mapScope
-	
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .excludingAll, showsTraffic: false)
-	//@State var position = MapCameraPosition.automatic
-	//@State var scene: MKLookAroundScene?
-	//@State var isLookingAround = false
-	//@State var isEditingSettings = false
 	@Binding var selectedPosition: PositionEntity?
 	@Binding var showWaypoints: Bool
 	//@Binding var editingWaypoint: WaypointEntity?
@@ -67,15 +60,15 @@ struct MeshMapContent: MapContent {
 							Circle()
 								.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
 								.foregroundStyle(Color(nodeColor.lighter()).opacity(0.3))
-//								.scaleEffect(scale)
-//								.animation(
-//									Animation.easeInOut(duration: 0.6)
-//										.repeatForever().delay(delay), value: scale
-//								)
-//								.onAppear {
-//									self.scale = 1
-//								}
-//								.frame(width: 60, height: 60)
+								.scaleEffect(scale)
+								.animation(
+									Animation.easeInOut(duration: 0.6)
+										.repeatForever().delay(delay), value: scale
+								)
+								.onAppear {
+									self.scale = 1
+								}
+								.frame(width: 60, height: 60)
 						}
 						if position.nodePosition?.hasDetectionSensorMetrics ?? false {
 							Image(systemName: "sensor.fill")

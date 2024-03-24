@@ -10,6 +10,16 @@ import MapKit
 import SwiftUI
 
 extension WaypointEntity {
+	
+	static func allWaypointssFetchRequest() -> NSFetchRequest<WaypointEntity> {
+		let request: NSFetchRequest<WaypointEntity> = WaypointEntity.fetchRequest()
+		//request.fetchLimit = 100
+		//request.fetchBatchSize = 1
+		request.returnsDistinctResults = true
+		request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: false)]
+		request.predicate = NSPredicate(format: "expire == nil || expire >= %@", Date() as NSDate)
+		return request
+	}
 
 	var latitude: Double? {
 

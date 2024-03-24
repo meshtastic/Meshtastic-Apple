@@ -14,11 +14,12 @@ extension PositionEntity {
 	
 	static func allPositionsFetchRequest() -> NSFetchRequest<PositionEntity> {
 		let request: NSFetchRequest<PositionEntity> = PositionEntity.fetchRequest()
-	//	request.fetchLimit = 100
-		//request.fetchBatchSize = 2
+		request.fetchLimit = 75
+		//request.fetchBatchSize = 1
+		//request.returnsObjectsAsFaults = true
 		//request.includesSubentities = false
 		request.returnsDistinctResults = true
-		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: true)]
+		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
 		request.predicate = NSPredicate(format: "nodePosition != nil && latest == true", Calendar.current.date(byAdding: .day, value: -7, to: Date())! as NSDate)
 		return request
 	}

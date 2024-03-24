@@ -32,44 +32,22 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
-	//@State var scene: MKLookAroundScene?
-	//@State var isLookingAround = false
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = true
+	@State var showWaypoints = false
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 	
-	let positionRequest: NSFetchRequest = {
-		// Create a fetch request.
-		let request = PositionEntity.fetchRequest()
-		
-		// Limit the maximum number of items that the request returns.
-		request.fetchLimit = 100
-				
-		// Filter the request results, such as to only return unchecked items.
-		request.predicate = NSPredicate(format: "nodePosition != nil && latest == true && time >= %@", Calendar.current.date(byAdding: .hour, value: -6, to: Date())! as NSDate)
-		
-		// Sort the fetched results
-		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: true)]
-
-
-		return request
-	}()
-	
 	/// && time >= %@
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
 	var positions: FetchedResults<PositionEntity>
 	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: false)],
-				  predicate: NSPredicate(
-					format: "expire == nil || expire >= %@", Date() as NSDate
-				  ), animation: .none)
-	private var waypoints: FetchedResults<WaypointEntity>
+	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
+	var waypoints: FetchedResults<WaypointEntity>
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
 				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
@@ -82,41 +60,7 @@ struct MeshMap: View {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
 						MeshMapContent(positions: Array(positions), waypoints: Array(waypoints), routes: Array(routes), showUserLocation: $showUserLocation, showNodeHistory: $showNodeHistory, showRouteLines: $showRouteLines, showConvexHull: $showConvexHull, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, showWaypoints: $showWaypoints, selectedWaypoint: $selectedWaypoint)
-
-//							/// Routes
-//							ForEach(Array(routes), id: \.id) { route in
-//								let routeLocations = Array(route.locations!) as! [LocationEntity]
-//								let routeCoords = routeLocations.compactMap({(loc) -> CLLocationCoordinate2D in
-//									return loc.locationCoordinate ?? LocationHelper.DefaultLocation
-//								})
-//								Annotation("Start", coordinate: routeCoords.first ?? LocationHelper.DefaultLocation) {
-//									ZStack {
-//										Circle()
-//											.fill(Color(.green))
-//											.strokeBorder(.white, lineWidth: 3)
-//											.frame(width: 15, height: 15)
-//									}
-//								}
-//								.annotationTitles(.automatic)
-//								Annotation("Finish", coordinate: routeCoords.last ?? LocationHelper.DefaultLocation) {
-//									ZStack {
-//										Circle()
-//											.fill(Color(.black))
-//											.strokeBorder(.white, lineWidth: 3)
-//											.frame(width: 15, height: 15)
-//									}
-//								}
-//								.annotationTitles(.automatic)
-//								let solid = StrokeStyle(
-//									lineWidth: 3,
-//									lineCap: .round, lineJoin: .round
-//								)
-//								MapPolyline(coordinates: routeCoords)
-//									.stroke(Color(UIColor(hex: UInt32(route.color))), style: solid)
-//								
-//							}
-//						}
-//						
+				
 					}
 					.mapScope(mapScope)
 					.mapStyle(mapStyle)
@@ -129,28 +73,41 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
-					.onTapGesture(count: 1,  perform: {
-					   position in
-						print(position)
-					//   tapText = "map tap"
-						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
-				   })
-					.onTapGesture(count: 1, perform: { location in
-					//	newWaypointCoord = reader.convert(location , from: .local)
+
+					.onTapGesture(count: 1,  perform: { position in
+							print(position)
+							newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
-					.onLongPressGesture(minimumDuration: 0.5, maximumDistance: 10) {
-						editingWaypoint = WaypointEntity(context: context)
-						editingWaypoint!.name = "Waypoint Pin"
-						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-						editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
-						editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
-						editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
-						editingWaypoint!.id = 0
-					}
-					
+					.gesture(
+						LongPressGesture(minimumDuration: 0.5)
+							.sequenced(before: SpatialTapGesture(coordinateSpace: .local))
+							.onEnded { value in
+							switch value {
+								case let .second(_, tapValue):
+									guard let point = tapValue?.location else {
+										print("Unable to retreive tap location from gesture data.")
+										return
+									}
+									
+									guard let coordinate = reader.convert(point, from: .local) else {
+										print("Unable to convert local point to coordinate on map.")
+										return
+									}
+
+									newWaypointCoord = coordinate
+									editingWaypoint = WaypointEntity(context: context)
+									editingWaypoint!.name = "Waypoint Pin"
+									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+									editingWaypoint!.latitudeI = Int32((newWaypointCoord?.latitude ?? 0) * 1e7)
+									editingWaypoint!.longitudeI = Int32((newWaypointCoord?.longitude ?? 0) * 1e7)
+									editingWaypoint!.expire = Date.now.addingTimeInterval(60 * 480)
+									editingWaypoint!.id = 0
+									print("Long press occured at: \(coordinate)")
+								default: return
+							}
+					})
 				}
 			}
-
 			.sheet(item: $selectedPosition) { selection in
 				PositionPopover(position: selection, popover: false)
 					.padding()
