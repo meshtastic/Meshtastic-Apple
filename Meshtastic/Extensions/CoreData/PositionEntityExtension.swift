@@ -21,13 +21,13 @@ extension PositionEntity {
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
 		
-		let positionPredicate = NSPredicate(format: "nodePosition != nil && nodePosition.user.shortName != nil && latest == true && time >= %@", Calendar.current.date(byAdding: .day, value: -2, to: Date())! as NSDate)
+		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true && time >= %@", Calendar.current.date(byAdding: .day, value: -2, to: Date())! as NSDate)
 		
 		let pointOfInterest = LocationHelper.currentLocation
 		
 		if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
 			/// Lets just get nodes within about 500 miles
-			let D: Double = 800000 * 1.1
+			let D: Double = UserDefaults.meshMapDistance * 1.1
 			let R: Double = 6371009
 			let meanLatitidue = pointOfInterest.latitude * .pi / 180
 			let deltaLatitude = D / R * 180 / .pi

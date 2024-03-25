@@ -34,6 +34,7 @@ extension UserDefaults {
 		case provideLocation
 		case provideLocationInterval
 		case mapLayer
+		case meshMapDistance
 		case meshMapRecentering
 		case meshMapShowNodeHistory
 		case meshMapShowRouteLines
@@ -76,6 +77,9 @@ extension UserDefaults {
 	@UserDefault(.mapLayer, defaultValue: .standard)
 	static var mapLayer: MapLayer
 
+	@UserDefault(.meshMapDistance, defaultValue: 800000)
+	static var meshMapDistance: Double
+	
 	@UserDefault(.enableMapRecentering, defaultValue: false)
 	static var enableMapRecentering: Bool
 

@@ -19,6 +19,7 @@ struct MapSettingsForm: View {
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
+	@Binding var meshMapDistance: Double
 	@Binding var meshMap: Bool
 
 	var body: some View {
@@ -55,6 +56,27 @@ struct MapSettingsForm: View {
 						.onTapGesture {
 							self.routeLines.toggle()
 							UserDefaults.enableMapRouteLines = self.routeLines
+						}
+					} else {
+						VStack {
+							HStack {
+								Label("Show nodes up to", systemImage: "lines.measurement.horizontal")
+								Picker("", selection: $meshMapDistance) {
+									ForEach(MeshMapDistances.allCases) { di in
+										Text(di.description)
+											.tag(di.id)
+									}
+								}
+								.pickerStyle(DefaultPickerStyle())
+							}
+							.listRowSeparator(.hidden)
+							Text("You will need to close and re-open the app for this to take effect.")
+								.font(.callout)
+								.foregroundColor(.gray)
+								.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+						}
+						.onChange(of: meshMapDistance) { newMeshMapDistance in
+							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
 					}
 					Toggle(isOn: $convexHull) {

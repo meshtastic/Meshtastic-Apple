@@ -15,7 +15,7 @@ import ActivityKit
 func generateMessageMarkdown (message: String) -> String {
 	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
 	let detector = try! NSDataDetector(types: types.rawValue)
-	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf8.count))
 	var messageWithMarkdown = message
 	if matches.count > 0 {
 		for match in matches {
@@ -28,9 +28,14 @@ func generateMessageMarkdown (message: String) -> String {
 				let phone = messageWithMarkdown[range]
 				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
 			} else if match.resultType == .link {
-				let url = messageWithMarkdown[range]
-				let absoluteUrl = match.url?.absoluteString ?? ""
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(absoluteUrl))")
+				let start = match.range.lowerBound
+				let stop = match.range.upperBound
+				if stop > start {
+					let url = message[start ..< stop]
+					let absoluteUrl = match.url?.absoluteString ?? ""
+					let markdownUrl = "[\(url)](\(absoluteUrl))"
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: markdownUrl)
+				}
 			}
 		}
 	}

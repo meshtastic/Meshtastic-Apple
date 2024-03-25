@@ -50,6 +50,20 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	}
 }
 
+enum MeshMapDistances: Double, CaseIterable, Identifiable {
+	case fiftyMiles = 80467.2
+	case oneHundredMiles = 160934
+	case twoHundredMiles = 321869
+	case fiveHundredMiles = 804672
+	case oneThousandMiles = 1609000
+	case twoThousandMiles = 3218688
+	var id: Double { self.rawValue }
+	var description: String {
+		let distanceFormatter = MKDistanceFormatter()
+		return "\(distanceFormatter.string(fromDistance: Double(self.rawValue))) away"
+	}
+}
+
 enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	case none = 0
 	case follow = 1

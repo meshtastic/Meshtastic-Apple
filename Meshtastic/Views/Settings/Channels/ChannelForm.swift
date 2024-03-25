@@ -245,7 +245,7 @@ struct ChannelForm: View {
 				}
 			}
 		}
-		.presentationDetents([.fraction(0.45), .fraction(0.65)])
+		.presentationDetents([.large])
 		.presentationDragIndicator(.visible)
 	}
 }

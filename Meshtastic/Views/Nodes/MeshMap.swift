@@ -24,6 +24,7 @@ struct MeshMap: View {
 	/// Parameters
 	@State var showUserLocation: Bool = true
 	/// Map State User Defaults
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
@@ -32,8 +33,8 @@ struct MeshMap: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .all, showsTraffic: true)
-	@State var position = MapCameraPosition.camera(MapCamera(centerCoordinate: LocationHelper.currentLocation, distance: 2500000, heading: 0, pitch: 0))
+	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .flat, emphasis: MapStyle.StandardEmphasis.muted ,pointsOfInterest: .excludingAll, showsTraffic: false)
+	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
 	@State var showWaypoints = false
@@ -120,7 +121,7 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(isPresented: $isEditingSettings) {
-				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
+				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMapDistance: $meshMapDistance, meshMap: $isMeshMap)
 			}
 			.onChange(of: (appState.navigationPath)) { newPath in
 				

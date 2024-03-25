@@ -20,6 +20,7 @@ struct NodeMapSwiftUI: View {
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
@@ -92,7 +93,7 @@ struct NodeMapSwiftUI: View {
 							.padding()
 					}
 					.sheet(isPresented: $isEditingSettings) {
-						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
+						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMapDistance: $meshMapDistance, meshMap: $isMeshMap)
 							.onChange(of: (selectedMapLayer)) { newMapLayer in
 								switch selectedMapLayer {
 								case .standard:
