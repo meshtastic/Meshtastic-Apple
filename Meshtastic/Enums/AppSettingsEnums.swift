@@ -60,7 +60,7 @@ enum MeshMapDistances: Double, CaseIterable, Identifiable {
 	var id: Double { self.rawValue }
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		return "\(distanceFormatter.string(fromDistance: Double(self.rawValue))) away"
+		return "up to \(distanceFormatter.string(fromDistance: Double(self.rawValue))) away"
 	}
 }
 

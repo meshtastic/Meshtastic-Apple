@@ -41,22 +41,15 @@ struct MapSettingsForm: View {
 						UserDefaults.mapLayer = newMapLayer
 					}
 					if meshMap {
-						VStack {
-							HStack {
-								Label("Show nodes", systemImage: "lines.measurement.horizontal")
-								Picker("", selection: $meshMapDistance) {
-									ForEach(MeshMapDistances.allCases) { di in
-										Text(di.description)
-											.tag(di.id)
-									}
+						HStack {
+							Label("Show nodes", systemImage: "lines.measurement.horizontal")
+							Picker("", selection: $meshMapDistance) {
+								ForEach(MeshMapDistances.allCases) { di in
+									Text(di.description)
+										.tag(di.id)
 								}
-								.pickerStyle(DefaultPickerStyle())
 							}
-							.listRowSeparator(.hidden)
-							Text("You will need to close and re-open the app for this to take effect.")
-								.font(.callout)
-								.foregroundColor(.gray)
-								.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+							.pickerStyle(DefaultPickerStyle())
 						}
 						.onChange(of: meshMapDistance) { newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance

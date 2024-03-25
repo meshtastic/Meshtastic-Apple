@@ -37,17 +37,12 @@ struct MeshMap: View {
 	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
+	@State var showWaypoints = true
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
-	
-	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .none)
-	var positions: FetchedResults<PositionEntity>
-	
-	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
-	var waypoints: FetchedResults<WaypointEntity>
+
 	
 	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
 				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
@@ -59,7 +54,7 @@ struct MeshMap: View {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(positions: Array(positions), waypoints: Array(waypoints), routes: Array(routes), showUserLocation: $showUserLocation, showNodeHistory: $showNodeHistory, showRouteLines: $showRouteLines, showConvexHull: $showConvexHull, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, showWaypoints: $showWaypoints, selectedWaypoint: $selectedWaypoint)
+						MeshMapContent(routes: Array(routes), showUserLocation: $showUserLocation, showNodeHistory: $showNodeHistory, showRouteLines: $showRouteLines, showConvexHull: $showConvexHull, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, showWaypoints: $showWaypoints, selectedWaypoint: $selectedWaypoint)
 				
 					}
 					.mapScope(mapScope)
@@ -142,12 +137,12 @@ struct MeshMap: View {
 					  print("Waypoint id not found")
 					  return
 					}
-					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
-					  print("Waypoint not found")
-					  return
-					}
+//					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+//					  print("Waypoint not found")
+//					  return
+//					}
 					showWaypoints = true
-					position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
+					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 				}
 			}
 			.onChange(of: (selectedMapLayer)) { newMapLayer in
@@ -179,26 +174,25 @@ struct MeshMap: View {
 					.foregroundColor(.accentColor)
 					.buttonStyle(.borderedProminent)
 					/// Show / Hide Waypoints Button
-					if waypoints.count > 0 {
-						
-						Button(action: {
-							withAnimation {
-								showWaypoints = !showWaypoints
-							}
-						}) {
-						Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
-							.padding(.vertical, 5)
+					
+					Button(action: {
+						withAnimation {
+							showWaypoints = !showWaypoints
 						}
-						.tint(Color(UIColor.secondarySystemBackground))
-						.foregroundColor(.accentColor)
-						.buttonStyle(.borderedProminent)
+					}) {
+					Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
+						.padding(.vertical, 5)
 					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+					
 				}
 				.controlSize(.regular)
 				.padding(5)
 			}
 		}
-		.navigationTitle("\(positions.count) Nodes")
+		.navigationTitle("Mesh Map")
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})

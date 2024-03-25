@@ -14,8 +14,7 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMapContent: MapContent {
 	
-	@State var positions: [PositionEntity] = []
-	@State var waypoints: [WaypointEntity] = []
+	//@State var waypoints: [WaypointEntity] = []
 	@State var routes: [RouteEntity] = []
 	/// Parameters
 	@Binding var showUserLocation: Bool
@@ -29,13 +28,19 @@ struct MeshMapContent: MapContent {
 	@Binding var selectedPosition: PositionEntity?
 	@Binding var showWaypoints: Bool
 	@Binding var selectedWaypoint: WaypointEntity?
+	
+	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)
+	var positions: FetchedResults<PositionEntity>
+	
+	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
+	var waypoints: FetchedResults<WaypointEntity>
 
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5
 
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		let lineCoords = positions.compactMap({(position) -> CLLocationCoordinate2D in
+		let lineCoords = Array(positions).compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
 		/// Convex Hull
@@ -148,7 +153,7 @@ struct MeshMapContent: MapContent {
 				}
 			}
 			/// Routes
-			ForEach(Array(routes), id: \.id) { route in
+			ForEach(Array(routes)) { route in
 				let routeLocations = Array(route.locations!) as! [LocationEntity]
 				let routeCoords = routeLocations.compactMap({(loc) -> CLLocationCoordinate2D in
 					return loc.locationCoordinate ?? LocationHelper.DefaultLocation
@@ -183,13 +188,15 @@ struct MeshMapContent: MapContent {
 		
 		/// Waypoint Annotations
 		if waypoints.count > 0 && showWaypoints {
-			ForEach(Array(waypoints), id: \.id) { waypoint in
+			ForEach(Array(waypoints) as! [WaypointEntity], id: \.self) { waypoint in
 				Annotation(waypoint.name ?? "?", coordinate: waypoint.coordinate) {
 					LazyVStack {
-						CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
-							.onTapGesture(perform: { location in
-								selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
-							})
+						ZStack {
+							CircleText(text: String(UnicodeScalar(Int(waypoint.icon)) ?? "📍"), color: Color.orange, circleSize: 40)
+								.onTapGesture(perform: { location in
+									selectedWaypoint = (selectedWaypoint == waypoint ? nil : waypoint)
+								})
+						}
 					}
 				}
 			}
@@ -199,5 +206,6 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var body: some MapContent {
 		meshMap
+		
 	}
 }

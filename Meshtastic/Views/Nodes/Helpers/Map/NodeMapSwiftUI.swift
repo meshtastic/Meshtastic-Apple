@@ -36,8 +36,6 @@ struct NodeMapSwiftUI: View {
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
-	@State var selectedWaypoint: WaypointEntity?
 	@State var isMeshMap = false
 	
 	@State private var mapRegion = MKCoordinateRegion.init()
@@ -87,10 +85,6 @@ struct NodeMapSwiftUI: View {
 								.clipShape(RoundedRectangle(cornerRadius: 12))
 								.padding(.horizontal, 20)
 						}
-					}
-					.sheet(item: $selectedWaypoint) { selection in
-						WaypointForm(waypoint: selection)
-							.padding()
 					}
 					.sheet(isPresented: $isEditingSettings) {
 						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMapDistance: $meshMapDistance, meshMap: $isMeshMap)
@@ -162,21 +156,6 @@ struct NodeMapSwiftUI: View {
 							.tint(Color(UIColor.secondarySystemBackground))
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
-							/// Show / Hide Waypoints Button
-							if waypoints.count > 0 {
-								
-								Button(action: {
-									withAnimation {
-										showWaypoints = !showWaypoints
-									}
-								}) {
-									Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
-										.padding(.vertical, 5)
-								}
-								.tint(Color(UIColor.secondarySystemBackground))
-								.foregroundColor(.accentColor)
-								.buttonStyle(.borderedProminent)
-							}
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {

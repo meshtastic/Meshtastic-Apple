@@ -72,6 +72,10 @@ struct PositionConfig: View {
 	/// walking speeds are likely to be error prone like the compass
 	@State var includeHeading = false
 
+	/// Minimum Version for fixed postion admin messages
+	@State var minimumVersion = "2.3.3"
+	@State private var supportedVersion = true
+	
 	var body: some View {
 		VStack {
 			Form {
@@ -159,6 +163,15 @@ struct PositionConfig: View {
 								Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							
+						}
+						.onChange(of: fixedPosition) { newFixed in
+							if node != nil && node!.positionConfig != nil {
+								if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
+							}
+							if supportedVersion && hasChanges && !newFixed {
+								// Send Admin message to remove the fixed position
+							}
 						}
 					}
 				}
@@ -316,6 +329,9 @@ struct PositionConfig: View {
 				self.bleManager.context = context
 			}
 			setPositionValues()
+			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+
+			
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")
@@ -353,11 +369,6 @@ struct PositionConfig: View {
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
 			if node != nil && node!.positionConfig != nil {
 				if newSmartPositionEnabled != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
-			}
-		}
-		.onChange(of: fixedPosition) { newFixed in
-			if node != nil && node!.positionConfig != nil {
-				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
 			}
 		}
 		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in

@@ -29,8 +29,6 @@ struct NodeMapContent: MapContent {
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
-	@State var selectedWaypoint: WaypointEntity?
 	@State var isMeshMap = false
 	
 	//let region: MKCoordinateRegion

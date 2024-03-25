@@ -28,9 +28,9 @@ func generateMessageMarkdown (message: String) -> String {
 				let phone = messageWithMarkdown[range]
 				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
 			} else if match.resultType == .link {
-				let start = match.range.lowerBound
-				let stop = match.range.upperBound
-				if stop > start {
+				if (match.range.location != NSNotFound) {
+					let start = match.range.lowerBound
+					let stop = match.range.upperBound
 					let url = message[start ..< stop]
 					let absoluteUrl = match.url?.absoluteString ?? ""
 					let markdownUrl = "[\(url)](\(absoluteUrl))"

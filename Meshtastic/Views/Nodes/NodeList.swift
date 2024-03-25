@@ -159,6 +159,25 @@ struct NodeList: View {
 					Text("Any missed messages will be delivered again.")
 				}
 			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							//isEditingSettings = !isEditingSettings
+						}
+					}) {
+						Image(systemName: true ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.padding(.bottom, 5)
 			.searchable(text: $searchState.searchText, placement: nodes.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a node")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
@@ -220,7 +239,7 @@ struct NodeList: View {
 									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 						})
 				}
-				.padding(.bottom, 5)
+			
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
