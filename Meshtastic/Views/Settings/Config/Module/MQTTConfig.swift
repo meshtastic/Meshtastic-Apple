@@ -276,6 +276,9 @@ struct MQTTConfig: View {
 			}
 		}
 		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+			if newProxyToClientEnabled {
+				jsonEnabled = false
+			}
 			if node != nil && node?.mqttConfig != nil {
 				if newProxyToClientEnabled != node!.mqttConfig!.proxyToClientEnabled { hasChanges = true }
 				if newProxyToClientEnabled {
@@ -289,6 +292,9 @@ struct MQTTConfig: View {
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
+			if newJsonEnabled {
+				proxyToClientEnabled = false
+			}
 			if node != nil && node?.mqttConfig != nil {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
