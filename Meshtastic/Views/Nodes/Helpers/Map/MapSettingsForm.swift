@@ -60,7 +60,7 @@ struct MapSettingsForm: View {
 					} else {
 						VStack {
 							HStack {
-								Label("Show nodes up to", systemImage: "lines.measurement.horizontal")
+								Label("Show nodes", systemImage: "lines.measurement.horizontal")
 								Picker("", selection: $meshMapDistance) {
 									ForEach(MeshMapDistances.allCases) { di in
 										Text(di.description)
