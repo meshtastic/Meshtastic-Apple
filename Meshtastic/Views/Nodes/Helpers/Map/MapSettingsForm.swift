@@ -40,24 +40,7 @@ struct MapSettingsForm: View {
 					.onChange(of: mapLayer) { newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
-					if !meshMap {
-						Toggle(isOn: $nodeHistory) {
-							Label("Node History", systemImage: "building.columns.fill")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							self.nodeHistory.toggle()
-							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
-						}
-						Toggle(isOn: $routeLines) {
-							Label("Route Lines", systemImage: "road.lanes")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							self.routeLines.toggle()
-							UserDefaults.enableMapRouteLines = self.routeLines
-						}
-					} else {
+					if meshMap {
 						VStack {
 							HStack {
 								Label("Show nodes", systemImage: "lines.measurement.horizontal")
@@ -78,6 +61,23 @@ struct MapSettingsForm: View {
 						.onChange(of: meshMapDistance) { newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
+					}
+					Toggle(isOn: $nodeHistory) {
+						Label("Node History", systemImage: "building.columns.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						self.nodeHistory.toggle()
+						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+					}
+					Toggle(isOn: $routeLines) {
+						Label("Route Lines", systemImage: "road.lanes")
+					}
+					
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						self.routeLines.toggle()
+						UserDefaults.enableMapRouteLines = self.routeLines
 					}
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")

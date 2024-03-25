@@ -52,6 +52,7 @@ struct MeshMapContent: MapContent {
 		ForEach(Array(positions), id: \.id) { position in
 			/// Node color from node.num
 			let nodeColor = UIColor(hex: UInt32(position.nodePosition?.num ?? 0))
+			/// Latest Position Anotations
 			Annotation(position.nodePosition?.user?.longName ?? "?", coordinate: position.coordinate) {
 				LazyVStack {
 					ZStack {
@@ -85,6 +86,56 @@ struct MeshMapContent: MapContent {
 				}
 				.onTapGesture { location in
 					selectedPosition = (selectedPosition == position ? nil : position)
+				}
+			}
+			
+			/// Node History and Route Lines for favorites
+			if position.nodePosition?.user?.vip ?? false {
+				if showRouteLines {
+					let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
+					let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
+						return pos.nodeCoordinate ?? LocationHelper.DefaultLocation
+					})
+					let gradient = LinearGradient(
+						colors: [Color(nodeColor.lighter().lighter()), Color(nodeColor.lighter()), Color(nodeColor)],
+						startPoint: .leading, endPoint: .trailing
+					)
+					let dashed = StrokeStyle(
+						lineWidth: 3,
+						lineCap: .round, lineJoin: .round, dash: [10, 10]
+					)
+					MapPolyline(coordinates: routeCoords)
+						.stroke(gradient, style: dashed)
+				}
+				if showNodeHistory {
+					ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
+						if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
+							let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
+							let headingDegrees = Angle.degrees(Double(mappin.heading))
+							Annotation("", coordinate: mappin.coordinate) {
+								LazyVStack {
+									if pf.contains(.Heading) {
+										Image(systemName: "location.north.circle")
+											.resizable()
+											.scaledToFit()
+											.foregroundStyle(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white)
+											.background(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+											.clipShape(Circle())
+											.rotationEffect(headingDegrees)
+											.frame(width: 16, height: 16)
+										
+									} else {
+										Circle()
+											.fill(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))))
+											.strokeBorder(Color(UIColor(hex: UInt32(mappin.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+											.frame(width: 12, height: 12)
+									}
+								}
+							}
+							.annotationTitles(.hidden)
+							.annotationSubtitles(.hidden)
+						}
+					}
 				}
 			}
 			/// Reduced Precision Map Circles
