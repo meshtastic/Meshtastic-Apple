@@ -37,7 +37,7 @@ struct MeshMap: View {
 	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = true
+	@State var showWaypoints = false
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
