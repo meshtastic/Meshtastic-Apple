@@ -28,7 +28,6 @@ struct MeshMapContent: MapContent {
 	// Map Configuration
 	@Binding var selectedPosition: PositionEntity?
 	@Binding var showWaypoints: Bool
-	//@Binding var editingWaypoint: WaypointEntity?
 	@Binding var selectedWaypoint: WaypointEntity?
 
 	var delay: Double = 0
@@ -199,8 +198,6 @@ struct MeshMapContent: MapContent {
 	
 	@MapContentBuilder
 	var body: some MapContent {
-		if positions.count > 0 {
-			meshMap
-		}
+		meshMap
 	}
 }

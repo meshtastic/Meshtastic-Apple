@@ -119,7 +119,7 @@ Spacer()
 				.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.45), .fraction(0.65)])
+		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
 		
 	}
