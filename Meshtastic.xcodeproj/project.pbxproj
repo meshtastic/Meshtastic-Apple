@@ -460,6 +460,7 @@
 		DDDC22322BA76961002C44F1 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
 		DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListFilter.swift; sourceTree = "<group>"; };
+		DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 31.xcdatamodel"; sourceTree = "<group>"; };
 		DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
@@ -1907,6 +1908,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */,
 				DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */,
 				DD398EBD2B93F640002B4C51 /* MeshtasticDataModelV 29.xcdatamodel */,
 				DD0E20FF2B892E1300F2D100 /* MeshtasticDataModelV 28.xcdatamodel */,
@@ -1938,7 +1940,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD9A1A912BA2D2D3001E602E /* MeshtasticDataModelV 30.xcdatamodel */;
+			currentVersion = DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
