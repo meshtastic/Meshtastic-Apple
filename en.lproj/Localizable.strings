@@ -99,6 +99,7 @@
 "device.role.lostandfound"="Broadcasts location as message to default channel regularly for to assist with device recovery.";
 "device.role.sensor"="Broadcasts telemetry packets as priority.";
 "device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "device.role.repeater"="Infrastructure node for extending network coverage by relaying messages with minimal overhead. Not visible in Nodes list.";
 "device.role.router"="Infrastructure node for extending network coverage by relaying messages. Visible in Nodes list.";
 "device.role.routerclient"="Combination of both ROUTER and CLIENT. Not for mobile devices.";

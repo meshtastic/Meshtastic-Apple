@@ -98,6 +98,9 @@
 "device.role.routerclient"="路由客户端模式 - 優先轉發 Mesh 網路中其他中繼點的消息，App 也可以連接到電台進行收發操作。";
 "device.role.repeater"="中繼模式 - Mesh 網路數據包將優先通過此中繼點路由。此模式可消除不必要的開銷，如 NodeInfo、DeviceTelemetry 和任何其他 Mesh 數據包，從而使設備不顯示為 Mesh 網路的一部分。有關此角色的其他特定設置，請參閱轉播模式。";
 "device.role.tracker"="追蹤模式 - 用於作為 GPS 追蹤器。從該設備發送的定位數據包優先級較高，每兩分鐘廣播一次。智能位置廣播預設為關閉。";
+"device.role.sensor"="Broadcasts telemetry packets as priority.";
+"device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "direct.messages"="聊天";
 "dismiss.keyboard"="隱藏鍵盤";
 "display"="螢幕（電台螢幕）";

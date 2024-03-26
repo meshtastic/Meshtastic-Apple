@@ -76,6 +76,7 @@
 "device.role.lostandfound"="Transmet régulièrement la position par message dans le canal par défaut pour vous aider à retrouver l'appareil.";
 "device.role.sensor"="Transmet les paquets de télémétrie en priorité.";
 "device.role.tak"="Optimisé pour le système de communication ATAK, diminue les émissions de routine.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "device.role.repeater"="Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages avec un minimum de surcharge. Invisible dans la liste des noeuds.";
 "device.role.router"="Noeud d'infrastructure qui étend la couverture du réseau en relayant les messages. Visible dans la liste des noeuds.";
 "device.role.routerclient"="Combinaison des modes ROUTER et CLIENT. Pas pour les appareils mobiles.";

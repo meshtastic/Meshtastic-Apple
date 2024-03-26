@@ -144,11 +144,13 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
+		
 			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
 				newNode.channel = Int32(packet.channel)
 			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				newNode.favorite = nodeInfoMessage.isFavorite
 			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 				newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
@@ -222,6 +224,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 
 				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
+				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
 					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)

@@ -99,6 +99,7 @@
 "device.role.lostandfound"="משדר מיקום כהודעה לערוץ ברירת מחדל לעיתים קבועות בכדי לסייע במציאת המכשיר.";
 "device.role.sensor"="משדר טלמטריה בעדיפות גבוהה.";
 "device.role.tak"="מותאם למערכת ATAK, מקטין תקשורת קבועה.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "device.role.repeater"="מכשיר תשתית להרחבת המש על ידי העברת הודעות עם דאטה נוסף מינימלי.";
 "device.role.router"="מכשיר תשתית להרחבת המש על ידי העברת הודעות. מופיע ברשימת מכשירים.";
 "device.role.routerclient"="קומבינציה של ROUTER וCLIENT. לא למכשירים ניידים.";

@@ -98,6 +98,10 @@
 "device.role.routerclient"="Router Client - Mesh Pakete werden bevorzugt über diesen Node gerouted. Der Router Client kann parallel auch von einer Client-App genutzt werden.";
 "device.role.repeater"="Repeater - Mesh packets will prefer to be routed over this node. This role eliminates unnecessary overhead such as NodeInfo, DeviceTelemetry, and any other mesh packet, resulting in the device not appearing as part of the network.  Please see Rebroadcast Mode for additional settings specific to this role.";
 "device.role.tracker"="Tracker - For use with devices intended as a GPS tracker. Position packets sent from this device will be higher priority, with position broadcasting every two minutes. Smart Position Broadcast will default to off.";
+"device.role.lostandfound"="Broadcasts location as message to default channel regularly for to assist with device recovery.";
+"device.role.sensor"="Broadcasts telemetry packets as priority.";
+"device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "direct.messages"="Direktnachrichten";
 "dismiss.keyboard"="Dismiss Keyboard";
 "display"="Display (Device Screen)";

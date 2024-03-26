@@ -263,6 +263,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.id = Int64(nodeInfo.num)
 			newNode.num = Int64(nodeInfo.num)
 			newNode.channel = Int32(nodeInfo.channel)
+			newNode.favorite = nodeInfo.isFavorite
+			newNode.hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasDeviceMetrics {
 				let telemetry = TelemetryEntity(context: context)
@@ -346,6 +348,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
+			fetchedNode[0].favorite = nodeInfo.isFavorite
+			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasUser {
 				if (fetchedNode[0].user == nil) {
