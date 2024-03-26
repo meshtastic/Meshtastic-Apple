@@ -18,15 +18,15 @@ struct MeshMapContent: MapContent {
 	@State var routes: [RouteEntity] = []
 	/// Parameters
 	@Binding var showUserLocation: Bool
-	@Binding var showNodeHistory: Bool
-	@Binding var showRouteLines: Bool
-	@Binding var showConvexHull: Bool
+	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@Binding var showTraffic: Bool
 	@Binding var showPointsOfInterest: Bool
 	@Binding var selectedMapLayer: MapLayer
 	// Map Configuration
 	@Binding var selectedPosition: PositionEntity?
-	@Binding var showWaypoints: Bool
+	@AppStorage("enableMapWaypoints") private var showWaypoints = false
 	@Binding var selectedWaypoint: WaypointEntity?
 	
 	@FetchRequest(fetchRequest: PositionEntity.allPositionsFetchRequest(), animation: .easeIn)

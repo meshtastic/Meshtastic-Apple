@@ -24,10 +24,6 @@ struct MeshMap: View {
 	/// Parameters
 	@State var showUserLocation: Bool = true
 	/// Map State User Defaults
-	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
-	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .standard
@@ -37,7 +33,6 @@ struct MeshMap: View {
 	@State var position = MapCameraPosition.automatic
 	@State var isEditingSettings = false
 	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
@@ -54,7 +49,7 @@ struct MeshMap: View {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(routes: Array(routes), showUserLocation: $showUserLocation, showNodeHistory: $showNodeHistory, showRouteLines: $showRouteLines, showConvexHull: $showConvexHull, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, showWaypoints: $showWaypoints, selectedWaypoint: $selectedWaypoint)
+						MeshMapContent(routes: Array(routes), showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
 				
 					}
 					.mapScope(mapScope)
@@ -116,7 +111,7 @@ struct MeshMap: View {
 					.padding()
 			}
 			.sheet(isPresented: $isEditingSettings) {
-				MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMapDistance: $meshMapDistance, meshMap: $isMeshMap)
+				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
 			.onChange(of: (appState.navigationPath)) { newPath in
 				
@@ -141,7 +136,7 @@ struct MeshMap: View {
 //					  print("Waypoint not found")
 //					  return
 //					}
-					showWaypoints = true
+					//showWaypoints = true
 					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
 				}
 			}
@@ -172,21 +167,7 @@ struct MeshMap: View {
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
 					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-					/// Show / Hide Waypoints Button
-					
-					Button(action: {
-						withAnimation {
-							showWaypoints = !showWaypoints
-						}
-					}) {
-					Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
-						.padding(.vertical, 5)
-					}
-					.tint(Color(UIColor.secondarySystemBackground))
-					.foregroundColor(.accentColor)
-					.buttonStyle(.borderedProminent)
-					
+					.buttonStyle(.borderedProminent)					
 				}
 				.controlSize(.regular)
 				.padding(5)

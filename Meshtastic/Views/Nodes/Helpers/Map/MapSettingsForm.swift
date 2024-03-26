@@ -13,13 +13,14 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
-	@Binding var nodeHistory: Bool
-	@Binding var routeLines: Bool
-	@Binding var convexHull: Bool
+	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var routeLines = false
+	@AppStorage("enableMapConvexHull") private var convexHull = false
+	@AppStorage("enableMapWaypoints") private var waypoints = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
-	@Binding var meshMapDistance: Double
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
 
 	var body: some View {
@@ -54,6 +55,13 @@ struct MapSettingsForm: View {
 						.onChange(of: meshMapDistance) { newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
+					}
+					Toggle(isOn: $waypoints) {
+						Label("Show Waypoints ", systemImage: "signpost.right.and.left")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						UserDefaults.enableMapWaypoints = !waypoints
 					}
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
