@@ -280,7 +280,7 @@ struct NodeList: View {
 			}
 		}
 		/// Role
-		if deviceRole > 0 {
+		if deviceRole > -1 {
 			let rolePredicate = NSPredicate(format: "user.role == %i", Int32(deviceRole))
 			predicates.append(rolePredicate)
 		}
