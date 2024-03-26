@@ -74,11 +74,13 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var systemName: String {
 		switch self {
 		case .client:
-			return "iphone.gen3.radiowaves.left.and.right"
+			return "apps.iphone"
 		case .clientMute:
 			return "speaker.slash"
-		case .router, .routerClient, .repeater:
+		case .router, .routerClient:
 			return "wifi.router"
+		case .repeater:
+			return "repeat"
 		case .tracker:
 			return "mappin.and.ellipse.circle"
 		case .sensor:

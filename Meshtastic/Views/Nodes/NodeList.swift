@@ -7,28 +7,6 @@
 import SwiftUI
 import CoreLocation
 
-struct NodeSearchState {
-	var searchText = ""
-	var searchScope = SearchScopes.all
-	var predicate: NSPredicate = .init()
-	
-	enum SearchScopes: CaseIterable, Identifiable {
-		case all
-		case lora
-		case mqtt
-		
-		var id: Self { self }
-		
-		var title: LocalizedStringKey {
-			switch self {
-			case .all: return "All"
-			case .lora: return "LoRa"
-			case .mqtt: return "MQTT"
-			}
-		}
-	}
-}
-
 struct NodeList: View {
 	
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
@@ -38,11 +16,17 @@ struct NodeList: View {
 	@State private var isPresentingDeleteNodeAlert = false
 	@State private var isPresentingPositionSentAlert = false
 	@State private var deleteNodeId: Int64 = 0
-	@State private var searchState = NodeSearchState()
+	@State private var searchText = ""
+	@State private var viaLora = true
+	@State private var viaMqtt = true
+	@State private var distanceFilter = false
+	@State private var maxDistance: Double = 800000
+	@State private var hopsAway: Int = -1
+	@State private var deviceRole: Int = -1
+	
+	@State var isEditingFilters = false
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-	
-	@State private var searchText = ""
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -159,14 +143,17 @@ struct NodeList: View {
 					Text("Any missed messages will be delivered again.")
 				}
 			}
+			.sheet(isPresented: $isEditingFilters) {
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
 					Button(action: {
 						withAnimation {
-							//isEditingSettings = !isEditingSettings
+							isEditingFilters = !isEditingFilters
 						}
 					}) {
-						Image(systemName: true ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
 							.padding(.vertical, 5)
 					}
 					.tint(Color(UIColor.secondarySystemBackground))
@@ -178,14 +165,9 @@ struct NodeList: View {
 				.padding(5)
 			}
 			.padding(.bottom, 5)
-			.searchable(text: $searchState.searchText, placement: nodes.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a node")
+			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
-			.searchScopes($searchState.searchScope) {
-				ForEach(NodeSearchState.SearchScopes.allCases) { scope in
-					Text(scope.title).tag(scope)
-				}
-			}
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
 			.confirmationDialog(
@@ -256,10 +238,19 @@ struct NodeList: View {
 			
 		}
 		.navigationSplitViewStyle(.balanced)
-		.onChange(of: searchState.searchText) { _ in
+		.onChange(of: searchText) { _ in
 			searchNodeList()
 		}
-		.onChange(of: searchState.searchScope) { _ in
+		.onChange(of: viaLora) { _ in
+			searchNodeList()
+		}
+		.onChange(of: viaMqtt) { _ in
+			searchNodeList()
+		}
+		.onChange(of: deviceRole) { _ in
+			searchNodeList()
+		}
+		.onChange(of: hopsAway) { _ in
 			searchNodeList()
 		}
 		.onAppear {
@@ -272,35 +263,63 @@ struct NodeList: View {
 	private func searchNodeList() {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
-			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchState.searchText)
+			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR
 		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+		/// Create an array of predicates to hold our AND predicates
+		var predicates: [NSPredicate] = []
+		/// Mqtt
+		if !(viaLora && viaMqtt) {
+			if viaLora {
+				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
+				predicates.append(loraPredicate)
+			} else {
+				let mqttPredicate = NSPredicate(format: "viaMqtt == YES")
+				predicates.append(mqttPredicate)
+			}
+		}
+		/// Role
+		if deviceRole > 0 {
+			let rolePredicate = NSPredicate(format: "user.role == %i", Int32(deviceRole))
+			predicates.append(rolePredicate)
+		}
+		/// Hops Away
+		if hopsAway > 0 {
+			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		}
+		/// Distance
+		if distanceFilter {
+			let pointOfInterest = LocationHelper.currentLocation
 		
-		/// Set the predicate to nil if the search string is empty
-		if searchState.searchText.isEmpty {
-			nodes.nsPredicate = nil
-			return
+			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+				let D: Double = maxDistance * 1.1
+				let R: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = D / R * 180 / .pi
+				let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(%lf <= (positions[first].longitudeI / 1e7))", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				//let distancePredicate = NSPredicate(format: "(%lf <= (positions[LAST].longitudeI / 1e7)) AND ((positions[LAST].longitudeI / 1e7) <= %lf) AND (%lf <= (positions[LAST].latitudeI / 1e7)) AND ((positions[LAST].latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				
+				//predicates.append(distancePredicate)
+			}
 		}
 		
-		/// Add a predicate for the search scope if selected
-		if searchState.searchScope != .all {
+		if predicates.count > 0 {
 			
-			if searchState.searchScope == .lora {
-				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
-				let scopePredicate = NSCompoundPredicate(type: .and, subpredicates: [loraPredicate])
-				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, scopePredicate])
-				return
-				
-			} else if searchState.searchScope == .mqtt {
-				let mqttPredicate = NSPredicate(format: "viaMqtt == YES")
-				let scopePredicate = NSCompoundPredicate(type: .and, subpredicates: [mqttPredicate])
-				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, scopePredicate])
-				return
+			if !searchText.isEmpty {
+				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
+			} else {
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
 			}
 		} else {
-			/// Use the text search predicate
-			nodes.nsPredicate = textSearchPredicate
+			nodes.nsPredicate = nil
 		}
 	}
 }

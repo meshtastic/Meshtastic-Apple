@@ -205,6 +205,5 @@ struct MeshMapContent: MapContent {
 	@MapContentBuilder
 	var body: some MapContent {
 		meshMap
-		
 	}
 }

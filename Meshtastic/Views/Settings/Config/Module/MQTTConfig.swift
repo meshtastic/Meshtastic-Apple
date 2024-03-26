@@ -47,7 +47,7 @@ struct MQTTConfig: View {
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.right")
+						Label("enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					

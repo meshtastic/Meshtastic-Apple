@@ -26,7 +26,6 @@ extension PositionEntity {
 		let pointOfInterest = LocationHelper.currentLocation
 		
 		if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
-			/// Lets just get nodes within about 500 miles
 			let D: Double = UserDefaults.meshMapDistance * 1.1
 			let R: Double = 6371009
 			let meanLatitidue = pointOfInterest.latitude * .pi / 180

@@ -186,6 +186,7 @@
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
 		DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDC22372BA92344002C44F1 /* MeshMapContent.swift */; };
+		DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */; };
 		DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
@@ -458,6 +459,7 @@
 		DDDC22312BA76701002C44F1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDDC22322BA76961002C44F1 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
+		DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeListFilter.swift; sourceTree = "<group>"; };
 		DDDD527729B5B83F0045BC3C /* MeshtasticDataModelV9.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV9.xcdatamodel; sourceTree = "<group>"; };
 		DDDE59F429AF163D00490C6C /* WidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsBundle.swift; sourceTree = "<group>"; };
@@ -960,6 +962,7 @@
 				DDDB26432AAC0206003AFCB7 /* NodeDetail.swift */,
 				DDDB26452AACC0B7003AFCB7 /* NodeInfoItem.swift */,
 				DDDB26412AABF655003AFCB7 /* NodeListItem.swift */,
+				DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1355,6 +1358,7 @@
 				DDB6ABE228B13FB500384BA1 /* PositionConfigEnums.swift in Sources */,
 				DD5E520E298EE33B00D21B61 /* mqtt.pb.swift in Sources */,
 				DD994B69295F88B60013760A /* IntervalEnums.swift in Sources */,
+				DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */,
 				DD1933762B0835D500771CD5 /* PositionAltitudeChart.swift in Sources */,
 				DD415828285859C4009B0E59 /* TelemetryConfig.swift in Sources */,
 				DDDB443D29F6592F00EE2349 /* NetworkManager.swift in Sources */,

@@ -132,7 +132,7 @@ struct NodeListItem: View {
 							}
 							
 							if node.viaMqtt && connectedNode != node.num {
-								Image(systemName: "network")
+								Image(systemName: "dot.radiowaves.up.forward")
 									.symbolRenderingMode(.hierarchical)
 									.font(.callout)
 									.frame(width: 30)
