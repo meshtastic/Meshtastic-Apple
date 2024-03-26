@@ -242,9 +242,15 @@ struct NodeList: View {
 			searchNodeList()
 		}
 		.onChange(of: viaLora) { _ in
+			if !viaLora && !viaMqtt {
+				viaMqtt = true
+			}
 			searchNodeList()
 		}
 		.onChange(of: viaMqtt) { _ in
+			if !viaLora && !viaMqtt {
+				viaLora = true
+			}
 			searchNodeList()
 		}
 		.onChange(of: deviceRole) { _ in
