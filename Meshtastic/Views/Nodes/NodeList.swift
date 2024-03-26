@@ -316,7 +316,7 @@ struct NodeList: View {
 			}
 		}
 		
-		if predicates.count > 0 {
+		if predicates.count > 0 || !searchText.isEmpty {
 			
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)

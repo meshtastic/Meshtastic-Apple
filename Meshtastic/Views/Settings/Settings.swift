@@ -333,7 +333,7 @@ struct Settings: View {
 								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 							} label: {
 								Label {
-									Text("config.module.paxcounter.setting")
+									Text("config.module.paxcounter.settings")
 								} icon: {
 									Image(systemName: "figure.walk.motion")
 								}
