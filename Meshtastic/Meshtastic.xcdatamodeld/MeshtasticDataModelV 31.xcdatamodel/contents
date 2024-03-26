@@ -189,6 +189,8 @@
         <attribute name="enabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="encryptionEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="jsonEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="mapPositionPrecision" optional="YES" attributeType="Integer 32" defaultValueString="13" usesScalarValueType="YES"/>
+        <attribute name="mapPublishIntervalSecs" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="mapReportingEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="password" optional="YES" attributeType="String" maxValueString="30"/>
         <attribute name="proxyToClientEnabled" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>

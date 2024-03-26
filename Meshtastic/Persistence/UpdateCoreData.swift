@@ -1119,6 +1119,9 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
 				newMQTTConfig.tlsEnabled = config.tlsEnabled
+				newMQTTConfig.mapReportingEnabled = config.mapReportingEnabled
+				newMQTTConfig.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
+				newMQTTConfig.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				fetchedNode[0].mqttConfig = newMQTTConfig
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
@@ -1130,6 +1133,9 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
 				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
 				fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
+				fetchedNode[0].mqttConfig?.mapReportingEnabled = config.mapReportingEnabled
+				fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
+				fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 			}
 			do {
 				try context.save()
