@@ -254,7 +254,7 @@ struct MQTTConfig: View {
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to brige over Mqtt.")
+				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
 			}
 			.scrollDismissesKeyboard(.interactively)

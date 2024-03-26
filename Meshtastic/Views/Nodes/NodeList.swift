@@ -19,6 +19,7 @@ struct NodeList: View {
 	@State private var searchText = ""
 	@State private var viaLora = true
 	@State private var viaMqtt = true
+	@State private var isOnline = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
@@ -144,7 +145,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
@@ -259,6 +260,9 @@ struct NodeList: View {
 		.onChange(of: hopsAway) { _ in
 			searchNodeList()
 		}
+		.onChange(of: isOnline) { _ in
+			searchNodeList()
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
@@ -294,6 +298,12 @@ struct NodeList: View {
 		if hopsAway > 0 {
 			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
 			predicates.append(hopsAwayPredicate)
+		}
+		
+		/// Online
+		if isOnline {
+			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			predicates.append(isOnlinePredicate)
 		}
 		/// Distance
 		if distanceFilter {
