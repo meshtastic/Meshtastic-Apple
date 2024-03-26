@@ -13,22 +13,22 @@ import ActivityKit
 #endif
 
 func generateMessageMarkdown (message: String) -> String {
-	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
-	let detector = try! NSDataDetector(types: types.rawValue)
-	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf8.count))
-	var messageWithMarkdown = message
-	if matches.count > 0 {
-		for match in matches {
-			guard let range = Range(match.range, in: message) else { continue }
-			if match.resultType == .address {
-				let address = message[range]
-				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
-			} else if match.resultType == .phoneNumber {
-				let phone = messageWithMarkdown[range]
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
-			} else if match.resultType == .link {
-				if (match.range.location != NSNotFound) {
+	if !message.isEmoji() {
+		let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+		let detector = try! NSDataDetector(types: types.rawValue)
+		let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+		var messageWithMarkdown = message
+		if matches.count > 0 {
+			for match in matches {
+				guard let range = Range(match.range, in: message) else { continue }
+				if match.resultType == .address {
+					let address = message[range]
+					let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
+				} else if match.resultType == .phoneNumber {
+					let phone = messageWithMarkdown[range]
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
+				} else if match.resultType == .link {
 					let start = match.range.lowerBound
 					let stop = match.range.upperBound
 					let url = message[start ..< stop]
@@ -38,8 +38,9 @@ func generateMessageMarkdown (message: String) -> String {
 				}
 			}
 		}
+		return messageWithMarkdown
 	}
-	return messageWithMarkdown
+	return message
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
