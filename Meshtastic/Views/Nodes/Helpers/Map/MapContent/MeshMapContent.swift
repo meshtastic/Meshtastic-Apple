@@ -8,14 +8,9 @@
 import SwiftUI
 import MapKit
 
-import SwiftUI
-import MapKit
-
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMapContent: MapContent {
 	
-	//@State var waypoints: [WaypointEntity] = []
-	@State var routes: [RouteEntity] = []
 	/// Parameters
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
@@ -34,6 +29,10 @@ struct MeshMapContent: MapContent {
 	
 	@FetchRequest(fetchRequest: WaypointEntity.allWaypointssFetchRequest(), animation: .none)
 	var waypoints: FetchedResults<WaypointEntity>
+	
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
+				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
+	private var routes: FetchedResults<RouteEntity>
 
 	var delay: Double = 0
 	@State private var scale: CGFloat = 0.5

@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import MapKit
+import CoreData
 
 @available(iOS 17.0, macOS 14.0, *)
 struct NodeMapContent: MapContent {
@@ -16,10 +17,12 @@ struct NodeMapContent: MapContent {
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
+	@AppStorage("enableMapWaypoints") private var showWaypoints = false
 	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
+	
 	// Map Configuration
 	@Namespace var mapScope
 	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
@@ -31,9 +34,6 @@ struct NodeMapContent: MapContent {
 	@State var selectedPosition: PositionEntity?
 	@State var isMeshMap = false
 	
-	//let region: MKCoordinateRegion
-	
-	
 	@MapContentBuilder
 	var nodeMap: some MapContent {
 		let positionArray = node.positions?.array as? [PositionEntity] ?? []
@@ -42,7 +42,6 @@ struct NodeMapContent: MapContent {
 		})
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
-		
 		
 		/// Node Annotations
 		ForEach(positionArray, id: \.id) { position in
@@ -79,7 +78,6 @@ struct NodeMapContent: MapContent {
 				MapPolyline(coordinates: lineCoords)
 					.stroke(gradient, style: dashed)
 			}
-			
 			/// Node Annotations
 			ForEach(positionArray, id: \.id) { position in
 				Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {

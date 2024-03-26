@@ -55,14 +55,15 @@ struct MapSettingsForm: View {
 						.onChange(of: meshMapDistance) { newMeshMapDistance in
 							UserDefaults.meshMapDistance = newMeshMapDistance
 						}
+						Toggle(isOn: $waypoints) {
+							Label("Show Waypoints ", systemImage: "signpost.right.and.left")
+						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+						.onTapGesture {
+							UserDefaults.enableMapWaypoints = !waypoints
+						}
 					}
-					Toggle(isOn: $waypoints) {
-						Label("Show Waypoints ", systemImage: "signpost.right.and.left")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					.onTapGesture {
-						UserDefaults.enableMapWaypoints = !waypoints
-					}
+					
 					Toggle(isOn: $nodeHistory) {
 						Label("Node History", systemImage: "building.columns.fill")
 					}

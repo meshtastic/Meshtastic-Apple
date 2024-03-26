@@ -31,7 +31,6 @@ struct NodeMapSwiftUI: View {
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
-	@State var selectedPosition: PositionEntity?
 	@State var isMeshMap = false
 	
 	@State private var mapRegion = MKCoordinateRegion.init()
@@ -41,6 +40,8 @@ struct NodeMapSwiftUI: View {
 					format: "expire == nil || expire >= %@", Date() as NSDate
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
+	
+	
 	
 	var body: some View {
 		var mostRecent = node.positions?.lastObject as? PositionEntity

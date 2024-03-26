@@ -38,18 +38,13 @@ struct MeshMap: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 
-	
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "name", ascending: true)],
-				  predicate: NSPredicate(format: "enabled == true", ""), animation: .none)
-	private var routes: FetchedResults<RouteEntity>
-
 	var body: some View {
 		
 		NavigationStack {
 			ZStack {
 				MapReader { reader in
 					Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-						MeshMapContent(routes: Array(routes), showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
+						MeshMapContent(showUserLocation: $showUserLocation, showTraffic: $showTraffic, showPointsOfInterest: $showPointsOfInterest, selectedMapLayer: $selectedMapLayer, selectedPosition: $selectedPosition, selectedWaypoint: $selectedWaypoint)
 				
 					}
 					.mapScope(mapScope)
