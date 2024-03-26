@@ -130,7 +130,7 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	}
 }
 
-enum MapLayer: String, CaseIterable, Equatable {
+enum MapLayer: String, CaseIterable, Equatable, Decodable {
 	case standard
 	case hybrid
 	case satellite
@@ -138,7 +138,7 @@ enum MapLayer: String, CaseIterable, Equatable {
 	var localized: String { self.rawValue.localized }
 }
 
-enum MapTileServer: String, CaseIterable, Identifiable {
+enum MapTileServer: String, CaseIterable, Identifiable, Decodable {
 	case openStreetMap
 	case openStreetMapDE
 	case openStreetMapFR
@@ -273,7 +273,7 @@ enum OverlayType: String, CaseIterable, Equatable {
 	var localized: String { self.rawValue.localized }
 }
 
-enum MapOverlayServer: String, CaseIterable, Identifiable {
+enum MapOverlayServer: String, CaseIterable, Identifiable, Decodable {
 	case baseReReflectivityCurrent
 	case baseReReflectivityOneHourAgo
 	case echoTopsEetCurrent
