@@ -29,7 +29,8 @@ struct UserDefault<T: Decodable> {
 				let storedValue = UserDefaults.standard.object(forKey: key.rawValue)
 
 				guard let storedValue,
-				let data = ("\"\(storedValue)\"".data(using: .utf8)),
+				let jsonString = (storedValue as? String != nil) ? "\"\(storedValue)\"" : "\(storedValue)",
+				let data = jsonString.data(using: .utf8),
 				let value = (try? JSONDecoder().decode(T.self, from: data)) else { return defaultValue }
 
 				return value
@@ -73,6 +74,7 @@ extension UserDefaults {
 		case enableSmartPosition
 		case modemPreset
 		case firmwareVersion
+		case testIntEnum
 	}
 
 	func reset() {
@@ -153,4 +155,13 @@ extension UserDefaults {
 
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
+
+	@UserDefault(.testIntEnum, defaultValue: .one)
+	static var testIntEnum: TestIntEnum
+}
+
+enum TestIntEnum: Int, Decodable {
+	case one = 1
+	case two
+	case three
 }
