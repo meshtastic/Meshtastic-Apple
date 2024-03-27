@@ -52,6 +52,7 @@ struct NodeListFilter: View {
 						} icon: {
 							Image(systemName: "checkmark.circle.fill")
 								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -124,7 +125,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.35), .fraction(0.45)])
+		.presentationDetents([.fraction(0.40), .fraction(0.50)])
 		.presentationDragIndicator(.visible)
 	}
 }
