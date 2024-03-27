@@ -267,6 +267,7 @@ struct NodeList: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
+			searchNodeList()
 		}
 	}
 	
