@@ -320,6 +320,46 @@ struct AdminMessage {
   }
 
   ///
+  /// Set specified node-num to be favorited on the NodeDB on the device
+  var setFavoriteNode: UInt32 {
+    get {
+      if case .setFavoriteNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .setFavoriteNode(newValue)}
+  }
+
+  ///
+  /// Set specified node-num to be un-favorited on the NodeDB on the device
+  var removeFavoriteNode: UInt32 {
+    get {
+      if case .removeFavoriteNode(let v)? = payloadVariant {return v}
+      return 0
+    }
+    set {payloadVariant = .removeFavoriteNode(newValue)}
+  }
+
+  ///
+  /// Set fixed position data on the node and then set the position.fixed_position = true
+  var setFixedPosition: Position {
+    get {
+      if case .setFixedPosition(let v)? = payloadVariant {return v}
+      return Position()
+    }
+    set {payloadVariant = .setFixedPosition(newValue)}
+  }
+
+  ///
+  /// Clear fixed position coordinates and then set position.fixed_position = false 
+  var removeFixedPosition: Bool {
+    get {
+      if case .removeFixedPosition(let v)? = payloadVariant {return v}
+      return false
+    }
+    set {payloadVariant = .removeFixedPosition(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   var beginEditSettings: Bool {
@@ -498,6 +538,18 @@ struct AdminMessage {
     /// Remove the node by the specified node-num from the NodeDB on the device
     case removeByNodenum(UInt32)
     ///
+    /// Set specified node-num to be favorited on the NodeDB on the device
+    case setFavoriteNode(UInt32)
+    ///
+    /// Set specified node-num to be un-favorited on the NodeDB on the device
+    case removeFavoriteNode(UInt32)
+    ///
+    /// Set fixed position data on the node and then set the position.fixed_position = true
+    case setFixedPosition(Position)
+    ///
+    /// Clear fixed position coordinates and then set position.fixed_position = false 
+    case removeFixedPosition(Bool)
+    ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
     case beginEditSettings(Bool)
@@ -641,6 +693,22 @@ struct AdminMessage {
       }()
       case (.removeByNodenum, .removeByNodenum): return {
         guard case .removeByNodenum(let l) = lhs, case .removeByNodenum(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setFavoriteNode, .setFavoriteNode): return {
+        guard case .setFavoriteNode(let l) = lhs, case .setFavoriteNode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeFavoriteNode, .removeFavoriteNode): return {
+        guard case .removeFavoriteNode(let l) = lhs, case .removeFavoriteNode(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.setFixedPosition, .setFixedPosition): return {
+        guard case .setFixedPosition(let l) = lhs, case .setFixedPosition(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.removeFixedPosition, .removeFixedPosition): return {
+        guard case .removeFixedPosition(let l) = lhs, case .removeFixedPosition(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       case (.beginEditSettings, .beginEditSettings): return {
@@ -978,6 +1046,10 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     36: .standard(proto: "set_canned_message_module_messages"),
     37: .standard(proto: "set_ringtone_message"),
     38: .standard(proto: "remove_by_nodenum"),
+    39: .standard(proto: "set_favorite_node"),
+    40: .standard(proto: "remove_favorite_node"),
+    41: .standard(proto: "set_fixed_position"),
+    42: .standard(proto: "remove_fixed_position"),
     64: .standard(proto: "begin_edit_settings"),
     65: .standard(proto: "commit_edit_settings"),
     95: .standard(proto: "reboot_ota_seconds"),
@@ -1278,6 +1350,43 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
           self.payloadVariant = .removeByNodenum(v)
         }
       }()
+      case 39: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setFavoriteNode(v)
+        }
+      }()
+      case 40: try {
+        var v: UInt32?
+        try decoder.decodeSingularUInt32Field(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .removeFavoriteNode(v)
+        }
+      }()
+      case 41: try {
+        var v: Position?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .setFixedPosition(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .setFixedPosition(v)
+        }
+      }()
+      case 42: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.payloadVariant != nil {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .removeFixedPosition(v)
+        }
+      }()
       case 64: try {
         var v: Bool?
         try decoder.decodeSingularBoolField(value: &v)
@@ -1464,6 +1573,22 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     case .removeByNodenum?: try {
       guard case .removeByNodenum(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 38)
+    }()
+    case .setFavoriteNode?: try {
+      guard case .setFavoriteNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 39)
+    }()
+    case .removeFavoriteNode?: try {
+      guard case .removeFavoriteNode(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 40)
+    }()
+    case .setFixedPosition?: try {
+      guard case .setFixedPosition(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 41)
+    }()
+    case .removeFixedPosition?: try {
+      guard case .removeFixedPosition(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 42)
     }()
     case .beginEditSettings?: try {
       guard case .beginEditSettings(let v)? = self.payloadVariant else { preconditionFailure() }

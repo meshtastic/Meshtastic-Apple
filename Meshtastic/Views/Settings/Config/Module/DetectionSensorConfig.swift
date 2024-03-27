@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-enum DetectionSensorRole: String, CaseIterable, Equatable {
+enum DetectionSensorRole: String, CaseIterable, Equatable, Decodable {
 	case sensor
 	case client
 	var description: String {

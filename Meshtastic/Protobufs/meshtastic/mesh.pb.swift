@@ -1861,6 +1861,14 @@ struct NodeInfo {
     set {_uniqueStorage()._hopsAway = newValue}
   }
 
+  ///
+  /// True if node is in our favorites list
+  /// Persists between NodeDB internal clean ups
+  var isFavorite: Bool {
+    get {return _storage._isFavorite}
+    set {_uniqueStorage()._isFavorite = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -2611,6 +2619,35 @@ struct Heartbeat {
   init() {}
 }
 
+///
+/// RemoteHardwarePins associated with a node
+struct NodeRemoteHardwarePin {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The node_num exposing the available gpio pin
+  var nodeNum: UInt32 = 0
+
+  ///
+  /// The the available gpio pin for usage with RemoteHardware module
+  var pin: RemoteHardwarePin {
+    get {return _pin ?? RemoteHardwarePin()}
+    set {_pin = newValue}
+  }
+  /// Returns true if `pin` has been explicitly set.
+  var hasPin: Bool {return self._pin != nil}
+  /// Clears the value of `pin`. Subsequent reads from it will return its default value.
+  mutating func clearPin() {self._pin = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _pin: RemoteHardwarePin? = nil
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
@@ -2645,6 +2682,7 @@ extension NeighborInfo: @unchecked Sendable {}
 extension Neighbor: @unchecked Sendable {}
 extension DeviceMetadata: @unchecked Sendable {}
 extension Heartbeat: @unchecked Sendable {}
+extension NodeRemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -3647,6 +3685,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     7: .same(proto: "channel"),
     8: .standard(proto: "via_mqtt"),
     9: .standard(proto: "hops_away"),
+    10: .standard(proto: "is_favorite"),
   ]
 
   fileprivate class _StorageClass {
@@ -3659,6 +3698,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _channel: UInt32 = 0
     var _viaMqtt: Bool = false
     var _hopsAway: UInt32 = 0
+    var _isFavorite: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -3674,6 +3714,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       _channel = source._channel
       _viaMqtt = source._viaMqtt
       _hopsAway = source._hopsAway
+      _isFavorite = source._isFavorite
     }
   }
 
@@ -3701,6 +3742,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
         case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
         case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         default: break
         }
       }
@@ -3740,6 +3782,9 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       if _storage._hopsAway != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
       }
+      if _storage._isFavorite != false {
+        try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3758,6 +3803,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
         if _storage._channel != rhs_storage._channel {return false}
         if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
         if _storage._hopsAway != rhs_storage._hopsAway {return false}
+        if _storage._isFavorite != rhs_storage._isFavorite {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -4591,6 +4637,48 @@ extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 
   static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_num"),
+    2: .same(proto: "pin"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._pin) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.nodeNum != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeNum, fieldNumber: 1)
+    }
+    try { if let v = self._pin {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
+    if lhs.nodeNum != rhs.nodeNum {return false}
+    if lhs._pin != rhs._pin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

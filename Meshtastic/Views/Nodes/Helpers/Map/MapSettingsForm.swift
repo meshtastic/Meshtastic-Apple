@@ -13,12 +13,14 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MapSettingsForm: View {
 	@Environment(\.dismiss) private var dismiss
-	@Binding var nodeHistory: Bool
-	@Binding var routeLines: Bool
-	@Binding var convexHull: Bool
+	@AppStorage("meshMapShowNodeHistory") private var nodeHistory = false
+	@AppStorage("meshMapShowRouteLines") private var routeLines = false
+	@AppStorage("enableMapConvexHull") private var convexHull = false
+	@AppStorage("enableMapWaypoints") private var waypoints = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
+	@AppStorage("meshMapDistance") private var meshMapDistance: Double = 800000
 	@Binding var meshMap: Bool
 
 	var body: some View {
@@ -39,23 +41,45 @@ struct MapSettingsForm: View {
 					.onChange(of: mapLayer) { newMapLayer in
 						UserDefaults.mapLayer = newMapLayer
 					}
-					if !meshMap {
-						Toggle(isOn: $nodeHistory) {
-							Label("Node History", systemImage: "building.columns.fill")
+					if meshMap {
+						HStack {
+							Label("Show nodes", systemImage: "lines.measurement.horizontal")
+							Picker("", selection: $meshMapDistance) {
+								ForEach(MeshMapDistances.allCases) { di in
+									Text(di.description)
+										.tag(di.id)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+						}
+						.onChange(of: meshMapDistance) { newMeshMapDistance in
+							UserDefaults.meshMapDistance = newMeshMapDistance
+						}
+						Toggle(isOn: $waypoints) {
+							Label("Show Waypoints ", systemImage: "signpost.right.and.left")
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.onTapGesture {
-							self.nodeHistory.toggle()
-							UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+							UserDefaults.enableMapWaypoints = !waypoints
 						}
-						Toggle(isOn: $routeLines) {
-							Label("Route Lines", systemImage: "road.lanes")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.onTapGesture {
-							self.routeLines.toggle()
-							UserDefaults.enableMapRouteLines = self.routeLines
-						}
+					}
+					
+					Toggle(isOn: $nodeHistory) {
+						Label("Node History", systemImage: "building.columns.fill")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						self.nodeHistory.toggle()
+						UserDefaults.enableMapNodeHistoryPins = self.nodeHistory
+					}
+					Toggle(isOn: $routeLines) {
+						Label("Route Lines", systemImage: "road.lanes")
+					}
+					
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.onTapGesture {
+						self.routeLines.toggle()
+						UserDefaults.enableMapRouteLines = self.routeLines
 					}
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
@@ -97,7 +121,7 @@ Spacer()
 				.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.45), .fraction(0.65)])
+		.presentationDetents([.fraction(meshMap ? 0.55 : 0.45), .fraction(0.65)])
 		.presentationDragIndicator(.visible)
 		
 	}
