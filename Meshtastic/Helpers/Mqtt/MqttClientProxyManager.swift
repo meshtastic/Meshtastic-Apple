@@ -36,8 +36,9 @@ class MqttClientProxyManager {
 				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
-		let minimumVersion = "2.3.0"
-		let latestVersion = minimumVersion.compare(UserDefaults.firmwareVersion, options: .numeric) == .orderedSame
+		let minimumVersion = "2.3.3"
+		let currentVersion = UserDefaults.firmwareVersion
+		let supportedVersion = minimumVersion.compare(currentVersion, options: .numeric) == .orderedAscending  || minimumVersion.compare(currentVersion, options: .numeric) == .orderedSame
 		
 		if let host = host {
 			let port = defaultServerPort
@@ -45,7 +46,7 @@ class MqttClientProxyManager {
 			let password = node.mqttConfig?.password
 			let root = node.mqttConfig?.root?.count ?? 0 > 0 ? node.mqttConfig?.root : "msh"
 			let prefix = root!
-			topic = prefix + (latestVersion ? "/2/e" : "/2/c") + "/#"
+			topic = prefix + (supportedVersion ? "/2/e" : "/2/c") + "/#"
 			let qos = CocoaMQTTQoS(rawValue: UInt8(1))!
 			connect(host: host, port: port, useSsl: useSsl, username: username, password: password, topic: topic, qos: qos, cleanSession: true)
 		}

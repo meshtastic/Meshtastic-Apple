@@ -13,6 +13,7 @@ struct NodeListFilter: View {
 	/// Filters
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
+	@Binding var isOnline: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
@@ -39,6 +40,19 @@ struct NodeListFilter: View {
 							Text("Via Mqtt")
 						} icon: {
 							Image(systemName: "dot.radiowaves.up.forward")
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $isOnline) {
+						
+						Label {
+							Text("Online Only")
+						} icon: {
+							Image(systemName: "checkmark.circle.fill")
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
 						}
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
@@ -111,7 +125,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.35), .fraction(0.45)])
+		.presentationDetents([.fraction(0.40), .fraction(0.50)])
 		.presentationDragIndicator(.visible)
 	}
 }

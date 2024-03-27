@@ -73,8 +73,10 @@ struct PositionConfig: View {
 	@State var includeHeading = false
 
 	/// Minimum Version for fixed postion admin messages
-	@State var minimumVersion = "2.3.3"
+	@State var minimumVersion = "2.3.2"
 	@State private var supportedVersion = true
+	@State private var showingSetFixedAlert = false
+	@State private var showingRemoveFixedAlert = false
 	
 	var body: some View {
 		VStack {
@@ -160,18 +162,44 @@ struct PositionConfig: View {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")
-								Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
+								Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval.")
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							
 						}
 						.onChange(of: fixedPosition) { newFixed in
 							if node != nil && node!.positionConfig != nil {
-								if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
+								/// Fixed Position is off to start
+								if !node!.positionConfig!.fixedPosition && newFixed && supportedVersion {
+									showingSetFixedAlert = true
+								} else if node!.positionConfig!.fixedPosition && newFixed && supportedVersion {
+									/// Fixed Position is on to start
+									showingRemoveFixedAlert = true
+								}
 							}
-							if supportedVersion && hasChanges && !newFixed {
-								// Send Admin message to remove the fixed position
-							}
+						}
+						.alert(isPresented: $showingSetFixedAlert) {
+							Alert(
+								title: Text("Set Fixed Position"),
+								message: Text("This will send a current position from your phone and enable fixed position."),
+								primaryButton: .default(Text("Set")) {
+									print("Set a fixed position here")
+								},
+								secondaryButton: .cancel(Text("Cancel")) {
+									fixedPosition = false
+								}
+							)
+						}
+						.alert(isPresented: $showingRemoveFixedAlert) {
+							Alert(
+								title: Text("Remove Fixed Position"),
+								message: Text("This will disable fixed position and remove the currently set position."),
+								primaryButton: .destructive(Text("Remove")) {
+									print("Remove a fixed position here")
+								},
+								secondaryButton: .cancel(Text("Cancel")) {
+									fixedPosition = true
+								}
+							)
 						}
 					}
 				}
