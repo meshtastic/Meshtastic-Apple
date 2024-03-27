@@ -25,7 +25,7 @@ struct NodeMapSwiftUI: View {
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
+	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
