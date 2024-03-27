@@ -58,10 +58,8 @@ struct MeshMap: View {
 							.mapControlVisibility(.automatic)
 					}
 					.controlSize(.regular)
-
 					.onTapGesture(count: 1,  perform: { position in
-							print(position)
-							newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
+						newWaypointCoord = reader.convert(position, from: .local) ??  CLLocationCoordinate2D.init()
 					})
 					.gesture(
 						LongPressGesture(minimumDuration: 0.5)

@@ -20,8 +20,8 @@ extension PositionEntity {
 		request.includesSubentities = true
 		request.returnsDistinctResults = true
 		request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-		
-		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true && time >= %@", Calendar.current.date(byAdding: .day, value: -2, to: Date())! as NSDate)
+		/// && time >= %@
+		let positionPredicate = NSPredicate(format: "nodePosition != nil && (nodePosition.user.shortName != nil || nodePosition.user.shortName != '') && latest == true", Calendar.current.date(byAdding: .day, value: -2, to: Date())! as NSDate)
 		
 		let pointOfInterest = LocationHelper.currentLocation
 		

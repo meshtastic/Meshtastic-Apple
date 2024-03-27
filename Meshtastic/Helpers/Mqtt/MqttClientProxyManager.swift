@@ -36,7 +36,7 @@ class MqttClientProxyManager {
 				defaultServerPort = Int(fullHost.components(separatedBy: ":")[1]) ?? (useSsl ? 8883 : 1883)
 			}
 		}
-		let minimumVersion = "2.3.3"
+		let minimumVersion = "2.3.2"
 		let currentVersion = UserDefaults.firmwareVersion
 		let supportedVersion = minimumVersion.compare(currentVersion, options: .numeric) == .orderedAscending  || minimumVersion.compare(currentVersion, options: .numeric) == .orderedSame
 		
