@@ -187,6 +187,7 @@
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
 		DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDC22372BA92344002C44F1 /* MeshMapContent.swift */; };
 		DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */; };
+		DDDCD5722BB3E46400BE6B60 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
 		DDDE59F529AF163D00490C6C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61C29AE7E8E003C5A37 /* WidgetKit.framework */; };
 		DDDE59F629AF163D00490C6C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD41A61E29AE7E8F003C5A37 /* SwiftUI.framework */; };
 		DDDE59F929AF163D00490C6C /* WidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE59F829AF163D00490C6C /* WidgetsBundle.swift */; };
@@ -1404,6 +1405,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DDD3BBD5292D763200D609B3 /* MeshtasticTests.swift in Sources */,
+				DDDCD5722BB3E46400BE6B60 /* BLEManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
