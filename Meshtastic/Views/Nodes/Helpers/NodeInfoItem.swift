@@ -79,5 +79,12 @@ struct NodeInfoItem: View {
 			}
 		}
 		Divider()
+		if node.metadata != nil {
+			HStack(alignment: .center) {
+				Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? "unknown".localized)")
+					.font(.title3).foregroundColor(Color.gray)
+			}
+			Divider()
+		}
 	}
 }
