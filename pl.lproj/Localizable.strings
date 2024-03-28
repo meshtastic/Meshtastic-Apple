@@ -100,6 +100,10 @@
 "device.role.routerclient"="Router Client - Hybryda ról klienta i routera. Podobnie jak w przypadku routera, z tym że Router Client może być używany zarówno jako router, jak i klient połączony z aplikacją. Radia BLE/Wi-Fi i ekran OLED nie zostaną uśpione.";
 "device.role.repeater"="Przekaźnik - Pakiety siatki będą preferować trasowanie przez ten węzeł. Ta rola eliminuje niepotrzebny nadmiar, taki jak NodeInfo, DeviceTelemetry i inne pakiety siatki, skutkując tym, że urządzenie nie będzie widoczne jako część sieci. Proszę zobaczyć tryb Rebroadcast dla dodatkowych ustawień specyficznych dla tej roli.";
 "device.role.tracker"="Tracker - Do użytku z urządzeniami przeznaczonymi jako śledzenie GPS. Pakiety pozycyjne wysyłane z tego urządzenia będą miały wyższy priorytet, z nadawaniem pozycji co dwie minuty. Inteligentna transmisja pozycji będzie domyślnie wyłączona.";
+"device.role.lostandfound"="Broadcasts location as message to default channel regularly for to assist with device recovery.";
+"device.role.sensor"="Broadcasts telemetry packets as priority.";
+"device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "direct.messages"="Bezpośrednie Wiadomości";
 "dismiss.keyboard"="Zamknij";
 "display"="Wyświetlacz (Ekran Urządzenia)";
@@ -310,12 +314,15 @@
 "tapback.exclamation"="Wykrzyknik";
 "tapback.question"="Znak zapytania";
 "tapback.poop"="Kupa";
+"tapback.wave"="Wave";
 "telemetry"="Telemetria (czujniki)";
 "telemetry.config"="Konfiguracja telemetrii";
 "timeout"="Limit czasu";
 "timestamp"="Znacznik czasu";
 "tip.bluetooth.connect.title"="Connected LoRa Radio";
 "tip.bluetooth.connect.message"="Shows information for the Lora radio currently connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.create.title"="Manage Channels";
 "tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="Sharing Meshtastic Channels";

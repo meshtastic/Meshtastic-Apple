@@ -20,23 +20,17 @@ struct NodeMapSwiftUI: View {
 	@State var showUserLocation: Bool = false
 	@State var positions: [PositionEntity] = []
 	/// Map State User Defaults
-	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
-	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
-	@AppStorage("enableMapConvexHull") private var showConvexHull = false
 	@AppStorage("enableMapTraffic") private var showTraffic: Bool = false
 	@AppStorage("enableMapPointsOfInterest") private var showPointsOfInterest: Bool = false
 	@AppStorage("mapLayer") private var selectedMapLayer: MapLayer = .hybrid
 	// Map Configuration
 	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
+	@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: .all, showsTraffic: true)
 	@State var position = MapCameraPosition.automatic
 	@State var scene: MKLookAroundScene?
 	@State var isLookingAround = false
 	@State var isShowingAltitude = false
 	@State var isEditingSettings = false
-	@State var selectedPosition: PositionEntity?
-	@State var showWaypoints = false
-	@State var selectedWaypoint: WaypointEntity?
 	@State var isMeshMap = false
 	
 	@State private var mapRegion = MKCoordinateRegion.init()
@@ -87,12 +81,8 @@ struct NodeMapSwiftUI: View {
 								.padding(.horizontal, 20)
 						}
 					}
-					.sheet(item: $selectedWaypoint) { selection in
-						WaypointForm(waypoint: selection)
-							.padding()
-					}
 					.sheet(isPresented: $isEditingSettings) {
-						MapSettingsForm(nodeHistory: $showNodeHistory, routeLines: $showRouteLines, convexHull: $showConvexHull, traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
+						MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 							.onChange(of: (selectedMapLayer)) { newMapLayer in
 								switch selectedMapLayer {
 								case .standard:
@@ -161,21 +151,6 @@ struct NodeMapSwiftUI: View {
 							.tint(Color(UIColor.secondarySystemBackground))
 							.foregroundColor(.accentColor)
 							.buttonStyle(.borderedProminent)
-							/// Show / Hide Waypoints Button
-							if waypoints.count > 0 {
-								
-								Button(action: {
-									withAnimation {
-										showWaypoints = !showWaypoints
-									}
-								}) {
-									Image(systemName: showWaypoints ? "signpost.right.and.left.fill" : "signpost.right.and.left")
-										.padding(.vertical, 5)
-								}
-								.tint(Color(UIColor.secondarySystemBackground))
-								.foregroundColor(.accentColor)
-								.buttonStyle(.borderedProminent)
-							}
 							/// Look Around Button
 							if self.scene != nil {
 								Button(action: {

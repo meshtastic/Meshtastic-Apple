@@ -99,6 +99,7 @@
 "device.role.lostandfound"="Broadcasts location as message to default channel regularly for to assist with device recovery.";
 "device.role.sensor"="Broadcasts telemetry packets as priority.";
 "device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "device.role.repeater"="Infrastructure node for extending network coverage by relaying messages with minimal overhead. Not visible in Nodes list.";
 "device.role.router"="Infrastructure node for extending network coverage by relaying messages. Visible in Nodes list.";
 "device.role.routerclient"="Combination of both ROUTER and CLIENT. Not for mobile devices.";
@@ -326,12 +327,15 @@
 "tapback.exclamation"="Exclamation Mark";
 "tapback.question"="Question Mark";
 "tapback.poop"="Poop";
+"tapback.wave"="Wave";
 "telemetry"="Telemetry (Sensors)";
 "telemetry.config"="Telemetry Config";
 "timeout"="Timeout";
 "timestamp"="Timestamp";
 "tip.bluetooth.connect.title"="Connected Radio";
 "tip.bluetooth.connect.message"="Shows information for the Lora radio connected via bluetooth. You can swipe left to disconnect the radio and long press to view stats or start the live activity.";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.create.title"="Manage Channels";
 "tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/tips/)";
 "tip.channels.share.title"="Sharing Meshtastic Channels";
