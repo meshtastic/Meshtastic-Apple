@@ -302,6 +302,8 @@
 "tip.bluetooth.connect.message"="Affiche les informations de la radio Lora connectée via le bluetooth. Vous pouvez faire un glissé vers la gauche pour déconnecter la radio et un appui long pour voir les statistiques ou démarrer l'activité en direct.";
 "tip.channels.create.title"="Gérer les canaux";
 "tip.channels.create.message"="La pluspart des données de votre maillage sont envoyées sur le canal principal. Vous pouvez définir des canaux secondaires pour créer des groupes de messagerie additionnelle sécurisés avec leur propre clé. [Conseils de configuration du canal](https://meshtastic.org/docs/configuration/tips/)";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.share.title"="Partage des canaux Meshtastic";
 "tip.channels.share.message"="Un code QR Meshtastic contient la configuration LoRa et les valeurs de canal nécessaires pour communiquer. La plupart des activités du maillage ont lieu sur le canal principal requis. Si vous ne partagez pas votre canal principal, votre premier canal partagé devient le canal principal de l’autre réseau. Les autres canaux sont pour les groupes privés, chacun avec sa propre clé.";
 "tip.messages.title"="Messages";

@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(TipKit)
+import TipKit
+#endif
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -130,6 +133,9 @@ struct Settings: View {
 											}
 										}
 									}
+								}
+								if #available(iOS 17.0, macOS 14.0, *) {
+									TipView(AdminChannelTip(), arrowEdge: .top)
 								}
 							} else {
 								if bleManager.connectedPeripheral != nil {

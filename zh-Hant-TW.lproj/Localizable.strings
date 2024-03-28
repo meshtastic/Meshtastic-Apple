@@ -319,6 +319,8 @@
 "timestamp"="時間戳記";
 "tip.bluetooth.connect.title"="連接到 LoRa 電台";
 "tip.bluetooth.connect.message"="顯示目前通過藍芽連接的 Lora 電台的信息。您可以向左滑動斷開電台，長按查看統計訊息或開始即時活動。";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.create.title"="管理頻道";
 "tip.channels.create.message"="現在 Mesh 上的資料會通過主通道發送。您可以設定輔助通道來建立由自己的金鑰保護的其他訊息組 [頻道設定提示](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="共享 Meshtastic 頻道";

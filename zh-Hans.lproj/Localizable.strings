@@ -320,6 +320,8 @@
 "timestamp"="时间戳";
 "tip.bluetooth.connect.title"="连接到 LoRa 电台";
 "tip.bluetooth.connect.message"="显示当前通过蓝牙连接的 Lora 电台的信息。您可以向左滑动断开电台，长按查看统计信息或开始实时活动。";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.create.title"="Manage Channels";
 "tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="共享 Meshtastic 频道";

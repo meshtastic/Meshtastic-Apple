@@ -41,8 +41,6 @@ struct NodeMapSwiftUI: View {
 				  ), animation: .none)
 	private var waypoints: FetchedResults<WaypointEntity>
 	
-	
-	
 	var body: some View {
 		var mostRecent = node.positions?.lastObject as? PositionEntity
 		
