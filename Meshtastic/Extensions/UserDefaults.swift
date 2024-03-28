@@ -4,12 +4,6 @@
 //
 //  Copyright(c) Garth Vander Houwen 4/24/23.
 //
-//
-//  UserDefaults.swift
-//  Meshtastic
-//
-//  Copyright(c) Garth Vander Houwen 4/24/23.
-//
 
 import Foundation
 
