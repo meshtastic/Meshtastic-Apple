@@ -33,7 +33,7 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "user.vip", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
 		animation: .default)
 
 	var nodes: FetchedResults<NodeInfoEntity>
@@ -49,19 +49,39 @@ struct NodeList: View {
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
 							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
-					if node.user != nil {
-						Button {
-							node.user!.vip = !node.user!.vip
-							context.refresh(node, mergeChanges: true)
-							do {
-								try context.save()
-							} catch {
-								context.rollback()
-								print("💥 Save User VIP Error")
+					
+					Button {
+						node.user!.vip = !node.user!.vip
+						if !node.favorite {
+							let success = bleManager.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+							if success {
+								node.favorite = !node.favorite
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									print("💥 Save Node Favorite Error")
+								}
+								print("Favorited a node")
 							}
-						} label: {
-							Label(node.user?.vip ?? false ? "Un-Favorite" : "Favorite", systemImage: node.user?.vip ?? false ? "star.slash.fill" : "star.fill")
+						} else {
+							let success = bleManager.removeFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+							if success {
+								node.favorite = !node.favorite
+								do {
+									try context.save()
+								} catch {
+									context.rollback()
+									print("💥 Save Node Favorite Error")
+								}
+								print("Favorited a node")
+							}
 						}
+						
+					} label: {
+						Label(node.favorite ? "Un-Favorite" : "Favorite", systemImage: node.favorite ? "star.slash.fill" : "star.fill")
+					}
+					if node.user != nil {
 						Button {
 							node.user!.mute = !node.user!.mute
 							context.refresh(node, mergeChanges: true)
