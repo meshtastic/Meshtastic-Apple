@@ -156,7 +156,10 @@ struct ChannelMessageList: View {
 					ConnectedDevice(
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
-						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
+						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
+						mqttProxyEnabled: channel.uplinkEnabled || channel.downlinkEnabled,
+						mqttProxyConnected: channel.uplinkEnabled || channel.downlinkEnabled ? bleManager.mqttProxyConnected : false
+					)
 				}
 			}
 		}

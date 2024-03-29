@@ -9,6 +9,7 @@ struct ConnectedDevice: View {
     var bluetoothOn: Bool
     var deviceConnected: Bool
     var name: String
+	var mqttProxyEnabled: Bool = false
 	var mqttProxyConnected: Bool = false
 	var phoneOnly: Bool = false
 
@@ -18,11 +19,11 @@ struct ConnectedDevice: View {
 			
 			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if bluetoothOn {
-					if deviceConnected && mqttProxyConnected {
-						if mqttProxyConnected {
+					if deviceConnected && (mqttProxyEnabled || mqttProxyConnected) {
+						if (mqttProxyConnected || mqttProxyEnabled) {
 							Image(systemName: "iphone.gen3.radiowaves.left.and.right.circle.fill")
 								.imageScale(.large)
-								.foregroundColor(.green)
+								.foregroundColor(mqttProxyConnected ? .green : .gray)
 								.symbolRenderingMode(.hierarchical)
 						}
 					}
