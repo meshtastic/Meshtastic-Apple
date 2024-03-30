@@ -109,17 +109,27 @@ struct Settings: View {
 									}
 									
 									ForEach(nodes) { node in
-										if !node.viaMqtt {
-											if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-												Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
-													.tag(Int(node.num))
-											} else if node.metadata != nil {
-												Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
-													.tag(Int(node.num))
-											} else if hasAdmin {
-												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
-													.tag(Int(node.num))
+										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
+											Label {
+												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "antenna.radiowaves.left.and.right")
 											}
+											.tag(Int(node.num))
+										} else if node.metadata != nil {
+											Label {
+												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "av.remote")
+											}
+											.tag(Int(node.num))
+										} else if hasAdmin {
+											Label {
+												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "rectangle.and.hand.point.up.left")
+											}
+											.tag(Int(node.num))
 										}
 									}
 								}
