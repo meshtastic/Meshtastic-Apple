@@ -759,20 +759,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
 							wantStoreAndForwardPackets = true;
 						}
-						if fetchedNodeInfo.count == 1 {
-							if !(fetchedNodeInfo[0].user?.vip ?? false) {
-								fetchedNodeInfo[0].favorite = true
-								fetchedNodeInfo[0].user?.vip = true
-								do {
-									try context!.save()
-									
-								} catch {
-									context!.rollback()
-									let nsError = error as NSError
-									print("💥 Core Data error. Error: \(nsError)")
-								}
-							}
-						}
 						
 					} catch {
 						print("Failed to find a node info for the connected node")

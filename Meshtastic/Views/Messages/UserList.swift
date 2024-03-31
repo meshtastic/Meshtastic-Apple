@@ -33,7 +33,9 @@ struct UserList: View {
 		 }
 	}
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false), NSSortDescriptor(key: "vip", ascending: false), NSSortDescriptor(key: "longName", ascending: true)],
+		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
+						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
+						  NSSortDescriptor(key: "longName", ascending: true)],
 		animation: .default)
 
 	private var users: FetchedResults<UserEntity>
@@ -71,7 +73,7 @@ struct UserList: View {
 									Text(user.longName ?? "unknown".localized)
 										.font(.headline)
 									Spacer()
-									if user.vip {
+									if (user.userNode?.favorite ?? false) {
 										Image(systemName: "star.fill")
 											.foregroundColor(.yellow)
 									}
@@ -108,15 +110,29 @@ struct UserList: View {
 						.frame(height: 62)
 						.contextMenu {
 							Button {
-								user.vip = !user.vip
+								
+								if node != nil && !(user.userNode?.favorite ?? false) {
+									let success = bleManager.setFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+									if success {
+										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
+										print("Favorited a node")
+									}
+								} else {
+									let success = bleManager.removeFavoriteNode(node: user.userNode!, connectedNodeNum: Int64(node!.num))
+									if success {
+										user.userNode?.favorite = !(user.userNode?.favorite ?? true)
+										print("Favorited a node")
+									}
+								}
+								context.refresh(user, mergeChanges: true)
 								do {
 									try context.save()
 								} catch {
 									context.rollback()
-									print("💥 Save User VIP Error")
+									print("💥 Save Node Favorite Error")
 								}
 							} label: {
-								Label(user.vip ? "Un-Favorite" : "Favorite", systemImage: user.vip ? "star.slash.fill" : "star.fill")
+								Label((user.userNode?.favorite ?? false)  ? "Un-Favorite" : "Favorite", systemImage: (user.userNode?.favorite ?? false) ? "star.slash.fill" : "star.fill")
 							}
 							Button {
 								user.mute = !user.mute
