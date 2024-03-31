@@ -166,7 +166,6 @@ struct MeshMap: View {
 				.padding(5)
 			}
 		}
-		.navigationTitle("Mesh Map")
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
