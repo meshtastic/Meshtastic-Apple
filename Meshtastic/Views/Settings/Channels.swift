@@ -161,6 +161,7 @@ struct Channels: View {
 								mutableChannels.add(selectedChannel as Any)
 							}
 							node!.myInfo!.channels = mutableChannels.copy() as? NSOrderedSet
+							context.refresh(selectedChannel!, mergeChanges: true)
 							do {
 								try context.save()
 								print("💾 Saved Channel: \(channel.settings.name)")
@@ -197,6 +198,8 @@ struct Channels: View {
 							channelName = ""
 							channelRole	= 2
 							hasChanges = false
+							
+							_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 						}
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
@@ -248,7 +251,7 @@ struct Channels: View {
 					newChannel.downlinkEnabled = downlink
 					newChannel.name = channelName
 					newChannel.role = Int32(channelRole)
-					//newChannel.psk = channelKey
+					newChannel.psk = Data(base64Encoded: channelKey) ?? Data()
 					newChannel.positionPrecision = Int32(positionPrecision)
 					selectedChannel = newChannel
 
