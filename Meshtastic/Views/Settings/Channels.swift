@@ -32,17 +32,17 @@ struct Channels: View {
 	@State var hasChanges = false
 	@State var hasValidKey = true
 	@State private var isPresentingSaveConfirm: Bool = false
-	@State private var channelIndex: Int32 = 0
-	@State private var channelName = ""
-	@State private var channelKeySize = 16
-	@State private var channelKey = "AQ=="
-	@State private var channelRole = 0
-	@State private var uplink = false
-	@State private var downlink = false
-	@State private var positionPrecision = 32.0
-	@State private var preciseLocation = true
-	@State private var positionsEnabled = true
-	@State private var supportedVersion = true
+	@State var channelIndex: Int32 = 0
+	@State var channelName = ""
+	@State var channelKeySize = 16
+	@State var channelKey = "AQ=="
+	@State var channelRole = 0
+	@State var uplink = false
+	@State var downlink = false
+	@State var positionPrecision = 32.0
+	@State var preciseLocation = true
+	@State var positionsEnabled = true
+	@State var supportedVersion = true
 	@State var selectedChannel: ChannelEntity?
 	
 	/// Minimum Version for granular position configuration
@@ -150,26 +150,17 @@ struct Channels: View {
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
 							
-							let newChannel = ChannelEntity(context: context)
-							newChannel.id = Int32(channel.index)
-							newChannel.index = Int32(channel.index)
-							newChannel.uplinkEnabled = channel.settings.uplinkEnabled
-							newChannel.downlinkEnabled = channel.settings.downlinkEnabled
-							newChannel.name = channel.settings.name
-							newChannel.role = Int32(channel.role.rawValue)
-							newChannel.psk = channel.settings.psk
-							newChannel.positionPrecision = Int32(positionPrecision)
+
 
 							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
 							}
-							if mutableChannels.contains(newChannel) {
-								mutableChannels.replaceObject(at: Int(newChannel.index), with: newChannel)
+							if mutableChannels.contains(selectedChannel as Any) {
+								mutableChannels.replaceObject(at: Int(channel.index), with: selectedChannel as Any)
 							} else {
-								mutableChannels.add(newChannel)
+								mutableChannels.add(selectedChannel as Any)
 							}
 							node!.myInfo!.channels = mutableChannels.copy() as? NSOrderedSet
-							context.refresh(newChannel, mergeChanges: true)
 							do {
 								try context.save()
 								print("💾 Saved Channel: \(channel.settings.name)")
@@ -249,7 +240,17 @@ struct Channels: View {
 					uplink = false
 					downlink = false
 					hasChanges = true
-					selectedChannel = ChannelEntity(context: context)
+					
+					let newChannel = ChannelEntity(context: context)
+					newChannel.id = channelIndex
+					newChannel.index = channelIndex
+					newChannel.uplinkEnabled = uplink
+					newChannel.downlinkEnabled = downlink
+					newChannel.name = channelName
+					newChannel.role = Int32(channelRole)
+					//newChannel.psk = channelKey
+					newChannel.positionPrecision = Int32(positionPrecision)
+					selectedChannel = newChannel
 
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")

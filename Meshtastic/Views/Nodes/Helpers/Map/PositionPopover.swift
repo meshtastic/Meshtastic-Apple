@@ -162,7 +162,7 @@ struct PositionPopover: View {
 				Spacer()
 				VStack (alignment: .center) {
 					if position.nodePosition != nil {
-						if position.nodePosition?.user?.vip ?? false {
+						if position.nodePosition?.favorite ?? false {
 							Image(systemName: "star.fill")
 								.foregroundColor(.yellow)
 								.symbolRenderingMode(.hierarchical)
