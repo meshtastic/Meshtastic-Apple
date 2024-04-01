@@ -130,12 +130,12 @@ struct LoRaConfig: View {
 					}
 					VStack(alignment: .leading) {
 						Picker("Number of hops", selection: $hopLimit) {
-							ForEach(1..<8) {
+							ForEach(0..<8) {
 								Text("\($0)")
-									.tag($0 == 0 ? 3 : $0)
+									.tag($0)
 							}
 						}
-						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully.")
+						Text("Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. O hop broadcast messages will not get ACKs.")
 							.foregroundColor(.gray)
 							.font(.callout)
 					}
@@ -181,7 +181,7 @@ struct LoRaConfig: View {
 					HStack {
 						Image(systemName: "antenna.radiowaves.left.and.right")
 							.foregroundColor(.accentColor)
-						Stepper("\(txPower)db Transmit Power", value: $txPower, in: 1...30, step: 1)
+						Stepper("\(txPower)dBm Transmit Power", value: $txPower, in: 1...30, step: 1)
 							.padding(5)
 					}
 				}
@@ -205,6 +205,9 @@ struct LoRaConfig: View {
 					lc.sx126XRxBoostedGain = rxBoostedGain
 					lc.overrideFrequency = overrideFrequency
 					lc.ignoreMqtt = ignoreMqtt
+					if connectedNode?.num ?? -1 == node?.user?.num ?? 0 {
+						UserDefaults.modemPreset = modemPreset
+					}
 					let adminMessageId = bleManager.saveLoRaConfig(config: lc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 					if adminMessageId > 0 {
 						// Should show a saved successfully alert once I know that to be true

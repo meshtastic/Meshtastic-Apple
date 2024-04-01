@@ -144,14 +144,32 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			newNode.snr = packet.rxSnr
 			newNode.rssi = packet.rxRssi
 			newNode.viaMqtt = packet.viaMqtt
-			newNode.channel = Int32(packet.channel)
+		
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				newNode.channel = Int32(packet.channel)
+			}
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				newNode.channel = Int32(nodeInfoMessage.channel)
-				print(packet.channel)
-				print("Channel From Message\(nodeInfoMessage.channel)")
+				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
+				newNode.favorite = nodeInfoMessage.isFavorite
+			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
-				let newUser = UserEntity(context: context)
+				
+				if newUserMessage.id.isEmpty {
+					let newUser = UserEntity(context: context)
+					newUser.num = Int64(packet.from)
+					let userId = String(format:"%2X", packet.from)
+					newUser.userId = "!\(userId)"
+					let last4 = String(userId.suffix(4))
+					newUser.longName = "Meshtastic \(last4)"
+					newUser.shortName = last4
+					newUser.hwModel = "UNSET"
+					newNode.user = newUser
+					
+				} else {
+					
+					let newUser = UserEntity(context: context)
 					newUser.userId = newUserMessage.id
 					newUser.num = Int64(packet.from)
 					newUser.longName = newUserMessage.longName
@@ -159,6 +177,17 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
+				}
+			} else {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(packet.from)
+				let userId = String(format:"%2X", packet.from)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				newNode.user = newUser
 			}
 			
 			if newNode.user == nil {
@@ -177,7 +206,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				print("💥 Error Inserting New Core Data MyInfoEntity: \(nsError)")
 			}
 			newNode.myInfo = myInfoEntity
-			//newNode.objectWillChange.send()
 			
 		} else {
 			// Update an existing node
@@ -189,10 +217,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			fetchedNode[0].snr = packet.rxSnr
 			fetchedNode[0].rssi = packet.rxRssi
 			fetchedNode[0].viaMqtt = packet.viaMqtt
-			fetchedNode[0].channel = Int32(packet.channel)
+			if packet.to == 4294967295 || packet.to == UserDefaults.preferredPeripheralNum {
+				fetchedNode[0].channel = Int32(packet.channel)
+			}
 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
-				fetchedNode[0].channel = Int32(nodeInfoMessage.channel)
+
+				fetchedNode[0].hopsAway = Int32(nodeInfoMessage.hopsAway)
+				fetchedNode[0].favorite = nodeInfoMessage.isFavorite
 				if nodeInfoMessage.hasDeviceMetrics {
 					let telemetry = TelemetryEntity(context: context)
 					telemetry.batteryLevel = Int32(nodeInfoMessage.deviceMetrics.batteryLevel)
@@ -204,6 +236,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
+					fetchedNode[0].user!.vip = nodeInfoMessage.isFavorite
 					/// Seeing Some crashes here ?
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
@@ -211,19 +244,20 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].user!.shortName = nodeInfoMessage.user.shortName
 					fetchedNode[0].user!.role = Int32(nodeInfoMessage.user.role.rawValue)
 					fetchedNode[0].user!.hwModel = String(describing: nodeInfoMessage.user.hwModel).uppercased()
-				} else {
-					if (fetchedNode[0].user == nil) {
-						let newUser = UserEntity(context: context)
-						newUser.num = Int64(nodeInfoMessage.num)
-						let userId = String(format:"%2X", nodeInfoMessage.num)
-						newUser.userId = "!\(userId)"
-						let last4 = String(userId.suffix(4))
-						newUser.longName = "Meshtastic \(last4)"
-						newUser.shortName = last4
-						newUser.hwModel = "UNSET"
-						fetchedNode[0].user! = newUser
-					}
 				}
+			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
+			}
+			if (fetchedNode[0].user == nil) {
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(packet.from)
+				let userId = String(format:"%2X", packet.from)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				fetchedNode[0].user! = newUser
 			}
 			do {
 				try context.save()
@@ -291,9 +325,9 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						return
 					}
 					/// Don't save nearly the same position over and over. If the next position is less than 10 meters from the new position, delete the previous position and save the new one.
-					if mutablePositions.count > 0 && position.precisionBits == 32 {
+					if mutablePositions.count > 0 && (position.precisionBits == 32 || position.precisionBits == 0) {
 						let mostRecent = mutablePositions.lastObject as! PositionEntity
-						if  mostRecent.coordinate.distance(from: position.coordinate) < 15 {
+						if  mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
 							mutablePositions.remove(mostRecent)
 						}
 					} else if mutablePositions.count > 0 && 11...16 ~= position.precisionBits {
@@ -1085,6 +1119,9 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				newMQTTConfig.encryptionEnabled = config.encryptionEnabled
 				newMQTTConfig.jsonEnabled = config.jsonEnabled
 				newMQTTConfig.tlsEnabled = config.tlsEnabled
+				newMQTTConfig.mapReportingEnabled = config.mapReportingEnabled
+				newMQTTConfig.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
+				newMQTTConfig.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 				fetchedNode[0].mqttConfig = newMQTTConfig
 			} else {
 				fetchedNode[0].mqttConfig?.enabled = config.enabled
@@ -1096,6 +1133,9 @@ func upsertMqttModuleConfigPacket(config: Meshtastic.ModuleConfig.MQTTConfig, no
 				fetchedNode[0].mqttConfig?.encryptionEnabled = config.encryptionEnabled
 				fetchedNode[0].mqttConfig?.jsonEnabled = config.jsonEnabled
 				fetchedNode[0].mqttConfig?.tlsEnabled = config.tlsEnabled
+				fetchedNode[0].mqttConfig?.mapReportingEnabled = config.mapReportingEnabled
+				fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(config.mapReportSettings.positionPrecision)
+				fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(config.mapReportSettings.publishIntervalSecs)
 			}
 			do {
 				try context.save()
@@ -1294,6 +1334,9 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 				newTelemetryConfig.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				newTelemetryConfig.environmentScreenEnabled = config.environmentScreenEnabled
 				newTelemetryConfig.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+				newTelemetryConfig.powerMeasurementEnabled = config.powerMeasurementEnabled
+				newTelemetryConfig.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				newTelemetryConfig.powerScreenEnabled = config.powerScreenEnabled
 				fetchedNode[0].telemetryConfig = newTelemetryConfig
 
 			} else {
@@ -1302,6 +1345,9 @@ func upsertTelemetryModuleConfigPacket(config: Meshtastic.ModuleConfig.Telemetry
 				fetchedNode[0].telemetryConfig?.environmentMeasurementEnabled = config.environmentMeasurementEnabled
 				fetchedNode[0].telemetryConfig?.environmentScreenEnabled = config.environmentScreenEnabled
 				fetchedNode[0].telemetryConfig?.environmentDisplayFahrenheit = config.environmentDisplayFahrenheit
+				fetchedNode[0].telemetryConfig?.powerMeasurementEnabled = config.powerMeasurementEnabled
+				fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(config.powerUpdateInterval)
+				fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 			}
 
 			do {

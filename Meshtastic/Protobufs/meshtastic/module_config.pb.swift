@@ -376,6 +376,43 @@ struct ModuleConfig {
     /// If true, we can use the connected phone / client to proxy messages to MQTT instead of a direct connection
     var proxyToClientEnabled: Bool = false
 
+    ///
+    /// If true, we will periodically report unencrypted information about our node to a map via MQTT
+    var mapReportingEnabled: Bool = false
+
+    ///
+    /// Settings for reporting information about our node to a map via MQTT
+    var mapReportSettings: ModuleConfig.MapReportSettings {
+      get {return _mapReportSettings ?? ModuleConfig.MapReportSettings()}
+      set {_mapReportSettings = newValue}
+    }
+    /// Returns true if `mapReportSettings` has been explicitly set.
+    var hasMapReportSettings: Bool {return self._mapReportSettings != nil}
+    /// Clears the value of `mapReportSettings`. Subsequent reads from it will return its default value.
+    mutating func clearMapReportSettings() {self._mapReportSettings = nil}
+
+    var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    init() {}
+
+    fileprivate var _mapReportSettings: ModuleConfig.MapReportSettings? = nil
+  }
+
+  ///
+  /// Settings for reporting unencrypted information about our node to a map via MQTT
+  struct MapReportSettings {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// How often we should report our info to the map (in seconds)
+    var publishIntervalSecs: UInt32 = 0
+
+    ///
+    /// Bits of precision for the location sent (default of 32 is full precision).
+    var positionPrecision: UInt32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1207,6 +1244,7 @@ extension RemoteHardwarePinType: @unchecked Sendable {}
 extension ModuleConfig: @unchecked Sendable {}
 extension ModuleConfig.OneOf_PayloadVariant: @unchecked Sendable {}
 extension ModuleConfig.MQTTConfig: @unchecked Sendable {}
+extension ModuleConfig.MapReportSettings: @unchecked Sendable {}
 extension ModuleConfig.RemoteHardwareConfig: @unchecked Sendable {}
 extension ModuleConfig.NeighborInfoConfig: @unchecked Sendable {}
 extension ModuleConfig.DetectionSensorConfig: @unchecked Sendable {}
@@ -1518,6 +1556,8 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     7: .standard(proto: "tls_enabled"),
     8: .same(proto: "root"),
     9: .standard(proto: "proxy_to_client_enabled"),
+    10: .standard(proto: "map_reporting_enabled"),
+    11: .standard(proto: "map_report_settings"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1535,12 +1575,18 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 7: try { try decoder.decodeSingularBoolField(value: &self.tlsEnabled) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.root) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.proxyToClientEnabled) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.mapReportingEnabled) }()
+      case 11: try { try decoder.decodeSingularMessageField(value: &self._mapReportSettings) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.enabled != false {
       try visitor.visitSingularBoolField(value: self.enabled, fieldNumber: 1)
     }
@@ -1568,6 +1614,12 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.proxyToClientEnabled != false {
       try visitor.visitSingularBoolField(value: self.proxyToClientEnabled, fieldNumber: 9)
     }
+    if self.mapReportingEnabled != false {
+      try visitor.visitSingularBoolField(value: self.mapReportingEnabled, fieldNumber: 10)
+    }
+    try { if let v = self._mapReportSettings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1581,6 +1633,46 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.tlsEnabled != rhs.tlsEnabled {return false}
     if lhs.root != rhs.root {return false}
     if lhs.proxyToClientEnabled != rhs.proxyToClientEnabled {return false}
+    if lhs.mapReportingEnabled != rhs.mapReportingEnabled {return false}
+    if lhs._mapReportSettings != rhs._mapReportSettings {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = ModuleConfig.protoMessageName + ".MapReportSettings"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "publish_interval_secs"),
+    2: .standard(proto: "position_precision"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.publishIntervalSecs) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.publishIntervalSecs != 0 {
+      try visitor.visitSingularUInt32Field(value: self.publishIntervalSecs, fieldNumber: 1)
+    }
+    if self.positionPrecision != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ModuleConfig.MapReportSettings, rhs: ModuleConfig.MapReportSettings) -> Bool {
+    if lhs.publishIntervalSecs != rhs.publishIntervalSecs {return false}
+    if lhs.positionPrecision != rhs.positionPrecision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

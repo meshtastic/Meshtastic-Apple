@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(TipKit)
+import TipKit
+#endif
 
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
@@ -50,34 +53,43 @@ struct Settings: View {
 				NavigationLink {
 					AboutMeshtastic()
 				} label: {
-					Image(systemName: "questionmark.app")
-						.symbolRenderingMode(.hierarchical)
-					Text("about.meshtastic")
+					Label {
+						Text("about.meshtastic")
+					} icon: {
+						Image(systemName: "questionmark.app")
+					}
 				}
 				.tag(SettingsSidebar.about)
 				NavigationLink {
 					AppSettings()
 				} label: {
-					Image(systemName: "gearshape")
-						.symbolRenderingMode(.hierarchical)
-					Text("appsettings")
+					Label {
+						Text("appsettings")
+					} icon: {
+						Image(systemName: "gearshape")
+					}
 				}
 				.tag(SettingsSidebar.appSettings)
 				if #available(iOS 17.0, macOS 14.0, *) {
 					NavigationLink {
 						Routes()
 					} label: {
-						Image(systemName: "road.lanes.curved.right")
-							.symbolRenderingMode(.hierarchical)
-						Text("routes")
+						Label {
+							Text("routes")
+						} icon: {
+							Image(systemName: "road.lanes.curved.right")
+						}
 					}
 					.tag(SettingsSidebar.routes)
 					NavigationLink {
 						RouteRecorder()
 					} label: {
-						Image(systemName: "record.circle")
-							.symbolRenderingMode(.hierarchical)
-						Text("route.recorder")
+						Label {
+							Text("route.recorder")
+						} icon: {
+							Image(systemName: "record.circle")
+								.foregroundColor(.red)
+						}
 					}
 					.tag(SettingsSidebar.routeRecorder)
 				}
@@ -122,6 +134,9 @@ struct Settings: View {
 										}
 									}
 								}
+								if #available(iOS 17.0, macOS 14.0, *) {
+									TipView(AdminChannelTip(), arrowEdge: .top)
+								}
 							} else {
 								if bleManager.connectedPeripheral != nil {
 									Text("Connected Node \(node?.user?.longName ?? "unknown".localized)")
@@ -144,7 +159,7 @@ struct Settings: View {
 								Text("Your region has a \(rc?.dutyCycle ?? 0)% hourly duty cycle, your radio will stop sending packets when it reaches the hourly limit.")
 									.foregroundColor(.orange)
 									.font(.caption)
-								Text("Limit all periodic broadcasts intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
+								Text("Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work.")
 									.font(.caption2)
 									.foregroundColor(.gray)
 							}
@@ -152,26 +167,33 @@ struct Settings: View {
 						NavigationLink {
 							LoRaConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "dot.radiowaves.left.and.right")
-								.symbolRenderingMode(.hierarchical)
-							Text("lora")
+							Label {
+								Text("lora")
+							} icon: {
+								Image(systemName: "dot.radiowaves.left.and.right")
+									.rotationEffect(.degrees(-90))
+							}
 						}
 						.tag(SettingsSidebar.loraConfig)
 						NavigationLink {
 							Channels(node: nodes.first(where: { $0.num == preferredNodeNum }))
 						} label: {
-							Image(systemName: "fibrechannel")
-								.symbolRenderingMode(.hierarchical)
-							Text("channels")
+							Label {
+								Text("channels")
+							} icon: {
+								Image(systemName: "fibrechannel")
+							}
 						}
 						.tag(SettingsSidebar.channelConfig)
 						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
 						NavigationLink {
 							ShareChannels(node: nodes.first(where: { $0.num == preferredNodeNum }))
 						} label: {
-							Image(systemName: "qrcode")
-								.symbolRenderingMode(.hierarchical)
-							Text("share.channels")
+							Label {
+								Text("share.channels")
+							} icon: {
+								Image(systemName: "qrcode")
+							}
 						}
 						.tag(SettingsSidebar.shareChannels)
 						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)
@@ -180,58 +202,72 @@ struct Settings: View {
 						NavigationLink {
 							UserConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "person.crop.rectangle.fill")
-								.symbolRenderingMode(.hierarchical)
-							Text("user")
+							Label {
+								Text("user")
+							} icon: {
+								Image(systemName: "person.crop.rectangle.fill")
+							}
 						}
 						.tag(SettingsSidebar.userConfig)
 						NavigationLink {
 							BluetoothConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "antenna.radiowaves.left.and.right")
-								.symbolRenderingMode(.hierarchical)
-							Text("bluetooth")
+							Label {
+								Text("bluetooth")
+							} icon: {
+								Image(systemName: "antenna.radiowaves.left.and.right")
+							}
 						}
 						.tag(SettingsSidebar.bluetoothConfig)
 						NavigationLink {
 							DeviceConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "flipphone")
-								.symbolRenderingMode(.hierarchical)
-							Text("device")
+							Label {
+								Text("device")
+							} icon: {
+								Image(systemName: "flipphone")
+							}
 						}
 						.tag(SettingsSidebar.deviceConfig)
 						NavigationLink {
 							DisplayConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "display")
-								.symbolRenderingMode(.hierarchical)
-							Text("display")
+							Label {
+								Text("display")
+							} icon: {
+								Image(systemName: "display")
+							}
 						}
 						.tag(SettingsSidebar.displayConfig)
 						NavigationLink {
 							NetworkConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "network")
-								.symbolRenderingMode(.hierarchical)
-							Text("network")
+							Label {
+								Text("network")
+							} icon: {
+								Image(systemName: "network")
+							}
 						}
 						.tag(SettingsSidebar.networkConfig)
 						NavigationLink {
 							PositionConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "location")
-								.symbolRenderingMode(.hierarchical)
-							Text("position")
+							Label {
+								Text("position")
+							} icon: {
+								Image(systemName: "location")
+							}
 						}
 						.tag(SettingsSidebar.positionConfig)
 
 						NavigationLink {
 							PowerConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "bolt.fill")
-								.symbolRenderingMode(.hierarchical)
-							Text("config.power.settings")
+							Label {
+								Text("config.power.settings")
+							} icon: {
+								Image(systemName: "bolt.fill")
+							}
 						}
 						.tag(SettingsSidebar.powerConfig)
 					}
@@ -240,92 +276,114 @@ struct Settings: View {
 							NavigationLink {
 								AmbientLightingConfig(node: nodes.first(where: { $0.num == selectedNode }))
 							} label: {
-								Image(systemName: "light.max")
-									.symbolRenderingMode(.hierarchical)
-								Text("ambient.lighting")
+								Label {
+									Text("ambient.lighting")
+								} icon: {
+									Image(systemName: "light.max")
+								}
 							}
 							.tag(SettingsSidebar.ambientLightingConfig)
 						}
 						NavigationLink {
 							CannedMessagesConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "list.bullet.rectangle.fill")
-								.symbolRenderingMode(.hierarchical)
-							Text("canned.messages")
+							Label {
+								Text("canned.messages")
+							} icon: {
+								Image(systemName: "list.bullet.rectangle.fill")
+							}
 						}
 						.tag(SettingsSidebar.cannedMessagesConfig)
 						NavigationLink {
 							DetectionSensorConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "sensor")
-								.symbolRenderingMode(.hierarchical)
-							Text("detection.sensor")
+							Label {
+								Text("detection.sensor")
+							} icon: {
+								Image(systemName: "sensor")
+							}
 						}
 						.tag(SettingsSidebar.detectionSensorConfig)
 						NavigationLink {
 							ExternalNotificationConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "megaphone")
-								.symbolRenderingMode(.hierarchical)
-							Text("external.notification")
+							Label {
+								Text("external.notification")
+							} icon: {
+								Image(systemName: "megaphone")
+							}
 						}
 						.tag(SettingsSidebar.externalNotificationConfig)
 						NavigationLink {
 							MQTTConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "dot.radiowaves.right")
-								.symbolRenderingMode(.hierarchical)
-							Text("mqtt")
+							Label {
+								Text("mqtt")
+							} icon: {
+								Image(systemName: "dot.radiowaves.up.forward")
+							}
 						}
 						.tag(SettingsSidebar.mqttConfig)
 						NavigationLink {
 							RangeTestConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "point.3.connected.trianglepath.dotted")
-								.symbolRenderingMode(.hierarchical)
-							Text("range.test")
+							Label {
+								Text("range.test")
+							} icon: {
+								Image(systemName: "point.3.connected.trianglepath.dotted")
+							}
 						}
 						.tag(SettingsSidebar.rangeTestConfig)
 						if node?.metadata?.hasWifi ?? false {
 							NavigationLink {
 								PaxCounterConfig(node: nodes.first(where: { $0.num == selectedNode }))
 							} label: {
-								Image(systemName: "figure.walk.motion")
-									.symbolRenderingMode(.hierarchical)
-								Text("config.module.paxcounter.settings")
+								Label {
+									Text("config.module.paxcounter.settings")
+								} icon: {
+									Image(systemName: "figure.walk.motion")
+								}
 							}
 							.tag(SettingsSidebar.paxCounterConfig)
 						}
 						NavigationLink {
 							RtttlConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "music.note.list")
-								.symbolRenderingMode(.hierarchical)
-							Text("ringtone")
+							Label {
+								Text("ringtone")
+							} icon: {
+								Image(systemName: "music.note.list")
+							}
 						}
 						.tag(SettingsSidebar.ringtoneConfig)
 						NavigationLink {
 							SerialConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "terminal")
-								.symbolRenderingMode(.hierarchical)
-							Text("serial")
+							Label {
+								Text("serial")
+							} icon: {
+								Image(systemName: "terminal")
+							}
 						}
 						.tag(SettingsSidebar.serialConfig)
 						NavigationLink {
 							StoreForwardConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "envelope.arrow.triangle.branch")
-								.symbolRenderingMode(.hierarchical)
-							Text("storeforward")
+							Label {
+								Text("storeforward")
+							} icon: {
+								Image(systemName: "envelope.arrow.triangle.branch")
+							}
 						}
 						.tag(SettingsSidebar.storeAndForwardConfig)
 						NavigationLink {
 							TelemetryConfig(node: nodes.first(where: { $0.num == selectedNode }))
 						} label: {
-							Image(systemName: "chart.xyaxis.line")
-								.symbolRenderingMode(.hierarchical)
-							Text("telemetry")
+							Label {
+								Text("telemetry")
+							} icon: {
+								Image(systemName: "chart.xyaxis.line")
+							}
 						}
 						.tag(SettingsSidebar.telemetryConfig)
 					}
@@ -333,18 +391,22 @@ struct Settings: View {
 						NavigationLink {
 							MeshLog()
 						} label: {
-							Image(systemName: "list.bullet.rectangle")
-								.symbolRenderingMode(.hierarchical)
-							Text("mesh.log")
+							Label {
+								Text("mesh.log")
+							} icon: {
+								Image(systemName: "list.bullet.rectangle")
+							}
 						}
 						.tag(SettingsSidebar.meshLog)
 						NavigationLink {
 							let connectedNode = nodes.first(where: { $0.num == preferredNodeNum })
 							AdminMessageList(user: connectedNode?.user)
 						} label: {
-							Image(systemName: "building.columns")
-								.symbolRenderingMode(.hierarchical)
-							Text("admin.log")
+							Label {
+								Text("admin.log")
+							} icon: {
+								Image(systemName: "building.columns")
+							}
 						}
 						.tag(SettingsSidebar.adminMessageLog)
 					}
@@ -352,9 +414,11 @@ struct Settings: View {
 						NavigationLink {
 							Firmware(node: nodes.first(where: { $0.num == preferredNodeNum }))
 						} label: {
-							Image(systemName: "arrow.up.arrow.down.square")
-								.symbolRenderingMode(.hierarchical)					
-							Text("Firmware Updates")
+							Label {
+								Text("Firmware Updates")
+							} icon: {
+								Image(systemName: "arrow.up.arrow.down.square")
+							}
 						}
 						.tag(SettingsSidebar.about)
 						.disabled(selectedNode > 0 && selectedNode != preferredNodeNum)

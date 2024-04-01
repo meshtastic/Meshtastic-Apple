@@ -13,28 +13,34 @@ import ActivityKit
 #endif
 
 func generateMessageMarkdown (message: String) -> String {
-	let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
-	let detector = try! NSDataDetector(types: types.rawValue)
-	let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
-	var messageWithMarkdown = message
-	if matches.count > 0 {
-		for match in matches {
-			guard let range = Range(match.range, in: message) else { continue }
-			if match.resultType == .address {
-				let address = message[range]
-				let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
-			} else if match.resultType == .phoneNumber {
-				let phone = messageWithMarkdown[range]
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
-			} else if match.resultType == .link {
-				let url = messageWithMarkdown[range]
-				let absoluteUrl = match.url?.absoluteString ?? ""
-				messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: "[\(String(match.url?.host ?? "Link"))\(String(match.url?.path ?? ""))](\(absoluteUrl))")
+	if !message.isEmoji() {
+		let types: NSTextCheckingResult.CheckingType = [.address, .link, .phoneNumber]
+		let detector = try! NSDataDetector(types: types.rawValue)
+		let matches = detector.matches(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count))
+		var messageWithMarkdown = message
+		if matches.count > 0 {
+			for match in matches {
+				guard let range = Range(match.range, in: message) else { continue }
+				if match.resultType == .address {
+					let address = message[range]
+					let urlEncodedAddress = address.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: address, with: "[\(address)](http://maps.apple.com/?address=\(urlEncodedAddress ?? ""))")
+				} else if match.resultType == .phoneNumber {
+					let phone = messageWithMarkdown[range]
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: phone, with: "[\(phone)](tel:\(phone))")
+				} else if match.resultType == .link {
+					let start = match.range.lowerBound
+					let stop = match.range.upperBound
+					let url = message[start ..< stop]
+					let absoluteUrl = match.url?.absoluteString ?? ""
+					let markdownUrl = "[\(url)](\(absoluteUrl))"
+					messageWithMarkdown = messageWithMarkdown.replacingOccurrences(of: url, with: markdownUrl)
+				}
 			}
 		}
+		return messageWithMarkdown
 	}
-	return messageWithMarkdown
+	return message
 }
 
 func localConfig (config: Config, context: NSManagedObjectContext, nodeNum: Int64, nodeLongName: String) {
@@ -257,6 +263,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			newNode.id = Int64(nodeInfo.num)
 			newNode.num = Int64(nodeInfo.num)
 			newNode.channel = Int32(nodeInfo.channel)
+			newNode.favorite = nodeInfo.isFavorite
+			newNode.hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasDeviceMetrics {
 				let telemetry = TelemetryEntity(context: context)
@@ -340,6 +348,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			fetchedNode[0].lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
 			fetchedNode[0].snr = nodeInfo.snr
 			fetchedNode[0].channel = Int32(nodeInfo.channel)
+			fetchedNode[0].favorite = nodeInfo.isFavorite
+			fetchedNode[0].hopsAway = Int32(nodeInfo.hopsAway)
 
 			if nodeInfo.hasUser {
 				if (fetchedNode[0].user == nil) {
@@ -724,24 +734,6 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 						)
 					]
 					manager.schedule()
-	
-//					let content = UNMutableNotificationContent()
-//					content.title = "Critically Low Battery!"
-//					content.body = "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining."
-//					content.userInfo["target"] = "node"
-//					content.userInfo["path"] = "meshtastic://node/\(telemetry.nodeTelemetry?.num ?? 0)"
-//					let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-//					let uuidString = UUID().uuidString
-//					let request = UNNotificationRequest(identifier: uuidString, content: content, trigger: trigger)
-//					let notificationCenter = UNUserNotificationCenter.current()
-//					notificationCenter.add(request) { (error) in
-//						if error != nil {
-//							// Handle any errors.
-//							print("Error creating local low battery notification: \(error?.localizedDescription ?? "no description")")
-//						} else {
-//							print("Created local low battery notification.")
-//						}
-//					}
 				}
 				// Update our live activity if there is one running, not available on mac iOS >= 16.2
 #if !targetEnvironment(macCatalyst)
@@ -775,7 +767,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
 
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
-	if !wantRangeTestPackets && ((messageText?.starts(with: "seq ")) != nil) {
+	if !wantRangeTestPackets && (String(messageText ?? "seq ").starts(with: "seq ")) {
 		return
 	}
 	var storeForwardBroadcast = false

@@ -23,7 +23,7 @@ struct DeviceConfig: View {
 	@State var serialEnabled = true
 	@State var debugLogEnabled = false
 	@State var rebroadcastMode = 0
-	@State var nodeInfoBroadcastSecs = 900
+	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
 
@@ -179,6 +179,10 @@ struct DeviceConfig: View {
 						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 						dc.isManaged = isManaged
+						if isManaged {
+							serialEnabled = false
+							debugLogEnabled = false
+						}
 						let adminMessageId = bleManager.saveDeviceConfig(config: dc, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 						if adminMessageId > 0 {
 							// Should show a saved successfully alert once I know that to be true
@@ -264,6 +268,9 @@ struct DeviceConfig: View {
 		self.buzzerGPIO = Int(node?.deviceConfig?.buzzerGpio ?? 0)
 		self.rebroadcastMode = Int(node?.deviceConfig?.rebroadcastMode ?? 0)
 		self.nodeInfoBroadcastSecs = Int(node?.deviceConfig?.nodeInfoBroadcastSecs ?? 900)
+		if nodeInfoBroadcastSecs < 3600 {
+			nodeInfoBroadcastSecs = 3600
+		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		self.hasChanges = false

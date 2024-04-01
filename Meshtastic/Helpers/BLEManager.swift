@@ -582,6 +582,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						nowKnown = true
 						connectedVersion = String(version.dropLast())
 						appState.firmwareVersion = connectedVersion
+						UserDefaults.firmwareVersion = connectedVersion
 					}
 					let supportedVersion = connectedVersion == "0.0.0" ||  self.minimumVersion.compare(connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(connectedVersion, options: .numeric) == .orderedSame
 					if !supportedVersion {
@@ -607,11 +608,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .adminApp:
 				adminAppPacket(packet: decodedInfo.packet, context: context!)
 			case .replyApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Reply App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Reply App handling as a text message")
+				textMessageAppPacket(packet: decodedInfo.packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
 			case .ipTunnelApp:
-				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for IP Tunnel App UNHANDLED UNHANDLED")
 			case .serialApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Serial App UNHANDLED UNHANDLED")
 			case .storeForwardApp:
 				if wantStoreAndForwardPackets {
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!)
@@ -628,17 +632,23 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			case .telemetryApp:
 				if !invalidVersion { telemetryPacket(packet: decodedInfo.packet, connectedNode: (self.connectedPeripheral != nil ? connectedPeripheral.num : 0), context: context!) }
 			case .textMessageCompressedApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Text Message Compressed App UNHANDLED")
 			case .zpsApp:
-				MeshLogger.log("🕸️ MESH PACKET received for ZPS App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				// MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Zero Positioning System App UNHANDLED")
 			case .privateApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Private App UNHANDLED UNHANDLED")
 			case .atakForwarder:
-				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for ATAK Forwarder App UNHANDLED UNHANDLED")
 			case .simulatorApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Simulator App UNHANDLED UNHANDLED")
 			case .audioApp:
-				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				//MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+				MeshLogger.log("🕸️ MESH PACKET received for Audio App UNHANDLED UNHANDLED")
 			case .tracerouteApp:
 				if let routingMessage = try? RouteDiscovery(serializedData: decodedInfo.packet.decoded.payload) {
 					let traceRoute = getTraceRoute(id: Int64(decodedInfo.packet.decoded.requestID), context: context!)
@@ -700,12 +710,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 			case .paxcounterApp:
 				paxCounterPacket(packet: decodedInfo.packet, context: context!)
+			case .mapReportApp:
+				MeshLogger.log("🕸️ MESH PACKET received for Map Report App UNHANDLED\(try! decodedInfo.packet.jsonString())")
 			case .UNRECOGNIZED:
 				MeshLogger.log("🕸️ MESH PACKET received for Other App UNHANDLED \(try! decodedInfo.packet.jsonString())")
 			case .max:
 				print("MAX PORT NUM OF 511")
 			case .atakPlugin:
 				MeshLogger.log("🕸️ MESH PACKET received for ATAK Plugin App UNHANDLED \((try? decodedInfo.packet.jsonString()) ?? "JSON Decode Failure")")
+		
 			}
 			
 			if decodedInfo.configCompleteID != 0 && decodedInfo.configCompleteID == configNonce {
@@ -970,9 +983,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
-		var success = false
-		let fromNodeNum = connectedPeripheral.num
+	public func getPositionFromPhoneGPS(channel: Int32, destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		
 		let fetchChannelRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "ChannelEntity")
@@ -980,7 +991,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		do {
 			guard let fetchedChannel = try context!.fetch(fetchChannelRequest) as? [ChannelEntity] else {
-				return false
+				return nil
 			}
 			if #available(iOS 17.0, macOS 14.0, *) {
 				
@@ -1006,8 +1017,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 
 			} else {
-				if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-					return false
+				if destNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+					return nil
 				}
 				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -1028,11 +1039,63 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			
 		} catch {
+			return nil
+		}
+		
+		return positionPacket
+	}
+	
+	public func setFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		guard let positionPacket = getPositionFromPhoneGPS(channel: channel, destNum: fromUser.num) else {
 			return false
 		}
+		adminPacket.setFixedPosition = positionPacket
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Set Fixed Postion Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
+			return true
+		}
 		return false
-
-
+	}
+	
+	public func removeFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeFixedPosition = true
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Remove Fixed Position Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
+			return true
+		}
+		return false
+	}
+	
+	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
+		var success = false
+		let fromNodeNum = connectedPeripheral.num
+		guard let positionPacket = getPositionFromPhoneGPS(channel: channel, destNum: destNum) else {
+			return false
+		}
 
 		var meshPacket = MeshPacket()
 		meshPacket.to = UInt32(destNum)

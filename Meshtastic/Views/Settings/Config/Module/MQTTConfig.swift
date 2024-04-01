@@ -5,6 +5,7 @@
 //  Copyright (c) Garth Vander Houwen 9/4/22.
 //
 import SwiftUI
+import CoreLocation
 
 struct MQTTConfig: View {
 
@@ -23,9 +24,17 @@ struct MQTTConfig: View {
 	@State var jsonEnabled = false
 	@State var tlsEnabled = true
 	@State var root = "msh"
+	@State var selectedTopic = ""
 	@State var mqttConnected: Bool = false
+	@State var defaultTopic = "msh/US"
+	@State var nearbyTopics = [String]()
+	@State var mapReportingEnabled = false
+	@State var mapPublishIntervalSecs = 3600
+	@State var preciseLocation: Bool = false
+	@State var mapPositionPrecision: Double = 13.0
 	
 	
+	let locale = Locale.current
 
 	var body: some View {
 		VStack {
@@ -44,18 +53,18 @@ struct MQTTConfig: View {
 				Section(header: Text("options")) {
 					
 					Toggle(isOn: $enabled) {
-						Label("enabled", systemImage: "dot.radiowaves.right")
+						Label("enabled", systemImage: "dot.radiowaves.up.forward")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
 					Toggle(isOn: $proxyToClientEnabled) {
 						
 						Label("mqtt.clientproxy", systemImage: "iphone.radiowaves.left.and.right")
-						Text("If both MQTT and the client proxy are enabled your mobile device will utilize an available network connection to connect to the specified MQTT server.")
+						Text("Utilizes the network connection on your phone to connect to MQTT.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					if enabled && proxyToClientEnabled {
+					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
 						}
@@ -69,18 +78,99 @@ struct MQTTConfig: View {
 					
 					Toggle(isOn: $jsonEnabled) {
 						Label("JSON Enabled", systemImage: "ellipsis.curlybraces")
-						Text("JSON mode is a limited, unencrypted MQTT output that can crash your node it should not be enabled unless you are locally integrating with home assistant")
+						Text("JSON mode is a limited, unencrypted MQTT output for locally integrating with home assistant")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					
-					Toggle(isOn: $tlsEnabled) {
-						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
-						Text("Your MQTT Server must support TLS.")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-
 				}
-				Section(header: Text("Custom Server")) {
+				
+				Section(header: Text("Map Report")) {
+					
+					Toggle(isOn: $mapReportingEnabled) {
+						Label("enabled", systemImage: "map")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					if mapReportingEnabled {
+						Picker("Map Publish Interval", selection: $mapPublishIntervalSecs ) {
+							ForEach(UpdateIntervals.allCases) { ui in
+								if ui.rawValue >= 3600 {
+									Text(ui.description)
+								}
+							}
+						}
+						.pickerStyle(DefaultPickerStyle())
+						
+						VStack(alignment: .leading) {
+							Toggle(isOn: $preciseLocation) {
+								Label("Precise Location", systemImage: "scope")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							.listRowSeparator(.visible)
+							.onChange(of: preciseLocation) { pl in
+								if pl == false {
+									mapPositionPrecision = 12
+								} else {
+									mapPositionPrecision = 32
+								}
+							}
+						}
+						
+						if !preciseLocation {
+							VStack(alignment: .leading) {
+								Label("Approximate Location", systemImage: "location.slash.circle.fill")
+								Slider(value: $mapPositionPrecision, in: 11...16, step: 1) {
+								} minimumValueLabel: {
+									Image(systemName: "minus")
+								} maximumValueLabel: {
+									Image(systemName: "plus")
+								}
+								Text(PositionPrecision(rawValue: Int(mapPositionPrecision))?.description ?? "")
+									.foregroundColor(.gray)
+									.font(.callout)
+							}
+						}
+					}
+				}
+				Section(header: Text("Root Topic")) {
+					HStack {
+						Label("Root Topic", systemImage: "tree")
+						TextField("Root Topic", text: $root)
+							.foregroundColor(.gray)
+							.onChange(of: root, perform: { _ in
+								let totalBytes = root.utf8.count
+								// Only mess with the value if it is too big
+								if totalBytes > 30 {
+									let firstNBytes = Data(root.utf8.prefix(30))
+									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
+										// Set the shortName back to the last place where it was the right size
+										root = maxBytesString
+									}
+								}
+							})
+							.foregroundColor(.gray)
+					}
+					.keyboardType(.asciiCapable)
+					.scrollDismissesKeyboard(.interactively)
+					.disableAutocorrection(true)
+					.listRowSeparator(.hidden)
+					Text("The root topic to use for MQTT.")
+						.foregroundColor(.gray)
+						.font(.callout)
+					
+					if nearbyTopics.count > 0 {
+						Picker("Nearby Topics", selection: $selectedTopic ) {
+							ForEach(nearbyTopics, id: \.self) { nt in
+								Text(nt)
+							}
+						}
+						.pickerStyle(InlinePickerStyle())
+						.listRowSeparator(.hidden)
+						Text("If the default region topic is too busy you can choose a more local topic.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
+				}
+				
+				Section(header: Text("Server")) {
 					HStack {
 						Label("Address", systemImage: "server.rack")
 						TextField("Server Address", text: $address)
@@ -157,31 +247,14 @@ struct MQTTConfig: View {
 					}
 					.keyboardType(.default)
 					.scrollDismissesKeyboard(.interactively)
-					HStack {
-						Label("Root Topic", systemImage: "tree")
-						TextField("Root Topic", text: $root)
-							.foregroundColor(.gray)
-							.onChange(of: root, perform: { _ in
-								let totalBytes = root.utf8.count
-								// Only mess with the value if it is too big
-								if totalBytes > 14 {
-									let firstNBytes = Data(root.utf8.prefix(14))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the shortName back to the last place where it was the right size
-										root = maxBytesString
-									}
-								}
-							})
-							.foregroundColor(.gray)
+					.listRowSeparator(/*@START_MENU_TOKEN@*/.visible/*@END_MENU_TOKEN@*/)
+					Toggle(isOn: $tlsEnabled) {
+						Label("TLS Enabled", systemImage: "checkmark.shield.fill")
+						Text("Your MQTT Server must support TLS.")
 					}
-					.keyboardType(.asciiCapable)
-					.scrollDismissesKeyboard(.interactively)
-					.disableAutocorrection(true)
-					Text("The root topic to use for MQTT messages. Default is \"msh\". This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs")
-						.foregroundColor(.gray)
-						.font(.callout)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				Text("You can set uplink and downlink for each channel.")
+				Text("For all Mqtt functionality other than the map report you must also set uplink and downlink for each channel you want to bridge over Mqtt.")
 					.font(.callout)
 			}
 			.scrollDismissesKeyboard(.interactively)
@@ -201,6 +274,9 @@ struct MQTTConfig: View {
 				mqtt.encryptionEnabled = self.encryptionEnabled
 				mqtt.jsonEnabled = self.jsonEnabled
 				mqtt.tlsEnabled = self.tlsEnabled
+				mqtt.mapReportingEnabled = self.mapReportingEnabled
+				mqtt.mapReportSettings.positionPrecision = UInt32(self.mapPositionPrecision)
+				mqtt.mapReportSettings.publishIntervalSecs = UInt32(self.mapPublishIntervalSecs)
 				let adminMessageId =  bleManager.saveMQTTConfig(config: mqtt, fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
 				if adminMessageId > 0 {
 					// Should show a saved successfully alert once I know that to be true
@@ -215,20 +291,6 @@ struct MQTTConfig: View {
 			ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
 		})
-		.onAppear {
-			if self.bleManager.context == nil {
-				self.bleManager.context = context
-			}
-			setMqttValues()
-			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
-			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
-				print("empty mqtt module config")
-				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
-				if node != nil && connectedNode != nil {
-					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
-				}
-			}
-		}
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
 				if newAddress != node!.mqttConfig!.address { hasChanges = true }
@@ -249,12 +311,18 @@ struct MQTTConfig: View {
 				if newRoot != node!.mqttConfig!.root { hasChanges = true }
 			}
 		}
+		.onChange(of: selectedTopic) { newSelectedTopic in
+			root = newSelectedTopic
+		}
 		.onChange(of: enabled) { newEnabled in
 			if node != nil && node?.mqttConfig != nil {
 				if newEnabled != node!.mqttConfig!.enabled { hasChanges = true }
 			}
 		}
 		.onChange(of: proxyToClientEnabled) { newProxyToClientEnabled in
+			if newProxyToClientEnabled {
+				jsonEnabled = false
+			}
 			if node != nil && node?.mqttConfig != nil {
 				if newProxyToClientEnabled != node!.mqttConfig!.proxyToClientEnabled { hasChanges = true }
 				if newProxyToClientEnabled {
@@ -268,6 +336,9 @@ struct MQTTConfig: View {
 			}
 		}
 		.onChange(of: jsonEnabled) { newJsonEnabled in
+			if newJsonEnabled {
+				proxyToClientEnabled = false
+			}
 			if node != nil && node?.mqttConfig != nil {
 				if newJsonEnabled != node!.mqttConfig!.jsonEnabled { hasChanges = true }
 			}
@@ -288,18 +359,102 @@ struct MQTTConfig: View {
 				}
 			}
 		}
+		.onChange(of: mapReportingEnabled) { newMapReportingEnabled in
+			if node != nil && node?.mqttConfig != nil {
+				if newMapReportingEnabled != node!.mqttConfig!.mapReportingEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: preciseLocation) { _ in
+			hasChanges = true
+		}
+		.onChange(of: mapPublishIntervalSecs) { newMapPublishIntervalSecs in
+			if node != nil && node?.mqttConfig != nil {
+				if newMapPublishIntervalSecs != node!.mqttConfig!.mapPublishIntervalSecs { hasChanges = true }
+			}
+		}
+		.onAppear {
+			if self.bleManager.context == nil {
+				self.bleManager.context = context
+			}
+			setMqttValues()
+			// Need to request a TelemetryModuleConfig from the remote node before allowing changes
+			if bleManager.connectedPeripheral != nil && node?.mqttConfig == nil {
+				print("empty mqtt module config")
+				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
+				if node != nil && connectedNode != nil {
+					_ = bleManager.requestMqttModuleConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				}
+			}
+		}
 	}
 	func setMqttValues() {
-		self.enabled = (node?.mqttConfig?.enabled ?? false)
-		self.proxyToClientEnabled = (node?.mqttConfig?.proxyToClientEnabled ?? false)
+		
+		if #available(iOS 17.0, macOS 14.0, *) {
+			
+			nearbyTopics = []
+			let geocoder = CLGeocoder()
+			if LocationsHandler.shared.locationsArray.count > 0 {
+				let region  = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))?.topic
+				defaultTopic = "msh/" + (region ?? "UNSET")
+				geocoder.reverseGeocodeLocation(LocationsHandler.shared.locationsArray.first!, completionHandler: {(placemarks, error) -> Void in
+					if error != nil {
+						print("Failed to reverse geocode location")
+						return
+					}
+					
+					if let placemarks = placemarks, let placemark = placemarks.first {
+						let cc = locale.region?.identifier ?? "UNK"
+						/// Country Topic unless you are US
+						if  placemark.isoCountryCode ?? "unknown" != cc {
+							let countryTopic = defaultTopic + "/" + (placemark.isoCountryCode ?? "")
+							if !countryTopic.isEmpty {
+								nearbyTopics.append(countryTopic)
+							}
+						}
+						let stateTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "")
+						if !stateTopic.isEmpty {
+							nearbyTopics.append(stateTopic)
+						}
+						let countyTopic = defaultTopic + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						if !countyTopic.isEmpty {
+							nearbyTopics.append(countyTopic)
+						}
+						let cityTopic = defaultTopic + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						if !cityTopic.isEmpty {
+							nearbyTopics.append(cityTopic)
+						}
+						let neightborhoodTopic = defaultTopic + "/" + (placemark.subLocality?.lowercased()
+							.replacingOccurrences(of: " ", with: "")
+							.replacingOccurrences(of: "'", with: "") ?? "")
+						if !neightborhoodTopic.isEmpty {
+							nearbyTopics.append(neightborhoodTopic)
+						}
+						
+					}
+					else
+					{
+						print("No Location")
+					}
+				})
+			}
+		}
+		self.enabled = node?.mqttConfig?.enabled ?? false
+		self.proxyToClientEnabled = node?.mqttConfig?.proxyToClientEnabled ?? false
 		self.address = node?.mqttConfig?.address ?? ""
 		self.username = node?.mqttConfig?.username ?? ""
 		self.password = node?.mqttConfig?.password ?? ""
 		self.root = node?.mqttConfig?.root ?? "msh"
-		self.encryptionEnabled = (node?.mqttConfig?.encryptionEnabled ?? false)
-		self.jsonEnabled = (node?.mqttConfig?.jsonEnabled ?? false)
-		self.tlsEnabled = (node?.mqttConfig?.tlsEnabled ?? false)
+		self.encryptionEnabled = node?.mqttConfig?.encryptionEnabled ?? false
+		self.jsonEnabled = node?.mqttConfig?.jsonEnabled ?? false
+		self.tlsEnabled = node?.mqttConfig?.tlsEnabled ?? false
 		self.mqttConnected = bleManager.mqttProxyConnected
+		self.mapReportingEnabled = node?.mqttConfig?.mapReportingEnabled ?? false
+		self.mapPublishIntervalSecs = Int(node?.mqttConfig?.mapPublishIntervalSecs ?? 3600)
+		self.mapPositionPrecision = Double(node?.mqttConfig?.mapPositionPrecision ?? 12)
+		if mapPositionPrecision == 0.0 {
+			self.mapPositionPrecision = 12
+		}
+		self.preciseLocation = mapPositionPrecision == 32
 		self.hasChanges = false
 	}
 }

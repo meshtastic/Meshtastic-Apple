@@ -98,6 +98,10 @@
 "device.role.routerclient"="路由客户端模式 - 优先转发 Mesh 网络中其他节点的消息，App 也可以连接到电台进行收发操作。";
 "device.role.repeater"="中继模式 - Mesh 网络数据包将优先通过此节点路由。此模式可消除不必要的开销，如 NodeInfo、DeviceTelemetry 和任何其他 Mesh 数据包，从而使设备不显示为 Mesh 网络的一部分。有关此角色的其他特定设置，请参阅转播模式。";
 "device.role.tracker"="定位模式 - 用于作为 GPS 跟踪器。从该设备发送的定位数据包优先级较高，每两分钟广播一次。智能位置广播默认为关闭。";
+"device.role.lostandfound"="Broadcasts location as message to default channel regularly for to assist with device recovery.";
+"device.role.sensor"="Broadcasts telemetry packets as priority.";
+"device.role.tak"="Optimized for ATAK system communication, reduces routine broadcasts.";
+"device.role.taktracker"="Enables automatic TAK PLI broadcasts and reduces routine broadcasts.";
 "direct.messages"="直频消息";
 "dismiss.keyboard"="隐藏键盘";
 "display"="屏幕（电台屏幕）";
@@ -309,12 +313,15 @@
 "tapback.exclamation"="感叹号";
 "tapback.question"="问号";
 "tapback.poop"="便便";
+"tapback.wave"="Wave";
 "telemetry"="遥测（传感器）";
 "telemetry.config"="遥测配置";
 "timeout"="超时";
 "timestamp"="时间戳";
 "tip.bluetooth.connect.title"="连接到 LoRa 电台";
 "tip.bluetooth.connect.message"="显示当前通过蓝牙连接的 Lora 电台的信息。您可以向左滑动断开电台，长按查看统计信息或开始实时活动。";
+"tip.channel.admin.title"="Admin Channel";
+"tip.channel.admin.message"="Admin channel detected: Select a node from the drop down to manage connected or remote devices.";
 "tip.channels.create.title"="Manage Channels";
 "tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/radio/channels/)";
 "tip.channels.share.title"="共享 Meshtastic 频道";

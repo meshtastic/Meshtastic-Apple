@@ -17,6 +17,7 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	case lostAndFound = 9
 	case sensor = 6
 	case tak = 7
+	case takTracker = 10
 	case repeater = 4
 	case router = 2
 	case routerClient = 3
@@ -40,11 +41,14 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "Sensor"
 		case .tak:
 			return "TAK"
+		case .takTracker:
+			return "TAK Tracker"
 		case .clientHidden:
 			return "Client Hidden"
 		case .lostAndFound:
 			return "Lost and Found"
 		}
+		
 	}
 	var description: String {
 		switch self {
@@ -64,6 +68,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return "device.role.sensor".localized
 		case .tak:
 			return "device.role.tak".localized
+		case .takTracker:
+			return "device.role.taktracker".localized
 		case .clientHidden:
 			return "device.role.clienthidden".localized
 		case .lostAndFound:
@@ -74,17 +80,21 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 	var systemName: String {
 		switch self {
 		case .client:
-			return "iphone.gen3.radiowaves.left.and.right"
+			return "apps.iphone"
 		case .clientMute:
 			return "speaker.slash"
-		case .router, .routerClient, .repeater:
+		case .router, .routerClient:
 			return "wifi.router"
+		case .repeater:
+			return "repeat"
 		case .tracker:
 			return "mappin.and.ellipse.circle"
 		case .sensor:
 			return "sensor"
 		case .tak:
 			return "shield.checkered"
+		case .takTracker:
+			return "dog"
 		case .clientHidden:
 			return "eye.slash"
 		case .lostAndFound:
@@ -110,6 +120,8 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return Config.DeviceConfig.Role.sensor
 		case .tak:
 			return Config.DeviceConfig.Role.tak
+		case .takTracker:
+			return Config.DeviceConfig.Role.takTracker
 		case .clientHidden:
 			return Config.DeviceConfig.Role.clientHidden
 		case .lostAndFound:

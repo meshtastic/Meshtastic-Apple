@@ -140,6 +140,7 @@ struct DeviceState {
   ///
   /// Used only during development.
   /// Indicates developer is testing and changes should never be saved to flash.
+  /// Deprecated in 2.3.1
   var noSave: Bool {
     get {return _storage._noSave}
     set {_uniqueStorage()._noSave = newValue}
@@ -252,6 +253,28 @@ struct NodeInfoLite {
   var channel: UInt32 {
     get {return _storage._channel}
     set {_uniqueStorage()._channel = newValue}
+  }
+
+  ///
+  /// True if we witnessed the node over MQTT instead of LoRA transport
+  var viaMqtt: Bool {
+    get {return _storage._viaMqtt}
+    set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
+  ///
+  /// Number of hops away from us this node is (0 if adjacent)
+  var hopsAway: UInt32 {
+    get {return _storage._hopsAway}
+    set {_uniqueStorage()._hopsAway = newValue}
+  }
+
+  ///
+  /// True if node is in our favorites list
+  /// Persists between NodeDB internal clean ups
+  var isFavorite: Bool {
+    get {return _storage._isFavorite}
+    set {_uniqueStorage()._isFavorite = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -382,35 +405,6 @@ struct OEMStore {
   fileprivate var _oemLocalModuleConfig: LocalModuleConfig? = nil
 }
 
-///
-/// RemoteHardwarePins associated with a node
-struct NodeRemoteHardwarePin {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// The node_num exposing the available gpio pin
-  var nodeNum: UInt32 = 0
-
-  ///
-  /// The the available gpio pin for usage with RemoteHardware module
-  var pin: RemoteHardwarePin {
-    get {return _pin ?? RemoteHardwarePin()}
-    set {_pin = newValue}
-  }
-  /// Returns true if `pin` has been explicitly set.
-  var hasPin: Bool {return self._pin != nil}
-  /// Clears the value of `pin`. Subsequent reads from it will return its default value.
-  mutating func clearPin() {self._pin = nil}
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-
-  fileprivate var _pin: RemoteHardwarePin? = nil
-}
-
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ScreenFonts: @unchecked Sendable {}
 extension DeviceState: @unchecked Sendable {}
@@ -418,7 +412,6 @@ extension NodeInfoLite: @unchecked Sendable {}
 extension PositionLite: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
 extension OEMStore: @unchecked Sendable {}
-extension NodeRemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -583,6 +576,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     5: .standard(proto: "last_heard"),
     6: .standard(proto: "device_metrics"),
     7: .same(proto: "channel"),
+    8: .standard(proto: "via_mqtt"),
+    9: .standard(proto: "hops_away"),
+    10: .standard(proto: "is_favorite"),
   ]
 
   fileprivate class _StorageClass {
@@ -593,6 +589,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     var _lastHeard: UInt32 = 0
     var _deviceMetrics: DeviceMetrics? = nil
     var _channel: UInt32 = 0
+    var _viaMqtt: Bool = false
+    var _hopsAway: UInt32 = 0
+    var _isFavorite: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -606,6 +605,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       _lastHeard = source._lastHeard
       _deviceMetrics = source._deviceMetrics
       _channel = source._channel
+      _viaMqtt = source._viaMqtt
+      _hopsAway = source._hopsAway
+      _isFavorite = source._isFavorite
     }
   }
 
@@ -631,6 +633,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
         case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
         default: break
         }
       }
@@ -664,6 +669,15 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       if _storage._channel != 0 {
         try visitor.visitSingularUInt32Field(value: _storage._channel, fieldNumber: 7)
       }
+      if _storage._viaMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
+      }
+      if _storage._hopsAway != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
+      }
+      if _storage._isFavorite != false {
+        try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -680,6 +694,9 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
         if _storage._lastHeard != rhs_storage._lastHeard {return false}
         if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
         if _storage._channel != rhs_storage._channel {return false}
+        if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
+        if _storage._hopsAway != rhs_storage._hopsAway {return false}
+        if _storage._isFavorite != rhs_storage._isFavorite {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -856,48 +873,6 @@ extension OEMStore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if lhs.oemAesKey != rhs.oemAesKey {return false}
     if lhs._oemLocalConfig != rhs._oemLocalConfig {return false}
     if lhs._oemLocalModuleConfig != rhs._oemLocalModuleConfig {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "node_num"),
-    2: .same(proto: "pin"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._pin) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.nodeNum != 0 {
-      try visitor.visitSingularUInt32Field(value: self.nodeNum, fieldNumber: 1)
-    }
-    try { if let v = self._pin {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
-    if lhs.nodeNum != rhs.nodeNum {return false}
-    if lhs._pin != rhs._pin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

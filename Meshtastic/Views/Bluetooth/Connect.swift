@@ -209,7 +209,7 @@ struct Connect: View {
 									}.padding([.bottom, .top])
 								}
 							}
-							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone and will reset all app settings.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
+							.confirmationDialog("Connecting to a new radio will clear all local app data on the phone and will reset all app specific settings.", isPresented: $presentingSwitchPreferredPeripheral, titleVisibility: .visible) {
 
 								Button("Connect to new radio?", role: .destructive) {
 									UserDefaults.preferredPeripheralId = selectedPeripherialId

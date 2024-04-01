@@ -31,7 +31,6 @@ struct Channels: View {
 
 	@State var hasChanges = false
 	@State var hasValidKey = true
-	@State private var isPresentingEditView = false
 	@State private var isPresentingSaveConfirm: Bool = false
 	@State private var channelIndex: Int32 = 0
 	@State private var channelName = ""
@@ -40,18 +39,16 @@ struct Channels: View {
 	@State private var channelRole = 0
 	@State private var uplink = false
 	@State private var downlink = false
-	
 	@State private var positionPrecision = 32.0
 	@State private var preciseLocation = true
 	@State private var positionsEnabled = true
+	@State private var supportedVersion = true
+	@State var selectedChannel: ChannelEntity?
 	
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
-	
 
 	var body: some View {
-		
-		let supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 
 		VStack {
 			List {
@@ -68,6 +65,8 @@ struct Channels: View {
 								channelKeySize = 0
 							} else if channelKey == "AQ==" {
 								channelKeySize = -1
+							} else if channelKey.count == 4 {
+								channelKeySize = 1
 							} else if channelKey.count == 24 {
 								channelKeySize = 16
 							} else if channelKey.count == 32 {
@@ -78,7 +77,7 @@ struct Channels: View {
 							channelName = channel.name ?? ""
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
-							hasChanges = false
+							positionPrecision = Double(channel.positionPrecision)
 							if !supportedVersion && channelRole == 1 {
 								positionPrecision = 32
 								preciseLocation = true
@@ -89,21 +88,20 @@ struct Channels: View {
 								preciseLocation = false
 								positionsEnabled = false
 							} else {
-								positionPrecision = Double(channel.positionPrecision)
 								if positionPrecision == 32 {
 									preciseLocation = true
 									positionsEnabled = true
 								} else {
 									preciseLocation = false
 								}
-								
 								if positionPrecision == 0 {
 									positionsEnabled = false
 								} else {
 									positionsEnabled = true
 								}
 							}
-							isPresentingEditView = true
+							hasChanges = false
+							selectedChannel = channel
 						}) {
 							VStack(alignment: .leading) {
 								HStack {
@@ -129,231 +127,15 @@ struct Channels: View {
 					}
 				}
 			}
-			.sheet(isPresented: $isPresentingEditView) {
-				
+			.sheet(item: $selectedChannel) { selection in
 				#if targetEnvironment(macCatalyst)
 				Text("channel")
 					.font(.largeTitle)
 					.padding()
 				#endif
-				Form {
-					Section(header: Text("channel details")) {
-						HStack {
-							Text("name")
-							Spacer()
-							TextField(
-								"Channel Name",
-								text: $channelName
-							)
-							.disableAutocorrection(true)
-							.keyboardType(.alphabet)
-							.foregroundColor(Color.gray)
-							.onChange(of: channelName, perform: { _ in
-								channelName = channelName.replacing(" ", with: "")
-								let totalBytes = channelName.utf8.count
-								// Only mess with the value if it is too big
-								if totalBytes > 11 {
-									let firstNBytes = Data(channelName.utf8.prefix(11))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the channelName back to the last place where it was the right size
-										channelName = maxBytesString
-									}
-								}
-								hasChanges = true
-							})
-						}
-						HStack {
-							Picker("Key Size", selection: $channelKeySize) {
-								Text("Empty").tag(0)
-								Text("Default").tag(-1)
-								Text("1 byte").tag(1)
-								Text("128 bit").tag(16)
-								Text("192 bit").tag(24)
-								Text("256 bit").tag(32)
-							}
-							.pickerStyle(DefaultPickerStyle())
-							Spacer()
-							Button {
-								if channelKeySize == -1 {
-									channelKey = "AQ=="
-								} else {
-									let key = generateChannelKey(size: channelKeySize)
-									channelKey = key
-								}
-							} label: {
-								Image(systemName: "lock.rotation")
-									.font(.title)
-							}
-							.buttonStyle(.bordered)
-							.buttonBorderShape(.capsule)
-							.controlSize(.small)
-						}
-						HStack(alignment: .center) {
-							Text("Key")
-							Spacer()
-							TextField(
-								"Key",
-								text: $channelKey,
-								axis: .vertical
-							)
-							.padding(6)
-							.disableAutocorrection(true)
-							.keyboardType(.alphabet)
-							.foregroundColor(Color.gray)
-							.textSelection(.enabled)
-							.background(
-								RoundedRectangle(cornerRadius: 10.0)
-									.stroke(
-										hasValidKey ?
-										Color.clear :
-											Color.red
-										, lineWidth: 2.0)
-								
-							)
-							.onChange(of: channelKey, perform: { _ in
-								let tempKey = Data(base64Encoded: channelKey) ?? Data()
-								if tempKey.count == channelKeySize || channelKeySize == -1{
-									hasValidKey = true
-								}
-								else {
-									hasValidKey = false
-								}
-								hasChanges = true
-							})
-							.disabled(channelKeySize <= 0)
-						}
-						HStack {
-							if channelRole == 1 {
-								Picker("Channel Role", selection: $channelRole) {
-									Text("Primary").tag(1)
-								}
-								.pickerStyle(.automatic)
-								.disabled(true)
-							} else {
-								Text("Channel Role")
-								Spacer()
-								Picker("Channel Role", selection: $channelRole) {
-									Text("Disabled").tag(0)
-									Text("Secondary").tag(2)
-								}
-								.pickerStyle(.segmented)
-							}
-						}
-					}
-					
-					Section(header: Text("position")) {
-						
-						VStack(alignment: .leading) {
-							Toggle(isOn: $positionsEnabled) {
-								Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
-							}
-							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-							.disabled(!supportedVersion)
-						}
-						
-						if positionsEnabled {
-							VStack(alignment: .leading) {
-								Toggle(isOn: $preciseLocation) {
-									Label("Precise Location", systemImage: "scope")
-								}
-								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-								.disabled(!supportedVersion)
-								.listRowSeparator(.visible)
-								.onChange(of: preciseLocation) { pl in
-									if pl == false {
-										positionPrecision = 13
-									}
-								}
-							}
-							
-							if !preciseLocation {
-								VStack(alignment: .leading) {
-									Label("Reduce Precision", systemImage: "location.viewfinder")
-									Slider(
-										value: $positionPrecision,
-										in: 11...16,
-										step: 1
-									)
-									{
-									} minimumValueLabel: {
-										Image(systemName: "minus")
-									} maximumValueLabel: {
-										Image(systemName: "plus")
-									}
-									Text(PositionPrecision(rawValue: Int(positionPrecision))?.description ?? "")
-										.foregroundColor(.gray)
-										.font(.callout)
-								}
-							}
-						}
-					}
-					Section(header: Text("mqtt")) {
-						Toggle(isOn: $uplink) {
-							Label("Uplink Enabled", systemImage: "arrowshape.up")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
-
-						Toggle(isOn: $downlink) {
-							Label("Downlink Enabled", systemImage: "arrowshape.down")
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						.listRowSeparator(.visible)
-					}
-				}
+				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
 				.onAppear {
-					let tempKey = Data(base64Encoded: channelKey) ?? Data()
-					if tempKey.count == channelKeySize || channelKeySize == -1{
-						hasValidKey = true
-					}
-					else {
-						hasValidKey = false
-					}
-				}
-				.onChange(of: channelName) { _ in
-					hasChanges = true
-				}
-				.onChange(of: channelKeySize) { _ in
-					if channelKeySize == -1 {
-						channelKey = "AQ=="
-					} else {
-						let key = generateChannelKey(size: channelKeySize)
-						channelKey = key
-					}
-					hasChanges = true
-				}
-				.onChange(of: channelKey) { _ in
-					hasChanges = true
-				}
-				.onChange(of: channelRole) { _ in
-					hasChanges = true
-				}
-				.onChange(of: preciseLocation) { loc in
-					if loc {
-						positionPrecision = 32
-					} else {
-						positionPrecision = 14
-					}
-					hasChanges = true
-				}
-				.onChange(of: positionPrecision) { _ in
-					hasChanges = true
-				}
-				.onChange(of: positionsEnabled) { pe in
-					if pe {
-						if positionPrecision == 0 {
-							positionPrecision = 32
-						}
-					} else {
-						positionPrecision = 0
-					}
-					hasChanges = true
-				}
-				.onChange(of: uplink) { _ in
-					hasChanges = true
-				}
-				.onChange(of: downlink) { _ in
-					hasChanges = true
+					supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 				}
 				HStack {
 					Button {
@@ -420,11 +202,10 @@ struct Channels: View {
 						let adminMessageId =  bleManager.saveChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 
 						if adminMessageId > 0 {
-							self.isPresentingEditView = false
+							selectedChannel = nil
 							channelName = ""
 							channelRole	= 2
 							hasChanges = false
-							//_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 						}
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")
@@ -436,7 +217,7 @@ struct Channels: View {
 					.padding(.bottom)
 					#if targetEnvironment(macCatalyst)
 					Button {
-						isPresentingEditView = false
+						goBack()
 					} label: {
 						Label("close", systemImage: "xmark")
 					}
@@ -468,7 +249,7 @@ struct Channels: View {
 					uplink = false
 					downlink = false
 					hasChanges = true
-					isPresentingEditView = true
+					selectedChannel = ChannelEntity(context: context)
 
 				} label: {
 					Label("Add Channel", systemImage: "plus.square")

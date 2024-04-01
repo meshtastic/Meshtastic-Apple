@@ -187,7 +187,7 @@ struct WaypointForm: View {
 					.controlSize(.regular)
 					.padding(.bottom)
 					
-					if waypoint.id > 0 {
+					if waypoint.id > 0 && bleManager.isConnected {
 						
 						Menu {
 							Button("For me", action: {

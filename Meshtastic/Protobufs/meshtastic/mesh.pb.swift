@@ -1434,8 +1434,7 @@ struct MeshPacket {
   }
 
   ///
-  /// The (immediatSee Priority description for more details.y should be fixed32 instead, this encoding only
-  /// hurts the ble link though.
+  /// The (immediate) destination for this packet
   var to: UInt32 {
     get {return _storage._to}
     set {_uniqueStorage()._to = newValue}
@@ -1564,6 +1563,14 @@ struct MeshPacket {
   var viaMqtt: Bool {
     get {return _storage._viaMqtt}
     set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
+  /// 
+  /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header. 
+  /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
+  var hopStart: UInt32 {
+    get {return _storage._hopStart}
+    set {_uniqueStorage()._hopStart = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1779,62 +1786,94 @@ struct NodeInfo {
 
   ///
   /// The node number
-  var num: UInt32 = 0
+  var num: UInt32 {
+    get {return _storage._num}
+    set {_uniqueStorage()._num = newValue}
+  }
 
   ///
   /// The user info for this node
   var user: User {
-    get {return _user ?? User()}
-    set {_user = newValue}
+    get {return _storage._user ?? User()}
+    set {_uniqueStorage()._user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return self._user != nil}
+  var hasUser: Bool {return _storage._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {self._user = nil}
+  mutating func clearUser() {_uniqueStorage()._user = nil}
 
   ///
   /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
   /// Position.time now indicates the last time we received a POSITION from that node.
   var position: Position {
-    get {return _position ?? Position()}
-    set {_position = newValue}
+    get {return _storage._position ?? Position()}
+    set {_uniqueStorage()._position = newValue}
   }
   /// Returns true if `position` has been explicitly set.
-  var hasPosition: Bool {return self._position != nil}
+  var hasPosition: Bool {return _storage._position != nil}
   /// Clears the value of `position`. Subsequent reads from it will return its default value.
-  mutating func clearPosition() {self._position = nil}
+  mutating func clearPosition() {_uniqueStorage()._position = nil}
 
   ///
   /// Returns the Signal-to-noise ratio (SNR) of the last received message,
   /// as measured by the receiver. Return SNR of the last received message in dB
-  var snr: Float = 0
+  var snr: Float {
+    get {return _storage._snr}
+    set {_uniqueStorage()._snr = newValue}
+  }
 
   ///
   /// Set to indicate the last time we received a packet from this node
-  var lastHeard: UInt32 = 0
+  var lastHeard: UInt32 {
+    get {return _storage._lastHeard}
+    set {_uniqueStorage()._lastHeard = newValue}
+  }
 
   ///
   /// The latest device metrics for the node.
   var deviceMetrics: DeviceMetrics {
-    get {return _deviceMetrics ?? DeviceMetrics()}
-    set {_deviceMetrics = newValue}
+    get {return _storage._deviceMetrics ?? DeviceMetrics()}
+    set {_uniqueStorage()._deviceMetrics = newValue}
   }
   /// Returns true if `deviceMetrics` has been explicitly set.
-  var hasDeviceMetrics: Bool {return self._deviceMetrics != nil}
+  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
   /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
-  mutating func clearDeviceMetrics() {self._deviceMetrics = nil}
+  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
 
   ///
   /// local channel index we heard that node on. Only populated if its not the default channel.
-  var channel: UInt32 = 0
+  var channel: UInt32 {
+    get {return _storage._channel}
+    set {_uniqueStorage()._channel = newValue}
+  }
+
+  ///
+  /// True if we witnessed the node over MQTT instead of LoRA transport
+  var viaMqtt: Bool {
+    get {return _storage._viaMqtt}
+    set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
+  ///
+  /// Number of hops away from us this node is (0 if adjacent)
+  var hopsAway: UInt32 {
+    get {return _storage._hopsAway}
+    set {_uniqueStorage()._hopsAway = newValue}
+  }
+
+  ///
+  /// True if node is in our favorites list
+  /// Persists between NodeDB internal clean ups
+  var isFavorite: Bool {
+    get {return _storage._isFavorite}
+    set {_uniqueStorage()._isFavorite = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _user: User? = nil
-  fileprivate var _position: Position? = nil
-  fileprivate var _deviceMetrics: DeviceMetrics? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 ///
@@ -2357,6 +2396,16 @@ struct ToRadio {
     set {payloadVariant = .mqttClientProxyMessage(newValue)}
   }
 
+  ///
+  /// Heartbeat message (used to keep the device connection awake on serial)
+  var heartbeat: Heartbeat {
+    get {
+      if case .heartbeat(let v)? = payloadVariant {return v}
+      return Heartbeat()
+    }
+    set {payloadVariant = .heartbeat(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -2384,6 +2433,9 @@ struct ToRadio {
     ///
     /// MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
     case mqttClientProxyMessage(MqttClientProxyMessage)
+    ///
+    /// Heartbeat message (used to keep the device connection awake on serial)
+    case heartbeat(Heartbeat)
 
   #if !swift(>=4.1)
     static func ==(lhs: ToRadio.OneOf_PayloadVariant, rhs: ToRadio.OneOf_PayloadVariant) -> Bool {
@@ -2409,6 +2461,10 @@ struct ToRadio {
       }()
       case (.mqttClientProxyMessage, .mqttClientProxyMessage): return {
         guard case .mqttClientProxyMessage(let l) = lhs, case .mqttClientProxyMessage(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.heartbeat, .heartbeat): return {
+        guard case .heartbeat(let l) = lhs, case .heartbeat(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -2550,6 +2606,48 @@ struct DeviceMetadata {
   init() {}
 }
 
+/// 
+/// A heartbeat message is sent to the node from the client to keep the connection alive.
+/// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
+struct Heartbeat {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+///
+/// RemoteHardwarePins associated with a node
+struct NodeRemoteHardwarePin {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The node_num exposing the available gpio pin
+  var nodeNum: UInt32 = 0
+
+  ///
+  /// The the available gpio pin for usage with RemoteHardware module
+  var pin: RemoteHardwarePin {
+    get {return _pin ?? RemoteHardwarePin()}
+    set {_pin = newValue}
+  }
+  /// Returns true if `pin` has been explicitly set.
+  var hasPin: Bool {return self._pin != nil}
+  /// Clears the value of `pin`. Subsequent reads from it will return its default value.
+  mutating func clearPin() {self._pin = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _pin: RemoteHardwarePin? = nil
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension HardwareModel: @unchecked Sendable {}
 extension Constants: @unchecked Sendable {}
@@ -2583,6 +2681,8 @@ extension Compressed: @unchecked Sendable {}
 extension NeighborInfo: @unchecked Sendable {}
 extension Neighbor: @unchecked Sendable {}
 extension DeviceMetadata: @unchecked Sendable {}
+extension Heartbeat: @unchecked Sendable {}
+extension NodeRemoteHardwarePin: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -3369,6 +3469,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     12: .standard(proto: "rx_rssi"),
     13: .same(proto: "delayed"),
     14: .standard(proto: "via_mqtt"),
+    15: .standard(proto: "hop_start"),
   ]
 
   fileprivate class _StorageClass {
@@ -3385,6 +3486,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _rxRssi: Int32 = 0
     var _delayed: MeshPacket.Delayed = .noDelay
     var _viaMqtt: Bool = false
+    var _hopStart: UInt32 = 0
 
     static let defaultInstance = _StorageClass()
 
@@ -3404,6 +3506,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       _rxRssi = source._rxRssi
       _delayed = source._delayed
       _viaMqtt = source._viaMqtt
+      _hopStart = source._hopStart
     }
   }
 
@@ -3455,6 +3558,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         case 12: try { try decoder.decodeSingularInt32Field(value: &_storage._rxRssi) }()
         case 13: try { try decoder.decodeSingularEnumField(value: &_storage._delayed) }()
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
+        case 15: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopStart) }()
         default: break
         }
       }
@@ -3514,6 +3618,9 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       if _storage._viaMqtt != false {
         try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 14)
       }
+      if _storage._hopStart != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopStart, fieldNumber: 15)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3536,6 +3643,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
         if _storage._rxRssi != rhs_storage._rxRssi {return false}
         if _storage._delayed != rhs_storage._delayed {return false}
         if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
+        if _storage._hopStart != rhs_storage._hopStart {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -3575,63 +3683,131 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     5: .standard(proto: "last_heard"),
     6: .standard(proto: "device_metrics"),
     7: .same(proto: "channel"),
+    8: .standard(proto: "via_mqtt"),
+    9: .standard(proto: "hops_away"),
+    10: .standard(proto: "is_favorite"),
   ]
 
+  fileprivate class _StorageClass {
+    var _num: UInt32 = 0
+    var _user: User? = nil
+    var _position: Position? = nil
+    var _snr: Float = 0
+    var _lastHeard: UInt32 = 0
+    var _deviceMetrics: DeviceMetrics? = nil
+    var _channel: UInt32 = 0
+    var _viaMqtt: Bool = false
+    var _hopsAway: UInt32 = 0
+    var _isFavorite: Bool = false
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _num = source._num
+      _user = source._user
+      _position = source._position
+      _snr = source._snr
+      _lastHeard = source._lastHeard
+      _deviceMetrics = source._deviceMetrics
+      _channel = source._channel
+      _viaMqtt = source._viaMqtt
+      _hopsAway = source._hopsAway
+      _isFavorite = source._isFavorite
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.num) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._user) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._position) }()
-      case 4: try { try decoder.decodeSingularFloatField(value: &self.snr) }()
-      case 5: try { try decoder.decodeSingularFixed32Field(value: &self.lastHeard) }()
-      case 6: try { try decoder.decodeSingularMessageField(value: &self._deviceMetrics) }()
-      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.channel) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularUInt32Field(value: &_storage._num) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._user) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._position) }()
+        case 4: try { try decoder.decodeSingularFloatField(value: &_storage._snr) }()
+        case 5: try { try decoder.decodeSingularFixed32Field(value: &_storage._lastHeard) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._deviceMetrics) }()
+        case 7: try { try decoder.decodeSingularUInt32Field(value: &_storage._channel) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._viaMqtt) }()
+        case 9: try { try decoder.decodeSingularUInt32Field(value: &_storage._hopsAway) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._isFavorite) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if self.num != 0 {
-      try visitor.visitSingularUInt32Field(value: self.num, fieldNumber: 1)
-    }
-    try { if let v = self._user {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._position {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    if self.snr != 0 {
-      try visitor.visitSingularFloatField(value: self.snr, fieldNumber: 4)
-    }
-    if self.lastHeard != 0 {
-      try visitor.visitSingularFixed32Field(value: self.lastHeard, fieldNumber: 5)
-    }
-    try { if let v = self._deviceMetrics {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    } }()
-    if self.channel != 0 {
-      try visitor.visitSingularUInt32Field(value: self.channel, fieldNumber: 7)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._num != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._num, fieldNumber: 1)
+      }
+      try { if let v = _storage._user {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._position {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if _storage._snr != 0 {
+        try visitor.visitSingularFloatField(value: _storage._snr, fieldNumber: 4)
+      }
+      if _storage._lastHeard != 0 {
+        try visitor.visitSingularFixed32Field(value: _storage._lastHeard, fieldNumber: 5)
+      }
+      try { if let v = _storage._deviceMetrics {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+      if _storage._channel != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._channel, fieldNumber: 7)
+      }
+      if _storage._viaMqtt != false {
+        try visitor.visitSingularBoolField(value: _storage._viaMqtt, fieldNumber: 8)
+      }
+      if _storage._hopsAway != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._hopsAway, fieldNumber: 9)
+      }
+      if _storage._isFavorite != false {
+        try visitor.visitSingularBoolField(value: _storage._isFavorite, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: NodeInfo, rhs: NodeInfo) -> Bool {
-    if lhs.num != rhs.num {return false}
-    if lhs._user != rhs._user {return false}
-    if lhs._position != rhs._position {return false}
-    if lhs.snr != rhs.snr {return false}
-    if lhs.lastHeard != rhs.lastHeard {return false}
-    if lhs._deviceMetrics != rhs._deviceMetrics {return false}
-    if lhs.channel != rhs.channel {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._num != rhs_storage._num {return false}
+        if _storage._user != rhs_storage._user {return false}
+        if _storage._position != rhs_storage._position {return false}
+        if _storage._snr != rhs_storage._snr {return false}
+        if _storage._lastHeard != rhs_storage._lastHeard {return false}
+        if _storage._deviceMetrics != rhs_storage._deviceMetrics {return false}
+        if _storage._channel != rhs_storage._channel {return false}
+        if _storage._viaMqtt != rhs_storage._viaMqtt {return false}
+        if _storage._hopsAway != rhs_storage._hopsAway {return false}
+        if _storage._isFavorite != rhs_storage._isFavorite {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4099,6 +4275,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     4: .same(proto: "disconnect"),
     5: .same(proto: "xmodemPacket"),
     6: .same(proto: "mqttClientProxyMessage"),
+    7: .same(proto: "heartbeat"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4162,6 +4339,19 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           self.payloadVariant = .mqttClientProxyMessage(v)
         }
       }()
+      case 7: try {
+        var v: Heartbeat?
+        var hadOneofValue = false
+        if let current = self.payloadVariant {
+          hadOneofValue = true
+          if case .heartbeat(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.payloadVariant = .heartbeat(v)
+        }
+      }()
       default: break
       }
     }
@@ -4192,6 +4382,10 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     case .mqttClientProxyMessage?: try {
       guard case .mqttClientProxyMessage(let v)? = self.payloadVariant else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .heartbeat?: try {
+      guard case .heartbeat(let v)? = self.payloadVariant else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     }()
     case nil: break
     }
@@ -4424,6 +4618,67 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.positionFlags != rhs.positionFlags {return false}
     if lhs.hwModel != rhs.hwModel {return false}
     if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Heartbeat"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Heartbeat, rhs: Heartbeat) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "node_num"),
+    2: .same(proto: "pin"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.nodeNum) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._pin) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.nodeNum != 0 {
+      try visitor.visitSingularUInt32Field(value: self.nodeNum, fieldNumber: 1)
+    }
+    try { if let v = self._pin {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: NodeRemoteHardwarePin, rhs: NodeRemoteHardwarePin) -> Bool {
+    if lhs.nodeNum != rhs.nodeNum {return false}
+    if lhs._pin != rhs._pin {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

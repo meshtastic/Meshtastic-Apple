@@ -55,8 +55,75 @@ struct ServiceEnvelope {
   fileprivate var _packet: MeshPacket? = nil
 }
 
+///
+/// Information about a node intended to be reported unencrypted to a map using MQTT.
+struct MapReport {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// A full name for this user, i.e. "Kevin Hester"
+  var longName: String = String()
+
+  ///
+  /// A VERY short name, ideally two characters.
+  /// Suitable for a tiny OLED screen
+  var shortName: String = String()
+
+  ///
+  /// Role of the node that applies specific settings for a particular use-case
+  var role: Config.DeviceConfig.Role = .client
+
+  ///
+  /// Hardware model of the node, i.e. T-Beam, Heltec V3, etc...
+  var hwModel: HardwareModel = .unset
+
+  ///
+  /// Device firmware version string
+  var firmwareVersion: String = String()
+
+  ///
+  /// The region code for the radio (US, CN, EU433, etc...)
+  var region: Config.LoRaConfig.RegionCode = .unset
+
+  ///
+  /// Modem preset used by the radio (LongFast, MediumSlow, etc...)
+  var modemPreset: Config.LoRaConfig.ModemPreset = .longFast
+
+  ///
+  /// Whether the node has a channel with default PSK and name (LongFast, MediumSlow, etc...)
+  /// and it uses the default frequency slot given the region and modem preset.
+  var hasDefaultChannel_p: Bool = false
+
+  ///
+  /// Latitude: multiply by 1e-7 to get degrees in floating point
+  var latitudeI: Int32 = 0
+
+  ///
+  /// Longitude: multiply by 1e-7 to get degrees in floating point
+  var longitudeI: Int32 = 0
+
+  ///
+  /// Altitude in meters above MSL
+  var altitude: Int32 = 0
+
+  ///
+  /// Indicates the bits of precision for latitude and longitude set by the sending node
+  var positionPrecision: UInt32 = 0
+
+  ///
+  /// Number of online nodes (heard in the last 2 hours) this node has in its list that were received locally (not via MQTT)
+  var numOnlineLocalNodes: UInt32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ServiceEnvelope: @unchecked Sendable {}
+extension MapReport: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -106,6 +173,110 @@ extension ServiceEnvelope: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs._packet != rhs._packet {return false}
     if lhs.channelID != rhs.channelID {return false}
     if lhs.gatewayID != rhs.gatewayID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension MapReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".MapReport"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "long_name"),
+    2: .standard(proto: "short_name"),
+    3: .same(proto: "role"),
+    4: .standard(proto: "hw_model"),
+    5: .standard(proto: "firmware_version"),
+    6: .same(proto: "region"),
+    7: .standard(proto: "modem_preset"),
+    8: .standard(proto: "has_default_channel"),
+    9: .standard(proto: "latitude_i"),
+    10: .standard(proto: "longitude_i"),
+    11: .same(proto: "altitude"),
+    12: .standard(proto: "position_precision"),
+    13: .standard(proto: "num_online_local_nodes"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.longName) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.shortName) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.role) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.region) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.modemPreset) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.hasDefaultChannel_p) }()
+      case 9: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
+      case 10: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
+      case 11: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.numOnlineLocalNodes) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.longName.isEmpty {
+      try visitor.visitSingularStringField(value: self.longName, fieldNumber: 1)
+    }
+    if !self.shortName.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortName, fieldNumber: 2)
+    }
+    if self.role != .client {
+      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 3)
+    }
+    if self.hwModel != .unset {
+      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 4)
+    }
+    if !self.firmwareVersion.isEmpty {
+      try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 5)
+    }
+    if self.region != .unset {
+      try visitor.visitSingularEnumField(value: self.region, fieldNumber: 6)
+    }
+    if self.modemPreset != .longFast {
+      try visitor.visitSingularEnumField(value: self.modemPreset, fieldNumber: 7)
+    }
+    if self.hasDefaultChannel_p != false {
+      try visitor.visitSingularBoolField(value: self.hasDefaultChannel_p, fieldNumber: 8)
+    }
+    if self.latitudeI != 0 {
+      try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 9)
+    }
+    if self.longitudeI != 0 {
+      try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 10)
+    }
+    if self.altitude != 0 {
+      try visitor.visitSingularInt32Field(value: self.altitude, fieldNumber: 11)
+    }
+    if self.positionPrecision != 0 {
+      try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 12)
+    }
+    if self.numOnlineLocalNodes != 0 {
+      try visitor.visitSingularUInt32Field(value: self.numOnlineLocalNodes, fieldNumber: 13)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: MapReport, rhs: MapReport) -> Bool {
+    if lhs.longName != rhs.longName {return false}
+    if lhs.shortName != rhs.shortName {return false}
+    if lhs.role != rhs.role {return false}
+    if lhs.hwModel != rhs.hwModel {return false}
+    if lhs.firmwareVersion != rhs.firmwareVersion {return false}
+    if lhs.region != rhs.region {return false}
+    if lhs.modemPreset != rhs.modemPreset {return false}
+    if lhs.hasDefaultChannel_p != rhs.hasDefaultChannel_p {return false}
+    if lhs.latitudeI != rhs.latitudeI {return false}
+    if lhs.longitudeI != rhs.longitudeI {return false}
+    if lhs.altitude != rhs.altitude {return false}
+    if lhs.positionPrecision != rhs.positionPrecision {return false}
+    if lhs.numOnlineLocalNodes != rhs.numOnlineLocalNodes {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

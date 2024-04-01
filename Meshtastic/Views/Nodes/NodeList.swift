@@ -14,19 +14,20 @@ struct NodeList: View {
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var isPresentingClientHistorySentAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
+	@State private var isPresentingPositionSentAlert = false
 	@State private var deleteNodeId: Int64 = 0
+	@State private var searchText = ""
+	@State private var viaLora = true
+	@State private var viaMqtt = true
+	@State private var isOnline = false
+	@State private var distanceFilter = false
+	@State private var maxDistance: Double = 800000
+	@State private var hopsAway: Int = -1
+	@State private var deviceRole: Int = -1
+	
+	@State var isEditingFilters = false
 	
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
-	
-	@State private var searchText = ""
-	var nodesQuery: Binding<String> {
-		 Binding {
-			 searchText
-		 } set: { newValue in
-			 searchText = newValue
-			 nodes.nsPredicate = newValue.isEmpty ? nil : NSPredicate(format: "user.longName CONTAINS[c] %@ OR user.shortName CONTAINS[c] %@", newValue, newValue)
-		 }
-	 }
 
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -37,8 +38,6 @@ struct NodeList: View {
 
 	var nodes: FetchedResults<NodeInfoEntity>
 	
-
-
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
 			
@@ -48,8 +47,7 @@ struct NodeList: View {
 				
 				NodeListItem(node: node, 
 							 connected: bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral?.num ?? -1 == node.num,
-							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1),
-							 modemPreset: Int(connectedNode?.loRaConfig?.modemPreset ?? 0))
+							 connectedNode: (bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? -1 : -1))
 				.contextMenu {
 					if node.user != nil {
 						Button {
@@ -76,7 +74,21 @@ struct NodeList: View {
 						} label: {
 							Label(node.user!.mute ? "Show Alerts" : "Hide Alerts", systemImage: node.user!.mute ? "bell" : "bell.slash")
 						}
-						if connectedNodeNum != node.num {
+						if bleManager.connectedPeripheral != nil && node.num != connectedNodeNum {
+							Button {
+								let positionSent = bleManager.sendPosition(
+									channel: node.channel,
+									destNum: node.num,
+									wantResponse: true
+								)
+								if positionSent {
+									isPresentingPositionSentAlert = true
+								}
+							} label: {
+								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
+							}
+						}
+						if bleManager.connectedPeripheral != nil && connectedNodeNum != node.num {
 							Button {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
@@ -108,6 +120,14 @@ struct NodeList: View {
 					}
 				}
 				.alert(
+					"Position Sent",
+					isPresented: $isPresentingPositionSentAlert
+				) {
+					Button("OK", role: .cancel) { }
+				} message: {
+					Text("Your position has been sent with a request for a response with their position.")
+				}
+				.alert(
 					"Trace Route Sent",
 					isPresented: $isPresentingTraceRouteSentAlert
 				) {
@@ -124,7 +144,31 @@ struct NodeList: View {
 					Text("Any missed messages will be delivered again.")
 				}
 			}
-			.searchable(text: nodesQuery, prompt: "Find a node")
+			.sheet(isPresented: $isEditingFilters) {
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							isEditingFilters = !isEditingFilters
+						}
+					}) {
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.padding(.bottom, 5)
+			.searchable(text: $searchText, placement: .automatic, prompt: "Find a node")
+				.disableAutocorrection(true)
+				.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
 			.listStyle(.plain)
 			.confirmationDialog(
@@ -178,7 +222,7 @@ struct NodeList: View {
 									name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", phoneOnly: true)
 						})
 				}
-				.padding(.bottom, 5)
+			
 			 } else {
 				 if #available (iOS 17, *) {
 					 ContentUnavailableView("select.node", systemImage: "flipphone")
@@ -195,33 +239,104 @@ struct NodeList: View {
 			
 		}
 		.navigationSplitViewStyle(.balanced)
-//		.onChange(of: selectedNode) { _ in
-//			if selectedNode == nil {
-//				columnVisibility = .all
-//			} else {
-//				columnVisibility = .doubleColumn
-//			}
-//		}
+		.onChange(of: searchText) { _ in
+			searchNodeList()
+		}
+		.onChange(of: viaLora) { _ in
+			if !viaLora && !viaMqtt {
+				viaMqtt = true
+			}
+			searchNodeList()
+		}
+		.onChange(of: viaMqtt) { _ in
+			if !viaLora && !viaMqtt {
+				viaLora = true
+			}
+			searchNodeList()
+		}
+		.onChange(of: deviceRole) { _ in
+			searchNodeList()
+		}
+		.onChange(of: hopsAway) { _ in
+			searchNodeList()
+		}
+		.onChange(of: isOnline) { _ in
+			searchNodeList()
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
+			searchNodeList()
 		}
-
-//		} detail: {
-//			VStack {
-//				Button("Detail Only") {
-//					columnVisibility = .detailOnly
-//				}
-//
-//				Button("Content and Detail") {
-//					columnVisibility = .doubleColumn
-//				}
-//
-//				Button("Show All") {
-//					columnVisibility = .all
-//				}
-//			}
-//		}
+	}
+	
+	private func searchNodeList() {
+		/// Case Insensitive Search Text Predicates
+		let searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
+			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+		}
+		/// Create a compound predicate using each text search preicate as an OR
+		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+		/// Create an array of predicates to hold our AND predicates
+		var predicates: [NSPredicate] = []
+		/// Mqtt
+		if !(viaLora && viaMqtt) {
+			if viaLora {
+				let loraPredicate = NSPredicate(format: "viaMqtt == NO")
+				predicates.append(loraPredicate)
+			} else {
+				let mqttPredicate = NSPredicate(format: "viaMqtt == YES")
+				predicates.append(mqttPredicate)
+			}
+		}
+		/// Role
+		if deviceRole > -1 {
+			let rolePredicate = NSPredicate(format: "user.role == %i", Int32(deviceRole))
+			predicates.append(rolePredicate)
+		}
+		/// Hops Away
+		if hopsAway > 0 {
+			let hopsAwayPredicate = NSPredicate(format: "hopsAway == %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		}
+		
+		/// Online
+		if isOnline {
+			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			predicates.append(isOnlinePredicate)
+		}
+		/// Distance
+		if distanceFilter {
+			let pointOfInterest = LocationHelper.currentLocation
+		
+			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+				let D: Double = maxDistance * 1.1
+				let R: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = D / R * 180 / .pi
+				let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(%lf <= (positions[first].longitudeI / 1e7))", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				//let distancePredicate = NSPredicate(format: "(%lf <= (positions[LAST].longitudeI / 1e7)) AND ((positions[LAST].longitudeI / 1e7) <= %lf) AND (%lf <= (positions[LAST].latitudeI / 1e7)) AND ((positions[LAST].latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				
+				//predicates.append(distancePredicate)
+			}
+		}
+		
+		if predicates.count > 0 || !searchText.isEmpty {
+			
+			if !searchText.isEmpty {
+				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
+			} else {
+				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
+			}
+		} else {
+			nodes.nsPredicate = nil
+		}
 	}
 }
