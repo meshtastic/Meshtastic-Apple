@@ -134,6 +134,8 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.presentationDetents([.large])
+					.presentationDragIndicator(.visible)
 				.onAppear {
 					supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 				}
@@ -149,8 +151,6 @@ struct Channels: View {
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-							
-
 
 							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
@@ -221,8 +221,6 @@ struct Channels: View {
 					.padding(.bottom)
 					#endif
 				}
-				.presentationDetents([.fraction(0.85), .large])
-				.presentationDragIndicator(.visible)
 			}
 			if node?.myInfo?.channels?.array.count ?? 0 < 8 && node != nil {
 

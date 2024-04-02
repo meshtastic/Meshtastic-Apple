@@ -20,6 +20,7 @@ struct NodeList: View {
 	@State private var viaLora = true
 	@State private var viaMqtt = true
 	@State private var isOnline = false
+	@State private var isFavorite = false
 	@State private var distanceFilter = false
 	@State private var maxDistance: Double = 800000
 	@State private var hopsAway: Int = -1
@@ -33,7 +34,9 @@ struct NodeList: View {
 	@EnvironmentObject var bleManager: BLEManager
 
 	@FetchRequest(
-		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false), NSSortDescriptor(key: "lastHeard", ascending: false)],
+		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false), 
+						  NSSortDescriptor(key: "lastHeard", ascending: false),
+						  NSSortDescriptor(key: "user.longName", ascending: true)],
 		animation: .default)
 
 	var nodes: FetchedResults<NodeInfoEntity>
@@ -164,7 +167,7 @@ struct NodeList: View {
 				}
 			}
 			.sheet(isPresented: $isEditingFilters) {
-				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+				NodeListFilter(viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
 			}
 			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
@@ -282,6 +285,12 @@ struct NodeList: View {
 		.onChange(of: isOnline) { _ in
 			searchNodeList()
 		}
+		.onChange(of: isFavorite) { _ in
+			searchNodeList()
+		}
+		.onChange(of: maxDistance) { _ in
+			searchNodeList()
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
@@ -325,6 +334,11 @@ struct NodeList: View {
 			let isOnlinePredicate = NSPredicate(format: "lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
 			predicates.append(isOnlinePredicate)
 		}
+		/// Favorites
+		if isFavorite {
+			let isFavoritePredicate = NSPredicate(format: "favorite == YES")
+			predicates.append(isFavoritePredicate)
+		}
 		/// Distance
 		if distanceFilter {
 			let pointOfInterest = LocationHelper.currentLocation
@@ -339,15 +353,12 @@ struct NodeList: View {
 				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
 				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
 				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
-				let distancePredicate = NSPredicate(format: "(%lf <= (positions[first].longitudeI / 1e7))", minLongitude, maxLongitude,minLatitude, maxLatitude)
-				//let distancePredicate = NSPredicate(format: "(%lf <= (positions[LAST].longitudeI / 1e7)) AND ((positions[LAST].longitudeI / 1e7) <= %lf) AND (%lf <= (positions[LAST].latitudeI / 1e7)) AND ((positions[LAST].latitudeI / 1e7) <= %lf)", minLongitude, maxLongitude,minLatitude, maxLatitude)
-				
-				//predicates.append(distancePredicate)
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				predicates.append(distancePredicate)
 			}
 		}
 		
 		if predicates.count > 0 || !searchText.isEmpty {
-			
 			if !searchText.isEmpty {
 				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
 				nodes.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])

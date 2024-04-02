@@ -14,6 +14,7 @@ struct NodeListFilter: View {
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
 	@Binding var isOnline: Bool
+	@Binding var isFavorite: Bool
 	@Binding var distanceFilter: Bool
 	@Binding var maximumDistance: Double
 	@Binding var hopsAway: Int
@@ -48,7 +49,7 @@ struct NodeListFilter: View {
 					Toggle(isOn: $isOnline) {
 						
 						Label {
-							Text("Online Only")
+							Text("Online")
 						} icon: {
 							Image(systemName: "checkmark.circle.fill")
 								.foregroundColor(.green)
@@ -58,29 +59,43 @@ struct NodeListFilter: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 					
-//					Toggle(isOn: $distanceFilter) {
-//						
-//						Label {
-//							Text("Distance")
-//						} icon: {
-//							Image(systemName: "map")
-//						}
-//					}
-//					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-//
-//					.listRowSeparator(distanceFilter ? .hidden : .visible)
-//					if distanceFilter {
-//						HStack {
-//							Label("Show nodes", systemImage: "lines.measurement.horizontal")
-//							Picker("", selection: $maximumDistance) {
-//								ForEach(MeshMapDistances.allCases) { di in
-//									Text(di.description)
-//										.tag(di.id)
-//								}
-//							}
-//							.pickerStyle(DefaultPickerStyle())
-//						}
-//					}
+					Toggle(isOn: $isFavorite) {
+						
+						Label {
+							Text("Favorites")
+						} icon: {
+							
+							Image(systemName: "star.fill")
+								.foregroundColor(.yellow)
+								.symbolRenderingMode(.hierarchical)
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					.listRowSeparator(.visible)
+					
+					Toggle(isOn: $distanceFilter) {
+						
+						Label {
+							Text("Distance")
+						} icon: {
+							Image(systemName: "map")
+						}
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+					.listRowSeparator(distanceFilter ? .hidden : .visible)
+					if distanceFilter {
+						HStack {
+							Label("Show nodes", systemImage: "lines.measurement.horizontal")
+							Picker("", selection: $maximumDistance) {
+								ForEach(MeshMapDistances.allCases) { di in
+									Text(di.description)
+										.tag(di.id)
+								}
+							}
+							.pickerStyle(DefaultPickerStyle())
+						}
+					}
 					HStack {
 						Label("Hops Away", systemImage: "hare")
 						Picker("", selection: $hopsAway) {
@@ -125,7 +140,7 @@ struct NodeListFilter: View {
 			.padding(.bottom)
 #endif
 		}
-		.presentationDetents([.fraction(0.40), .fraction(0.50)])
+		.presentationDetents([.fraction(0.6), .fraction(0.75)])
 		.presentationDragIndicator(.visible)
 	}
 }
