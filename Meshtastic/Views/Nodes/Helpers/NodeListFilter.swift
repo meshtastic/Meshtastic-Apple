@@ -11,6 +11,7 @@ import SwiftUI
 struct NodeListFilter: View {
 	@Environment(\.dismiss) private var dismiss
 	/// Filters
+	var filterTitle = "Node Filters"
 	@Binding var viaLora: Bool
 	@Binding var viaMqtt: Bool
 	@Binding var isOnline: Bool
@@ -24,7 +25,7 @@ struct NodeListFilter: View {
 		
 		NavigationStack {
 			Form {
-				Section(header: Text("Node Filters")) {
+				Section(header: Text(filterTitle)) {
 					Toggle(isOn: $viaLora) {
 						
 						Label {

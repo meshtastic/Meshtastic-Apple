@@ -148,7 +148,7 @@ struct MeshMap: View {
 					return
 				}
 			}
-			.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
 					Button(action: {
 						withAnimation {

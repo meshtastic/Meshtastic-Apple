@@ -17,21 +17,16 @@ struct UserList: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@State private var searchText = ""
+	@State private var viaLora = true
+	@State private var viaMqtt = true
+	@State private var isOnline = false
+	@State private var isFavorite = false
+	@State private var distanceFilter = false
+	@State private var maxDistance: Double = 800000
+	@State private var hopsAway: Int = -1
+	@State private var deviceRole: Int = -1
+	@State var isEditingFilters = false
 	
-	var usersQuery: Binding<String> {
-		 Binding {
-			 searchText
-		 } set: { newValue in
-			 searchText = newValue
-			 /// Case Insensitive Search Text Predicates
-			 let searchPredicates = ["userId", "hwModel", "longName", "shortName"].map { property in
-				 return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
-			 }
-			 /// Create a compound predicate using each text search predicate as an OR
-			 let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
-			 users.nsPredicate = newValue.isEmpty ? nil : textSearchPredicate
-		 }
-	}
 	@FetchRequest(
 		sortDescriptors: [NSSortDescriptor(key: "lastMessage", ascending: false),
 						  NSSortDescriptor(key: "userNode.favorite", ascending: false),
@@ -172,9 +167,143 @@ struct UserList: View {
 			}
 			.listStyle(.plain)
 			.navigationTitle(String.localizedStringWithFormat("contacts %@".localized, String(users.count == 0 ? 0 : users.count - 1)))
-			.searchable(text: usersQuery, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
+			.sheet(isPresented: $isEditingFilters) {
+				NodeListFilter(filterTitle: "Contact Filters", viaLora: $viaLora, viaMqtt: $viaMqtt, isOnline: $isOnline, isFavorite: $isFavorite, distanceFilter: $distanceFilter, maximumDistance: $maxDistance, hopsAway: $hopsAway, deviceRole: $deviceRole)
+			}
+			.onChange(of: searchText) { _ in
+				searchUserList()
+			}
+			.onChange(of: viaLora) { _ in
+				if !viaLora && !viaMqtt {
+					viaMqtt = true
+				}
+				searchUserList()
+			}
+			.onChange(of: viaMqtt) { _ in
+				if !viaLora && !viaMqtt {
+					viaLora = true
+				}
+				searchUserList()
+			}
+			.onChange(of: deviceRole) { _ in
+				searchUserList()
+			}
+			.onChange(of: hopsAway) { _ in
+				searchUserList()
+			}
+			.onChange(of: isOnline) { _ in
+				searchUserList()
+			}
+			.onChange(of: isFavorite) { _ in
+				searchUserList()
+			}
+			.onChange(of: maxDistance) { _ in
+				searchUserList()
+			}
+			.onChange(of: distanceFilter) { _ in
+				searchUserList()
+			}
+			.onAppear {
+				if self.bleManager.context == nil {
+					self.bleManager.context = context
+				}
+				searchUserList()
+			}
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+				HStack {
+					Button(action: {
+						withAnimation {
+							isEditingFilters = !isEditingFilters
+						}
+					}) {
+						Image(systemName: !isEditingFilters ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+							.padding(.vertical, 5)
+					}
+					.tint(Color(UIColor.secondarySystemBackground))
+					.foregroundColor(.accentColor)
+					.buttonStyle(.borderedProminent)
+
+				}
+				.controlSize(.regular)
+				.padding(5)
+			}
+			.padding(.bottom, 5)
+			.searchable(text: $searchText, placement: users.count > 10 ? .navigationBarDrawer(displayMode: .always) : .automatic, prompt: "Find a contact")
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 		}
+	}
+	
+	private func searchUserList() {
+		
+		/// Case Insensitive Search Text Predicates
+		let searchPredicates = ["userId", "numString", "hwModel", "longName", "shortName"].map { property in
+			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
+		}
+		/// Create a compound predicate using each text search preicate as an OR
+		let textSearchPredicate = NSCompoundPredicate(type: .or, subpredicates: searchPredicates)
+		/// Create an array of predicates to hold our AND predicates
+		var predicates: [NSPredicate] = []
+		/// Mqtt
+		if !(viaLora && viaMqtt) {
+			if viaLora {
+				let loraPredicate = NSPredicate(format: "userNode.viaMqtt == NO")
+				predicates.append(loraPredicate)
+			} else {
+				let mqttPredicate = NSPredicate(format: "userNode.viaMqtt == YES")
+				predicates.append(mqttPredicate)
+			}
+		}
+		/// Role
+		if deviceRole > -1 {
+			let rolePredicate = NSPredicate(format: "role == %i", Int32(deviceRole))
+			predicates.append(rolePredicate)
+		}
+		/// Hops Away
+		if hopsAway > 0 {
+			let hopsAwayPredicate = NSPredicate(format: "userNode.hopsAway == %i", Int32(hopsAway))
+			predicates.append(hopsAwayPredicate)
+		}
+		
+		/// Online
+		if isOnline {
+			let isOnlinePredicate = NSPredicate(format: "userNode.lastHeard >= %@", Calendar.current.date(byAdding: .minute, value: -15, to: Date())! as NSDate)
+			predicates.append(isOnlinePredicate)
+		}
+		/// Favorites
+		if isFavorite {
+			let isFavoritePredicate = NSPredicate(format: "userNode.favorite == YES")
+			predicates.append(isFavoritePredicate)
+		}
+		/// Distance
+		if distanceFilter {
+			let pointOfInterest = LocationHelper.currentLocation
+		
+			if pointOfInterest.latitude != LocationHelper.DefaultLocation.latitude && pointOfInterest.longitude != LocationHelper.DefaultLocation.longitude {
+				let D: Double = maxDistance * 1.1
+				let R: Double = 6371009
+				let meanLatitidue = pointOfInterest.latitude * .pi / 180
+				let deltaLatitude = D / R * 180 / .pi
+				let deltaLongitude = D / (R * cos(meanLatitidue)) * 180 / .pi
+				let minLatitude: Double = pointOfInterest.latitude - deltaLatitude
+				let maxLatitude: Double = pointOfInterest.latitude + deltaLatitude
+				let minLongitude: Double = pointOfInterest.longitude - deltaLongitude
+				let maxLongitude: Double = pointOfInterest.longitude + deltaLongitude
+				let distancePredicate = NSPredicate(format: "(SUBQUERY(userNode.positions, $position, $position.latest == TRUE && (%lf <= ($position.longitudeI / 1e7)) AND (($position.longitudeI / 1e7) <= %lf) AND (%lf <= ($position.latitudeI / 1e7)) AND (($position.latitudeI / 1e7) <= %lf))).@count > 0", minLongitude, maxLongitude,minLatitude, maxLatitude)
+				predicates.append(distancePredicate)
+			}
+		}
+		
+		if predicates.count > 0 || !searchText.isEmpty {
+			if !searchText.isEmpty {
+				let filterPredicates = NSCompoundPredicate(type: .and, subpredicates: predicates)
+				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: [textSearchPredicate, filterPredicates])
+			} else {
+				users.nsPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
+			}
+		} else {
+			users.nsPredicate = nil
+		}
+		
 	}
 }
