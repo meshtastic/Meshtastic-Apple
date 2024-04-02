@@ -304,7 +304,7 @@ struct NodeList: View {
 	
 	private func searchNodeList() {
 		/// Case Insensitive Search Text Predicates
-		let searchPredicates = ["user.userId", "user.hwModel", "user.longName", "user.shortName"].map { property in
+		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
 			return NSPredicate(format: "%K CONTAINS[c] %@", property, searchText)
 		}
 		/// Create a compound predicate using each text search preicate as an OR
