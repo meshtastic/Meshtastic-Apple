@@ -291,6 +291,9 @@ struct NodeList: View {
 		.onChange(of: maxDistance) { _ in
 			searchNodeList()
 		}
+		.onChange(of: distanceFilter) { _ in
+			searchNodeList()
+		}
 		.onAppear {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
