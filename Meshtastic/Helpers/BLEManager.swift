@@ -1306,31 +1306,44 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	public func saveChannelSet(base64UrlString: String, addChannel: Bool = false) -> Bool {
 		if isConnected {
+			
+			var i: Int32 = 0
 			// Before we get started delete the existing channels from the myNodeInfo
-			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 			if !addChannel {
 				tryClearExistingChannels()
+			} else {
+				// We are trying to add a channel so lets get the last index
+				let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+				do {
+					let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+					if fetchedMyInfo.count == 1 {
+						if addChannel {
+							i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
+							// Bail out if the index is negative or bigger than our max of 8
+							if i < 0 || i > 8 {
+								return false
+							}
+						}
+					}
+				} catch {
+					print("Failed to find a node MyInfo to save these channels to")
+				}
 			}
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
-					var i: Int32 = 0
 					for cs in channelSet.settings {
 						var chan = Channel()
-						
-						if i == 0 && !addChannel {
+						if i == 0 {
 							chan.role = Channel.Role.primary
-							
 						} else {
 							chan.role = Channel.Role.secondary
 						}
 						chan.settings = cs
-						if !addChannel {
-							chan.index = i
-							i += 1
-						}
+						chan.index = i
+						i += 1
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()
