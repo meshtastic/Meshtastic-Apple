@@ -1304,13 +1304,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
-	public func saveChannelSet(base64UrlString: String) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannel: Bool = false) -> Bool {
 		if isConnected {
 			// Before we get started delete the existing channels from the myNodeInfo
 			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
 			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
-			
-			tryClearExistingChannels()
+			if !addChannel {
+				tryClearExistingChannels()
+			}
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
@@ -1318,14 +1319,18 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					var i: Int32 = 0
 					for cs in channelSet.settings {
 						var chan = Channel()
-						if i == 0 {
+						
+						if i == 0 && !addChannel {
 							chan.role = Channel.Role.primary
+							
 						} else {
 							chan.role = Channel.Role.secondary
 						}
 						chan.settings = cs
-						chan.index = i
-						i += 1
+						if !addChannel {
+							chan.index = i
+							i += 1
+						}
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()

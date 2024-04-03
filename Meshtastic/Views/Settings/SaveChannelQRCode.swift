@@ -11,6 +11,7 @@ struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
 
 	var channelSetLink: String
+	var addChannel: Bool = false
 	var bleManager: BLEManager
 	@State var connectedToDevice = false
 
@@ -26,7 +27,7 @@ struct SaveChannelQRCode: View {
 			HStack {
 
 				Button {
-					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink)
+					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink, addChannel: addChannel)
 					if success {
 						dismiss()
 					}

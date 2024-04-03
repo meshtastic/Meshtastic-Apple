@@ -151,6 +151,14 @@ struct Channels: View {
 							channel.settings.uplinkEnabled = uplink
 							channel.settings.downlinkEnabled = downlink
 							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
+							
+							selectedChannel!.role = Int32(channelRole)
+							selectedChannel!.index = channelIndex
+							selectedChannel!.name = channelName
+							selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
+							selectedChannel!.uplinkEnabled = uplink
+							selectedChannel!.downlinkEnabled = downlink
+							selectedChannel!.positionPrecision = Int32(positionPrecision)
 
 							guard let mutableChannels = node?.myInfo?.channels?.mutableCopy() as? NSMutableOrderedSet else {
 								return
@@ -160,7 +168,7 @@ struct Channels: View {
 							} else {
 								mutableChannels.add(selectedChannel as Any)
 							}
-							node!.myInfo!.channels = mutableChannels.copy() as? NSOrderedSet
+							node?.myInfo?.channels = mutableChannels.copy() as? NSOrderedSet
 							context.refresh(selectedChannel!, mergeChanges: true)
 							do {
 								try context.save()
@@ -171,23 +179,21 @@ struct Channels: View {
 								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						} else {
-							if channelIndex <= node!.myInfo!.channels?.count ?? 0 {
-								guard let channelEntity = node!.myInfo!.channels?[Int(channelIndex)] as? ChannelEntity else {
-									return
-								}
-								let objects = channelEntity.allPrivateMessages
-								for object in objects {
-									context.delete(object)
-								}								
-								context.delete(channelEntity)
-								do {
-									try context.save()
-									print("💾 Deleted Channel: \(channel.settings.name)")
-								} catch {
-									context.rollback()
-									let nsError = error as NSError
-									print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
-								}
+							guard let channelEntity = node?.myInfo?.channels?.first(where: { ($0 as! ChannelEntity).index == channelIndex }) else {
+								return
+							}
+							let objects = (channelEntity as! ChannelEntity).allPrivateMessages
+							for object in objects {
+								context.delete(object)
+							}
+							context.delete(channelEntity as! ChannelEntity)
+							do {
+								try context.save()
+								print("💾 Deleted Channel: \(channel.settings.name)")
+							} catch {
+								context.rollback()
+								let nsError = error as NSError
+								print("💥 Unresolved Core Data error in the channel editor. Error: \(nsError)")
 							}
 						}
 
@@ -198,8 +204,6 @@ struct Channels: View {
 							channelName = ""
 							channelRole	= 2
 							hasChanges = false
-							
-							_ = bleManager.getChannel(channel: channel, fromUser: node!.user!, toUser: node!.user!)
 						}
 					} label: {
 						Label("save", systemImage: "square.and.arrow.down")

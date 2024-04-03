@@ -18,6 +18,7 @@ struct MeshtasticAppleApp: App {
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
+	@State var addChannel = false
 	@StateObject var appState = AppState.shared
 
     var body: some Scene {
@@ -26,7 +27,7 @@ struct MeshtasticAppleApp: App {
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
-				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", bleManager: bleManager)
+				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannel: addChannel,  bleManager: bleManager)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
 			}
@@ -36,9 +37,13 @@ struct MeshtasticAppleApp: App {
 				self.incomingUrl = userActivity.webpageURL
 
 				if (self.incomingUrl?.absoluteString.lowercased().contains("meshtastic.org/e/#")) != nil {
-
 					if let components = self.incomingUrl?.absoluteString.components(separatedBy: "#") {
-						self.channelSettings = components.last!
+						guard let cs = components.last!.components(separatedBy: "?").first else {
+							return
+						}
+						self.channelSettings = cs
+						self.addChannel = Bool(self.incomingUrl?["add"] ?? "false") ?? false
+						print("Add Channel \(self.addChannel)")
 					}
 					self.saveChannels = true
 					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
