@@ -38,6 +38,7 @@ struct UserDefault<T: Decodable> {
 	}
 }
 
+
 extension UserDefaults {
 	enum Keys: String, CaseIterable {
 		case preferredPeripheralId
@@ -68,12 +69,27 @@ extension UserDefaults {
 		case enableSmartPosition
 		case modemPreset
 		case firmwareVersion
-		case testIntEnum
+		case usePhoneForFixedPosition
+		case fixedLatitude
+		case fixedLongitude
+		case fixedAltitude
 	}
 
 	func reset() {
 		Keys.allCases.forEach { removeObject(forKey: $0.rawValue) }
 	}
+
+	@UserDefault(.usePhoneForFixedPosition, defaultValue: true)
+	static var usePhoneForFixedPosition: Bool
+
+	@UserDefault(.fixedLatitude, defaultValue: 0.0)
+	static var fixedLatitude: Double
+
+	@UserDefault(.fixedLongitude, defaultValue: 0.0)
+	static var fixedLongitude: Double
+
+	@UserDefault(.fixedAltitude, defaultValue: 0.0)
+	static var fixedAltitude: Double
 
 	@UserDefault(.preferredPeripheralId, defaultValue: "")
 	static var preferredPeripheralId: String
@@ -96,13 +112,19 @@ extension UserDefaults {
 	@UserDefault(.enableMapWaypoints, defaultValue: false)
 	static var enableMapWaypoints: Bool
 	
+	@UserDefault(.provideLocationInterval, defaultValue: 0)
+	static var provideLocationInterval: Int
+	
+	@UserDefault(.mapLayer, defaultValue: .standard)
+	static var mapLayer: MapLayer
+	
 	@UserDefault(.enableMapRecentering, defaultValue: false)
 	static var enableMapRecentering: Bool
 
 	@UserDefault(.enableMapNodeHistoryPins, defaultValue: false)
 	static var enableMapNodeHistoryPins: Bool
 
-	@UserDefault(.enableMapRouteLines, defaultValue: false)
+  @UserDefault(.enableMapRouteLines, defaultValue: false)
 	static var enableMapRouteLines: Bool
 
 	@UserDefault(.enableMapConvexHull, defaultValue: false)
@@ -158,4 +180,46 @@ enum TestIntEnum: Int, Decodable {
 	case one = 1
 	case two
 	case three
+	
+	@UserDefault(.enableMapTraffic, defaultValue: false)
+	static var enableMapTraffic: Bool
+	
+	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
+	static var enableMapPointsOfInterest: Bool
+	
+	@UserDefault(.enableOfflineMaps, defaultValue: false)
+	static var enableOfflineMaps: Bool
+	
+	@UserDefault(.enableOfflineMapsMBTiles, defaultValue: false)
+	static var enableOfflineMapsMBTiles: Bool
+	
+	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
+	static var mapTileServer: MapTileServer
+	
+	@UserDefault(.enableOverlayServer, defaultValue: false)
+	static var enableOverlayServer: Bool
+	
+	@UserDefault(.mapOverlayServer, defaultValue: .baseReReflectivityCurrent)
+	static var mapOverlayServer: MapOverlayServer
+	
+	@UserDefault(.mapTilesAboveLabels, defaultValue: false)
+	static var mapTilesAboveLabels: Bool
+	
+	@UserDefault(.mapUseLegacy, defaultValue: false)
+	static var mapUseLegacy: Bool
+	
+	@UserDefault(.enableDetectionNotifications, defaultValue: false)
+	static var enableDetectionNotifications: Bool
+	
+	@UserDefault(.detectionSensorRole, defaultValue: .sensor)
+	static var detectionSensorRole: DetectionSensorRole
+	
+	@UserDefault(.enableSmartPosition, defaultValue: false)
+	static var enableSmartPosition: Bool
+	
+	@UserDefault(.modemPreset, defaultValue: 0)
+	static var modemPreset: Int
+	
+	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
+	static var firmwareVersion: String
 }

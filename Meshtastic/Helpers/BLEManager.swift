@@ -993,8 +993,20 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			guard let fetchedChannel = try context!.fetch(fetchChannelRequest) as? [ChannelEntity] else {
 				return nil
 			}
-			if #available(iOS 17.0, macOS 14.0, *) {
-				
+
+			if !UserDefaults.usePhoneForFixedPosition {
+				positionPacket.latitudeI = Int32(UserDefaults.fixedLatitude * 1e7)
+				positionPacket.longitudeI = Int32(UserDefaults.fixedLongitude * 1e7)
+				let timestamp = Date()
+				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+				positionPacket.altitude = Int32(UserDefaults.fixedAltitude)
+				positionPacket.satsInView = UInt32(0)
+				positionPacket.precisionBits = UInt32(32)
+				positionPacket.groundSpeed = UInt32(0)
+				positionPacket.groundTrack = UInt32(0)
+			} else if #available(iOS 17.0, macOS 14.0, *) {
+
 				if let lastLocation = LocationsHandler.shared.locationsArray.last {
 					
 					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
@@ -1119,6 +1131,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 		return success
 	}
+	
 	@objc func positionTimerFired(timer: Timer) {
 		// Check for connected node
 		if connectedPeripheral != nil {

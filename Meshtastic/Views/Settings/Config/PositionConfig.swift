@@ -24,9 +24,23 @@ struct PositionFlags: OptionSet {
 
 struct PositionConfig: View {
 
+	enum Field: Hashable {
+		case fixedLongitude
+		case fixedLatitude
+		case fixedAltitude
+	}
+
+	let floatFormatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.numberStyle = .decimal
+		formatter.maximumFractionDigits = 15
+		return formatter
+	}()
+
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	@Environment(\.dismiss) private var goBack
+	@FocusState var focusedField: Field?
 
 	var node: NodeInfoEntity?
 
@@ -40,6 +54,10 @@ struct PositionConfig: View {
 	@State var txGpio = 0
 	@State var gpsEnGpio = 0
 	@State var fixedPosition = false
+	@State var usePhonePosition = UserDefaults.usePhoneForFixedPosition
+	@State var fixedLatitude = UserDefaults.fixedLatitude
+	@State var fixedLongitude = UserDefaults.fixedLongitude
+	@State var fixedAltitude = UserDefaults.fixedAltitude
 	@State var gpsUpdateInterval = 0
 	@State var positionBroadcastSeconds = 0
 	@State var broadcastSmartMinimumDistance = 0
@@ -158,11 +176,44 @@ struct PositionConfig: View {
 								.foregroundColor(.gray)
 								.font(.callout)
 						}
-					}
-					VStack(alignment: .leading) {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
-							Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval.")
+					} else {
+						VStack(alignment: .leading) {
+							Toggle(isOn: $fixedPosition) {
+								Label("Fixed Position", systemImage: "location.square.fill")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+							if fixedPosition {
+								Toggle(isOn: $usePhonePosition) {
+									Label("Use Phone Position", systemImage: "location.square.fill")
+									Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval. Fixed position will always use the most recent position the device has.")
+								}
+								if !usePhonePosition {
+									HStack {
+										Text("Latitude")
+										Spacer()
+										TextField("Fixed Latitude", value: $fixedLatitude, formatter: floatFormatter)
+											.keyboardType(.decimalPad)
+											.scrollDismissesKeyboard(.immediately)
+											.focused($focusedField, equals: .fixedLatitude)
+									}
+									HStack {
+										Text("Longitude")
+										Spacer()
+										TextField("Fixed Longitude", value: $fixedLongitude, formatter: floatFormatter)
+											.keyboardType(.decimalPad)
+											.scrollDismissesKeyboard(.immediately)
+											.focused($focusedField, equals: .fixedLongitude)
+									}
+									HStack {
+										Text("Altitude (in meters)")
+										Spacer()
+										TextField("Fixed Altitude", value: $fixedAltitude, formatter: floatFormatter)
+											.keyboardType(.decimalPad)
+											.scrollDismissesKeyboard(.immediately)
+											.focused($focusedField, equals: .fixedAltitude)
+									}
+								}
+							}
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
@@ -311,6 +362,11 @@ struct PositionConfig: View {
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				if fixedPosition && !supportedVersion {
+				UserDefaults.usePhoneForFixedPosition = usePhonePosition
+				UserDefaults.fixedLatitude = fixedLatitude
+				UserDefaults.fixedLongitude = fixedLongitude
+				UserDefaults.fixedAltitude = fixedAltitude
+				
 					_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 				}
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
@@ -416,6 +472,31 @@ struct PositionConfig: View {
 		.onChange(of: smartPositionEnabled) { newSmartPositionEnabled in
 			if node != nil && node!.positionConfig != nil {
 				if newSmartPositionEnabled != node!.positionConfig!.smartPositionEnabled { hasChanges = true }
+			}
+		}
+		.onChange(of: fixedPosition) { newFixed in
+			if node != nil && node!.positionConfig != nil {
+				if newFixed != node!.positionConfig!.fixedPosition { hasChanges = true }
+			}
+		}
+		.onChange(of: usePhonePosition) { newPhonePosition in
+			if node != nil && node!.positionConfig != nil {
+				if newPhonePosition != UserDefaults.usePhoneForFixedPosition { hasChanges = true }
+			}
+		}
+		.onChange(of: fixedLongitude) { newFixedLongitude in
+			if node != nil && node!.positionConfig != nil {
+				if newFixedLongitude != UserDefaults.fixedLongitude { hasChanges = true }
+			}
+		}
+		.onChange(of: fixedLatitude) { newFixedLatitude in
+			if node != nil && node!.positionConfig != nil {
+				if newFixedLatitude != UserDefaults.fixedLatitude { hasChanges = true }
+			}
+		}
+		.onChange(of: fixedAltitude) { newFixedAltitude in
+			if node != nil && node!.positionConfig != nil {
+				if newFixedAltitude != UserDefaults.fixedAltitude { hasChanges = true }
 			}
 		}
 		.onChange(of: positionBroadcastSeconds) { newPositionBroadcastSeconds in
