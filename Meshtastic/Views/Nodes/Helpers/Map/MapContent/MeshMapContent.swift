@@ -93,7 +93,7 @@ struct MeshMapContent: MapContent {
 			}
 			
 			/// Node History and Route Lines for favorites
-			if position.nodePosition?.user?.vip ?? false {
+			if position.nodePosition?.favorite ?? false {
 				if showRouteLines {
 					let nodePositions = Array(position.nodePosition!.positions!) as! [PositionEntity]
 					let routeCoords = nodePositions.compactMap({(pos) -> CLLocationCoordinate2D in
@@ -112,7 +112,7 @@ struct MeshMapContent: MapContent {
 				}
 				if showNodeHistory {
 					ForEach(Array(position.nodePosition!.positions!) as! [PositionEntity], id: \.self) { (mappin: PositionEntity) in
-						if mappin.latest == false && mappin.nodePosition?.user?.vip ?? false {
+						if mappin.latest == false && mappin.nodePosition?.favorite ?? false {
 							let pf = PositionFlags(rawValue: Int(mappin.nodePosition?.metadata?.positionFlags ?? 771))
 							let headingDegrees = Angle.degrees(Double(mappin.heading))
 							Annotation("", coordinate: mappin.coordinate) {

@@ -239,6 +239,7 @@
 "network.config"="网络配置";
 "nodes"="节点";
 "nodes %@"="节点 (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="未找到 Meshtastic 节点";
 "not.connected"="未连接到电台";
 "numbers.punctuation"="数字和标点符号";

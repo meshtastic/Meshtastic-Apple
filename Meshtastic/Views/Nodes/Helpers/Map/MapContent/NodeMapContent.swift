@@ -128,13 +128,13 @@ struct NodeMapContent: MapContent {
 							}
 						}
 					}
-				//	.tag(position.time)
+					.tag(position.time)
 					.annotationTitles(.automatic)
 					.annotationSubtitles(.automatic)
 			}
 			/// Node History
 			if showNodeHistory {
-				if position.latest == false && position.nodePosition?.user?.vip ?? false {
+				if position.latest == false && position.nodePosition?.favorite ?? false {
 					let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 					let headingDegrees = Angle.degrees(Double(position.heading))
 					Annotation("", coordinate: position.coordinate) {

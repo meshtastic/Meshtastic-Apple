@@ -28,6 +28,9 @@ SwiftUI client applications for iOS, iPadOS and macOS.
   brew install swift-protobuf
   ```
 - check out the latest protobuf commit from the master branch
+  ```bash
+  git submodule update --init
+  ```
 - run:
   ```bash
   ./gen_proto.sh

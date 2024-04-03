@@ -105,6 +105,7 @@ struct ChannelForm: View {
 							
 						)
 						.onChange(of: channelKey, perform: { _ in
+					
 							let tempKey = Data(base64Encoded: channelKey) ?? Data()
 							if tempKey.count == channelKeySize || channelKeySize == -1{
 								hasValidKey = true
@@ -245,7 +246,5 @@ struct ChannelForm: View {
 				}
 			}
 		}
-		.presentationDetents([.large])
-		.presentationDragIndicator(.visible)
 	}
 }

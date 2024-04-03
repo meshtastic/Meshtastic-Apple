@@ -13,7 +13,8 @@ import TipKit
 struct Settings: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
-	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
+	@FetchRequest(sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
+									NSSortDescriptor(key: "user.longName", ascending: true)], animation: .default)
 	private var nodes: FetchedResults<NodeInfoEntity>
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
@@ -106,16 +107,29 @@ struct Settings: View {
 									if selectedNode == 0 {
 										Text("Connect to a Node").tag(0)
 									}
+									
 									ForEach(nodes) { node in
 										if node.num == bleManager.connectedPeripheral?.num ?? 0 {
-											Text("BLE Config: \(node.user?.longName ?? "unknown".localized)")
-												.tag(Int(node.num))
+											Label {
+												Text("BLE: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "antenna.radiowaves.left.and.right")
+											}
+											.tag(Int(node.num))
 										} else if node.metadata != nil {
-											Text("Remote Config: \(node.user?.longName ?? "unknown".localized)")
-												.tag(Int(node.num))
+											Label {
+												Text("Remote: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "av.remote")
+											}
+											.tag(Int(node.num))
 										} else if hasAdmin {
-											Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
-												.tag(Int(node.num))
+											Label {
+												Text("Request Admin: \(node.user?.longName ?? "unknown".localized)")
+											} icon: {
+												Image(systemName: "rectangle.and.hand.point.up.left")
+											}
+											.tag(Int(node.num))
 										}
 									}
 								}

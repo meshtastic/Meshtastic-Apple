@@ -255,7 +255,7 @@ extension MemberRole: CaseIterable {
 #endif  // swift(>=4.2)
 
 ///
-/// Packets for the official ATAK Plugin 
+/// Packets for the official ATAK Plugin
 struct TAKPacket {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for

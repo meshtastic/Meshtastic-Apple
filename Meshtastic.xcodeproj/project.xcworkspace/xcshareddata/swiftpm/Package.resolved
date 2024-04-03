@@ -1,4 +1,5 @@
 {
+  "originHash" : "e9855e3a299c14a10f11ee0b8f29e4170b09548533939361223a0f50e7caac8c",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -46,5 +47,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

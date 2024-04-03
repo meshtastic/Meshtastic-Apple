@@ -759,19 +759,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						if fetchedNodeInfo.count == 1 && fetchedNodeInfo[0].storeForwardConfig?.enabled == true {
 							wantStoreAndForwardPackets = true;
 						}
-						if fetchedNodeInfo.count == 1 {
-							if !(fetchedNodeInfo[0].user?.vip ?? false) {
-								fetchedNodeInfo[0].user?.vip = true
-								do {
-									try context!.save()
-									
-								} catch {
-									context!.rollback()
-									let nsError = error as NSError
-									print("💥 Core Data error. Error: \(nsError)")
-								}
-							}
-						}
 						
 					} catch {
 						print("Failed to find a node info for the connected node")
@@ -1317,18 +1304,36 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
-	public func saveChannelSet(base64UrlString: String) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
 		if isConnected {
-			// Before we get started delete the existing channels from the myNodeInfo
-			let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-			fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
 			
-			tryClearExistingChannels()
+			var i: Int32 = 0
+			// Before we get started delete the existing channels from the myNodeInfo
+			if !addChannels {
+				tryClearExistingChannels()
+			} else {
+				// We are trying to add a channel so lets get the last index
+				let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+				do {
+					let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+					if fetchedMyInfo.count == 1 {
+						if addChannels {
+							i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
+							// Bail out if the index is negative or bigger than our max of 8
+							if i < 0 || i > 8 {
+								return false
+							}
+						}
+					}
+				} catch {
+					print("Failed to find a node MyInfo to save these channels to")
+				}
+			}
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
-					var i: Int32 = 0
 					for cs in channelSet.settings {
 						var chan = Channel()
 						if i == 0 {
@@ -1385,7 +1390,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
 						MeshLogger.log("📻 \(logString)")
 					}
-					return true
+					
+					if self.connectedPeripheral != nil {
+						self.sendWantConfig()
+						return true
+					}
+				
 				} catch {
 					return false
 				}
@@ -1444,6 +1454,54 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				let nsError = error as NSError
 				print("💥 Error deleting node from core data: \(nsError)")
 			}
+		}
+		return false
+	}
+	
+	public func setFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.setFavoriteNode = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected{
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				return true
+		}
+		return false
+	}
+	
+	public func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeFavoriteNode = UInt32(node.num)
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(connectedNodeNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		var toRadio: ToRadio!
+		toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let binaryData: Data = try! toRadio.serializedData()
+		
+		if connectedPeripheral?.peripheral.state ?? CBPeripheralState.disconnected == CBPeripheralState.connected{
+			connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
+				return true
 		}
 		return false
 	}

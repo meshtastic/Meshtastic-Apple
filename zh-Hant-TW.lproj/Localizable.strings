@@ -238,6 +238,7 @@
 "network.config"="網路設定";
 "nodes"="中繼點";
 "nodes %@"="中繼點 (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="未找到 Meshtastic 中繼點";
 "not.connected"="未連接到電台";
 "numbers.punctuation"="數字和標點符號";

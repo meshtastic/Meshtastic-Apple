@@ -1565,8 +1565,8 @@ struct MeshPacket {
     set {_uniqueStorage()._viaMqtt = newValue}
   }
 
-  /// 
-  /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header. 
+  ///
+  /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
   var hopStart: UInt32 {
     get {return _storage._hopStart}
@@ -2606,7 +2606,7 @@ struct DeviceMetadata {
   init() {}
 }
 
-/// 
+///
 /// A heartbeat message is sent to the node from the client to keep the connection alive.
 /// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
 struct Heartbeat {

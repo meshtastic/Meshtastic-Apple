@@ -293,6 +293,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 			} else {
 				let newUser = UserEntity(context: context)
 				newUser.num = Int64(nodeInfo.num)
+				newUser.numString = String(nodeInfo.num)
 				let userId = String(format:"%2X", nodeInfo.num)
 				newUser.userId = "!\(userId)"
 				let last4 = String(userId.suffix(4))
@@ -357,6 +358,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				}
 				fetchedNode[0].user!.userId = nodeInfo.user.id
 				fetchedNode[0].user!.num = Int64(nodeInfo.num)
+				fetchedNode[0].user!.numString = String(nodeInfo.num)
 				fetchedNode[0].user!.longName = nodeInfo.user.longName
 				fetchedNode[0].user!.shortName = nodeInfo.user.shortName
 				fetchedNode[0].user!.isLicensed = nodeInfo.user.isLicensed

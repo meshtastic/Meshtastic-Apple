@@ -11,22 +11,23 @@ struct SaveChannelQRCode: View {
 	@Environment(\.dismiss) private var dismiss
 
 	var channelSetLink: String
+	var addChannels: Bool = false
 	var bleManager: BLEManager
 	@State var connectedToDevice = false
 
 	var body: some View {
 		VStack {
-			Text("Save Channel Settings?")
+			Text("\(addChannels ? "Add" : "Replace all") Channels?")
 				.font(.title)
-			Text("These settings will replace the current LoRa Config and Channel Settings on your radio. After everything saves your device will reboot.")
+			Text("These settings will \(addChannels ? "add" : "replace all") channels. The current LoRa Config will be replaced. After everything saves your device will reboot.")
 				.foregroundColor(.gray)
-				.font(.callout)
+				.font(.title3)
 				.padding()
 
 			HStack {
 
 				Button {
-					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink)
+					let success = bleManager.saveChannelSet(base64UrlString: channelSetLink, addChannels: addChannels)
 					if success {
 						dismiss()
 					}

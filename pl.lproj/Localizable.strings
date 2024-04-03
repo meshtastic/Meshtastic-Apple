@@ -240,6 +240,7 @@
 "network"="Sieć";
 "network.config"="Konfiguracja sieci";
 "nodes %@"="Węzły (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="Nie znaleziono węzłów Meshtastic";
 "not.connected"="Brak podłączonych urządzeń";
 "numbers.punctuation"="Cyfry i interpunkcja";
