@@ -1304,12 +1304,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return 0
 	}
 	
-	public func saveChannelSet(base64UrlString: String, addChannel: Bool = false) -> Bool {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false) -> Bool {
 		if isConnected {
 			
 			var i: Int32 = 0
 			// Before we get started delete the existing channels from the myNodeInfo
-			if !addChannel {
+			if !addChannels {
 				tryClearExistingChannels()
 			} else {
 				// We are trying to add a channel so lets get the last index
@@ -1318,7 +1318,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				do {
 					let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
 					if fetchedMyInfo.count == 1 {
-						if addChannel {
+						if addChannels {
 							i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
 							// Bail out if the index is negative or bigger than our max of 8
 							if i < 0 || i > 8 {
