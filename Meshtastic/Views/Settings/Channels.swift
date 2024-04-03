@@ -47,6 +47,14 @@ struct Channels: View {
 	
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
+	
+	@FetchRequest(
+		sortDescriptors: [NSSortDescriptor(key: "favorite", ascending: false),
+						  NSSortDescriptor(key: "lastHeard", ascending: false),
+						  NSSortDescriptor(key: "user.longName", ascending: true)],
+		animation: .default)
+
+	var nodes: FetchedResults<NodeInfoEntity>
 
 	var body: some View {
 
@@ -182,9 +190,15 @@ struct Channels: View {
 							guard let channelEntity = node?.myInfo?.channels?.first(where: { ($0 as! ChannelEntity).index == channelIndex }) else {
 								return
 							}
+							
 							let objects = (channelEntity as! ChannelEntity).allPrivateMessages
 							for object in objects {
 								context.delete(object)
+							}
+							for node in nodes {
+								if node.channel == (channelEntity as AnyObject).index {
+									context.delete(node)
+								}
 							}
 							context.delete(channelEntity as! ChannelEntity)
 							do {
@@ -287,7 +301,6 @@ func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
 	}
 	return indexes.count + 1
 }
-
 
 enum PositionPrecision: Int, CaseIterable, Identifiable {
 
