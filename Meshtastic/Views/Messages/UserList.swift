@@ -304,6 +304,5 @@ struct UserList: View {
 		} else {
 			users.nsPredicate = nil
 		}
-		
 	}
 }

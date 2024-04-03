@@ -54,7 +54,8 @@ struct NodeList: View {
 				.contextMenu {
 					
 					Button {
-						if node.favorite {
+						if !node.favorite {
+							
 							let success = bleManager.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
 							if success {
 								node.favorite = !node.favorite
