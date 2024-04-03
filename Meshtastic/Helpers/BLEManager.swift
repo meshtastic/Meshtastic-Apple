@@ -1390,7 +1390,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						let logString = String.localizedStringWithFormat("mesh.log.lora.config.sent %@".localized, String(connectedPeripheral.num))
 						MeshLogger.log("📻 \(logString)")
 					}
-					return true
+					
+					if self.connectedPeripheral != nil {
+						self.sendWantConfig()
+						return true
+					}
+				
 				} catch {
 					return false
 				}
