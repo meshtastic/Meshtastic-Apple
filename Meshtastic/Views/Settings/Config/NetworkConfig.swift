@@ -48,11 +48,7 @@ struct NetworkConfig: View {
 									let totalBytes = wifiSsid.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 32 {
-										let firstNBytes = Data(wifiSsid.utf8.prefix(32))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the shortName back to the last place where it was the right size
-											wifiSsid = maxBytesString
-										}
+										wifiSsid = String(wifiSsid.dropLast())
 									}
 									hasChanges = true
 								})
@@ -69,11 +65,7 @@ struct NetworkConfig: View {
 									let totalBytes = wifiPsk.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 63 {
-										let firstNBytes = Data(wifiPsk.utf8.prefix(63))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the shortName back to the last place where it was the right size
-											wifiPsk = maxBytesString
-										}
+										wifiPsk = String(wifiPsk.dropLast())
 									}
 									hasChanges = true
 								})

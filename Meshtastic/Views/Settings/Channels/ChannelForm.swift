@@ -47,11 +47,7 @@ struct ChannelForm: View {
 							let totalBytes = channelName.utf8.count
 							// Only mess with the value if it is too big
 							if totalBytes > 11 {
-								let firstNBytes = Data(channelName.utf8.prefix(11))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the channelName back to the last place where it was the right size
-									channelName = maxBytesString
-								}
+								channelName = String(channelName.dropLast())
 							}
 							hasChanges = true
 						})

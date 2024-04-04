@@ -63,11 +63,7 @@ struct WaypointForm: View {
 								let totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 30 {
-									let firstNBytes = Data(name.utf8.prefix(30))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the name back to the last place where it was the right size
-										name = maxBytesString
-									}
+									name = String(name.dropLast())
 								}
 							})
 						}
@@ -84,11 +80,7 @@ struct WaypointForm: View {
 								let totalBytes = description.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 100 {
-									let firstNBytes = Data(description.utf8.prefix(100))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the name back to the last place where it was the right size
-										description = maxBytesString
-									}
+									description = String(description.dropLast())
 								}
 							})
 						}
