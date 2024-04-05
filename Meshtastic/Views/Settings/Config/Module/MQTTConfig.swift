@@ -266,7 +266,7 @@ struct MQTTConfig: View {
 		.navigationTitle("mqtt.config")
 		.navigationBarItems(trailing:
 			ZStack {
-			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyEnabled: self.enabled, mqttProxyConnected: bleManager.mqttProxyConnected)
+			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
 		})
 		.onChange(of: address) { newAddress in
 			if node != nil && node?.mqttConfig != nil {
