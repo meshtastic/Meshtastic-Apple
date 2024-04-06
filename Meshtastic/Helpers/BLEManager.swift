@@ -27,6 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
+	@Published var mqttError: String = ""
 	@StateObject var appState = AppState.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
@@ -312,6 +313,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MARK:  MqttClientProxyManagerDelegate Methods
 	func onMqttConnected() {
 		mqttProxyConnected = true
+		mqttError = ""
 		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
@@ -344,6 +346,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func onMqttError(message: String) {
 		mqttProxyConnected = false
+		mqttError = message
 		print("📲 Mqtt Client Proxy onMqttError: \(message)")
 	}
 	
