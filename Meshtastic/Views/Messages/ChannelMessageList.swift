@@ -159,7 +159,7 @@ struct ChannelMessageList: View {
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
 
 						// mqttProxyConnected defaults to false, so if it's not enabled it will still be false
-						mqttProxyConnected: bleManager.mqttProxyConnected,
+						mqttProxyConnected: bleManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,
 						mqttTopic: bleManager.mqttManager.topic
