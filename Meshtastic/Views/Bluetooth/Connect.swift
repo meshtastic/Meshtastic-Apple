@@ -260,7 +260,7 @@ struct Connect: View {
 			.navigationTitle("bluetooth")
 			.navigationBarItems(leading: MeshtasticLogo(), trailing:
 									ZStack {
-				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?", mqttProxyConnected: bleManager.mqttProxyConnected)
+				ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 			})
 		}
 		.sheet(isPresented: $invalidFirmwareVersion, onDismiss: didDismissSheet) {

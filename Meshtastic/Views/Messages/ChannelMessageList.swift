@@ -157,8 +157,12 @@ struct ChannelMessageList: View {
 						bluetoothOn: bleManager.isSwitchedOn,
 						deviceConnected: bleManager.connectedPeripheral != nil,
 						name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?",
-						mqttProxyEnabled: channel.uplinkEnabled || channel.downlinkEnabled,
-						mqttProxyConnected: channel.uplinkEnabled || channel.downlinkEnabled ? bleManager.mqttProxyConnected : false
+
+						// mqttProxyConnected defaults to false, so if it's not enabled it will still be false
+						mqttProxyConnected: bleManager.mqttProxyConnected,
+						mqttUplinkEnabled: channel.uplinkEnabled,
+						mqttDownlinkEnabled: channel.downlinkEnabled,
+						mqttTopic: bleManager.mqttManager.topic
 					)
 				}
 			}
