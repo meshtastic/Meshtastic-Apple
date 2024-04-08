@@ -50,6 +50,20 @@ enum MeshMapTypes: Int, CaseIterable, Identifiable {
 	}
 }
 
+enum MeshMapDistances: Double, CaseIterable, Identifiable {
+	case fiftyMiles = 80467.2
+	case oneHundredMiles = 160934
+	case twoHundredMiles = 321869
+	case fiveHundredMiles = 804672
+	case oneThousandMiles = 1609000
+	case twentyFiveHundredMiles = 4023360
+	var id: Double { self.rawValue }
+	var description: String {
+		let distanceFormatter = MKDistanceFormatter()
+		return "up to \(distanceFormatter.string(fromDistance: Double(self.rawValue))) away"
+	}
+}
+
 enum UserTrackingModes: Int, CaseIterable, Identifiable {
 	case none = 0
 	case follow = 1
@@ -116,7 +130,7 @@ enum LocationUpdateInterval: Int, CaseIterable, Identifiable {
 	}
 }
 
-enum MapLayer: String, CaseIterable, Equatable {
+enum MapLayer: String, CaseIterable, Equatable, Decodable {
 	case standard
 	case hybrid
 	case satellite
@@ -124,7 +138,7 @@ enum MapLayer: String, CaseIterable, Equatable {
 	var localized: String { self.rawValue.localized }
 }
 
-enum MapTileServer: String, CaseIterable, Identifiable {
+enum MapTileServer: String, CaseIterable, Identifiable, Decodable {
 	case openStreetMap
 	case openStreetMapDE
 	case openStreetMapFR
@@ -259,7 +273,7 @@ enum OverlayType: String, CaseIterable, Equatable {
 	var localized: String { self.rawValue.localized }
 }
 
-enum MapOverlayServer: String, CaseIterable, Identifiable {
+enum MapOverlayServer: String, CaseIterable, Identifiable, Decodable {
 	case baseReReflectivityCurrent
 	case baseReReflectivityOneHourAgo
 	case echoTopsEetCurrent

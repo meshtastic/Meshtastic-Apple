@@ -90,6 +90,12 @@ struct PositionConfig: View {
 	/// walking speeds are likely to be error prone like the compass
 	@State var includeHeading = false
 
+	/// Minimum Version for fixed postion admin messages
+	@State var minimumVersion = "2.3.3"
+	@State private var supportedVersion = true
+	@State private var showingSetFixedAlert = false
+	//@State private var showingRemoveFixedAlert = false
+	
 	var body: some View {
 		VStack {
 			Form {
@@ -209,6 +215,7 @@ struct PositionConfig: View {
 								}
 							}
 						}
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 				Section(header: Text("Position Flags")) {
@@ -312,14 +319,54 @@ struct PositionConfig: View {
 				}
 			}
 			.disabled(self.bleManager.connectedPeripheral == nil || node?.positionConfig == nil)
+			.alert(node?.positionConfig?.fixedPosition ?? false ? "Remove Fixed Position" : "Set Fixed Position", isPresented: $showingSetFixedAlert) {
+				Button("Cancel", role: .cancel) {
+					fixedPosition = !fixedPosition
+				}
+				if node?.positionConfig?.fixedPosition ?? false {
+					Button("Remove", role: .destructive) {
+						if !bleManager.removeFixedPosition(fromUser: node!.user!, channel: 0) {
+							print("Set Position Failed")
+						}
+						print("Remove a fixed position here")
+						node?.positionConfig?.fixedPosition = false
+						do {
+							try context.save()
+							print("💾 Updated Position Config with Fixed Position = false")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							print("💥 Error Saving Position Config Entity \(nsError)")
+						}
+					}
+				} else {
+					Button("Set") {
+						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
+							print("Set Position Failed")
+						}
+						print("Set a fixed position")
+						node?.positionConfig?.fixedPosition = true
+						do {
+							try context.save()
+							print("💾 Updated Position Config with Fixed Position = true")
+						} catch {
+							context.rollback()
+							let nsError = error as NSError
+							print("💥 Error Saving Position Config Entity \(nsError)")
+						}
+					}
+				}
+			} message: {
+				Text(node?.positionConfig?.fixedPosition ?? false ? "This will disable fixed position and remove the currently set position." : "This will send a current position from your phone and enable fixed position.")
+			}
 
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
+				if fixedPosition && !supportedVersion {
 				UserDefaults.usePhoneForFixedPosition = usePhonePosition
 				UserDefaults.fixedLatitude = fixedLatitude
 				UserDefaults.fixedLongitude = fixedLongitude
 				UserDefaults.fixedAltitude = fixedAltitude
 				
-				if fixedPosition {
 					_ = bleManager.sendPosition(channel: 0, destNum: node?.num ?? 0, wantResponse: true)
 				}
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
@@ -370,12 +417,30 @@ struct PositionConfig: View {
 				self.bleManager.context = context
 			}
 			setPositionValues()
+			supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 			// Need to request a PositionConfig from the remote node before allowing changes
 			if bleManager.connectedPeripheral != nil && node?.positionConfig == nil {
 				print("empty position config")
 				let connectedNode = getNodeInfo(id: bleManager.connectedPeripheral.num, context: context)
 				if node != nil && connectedNode != nil {
 					_ = bleManager.requestPositionConfig(fromUser: connectedNode!.user!, toUser: node!.user!, adminIndex: connectedNode?.myInfo?.adminIndex ?? 0)
+				}
+			}
+		}
+		.onChange(of: fixedPosition) { newFixed in
+			print("Changing Fixed Position Value")
+			if supportedVersion {
+				if node != nil && node!.positionConfig != nil {
+					print("We have a node and position config")
+					print("We have turned on fixed position \(!node!.positionConfig!.fixedPosition && newFixed)")
+					/// Fixed Position is off to start
+					if !node!.positionConfig!.fixedPosition && newFixed {
+						print("fire alert")
+						showingSetFixedAlert = true
+					} else if node!.positionConfig!.fixedPosition && !newFixed {
+						/// Fixed Position is on to start
+						showingSetFixedAlert = true
+					}
 				}
 			}
 		}

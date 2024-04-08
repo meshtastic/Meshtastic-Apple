@@ -42,3 +42,20 @@ struct CreateChannelsTip: Tip {
 	   Image(systemName: "fibrechannel")
    }
 }
+
+@available(iOS 17.0, macOS 14.0, *)
+struct AdminChannelTip: Tip {
+
+   var id: String {
+	   return "tip.channel.admin"
+   }
+   var title: Text {
+	   Text("tip.channel.admin.title")
+   }
+   var message: Text? {
+	   Text("tip.channel.admin.message")
+   }
+   var image: Image? {
+	   Image(systemName: "fibrechannel")
+   }
+}

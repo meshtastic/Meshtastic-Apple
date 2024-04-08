@@ -983,9 +983,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		return success
 	}
 	
-	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
-		var success = false
-		let fromNodeNum = connectedPeripheral.num
+	public func getPositionFromPhoneGPS(channel: Int32, destNum: Int64) -> Position? {
 		var positionPacket = Position()
 		
 		let fetchChannelRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "ChannelEntity")
@@ -993,7 +991,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 
 		do {
 			guard let fetchedChannel = try context!.fetch(fetchChannelRequest) as? [ChannelEntity] else {
-				return false
+				return nil
 			}
 
 			if !UserDefaults.usePhoneForFixedPosition {
@@ -1031,8 +1029,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				}
 
 			} else {
-				if fromNodeNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-					return false
+				if destNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
+					return nil
 				}
 				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
@@ -1053,6 +1051,61 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			}
 			
 		} catch {
+			return nil
+		}
+		
+		return positionPacket
+	}
+	
+	public func setFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		guard let positionPacket = getPositionFromPhoneGPS(channel: channel, destNum: fromUser.num) else {
+			return false
+		}
+		adminPacket.setFixedPosition = positionPacket
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Set Fixed Postion Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
+			return true
+		}
+		return false
+	}
+	
+	public func removeFixedPosition(fromUser: UserEntity, channel: Int32) -> Bool {
+		var adminPacket = AdminMessage()
+		adminPacket.removeFixedPosition = true
+		var meshPacket: MeshPacket = MeshPacket()
+		meshPacket.to = UInt32(fromUser.num)
+		meshPacket.from	= UInt32(fromUser.num)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority =  MeshPacket.Priority.reliable
+		meshPacket.wantAck = true
+		meshPacket.channel = UInt32(channel)
+		var dataMessage = DataMessage()
+		dataMessage.payload = try! adminPacket.serializedData()
+		dataMessage.portnum = PortNum.adminApp
+		meshPacket.decoded = dataMessage
+		let messageDescription = "🚀 Sent Remove Fixed Position Admin Message to: \(fromUser.longName ?? "unknown".localized) from: \(fromUser.longName ?? "unknown".localized)"
+		if sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription, fromUser: fromUser, toUser: fromUser) {
+			return true
+		}
+		return false
+	}
+	
+	public func sendPosition(channel: Int32, destNum: Int64, wantResponse: Bool) -> Bool {
+		var success = false
+		let fromNodeNum = connectedPeripheral.num
+		guard let positionPacket = getPositionFromPhoneGPS(channel: channel, destNum: destNum) else {
 			return false
 		}
 
