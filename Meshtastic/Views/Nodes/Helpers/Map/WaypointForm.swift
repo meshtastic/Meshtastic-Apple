@@ -195,8 +195,8 @@ struct WaypointForm: View {
 								newWaypoint.id = UInt32(waypoint.id)
 								newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 								newWaypoint.description_p = description
-								newWaypoint.latitudeI = waypoint.longitudeI
-								newWaypoint.longitudeI = waypoint.latitudeI
+								newWaypoint.latitudeI = waypoint.latitudeI
+								newWaypoint.longitudeI = waypoint.longitudeI
 								// Unicode scalar value for the icon emoji string
 								let unicodeScalers = icon.unicodeScalars
 								// First element as an UInt32
@@ -209,7 +209,7 @@ struct WaypointForm: View {
 										newWaypoint.lockedTo = UInt32(lockedTo)
 									}
 								}
-								newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+								newWaypoint.expire = UInt32(1)
 								if bleManager.sendWaypoint(waypoint: newWaypoint) {
 									
 									bleManager.context!.delete(waypoint)
