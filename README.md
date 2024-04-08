@@ -33,7 +33,7 @@ SwiftUI client applications for iOS, iPadOS and macOS.
   ```
 - run:
   ```bash
-  ./gen_proto.sh
+  ./gen_protos.sh
   ```
 - build, test, commit changes
 - You may need to run:
