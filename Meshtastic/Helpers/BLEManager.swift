@@ -418,7 +418,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Grab the most recent postion, within the last hour
 				if connectedNode?.positions?.count ?? 0 > 0 {
 					let mostRecent = connectedNode?.positions?.lastObject as! PositionEntity
-					if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+					if mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 						traceRoute.altitude = mostRecent.altitude
 						traceRoute.latitudeI = mostRecent.latitudeI
 						traceRoute.longitudeI = mostRecent.longitudeI
