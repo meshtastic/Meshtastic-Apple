@@ -1600,7 +1600,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -1611,7 +1611,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1634,7 +1634,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Meshtastic/Preview Content\"";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -1645,7 +1645,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1662,7 +1662,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				INFOPLIST_FILE = MeshtasticTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1670,7 +1670,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1687,7 +1687,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				INFOPLIST_FILE = MeshtasticTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1695,7 +1695,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1708,7 +1708,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1716,7 +1716,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1729,7 +1729,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				INFOPLIST_FILE = MeshtasticUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1737,7 +1737,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1755,7 +1755,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Widgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
@@ -1767,7 +1767,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1788,7 +1788,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = 6UB3T8FJYV;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Widgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Widgets;
@@ -1800,7 +1800,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = ChD.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
