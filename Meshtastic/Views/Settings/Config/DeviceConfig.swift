@@ -26,6 +26,7 @@ struct DeviceConfig: View {
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
 	@State var isManaged = false
+	@State var tzdef = ""
 
 	var body: some View {
 		VStack {
@@ -86,6 +87,26 @@ struct DeviceConfig: View {
 						Label("Debug Log", systemImage: "ant.fill")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					VStack(alignment: .leading) {
+						HStack {
+							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
+							TextField("Time Zone", text: $tzdef)
+								.foregroundColor(.gray)
+								.onChange(of: tzdef, perform: { _ in
+									let totalBytes = tzdef.utf8.count
+									// Only mess with the value if it is too big
+									if totalBytes > 63 {
+										tzdef = String(tzdef.dropLast())
+									}
+								})
+								.foregroundColor(.gray)
+						}
+						.keyboardType(.default)
+						.disableAutocorrection(true)
+						Text("Time zone for dates on the device screen and log.")
+							.foregroundColor(.gray)
+							.font(.callout)
+					}
 				}
 				Section(header: Text("GPIO")) {
 					Picker("Button GPIO", selection: $buttonGPIO) {
@@ -179,6 +200,7 @@ struct DeviceConfig: View {
 						dc.nodeInfoBroadcastSecs = UInt32(nodeInfoBroadcastSecs)
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 						dc.isManaged = isManaged
+						dc.tzdef = tzdef
 						if isManaged {
 							serialEnabled = false
 							debugLogEnabled = false
@@ -259,6 +281,11 @@ struct DeviceConfig: View {
 				if newIsManaged != node!.deviceConfig!.isManaged { hasChanges = true }
 			}
 		}
+		.onChange(of: tzdef) { newTzdef in
+			if node != nil && node?.deviceConfig != nil {
+				if newTzdef != node!.deviceConfig!.tzdef { hasChanges = true }
+			}
+		}
 	}
 	func setDeviceValues() {
 		self.deviceRole = Int(node?.deviceConfig?.role ?? 0)
@@ -273,6 +300,11 @@ struct DeviceConfig: View {
 		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
-		self.hasChanges = false
+		if self.tzdef.isEmpty {
+			self.tzdef = TimeZone.current.posixDescription
+			self.hasChanges = true
+		} else {
+			self.hasChanges = false
+		}
 	}
 }
