@@ -12,6 +12,7 @@ struct AppSettings: View {
 	@StateObject var locationHelper = LocationHelper()
 	@State var provideLocation: Bool = UserDefaults.provideLocation
 	@State var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
+	@State var newNodeNotifications: Bool = UserDefaults.newNodeNotifications
 	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
 	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
@@ -51,6 +52,12 @@ struct AppSettings: View {
 						Label("map.use.legacy", systemImage: "map")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+				}
+				
+				Section(header: Text("Notifications")){
+					Toggle(isOn: $newNodeNotifications){
+						Label("appsettings.newNodeNotifications", systemImage: "bell.fill")
+					}
 				}
 				Section(header: Text("phone.gps")) {
 					if #available(iOS 17.0, macOS 14.0, *) {
@@ -155,6 +162,10 @@ struct AppSettings: View {
 			if bleManager.connectedPeripheral != nil {
 				self.bleManager.sendWantConfig()
 			}
+		}
+		
+		.onChange(of: newNodeNotifications){ newNewNodeNotifications in
+			UserDefaults.newNodeNotifications = newNewNodeNotifications
 		}
 		.onChange(of: enableSmartPosition) { newEnableSmartPosition in
 			UserDefaults.enableSmartPosition = newEnableSmartPosition
