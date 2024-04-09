@@ -58,6 +58,15 @@ class Api : ObservableObject{
 			DispatchQueue.main.async {
 				completion(deviceHardware)
 			}
+			
+			if let data = data {
+				if let deviceHardware = try? JSONDecoder().decode([DeviceHardware].self, from: data) {
+					DispatchQueue.main.async {
+						completion(deviceHardware)
+					}
+					return
+				}
+			}
 		}.resume()
 	}
 	
@@ -67,9 +76,13 @@ class Api : ObservableObject{
 			return
 		}
 		URLSession.shared.dataTask(with: url) { data, response, error in
-			let firmwareReleases = try! JSONDecoder().decode(FirmwareReleases.self, from: data!)
-			DispatchQueue.main.async {
-				completion(firmwareReleases)
+			if let data = data {
+				if let firmwareReleases = try? JSONDecoder().decode(FirmwareReleases.self, from: data) {
+					DispatchQueue.main.async {
+						completion(firmwareReleases)
+					}
+					return
+				}
 			}
 		}.resume()
 	}

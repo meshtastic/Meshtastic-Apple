@@ -90,7 +90,7 @@ struct DeviceConfig: View {
 					VStack(alignment: .leading) {
 						HStack {
 							Label("Time Zone", systemImage: "clock.badge.exclamationmark")
-							TextField("Time Zone", text: $tzdef)
+							TextField("Time Zone", text: $tzdef, axis: .vertical)
 								.foregroundColor(.gray)
 								.onChange(of: tzdef, perform: { _ in
 									let totalBytes = tzdef.utf8.count
@@ -100,6 +100,7 @@ struct DeviceConfig: View {
 									}
 								})
 								.foregroundColor(.gray)
+						
 						}
 						.keyboardType(.default)
 						.disableAutocorrection(true)
