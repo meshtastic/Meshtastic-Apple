@@ -27,6 +27,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var isSwitchedOn: Bool = false
 	@Published var automaticallyReconnect: Bool = true
 	@Published var mqttProxyConnected: Bool = false
+	@Published var mqttError: String = ""
 	@StateObject var appState = AppState.shared
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
@@ -312,6 +313,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	// MARK:  MqttClientProxyManagerDelegate Methods
 	func onMqttConnected() {
 		mqttProxyConnected = true
+		mqttError = ""
 		print("📲 Mqtt Client Proxy onMqttConnected now subscribing to \(mqttManager.topic).")
 		mqttManager.mqttClientProxy?.subscribe(mqttManager.topic)
 	}
@@ -344,6 +346,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	func onMqttError(message: String) {
 		mqttProxyConnected = false
+		mqttError = message
 		print("📲 Mqtt Client Proxy onMqttError: \(message)")
 	}
 	
@@ -415,7 +418,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Grab the most recent postion, within the last hour
 				if connectedNode?.positions?.count ?? 0 > 0 {
 					let mostRecent = connectedNode?.positions?.lastObject as! PositionEntity
-					if mostRecent.time! >= Calendar.current.date(byAdding: .minute, value: -60, to: Date())! {
+					if mostRecent.time! >= Calendar.current.date(byAdding: .hour, value: -24, to: Date())! {
 						traceRoute.altitude = mostRecent.altitude
 						traceRoute.latitudeI = mostRecent.latitudeI
 						traceRoute.longitudeI = mostRecent.longitudeI

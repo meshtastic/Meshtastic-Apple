@@ -190,6 +190,10 @@ struct Config {
     /// Disables the triple-press of user button to enable or disable GPS
     var disableTripleClick: Bool = false
 
+    ///
+    /// POSIX Timezone definition string from https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv.
+    var tzdef: String = String()
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -1734,6 +1738,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     8: .standard(proto: "double_tap_as_button_press"),
     9: .standard(proto: "is_managed"),
     10: .standard(proto: "disable_triple_click"),
+    11: .same(proto: "tzdef"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1752,6 +1757,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 8: try { try decoder.decodeSingularBoolField(value: &self.doubleTapAsButtonPress) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.disableTripleClick) }()
+      case 11: try { try decoder.decodeSingularStringField(value: &self.tzdef) }()
       default: break
       }
     }
@@ -1788,6 +1794,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.disableTripleClick != false {
       try visitor.visitSingularBoolField(value: self.disableTripleClick, fieldNumber: 10)
     }
+    if !self.tzdef.isEmpty {
+      try visitor.visitSingularStringField(value: self.tzdef, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1802,6 +1811,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.doubleTapAsButtonPress != rhs.doubleTapAsButtonPress {return false}
     if lhs.isManaged != rhs.isManaged {return false}
     if lhs.disableTripleClick != rhs.disableTripleClick {return false}
+    if lhs.tzdef != rhs.tzdef {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

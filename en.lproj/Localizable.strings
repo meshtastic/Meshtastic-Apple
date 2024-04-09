@@ -341,7 +341,7 @@
 "tip.channels.create.title"="Manage Channels";
 "tip.channels.create.message"="Most data on your mesh is sent over the primary channel. You can set up secondary channels to create additional messaging groups secured by their own key. [Channel config tips](https://meshtastic.org/docs/configuration/tips/)";
 "tip.channels.share.title"="Sharing Meshtastic Channels";
-"tip.channels.share.message"="A Meshtastic QR code contains the LoRa config and channel values needed to communicate. Most mesh activity takes place on the required Primary channel. If you don't share your primary channel your first shared channel becomes the primary channel on the other network. Other channels are for private groups, each with its own key.";
+"tip.channels.share.message"="A Meshtastic QR code contains the LoRa config and channel values needed for radios to communicate. You can share a complete channel configuration using the Replace Channels option, if you choose Add Channels your shared channels will be added to the channels on the receiving radio.";
 "tip.messages.title"="Messages";
 "tip.messages.message"="You can send and receive channel (group chats) and direct messages.  From any message you can long press to see available actions like copy, reply, tapback and delete as well as delivery details.";
 "twitter"="Twitter";

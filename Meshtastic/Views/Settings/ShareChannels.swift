@@ -54,9 +54,9 @@ struct ShareChannels: View {
 	var body: some View {
 		
 		if #available(iOS 17.0, macOS 14.0, *) {
-//			VStack {
-//				TipView(ShareChannelsTip(), arrowEdge: .bottom)
-//			}
+			VStack {
+				TipView(ShareChannelsTip(), arrowEdge: .bottom)
+			}
 		}
 		GeometryReader { bounds in
 			let smallest = min(bounds.size.width, bounds.size.height)
@@ -219,10 +219,10 @@ struct ShareChannels: View {
 								.resizable()
 								.scaledToFit()
 								.frame(
-									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
+									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
 									alignment: .top
 								)
 						}

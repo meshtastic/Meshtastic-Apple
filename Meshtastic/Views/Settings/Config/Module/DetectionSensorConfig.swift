@@ -94,12 +94,7 @@ struct DetectionSensorConfig: View {
 									let totalBytes = name.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 20 {
-										
-										let firstNBytes = Data(name.utf8.prefix(20))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the shortName back to the last place where it was the right size
-											name = maxBytesString
-										}
+										name = String(name.dropLast())
 									}
 								})
 						}
