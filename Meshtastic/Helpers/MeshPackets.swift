@@ -723,7 +723,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+				if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
 					let manager = LocalNotificationManager()
 					manager.notifications = [
 						Notification(

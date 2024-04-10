@@ -5,6 +5,33 @@
 	<key>StringsTable</key>
 	<string>Root</string>
 	<key>PreferenceSpecifiers</key>
-	<array/>
+	<array>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Notifications</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>New Nodes</string>
+			<key>Key</key>
+			<string>newNodeNotifications</string>
+			<key>DefaultValue</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Low Battery</string>
+			<key>Key</key>
+			<string>lowBatteryNotifications</string>
+			<key>DefaultValue</key>
+			<true/>
+		</dict>
+	</array>
 </dict>
 </plist>

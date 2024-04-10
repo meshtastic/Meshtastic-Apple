@@ -54,11 +54,11 @@ struct AppSettings: View {
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 				
-				Section(header: Text("Notifications")){
-					Toggle(isOn: $newNodeNotifications){
-						Label("appsettings.newNodeNotifications", systemImage: "bell.fill")
-					}
-				}
+//				Section(header: Text("Notifications")){
+//					Toggle(isOn: $newNodeNotifications){
+//						Label("appsettings.newNodeNotifications", systemImage: "bell.fill")
+//					}
+//				}
 				Section(header: Text("phone.gps")) {
 					if #available(iOS 17.0, macOS 14.0, *) {
 						GPSStatus()
