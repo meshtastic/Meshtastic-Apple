@@ -462,6 +462,7 @@
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		DDDB445329F8AD1600EE2349 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 34.xcdatamodel"; sourceTree = "<group>"; };
 		DDDC22312BA76701002C44F1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDDC22322BA76961002C44F1 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
@@ -1927,6 +1928,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */,
 				DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */,
 				DD9681A22BBB22BE00FD2C47 /* MeshtasticDataModelV32.xcdatamodel */,
 				DDDCD5712BB3246500BE6B60 /* MeshtasticDataModelV 31.xcdatamodel */,
@@ -1961,7 +1963,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */;
+			currentVersion = DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";

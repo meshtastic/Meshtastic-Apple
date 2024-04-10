@@ -30,7 +30,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, \("voltage".localized), \("current".localized), \("timestamp".localized)"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("voltage".localized), \("current".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 1 {
 				csvString += "\n"
@@ -39,6 +39,8 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += String(dm.relativeHumidity)
 				csvString += ", "
 				csvString += String(dm.barometricPressure)
+				csvString += ", "
+				csvString += String(dm.iaq)
 				csvString += ", "
 				csvString += String(dm.gasResistance)
 				csvString += ", "

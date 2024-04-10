@@ -86,7 +86,7 @@ struct EnvironmentMetricsLog: View {
 							TableColumn("Barometric Pressure") { em in
 								Text("\(String(format: "%.1f", em.barometricPressure)) hPa")
 							}
-							TableColumn("gas.resistance") { em in
+							TableColumn("Indoor Air Quality") { em in
 								Text("\(String(format: "%.1f", em.gasResistance)) ohms")
 							}
 							TableColumn("current") { em in
@@ -121,7 +121,7 @@ struct EnvironmentMetricsLog: View {
 									Text("Bar")
 										.font(.caption)
 										.fontWeight(.bold)
-									Text("gas")
+									Text("IAQ")
 										.font(.caption)
 										.fontWeight(.bold)
 									Text("timestamp")

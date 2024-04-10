@@ -698,6 +698,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
 					telemetry.current = telemetryMessage.environmentMetrics.current
+					telemetry.iaq = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq)
 					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
 					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
 					telemetry.temperature = telemetryMessage.environmentMetrics.temperature

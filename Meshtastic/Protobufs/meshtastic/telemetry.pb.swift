@@ -225,6 +225,11 @@ struct EnvironmentMetrics {
   /// Current measured (To be depreciated in favor of PowerMetrics in Meshtastic 3.x)
   var current: Float = 0
 
+  /// 
+  /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
+  /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
+  var iaq: UInt32 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -520,6 +525,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     4: .standard(proto: "gas_resistance"),
     5: .same(proto: "voltage"),
     6: .same(proto: "current"),
+    7: .same(proto: "iaq"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -534,6 +540,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 4: try { try decoder.decodeSingularFloatField(value: &self.gasResistance) }()
       case 5: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.current) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.iaq) }()
       default: break
       }
     }
@@ -558,6 +565,9 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.current != 0 {
       try visitor.visitSingularFloatField(value: self.current, fieldNumber: 6)
     }
+    if self.iaq != 0 {
+      try visitor.visitSingularUInt32Field(value: self.iaq, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -568,6 +578,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.gasResistance != rhs.gasResistance {return false}
     if lhs.voltage != rhs.voltage {return false}
     if lhs.current != rhs.current {return false}
+    if lhs.iaq != rhs.iaq {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
