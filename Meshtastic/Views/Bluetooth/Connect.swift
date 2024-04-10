@@ -158,6 +158,13 @@ struct Connect: View {
 										}
 									}
 									.padding()
+									.swipeActions {
+										Button(role: .destructive) {
+											bleManager.cancelConnection()
+										} label: {
+											Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}
+									}
 
 								} else {
 
