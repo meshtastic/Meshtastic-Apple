@@ -177,6 +177,22 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					newUser.role = Int32(newUserMessage.role.rawValue)
 					newUser.hwModel = String(describing: newUserMessage.hwModel).uppercased()
 					newNode.user = newUser
+					
+					
+					if (UserDefaults.newNodeNotifications){
+						let manager = LocalNotificationManager()
+						manager.notifications = [
+							Notification(
+								id: (UUID().uuidString),
+								title: "New Node",
+								subtitle: "\(newUser.longName ?? "unknown".localized)",
+								content: "New Node has been discovered",
+								target: "nodeInfo",
+								path: "meshtastic://nodeInfo"
+							)
+						]
+						manager.schedule()
+					}
 				}
 			} else {
 				let newUser = UserEntity(context: context)
