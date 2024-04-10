@@ -87,7 +87,10 @@ struct EnvironmentMetricsLog: View {
 								Text("\(String(format: "%.1f", em.barometricPressure)) hPa")
 							}
 							TableColumn("Indoor Air Quality") { em in
-								Text("\(String(format: "%.1f", em.gasResistance)) ohms")
+								HStack {
+									Text("IAQ")
+									IndoorAirQuality(iaq: Int(em.iaq), displayMode: IaqDisplayMode.dot )
+								}
 							}
 							TableColumn("current") { em in
 								Text("\(String(format: "%.1f", em.current))")
@@ -106,7 +109,7 @@ struct EnvironmentMetricsLog: View {
 								GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
 								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 								GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-								GridItem(.flexible(minimum: 30, maximum: 50), spacing: 0.1),
+								GridItem(.flexible(minimum: 30, maximum: 70), spacing: 0.1),
 								GridItem(spacing: 0)
 							]
 							LazyVGrid(columns: columns, alignment: .leading, spacing: 1, pinnedViews: [.sectionHeaders]) {
@@ -138,7 +141,7 @@ struct EnvironmentMetricsLog: View {
 											.font(.caption)
 										Text("\(String(format: "%.1f", em.barometricPressure))")
 											.font(.caption)
-										Text("\(String(format: "%.1f", em.gasResistance))")
+										IndoorAirQuality(iaq: Int(em.iaq), displayMode: .dot)
 											.font(.caption)
 										Text(em.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 											.font(.caption)
