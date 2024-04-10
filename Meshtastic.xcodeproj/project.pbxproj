@@ -185,6 +185,7 @@
 		DDDB445029F8AC9C00EE2349 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB444F29F8AC9C00EE2349 /* UIImage.swift */; };
 		DDDB445229F8ACF900EE2349 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445129F8ACF900EE2349 /* Date.swift */; };
 		DDDB445429F8AD1600EE2349 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDB445329F8AD1600EE2349 /* Data.swift */; };
+		DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */; };
 		DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDC22372BA92344002C44F1 /* MeshMapContent.swift */; };
 		DDDCD5702BB26F5C00BE6B60 /* NodeListFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDCD56F2BB26F5C00BE6B60 /* NodeListFilter.swift */; };
 		DDDCD5722BB3E46400BE6B60 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF8C5226EB1DF10058C060 /* BLEManager.swift */; };
@@ -460,6 +461,7 @@
 		DDDB444F29F8AC9C00EE2349 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
 		DDDB445129F8ACF900EE2349 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		DDDB445329F8AD1600EE2349 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		DDDC22312BA76701002C44F1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DDDC22322BA76961002C44F1 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DDDC22372BA92344002C44F1 /* MeshMapContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshMapContent.swift; sourceTree = "<group>"; };
@@ -790,6 +792,7 @@
 		DDC2E14B26CE248E0042C5E4 = {
 			isa = PBXGroup;
 			children = (
+				DDDBC87A2BC62E4E001E8DF7 /* Settings.bundle */,
 				DDCDC6CD29481FCC004C1DDA /* Localizable.strings */,
 				DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */,
 				DDC2E15626CE248E0042C5E4 /* Meshtastic */,
@@ -1177,6 +1180,7 @@
 				DDB75A1A2A05EB67006ED576 /* alpha.png in Resources */,
 				DDC2E15C26CE248F0042C5E4 /* Assets.xcassets in Resources */,
 				DD0E21012B8A6F1300F2D100 /* DeviceHardware.json in Resources */,
+				DDDBC87B2BC62E4E001E8DF7 /* Settings.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

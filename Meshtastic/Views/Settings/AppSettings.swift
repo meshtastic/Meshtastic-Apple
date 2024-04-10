@@ -132,6 +132,14 @@ struct AppSettings: View {
 					}
 				}
 			}
+			.onReceive(
+				NotificationCenter.default
+					.publisher(for: UserDefaults.didChangeNotification)
+					.receive(on: RunLoop.main)
+			) { _ in
+				provideLocation = !UserDefaults.provideLocation
+				enableSmartPosition = UserDefaults.enableSmartPosition
+			}
 			.onAppear(perform: {
 				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 			})
