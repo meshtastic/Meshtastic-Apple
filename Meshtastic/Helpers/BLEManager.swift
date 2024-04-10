@@ -102,8 +102,14 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			if connectedPeripheral != nil {
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
+			
+			if self.timeoutTimer != nil {
+				self.timeoutTimer?.invalidate()
+			}
+			self.automaticallyReconnect = false
 			self.isConnected = false
 			self.isConnecting = false
+			self.centralManager?.cancelPeripheralConnection(peripheralConnectingTo)
 			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.connection.timeout %d %@".localized, timeoutTimerCount, name)
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
@@ -141,14 +147,12 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	//Force cancel any ongoing connection attempt
 	func cancelConnection(){
-		if  peripheralConnectingTo.identifier.uuidString == UserDefaults.standard.object(forKey: "preferredPeripheralId") as? String ?? "" {
-			UserDefaults.preferredPeripheralId = ""
-		}
 		self.isConnected = false
 		self.isConnecting = false
 		self.centralManager?.cancelPeripheralConnection(peripheralConnectingTo)
 		self.timeoutTimer?.invalidate()
 		self.timeoutTimer = nil
+		self.automaticallyReconnect = false
 		self.startScanning()
 	}
 	
