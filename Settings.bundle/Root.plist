@@ -92,7 +92,7 @@
 			<key>Key</key>
 			<string>newNodeNotifications</string>
 			<key>DefaultValue</key>
-			<true/>
+			<false/>
 		</dict>
 	</array>
 </dict>
