@@ -44,7 +44,8 @@ struct NodeMapContent: MapContent {
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		
 		/// Node Annotations
-		ForEach(positionArray, id: \.id) { position in
+		ForEach(node.positions?.array as? [PositionEntity] ?? [], id: \.id) { position in
+			
 			let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
@@ -57,6 +58,7 @@ struct NodeMapContent: MapContent {
 						.stroke(.white, lineWidth: 2)
 				}
 			}
+			/// Convex Hull
 			if showConvexHull {
 				if lineCoords.count > 0 {
 					let hull = lineCoords.getConvexHull()
@@ -78,11 +80,11 @@ struct NodeMapContent: MapContent {
 				MapPolyline(coordinates: lineCoords)
 					.stroke(gradient, style: dashed)
 			}
-			/// Node Annotations
-			ForEach(positionArray, id: \.id) { position in
+			/// Lastest Position Pin
+			if position.latest {
+				/// Node Annotations
 				Annotation(position.latest ? node.user?.shortName ?? "?": "", coordinate: position.coordinate) {
 					LazyVStack {
-						if position.latest {
 							ZStack {
 								Circle()
 									.fill(Color(nodeColor.lighter()).opacity(0.4).shadow(.drop(color: Color(nodeColor).isLight() ? .black : .white, radius: 5)))
@@ -124,31 +126,40 @@ struct NodeMapContent: MapContent {
 											}
 									}
 							}
-						} else {
-							if showNodeHistory {
-								if pf.contains(.Heading) {
-									Image(systemName: "location.north.circle")
-										.resizable()
-										.scaledToFit()
-										.foregroundStyle(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white)
-										.background(Color(UIColor(hex: UInt32(node.num))))
-										.clipShape(Circle())
-										.rotationEffect(headingDegrees)
-										.frame(width: 16, height: 16)
-
-								} else {
-									Circle()
-										.fill(Color(UIColor(hex: UInt32(node.num))))
-										.strokeBorder(Color(UIColor(hex: UInt32(node.num))).isLight() ? .black : .white ,lineWidth: 2)
-										.frame(width: 12, height: 12)
-								}
+						}
+					}
+					.tag(position.time)
+					.annotationTitles(.automatic)
+					.annotationSubtitles(.automatic)
+			}
+			/// Node History
+			if showNodeHistory {
+				if position.latest == false && position.nodePosition?.favorite ?? false {
+					let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
+					let headingDegrees = Angle.degrees(Double(position.heading))
+					Annotation("", coordinate: position.coordinate) {
+						LazyVStack {
+							if pf.contains(.Heading) {
+								Image(systemName: "location.north.circle")
+									.resizable()
+									.scaledToFit()
+									.foregroundStyle(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white)
+									.background(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
+									.clipShape(Circle())
+									.rotationEffect(headingDegrees)
+									.frame(width: 16, height: 16)
+								
+							} else {
+								Circle()
+									.fill(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))))
+									.strokeBorder(Color(UIColor(hex: UInt32(position.nodePosition?.num ?? 0))).isLight() ? .black : .white ,lineWidth: 2)
+									.frame(width: 12, height: 12)
 							}
 						}
 					}
+					.annotationTitles(.hidden)
+					.annotationSubtitles(.hidden)
 				}
-				.tag(position.time)
-				.annotationTitles(.automatic)
-				.annotationSubtitles(.automatic)
 			}
 		}
 	}

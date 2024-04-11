@@ -219,6 +219,7 @@
 "network.config"="Configuration du réseau";
 "nodes"="Noeuds";
 "nodes %@"="Noeuds (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="Aucun noeud Meshtastic trouvé";
 "not.connected"="Aucun appareil connecté";
 "numbers.punctuation"="Nombres and Ponctuation";

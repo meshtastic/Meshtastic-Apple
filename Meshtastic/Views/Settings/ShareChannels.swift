@@ -46,6 +46,7 @@ struct ShareChannels: View {
 	@State var includeChannel5 = true
 	@State var includeChannel6 = true
 	@State var includeChannel7 = true
+	@State var replaceChannels = true
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://www.meshtastic.org/e/#"
 	var qrCodeImage = QrCodeImage()
@@ -191,6 +192,17 @@ struct ShareChannels: View {
 					let qrImage = qrCodeImage.generateQRCode(from: channelsUrl)
 					VStack {
 						if node != nil {
+							Toggle(isOn: $replaceChannels) {
+								Label(replaceChannels ? "Replace Channels" : "Add Channels", systemImage: replaceChannels ? "arrow.triangle.2.circlepath.circle" : "plus.app")
+							}
+							.tint(.accentColor)
+							.toggleStyle(.button)
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							.padding(.top)
+							.padding(.bottom)
+							
 							ShareLink("Share QR Code & Link",
 										item: Image(uiImage: qrImage),
 										subject: Text("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you"),
@@ -207,10 +219,10 @@ struct ShareChannels: View {
 								.resizable()
 								.scaledToFit()
 								.frame(
-									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
-									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.9 : 0.6),
+									minWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									maxWidth: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									minHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
+									maxHeight: smallest * (UIDevice.current.userInterfaceIdiom == .phone ? 0.8 : 0.6),
 									alignment: .top
 								)
 						}
@@ -235,6 +247,7 @@ struct ShareChannels: View {
 			.onChange(of: includeChannel5) { _ in generateChannelSet()	}
 			.onChange(of: includeChannel6) { _ in generateChannelSet() }
 			.onChange(of: includeChannel7) { _ in generateChannelSet() }
+			.onChange(of: replaceChannels) { _ in generateChannelSet() }
 		}
 	}
 	func generateChannelSet() {
@@ -272,7 +285,7 @@ struct ShareChannels: View {
 				}
 			}
 			let settingsString = try! channelSet.serializedData().base64EncodedString()
-			channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url())
+			channelsUrl = ("https://meshtastic.org/e/#" + settingsString.base64ToBase64url() + (replaceChannels ? "" : "?add=true"))
 		}
 	}
 }

@@ -370,7 +370,7 @@ struct Telemetry {
   }
 
   ///
-  /// Power Metrics 
+  /// Power Metrics
   var powerMetrics: PowerMetrics {
     get {
       if case .powerMetrics(let v)? = variant {return v}
@@ -392,7 +392,7 @@ struct Telemetry {
     /// Air quality metrics
     case airQualityMetrics(AirQualityMetrics)
     ///
-    /// Power Metrics 
+    /// Power Metrics
     case powerMetrics(PowerMetrics)
 
   #if !swift(>=4.1)

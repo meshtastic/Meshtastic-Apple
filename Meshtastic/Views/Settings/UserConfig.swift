@@ -52,11 +52,7 @@ struct UserConfig: View {
 									let totalBytes = longName.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > (isLicensed ? 6 : 36) {
-										let firstNBytes = Data(longName.utf8.prefix(isLicensed ? 6 : 36))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the longName back to the last place where it was the right size
-											longName = maxBytesString
-										}
+										longName = String(longName.dropLast())
 									}
 								})
 						}
@@ -80,11 +76,7 @@ struct UserConfig: View {
 									let totalBytes = shortName.utf8.count
 									// Only mess with the value if it is too big
 									if totalBytes > 4 {
-										let firstNBytes = Data(shortName.utf8.prefix(4))
-										if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-											// Set the shortName back to the last place where it was the right size
-											shortName = maxBytesString
-										}
+										shortName = String(shortName.dropLast())
 									}
 								})
 								.foregroundColor(.gray)

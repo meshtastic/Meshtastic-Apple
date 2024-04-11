@@ -21,7 +21,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 ///
-/// TODO: REPLACE
+/// Font sizes for the device screen
 enum ScreenFonts: SwiftProtobuf.Enum {
   typealias RawValue = Int
 
@@ -74,6 +74,140 @@ extension ScreenFonts: CaseIterable {
 }
 
 #endif  // swift(>=4.2)
+
+///
+/// Position with static location information only for NodeDBLite
+struct PositionLite {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The new preferred location encoding, multiply by 1e-7 to get degrees
+  /// in floating point
+  var latitudeI: Int32 = 0
+
+  ///
+  /// TODO: REPLACE
+  var longitudeI: Int32 = 0
+
+  ///
+  /// In meters above MSL (but see issue #359)
+  var altitude: Int32 = 0
+
+  ///
+  /// This is usually not sent over the mesh (to save space), but it is sent
+  /// from the phone so that the local device can set its RTC If it is sent over
+  /// the mesh (because there are devices on the mesh without GPS), it will only
+  /// be sent by devices which has a hardware GPS clock.
+  /// seconds since 1970
+  var time: UInt32 = 0
+
+  ///
+  /// TODO: REPLACE
+  var locationSource: Position.LocSource = .locUnset
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct NodeInfoLite {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// The node number
+  var num: UInt32 {
+    get {return _storage._num}
+    set {_uniqueStorage()._num = newValue}
+  }
+
+  ///
+  /// The user info for this node
+  var user: User {
+    get {return _storage._user ?? User()}
+    set {_uniqueStorage()._user = newValue}
+  }
+  /// Returns true if `user` has been explicitly set.
+  var hasUser: Bool {return _storage._user != nil}
+  /// Clears the value of `user`. Subsequent reads from it will return its default value.
+  mutating func clearUser() {_uniqueStorage()._user = nil}
+
+  ///
+  /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
+  /// Position.time now indicates the last time we received a POSITION from that node.
+  var position: PositionLite {
+    get {return _storage._position ?? PositionLite()}
+    set {_uniqueStorage()._position = newValue}
+  }
+  /// Returns true if `position` has been explicitly set.
+  var hasPosition: Bool {return _storage._position != nil}
+  /// Clears the value of `position`. Subsequent reads from it will return its default value.
+  mutating func clearPosition() {_uniqueStorage()._position = nil}
+
+  ///
+  /// Returns the Signal-to-noise ratio (SNR) of the last received message,
+  /// as measured by the receiver. Return SNR of the last received message in dB
+  var snr: Float {
+    get {return _storage._snr}
+    set {_uniqueStorage()._snr = newValue}
+  }
+
+  ///
+  /// Set to indicate the last time we received a packet from this node
+  var lastHeard: UInt32 {
+    get {return _storage._lastHeard}
+    set {_uniqueStorage()._lastHeard = newValue}
+  }
+
+  ///
+  /// The latest device metrics for the node.
+  var deviceMetrics: DeviceMetrics {
+    get {return _storage._deviceMetrics ?? DeviceMetrics()}
+    set {_uniqueStorage()._deviceMetrics = newValue}
+  }
+  /// Returns true if `deviceMetrics` has been explicitly set.
+  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
+  /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
+  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
+
+  ///
+  /// local channel index we heard that node on. Only populated if its not the default channel.
+  var channel: UInt32 {
+    get {return _storage._channel}
+    set {_uniqueStorage()._channel = newValue}
+  }
+
+  ///
+  /// True if we witnessed the node over MQTT instead of LoRA transport
+  var viaMqtt: Bool {
+    get {return _storage._viaMqtt}
+    set {_uniqueStorage()._viaMqtt = newValue}
+  }
+
+  ///
+  /// Number of hops away from us this node is (0 if adjacent)
+  var hopsAway: UInt32 {
+    get {return _storage._hopsAway}
+    set {_uniqueStorage()._hopsAway = newValue}
+  }
+
+  ///
+  /// True if node is in our favorites list
+  /// Persists between NodeDB internal clean ups
+  var isFavorite: Bool {
+    get {return _storage._isFavorite}
+    set {_uniqueStorage()._isFavorite = newValue}
+  }
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
 
 ///
 /// This message is never sent over the wire, but it is used for serializing DB
@@ -187,140 +321,6 @@ struct DeviceState {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-struct NodeInfoLite {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// The node number
-  var num: UInt32 {
-    get {return _storage._num}
-    set {_uniqueStorage()._num = newValue}
-  }
-
-  ///
-  /// The user info for this node
-  var user: User {
-    get {return _storage._user ?? User()}
-    set {_uniqueStorage()._user = newValue}
-  }
-  /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return _storage._user != nil}
-  /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {_uniqueStorage()._user = nil}
-
-  ///
-  /// This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
-  /// Position.time now indicates the last time we received a POSITION from that node.
-  var position: PositionLite {
-    get {return _storage._position ?? PositionLite()}
-    set {_uniqueStorage()._position = newValue}
-  }
-  /// Returns true if `position` has been explicitly set.
-  var hasPosition: Bool {return _storage._position != nil}
-  /// Clears the value of `position`. Subsequent reads from it will return its default value.
-  mutating func clearPosition() {_uniqueStorage()._position = nil}
-
-  ///
-  /// Returns the Signal-to-noise ratio (SNR) of the last received message,
-  /// as measured by the receiver. Return SNR of the last received message in dB
-  var snr: Float {
-    get {return _storage._snr}
-    set {_uniqueStorage()._snr = newValue}
-  }
-
-  ///
-  /// Set to indicate the last time we received a packet from this node
-  var lastHeard: UInt32 {
-    get {return _storage._lastHeard}
-    set {_uniqueStorage()._lastHeard = newValue}
-  }
-
-  ///
-  /// The latest device metrics for the node.
-  var deviceMetrics: DeviceMetrics {
-    get {return _storage._deviceMetrics ?? DeviceMetrics()}
-    set {_uniqueStorage()._deviceMetrics = newValue}
-  }
-  /// Returns true if `deviceMetrics` has been explicitly set.
-  var hasDeviceMetrics: Bool {return _storage._deviceMetrics != nil}
-  /// Clears the value of `deviceMetrics`. Subsequent reads from it will return its default value.
-  mutating func clearDeviceMetrics() {_uniqueStorage()._deviceMetrics = nil}
-
-  ///
-  /// local channel index we heard that node on. Only populated if its not the default channel.
-  var channel: UInt32 {
-    get {return _storage._channel}
-    set {_uniqueStorage()._channel = newValue}
-  }
-
-  ///
-  /// True if we witnessed the node over MQTT instead of LoRA transport
-  var viaMqtt: Bool {
-    get {return _storage._viaMqtt}
-    set {_uniqueStorage()._viaMqtt = newValue}
-  }
-
-  ///
-  /// Number of hops away from us this node is (0 if adjacent)
-  var hopsAway: UInt32 {
-    get {return _storage._hopsAway}
-    set {_uniqueStorage()._hopsAway = newValue}
-  }
-
-  ///
-  /// True if node is in our favorites list
-  /// Persists between NodeDB internal clean ups
-  var isFavorite: Bool {
-    get {return _storage._isFavorite}
-    set {_uniqueStorage()._isFavorite = newValue}
-  }
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-
-  fileprivate var _storage = _StorageClass.defaultInstance
-}
-
-///
-/// Position with static location information only for NodeDBLite
-struct PositionLite {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  ///
-  /// The new preferred location encoding, multiply by 1e-7 to get degrees
-  /// in floating point
-  var latitudeI: Int32 = 0
-
-  ///
-  /// TODO: REPLACE
-  var longitudeI: Int32 = 0
-
-  ///
-  /// In meters above MSL (but see issue #359)
-  var altitude: Int32 = 0
-
-  ///
-  /// This is usually not sent over the mesh (to save space), but it is sent
-  /// from the phone so that the local device can set its RTC If it is sent over
-  /// the mesh (because there are devices on the mesh without GPS), it will only
-  /// be sent by devices which has a hardware GPS clock.
-  /// seconds since 1970
-  var time: UInt32 = 0
-
-  ///
-  /// TODO: REPLACE
-  var locationSource: Position.LocSource = .locUnset
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
 ///
 /// The on-disk saved channels
 struct ChannelFile {
@@ -407,9 +407,9 @@ struct OEMStore {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ScreenFonts: @unchecked Sendable {}
-extension DeviceState: @unchecked Sendable {}
-extension NodeInfoLite: @unchecked Sendable {}
 extension PositionLite: @unchecked Sendable {}
+extension NodeInfoLite: @unchecked Sendable {}
+extension DeviceState: @unchecked Sendable {}
 extension ChannelFile: @unchecked Sendable {}
 extension OEMStore: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -426,141 +426,57 @@ extension ScreenFonts: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".DeviceState"
+extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PositionLite"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .standard(proto: "my_node"),
-    3: .same(proto: "owner"),
-    5: .standard(proto: "receive_queue"),
-    8: .same(proto: "version"),
-    7: .standard(proto: "rx_text_message"),
-    9: .standard(proto: "no_save"),
-    11: .standard(proto: "did_gps_reset"),
-    12: .standard(proto: "rx_waypoint"),
-    13: .standard(proto: "node_remote_hardware_pins"),
-    14: .standard(proto: "node_db_lite"),
+    1: .standard(proto: "latitude_i"),
+    2: .standard(proto: "longitude_i"),
+    3: .same(proto: "altitude"),
+    4: .same(proto: "time"),
+    5: .standard(proto: "location_source"),
   ]
 
-  fileprivate class _StorageClass {
-    var _myNode: MyNodeInfo? = nil
-    var _owner: User? = nil
-    var _receiveQueue: [MeshPacket] = []
-    var _version: UInt32 = 0
-    var _rxTextMessage: MeshPacket? = nil
-    var _noSave: Bool = false
-    var _didGpsReset: Bool = false
-    var _rxWaypoint: MeshPacket? = nil
-    var _nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
-    var _nodeDbLite: [NodeInfoLite] = []
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _myNode = source._myNode
-      _owner = source._owner
-      _receiveQueue = source._receiveQueue
-      _version = source._version
-      _rxTextMessage = source._rxTextMessage
-      _noSave = source._noSave
-      _didGpsReset = source._didGpsReset
-      _rxWaypoint = source._rxWaypoint
-      _nodeRemoteHardwarePins = source._nodeRemoteHardwarePins
-      _nodeDbLite = source._nodeDbLite
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._myNode) }()
-        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._owner) }()
-        case 5: try { try decoder.decodeRepeatedMessageField(value: &_storage._receiveQueue) }()
-        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._rxTextMessage) }()
-        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
-        case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
-        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
-        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._rxWaypoint) }()
-        case 13: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeRemoteHardwarePins) }()
-        case 14: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeDbLite) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
+      case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
+      case 4: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.locationSource) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._myNode {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      try { if let v = _storage._owner {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      } }()
-      if !_storage._receiveQueue.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._receiveQueue, fieldNumber: 5)
-      }
-      try { if let v = _storage._rxTextMessage {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-      } }()
-      if _storage._version != 0 {
-        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
-      }
-      if _storage._noSave != false {
-        try visitor.visitSingularBoolField(value: _storage._noSave, fieldNumber: 9)
-      }
-      if _storage._didGpsReset != false {
-        try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
-      }
-      try { if let v = _storage._rxWaypoint {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
-      } }()
-      if !_storage._nodeRemoteHardwarePins.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._nodeRemoteHardwarePins, fieldNumber: 13)
-      }
-      if !_storage._nodeDbLite.isEmpty {
-        try visitor.visitRepeatedMessageField(value: _storage._nodeDbLite, fieldNumber: 14)
-      }
+    if self.latitudeI != 0 {
+      try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 1)
+    }
+    if self.longitudeI != 0 {
+      try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 2)
+    }
+    if self.altitude != 0 {
+      try visitor.visitSingularInt32Field(value: self.altitude, fieldNumber: 3)
+    }
+    if self.time != 0 {
+      try visitor.visitSingularFixed32Field(value: self.time, fieldNumber: 4)
+    }
+    if self.locationSource != .locUnset {
+      try visitor.visitSingularEnumField(value: self.locationSource, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeviceState, rhs: DeviceState) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._myNode != rhs_storage._myNode {return false}
-        if _storage._owner != rhs_storage._owner {return false}
-        if _storage._receiveQueue != rhs_storage._receiveQueue {return false}
-        if _storage._version != rhs_storage._version {return false}
-        if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
-        if _storage._noSave != rhs_storage._noSave {return false}
-        if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
-        if _storage._rxWaypoint != rhs_storage._rxWaypoint {return false}
-        if _storage._nodeRemoteHardwarePins != rhs_storage._nodeRemoteHardwarePins {return false}
-        if _storage._nodeDbLite != rhs_storage._nodeDbLite {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+  static func ==(lhs: PositionLite, rhs: PositionLite) -> Bool {
+    if lhs.latitudeI != rhs.latitudeI {return false}
+    if lhs.longitudeI != rhs.longitudeI {return false}
+    if lhs.altitude != rhs.altitude {return false}
+    if lhs.time != rhs.time {return false}
+    if lhs.locationSource != rhs.locationSource {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -706,57 +622,141 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PositionLite"
+extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".DeviceState"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "latitude_i"),
-    2: .standard(proto: "longitude_i"),
-    3: .same(proto: "altitude"),
-    4: .same(proto: "time"),
-    5: .standard(proto: "location_source"),
+    2: .standard(proto: "my_node"),
+    3: .same(proto: "owner"),
+    5: .standard(proto: "receive_queue"),
+    8: .same(proto: "version"),
+    7: .standard(proto: "rx_text_message"),
+    9: .standard(proto: "no_save"),
+    11: .standard(proto: "did_gps_reset"),
+    12: .standard(proto: "rx_waypoint"),
+    13: .standard(proto: "node_remote_hardware_pins"),
+    14: .standard(proto: "node_db_lite"),
   ]
 
+  fileprivate class _StorageClass {
+    var _myNode: MyNodeInfo? = nil
+    var _owner: User? = nil
+    var _receiveQueue: [MeshPacket] = []
+    var _version: UInt32 = 0
+    var _rxTextMessage: MeshPacket? = nil
+    var _noSave: Bool = false
+    var _didGpsReset: Bool = false
+    var _rxWaypoint: MeshPacket? = nil
+    var _nodeRemoteHardwarePins: [NodeRemoteHardwarePin] = []
+    var _nodeDbLite: [NodeInfoLite] = []
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _myNode = source._myNode
+      _owner = source._owner
+      _receiveQueue = source._receiveQueue
+      _version = source._version
+      _rxTextMessage = source._rxTextMessage
+      _noSave = source._noSave
+      _didGpsReset = source._didGpsReset
+      _rxWaypoint = source._rxWaypoint
+      _nodeRemoteHardwarePins = source._nodeRemoteHardwarePins
+      _nodeDbLite = source._nodeDbLite
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularSFixed32Field(value: &self.latitudeI) }()
-      case 2: try { try decoder.decodeSingularSFixed32Field(value: &self.longitudeI) }()
-      case 3: try { try decoder.decodeSingularInt32Field(value: &self.altitude) }()
-      case 4: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
-      case 5: try { try decoder.decodeSingularEnumField(value: &self.locationSource) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._myNode) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._owner) }()
+        case 5: try { try decoder.decodeRepeatedMessageField(value: &_storage._receiveQueue) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._rxTextMessage) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._version) }()
+        case 9: try { try decoder.decodeSingularBoolField(value: &_storage._noSave) }()
+        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._didGpsReset) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._rxWaypoint) }()
+        case 13: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeRemoteHardwarePins) }()
+        case 14: try { try decoder.decodeRepeatedMessageField(value: &_storage._nodeDbLite) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.latitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.latitudeI, fieldNumber: 1)
-    }
-    if self.longitudeI != 0 {
-      try visitor.visitSingularSFixed32Field(value: self.longitudeI, fieldNumber: 2)
-    }
-    if self.altitude != 0 {
-      try visitor.visitSingularInt32Field(value: self.altitude, fieldNumber: 3)
-    }
-    if self.time != 0 {
-      try visitor.visitSingularFixed32Field(value: self.time, fieldNumber: 4)
-    }
-    if self.locationSource != .locUnset {
-      try visitor.visitSingularEnumField(value: self.locationSource, fieldNumber: 5)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._myNode {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._owner {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if !_storage._receiveQueue.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._receiveQueue, fieldNumber: 5)
+      }
+      try { if let v = _storage._rxTextMessage {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
+      if _storage._version != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._version, fieldNumber: 8)
+      }
+      if _storage._noSave != false {
+        try visitor.visitSingularBoolField(value: _storage._noSave, fieldNumber: 9)
+      }
+      if _storage._didGpsReset != false {
+        try visitor.visitSingularBoolField(value: _storage._didGpsReset, fieldNumber: 11)
+      }
+      try { if let v = _storage._rxWaypoint {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
+      if !_storage._nodeRemoteHardwarePins.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._nodeRemoteHardwarePins, fieldNumber: 13)
+      }
+      if !_storage._nodeDbLite.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._nodeDbLite, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: PositionLite, rhs: PositionLite) -> Bool {
-    if lhs.latitudeI != rhs.latitudeI {return false}
-    if lhs.longitudeI != rhs.longitudeI {return false}
-    if lhs.altitude != rhs.altitude {return false}
-    if lhs.time != rhs.time {return false}
-    if lhs.locationSource != rhs.locationSource {return false}
+  static func ==(lhs: DeviceState, rhs: DeviceState) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._myNode != rhs_storage._myNode {return false}
+        if _storage._owner != rhs_storage._owner {return false}
+        if _storage._receiveQueue != rhs_storage._receiveQueue {return false}
+        if _storage._version != rhs_storage._version {return false}
+        if _storage._rxTextMessage != rhs_storage._rxTextMessage {return false}
+        if _storage._noSave != rhs_storage._noSave {return false}
+        if _storage._didGpsReset != rhs_storage._didGpsReset {return false}
+        if _storage._rxWaypoint != rhs_storage._rxWaypoint {return false}
+        if _storage._nodeRemoteHardwarePins != rhs_storage._nodeRemoteHardwarePins {return false}
+        if _storage._nodeDbLite != rhs_storage._nodeDbLite {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

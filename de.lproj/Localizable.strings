@@ -239,6 +239,7 @@
 "network.config"="Netzwerkeinstellungen";
 "nodes"="Nodes";
 "nodes %@"="Nodes (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="Keine Meshtastic Nodes gefunden";
 "not.connected"="Kein Gerät verbunden";
 "numbers.punctuation"="Ziffern und Interpunktion";

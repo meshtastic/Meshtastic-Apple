@@ -74,12 +74,7 @@ struct CannedMessagesConfig: View {
 							let totalBytes = messages.utf8.count
 							// Only mess with the value if it is too big
 							if totalBytes > 198 {
-
-								let firstNBytes = Data(messages.utf8.prefix(198))
-								if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-									// Set the shortName back to the last place where it was the right size
-									messages = maxBytesString
-								}
+								messages = String(messages.dropLast())
 							}
 							hasMessagesChanges = true
 						})

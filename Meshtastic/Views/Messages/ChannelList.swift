@@ -21,7 +21,7 @@ struct ChannelList: View {
 
 	@State private var isPresentingTraceRouteSentAlert = false
 	
-	var restrictedChannels = ["admin", "gpio", "mqtt", "serial"]
+	var restrictedChannels = ["gpio", "mqtt", "serial"]
 	
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)

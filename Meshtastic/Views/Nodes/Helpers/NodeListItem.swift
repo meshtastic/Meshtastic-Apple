@@ -31,7 +31,7 @@ struct NodeListItem: View {
 							Text(node.user?.longName ?? "unknown".localized)
 								.fontWeight(.medium)
 								.font(.headline)
-							if node.user?.vip ?? false {
+							if node.favorite {
 								Spacer()
 								Image(systemName: "star.fill")
 									.foregroundColor(.yellow)

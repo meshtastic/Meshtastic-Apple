@@ -148,7 +148,7 @@ struct MeshMap: View {
 					return
 				}
 			}
-			.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+			.safeAreaInset(edge: .bottom, alignment: .trailing) {
 				HStack {
 					Button(action: {
 						withAnimation {
@@ -166,7 +166,6 @@ struct MeshMap: View {
 				.padding(5)
 			}
 		}
-		.navigationTitle("Mesh Map")
 		.navigationBarItems(leading: MeshtasticLogo(), trailing: ZStack {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})

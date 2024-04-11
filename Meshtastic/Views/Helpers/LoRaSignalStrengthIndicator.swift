@@ -85,7 +85,7 @@ func getRssiColor(rssi: Int32) -> Color {
 	if rssi > -115 {
 		/// Good
 		return .green
-	} else if rssi > -115 && rssi < -120 {
+	} else if rssi > -120 {
 		/// Fair
 		return .yellow
 	} else if rssi > -126 {

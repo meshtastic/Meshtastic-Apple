@@ -35,12 +35,7 @@ struct RtttlConfig: View {
 								let totalBytes = ringtone.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 228 {
-
-									let firstNBytes = Data(ringtone.utf8.prefix(228))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the ringtone back to the last place where it was the right size
-										ringtone = maxBytesString
-									}
+									ringtone = String(ringtone.dropLast())
 								}
 							})
 							.foregroundColor(.gray)

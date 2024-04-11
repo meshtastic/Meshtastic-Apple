@@ -67,6 +67,12 @@ struct MQTTConfig: View {
 					if enabled && proxyToClientEnabled && node!.mqttConfig!.proxyToClientEnabled == true {
 						Toggle(isOn: $mqttConnected) {
 							Label(mqttConnected ? "mqtt.disconnect".localized : "mqtt.connect".localized, systemImage: "server.rack")
+							if bleManager.mqttError.count > 0 {
+								Text(bleManager.mqttError)
+									.fixedSize(horizontal: false, vertical: true)
+									.foregroundColor(.red)
+							}
+								
 						}
 						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
@@ -139,11 +145,7 @@ struct MQTTConfig: View {
 								let totalBytes = root.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 30 {
-									let firstNBytes = Data(root.utf8.prefix(30))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the shortName back to the last place where it was the right size
-										root = maxBytesString
-									}
+									root = String(root.dropLast())
 								}
 							})
 							.foregroundColor(.gray)
@@ -181,11 +183,7 @@ struct MQTTConfig: View {
 								let totalBytes = address.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 62 {
-									let firstNBytes = Data(username.utf8.prefix(62))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the shortName back to the last place where it was the right size
-										address = maxBytesString
-									}
+									address = String(address.dropLast())
 								}
 								hasChanges = true
 							})
@@ -205,14 +203,7 @@ struct MQTTConfig: View {
 								
 								// Only mess with the value if it is too big
 								if totalBytes > 62 {
-									
-									let firstNBytes = Data(username.utf8.prefix(62))
-									
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										
-										// Set the shortName back to the last place where it was the right size
-										username = maxBytesString
-									}
+									username = String(username.dropLast())
 								}
 								hasChanges = true
 							})
@@ -229,17 +220,9 @@ struct MQTTConfig: View {
 							.onChange(of: password, perform: { _ in
 								
 								let totalBytes = password.utf8.count
-								
 								// Only mess with the value if it is too big
 								if totalBytes > 62 {
-									
-									let firstNBytes = Data(password.utf8.prefix(62))
-									
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										
-										// Set the shortName back to the last place where it was the right size
-										password = maxBytesString
-									}
+									password = String(password.dropLast())
 								}
 								hasChanges = true
 							})

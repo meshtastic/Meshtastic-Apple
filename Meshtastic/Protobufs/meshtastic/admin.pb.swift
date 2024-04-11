@@ -350,7 +350,7 @@ struct AdminMessage {
   }
 
   ///
-  /// Clear fixed position coordinates and then set position.fixed_position = false 
+  /// Clear fixed position coordinates and then set position.fixed_position = false
   var removeFixedPosition: Bool {
     get {
       if case .removeFixedPosition(let v)? = payloadVariant {return v}
@@ -547,7 +547,7 @@ struct AdminMessage {
     /// Set fixed position data on the node and then set the position.fixed_position = true
     case setFixedPosition(Position)
     ///
-    /// Clear fixed position coordinates and then set position.fixed_position = false 
+    /// Clear fixed position coordinates and then set position.fixed_position = false
     case removeFixedPosition(Bool)
     ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes

@@ -243,6 +243,7 @@
 "network.config"="הגדרות רשת";
 "nodes"="מכשירים";
 "nodes %@"="מכשירים (%@)";
+"nodelist.filter.distance %@"="up to %@ away";
 "no.nodes"="לא נמצאו מכשירי משטסטיק";
 "not.connected"="אין מכשיר מחובר";
 "numbers.punctuation"="מספרים וסימני פיסוק  ";

@@ -236,7 +236,6 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					fetchedNode[0].telemetries? = NSOrderedSet(array: newTelemetries)
 				}
 				if nodeInfoMessage.hasUser {
-					fetchedNode[0].user!.vip = nodeInfoMessage.isFavorite
 					/// Seeing Some crashes here ?
 					fetchedNode[0].user!.userId = nodeInfoMessage.user.id
 					fetchedNode[0].user!.num = Int64(nodeInfoMessage.num)
@@ -438,6 +437,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
 				newDeviceConfig.isManaged = config.isManaged
+				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
 			} else {
 				fetchedNode[0].deviceConfig?.role = Int32(config.role.rawValue)
@@ -449,6 +449,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
+				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
 			}
 			do {
 				try context.save()

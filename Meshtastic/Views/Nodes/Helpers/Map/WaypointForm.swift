@@ -63,11 +63,7 @@ struct WaypointForm: View {
 								let totalBytes = name.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 30 {
-									let firstNBytes = Data(name.utf8.prefix(30))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the name back to the last place where it was the right size
-										name = maxBytesString
-									}
+									name = String(name.dropLast())
 								}
 							})
 						}
@@ -84,11 +80,7 @@ struct WaypointForm: View {
 								let totalBytes = description.utf8.count
 								// Only mess with the value if it is too big
 								if totalBytes > 100 {
-									let firstNBytes = Data(description.utf8.prefix(100))
-									if let maxBytesString = String(data: firstNBytes, encoding: String.Encoding.utf8) {
-										// Set the name back to the last place where it was the right size
-										description = maxBytesString
-									}
+									description = String(description.dropLast())
 								}
 							})
 						}
@@ -187,7 +179,7 @@ struct WaypointForm: View {
 					.controlSize(.regular)
 					.padding(.bottom)
 					
-					if waypoint.id > 0 {
+					if waypoint.id > 0 && bleManager.isConnected {
 						
 						Menu {
 							Button("For me", action: {
@@ -203,8 +195,8 @@ struct WaypointForm: View {
 								newWaypoint.id = UInt32(waypoint.id)
 								newWaypoint.name = name.count > 0 ? name : "Dropped Pin"
 								newWaypoint.description_p = description
-								newWaypoint.latitudeI = waypoint.longitudeI
-								newWaypoint.longitudeI = waypoint.latitudeI
+								newWaypoint.latitudeI = waypoint.latitudeI
+								newWaypoint.longitudeI = waypoint.longitudeI
 								// Unicode scalar value for the icon emoji string
 								let unicodeScalers = icon.unicodeScalars
 								// First element as an UInt32
@@ -217,7 +209,7 @@ struct WaypointForm: View {
 										newWaypoint.lockedTo = UInt32(lockedTo)
 									}
 								}
-								newWaypoint.expire = UInt32(expire.timeIntervalSince1970)
+								newWaypoint.expire = UInt32(1)
 								if bleManager.sendWaypoint(waypoint: newWaypoint) {
 									
 									bleManager.context!.delete(waypoint)

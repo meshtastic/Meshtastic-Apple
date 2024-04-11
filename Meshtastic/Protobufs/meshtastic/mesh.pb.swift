@@ -257,6 +257,15 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case heltecWirelessTrackerV10 // = 58
 
   ///
+  /// unPhone with ESP32-S3, TFT touchscreen,  LSM6DS3TR-C accelerometer and gyroscope
+  case unphone // = 59
+
+  ///
+  /// Teledatics TD-LORAC NRF52840 based M.2 LoRA module
+  /// Compatible with the TD-WRLS development board
+  case tdLorac // = 60
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -323,6 +332,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 56: self = .chatter2
     case 57: self = .heltecWirelessPaperV10
     case 58: self = .heltecWirelessTrackerV10
+    case 59: self = .unphone
+    case 60: self = .tdLorac
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -384,6 +395,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .chatter2: return 56
     case .heltecWirelessPaperV10: return 57
     case .heltecWirelessTrackerV10: return 58
+    case .unphone: return 59
+    case .tdLorac: return 60
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -450,6 +463,8 @@ extension HardwareModel: CaseIterable {
     .chatter2,
     .heltecWirelessPaperV10,
     .heltecWirelessTrackerV10,
+    .unphone,
+    .tdLorac,
     .privateHw,
   ]
 }
@@ -1565,8 +1580,8 @@ struct MeshPacket {
     set {_uniqueStorage()._viaMqtt = newValue}
   }
 
-  /// 
-  /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header. 
+  ///
+  /// Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
   /// When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
   var hopStart: UInt32 {
     get {return _storage._hopStart}
@@ -2606,7 +2621,7 @@ struct DeviceMetadata {
   init() {}
 }
 
-/// 
+///
 /// A heartbeat message is sent to the node from the client to keep the connection alive.
 /// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
 struct Heartbeat {
@@ -2745,6 +2760,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     56: .same(proto: "CHATTER_2"),
     57: .same(proto: "HELTEC_WIRELESS_PAPER_V1_0"),
     58: .same(proto: "HELTEC_WIRELESS_TRACKER_V1_0"),
+    59: .same(proto: "UNPHONE"),
+    60: .same(proto: "TD_LORAC"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
