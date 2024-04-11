@@ -146,7 +146,7 @@ struct NodeList: View {
 					"Position Sent",
 					isPresented: $isPresentingPositionSentAlert
 				) {
-					Button("OK", role: .cancel) { }
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
 					Text("Your position has been sent with a request for a response with their position.")
 				}
@@ -154,7 +154,7 @@ struct NodeList: View {
 					"Trace Route Sent",
 					isPresented: $isPresentingTraceRouteSentAlert
 				) {
-					Button("OK", role: .cancel) { }
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
 					Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 				}
@@ -162,7 +162,7 @@ struct NodeList: View {
 					"Client History Request Sent",
 					isPresented: $isPresentingClientHistorySentAlert
 				) {
-					Button("OK", role: .cancel) { }
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
 					Text("Any missed messages will be delivered again.")
 				}

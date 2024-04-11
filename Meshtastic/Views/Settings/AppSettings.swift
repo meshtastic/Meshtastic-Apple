@@ -10,55 +10,19 @@ struct AppSettings: View {
 	@ObservedObject var tileManager = OfflineTileManager.shared
 	@State var totalDownloadedTileSize = ""
 	@StateObject var locationHelper = LocationHelper()
-	@State var provideLocation: Bool = UserDefaults.provideLocation
-	@State var enableSmartPosition: Bool = UserDefaults.enableSmartPosition
-	@State var newNodeNotifications: Bool = UserDefaults.newNodeNotifications
-	@State var useLegacyMap: Bool = UserDefaults.mapUseLegacy
-	@State var provideLocationInterval: Int = UserDefaults.provideLocationInterval
 	@State private var isPresentingCoreDataResetConfirm = false
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	var body: some View {
 		VStack {
 			Form {
-				Section(header: Text("Location Settings")) {
-					Toggle(isOn: $provideLocation) {
-						Label("appsettings.provide.location", systemImage: "location.circle.fill")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-					Text("Use your phone's gps to provide a location to your node. Must have location access and precise location enabled for Meshtastic in Settings.")
-						.font(.caption2)
-						.foregroundColor(.gray)
-					if provideLocation {
-						Toggle(isOn: $enableSmartPosition) {
-							Label("appsettings.smartposition", systemImage: "brain")
-							Text("Will only send a position to the phone if it is recent and of high horizontal accuracy.")
-								.font(.caption2)
-								.foregroundColor(.gray)
-						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
-						VStack {
-							Picker("update.interval", selection: $provideLocationInterval) {
-								ForEach(LocationUpdateInterval.allCases) { lu in
-									Text(lu.description)
-								}
-							}
-							.pickerStyle(DefaultPickerStyle())
-							Text("phone.gps.interval.description")
-								.font(.caption2)
-								.foregroundColor(.gray)
+				Section(header: Text("App Settings")) {
+					Button("Open Settings",  systemImage: "gear") {
+						// Get the settings URL and open it
+						if let url = URL(string: UIApplication.openSettingsURLString) {
+							UIApplication.shared.open(url)
 						}
 					}
-					Toggle(isOn: $useLegacyMap) {
-						Label("map.use.legacy", systemImage: "map")
-					}
-					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
-				
-//				Section(header: Text("Notifications")){
-//					Toggle(isOn: $newNodeNotifications){
-//						Label("appsettings.newNodeNotifications", systemImage: "bell.fill")
-//					}
-//				}
 				Section(header: Text("phone.gps")) {
 					if #available(iOS 17.0, macOS 14.0, *) {
 						GPSStatus()
@@ -139,14 +103,6 @@ struct AppSettings: View {
 					}
 				}
 			}
-			.onReceive(
-				NotificationCenter.default
-					.publisher(for: UserDefaults.didChangeNotification)
-					.receive(on: RunLoop.main)
-			) { _ in
-				provideLocation = !UserDefaults.provideLocation
-				enableSmartPosition = UserDefaults.enableSmartPosition
-			}
 			.onAppear(perform: {
 				totalDownloadedTileSize = tileManager.getAllDownloadedSize()
 			})
@@ -157,32 +113,9 @@ struct AppSettings: View {
 			ConnectedDevice(bluetoothOn: bleManager.isSwitchedOn, deviceConnected: bleManager.connectedPeripheral != nil, name: (bleManager.connectedPeripheral != nil) ? bleManager.connectedPeripheral.shortName : "?")
 		})
 		.onAppear {
-			if provideLocationInterval <= 0 {
-				provideLocationInterval = 30
-				UserDefaults.provideLocationInterval = provideLocationInterval
-			}
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
-		}
-		.onChange(of: provideLocation) { newProvideLocation in
-			UserDefaults.provideLocation = newProvideLocation
-			if bleManager.connectedPeripheral != nil {
-				self.bleManager.sendWantConfig()
-			}
-		}
-		
-		.onChange(of: newNodeNotifications){ newNewNodeNotifications in
-			UserDefaults.newNodeNotifications = newNewNodeNotifications
-		}
-		.onChange(of: enableSmartPosition) { newEnableSmartPosition in
-			UserDefaults.enableSmartPosition = newEnableSmartPosition
-		}
-		.onChange(of: (provideLocationInterval)) { newProvideLocationInterval in
-			UserDefaults.provideLocationInterval = newProvideLocationInterval
-		}
-		.onChange(of: useLegacyMap) { newMapUseLegacy in
-			UserDefaults.mapUseLegacy = newMapUseLegacy
 		}
 	}
 }

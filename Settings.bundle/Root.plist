@@ -8,6 +8,68 @@
 	<array>
 		<dict>
 			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Share Location</string>
+			<key>Key</key>
+			<string>provideLocation</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Smart Position</string>
+			<key>Key</key>
+			<string>enableSmartPosition</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Location Interval</string>
+			<key>Key</key>
+			<string>provideLocationInterval</string>
+			<key>Values</key>
+			<array>
+				<integer>10</integer>
+				<integer>15</integer>
+				<integer>30</integer>
+				<integer>45</integer>
+				<integer>60</integer>
+				<integer>300</integer>
+				<integer>600</integer>
+				<integer>900</integer>
+			</array>
+			<key>Titles</key>
+			<array>
+				<string>Ten Seconds</string>
+				<string>Fifteen Seconds</string>
+				<string>Thirty Seconds</string>
+				<string>Forty Five Seconds</string>
+				<string>One Minute</string>
+				<string>Five Minutes</string>
+				<string>Ten Minutes</string>
+				<string>Fifteen Minutes</string>
+			</array>
+			<key>DefaultValue</key>
+			<string>Thirty Seconds</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Use Legacy Mesh Map</string>
+			<key>Key</key>
+			<string>mapUseLegacy</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>Notifications</string>
@@ -16,9 +78,9 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>New Nodes</string>
+			<string>Low Battery</string>
 			<key>Key</key>
-			<string>newNodeNotifications</string>
+			<string>lowBatteryNotifications</string>
 			<key>DefaultValue</key>
 			<true/>
 		</dict>
@@ -26,9 +88,9 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Low Battery</string>
+			<string>New Nodes</string>
 			<key>Key</key>
-			<string>lowBatteryNotifications</string>
+			<string>newNodeNotifications</string>
 			<key>DefaultValue</key>
 			<true/>
 		</dict>
