@@ -199,9 +199,8 @@ struct NodeListItem: View {
 							}
 						} else {
 							if node.snr != 0 && !node.viaMqtt {
-								VStack(alignment: .center) {
-									LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: modemPreset, compact: true)
-								}
+								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: modemPreset, compact: true)
+									.padding(.top, node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes ? 0 : 15)
 							}
 						}
 					}

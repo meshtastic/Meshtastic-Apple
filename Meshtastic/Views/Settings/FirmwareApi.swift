@@ -54,7 +54,6 @@ class Api : ObservableObject{
 		}
 		
 		URLSession.shared.dataTask(with: url) { data, response, error in
-			let deviceHardware = try! JSONDecoder().decode([DeviceHardware].self, from: data!)
 			if let data = data {
 				do {
 					let deviceHardware = try JSONDecoder().decode([DeviceHardware].self, from: data)

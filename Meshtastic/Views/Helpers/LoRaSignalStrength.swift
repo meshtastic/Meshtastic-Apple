@@ -29,19 +29,21 @@ struct LoRaSignalStrengthMeter: View {
 						.font(.caption2)
 				}
 			} else {
-				Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
-				} currentValueLabel: {
-					Image(systemName: "dot.radiowaves.left.and.right")
-						.font(.callout)
-						.frame(width: 30)
-					Text("Signal \(signalStrength.description)")
-						.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-						.foregroundColor(.gray)
-						.fixedSize()
+				VStack {
+					Gauge(value: Double(signalStrength.rawValue), in: 0...3) {
+					} currentValueLabel: {
+						Image(systemName: "dot.radiowaves.left.and.right")
+							.font(.callout)
+							.frame(width: 30)
+						Text("Signal \(signalStrength.description)")
+							.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+							.foregroundColor(.gray)
+							.fixedSize()
+					}
+					.gaugeStyle(.accessoryLinear)
+					.tint(gradient)
+					.font(.caption)
 				}
-				.gaugeStyle(.accessoryLinear)
-				.tint(gradient)
-				.font(.caption)
 			}
 		}
 	}

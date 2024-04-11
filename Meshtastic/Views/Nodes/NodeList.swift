@@ -106,6 +106,9 @@ struct NodeList: View {
 								)
 								if positionSent {
 									isPresentingPositionSentAlert = true
+									DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+										isPresentingPositionSentAlert = false
+									}
 								}
 							} label: {
 								Label("Exchange Positions", systemImage: "arrow.triangle.2.circlepath")
@@ -116,7 +119,11 @@ struct NodeList: View {
 								let success = bleManager.sendTraceRouteRequest(destNum: node.user?.num ?? 0, wantResponse: true)
 								if success {
 									isPresentingTraceRouteSentAlert = true
+									DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+										isPresentingTraceRouteSentAlert = false
+									}
 								}
+								
 							} label: {
 								Label("Trace Route", systemImage: "signpost.right.and.left")
 							}
@@ -126,6 +133,9 @@ struct NodeList: View {
 									let success = bleManager.requestStoreAndForwardClientHistory(fromUser: connectedNode!.user!, toUser:  node.user!)
 									if success {
 										isPresentingClientHistorySentAlert = true
+										DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+											isPresentingClientHistorySentAlert = false
+										}
 									}
 								} label: {
 									Label("Client History", systemImage: "envelope.arrow.triangle.branch")
@@ -302,7 +312,7 @@ struct NodeList: View {
 			searchNodeList()
 		}
 	}
-	
+
 	private func searchNodeList() {
 		/// Case Insensitive Search Text Predicates
 		let searchPredicates = ["user.userId", "user.numString", "user.hwModel", "user.longName", "user.shortName"].map { property in
