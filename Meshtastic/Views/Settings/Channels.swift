@@ -231,9 +231,8 @@ struct Channels: View {
 					Button {
 						goBack()
 					} label: {
-						Label("close me", systemImage: "xmark")
+						Label("close", systemImage: "xmark")
 					}
-					.keyboardShortcut("w")
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
