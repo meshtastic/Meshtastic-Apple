@@ -18,19 +18,9 @@
 		</dict>
 		<dict>
 			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Smart Position</string>
-			<key>Key</key>
-			<string>enableSmartPosition</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Location Interval</string>
+			<string>Share Location Interval</string>
 			<key>Key</key>
 			<string>provideLocationInterval</string>
 			<key>Values</key>
@@ -57,6 +47,16 @@
 			</array>
 			<key>DefaultValue</key>
 			<string>Thirty Seconds</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Smart Position</string>
+			<key>Key</key>
+			<string>enableSmartPosition</string>
+			<key>DefaultValue</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>Type</key>
