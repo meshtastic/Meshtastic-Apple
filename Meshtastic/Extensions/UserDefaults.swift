@@ -112,12 +112,6 @@ extension UserDefaults {
 	@UserDefault(.enableMapWaypoints, defaultValue: false)
 	static var enableMapWaypoints: Bool
 	
-	@UserDefault(.provideLocationInterval, defaultValue: 0)
-	static var provideLocationInterval: Int
-	
-	@UserDefault(.mapLayer, defaultValue: .standard)
-	static var mapLayer: MapLayer
-	
 	@UserDefault(.enableMapRecentering, defaultValue: false)
 	static var enableMapRecentering: Bool
 
@@ -169,57 +163,6 @@ extension UserDefaults {
 	@UserDefault(.modemPreset, defaultValue: 0)
 	static var modemPreset: Int
 
-	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
-	static var firmwareVersion: String
-
-	@UserDefault(.testIntEnum, defaultValue: .one)
-	static var testIntEnum: TestIntEnum
-}
-
-enum TestIntEnum: Int, Decodable {
-	case one = 1
-	case two
-	case three
-	
-	@UserDefault(.enableMapTraffic, defaultValue: false)
-	static var enableMapTraffic: Bool
-	
-	@UserDefault(.enableMapPointsOfInterest, defaultValue: false)
-	static var enableMapPointsOfInterest: Bool
-	
-	@UserDefault(.enableOfflineMaps, defaultValue: false)
-	static var enableOfflineMaps: Bool
-	
-	@UserDefault(.enableOfflineMapsMBTiles, defaultValue: false)
-	static var enableOfflineMapsMBTiles: Bool
-	
-	@UserDefault(.mapTileServer, defaultValue: .openStreetMap)
-	static var mapTileServer: MapTileServer
-	
-	@UserDefault(.enableOverlayServer, defaultValue: false)
-	static var enableOverlayServer: Bool
-	
-	@UserDefault(.mapOverlayServer, defaultValue: .baseReReflectivityCurrent)
-	static var mapOverlayServer: MapOverlayServer
-	
-	@UserDefault(.mapTilesAboveLabels, defaultValue: false)
-	static var mapTilesAboveLabels: Bool
-	
-	@UserDefault(.mapUseLegacy, defaultValue: false)
-	static var mapUseLegacy: Bool
-	
-	@UserDefault(.enableDetectionNotifications, defaultValue: false)
-	static var enableDetectionNotifications: Bool
-	
-	@UserDefault(.detectionSensorRole, defaultValue: .sensor)
-	static var detectionSensorRole: DetectionSensorRole
-	
-	@UserDefault(.enableSmartPosition, defaultValue: false)
-	static var enableSmartPosition: Bool
-	
-	@UserDefault(.modemPreset, defaultValue: 0)
-	static var modemPreset: Int
-	
 	@UserDefault(.firmwareVersion, defaultValue: "0.0.0")
 	static var firmwareVersion: String
 }
