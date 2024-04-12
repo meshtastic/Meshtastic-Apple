@@ -31,6 +31,7 @@ struct MQTTIcon: View {
 					.padding(20)
 				Button("Close", action: { self.isPopoverOpen = false }).padding([.bottom], 20)
 			}
+			.presentationCompactAdaptation(.popover)
 		})
 	}
 }
