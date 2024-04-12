@@ -687,6 +687,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 							}
 							traceRouteHop.num = hopNode?.num ?? 0
 							if hopNode != nil {
+								if decodedInfo.packet.rxTime > 0 {
+									hopNode?.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(decodedInfo.packet.rxTime)))
+								}
 								hopNodes.append(traceRouteHop)
 							}
 							routeString += "\(hopNode?.user?.longName ?? "unknown".localized) \(hopNode?.viaMqtt ?? false ? "MQTT" : "") --> "
