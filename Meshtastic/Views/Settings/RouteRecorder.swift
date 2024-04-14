@@ -158,10 +158,10 @@ struct RouteRecorder: View {
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = Date()
 										let newRoute = RouteEntity(context: context)
-										newRoute.name = String("Route Recording")
+										newRoute.date = Date()
+										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) hike"
 										newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 										newRoute.color = Int64(UIColor.random.hex)
-										newRoute.date = Date()
 										newRoute.enabled = false
 										color = Color(UIColor(hex: UInt32(newRoute.color)))
 										self.recording = newRoute

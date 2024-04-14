@@ -144,7 +144,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [TelemetrySensorType] = [
+  static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
     .bme280,
     .bme680,
@@ -188,6 +188,10 @@ struct DeviceMetrics {
   ///
   /// Percent of airtime for transmission used within the last hour.
   var airUtilTx: Float = 0
+
+  ///
+  /// How long the device has been running since the last reboot (in seconds)
+  var uptimeSeconds: UInt32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -473,6 +477,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     2: .same(proto: "voltage"),
     3: .standard(proto: "channel_utilization"),
     4: .standard(proto: "air_util_tx"),
+    5: .standard(proto: "uptime_seconds"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -485,6 +490,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 2: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
       case 3: try { try decoder.decodeSingularFloatField(value: &self.channelUtilization) }()
       case 4: try { try decoder.decodeSingularFloatField(value: &self.airUtilTx) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.uptimeSeconds) }()
       default: break
       }
     }
@@ -503,6 +509,9 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.airUtilTx != 0 {
       try visitor.visitSingularFloatField(value: self.airUtilTx, fieldNumber: 4)
     }
+    if self.uptimeSeconds != 0 {
+      try visitor.visitSingularUInt32Field(value: self.uptimeSeconds, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -511,6 +520,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.voltage != rhs.voltage {return false}
     if lhs.channelUtilization != rhs.channelUtilization {return false}
     if lhs.airUtilTx != rhs.airUtilTx {return false}
+    if lhs.uptimeSeconds != rhs.uptimeSeconds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

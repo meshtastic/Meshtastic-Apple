@@ -344,7 +344,7 @@ struct StoreAndForward {
 
 extension StoreAndForward.RequestResponse: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [StoreAndForward.RequestResponse] = [
+  static let allCases: [StoreAndForward.RequestResponse] = [
     .unset,
     .routerError,
     .routerHeartbeat,

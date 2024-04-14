@@ -278,6 +278,11 @@
 "reboot.node"="Reboot node?";
 "received.ack"="Received Ack";
 "received.ack.real"="Recipient Ack";
+"relativetimeofday.morning"="Morning";
+"relativetimeofday.midday"="Midday";
+"relativetimeofday.afternoon"="Afternoon";
+"relativetimeofday.evening"="Evening";
+"relativetimeofday.nighttime"="Nighttime";
 "resume"="Resume";
 "ringtone"="Ringtone";
 "ringtone.config"="Ringtone Config";
