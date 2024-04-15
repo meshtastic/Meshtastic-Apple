@@ -143,7 +143,8 @@ struct Routes: View {
 							}
 						}
 					}
-					.badge(route.locations?.count ?? 0)
+					.badge(Text("\(Image(systemName: "mappin.and.ellipse")) \(route.locations?.count ?? 0)"))
+							.font(.headline)
 					.swipeActions {
 						Button(role: .destructive) {
 							context.delete(route)
@@ -167,35 +168,35 @@ struct Routes: View {
 							return location.locationCoordinate ?? LocationHelper.DefaultLocation
 						})
 						Form {
-							HStack {
-								Text("Name")
-								Spacer()
-								TextField(
-									"Name",
-									text: $name,
-									axis: .vertical
-								)
-								.foregroundColor(Color.gray)
-								.onChange(of: name, perform: { _ in
-									let totalBytes = name.utf8.count
-									// Only mess with the value if it is too big
-									if totalBytes > 100 {
-										name = String(name.dropLast())
-									}
-								})
+							TextField(
+								"Name",
+								text: $name,
+								axis: .vertical
+							)
+							.foregroundColor(Color.gray)
+							.onChange(of: name, perform: { _ in
+								let totalBytes = name.utf8.count
+								// Only mess with the value if it is too big
+								
+								if totalBytes > 100 {
+									name = String(name.dropLast())
+								}
+							})
+							
+							Toggle(isOn: $enabled) {
+								Label("enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
+								Text("Show on the mesh map.")
 							}
-							Toggle("Enabled", isOn: $enabled)
-								.toggleStyle(.switch)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 							
 							ColorPicker("Color", selection: $color, supportsOpacity: false)
-								.padding(5)
 							
 							TextField(
 								"Notes",
 								text: $notes,
 								axis: .vertical
 							)
-							.lineLimit(4...6)
+							.lineLimit(3...5)
 							.foregroundColor(Color.gray)
 						}
 						.onAppear {

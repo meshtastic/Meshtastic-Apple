@@ -7,6 +7,7 @@
 */
 "about"="אודות";
 "about.meshtastic"="אודות משטסטיק";
+"activity"="Activity";
 "admin"="אדמין";
 "admin.log"="היסטוריית הודעות אדמין";
 "ago"="עברו";
@@ -113,6 +114,7 @@
 "email.address"="כתובת דואר אלקטרוני";
 "enabled"="מופעל";
 "encrypted"="מוצפן";
+"export"="Export";
 "external.notification"="נוטיפיקציה חיצונית";
 "external.notification.config"="הגדרות נוטיפיקציה חיצונית";
 "finish"="סיים";

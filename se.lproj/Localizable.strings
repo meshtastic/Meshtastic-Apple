@@ -7,6 +7,7 @@
 */
 "about"="Om";
 "about.meshtastic"="Om Meshtastic";
+"activity"="Activity";
 "admin"="Administratör";
 "admin.log"="Administratörsmeddelandelogg";
 "ago"="sedan";
@@ -113,6 +114,7 @@
 "email.address"="E-postadress";
 "enabled"="Aktiverad";
 "encrypted"="Krypterad";
+"export"="Export";
 "external.notification"="Extern Notifikation";
 "external.notification.config"="Konfiguration av Extern Notifikation";
 "finish"="Avsluta";

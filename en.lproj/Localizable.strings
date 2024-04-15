@@ -7,6 +7,7 @@
 */
 "about"="About";
 "about.meshtastic"="About Meshtastic";
+"activity"="Activity";
 "admin"="Admin";
 "admin.log"="Admin Message Log";
 "ago"="ago";
@@ -113,6 +114,7 @@
 "email.address"="Email Address";
 "enabled"="Enabled";
 "encrypted"="Encrypted";
+"export"="Export";
 "external.notification"="External Notification";
 "external.notification.config"="External Notification Config";
 "finish"="Finish";
@@ -288,6 +290,18 @@
 "ringtone.config"="Ringtone Config";
 "route.recorder"="Route Recorder";
 "routes"="Routes";
+"routes.activitytype.walking"="Walking";
+"routes.activitytype.hiking"="Hiking";
+"routes.activitytype.biking"="Biking";
+"routes.activitytype.driving"="Driving";
+"routes.activitytype.overlanding"="Overlanding";
+"routes.activitytype.skiing"="Skiing";
+"routes.activitytype.filename.walking"="walk";
+"routes.activitytype.filename.hiking"="hike";
+"routes.activitytype.filename.biking"="bike tour";
+"routes.activitytype.filename.driving"="drive";
+"routes.activitytype.filename.overlanding"="overland drive";
+"routes.activitytype.filename.skiing"="ski tour";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
 "routing.gotnak"="Received a negative acknowledgment";

@@ -46,6 +46,7 @@
 		DD23A50F26FD1B4400D9B90C /* PeripheralModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD23A50E26FD1B4400D9B90C /* PeripheralModel.swift */; };
 		DD2553572855B02500E55709 /* LoRaConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553562855B02500E55709 /* LoRaConfig.swift */; };
 		DD2553592855B52700E55709 /* PositionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2553582855B52700E55709 /* PositionConfig.swift */; };
+		DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD268D8D2BCC90E2008073AE /* RouteEnums.swift */; };
 		DD2AD8A8296D2DF9001FF0E7 /* MapViewSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */; };
 		DD33DB622B3D27C7003E1EA0 /* FirmwareApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */; };
 		DD3501892852FC3B000FC853 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3501882852FC3B000FC853 /* Settings.swift */; };
@@ -287,6 +288,7 @@
 		DD2553562855B02500E55709 /* LoRaConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoRaConfig.swift; sourceTree = "<group>"; };
 		DD2553582855B52700E55709 /* PositionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionConfig.swift; sourceTree = "<group>"; };
 		DD268D8C2BCC7D11008073AE /* MeshtasticDataModelV 35.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 35.xcdatamodel"; sourceTree = "<group>"; };
+		DD268D8D2BCC90E2008073AE /* RouteEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEnums.swift; sourceTree = "<group>"; };
 		DD295CE92B323ED9002CC4AC /* MeshtasticDataModelV22.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV22.xcdatamodel; sourceTree = "<group>"; };
 		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
 		DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
@@ -723,6 +725,7 @@
 				DDB6ABE528B1406100384BA1 /* LoraConfigEnums.swift */,
 				DD3CC6BF28E7A60700FA9159 /* MessagingEnums.swift */,
 				DDB6ABE128B13FB500384BA1 /* PositionConfigEnums.swift */,
+				DD268D8D2BCC90E2008073AE /* RouteEnums.swift */,
 				DD8ED9C7289CE4B900B3B0AB /* RoutingError.swift */,
 				DD1925B828CDA93900720036 /* SerialConfigEnums.swift */,
 				DD994B68295F88B60013760A /* IntervalEnums.swift */,
@@ -1328,6 +1331,7 @@
 				DDCE4E2C2869F92900BE9F8F /* UserConfig.swift in Sources */,
 				DDB75A212A12B954006ED576 /* LoRaSignalStrength.swift in Sources */,
 				DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */,
+				DD268D8E2BCC90E2008073AE /* RouteEnums.swift in Sources */,
 				DDB6ABE428B13FFF00384BA1 /* DisplayEnums.swift in Sources */,
 				DD4975A52B147BA90026544E /* AmbientLightingConfig.swift in Sources */,
 				D93068D92B81509C0066FBC8 /* TapbackResponses.swift in Sources */,

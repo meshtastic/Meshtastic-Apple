@@ -7,6 +7,7 @@
 */
 "about"="Über";
 "about.meshtastic"="Über Meshtastic";
+"activity"="Activity";
 "admin"="admin";
 "admin.log"="Admin Log";
 "ago"="her";
@@ -112,6 +113,7 @@
 "email.address"="Email Adresse";
 "enabled"="Aktiviert";
 "encrypted"="Verschlüsselt";
+"export"="Export";
 "external.notification"="Externe Benachrichtigung";
 "external.notification.config"="Einstellungen der externen Benachrichtigung";
 "finish"="Finish";

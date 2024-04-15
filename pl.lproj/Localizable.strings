@@ -9,6 +9,7 @@
 */
 "about"="O programie";
 "about.meshtastic"="O Meshtastic";
+"activity"="Activity";
 "admin"="Administrator";
 "admin.log"="Log administratora";
 "ago"="temu";
@@ -114,6 +115,7 @@
 "email.address"="Adres Email";
 "enabled"="Włączony";
 "encrypted"="Zaszyfrowany";
+"export"="Export";
 "external.notification"="Zewnętrzne Powiadomienie";
 "external.notification.config"="Konfiguracja Zewnętrznego Powiadomienia";
 "finish"="Finish";
