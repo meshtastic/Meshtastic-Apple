@@ -207,6 +207,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 				return
 			}
 			let newMetadata = DeviceMetadataEntity(context: context)
+			newMetadata.time = Date()
 			newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
 			newMetadata.canShutdown = metadata.canShutdown
 			newMetadata.hasWifi = metadata.hasWifi_p
