@@ -13,7 +13,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("timestamp".localized)"
+		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 0 {
 				csvString += "\n"
@@ -25,12 +25,14 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += ", "
 				csvString += String(dm.airUtilTx)
 				csvString += ", "
+				csvString += String(dm.uptimeSeconds)
+				csvString += ", "
 				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 			}
 		}
 	} else if metricsType == 1 {
 		// Create Environment Telemetry Header
-		csvString = "Temperature, Relative Humidity, Barometric Pressure, Gas Resistance, \("voltage".localized), \("current".localized), \("timestamp".localized)"
+		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("voltage".localized), \("current".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 1 {
 				csvString += "\n"
@@ -39,6 +41,8 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += String(dm.relativeHumidity)
 				csvString += ", "
 				csvString += String(dm.barometricPressure)
+				csvString += ", "
+				csvString += String(dm.iaq)
 				csvString += ", "
 				csvString += String(dm.gasResistance)
 				csvString += ", "

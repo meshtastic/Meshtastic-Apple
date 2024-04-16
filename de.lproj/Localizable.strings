@@ -7,6 +7,7 @@
 */
 "about"="Über";
 "about.meshtastic"="Über Meshtastic";
+"activity"="Activity";
 "admin"="admin";
 "admin.log"="Admin Log";
 "ago"="her";
@@ -70,7 +71,7 @@
 "config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
-"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.";
 "config.module.paxcounter.updateinterval"="Update Interval";
 "config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="Nach dem ändern der Einstellungen wird das Gerät neu starten.";
@@ -112,6 +113,7 @@
 "email.address"="Email Adresse";
 "enabled"="Aktiviert";
 "encrypted"="Verschlüsselt";
+"export"="Export";
 "external.notification"="Externe Benachrichtigung";
 "external.notification.config"="Einstellungen der externen Benachrichtigung";
 "finish"="Finish";
@@ -335,7 +337,9 @@
 "unset"="Unset";
 "update.firmware"="Update Your Firmware";
 "update.interval"="Update intervall";
+"uptime"="Uptime";
 "user"="Benutzer";
 "user.details"="Benutzer Details";
 "voltage"="Voltage";
 "waiting"="Warte...";
+"appsettings.newNodeNotifications"="New Node Notifications";

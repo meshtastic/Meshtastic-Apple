@@ -7,6 +7,7 @@
 */
 "about"="À propos";
 "about.meshtastic"="À propos de Meshtastic";
+"activity"="Activity";
 "admin"="Administrateur";
 "admin.log"="Journal des messages d'administration";
 "ago"="auparavant";
@@ -90,6 +91,7 @@
 "email.address"="Adresse mail";
 "enabled"="Activé";
 "encrypted"="Encrypté";
+"export"="Export";
 "external.notification"="Notification extérieure";
 "external.notification.config"="Configuration de la notification extérieure";
 "finish"="Terminer";
@@ -319,3 +321,4 @@
 "user.details"="Détails de l'utilisateur";
 "voltage"="Tension";
 "waiting"="En attente . . .";
+"appsettings.newNodeNotifications"="New Node Notifications";

@@ -1387,7 +1387,7 @@ struct Config {
 
 extension Config.DeviceConfig.Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DeviceConfig.Role] = [
+  static let allCases: [Config.DeviceConfig.Role] = [
     .client,
     .clientMute,
     .router,
@@ -1404,7 +1404,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
 
 extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DeviceConfig.RebroadcastMode] = [
+  static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
     .all,
     .allSkipDecoding,
     .localOnly,
@@ -1414,7 +1414,7 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
 
 extension Config.PositionConfig.PositionFlags: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.PositionConfig.PositionFlags] = [
+  static let allCases: [Config.PositionConfig.PositionFlags] = [
     .unset,
     .altitude,
     .altitudeMsl,
@@ -1431,7 +1431,7 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
 
 extension Config.PositionConfig.GpsMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.PositionConfig.GpsMode] = [
+  static let allCases: [Config.PositionConfig.GpsMode] = [
     .disabled,
     .enabled,
     .notPresent,
@@ -1440,7 +1440,7 @@ extension Config.PositionConfig.GpsMode: CaseIterable {
 
 extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.NetworkConfig.AddressMode] = [
+  static let allCases: [Config.NetworkConfig.AddressMode] = [
     .dhcp,
     .static,
   ]
@@ -1448,7 +1448,7 @@ extension Config.NetworkConfig.AddressMode: CaseIterable {
 
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
+  static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
     .dec,
     .dms,
     .utm,
@@ -1460,7 +1460,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
 
 extension Config.DisplayConfig.DisplayUnits: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DisplayConfig.DisplayUnits] = [
+  static let allCases: [Config.DisplayConfig.DisplayUnits] = [
     .metric,
     .imperial,
   ]
@@ -1468,7 +1468,7 @@ extension Config.DisplayConfig.DisplayUnits: CaseIterable {
 
 extension Config.DisplayConfig.OledType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DisplayConfig.OledType] = [
+  static let allCases: [Config.DisplayConfig.OledType] = [
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
@@ -1478,7 +1478,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
 
 extension Config.DisplayConfig.DisplayMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.DisplayConfig.DisplayMode] = [
+  static let allCases: [Config.DisplayConfig.DisplayMode] = [
     .default,
     .twocolor,
     .inverted,
@@ -1488,7 +1488,7 @@ extension Config.DisplayConfig.DisplayMode: CaseIterable {
 
 extension Config.LoRaConfig.RegionCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.LoRaConfig.RegionCode] = [
+  static let allCases: [Config.LoRaConfig.RegionCode] = [
     .unset,
     .us,
     .eu433,
@@ -1513,7 +1513,7 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
 
 extension Config.LoRaConfig.ModemPreset: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.LoRaConfig.ModemPreset] = [
+  static let allCases: [Config.LoRaConfig.ModemPreset] = [
     .longFast,
     .longSlow,
     .veryLongSlow,
@@ -1527,7 +1527,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
 
 extension Config.BluetoothConfig.PairingMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Config.BluetoothConfig.PairingMode] = [
+  static let allCases: [Config.BluetoothConfig.PairingMode] = [
     .randomPin,
     .fixedPin,
     .noPin,
