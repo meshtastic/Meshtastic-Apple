@@ -694,6 +694,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
 					telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
+					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics

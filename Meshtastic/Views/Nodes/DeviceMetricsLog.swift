@@ -108,6 +108,12 @@ struct DeviceMetricsLog: View {
 						TableColumn("airtime") { dm in
 							Text("\(String(format: "%.2f", dm.airUtilTx))%")
 						}
+						TableColumn("uptime") { dm in
+							let now = Date.now
+							let later = now + TimeInterval(dm.uptimeSeconds)
+							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
+							Text(components)
+						}
 						TableColumn("timestamp") { dm in
 							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 						}
@@ -116,10 +122,11 @@ struct DeviceMetricsLog: View {
 				} else {
 					ScrollView {
 						let columns = [
-							GridItem(.flexible(minimum: 35, maximum: 55), spacing: 0.1),
-							GridItem(.flexible(minimum: 35, maximum: 60), spacing: 0.1),
-							GridItem(.flexible(minimum: 35, maximum: 70), spacing: 0.1),
-							GridItem(.flexible(minimum: 35, maximum: 65), spacing: 0.1),
+							GridItem(.flexible(minimum: 25, maximum: 45), spacing: 0.1),
+							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
+							GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
+							GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
 							GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
@@ -134,6 +141,9 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("AirTm")
+									.font(.caption)
+									.fontWeight(.bold)
+								Text("uptime")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("timestamp")
@@ -154,6 +164,11 @@ struct DeviceMetricsLog: View {
 									Text("\(String(format: "%.2f", dm.channelUtilization))%")
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
+										.font(.caption)
+									let now = Date.now
+									let later = now + TimeInterval(dm.uptimeSeconds)
+									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
+									Text(components)
 										.font(.caption)
 									Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 										.font(.caption)

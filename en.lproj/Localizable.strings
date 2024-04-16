@@ -71,7 +71,7 @@
 "config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
-"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.";
 "config.module.paxcounter.updateinterval"="Update Interval";
 "config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="After config values save the node will reboot.";
@@ -261,7 +261,6 @@
 "paxcounter.ble"="BLE";
 "paxcounter.delete"="Delete all pax data?";
 "paxcounter.wifi"="WiFi";
-"paxcounter.uptime"="Uptime";
 "paxcounter.content.unavailable"="No PAX Counter Logs";
 "paxcounter.log"="PAX Counter Log";
 "paxcounter.total"="Total PAX";
@@ -369,6 +368,7 @@
 "unset"="Unset";
 "update.firmware"="Update Your Firmware";
 "update.interval"="Update Interval";
+"uptime"="Uptime";
 "user"="User";
 "user.details"="User Details";
 "voltage"="Voltage";

@@ -97,7 +97,7 @@ struct PaxCounterLog: View {
 						TableColumn("paxcounter.total") { pc in
 							Text("\(pc.wifi + pc.ble)")
 						}
-						TableColumn("paxcounter.uptime") { pc in
+						TableColumn("uptime") { pc in
 							let now = Date.now
 							let later = now + TimeInterval(pc.uptime)
 							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
@@ -128,7 +128,7 @@ struct PaxCounterLog: View {
 								Text("Total")
 									.font(.caption)
 									.fontWeight(.bold)
-								Text("paxcounter.uptime")
+								Text("uptime")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("timestamp")

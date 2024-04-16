@@ -13,7 +13,7 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 	let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 	if metricsType == 0 {
 		// Create Device Metrics Header
-		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("timestamp".localized)"
+		csvString = "\("battery.level".localized), \("voltage".localized), \("channel.utilization".localized), \("airtime".localized), \("uptime".localized), \("timestamp".localized)"
 		for dm in telemetry {
 			if dm.metricsType == 0 {
 				csvString += "\n"
@@ -24,6 +24,8 @@ func telemetryToCsvFile(telemetry: [TelemetryEntity], metricsType: Int) -> Strin
 				csvString += String(dm.channelUtilization)
 				csvString += ", "
 				csvString += String(dm.airUtilTx)
+				csvString += ", "
+				csvString += String(dm.uptimeSeconds)
 				csvString += ", "
 				csvString += dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized
 			}

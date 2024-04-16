@@ -261,7 +261,6 @@
 "paxcounter.ble"="BLE";
 "paxcounter.delete"="Radera all paxdata?";
 "paxcounter.wifi"="WiFi";
-"paxcounter.uptime"="Drifttid";
 "paxcounter.content.unavailable"="Inga loggar för PAX-räknare";
 "paxcounter.log"="PAX-räknarens logg";
 "paxcounter.total"="Totalt PAX";
@@ -352,6 +351,7 @@
 "unset"="Återställ";
 "update.firmware"="Uppdatera din firmware";
 "update.interval"="Uppdateringsintervall";
+"uptime"="Drifttid";
 "user"="Användare";
 "user.details"="Användaruppgifter";
 "voltage"="Spänning";
