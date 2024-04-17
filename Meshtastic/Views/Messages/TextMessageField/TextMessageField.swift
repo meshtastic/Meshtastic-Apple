@@ -18,7 +18,7 @@ struct TextMessageField: View {
 		HStack {
 			if destination.showAlertButton {
 				Spacer()
-				AlertButton { typingMessage += "🔔 Alert Bell Character! \u{7}" }
+				AlertButton { typingMessage += "🔔 Alert Bell! \u{7}" }
 			}
 			Spacer()
 			RequestPositionButton(action: requestPosition)
@@ -131,7 +131,7 @@ private extension MessageDestination {
 
 	var showAlertButton: Bool {
 		switch self {
-		case .user: return false
+		case .user: return true
 		case .channel: return true
 		}
 	}
