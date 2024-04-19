@@ -548,8 +548,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
 					
 					if myInfo != nil {
-						UserDefaults.preferredPeripheralNum = Int(myInfo!.myNodeNum)
-						connectedPeripheral.num = myInfo!.myNodeNum
+						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
+						connectedPeripheral.num = myInfo?.myNodeNum ?? 0
 						connectedPeripheral.name = myInfo?.bleName ?? "unknown".localized
 						connectedPeripheral.longName = myInfo?.bleName ?? "unknown".localized
 					}
@@ -561,7 +561,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
 					
 					if nodeInfo != nil {
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo!.num {
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo?.num ?? -1 {
 							if nodeInfo!.user != nil {
 								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "?"
 								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "unknown".localized
@@ -1008,29 +1008,34 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				
 				if let lastLocation = LocationsHandler.shared.locationsArray.last {
 					
-					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-					positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-					let timestamp = lastLocation.timestamp
-					positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.altitude = Int32(lastLocation.altitude)
-					positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-					positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
-					let currentSpeed = lastLocation.speed
-					if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-						positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+					if fetchedChannel.count > 0 {
+						positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+						positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+						let timestamp = lastLocation.timestamp
+						positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+						positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+						positionPacket.altitude = Int32(lastLocation.altitude)
+						positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+						positionPacket.precisionBits = UInt32(fetchedChannel[0].positionPrecision)
+						let currentSpeed = lastLocation.speed
+						if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+							positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+						}
+						let currentHeading = lastLocation.course
+						if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+							positionPacket.groundTrack = UInt32(currentHeading)
+						}
 					}
-					let currentHeading = lastLocation.course
-					if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-						positionPacket.groundTrack = UInt32(currentHeading)
-					}
-					
 				}
 				
 			} else {
 				if destNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
 					return nil
 				}
+				if fetchedChannel.count <= 0 {
+					return nil
+				}
+				
 				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
 				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
 				let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
