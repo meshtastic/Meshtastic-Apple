@@ -12,7 +12,7 @@ struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	var node: NodeInfoEntity?
-	@State var minimumVersion = "2.3.4"
+	@State var minimumVersion = "2.3.5"
 	@State var version = ""
 	@State private var currentDevice: DeviceHardware?
 	@State private var latestStable: FirmwareRelease?
