@@ -9,6 +9,7 @@ import CocoaMQTT
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
+
 	
 	private static var documentsFolder: URL {
 		do {
