@@ -54,9 +54,16 @@ class Api : ObservableObject{
 		}
 		
 		URLSession.shared.dataTask(with: url) { data, response, error in
-			let deviceHardware = try! JSONDecoder().decode([DeviceHardware].self, from: data!)
-			DispatchQueue.main.async {
-				completion(deviceHardware)
+			if let data = data {
+				do {
+					let deviceHardware = try JSONDecoder().decode([DeviceHardware].self, from: data)
+					DispatchQueue.main.async {
+						completion(deviceHardware)
+					}
+				} catch let jsonError as NSError {
+					print("JSON decode failure: \(jsonError.localizedDescription)")
+				}
+				return
 			}
 		}.resume()
 	}
@@ -67,9 +74,16 @@ class Api : ObservableObject{
 			return
 		}
 		URLSession.shared.dataTask(with: url) { data, response, error in
-			let firmwareReleases = try! JSONDecoder().decode(FirmwareReleases.self, from: data!)
-			DispatchQueue.main.async {
-				completion(firmwareReleases)
+			if let data = data {
+				do {
+					let firmwareReleases = try JSONDecoder().decode(FirmwareReleases.self, from: data)
+					DispatchQueue.main.async {
+						completion(firmwareReleases)
+					}
+				} catch let jsonError as NSError {
+					print("JSON decode failure: \(jsonError.localizedDescription)")
+				}
+				return
 			}
 		}.resume()
 	}

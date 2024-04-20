@@ -160,6 +160,30 @@
 	"displayName": "RAK11310"
   },
   {
+	"hwModel": 29,
+	"hwModelSlug": "CANARYONE",
+	"platformioTarget": "canaryone",
+	"architecture": "nrf52840",
+	"activelySupported": true,
+	"displayName": "CanaryOne"
+  },
+  {
+	"hwModel": 30,
+	"hwModelSlug": "RP2040_LORA",
+	"platformioTarget": "rp2040-lora",
+	"architecture": "rp2040",
+	"activelySupported": true,
+	"displayName": "RP2040 LoRa"
+  },
+  {
+	"hwModel": 31,
+	"hwModelSlug": "STATION_G2",
+	"platformioTarget": "station-g2",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "Station G2"
+  },
+  {
 	"hwModel": 39,
 	"hwModelSlug": "DIY_V1",
 	"platformioTarget": "meshtastic-diy-v1",
@@ -229,7 +253,15 @@
 	"platformioTarget": "heltec-wireless-tracker",
 	"architecture": "esp32-s3",
 	"activelySupported": true,
-	"displayName": "Heltec Wireless Tracker"
+	"displayName": "Heltec Wireless Tracker V1.1"
+  },
+  {
+	"hwModel": 58,
+	"hwModelSlug": "HELTEC_WIRELESS_TRACKER_V1_0",
+	"platformioTarget": "heltec-wireless-tracker-V1-0",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "Heltec Wireless Tracker V1.0"
   },
   {
 	"hwModel": 49,
@@ -270,5 +302,21 @@
 	"architecture": "esp32-c3",
 	"activelySupported": true,
 	"displayName": "Heltec HT62"
+  },
+  {
+	"hwModel": 57,
+	"hwModelSlug": "HELTEC_WIRELESS_PAPER_V1_0",
+	"platformioTarget": "heltec-wireless-paper-v1_0",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "Heltec Wireless Paper V1.0"
+  },
+  {
+	"hwModel": 59,
+	"hwModelSlug": "UNPHONE",
+	"platformioTarget": "unphone",
+	"architecture": "esp32-s3",
+	"activelySupported": true,
+	"displayName": "unPhone"
   }
 ]

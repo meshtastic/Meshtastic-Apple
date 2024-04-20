@@ -47,7 +47,6 @@ extension NodeInfoEntity {
 		}
 		return false
 	}
-
 }
 
 public func createNodeInfo(num: Int64, context: NSManagedObjectContext) -> NodeInfoEntity {

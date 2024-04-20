@@ -7,6 +7,7 @@
 */
 "about"="關於";
 "about.meshtastic"="關於 Meshtastic";
+"activity"="Activity";
 "admin"="管理員";
 "admin.log"="管理員消息紀錄檔";
 "ago"="ago";
@@ -70,7 +71,7 @@
 "config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
-"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.";
 "config.module.paxcounter.updateinterval"="Update Interval";
 "config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="電台將會在設定儲存後重啟。";
@@ -111,6 +112,7 @@
 "email.address"="電子信箱";
 "enabled"="啟用";
 "encrypted"="加密";
+"export"="Export";
 "external.notification"="外部通知";
 "external.notification.config"="外部通知設定";
 "finish"="完成";

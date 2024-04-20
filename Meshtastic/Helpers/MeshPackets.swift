@@ -207,6 +207,7 @@ func deviceMetadataPacket (metadata: DeviceMetadata, fromNum: Int64, context: NS
 				return
 			}
 			let newMetadata = DeviceMetadataEntity(context: context)
+			newMetadata.time = Date()
 			newMetadata.deviceStateVersion = Int32(metadata.deviceStateVersion)
 			newMetadata.canShutdown = metadata.canShutdown
 			newMetadata.hasWifi = metadata.hasWifi_p
@@ -693,11 +694,13 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 					telemetry.channelUtilization = telemetryMessage.deviceMetrics.channelUtilization
 					telemetry.batteryLevel = Int32(telemetryMessage.deviceMetrics.batteryLevel)
 					telemetry.voltage = telemetryMessage.deviceMetrics.voltage
+					telemetry.uptimeSeconds = Int32(telemetryMessage.deviceMetrics.uptimeSeconds)
 					telemetry.metricsType = 0
 				} else if telemetryMessage.variant == Telemetry.OneOf_Variant.environmentMetrics(telemetryMessage.environmentMetrics) {
 					// Environment Metrics
 					telemetry.barometricPressure = telemetryMessage.environmentMetrics.barometricPressure
 					telemetry.current = telemetryMessage.environmentMetrics.current
+					telemetry.iaq = Int32(truncatingIfNeeded: telemetryMessage.environmentMetrics.iaq)
 					telemetry.gasResistance = telemetryMessage.environmentMetrics.gasResistance
 					telemetry.relativeHumidity = telemetryMessage.environmentMetrics.relativeHumidity
 					telemetry.temperature = telemetryMessage.environmentMetrics.temperature
@@ -723,7 +726,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 				// Connected Device Metrics
 				// ------------------------
 				// Low Battery notification
-				if telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
+				if UserDefaults.lowBatteryNotifications && telemetry.batteryLevel > 0 && telemetry.batteryLevel < 4 {
 					let manager = LocalNotificationManager()
 					manager.notifications = [
 						Notification(

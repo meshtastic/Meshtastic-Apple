@@ -26,6 +26,27 @@ struct NodeDetail: View {
 				VStack {
 					ScrollView {
 						NodeInfoItem(node: node)
+						if node.metadata != nil {
+							HStack(alignment: .center) {
+								Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? "unknown".localized)")
+									.font(.title3).foregroundColor(Color.gray)
+								if connectedNode != nil && connectedNode?.myInfo?.hasAdmin ?? false && node.metadata?.time != nil && !Calendar.current.isDateInToday(node.metadata!.time!) {
+									Button {
+										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)
+										if adminMessageId > 0 {
+											print("Sent node metadata request from node details")
+										}
+									} label: {
+										Image(systemName: "arrow.clockwise")
+											.font(.title3)
+									}
+									.buttonStyle(.bordered)
+									.buttonBorderShape(.capsule)
+									.controlSize(.small)
+								}
+							}
+							Divider()
+						}
 						VStack {
 							NavigationLink {
 								DeviceMetricsLog(node: node)

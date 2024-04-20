@@ -7,6 +7,7 @@
 */
 "about"="Om";
 "about.meshtastic"="Om Meshtastic";
+"activity"="Activity";
 "admin"="Administratör";
 "admin.log"="Administratörsmeddelandelogg";
 "ago"="sedan";
@@ -113,6 +114,7 @@
 "email.address"="E-postadress";
 "enabled"="Aktiverad";
 "encrypted"="Krypterad";
+"export"="Export";
 "external.notification"="Extern Notifikation";
 "external.notification.config"="Konfiguration av Extern Notifikation";
 "finish"="Avsluta";
@@ -259,7 +261,6 @@
 "paxcounter.ble"="BLE";
 "paxcounter.delete"="Radera all paxdata?";
 "paxcounter.wifi"="WiFi";
-"paxcounter.uptime"="Drifttid";
 "paxcounter.content.unavailable"="Inga loggar för PAX-räknare";
 "paxcounter.log"="PAX-räknarens logg";
 "paxcounter.total"="Totalt PAX";
@@ -350,6 +351,7 @@
 "unset"="Återställ";
 "update.firmware"="Uppdatera din firmware";
 "update.interval"="Uppdateringsintervall";
+"uptime"="Drifttid";
 "user"="Användare";
 "user.details"="Användaruppgifter";
 "voltage"="Spänning";

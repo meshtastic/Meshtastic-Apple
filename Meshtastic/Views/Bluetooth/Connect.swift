@@ -160,7 +160,7 @@ struct Connect: View {
 									.padding()
 									.swipeActions {
 										Button(role: .destructive) {
-											bleManager.cancelConnection()
+											bleManager.cancelPeripheralConnection()
 										} label: {
 											Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}

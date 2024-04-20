@@ -17,13 +17,13 @@ struct RouteRecorder: View {
 	@ObservedObject var locationsHandler: LocationsHandler = LocationsHandler.shared
 	@Environment(\.managedObjectContext) var context
 	@State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
-	//@State var mapStyle: MapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: .all, showsTraffic: true)
 	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic)
 	@State var isShowingDetails = false
 	@Namespace var namespace
 	@Namespace var routerecorderscope
 	@State var recording: RouteEntity?
 	@State var color: Color = .blue
+	@State var activity: Int = 1
 	
 	var body: some View {
 		VStack {
@@ -87,7 +87,7 @@ struct RouteRecorder: View {
 								Text("Recording route")
 									.font(.title)
 								Spacer()
-								Text("\(locationsHandler.count)")
+								Text("\(Image(systemName: "mappin.and.ellipse")) \(locationsHandler.count)")
 									.foregroundColor(.red)
 									.font(.title2)
 							}
@@ -146,6 +146,22 @@ struct RouteRecorder: View {
 								GPSStatus(largeFont: .body, smallFont: .callout)
 							}
 							.listStyle(.plain)
+							if recording == nil {
+								HStack(alignment: .center) {
+									Spacer()
+									Image(systemName: "figure.hiking")
+										.symbolRenderingMode(.multicolor)
+										.font(.title3)
+										.foregroundColor(.accentColor)
+									Text("activity")
+									Picker(selection: $activity, label: Text("Activity")) {
+										ForEach(ActivityType.allCases) { r in
+											Text(r.description)
+										}
+									}
+									Spacer()
+								}
+							}
 							HStack {
 								Spacer()
 								if !locationsHandler.isRecording && !locationsHandler.isRecordingPaused {
@@ -158,10 +174,11 @@ struct RouteRecorder: View {
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = Date()
 										let newRoute = RouteEntity(context: context)
-										newRoute.name = String("Route Recording")
+										newRoute.date = Date()
+										let at = ActivityType(rawValue: activity)
+										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
 										newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
 										newRoute.color = Int64(UIColor.random.hex)
-										newRoute.date = Date()
 										newRoute.enabled = false
 										color = Color(UIColor(hex: UInt32(newRoute.color)))
 										self.recording = newRoute
@@ -210,17 +227,19 @@ struct RouteRecorder: View {
 								if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
 									/// We are recording or paused, show finish button
 									Button {
+									
+										if let rec = recording {
+											rec.enabled = true
+											rec.distance = locationsHandler.distanceTraveled
+											rec.elevationGain = locationsHandler.elevationGain
+											context.refresh(rec, mergeChanges:true)
+										}
 										locationsHandler.isRecording = false
 										locationsHandler.isRecordingPaused = false
 										locationsHandler.distanceTraveled = 0.0
 										locationsHandler.elevationGain = 0.0
 										locationsHandler.locationsArray.removeAll()
 										locationsHandler.recordingStarted = nil
-										if let rec = recording {
-											rec.enabled = true
-											context.refresh(rec, mergeChanges:true)
-										}
-										
 										do {
 											try context.save()
 											print("💾 Saved a route finish")
@@ -254,7 +273,7 @@ struct RouteRecorder: View {
 						}
 					}
 				}
-				.presentationDetents([.fraction(0.30), .fraction(0.65)])
+				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)
 				.onAppear {

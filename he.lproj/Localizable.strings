@@ -7,6 +7,7 @@
 */
 "about"="אודות";
 "about.meshtastic"="אודות משטסטיק";
+"activity"="Activity";
 "admin"="אדמין";
 "admin.log"="היסטוריית הודעות אדמין";
 "ago"="עברו";
@@ -70,7 +71,7 @@
 "config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
-"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.";
 "config.module.paxcounter.updateinterval"="Update Interval";
 "config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="לאחר שמירת הגדרות המכשיר יתחיל מחדש.";
@@ -113,6 +114,7 @@
 "email.address"="כתובת דואר אלקטרוני";
 "enabled"="מופעל";
 "encrypted"="מוצפן";
+"export"="Export";
 "external.notification"="נוטיפיקציה חיצונית";
 "external.notification.config"="הגדרות נוטיפיקציה חיצונית";
 "finish"="סיים";

@@ -159,12 +159,14 @@ struct PositionConfig: View {
 								.font(.callout)
 						}
 					}
-					VStack(alignment: .leading) {
-						Toggle(isOn: $fixedPosition) {
-							Label("Fixed Position", systemImage: "location.square.fill")
-							Text("If enabled your current phone location will be sent to the device and will broadcast over the mesh on the position interval.")
+					if gpsMode != 1 {
+						VStack(alignment: .leading) {
+							Toggle(isOn: $fixedPosition) {
+								Label("Fixed Position", systemImage: "location.square.fill")
+								Text("If enabled your current phone location and time will be sent to the device and will broadcast over the mesh on the position interval.")
+							}
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
-						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					}
 				}
 				Section(header: Text("Position Flags")) {

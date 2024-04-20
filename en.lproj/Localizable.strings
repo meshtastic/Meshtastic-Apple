@@ -7,6 +7,7 @@
 */
 "about"="About";
 "about.meshtastic"="About Meshtastic";
+"activity"="Activity";
 "admin"="Admin";
 "admin.log"="Admin Message Log";
 "ago"="ago";
@@ -70,7 +71,7 @@
 "config.ringtone.description"="Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications.";
 "config.module.paxcounter.settings"="PAX Counter";
 "config.module.paxcounter.title"="PAX Counter Config";
-"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be enabled for PAX counter to work.";
+"config.module.paxcounter.enabled.description"="When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work.";
 "config.module.paxcounter.updateinterval"="Update Interval";
 "config.module.paxcounter.updateinterval.description"="How often we can send a message to the mesh when people are detected.";
 "config.save.confirm"="After config values save the node will reboot.";
@@ -113,6 +114,7 @@
 "email.address"="Email Address";
 "enabled"="Enabled";
 "encrypted"="Encrypted";
+"export"="Export";
 "external.notification"="External Notification";
 "external.notification.config"="External Notification Config";
 "finish"="Finish";
@@ -259,7 +261,6 @@
 "paxcounter.ble"="BLE";
 "paxcounter.delete"="Delete all pax data?";
 "paxcounter.wifi"="WiFi";
-"paxcounter.uptime"="Uptime";
 "paxcounter.content.unavailable"="No PAX Counter Logs";
 "paxcounter.log"="PAX Counter Log";
 "paxcounter.total"="Total PAX";
@@ -278,11 +279,28 @@
 "reboot.node"="Reboot node?";
 "received.ack"="Received Ack";
 "received.ack.real"="Recipient Ack";
+"relativetimeofday.morning"="Morning";
+"relativetimeofday.midday"="Midday";
+"relativetimeofday.afternoon"="Afternoon";
+"relativetimeofday.evening"="Evening";
+"relativetimeofday.nighttime"="Nighttime";
 "resume"="Resume";
 "ringtone"="Ringtone";
 "ringtone.config"="Ringtone Config";
 "route.recorder"="Route Recorder";
 "routes"="Routes";
+"routes.activitytype.walking"="Walking";
+"routes.activitytype.hiking"="Hiking";
+"routes.activitytype.biking"="Biking";
+"routes.activitytype.driving"="Driving";
+"routes.activitytype.overlanding"="Overlanding";
+"routes.activitytype.skiing"="Skiing";
+"routes.activitytype.filename.walking"="walk";
+"routes.activitytype.filename.hiking"="hike";
+"routes.activitytype.filename.biking"="bike tour";
+"routes.activitytype.filename.driving"="drive";
+"routes.activitytype.filename.overlanding"="overland drive";
+"routes.activitytype.filename.skiing"="ski tour";
 "routing.acknowledged"="Acknowledged";
 "routing.noroute"="No Route";
 "routing.gotnak"="Received a negative acknowledgment";
@@ -350,6 +368,7 @@
 "unset"="Unset";
 "update.firmware"="Update Your Firmware";
 "update.interval"="Update Interval";
+"uptime"="Uptime";
 "user"="User";
 "user.details"="User Details";
 "voltage"="Voltage";

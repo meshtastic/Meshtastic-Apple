@@ -67,6 +67,7 @@ extension UserDefaults {
 		case detectionSensorRole
 		case enableSmartPosition
 		case newNodeNotifications
+		case lowBatteryNotifications
 		case modemPreset
 		case firmwareVersion
 		case testIntEnum
@@ -145,8 +146,11 @@ extension UserDefaults {
 	@UserDefault(.enableSmartPosition, defaultValue: false)
 	static var enableSmartPosition: Bool
 	
-	@UserDefault(.newNodeNotifications, defaultValue: false)
+	@UserDefault(.newNodeNotifications, defaultValue: true)
 	static var newNodeNotifications: Bool
+	
+	@UserDefault(.lowBatteryNotifications, defaultValue: true)
+	static var lowBatteryNotifications: Bool
 
 	@UserDefault(.modemPreset, defaultValue: 0)
 	static var modemPreset: Int

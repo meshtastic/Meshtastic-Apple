@@ -13,6 +13,7 @@ struct NodeListItem: View {
 	@ObservedObject var node: NodeInfoEntity
 	var connected: Bool
 	var connectedNode: Int64
+	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
 	
 	var body: some View {
 		
@@ -141,19 +142,6 @@ struct NodeListItem: View {
 									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
 							}
 						}
-						if node.hopsAway > 0 {
-							HStack {
-								Image(systemName: "hare")
-									.font(.callout)
-									.symbolRenderingMode(.hierarchical)
-								Text("Hops Away:")
-									.foregroundColor(.gray)
-									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
-								Image(systemName: "\(node.hopsAway).square")
-									.font(.title2)
-									.symbolRenderingMode(.hierarchical)
-							}
-						}
 						if node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes {
 							HStack {
 								Image(systemName: "scroll")
@@ -195,6 +183,24 @@ struct NodeListItem: View {
 											.frame(width: 30)
 									}
 								}
+							}
+						}
+						if node.hopsAway > 0 {
+							HStack {
+								Image(systemName: "hare")
+									.font(.callout)
+									.symbolRenderingMode(.hierarchical)
+								Text("Hops Away:")
+									.foregroundColor(.gray)
+									.font(UIDevice.current.userInterfaceIdiom == .phone ? .callout : .caption)
+								Image(systemName: "\(node.hopsAway).square")
+									.font(.title2)
+									.symbolRenderingMode(.hierarchical)
+							}
+						} else {
+							if node.snr != 0 && !node.viaMqtt {
+								LoRaSignalStrengthMeter(snr: node.snr, rssi: node.rssi, preset: modemPreset, compact: true)
+									.padding(.top, node.hasPositions || node.hasEnvironmentMetrics || node.hasDetectionSensorMetrics || node.hasTraceRoutes ? 0 : 15)
 							}
 						}
 					}

@@ -924,7 +924,7 @@ struct AdminMessage {
 
 extension AdminMessage.ConfigType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [AdminMessage.ConfigType] = [
+  static let allCases: [AdminMessage.ConfigType] = [
     .deviceConfig,
     .positionConfig,
     .powerConfig,
@@ -937,7 +937,7 @@ extension AdminMessage.ConfigType: CaseIterable {
 
 extension AdminMessage.ModuleConfigType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [AdminMessage.ModuleConfigType] = [
+  static let allCases: [AdminMessage.ModuleConfigType] = [
     .mqttConfig,
     .serialConfig,
     .extnotifConfig,
