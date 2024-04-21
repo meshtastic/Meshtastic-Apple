@@ -5,7 +5,7 @@ class LocalNotificationManager {
 
     var notifications = [Notification]()
 	let thumbsUpAction = UNNotificationAction(identifier: "messageNotification.thumbsUpAction", title: 
-												"👍 \(Tapbacks.thumbsDown.description)", options: [])
+												"👍 \(Tapbacks.thumbsUp.description)", options: [])
 	let thumbsDownAction = UNNotificationAction(identifier: "messageNotification.thumbsDownAction", title:
 													"👎  \(Tapbacks.thumbsDown.description)", options: [])
 	let replyInputAction =  UNTextInputNotificationAction(
@@ -78,9 +78,7 @@ class LocalNotificationManager {
 				content.userInfo["userNum"] = notification.userNum
 			}
 			
-			print(notification.messageId ?? "NO Message ID")
-			print(notification.channel ?? "NO Channel")
-			print(notification.userNum ?? "NO User Num")
+		
 			
 			
 
