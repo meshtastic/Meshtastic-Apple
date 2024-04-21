@@ -121,6 +121,14 @@ struct Connect: View {
 										Text("Short Name: \(node?.user?.shortName ?? "?")")
 										Text("Long Name: \(node?.user?.longName ?? "unknown".localized)")
 										Text("BLE RSSI: \(bleManager.connectedPeripheral.rssi)")
+										Button {
+											if !bleManager.sendShutdown(fromUser: node!.user!, toUser: node!.user!, adminIndex: node!.myInfo!.adminIndex) {
+												print("Shutdown Failed")
+											}
+											
+										} label: {
+											Label("Power Off", systemImage: "power")
+										}
 									}
 								}
 								if isUnsetRegion {
@@ -234,7 +242,7 @@ struct Connect: View {
 							}
 							.textCase(nil)
 						}
-
+ 
 					} else {
 						Text("bluetooth.off")
 							.foregroundColor(.red)
