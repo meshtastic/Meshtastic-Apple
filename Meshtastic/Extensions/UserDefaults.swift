@@ -86,7 +86,7 @@ extension UserDefaults {
 	@UserDefault(.provideLocation, defaultValue: false)
 	static var provideLocation: Bool
 
-	@UserDefault(.provideLocationInterval, defaultValue: 0)
+	@UserDefault(.provideLocationInterval, defaultValue: 30)
 	static var provideLocationInterval: Int
 
 	@UserDefault(.mapLayer, defaultValue: .standard)
