@@ -40,7 +40,7 @@ struct NodeDetail: View {
 											.foregroundColor(Color.gray)
 									},
 									icon: {
-										Image(systemName: "arrowshape.up.circle.fill")
+										Image(systemName: "checkmark.circle.fill")
 											.foregroundColor(.green)
 											.symbolRenderingMode(.hierarchical)
 											.font(.title)
