@@ -106,14 +106,24 @@ public func deleteUserMessages(user: UserEntity, context: NSManagedObjectContext
 	}
 }
 
-public func clearCoreDataDatabase(context: NSManagedObjectContext) {
+public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes: Bool) {
 
 	let persistenceController = PersistenceController.shared.container
 	for i in 0...persistenceController.managedObjectModel.entities.count-1 {
+		
 		let entity = persistenceController.managedObjectModel.entities[i]
 		let query = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
-		let deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
-
+		var deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+		let entityName = entity.name ?? "UNK"
+		
+		if includeRoutes {
+			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+		} else if !includeRoutes {
+			if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
+				print(entity.name?.lowercased())
+				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
+			}
+		}
 		do {
 			try context.executeAndMergeChanges(using: deleteRequest)
 		} catch let error as NSError {

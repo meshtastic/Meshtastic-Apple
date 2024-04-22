@@ -232,7 +232,7 @@ struct Connect: View {
 									if bleManager.connectedPeripheral != nil && bleManager.connectedPeripheral.peripheral.state == CBPeripheralState.connected {
 										bleManager.disconnectPeripheral()
 									}
-									clearCoreDataDatabase(context: context)
+									clearCoreDataDatabase(context: context, includeRoutes: false)
 									
 									let radio = bleManager.peripherals.first(where: { $0.peripheral.identifier.uuidString == selectedPeripherialId })
 									if radio != nil {
