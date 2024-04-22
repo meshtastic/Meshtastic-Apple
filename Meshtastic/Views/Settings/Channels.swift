@@ -294,9 +294,13 @@ struct Channels: View {
 }
 
 func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
-	for element in 1...indexes.count {
-		if !indexes.contains(element) {
-			return element
+	var smallestIndex = 1
+	if indexes.isEmpty { return smallestIndex }
+	if smallestIndex <= indexes.count {
+		for element in smallestIndex...indexes.count {
+			if !indexes.contains(element) {
+				return element
+			}
 		}
 	}
 	return indexes.count + 1

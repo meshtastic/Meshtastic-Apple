@@ -122,12 +122,12 @@ struct DeviceMetricsLog: View {
 				} else {
 					ScrollView {
 						let columns = [
-							GridItem(.flexible(minimum: 25, maximum: 45), spacing: 0.1),
 							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
-							GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
-							GridItem(.flexible(minimum: 30, maximum: 65), spacing: 0.1),
-							GridItem(.flexible(minimum: 30, maximum: 60), spacing: 0.1),
-							GridItem(.flexible(minimum: 130, maximum: 200), spacing: 0.1)
+							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 25, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 25, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
+							GridItem(.flexible(minimum: 130, maximum: 175), spacing: 0.1)
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 							GridRow {

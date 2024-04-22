@@ -75,7 +75,7 @@ struct AppSettings: View {
 					) {
 						Button("Erase all app data?", role: .destructive) {
 							bleManager.disconnectPeripheral()
-							clearCoreDataDatabase(context: context)
+							clearCoreDataDatabase(context: context, includeRoutes: true)
 							context.refreshAllObjects()
 							UserDefaults.standard.reset()
 						}

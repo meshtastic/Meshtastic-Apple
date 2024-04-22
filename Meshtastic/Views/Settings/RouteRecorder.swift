@@ -248,6 +248,7 @@ struct RouteRecorder: View {
 											let nsError = error as NSError
 											print("💥 Error Saving RouteEntity from the Route Recorder \(nsError)")
 										}
+										isShowingDetails = false
 									} label: {
 										Label("finish", systemImage: "flag.checkered")
 									}
