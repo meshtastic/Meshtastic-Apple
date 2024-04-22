@@ -91,35 +91,35 @@ struct IndoorAirQuality_Previews: PreviewProvider {
 					IndoorAirQuality(iaq: 351, displayMode: .dot)
 				}
 			}
-//			Text(".text")
-//				.font(.title)
-//			IndoorAirQuality(iaq: 6, displayMode: .text)
-//			IndoorAirQuality(iaq: 51, displayMode: .text)
-//			IndoorAirQuality(iaq: 101, displayMode: .text)
-//			IndoorAirQuality(iaq: 201, displayMode: .text)
-//			IndoorAirQuality(iaq: 350, displayMode: .text)
-//			IndoorAirQuality(iaq: 351, displayMode: .text)
-//			Text(".gauge")
-//				.font(.title)
-//			HStack (alignment: .top) {
-//				VStack{
-//					IndoorAirQuality(iaq: 6, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 51, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 101, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 151, displayMode: .gauge)
-//				}
-//				VStack{
-//					IndoorAirQuality(iaq: 201, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 251, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 301, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 350, displayMode: .gauge)
-//				}
-//				VStack{
-//					IndoorAirQuality(iaq: 351, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 401, displayMode: .gauge)
-//					IndoorAirQuality(iaq: 500, displayMode: .gauge)
-//				}
-//			}
+			Text(".text")
+				.font(.title)
+			IndoorAirQuality(iaq: 6, displayMode: .text)
+			IndoorAirQuality(iaq: 51, displayMode: .text)
+			IndoorAirQuality(iaq: 101, displayMode: .text)
+			IndoorAirQuality(iaq: 201, displayMode: .text)
+			IndoorAirQuality(iaq: 350, displayMode: .text)
+			IndoorAirQuality(iaq: 351, displayMode: .text)
+			Text(".gauge")
+				.font(.title)
+			HStack (alignment: .top) {
+				VStack{
+					IndoorAirQuality(iaq: 6, displayMode: .gauge)
+					IndoorAirQuality(iaq: 51, displayMode: .gauge)
+					IndoorAirQuality(iaq: 101, displayMode: .gauge)
+					IndoorAirQuality(iaq: 151, displayMode: .gauge)
+				}
+				VStack{
+					IndoorAirQuality(iaq: 201, displayMode: .gauge)
+					IndoorAirQuality(iaq: 251, displayMode: .gauge)
+					IndoorAirQuality(iaq: 301, displayMode: .gauge)
+					IndoorAirQuality(iaq: 350, displayMode: .gauge)
+				}
+				VStack{
+					IndoorAirQuality(iaq: 351, displayMode: .gauge)
+					IndoorAirQuality(iaq: 401, displayMode: .gauge)
+					IndoorAirQuality(iaq: 500, displayMode: .gauge)
+				}
+			}
 		}.previewLayout(.fixed(width: 300, height: 800))
 	}
 }
