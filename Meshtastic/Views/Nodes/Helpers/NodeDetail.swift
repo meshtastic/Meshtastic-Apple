@@ -26,10 +26,34 @@ struct NodeDetail: View {
 				VStack {
 					ScrollView {
 						NodeInfoItem(node: node)
+						let dm = node.telemetries?.filtered(using: NSPredicate(format: "metricsType == 0")).lastObject as? TelemetryEntity
+						if dm?.uptimeSeconds ?? 0 > 0 {
+							HStack(alignment: .center) {
+								let now = Date.now
+								let later = now + TimeInterval(dm!.uptimeSeconds)
+								let components = (now..<later).formatted(.components(style: .narrow))
+								Label(
+									title: {
+										Text("\("uptime".localized)")
+											.font(.title2)+Text(": \(components)")
+											.font(.title3)
+											.foregroundColor(Color.gray)
+									},
+									icon: {
+										Image(systemName: "arrowshape.up.circle.fill")
+											.foregroundColor(.green)
+											.symbolRenderingMode(.hierarchical)
+											.font(.title)
+									}
+								)
+							}
+							Divider()
+						}
 						if node.metadata != nil {
 							HStack(alignment: .center) {
 								Text("firmware.version").font(.title2)+Text(": \(node.metadata?.firmwareVersion ?? "unknown".localized)")
-									.font(.title3).foregroundColor(Color.gray)
+									.font(.title3)
+									.foregroundColor(Color.gray)
 								if connectedNode != nil && connectedNode?.myInfo?.hasAdmin ?? false && node.metadata?.time != nil && !Calendar.current.isDateInToday(node.metadata!.time!) {
 									Button {
 										let adminMessageId =  bleManager.requestDeviceMetadata(fromUser: connectedNode!.user!, toUser: node.user!, adminIndex: connectedNode!.myInfo!.adminIndex, context: context)

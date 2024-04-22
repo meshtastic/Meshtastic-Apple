@@ -6,7 +6,6 @@
 //
 import SwiftUI
 import Charts
-import UIKit
 
 struct DeviceMetricsLog: View {
 
@@ -87,8 +86,8 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 250)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
+				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
+				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					// Table(Array(deviceMetrics),id: \.self) {
@@ -114,28 +113,6 @@ struct DeviceMetricsLog: View {
 							let later = now + TimeInterval(dm.uptimeSeconds)
 							let components = (now..<later).formatted(.components(style: .narrow))
 							Text(components)
-							
-							let formatter = RelativeDateTimeFormatter()
-							formatter.unitsStyle = .abbreviated
-							//let formattedString = String(format: "%02ld%02ld", difference.hour!, difference.minute!)
-//print(formattedString)
-							
-//							let formatter = DateComponentsFormatter()
-//
-//							formatter.unitsStyle = .abbreviated
-//							formatter.zeroFormattingBehavior = .dropAll
-//							formatter.allowedUnits = [.day, .hour, .minute, .second]
-							//formatter.unitsStyle = .narrow
-						//	let formattedDuration = formatter.string(from: now, to: later)
-						//	print(formattedDuration) // Output: "2h 30m"
-							
-							//let formattedDuration = formatter.string(from: now, to: later)
-							//print(formattedDuration) // Output: "2h 30m"
-							
-							//let components = (now..<later).formatted(.components(style: .narrow))
-							//formatter.string(from: (now..<later).duration)
-							//Text(formattedDuration)
-							//Text(components)
 						}
 						TableColumn("timestamp") { dm in
 							Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
@@ -145,11 +122,10 @@ struct DeviceMetricsLog: View {
 				} else {
 					ScrollView {
 						let columns = [
-							GridItem(.flexible(minimum: 20, maximum: 50), spacing: 0.1),
-							GridItem(.flexible(minimum: 20, maximum: 50), spacing: 0.1),
 							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
 							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
-							GridItem(.flexible(minimum: 20, maximum: 70), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
 							GridItem(.flexible(minimum: 100, maximum: .infinity), spacing: 0.1)
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
@@ -164,9 +140,6 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("AirTm")
-									.font(.caption)
-									.fontWeight(.bold)
-								Text("uptime")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("timestamp")
@@ -187,11 +160,6 @@ struct DeviceMetricsLog: View {
 									Text("\(String(format: "%.2f", dm.channelUtilization))%")
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
-										.font(.caption)
-									let now = Date.now
-									let later = now + TimeInterval(dm.uptimeSeconds)
-									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
-									Text(components)
 										.font(.caption)
 									Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 										.font(.caption)
