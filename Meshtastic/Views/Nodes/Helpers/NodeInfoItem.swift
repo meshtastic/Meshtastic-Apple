@@ -64,7 +64,10 @@ struct NodeInfoItem: View {
 						.symbolRenderingMode(.hierarchical)
 					Text("Node Number:").font(.title2)
 				}
-				Text(String(node.num)).font(.title3).foregroundColor(.gray)
+				Text(String(node.num))
+					.font(.title3)
+					.foregroundColor(.gray)
+					.textSelection(.enabled)
 			}
 			Divider()
 			VStack {
@@ -75,7 +78,10 @@ struct NodeInfoItem: View {
 						.symbolRenderingMode(.hierarchical)
 					Text("User Id:").font(.title2)
 				}
-				Text(node.user?.userId ?? "?").font(.title3).foregroundColor(.gray)
+				Text(node.user?.userId ?? "?")
+					.font(.title3)
+					.foregroundColor(.gray)
+					.textSelection(.enabled)
 			}
 		}
 		Divider()

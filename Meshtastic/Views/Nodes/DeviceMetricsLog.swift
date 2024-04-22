@@ -86,8 +86,8 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 250)
 				}
-				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMddjmma", options: 0, locale: Locale.current)
-				let dateFormatString = (localeDateFormat ?? "MM/dd/YY j:mma").replacingOccurrences(of: ",", with: "")
+				let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
+				let dateFormatString = (localeDateFormat ?? "M/d/YY j:mma").replacingOccurrences(of: ",", with: "")
 				if UIScreen.main.bounds.size.width > 768 && (UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac) {
 					// Add a table for mac and ipad
 					// Table(Array(deviceMetrics),id: \.self) {
@@ -111,7 +111,7 @@ struct DeviceMetricsLog: View {
 						TableColumn("uptime") { dm in
 							let now = Date.now
 							let later = now + TimeInterval(dm.uptimeSeconds)
-							let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
+							let components = (now..<later).formatted(.components(style: .narrow))
 							Text(components)
 						}
 						TableColumn("timestamp") { dm in
@@ -122,12 +122,11 @@ struct DeviceMetricsLog: View {
 				} else {
 					ScrollView {
 						let columns = [
-							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
-							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
-							GridItem(.flexible(minimum: 25, maximum: 60), spacing: 0.1),
-							GridItem(.flexible(minimum: 25, maximum: 60), spacing: 0.1),
-							GridItem(.flexible(minimum: 25, maximum: 50), spacing: 0.1),
-							GridItem(.flexible(minimum: 130, maximum: 175), spacing: 0.1)
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 20, maximum: 60), spacing: 0.1),
+							GridItem(.flexible(minimum: 100, maximum: .infinity), spacing: 0.1)
 						]
 						LazyVGrid(columns: columns, alignment: .leading, spacing: 1) {
 							GridRow {
@@ -141,9 +140,6 @@ struct DeviceMetricsLog: View {
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("AirTm")
-									.font(.caption)
-									.fontWeight(.bold)
-								Text("uptime")
 									.font(.caption)
 									.fontWeight(.bold)
 								Text("timestamp")
@@ -164,11 +160,6 @@ struct DeviceMetricsLog: View {
 									Text("\(String(format: "%.2f", dm.channelUtilization))%")
 										.font(.caption)
 									Text("\(String(format: "%.2f", dm.airUtilTx))%")
-										.font(.caption)
-									let now = Date.now
-									let later = now + TimeInterval(dm.uptimeSeconds)
-									let components = (now..<later).formatted(.components(style: .condensedAbbreviated))
-									Text(components)
 										.font(.caption)
 									Text(dm.time?.formattedDate(format: dateFormatString) ?? "unknown.age".localized)
 										.font(.caption)
