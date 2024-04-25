@@ -152,7 +152,7 @@ struct Firmware: View {
 						Link("Web Flasher", destination: URL(string: "https://flash.meshtastic.org")!)
 							.font(.callout)
 							.padding(.bottom)
-						Text("ESP 32 OTA update is a work in progress, click the button below to sent your device a reboot into ota admin message.")
+						Text("ESP 32 OTA update is a work in progress, click the button below to send your device a reboot into ota admin message.")
 							.font(.caption)
 						HStack(alignment: .center) {
 							Spacer()
