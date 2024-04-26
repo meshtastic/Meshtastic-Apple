@@ -55,7 +55,7 @@ struct ChannelMessageList: View {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
 									if !currentUser && message.fromUser != nil {
-										Text("\(message.fromUser?.longName ?? "unknown".localized ) (!\(message.fromUser?.userId ?? "?"))")
+										Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 											.font(.caption)
 											.foregroundColor(.gray)
 									}
