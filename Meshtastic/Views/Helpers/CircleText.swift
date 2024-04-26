@@ -29,10 +29,8 @@ struct CircleText: View {
 
 struct CircleText_Previews: PreviewProvider {
     static var previews: some View {
-		
-		HStack {
-			VStack {
-
+		VStack {
+			HStack {
 				CircleText(text: "N1", color: Color.yellow, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "8", color: Color.purple, circleSize: 80)
@@ -41,17 +39,20 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "🍔", color: Color.brown, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
+			}
+			HStack {
 				CircleText(text: "👻", color: Color.orange, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "🤙", color: Color.orange, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
-				
-			}
-			VStack {
 				CircleText(text: "69", color: Color.green, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "WWWW", color: Color.cyan, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
+			}
+			HStack {
+				
+		
 				CircleText(text: "CW-A", color: Color.secondary)
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "CW-A", color: Color.secondary, circleSize: 80)
@@ -60,7 +61,20 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "IIII", color: Color.accentColor, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
-				CircleText(text: "LCP", color: Color.primary, circleSize: 80)
+			}
+			HStack {
+				
+				CircleText(text: "🚗", color: Color.orange)
+					.previewLayout(.fixed(width: 300, height: 100))
+				CircleText(text: "🔋", color: Color.indigo, circleSize: 80)
+					.previewLayout(.fixed(width: 300, height: 100))
+				CircleText(text: "🛢️", color: Color.orange, circleSize: 80)
+					.previewLayout(.fixed(width: 300, height: 100))
+				CircleText(text: "LCP", color: Color.indigo, circleSize: 80)
+					.previewLayout(.fixed(width: 300, height: 100))
+			}
+			HStack {
+				CircleText(text: "🤡", color: Color.red, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
 			}
 		}
