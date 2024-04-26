@@ -43,17 +43,24 @@ struct ChannelMessageList: View {
 										.padding(.trailing)
 								}
 							}
-							HStack(alignment: .top) {
+							HStack(alignment: .bottom) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
 									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
 										.padding(.all, 5)
-										.offset(y: -5)
+										.offset(y: -10)
 								}
+
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
+									if !currentUser && message.fromUser != nil {
+										Text("\(message.fromUser?.longName ?? "unknown".localized ) (!\(message.fromUser?.userId ?? "?"))")
+											.font(.caption)
+											.foregroundColor(.gray)
+									}
 									HStack {
+										
 										MessageText(
 											message: message,
 											tapBackDestination: .channel(channel),
