@@ -88,7 +88,7 @@
 		DD5E5211298EE33B00D21B61 /* remote_hardware.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E51FF298EE33B00D21B61 /* remote_hardware.pb.swift */; };
 		DD5E5212298EE33B00D21B61 /* apponly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E5200298EE33B00D21B61 /* apponly.pb.swift */; };
 		DD5E5213298EE33B00D21B61 /* deviceonly.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E5201298EE33B00D21B61 /* deviceonly.pb.swift */; };
-		DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */; };
+		DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */; };
 		DD6193752862F6E600E59241 /* ExternalNotificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */; };
 		DD6193772862F90F00E59241 /* CannedMessagesConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */; };
 		DD6193792863875F00E59241 /* SerialConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6193782863875F00E59241 /* SerialConfig.swift */; };
@@ -341,7 +341,7 @@
 		DD5E51FF298EE33B00D21B61 /* remote_hardware.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = remote_hardware.pb.swift; sourceTree = "<group>"; };
 		DD5E5200298EE33B00D21B61 /* apponly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = apponly.pb.swift; sourceTree = "<group>"; };
 		DD5E5201298EE33B00D21B61 /* deviceonly.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = deviceonly.pb.swift; sourceTree = "<group>"; };
-		DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityIndexCompact.swift; sourceTree = "<group>"; };
+		DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityIndex.swift; sourceTree = "<group>"; };
 		DD6193742862F6E600E59241 /* ExternalNotificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalNotificationConfig.swift; sourceTree = "<group>"; };
 		DD6193762862F90F00E59241 /* CannedMessagesConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannedMessagesConfig.swift; sourceTree = "<group>"; };
 		DD6193782863875F00E59241 /* SerialConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialConfig.swift; sourceTree = "<group>"; };
@@ -651,7 +651,7 @@
 		DD5E523D298F5A7D00D21B61 /* Weather */ = {
 			isa = PBXGroup;
 			children = (
-				DD5E523E298F5A9E00D21B61 /* AirQualityIndexCompact.swift */,
+				DD5E523E298F5A9E00D21B61 /* AirQualityIndex.swift */,
 				DDFEB3BA29900C1200EE7472 /* CurrentConditionsCompact.swift */,
 				DDA9515D2BC6F56F00CEA535 /* IndoorAirQuality.swift */,
 				DD41A61429AB0035003C5A37 /* NodeWeatherForecast.swift */,
@@ -1207,7 +1207,7 @@
 				DD836AE726F6B38600ABCC23 /* Connect.swift in Sources */,
 				DD0E20FD2B87090400F2D100 /* clientonly.pb.swift in Sources */,
 				D93069082B81DF040066FBC8 /* SaveConfigButton.swift in Sources */,
-				DD5E523F298F5A9E00D21B61 /* AirQualityIndexCompact.swift in Sources */,
+				DD5E523F298F5A9E00D21B61 /* AirQualityIndex.swift in Sources */,
 				DD964FBF296E76EF007C176F /* WaypointFormMapKit.swift in Sources */,
 				DD3501892852FC3B000FC853 /* Settings.swift in Sources */,
 				DDDC22382BA92344002C44F1 /* MeshMapContent.swift in Sources */,

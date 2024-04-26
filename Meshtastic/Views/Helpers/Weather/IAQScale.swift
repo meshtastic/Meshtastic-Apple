@@ -9,10 +9,32 @@ import SwiftUI
 
 struct IAQScale: View {
 
-	let gradient = Gradient(colors: [.green, .mint, .yellow, .orange, .red, .purple, .purple, .brown, .brown, .brown, .brown])
 	var body: some View {
-		ZStack (alignment: .leading) {
+		VStack(alignment:.leading) {
+			ForEach(Iaq.allCases) { iaq in
+				HStack {
+					RoundedRectangle(cornerRadius: 5)
+						.fill(iaq.color)
+						.frame(width: 30, height: 20)
+					Text(iaq.description)
+						.font(.callout)
+				}
+			}
+		}
+		.padding()
+		.background(.white)
+		.cornerRadius(20) /// make the background rounded
+		.overlay(
+			RoundedRectangle(cornerRadius: 20)
+				.stroke(.secondary, lineWidth: 4)
+		)
+	}
+}
 
+struct IAQSCalePreviews: PreviewProvider {
+	static var previews: some View {
+		VStack {
+			IAQScale()
 		}
 	}
 }
