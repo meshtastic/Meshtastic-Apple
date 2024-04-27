@@ -94,7 +94,7 @@ struct Firmware: View {
 				if currentDevice?.architecture == Meshtastic.Architecture.nrf52840 {
 					VStack(alignment: .leading) {
 						
-						Text("Drag & Drop is the reccomended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor.")
+						Text("Drag & Drop is the recommended way to update firmware for NRF devices. If your iPhone or iPad is USB-C it will work with your regular USB-C charging cable, for lightning devices you need the Apple Lightning to USB camera adaptor.")
 							.fixedSize(horizontal: false, vertical: true)
 							.foregroundStyle(.gray)
 							.font(.caption)
