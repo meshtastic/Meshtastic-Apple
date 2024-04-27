@@ -88,6 +88,10 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// BMP085/BMP180 High accuracy temperature and pressure (older Version of BMP280)
   case bmp085 // = 15
+
+  ///
+  /// RCWL-9620 Doppler Radar Distance Sensor, used for water level detection
+  case rcwl9620 // = 16
   case UNRECOGNIZED(Int)
 
   init() {
@@ -112,6 +116,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 13: self = .pmsa003I
     case 14: self = .ina3221
     case 15: self = .bmp085
+    case 16: self = .rcwl9620
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -134,6 +139,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .pmsa003I: return 13
     case .ina3221: return 14
     case .bmp085: return 15
+    case .rcwl9620: return 16
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -144,7 +150,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [TelemetrySensorType] = [
+  static var allCases: [TelemetrySensorType] = [
     .sensorUnset,
     .bme280,
     .bme680,
@@ -161,6 +167,7 @@ extension TelemetrySensorType: CaseIterable {
     .pmsa003I,
     .ina3221,
     .bmp085,
+    .rcwl9620,
   ]
 }
 
@@ -233,6 +240,10 @@ struct EnvironmentMetrics {
   /// relative scale IAQ value as measured by Bosch BME680 . value 0-500.
   /// Belongs to Air Quality but is not particle but VOC measurement. Other VOC values can also be put in here.
   var iaq: UInt32 = 0
+
+  ///
+  /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
+  var distance: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -467,6 +478,7 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     13: .same(proto: "PMSA003I"),
     14: .same(proto: "INA3221"),
     15: .same(proto: "BMP085"),
+    16: .same(proto: "RCWL9620"),
   ]
 }
 
@@ -536,6 +548,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     5: .same(proto: "voltage"),
     6: .same(proto: "current"),
     7: .same(proto: "iaq"),
+    8: .same(proto: "distance"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -551,6 +564,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 5: try { try decoder.decodeSingularFloatField(value: &self.voltage) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.current) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.iaq) }()
+      case 8: try { try decoder.decodeSingularFloatField(value: &self.distance) }()
       default: break
       }
     }
@@ -578,6 +592,9 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.iaq != 0 {
       try visitor.visitSingularUInt32Field(value: self.iaq, fieldNumber: 7)
     }
+    if self.distance != 0 {
+      try visitor.visitSingularFloatField(value: self.distance, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -589,6 +606,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.voltage != rhs.voltage {return false}
     if lhs.current != rhs.current {return false}
     if lhs.iaq != rhs.iaq {return false}
+    if lhs.distance != rhs.distance {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

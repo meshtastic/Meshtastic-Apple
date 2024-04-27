@@ -266,6 +266,15 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case tdLorac // = 60
 
   ///
+  /// CDEBYTE EoRa-S3 board using their own MM modules, clone of LILYGO T3S3
+  case cdebyteEoraS3 // = 61
+
+  ///
+  /// TWC_MESH_V4 
+  /// Adafruit NRF52840 feather express with SX1262, SSD1306 OLED and NEO6M GPS
+  case twcMeshV4 // = 62
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -334,6 +343,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 58: self = .heltecWirelessTrackerV10
     case 59: self = .unphone
     case 60: self = .tdLorac
+    case 61: self = .cdebyteEoraS3
+    case 62: self = .twcMeshV4
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -397,6 +408,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .heltecWirelessTrackerV10: return 58
     case .unphone: return 59
     case .tdLorac: return 60
+    case .cdebyteEoraS3: return 61
+    case .twcMeshV4: return 62
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -408,7 +421,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
 
 extension HardwareModel: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [HardwareModel] = [
+  static var allCases: [HardwareModel] = [
     .unset,
     .tloraV2,
     .tloraV1,
@@ -465,6 +478,8 @@ extension HardwareModel: CaseIterable {
     .heltecWirelessTrackerV10,
     .unphone,
     .tdLorac,
+    .cdebyteEoraS3,
+    .twcMeshV4,
     .privateHw,
   ]
 }
@@ -514,7 +529,7 @@ enum Constants: SwiftProtobuf.Enum {
 
 extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Constants] = [
+  static var allCases: [Constants] = [
     .zero,
     .dataPayloadLen,
   ]
@@ -627,7 +642,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
 
 extension CriticalErrorCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [CriticalErrorCode] = [
+  static var allCases: [CriticalErrorCode] = [
     .none,
     .txWatchdog,
     .sleepEnterWait,
@@ -946,7 +961,7 @@ struct Position {
 
 extension Position.LocSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Position.LocSource] = [
+  static var allCases: [Position.LocSource] = [
     .locUnset,
     .locManual,
     .locInternal,
@@ -956,7 +971,7 @@ extension Position.LocSource: CaseIterable {
 
 extension Position.AltSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Position.AltSource] = [
+  static var allCases: [Position.AltSource] = [
     .altUnset,
     .altManual,
     .altInternal,
@@ -1237,7 +1252,7 @@ struct Routing {
 
 extension Routing.Error: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Routing.Error] = [
+  static var allCases: [Routing.Error] = [
     .none,
     .noRoute,
     .gotNak,
@@ -1755,7 +1770,7 @@ struct MeshPacket {
 
 extension MeshPacket.Priority: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MeshPacket.Priority] = [
+  static var allCases: [MeshPacket.Priority] = [
     .unset,
     .min,
     .background,
@@ -1768,7 +1783,7 @@ extension MeshPacket.Priority: CaseIterable {
 
 extension MeshPacket.Delayed: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MeshPacket.Delayed] = [
+  static var allCases: [MeshPacket.Delayed] = [
     .noDelay,
     .broadcast,
     .direct,
@@ -2022,7 +2037,7 @@ struct LogRecord {
 
 extension LogRecord.Level: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [LogRecord.Level] = [
+  static var allCases: [LogRecord.Level] = [
     .unset,
     .critical,
     .error,
@@ -2762,6 +2777,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     58: .same(proto: "HELTEC_WIRELESS_TRACKER_V1_0"),
     59: .same(proto: "UNPHONE"),
     60: .same(proto: "TD_LORAC"),
+    61: .same(proto: "CDEBYTE_EORA_S3"),
+    62: .same(proto: "TWC_MESH_V4"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }
@@ -2843,15 +2860,7 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _seqNumber: UInt32 = 0
     var _precisionBits: UInt32 = 0
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 
@@ -3513,15 +3522,7 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 
@@ -3733,15 +3734,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _hopsAway: UInt32 = 0
     var _isFavorite: Bool = false
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 
@@ -4033,15 +4026,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     var _id: UInt32 = 0
     var _payloadVariant: FromRadio.OneOf_PayloadVariant?
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 

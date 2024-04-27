@@ -17,9 +17,11 @@ extension Color {
 		let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
 		return (brightness > 0.5)
 	}
-	public static var magenta: Color {
-		return Color(UIColor(red: 0.50, green: 0.00, blue: 0.00, alpha: 1.00))	//return Color(UIColor.magenta)
-	}
+	public static let magenta = Color(red: 0.50, green: 0.00, blue: 0.00)
+//	public static var magenta: Color {
+//		return Color(red: 0.50, green: 0.00, blue: 0.00)
+//		//return Color(UIColor(red: 0.50, green: 0.00, blue: 0.00, alpha: 1.00))	//return Color(UIColor.magenta)
+//	}
 }
 
 extension UIColor {

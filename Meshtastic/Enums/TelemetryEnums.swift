@@ -49,6 +49,23 @@ enum Aqi: Int, CaseIterable, Identifiable {
 			return .magenta
 		}
 	}
+	var range: Range<Int> {
+		switch self {
+		case .good:
+			return Range(0...50)
+		case .moderate:
+			return Range(51...100)
+		case .sensitive:
+			return Range(101...150)
+		case .unhealthy:
+			return Range(151...200)
+		case .veryUnhealthy:
+			return Range(201...300)
+		case .hazardous:
+			return Range(301...500)
+		}
+	}
+	
 	static func getAqi(for value: Int) -> Aqi {
 		let aqi: Aqi
 		switch value {
@@ -115,6 +132,25 @@ enum Iaq: Int, CaseIterable, Identifiable {
 			return .magenta
 		case .extremelyPolluted:
 			return .brown
+		}
+	}
+	
+	var range: Range<Int> {
+		switch self {
+		case .excellent:
+			return Range(0...50)
+		case .good:
+			return Range(51...100)
+		case .lightlyPolluted:
+			return Range(101...150)
+		case .moderatelyPolluted:
+			return Range(151...200)
+		case .heavilyPolluted:
+			return Range(201...250)
+		case .severelyPolluted:
+			return Range(251...350)
+		case .extremelyPolluted:
+			return Range(351...500)
 		}
 	}
 	static func getIaq(for value: Int) -> Iaq {

@@ -878,7 +878,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 									if channel.index == newMessage.channel {
 										context.refresh(channel, mergeChanges: true)
 									}
-									if channel.index == newMessage.channel && !channel.mute {
+									if channel.index == newMessage.channel && !channel.mute && UserDefaults.channelMessageNotifications {
 										// Create an iOS Notification for the received private channel message and schedule it immediately
 										let manager = LocalNotificationManager()
 										manager.notifications = [

@@ -277,7 +277,7 @@ enum PortNum: SwiftProtobuf.Enum {
 
 extension PortNum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [PortNum] = [
+  static var allCases: [PortNum] = [
     .unknownApp,
     .textMessageApp,
     .remoteHardwareApp,

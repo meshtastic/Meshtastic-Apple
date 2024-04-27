@@ -314,15 +314,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _bluetooth: Config.BluetoothConfig? = nil
     var _version: UInt32 = 0
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 
@@ -458,15 +450,7 @@ extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _paxcounter: ModuleConfig.PaxcounterConfig? = nil
     var _version: UInt32 = 0
 
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
+    static let defaultInstance = _StorageClass()
 
     private init() {}
 

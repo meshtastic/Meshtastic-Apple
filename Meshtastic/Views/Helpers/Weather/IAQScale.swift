@@ -22,12 +22,11 @@ struct IAQScale: View {
 			}
 		}
 		.padding()
-		.background(.white)
-		.cornerRadius(20) /// make the background rounded
-		.overlay(
-			RoundedRectangle(cornerRadius: 20)
-				.stroke(.secondary, lineWidth: 4)
-		)
+		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+//		.overlay(
+//			RoundedRectangle(cornerRadius: 20)
+//				.stroke(.secondary, lineWidth: 5)
+//		)
 	}
 }
 

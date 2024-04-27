@@ -78,9 +78,9 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Low Battery</string>
+			<string>Channel Messages</string>
 			<key>Key</key>
-			<string>lowBatteryNotifications</string>
+			<string>channelMessageNotifications</string>
 			<key>DefaultValue</key>
 			<true/>
 		</dict>
@@ -91,6 +91,16 @@
 			<string>New Nodes</string>
 			<key>Key</key>
 			<string>newNodeNotifications</string>
+			<key>DefaultValue</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Low Battery</string>
+			<key>Key</key>
+			<string>lowBatteryNotifications</string>
 			<key>DefaultValue</key>
 			<true/>
 		</dict>

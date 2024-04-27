@@ -64,7 +64,7 @@ enum RemoteHardwarePinType: SwiftProtobuf.Enum {
 
 extension RemoteHardwarePinType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [RemoteHardwarePinType] = [
+  static var allCases: [RemoteHardwarePinType] = [
     .unknown,
     .digitalRead,
     .digitalWrite,
@@ -1152,7 +1152,7 @@ struct ModuleConfig {
 
 extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
+  static var allCases: [ModuleConfig.AudioConfig.Audio_Baud] = [
     .codec2Default,
     .codec23200,
     .codec22400,
@@ -1167,7 +1167,7 @@ extension ModuleConfig.AudioConfig.Audio_Baud: CaseIterable {
 
 extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
+  static var allCases: [ModuleConfig.SerialConfig.Serial_Baud] = [
     .baudDefault,
     .baud110,
     .baud300,
@@ -1189,7 +1189,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: CaseIterable {
 
 extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
+  static var allCases: [ModuleConfig.SerialConfig.Serial_Mode] = [
     .default,
     .simple,
     .proto,
@@ -1201,7 +1201,7 @@ extension ModuleConfig.SerialConfig.Serial_Mode: CaseIterable {
 
 extension ModuleConfig.CannedMessageConfig.InputEventChar: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
+  static var allCases: [ModuleConfig.CannedMessageConfig.InputEventChar] = [
     .none,
     .up,
     .down,

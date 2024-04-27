@@ -25,6 +25,7 @@ struct DeviceConfig: View {
 	@State var rebroadcastMode = 0
 	@State var nodeInfoBroadcastSecs = 10800
 	@State var doubleTapAsButtonPress = false
+	@State var ledHeartbeatEnabled = true
 	@State var isManaged = false
 	@State var tzdef = ""
 
@@ -58,6 +59,12 @@ struct DeviceConfig: View {
 					}
 					.pickerStyle(DefaultPickerStyle())
 					
+					Toggle(isOn: $isManaged) {
+						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
+						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
+					}
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
+					
 					Picker("Node Info Broadcast Interval", selection: $nodeInfoBroadcastSecs ) {
 						ForEach(UpdateIntervals.allCases) { ui in
 							if ui.rawValue >= 3600 {
@@ -66,15 +73,18 @@ struct DeviceConfig: View {
 						}
 					}
 					.pickerStyle(DefaultPickerStyle())
+				}
+				Section(header: Text("Hardware")) {
+					
 					Toggle(isOn: $doubleTapAsButtonPress) {
 						Label("Double Tap as Button", systemImage: "hand.tap")
 						Text("Treat double tap on supported accelerometers as a user button press.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					
-					Toggle(isOn: $isManaged) {
-						Label("Managed Device", systemImage: "gearshape.arrow.triangle.2.circlepath")
-						Text("Enabling Managed mode will restrict access to all radio configurations, such as short/long names, regions, channels, modules, etc. and will only be accessible through the Admin channel. To avoid being locked out, make sure the Admin channel is working properly before enabling it.")
+					Toggle(isOn: $ledHeartbeatEnabled) {
+						Label("LED Heartbeat", systemImage: "waveform.path.ecg")
+						Text("Controls the blinking LED on the device.  For most devices this will control one of the up to 4 LEDS, the charger and GPS LEDs are not controllable.")
 					}
 					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
@@ -202,6 +212,7 @@ struct DeviceConfig: View {
 						dc.doubleTapAsButtonPress = doubleTapAsButtonPress
 						dc.isManaged = isManaged
 						dc.tzdef = tzdef
+						dc.ledHeartbeatDisabled = !ledHeartbeatEnabled
 						if isManaged {
 							serialEnabled = false
 							debugLogEnabled = false
@@ -300,6 +311,7 @@ struct DeviceConfig: View {
 			nodeInfoBroadcastSecs = 3600
 		}
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
+		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
 		if self.tzdef.isEmpty {
 			self.tzdef = TimeZone.current.posixDescription

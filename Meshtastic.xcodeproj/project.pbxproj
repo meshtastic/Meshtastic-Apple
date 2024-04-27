@@ -293,6 +293,7 @@
 		DD295CE92B323ED9002CC4AC /* MeshtasticDataModelV22.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV22.xcdatamodel; sourceTree = "<group>"; };
 		DD2AD8A7296D2DF9001FF0E7 /* MapViewSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewSwiftUI.swift; sourceTree = "<group>"; };
 		DD2CC2E52ABFE04E00EDFDA7 /* MeshtasticDataModelV19.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV19.xcdatamodel; sourceTree = "<group>"; };
+		DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 36.xcdatamodel"; sourceTree = "<group>"; };
 		DD31EC492B7F18B7006A3995 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DD33DB602B3D1ECC003E1EA0 /* MeshtasticDataModelV 23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 23.xcdatamodel"; sourceTree = "<group>"; };
 		DD33DB612B3D27C7003E1EA0 /* FirmwareApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareApi.swift; sourceTree = "<group>"; };
@@ -1824,6 +1825,7 @@
 		DD3CC6BA28E366DF00FA9159 /* Meshtastic.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */,
 				DD268D8C2BCC7D11008073AE /* MeshtasticDataModelV 35.xcdatamodel */,
 				DDDBC87C2BC65682001E8DF7 /* MeshtasticDataModelV 34.xcdatamodel */,
 				DDF45C382BC46B16005ED5F2 /* MeshtasticDataModelV33.xcdatamodel */,
@@ -1860,7 +1862,7 @@
 				DD5D0A9A2931AD6B00F7EA61 /* MeshtasticDataModelV2.xcdatamodel */,
 				DD3CC6BB28E366DF00FA9159 /* MeshtasticDataModel.xcdatamodel */,
 			);
-			currentVersion = DD268D8C2BCC7D11008073AE /* MeshtasticDataModelV 35.xcdatamodel */;
+			currentVersion = DD31B04D2BDC6FD30024FA63 /* MeshtasticDataModelV 36.xcdatamodel */;
 			name = Meshtastic.xcdatamodeld;
 			path = Meshtastic/Meshtastic.xcdatamodeld;
 			sourceTree = "<group>";
