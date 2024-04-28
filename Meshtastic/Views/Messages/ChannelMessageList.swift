@@ -58,10 +58,10 @@ struct ChannelMessageList: View {
 										Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 											.font(.caption)
 											.foregroundColor(.gray)
-											.offset(y: 5)
+											.offset(y: 8)
 									}
+									
 									HStack {
-										
 										MessageText(
 											message: message,
 											tapBackDestination: .channel(channel),
@@ -75,7 +75,7 @@ struct ChannelMessageList: View {
 											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
-
+									
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
