@@ -194,6 +194,10 @@ struct Config {
     /// POSIX Timezone definition string from https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv.
     var tzdef: String = String()
 
+    ///
+    /// If true, disable the default blinking LED (LED_PIN) behavior on the device 
+    var ledHeartbeatDisabled: Bool = false
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
@@ -584,27 +588,25 @@ struct Config {
     // methods supported on all messages.
 
     ///
-    /// If set, we are powered from a low-current source (i.e. solar), so even if it looks like we have power flowing in
-    /// we should try to minimize power consumption as much as possible.
-    /// YOU DO NOT NEED TO SET THIS IF YOU'VE set is_router (it is implied in that case).
-    /// Advanced Option
+    /// Description: Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. 
+    /// Don't use this setting if you want to use your device with the phone apps or are using a device without a user button.
+    /// Technical Details: Works for ESP32 devices and NRF52 devices in the Sensor or Tracker roles
     var isPowerSaving: Bool = false
 
     ///
-    /// If non-zero, the device will fully power off this many seconds after external power is removed.
+    ///  Description: If non-zero, the device will fully power off this many seconds after external power is removed.
     var onBatteryShutdownAfterSecs: UInt32 = 0
 
     ///
     /// Ratio of voltage divider for battery pin eg. 3.20 (R1=100k, R2=220k)
     /// Overrides the ADC_MULTIPLIER defined in variant for battery voltage calculation.
-    /// Should be set to floating point value between 2 and 4
-    /// Fixes issues on Heltec v2
+    /// https://meshtastic.org/docs/configuration/radio/power/#adc-multiplier-override
+    /// Should be set to floating point value between 2 and 6
     var adcMultiplierOverride: Float = 0
 
     ///
-    /// Wait Bluetooth Seconds
-    /// The number of seconds for to wait before turning off BLE in No Bluetooth states
-    /// 0 for default of 1 minute
+    ///  Description: The number of seconds for to wait before turning off BLE in No Bluetooth states
+    ///  Technical Details: ESP32 Only 0 for default of 1 minute
     var waitBluetoothSecs: UInt32 = 0
 
     ///
@@ -615,16 +617,13 @@ struct Config {
     var sdsSecs: UInt32 = 0
 
     ///
-    /// Light Sleep Seconds
-    /// In light sleep the CPU is suspended, LoRa radio is on, BLE is off an GPS is on
-    /// ESP32 Only
-    /// 0 for default of 300
+    /// Description: In light sleep the CPU is suspended, LoRa radio is on, BLE is off an GPS is on
+    /// Technical Details: ESP32 Only 0 for default of 300
     var lsSecs: UInt32 = 0
 
     ///
-    /// Minimum Wake Seconds
-    /// While in light sleep when we receive packets on the LoRa radio we will wake and handle them and stay awake in no BLE mode for this value
-    /// 0 for default of 10 seconds
+    /// Description: While in light sleep when we receive packets on the LoRa radio we will wake and handle them and stay awake in no BLE mode for this value
+    /// Technical Details: ESP32 Only 0 for default of 10 seconds
     var minWakeSecs: UInt32 = 0
 
     ///
@@ -1387,7 +1386,7 @@ struct Config {
 
 extension Config.DeviceConfig.Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DeviceConfig.Role] = [
+  static var allCases: [Config.DeviceConfig.Role] = [
     .client,
     .clientMute,
     .router,
@@ -1404,7 +1403,7 @@ extension Config.DeviceConfig.Role: CaseIterable {
 
 extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DeviceConfig.RebroadcastMode] = [
+  static var allCases: [Config.DeviceConfig.RebroadcastMode] = [
     .all,
     .allSkipDecoding,
     .localOnly,
@@ -1414,7 +1413,7 @@ extension Config.DeviceConfig.RebroadcastMode: CaseIterable {
 
 extension Config.PositionConfig.PositionFlags: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.PositionConfig.PositionFlags] = [
+  static var allCases: [Config.PositionConfig.PositionFlags] = [
     .unset,
     .altitude,
     .altitudeMsl,
@@ -1431,7 +1430,7 @@ extension Config.PositionConfig.PositionFlags: CaseIterable {
 
 extension Config.PositionConfig.GpsMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.PositionConfig.GpsMode] = [
+  static var allCases: [Config.PositionConfig.GpsMode] = [
     .disabled,
     .enabled,
     .notPresent,
@@ -1440,7 +1439,7 @@ extension Config.PositionConfig.GpsMode: CaseIterable {
 
 extension Config.NetworkConfig.AddressMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.NetworkConfig.AddressMode] = [
+  static var allCases: [Config.NetworkConfig.AddressMode] = [
     .dhcp,
     .static,
   ]
@@ -1448,7 +1447,7 @@ extension Config.NetworkConfig.AddressMode: CaseIterable {
 
 extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
+  static var allCases: [Config.DisplayConfig.GpsCoordinateFormat] = [
     .dec,
     .dms,
     .utm,
@@ -1460,7 +1459,7 @@ extension Config.DisplayConfig.GpsCoordinateFormat: CaseIterable {
 
 extension Config.DisplayConfig.DisplayUnits: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.DisplayUnits] = [
+  static var allCases: [Config.DisplayConfig.DisplayUnits] = [
     .metric,
     .imperial,
   ]
@@ -1468,7 +1467,7 @@ extension Config.DisplayConfig.DisplayUnits: CaseIterable {
 
 extension Config.DisplayConfig.OledType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.OledType] = [
+  static var allCases: [Config.DisplayConfig.OledType] = [
     .oledAuto,
     .oledSsd1306,
     .oledSh1106,
@@ -1478,7 +1477,7 @@ extension Config.DisplayConfig.OledType: CaseIterable {
 
 extension Config.DisplayConfig.DisplayMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.DisplayConfig.DisplayMode] = [
+  static var allCases: [Config.DisplayConfig.DisplayMode] = [
     .default,
     .twocolor,
     .inverted,
@@ -1488,7 +1487,7 @@ extension Config.DisplayConfig.DisplayMode: CaseIterable {
 
 extension Config.LoRaConfig.RegionCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.LoRaConfig.RegionCode] = [
+  static var allCases: [Config.LoRaConfig.RegionCode] = [
     .unset,
     .us,
     .eu433,
@@ -1513,7 +1512,7 @@ extension Config.LoRaConfig.RegionCode: CaseIterable {
 
 extension Config.LoRaConfig.ModemPreset: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.LoRaConfig.ModemPreset] = [
+  static var allCases: [Config.LoRaConfig.ModemPreset] = [
     .longFast,
     .longSlow,
     .veryLongSlow,
@@ -1527,7 +1526,7 @@ extension Config.LoRaConfig.ModemPreset: CaseIterable {
 
 extension Config.BluetoothConfig.PairingMode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Config.BluetoothConfig.PairingMode] = [
+  static var allCases: [Config.BluetoothConfig.PairingMode] = [
     .randomPin,
     .fixedPin,
     .noPin,
@@ -1739,6 +1738,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     9: .standard(proto: "is_managed"),
     10: .standard(proto: "disable_triple_click"),
     11: .same(proto: "tzdef"),
+    12: .standard(proto: "led_heartbeat_disabled"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1758,6 +1758,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 9: try { try decoder.decodeSingularBoolField(value: &self.isManaged) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.disableTripleClick) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self.tzdef) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.ledHeartbeatDisabled) }()
       default: break
       }
     }
@@ -1797,6 +1798,9 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if !self.tzdef.isEmpty {
       try visitor.visitSingularStringField(value: self.tzdef, fieldNumber: 11)
     }
+    if self.ledHeartbeatDisabled != false {
+      try visitor.visitSingularBoolField(value: self.ledHeartbeatDisabled, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1812,6 +1816,7 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.isManaged != rhs.isManaged {return false}
     if lhs.disableTripleClick != rhs.disableTripleClick {return false}
     if lhs.tzdef != rhs.tzdef {return false}
+    if lhs.ledHeartbeatDisabled != rhs.ledHeartbeatDisabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

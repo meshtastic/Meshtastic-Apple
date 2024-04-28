@@ -136,7 +136,7 @@ enum Team: SwiftProtobuf.Enum {
 
 extension Team: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [Team] = [
+  static var allCases: [Team] = [
     .unspecifedColor,
     .white,
     .yellow,
@@ -239,7 +239,7 @@ enum MemberRole: SwiftProtobuf.Enum {
 
 extension MemberRole: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MemberRole] = [
+  static var allCases: [MemberRole] = [
     .unspecifed,
     .teamMember,
     .teamLead,
