@@ -160,12 +160,14 @@ func channelPacket (channel: Channel, fromNum: Int64, context: NSManagedObjectCo
 				newChannel.name = channel.settings.name
 				newChannel.role = Int32(channel.role.rawValue)
 				newChannel.psk = channel.settings.psk
-				newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+				if channel.settings.hasModuleSettings {
+					newChannel.positionPrecision = Int32(truncatingIfNeeded: channel.settings.moduleSettings.positionPrecision)
+					newChannel.mute = channel.settings.moduleSettings.isClientMuted
+				}
 				guard let mutableChannels = fetchedMyInfo[0].channels!.mutableCopy() as? NSMutableOrderedSet else {
 					return
 				}
 				if let oldChannel = mutableChannels.first(where: {($0 as AnyObject).index == newChannel.index }) as? ChannelEntity {
-					newChannel.mute = oldChannel.mute
 					let index = mutableChannels.index(of: oldChannel as Any)
 					mutableChannels.replaceObject(at: index, with: newChannel)
 				} else {
@@ -841,26 +843,28 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 						return
 					}
 					let appState = AppState.shared
-					if newMessage.fromUser != nil && newMessage.toUser != nil && !(newMessage.fromUser?.mute ?? false) {
+					if newMessage.fromUser != nil && newMessage.toUser != nil {
 						// Set Unread Message Indicators
 						if packet.to == connectedNode {
 							appState.unreadDirectMessages = newMessage.toUser?.unreadMessages ?? 0
 							UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 						}
-						// Create an iOS Notification for the received DM message and schedule it immediately
-						let manager = LocalNotificationManager()
-						manager.notifications = [
-							Notification(
-								id: ("notification.id.\(newMessage.messageId)"),
-								title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
-								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
-								content: messageText!,
-								target: "message",
-								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
-							)
-						]
-						manager.schedule()
-						print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+						if !(newMessage.fromUser?.mute ?? false) {
+							// Create an iOS Notification for the received DM message and schedule it immediately
+							let manager = LocalNotificationManager()
+							manager.notifications = [
+								Notification(
+									id: ("notification.id.\(newMessage.messageId)"),
+									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
+									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
+									content: messageText!,
+									target: "message",
+									path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
+								)
+							]
+							manager.schedule()
+							print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
+						}
 					} else if newMessage.fromUser != nil && newMessage.toUser == nil {
 
 						let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
