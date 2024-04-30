@@ -151,12 +151,15 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		isConnecting = false
 		isConnected = false
 		isSubscribed = false
+		self.connectedPeripheral = nil
 		invalidVersion = false
 		connectedVersion = "0.0.0"
 		connectedPeripheral = nil
 		if timeoutTimer != nil {
 			timeoutTimer!.invalidate()
 		}
+		automaticallyReconnect = false
+		stopScanning()
 		startScanning()
 	}
 	
