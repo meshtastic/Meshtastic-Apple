@@ -9,6 +9,7 @@ import CocoaMQTT
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
 class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate, ObservableObject {
+
 	
 	private static var documentsFolder: URL {
 		do {
@@ -29,6 +30,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	@Published var mqttProxyConnected: Bool = false
 	@Published var mqttError: String = ""
 	@StateObject var appState = AppState.shared
+	var peripheralConnectingTo: CBPeripheral!
 	public var minimumVersion = "2.0.0"
 	public var connectedVersion: String
 	public var isConnecting: Bool = false
@@ -54,6 +56,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	let FROMNUM_UUID = CBUUID(string: "0xED9DA18C-A800-4F66-A670-AA7547E34453")
 	
 	let meshLog = documentsFolder.appendingPathComponent("meshlog.txt")
+	@State var forceCancelConnection:Bool = false
 	
 	// MARK: init BLEManager
 	override init() {
@@ -95,17 +98,19 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		self.timeoutTimerCount += 1
 		self.lastConnectionError = ""
 		
-		if timeoutTimerCount == 10 {
+		
+		if timeoutTimerCount == 10{
 			if connectedPeripheral != nil {
 				self.centralManager?.cancelPeripheralConnection(connectedPeripheral.peripheral)
 			}
-			connectedPeripheral = nil
+			
 			if self.timeoutTimer != nil {
-				
-				self.timeoutTimer!.invalidate()
+				self.timeoutTimer?.invalidate()
 			}
+			self.automaticallyReconnect = false
 			self.isConnected = false
 			self.isConnecting = false
+			self.centralManager?.cancelPeripheralConnection(peripheralConnectingTo)
 			self.lastConnectionError = "🚨 " + String.localizedStringWithFormat("ble.connection.timeout %d %@".localized, timeoutTimerCount, name)
 			MeshLogger.log(lastConnectionError)
 			self.timeoutTimerCount = 0
@@ -127,7 +132,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			print("ℹ️ BLE Disconnecting from: \(connectedPeripheral.name) to connect to \(peripheral.name ?? "Unknown")")
 			disconnectPeripheral()
 		}
-		
+		peripheralConnectingTo = peripheral
 		centralManager?.connect(peripheral)
 		// Invalidate any existing timer
 		if timeoutTimer != nil {
@@ -139,6 +144,17 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		timeoutTimer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(timeoutTimerFired), userInfo: context, repeats: true)
 		RunLoop.current.add(timeoutTimer!, forMode: .common)
 		print("ℹ️ BLE Connecting: \(peripheral.name ?? "Unknown")")
+	}
+	
+	//Force cancel any ongoing connection attempt
+	func cancelConnection(){
+		self.isConnected = false
+		self.isConnecting = false
+		self.centralManager?.cancelPeripheralConnection(peripheralConnectingTo)
+		self.timeoutTimer?.invalidate()
+		self.timeoutTimer = nil
+		self.automaticallyReconnect = false
+		self.startScanning()
 	}
 	
 	// Disconnect Connected Peripheral

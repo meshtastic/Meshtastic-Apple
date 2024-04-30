@@ -856,7 +856,10 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 								subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 								content: messageText!,
 								target: "message",
-								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
+								path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)",
+								messageId: newMessage.messageId,
+								channel: newMessage.channel,
+								userNum: Int64(packet.from)
 							)
 						]
 						manager.schedule()
@@ -872,6 +875,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 							}
 							if !fetchedMyInfo.isEmpty {
 								appState.unreadChannelMessages = fetchedMyInfo[0].unreadMessages
+								
 								UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages
 								
 								for channel in (fetchedMyInfo[0].channels?.array ?? []) as? [ChannelEntity] ?? [] {
@@ -888,7 +892,12 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
 												target: "message",
-												path: "meshtastic://messages/channel/\(newMessage.messageId)")
+												path: "meshtastic://messages/channel/\(newMessage.messageId)",
+												messageId: newMessage.messageId,
+												channel: newMessage.channel,
+												userNum: Int64(newMessage.fromUser?.userId ?? "nil")
+											)
+													
 										]
 										manager.schedule()
 										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
