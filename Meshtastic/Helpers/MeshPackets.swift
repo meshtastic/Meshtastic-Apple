@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import SwiftUI
+import RegexBuilder
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -774,7 +775,19 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connectedNode: Int64, storeForward: Bool = false, context: NSManagedObjectContext) {
 
 	var messageText = String(bytes: packet.decoded.payload, encoding: .utf8)
-	if !wantRangeTestPackets && (String(messageText ?? "seq ").starts(with: "seq ")) {
+	let rangeRef = Reference(Int.self)
+	let rangeTestRegex = Regex {
+		"seq "
+
+		TryCapture(as: rangeRef) {
+			OneOrMore(.digit)
+		} transform: { match in
+			Int(match)
+		}
+	}
+	let rangeTest = messageText?.contains(rangeTestRegex) ?? false && messageText?.starts(with: "seq ") ?? false
+	
+	if !wantRangeTestPackets && rangeTest {
 		return
 	}
 	var storeForwardBroadcast = false
