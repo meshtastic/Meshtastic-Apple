@@ -8,6 +8,16 @@
 	<array>
 		<dict>
 			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>DefaultValue</key>
+			<string></string>
+			<key>Title</key>
+			<string>Will share your phone GPS location with your node.</string>
+			<key>Key</key>
+			<string>shareLocationTitle</string>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
 			<string>Share Location</string>
@@ -20,7 +30,7 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Share Location Interval</string>
+			<string>Interval</string>
 			<key>Key</key>
 			<string>provideLocationInterval</string>
 			<key>Values</key>
