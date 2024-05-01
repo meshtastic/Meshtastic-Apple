@@ -8,13 +8,10 @@ import TipKit
 
 @main
 struct MeshtasticAppleApp: App {
-	
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager()
-
 	@Environment(\.scenePhase) var scenePhase
-
 	@State var saveChannels = false
 	@State var incomingUrl: URL?
 	@State var channelSettings: String?
@@ -30,6 +27,9 @@ struct MeshtasticAppleApp: App {
 				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels,  bleManager: bleManager)
 					.presentationDetents([.medium, .large])
 					.presentationDragIndicator(.visible)
+			}
+			.onAppear(){
+				appDelegate.addBleManager(bleManager: bleManager)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
 
@@ -52,6 +52,7 @@ struct MeshtasticAppleApp: App {
 					print("User wants to open Channel Settings URL: \(String(describing: self.incomingUrl!.relativeString))")
 				}
 			}
+			
 			.onOpenURL(perform: { (url) in
 
 				print("Some sort of URL was received \(url)")
