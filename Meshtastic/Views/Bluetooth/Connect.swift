@@ -266,6 +266,18 @@ struct Connect: View {
 						.controlSize(.large)
 						.padding()
 					}
+					if bleManager.isConnecting {
+						Button(role: .destructive, action: {
+							bleManager.cancelPeripheralConnection()
+							
+						}) {
+							Label("disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+						}
+						.buttonStyle(.bordered)
+						.buttonBorderShape(.capsule)
+						.controlSize(.large)
+						.padding()
+					}
 					#endif
 					Spacer()
 				}

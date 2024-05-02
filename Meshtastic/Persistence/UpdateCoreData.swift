@@ -462,6 +462,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				newDeviceConfig.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				newDeviceConfig.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				newDeviceConfig.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				newDeviceConfig.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				newDeviceConfig.isManaged = config.isManaged
 				newDeviceConfig.tzdef = config.tzdef
 				fetchedNode[0].deviceConfig = newDeviceConfig
@@ -474,6 +475,7 @@ func upsertDeviceConfigPacket(config: Meshtastic.Config.DeviceConfig, nodeNum: I
 				fetchedNode[0].deviceConfig?.rebroadcastMode = Int32(config.rebroadcastMode.rawValue)
 				fetchedNode[0].deviceConfig?.nodeInfoBroadcastSecs = Int32(truncating: config.nodeInfoBroadcastSecs as NSNumber)
 				fetchedNode[0].deviceConfig?.doubleTapAsButtonPress = config.doubleTapAsButtonPress
+				fetchedNode[0].deviceConfig?.ledHeartbeatEnabled = !config.ledHeartbeatDisabled
 				fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 				fetchedNode[0].deviceConfig?.tzdef = config.tzdef
 			}
