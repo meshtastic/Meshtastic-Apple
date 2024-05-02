@@ -88,7 +88,7 @@ struct XModem {
 
 extension XModem.Control: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [XModem.Control] = [
+  static let allCases: [XModem.Control] = [
     .nul,
     .soh,
     .stx,

@@ -421,7 +421,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
 
 extension HardwareModel: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [HardwareModel] = [
+  static let allCases: [HardwareModel] = [
     .unset,
     .tloraV2,
     .tloraV1,
@@ -529,7 +529,7 @@ enum Constants: SwiftProtobuf.Enum {
 
 extension Constants: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Constants] = [
+  static let allCases: [Constants] = [
     .zero,
     .dataPayloadLen,
   ]
@@ -642,7 +642,7 @@ enum CriticalErrorCode: SwiftProtobuf.Enum {
 
 extension CriticalErrorCode: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [CriticalErrorCode] = [
+  static let allCases: [CriticalErrorCode] = [
     .none,
     .txWatchdog,
     .sleepEnterWait,
@@ -961,7 +961,7 @@ struct Position {
 
 extension Position.LocSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Position.LocSource] = [
+  static let allCases: [Position.LocSource] = [
     .locUnset,
     .locManual,
     .locInternal,
@@ -971,7 +971,7 @@ extension Position.LocSource: CaseIterable {
 
 extension Position.AltSource: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Position.AltSource] = [
+  static let allCases: [Position.AltSource] = [
     .altUnset,
     .altManual,
     .altInternal,
@@ -1252,7 +1252,7 @@ struct Routing {
 
 extension Routing.Error: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Routing.Error] = [
+  static let allCases: [Routing.Error] = [
     .none,
     .noRoute,
     .gotNak,
@@ -1770,7 +1770,7 @@ struct MeshPacket {
 
 extension MeshPacket.Priority: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [MeshPacket.Priority] = [
+  static let allCases: [MeshPacket.Priority] = [
     .unset,
     .min,
     .background,
@@ -1783,7 +1783,7 @@ extension MeshPacket.Priority: CaseIterable {
 
 extension MeshPacket.Delayed: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [MeshPacket.Delayed] = [
+  static let allCases: [MeshPacket.Delayed] = [
     .noDelay,
     .broadcast,
     .direct,
@@ -2037,7 +2037,7 @@ struct LogRecord {
 
 extension LogRecord.Level: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [LogRecord.Level] = [
+  static let allCases: [LogRecord.Level] = [
     .unset,
     .critical,
     .error,
@@ -2860,7 +2860,15 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _seqNumber: UInt32 = 0
     var _precisionBits: UInt32 = 0
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -3522,7 +3530,15 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _viaMqtt: Bool = false
     var _hopStart: UInt32 = 0
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -3734,7 +3750,15 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     var _hopsAway: UInt32 = 0
     var _isFavorite: Bool = false
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -4026,7 +4050,15 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     var _id: UInt32 = 0
     var _payloadVariant: FromRadio.OneOf_PayloadVariant?
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 

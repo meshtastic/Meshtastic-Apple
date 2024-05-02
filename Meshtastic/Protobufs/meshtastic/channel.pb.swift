@@ -215,7 +215,7 @@ struct Channel {
 
 extension Channel.Role: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [Channel.Role] = [
+  static let allCases: [Channel.Role] = [
     .disabled,
     .primary,
     .secondary,

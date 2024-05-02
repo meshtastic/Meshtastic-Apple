@@ -119,7 +119,7 @@ struct HardwareMessage {
 
 extension HardwareMessage.TypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [HardwareMessage.TypeEnum] = [
+  static let allCases: [HardwareMessage.TypeEnum] = [
     .unset,
     .writeGpios,
     .watchGpios,

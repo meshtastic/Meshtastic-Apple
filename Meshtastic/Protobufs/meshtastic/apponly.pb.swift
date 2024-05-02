@@ -75,7 +75,15 @@ extension ChannelSet: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     var _settings: [ChannelSettings] = []
     var _loraConfig: Config.LoRaConfig? = nil
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
