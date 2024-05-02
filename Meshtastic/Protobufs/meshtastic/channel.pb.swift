@@ -120,11 +120,6 @@ struct ModuleSettings {
   /// Bits of precision for the location sent in position packets.
   var positionPrecision: UInt32 = 0
 
-  ///
-  /// Controls whether or not the phone / clients should mute the current channel
-  /// Useful for noisy public channels you don't necessarily want to disable
-  var isClientMuted: Bool = false
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -316,7 +311,6 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   static let protoMessageName: String = _protobuf_package + ".ModuleSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "position_precision"),
-    2: .standard(proto: "is_client_muted"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -326,7 +320,6 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.positionPrecision) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.isClientMuted) }()
       default: break
       }
     }
@@ -336,15 +329,11 @@ extension ModuleSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.positionPrecision != 0 {
       try visitor.visitSingularUInt32Field(value: self.positionPrecision, fieldNumber: 1)
     }
-    if self.isClientMuted != false {
-      try visitor.visitSingularBoolField(value: self.isClientMuted, fieldNumber: 2)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleSettings, rhs: ModuleSettings) -> Bool {
     if lhs.positionPrecision != rhs.positionPrecision {return false}
-    if lhs.isClientMuted != rhs.isClientMuted {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
