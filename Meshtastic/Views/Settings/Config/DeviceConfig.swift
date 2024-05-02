@@ -163,7 +163,7 @@ struct DeviceConfig: View {
 							if bleManager.sendNodeDBReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
-									clearCoreDataDatabase(context: context)
+									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 								
 							} else {
@@ -188,7 +188,7 @@ struct DeviceConfig: View {
 							if bleManager.sendFactoryReset(fromUser: node!.user!, toUser: node!.user!) {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 									bleManager.disconnectPeripheral()
-									clearCoreDataDatabase(context: context)
+									clearCoreDataDatabase(context: context, includeRoutes: false)
 								}
 							} else {
 								print("Factory Reset Failed")

@@ -53,9 +53,14 @@ struct MessageContextMenuItems: View {
 				let messageDate = Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp))
 				Text("\(messageDate.formattedDate(format: MessageText.dateFormatString))").foregroundColor(.gray)
 			}
-			if !isCurrentUser {
+			if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) &&  message.fromUser?.userNode?.hopsAway ?? -1 == 0 {
 				VStack {
 					Text("SNR \(String(format: "%.2f", message.snr)) dB")
+					Text("RSSI \(String(format: "%.2f", message.rssi)) dBm")
+				}
+			} else if !isCurrentUser && !(message.fromUser?.userNode?.viaMqtt ?? false) {
+				VStack {
+					Text("Hops Away \(message.fromUser?.userNode?.hopsAway ?? 0)) dB")
 				}
 			}
 			if isCurrentUser && message.receivedACK {
@@ -77,10 +82,6 @@ struct MessageContextMenuItems: View {
 					let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date())
 					if ackDate >= sixMonthsAgo! {
 						Text("Ack Time: \(ackDate.formattedDate(format: "h:mm:ss.SSSS a"))")
-							.foregroundColor(.gray)
-					} else {
-						Text("unknown.age")
-							.font(.caption2)
 							.foregroundColor(.gray)
 					}
 				}
