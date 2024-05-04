@@ -280,6 +280,9 @@ struct PositionConfig: View {
 							print("Set Position Failed")
 						}
 						print("Remove a fixed position here")
+						let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
+						mutablePositions?.removeAllObjects()
+						node?.positions = mutablePositions
 						node?.positionConfig?.fixedPosition = false
 						do {
 							try context.save()
