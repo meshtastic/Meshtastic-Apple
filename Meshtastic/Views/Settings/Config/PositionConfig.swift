@@ -298,7 +298,6 @@ struct PositionConfig: View {
 						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
 							print("Set Position Failed")
 						}
-						print("Set a fixed position")
 						node?.positionConfig?.fixedPosition = true
 						do {
 							try context.save()
