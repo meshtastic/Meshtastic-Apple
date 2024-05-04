@@ -12,7 +12,7 @@ struct Firmware: View {
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
 	var node: NodeInfoEntity?
-	@State var minimumVersion = "2.3.7"
+	@State var minimumVersion = "2.3.8"
 	@State var version = ""
 	@State private var currentDevice: DeviceHardware?
 	@State private var latestStable: FirmwareRelease?
@@ -20,7 +20,7 @@ struct Firmware: View {
 	
 	var body: some View {
 		
-		let supportedVersion = bleManager.connectedVersion == "0.0.0" ||  self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
+		let supportedVersion = self.minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedAscending || minimumVersion.compare(bleManager.connectedVersion, options: .numeric) == .orderedSame
 		ScrollView {
 			VStack(alignment: .leading) {
 				let deviceString = currentDevice?.hwModelSlug.replacingOccurrences(of: "_", with: "")
@@ -57,12 +57,12 @@ struct Firmware: View {
 						.font(.title3)
 						.padding(.bottom)
 				} else {
-					Text("Your Firmware is out of date")
+					Text("Newer firmware is available")
 						.fixedSize(horizontal: false, vertical: true)
 						.foregroundStyle(.red)
 						.font(.title2)
 						.padding(.bottom)
-					Text("Current Firmware Version: \(bleManager.connectedVersion), Minimium Firmware Version: \(minimumVersion)")
+					Text("Current Firmware Version: \(bleManager.connectedVersion), Latest Firmware Version: \(minimumVersion)")
 						.fixedSize(horizontal: false, vertical: true)
 						.font(.title3)
 						.padding(.bottom)
