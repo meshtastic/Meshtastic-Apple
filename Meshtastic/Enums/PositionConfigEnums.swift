@@ -100,8 +100,8 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 }
 
 enum GpsMode: Int, CaseIterable, Equatable {
-	case disabled = 0
 	case enabled = 1
+	case disabled = 0
 	case notPresent = 2
 	
 	var id: Int { self.rawValue }

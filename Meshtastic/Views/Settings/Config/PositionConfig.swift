@@ -146,8 +146,12 @@ struct PositionConfig: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					
 					if gpsMode == 1 {
+						
+						
+					Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
+						.foregroundColor(.gray)
+						.font(.callout)
 						VStack(alignment: .leading) {
 							Picker("Update Interval", selection: $gpsUpdateInterval) {
 								ForEach(GpsUpdateIntervals.allCases) { ui in
@@ -163,7 +167,11 @@ struct PositionConfig: View {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")
-								Text("If enabled your current phone location and time will be sent to the device and will broadcast over the mesh on the position interval.")
+								if !(node?.positionConfig?.fixedPosition ?? false) {
+									Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
+								} else {
+									
+								}
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
