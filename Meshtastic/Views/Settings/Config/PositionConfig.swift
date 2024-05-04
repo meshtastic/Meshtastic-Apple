@@ -374,14 +374,10 @@ struct PositionConfig: View {
 			}
 		}
 		.onChange(of: fixedPosition) { newFixed in
-			print("Changing Fixed Position Value")
 			if supportedVersion {
 				if node != nil && node!.positionConfig != nil {
-					print("We have a node and position config")
-					print("We have turned on fixed position \(!node!.positionConfig!.fixedPosition && newFixed)")
 					/// Fixed Position is off to start
 					if !node!.positionConfig!.fixedPosition && newFixed {
-						print("fire alert")
 						showingSetFixedAlert = true
 					} else if node!.positionConfig!.fixedPosition && !newFixed {
 						/// Fixed Position is on to start
