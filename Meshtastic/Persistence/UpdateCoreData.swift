@@ -355,7 +355,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 						if  mostRecent.coordinate.distance(from: position.coordinate) < 15.0 {
 							mutablePositions.remove(mostRecent)
 						}
-					} else if mutablePositions.count > 0 && 11...16 ~= position.precisionBits {
+					} else if mutablePositions.count > 0 {
 						/// Don't store any history for reduced accuracy positions, we will just show a circle
 						mutablePositions.removeAllObjects()
 					}

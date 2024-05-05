@@ -11,7 +11,7 @@ struct MeshtasticAppleApp: App {
 	
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
-	@ObservedObject private var bleManager: BLEManager = BLEManager()
+	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
 
 	@Environment(\.scenePhase) var scenePhase
 

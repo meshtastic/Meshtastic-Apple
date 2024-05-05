@@ -111,6 +111,10 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case loraType // = 19
 
   ///
+  /// wiphone https://www.wiphone.io/
+  case wiphone // = 20
+
+  ///
   /// B&Q Consulting Station Edition G1: https://uniteng.com/wiki/doku.php?id=meshtastic:station
   case stationG1 // = 25
 
@@ -307,6 +311,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 17: self = .nanoG1Explorer
     case 18: self = .nanoG2Ultra
     case 19: self = .loraType
+    case 20: self = .wiphone
     case 25: self = .stationG1
     case 26: self = .rak11310
     case 27: self = .senseloraRp2040
@@ -372,6 +377,7 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .nanoG1Explorer: return 17
     case .nanoG2Ultra: return 18
     case .loraType: return 19
+    case .wiphone: return 20
     case .stationG1: return 25
     case .rak11310: return 26
     case .senseloraRp2040: return 27
@@ -442,6 +448,7 @@ extension HardwareModel: CaseIterable {
     .nanoG1Explorer,
     .nanoG2Ultra,
     .loraType,
+    .wiphone,
     .stationG1,
     .rak11310,
     .senseloraRp2040,
@@ -2741,6 +2748,7 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     17: .same(proto: "NANO_G1_EXPLORER"),
     18: .same(proto: "NANO_G2_ULTRA"),
     19: .same(proto: "LORA_TYPE"),
+    20: .same(proto: "WIPHONE"),
     25: .same(proto: "STATION_G1"),
     26: .same(proto: "RAK11310"),
     27: .same(proto: "SENSELORA_RP2040"),

@@ -18,6 +18,8 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		}
 	}
 	var context: NSManagedObjectContext?
+	
+	static let shared = BLEManager()
 	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
 	@Published var peripherals: [Peripheral] = []
@@ -545,10 +547,13 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// Handle Any local only packets we get over BLE
 			case .unknownApp:
 				var nowKnown = false
+				guard let ctx = context else {
+					return
+				}
 				
 				// MyInfo from initial connection
-				if context != nil && decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
-					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: context!)
+				if decodedInfo.myInfo.isInitialized && decodedInfo.myInfo.myNodeNum > 0 {
+					let myInfo = myInfoPacket(myInfo: decodedInfo.myInfo, peripheralId: self.connectedPeripheral.id, context: ctx)
 					
 					if myInfo != nil {
 						UserDefaults.preferredPeripheralNum = Int(myInfo?.myNodeNum ?? 0)
@@ -559,33 +564,31 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					tryClearExistingChannels()
 				}
 				// NodeInfo
-				if  context != nil && decodedInfo.nodeInfo.num > 0 {// && !invalidVersion {
+				if decodedInfo.nodeInfo.num > 0 {
 					nowKnown = true
-					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: context!)
-					
-					if nodeInfo != nil {
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo?.num ?? -1 {
-							if nodeInfo!.user != nil {
-								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "?"
-								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "unknown".localized
+					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: ctx) {
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
+							if nodeInfo.user != nil {
+								connectedPeripheral.shortName = nodeInfo.user?.shortName ?? "?"
+								connectedPeripheral.longName = nodeInfo.user?.longName ?? "unknown".localized
 							}
 						}
 					}
 				}
 				// Channels
-				if  context != nil && decodedInfo.channel.isInitialized && connectedPeripheral != nil {
+				if decodedInfo.channel.isInitialized && connectedPeripheral != nil {
 					nowKnown = true
-					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: context!)
+					channelPacket(channel: decodedInfo.channel, fromNum: Int64(truncatingIfNeeded: connectedPeripheral.num), context: ctx)
 				}
 				// Config
-				if  context != nil && decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
+				if decodedInfo.config.isInitialized && !invalidVersion && connectedPeripheral != nil {
 					nowKnown = true
-					localConfig(config: decodedInfo.config, context: context!, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
+					localConfig(config: decodedInfo.config, context: ctx, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral.num), nodeLongName: self.connectedPeripheral.longName)
 				}
 				// Module Config
-				if  context != nil && decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0{
+				if decodedInfo.moduleConfig.isInitialized && !invalidVersion && self.connectedPeripheral?.num != 0{
 					nowKnown = true
-					moduleConfig(config: decodedInfo.moduleConfig, context: context!, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
+					moduleConfig(config: decodedInfo.moduleConfig, context: ctx, nodeNum: Int64(truncatingIfNeeded: self.connectedPeripheral?.num ?? 0), nodeLongName: self.connectedPeripheral.longName)
 					if decodedInfo.moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.cannedMessage(decodedInfo.moduleConfig.cannedMessage) {
 						if decodedInfo.moduleConfig.cannedMessage.enabled {
 							_ = self.getCannedMessageModuleMessages(destNum: self.connectedPeripheral.num, wantResponse: true)
@@ -593,9 +596,9 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 					}
 				}
 				// Device Metadata
-				if  context != nil && decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
+				if decodedInfo.metadata.firmwareVersion.count > 0 && !invalidVersion {
 					nowKnown = true
-					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: context!)
+					deviceMetadataPacket(metadata: decodedInfo.metadata, fromNum: connectedPeripheral.num, context: ctx)
 					connectedPeripheral.firmwareVersion = decodedInfo.metadata.firmwareVersion
 					let lastDotIndex = decodedInfo.metadata.firmwareVersion.lastIndex(of: ".")
 					if lastDotIndex == nil {
@@ -2623,6 +2626,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
 				try context!.save()
+				print(adminDescription)
 				return true
 			} catch {
 				context!.rollback()

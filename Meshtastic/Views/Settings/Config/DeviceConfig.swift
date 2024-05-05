@@ -313,6 +313,7 @@ struct DeviceConfig: View {
 		self.doubleTapAsButtonPress = node?.deviceConfig?.doubleTapAsButtonPress ?? false
 		self.ledHeartbeatEnabled = node?.deviceConfig?.ledHeartbeatEnabled ?? true
 		self.isManaged = node?.deviceConfig?.isManaged ?? false
+		self.tzdef = node?.deviceConfig?.tzdef ?? ""
 		if self.tzdef.isEmpty {
 			self.tzdef = TimeZone.current.posixDescription
 			self.hasChanges = true
