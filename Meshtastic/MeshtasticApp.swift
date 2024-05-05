@@ -28,7 +28,7 @@ struct MeshtasticAppleApp: App {
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
 				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels,  bleManager: bleManager)
-					.presentationDetents([.medium, .large])
+					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
