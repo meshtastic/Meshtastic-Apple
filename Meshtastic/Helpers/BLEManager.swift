@@ -566,13 +566,11 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 				// NodeInfo
 				if decodedInfo.nodeInfo.num > 0 {
 					nowKnown = true
-					let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: ctx)
-					
-					if nodeInfo != nil {
-						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo?.num ?? -1 {
-							if nodeInfo!.user != nil {
-								connectedPeripheral.shortName = nodeInfo?.user?.shortName ?? "?"
-								connectedPeripheral.longName = nodeInfo?.user?.longName ?? "unknown".localized
+					if let nodeInfo = nodeInfoPacket(nodeInfo: decodedInfo.nodeInfo, channel: decodedInfo.packet.channel, context: ctx) {
+						if self.connectedPeripheral != nil && self.connectedPeripheral.num == nodeInfo.num {
+							if nodeInfo.user != nil {
+								connectedPeripheral.shortName = nodeInfo.user?.shortName ?? "?"
+								connectedPeripheral.longName = nodeInfo.user?.longName ?? "unknown".localized
 							}
 						}
 					}
