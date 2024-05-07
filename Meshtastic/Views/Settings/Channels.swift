@@ -308,18 +308,52 @@ func firstMissingChannelIndex(_ indexes: [Int]) -> Int {
 
 enum PositionPrecision: Int, CaseIterable, Identifiable {
 
+	case two = 2
+	case three = 3
+	case four = 4
+	case five = 5
+	case six = 6
+	case seven = 7
+	case eight = 8
+	case nine = 9
+	case ten = 10
 	case eleven = 11
 	case twelve = 12
 	case thirteen = 13
 	case fourteen = 14
 	case fifteen = 15
 	case sixteen = 16
+	case seventeen = 17
+	case eightteen = 18
+	case nineteen = 19
+	case twenty = 20
+	case twentyone = 21
+	case twentytwo = 22
+	case twentythree = 23
+	case twentyfour = 24
 
 	var id: Int { self.rawValue }
 	
 	var precisionMeters: Double {
 		switch self {
-
+		case .two:
+			return 5976446.981252
+		case .three:
+			return 2988223.4850600003
+		case .four:
+			return 1494111.7369640006
+		case .five:
+			return 747055.8629159998
+		case .six:
+			return 373527.9258920002
+		case .seven:
+			return 186763.95738000044
+		case .eight:
+			return 93381.97312400135
+		case .nine:
+			return 46690.98099600022
+		case .ten:
+			return 23345.48493200123
 		case .eleven:
 			return 11672.736900000944
 		case .twelve:
@@ -332,25 +366,27 @@ enum PositionPrecision: Int, CaseIterable, Identifiable {
 			return 729.5356200010741
 		case .sixteen:
 			return 364.7622440000765
+		case .seventeen:
+			return 182.37555600115968
+		case .eightteen:
+			return 91.1822120001193
+		case .nineteen:
+			return 45.58554000039009
+		case .twenty:
+			return 22.787204001316468
+		case .twentyone:
+			return 11.388036000988677
+		case .twentytwo:
+			return 5.688452000824781
+		case .twentythree:
+			return 2.8386600007428338
+		case .twentyfour:
+			return 1.413763999910884
 		}
 	}
 	
 	var description: String {
 		let distanceFormatter = MKDistanceFormatter()
-		switch self {
-
-		case .eleven:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		case .twelve:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		case .thirteen:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		case .fourteen:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		case .fifteen:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		case .sixteen:
-			return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
-		}
+		return String.localizedStringWithFormat("position.precision %@".localized, String(distanceFormatter.string(fromDistance: precisionMeters)))
 	}
 }

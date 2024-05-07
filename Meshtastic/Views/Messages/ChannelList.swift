@@ -109,6 +109,24 @@ struct ChannelList: View {
 									Label("Delete Messages", systemImage: "trash")
 								}
 							}
+							Button {
+								channel.mute = !channel.mute
+						
+								do {
+									let adminMessageId =  bleManager.saveChannel(channel: channel.protoBuf, fromUser: node!.user!, toUser: node!.user!)
+									if adminMessageId > 0 {
+										context.refresh(channel, mergeChanges: true)
+									}
+									
+									try context.save()
+					
+								} catch {
+									context.rollback()
+									print("💥 Save Channel Mute Error")
+								}
+							} label: {
+								Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
+							}
 						}
 						.confirmationDialog(
 							"This conversation will be deleted.",

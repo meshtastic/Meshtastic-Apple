@@ -150,7 +150,7 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
 
 extension TelemetrySensorType: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static var allCases: [TelemetrySensorType] = [
+  static let allCases: [TelemetrySensorType] = [
     .sensorUnset,
     .bme280,
     .bme680,

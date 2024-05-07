@@ -32,7 +32,8 @@ struct NodeInfoItem: View {
 						.frame(width: 75, height: 75)
 						.cornerRadius(5)
 					Text(String(node.user!.hwModel ?? "unset".localized))
-						.font(.caption2).fixedSize()
+						.font(.caption2)
+						.frame(maxWidth: 125)
 				}
 			}
 			if node.snr != 0 && !node.viaMqtt {

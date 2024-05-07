@@ -43,16 +43,24 @@ struct ChannelMessageList: View {
 										.padding(.trailing)
 								}
 							}
-							HStack(alignment: .top) {
+							HStack(alignment: .bottom) {
 								if currentUser { Spacer(minLength: 50) }
 								if !currentUser {
 									CircleText(text: message.fromUser?.shortName ?? "?", color: Color(UIColor(hex: UInt32(message.fromUser?.num ?? 0))), circleSize: 44)
 										.padding(.all, 5)
-										.offset(y: -5)
+										.offset(y: -7)
 								}
+
 								VStack(alignment: currentUser ? .trailing : .leading) {
 									let isDetectionSensorMessage = message.portNum == Int32(PortNum.detectionSensorApp.rawValue)
 
+									if !currentUser && message.fromUser != nil {
+										Text("\(message.fromUser?.longName ?? "unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+											.font(.caption)
+											.foregroundColor(.gray)
+											.offset(y: 8)
+									}
+									
 									HStack {
 										MessageText(
 											message: message,
@@ -67,7 +75,7 @@ struct ChannelMessageList: View {
 											RetryButton(message: message, destination: .channel(channel))
 										}
 									}
-
+									
 									TapbackResponses(message: message) {
 										appState.unreadChannelMessages = myInfo.unreadMessages
 										UIApplication.shared.applicationIconBadgeNumber = appState.unreadChannelMessages + appState.unreadDirectMessages

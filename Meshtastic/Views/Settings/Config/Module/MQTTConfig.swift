@@ -398,21 +398,20 @@ struct MQTTConfig: View {
 						if !stateTopic.isEmpty {
 							nearbyTopics.append(stateTopic)
 						}
-						let countyTopic = defaultTopic + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						let countyTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
 						if !countyTopic.isEmpty {
 							nearbyTopics.append(countyTopic)
 						}
-						let cityTopic = defaultTopic + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
+						let cityTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")
 						if !cityTopic.isEmpty {
 							nearbyTopics.append(cityTopic)
 						}
-						let neightborhoodTopic = defaultTopic + "/" + (placemark.subLocality?.lowercased()
+						let neightborhoodTopic = defaultTopic + "/" + (placemark.administrativeArea ?? "") + "/" + (placemark.subLocality?.lowercased()
 							.replacingOccurrences(of: " ", with: "")
 							.replacingOccurrences(of: "'", with: "") ?? "")
 						if !neightborhoodTopic.isEmpty {
 							nearbyTopics.append(neightborhoodTopic)
 						}
-						
 					}
 					else
 					{

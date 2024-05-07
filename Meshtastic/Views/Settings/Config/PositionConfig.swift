@@ -146,8 +146,12 @@ struct PositionConfig: View {
 					.pickerStyle(SegmentedPickerStyle())
 					.padding(.top, 5)
 					.padding(.bottom, 5)
-					
 					if gpsMode == 1 {
+						
+						
+					Text("Positions will be provided by your device GPS, if you select disabled or not present you can set a fixed position.")
+						.foregroundColor(.gray)
+						.font(.callout)
 						VStack(alignment: .leading) {
 							Picker("Update Interval", selection: $gpsUpdateInterval) {
 								ForEach(GpsUpdateIntervals.allCases) { ui in
@@ -163,7 +167,11 @@ struct PositionConfig: View {
 						VStack(alignment: .leading) {
 							Toggle(isOn: $fixedPosition) {
 								Label("Fixed Position", systemImage: "location.square.fill")
-								Text("If enabled your current phone location and time will be sent to the device and will broadcast over the mesh on the position interval.")
+								if !(node?.positionConfig?.fixedPosition ?? false) {
+									Text("Your current location will be set as the fixed position and broadcast over the mesh on the position interval.")
+								} else {
+									
+								}
 							}
 							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
@@ -280,6 +288,9 @@ struct PositionConfig: View {
 							print("Set Position Failed")
 						}
 						print("Remove a fixed position here")
+						let mutablePositions = node?.positions?.mutableCopy() as? NSMutableOrderedSet
+						mutablePositions?.removeAllObjects()
+						node?.positions = mutablePositions
 						node?.positionConfig?.fixedPosition = false
 						do {
 							try context.save()
@@ -295,7 +306,6 @@ struct PositionConfig: View {
 						if !bleManager.setFixedPosition(fromUser: node!.user!, channel: 0) {
 							print("Set Position Failed")
 						}
-						print("Set a fixed position")
 						node?.positionConfig?.fixedPosition = true
 						do {
 							try context.save()
@@ -374,14 +384,10 @@ struct PositionConfig: View {
 			}
 		}
 		.onChange(of: fixedPosition) { newFixed in
-			print("Changing Fixed Position Value")
 			if supportedVersion {
 				if node != nil && node!.positionConfig != nil {
-					print("We have a node and position config")
-					print("We have turned on fixed position \(!node!.positionConfig!.fixedPosition && newFixed)")
 					/// Fixed Position is off to start
 					if !node!.positionConfig!.fixedPosition && newFixed {
-						print("fire alert")
 						showingSetFixedAlert = true
 					} else if node!.positionConfig!.fixedPosition && !newFixed {
 						/// Fixed Position is on to start
