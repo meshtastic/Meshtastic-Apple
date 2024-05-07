@@ -4,11 +4,14 @@
 
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct ContentView: View {
+	@State var deepLinkManager: DeepLinkManager
+
 	@StateObject var appState = AppState.shared
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
-			Messages()
+			Messages(deepLinkManager: deepLinkManager.features[0] as? DeepLinkManagerMessages)
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
@@ -19,7 +22,7 @@ struct ContentView: View {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(Tab.ble)
-			NodeList()
+			NodeList(deepLinkManager: deepLinkManager.features[2] as? DeepLinkManagerNodes)
 				.tabItem {
 					Label("nodes", systemImage: "flipphone")
 				}
@@ -54,14 +57,21 @@ struct ContentView: View {
 		}
 	}
 }
+//#Preview {
+//	if #available(iOS 17.0, *) {
+//	//	ContentView(deepLinkManager: .init())
+//	} else {
+//		// Fallback on earlier versions
+//	}
+//}
 
-struct ContentView_Previews: PreviewProvider {
-	static var previews: some View {
-		ContentView()
-	}
-}
+//struct ContentView_Previews: PreviewProvider {
+//	static var previews: some View {
+//		ContentView()
+//	}
+//}
 
-enum Tab {
+enum Tab: Hashable {
 	case contacts
 	case messages
 	case map

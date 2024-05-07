@@ -49,7 +49,7 @@ struct NodeMapContent: MapContent {
 			let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
-			if position.latest && 2...24 ~= position.precisionBits {
+			if position.latest && 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {

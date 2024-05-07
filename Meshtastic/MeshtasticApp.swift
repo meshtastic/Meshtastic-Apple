@@ -6,8 +6,11 @@ import CoreData
 import TipKit
 #endif
 
+@available(iOS 17.0, *)
 @main
 struct MeshtasticAppleApp: App {
+	
+	let deepLinkManager = DeepLinkManager()
 	
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
@@ -23,7 +26,7 @@ struct MeshtasticAppleApp: App {
 
     var body: some Scene {
         WindowGroup {
-			ContentView()
+			ContentView(deepLinkManager: deepLinkManager)
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
@@ -53,6 +56,10 @@ struct MeshtasticAppleApp: App {
 				}
 			}
 			.onOpenURL(perform: { (url) in
+				
+				if url.absoluteString.lowercased().contains("meshtastic://") {
+					deepLinkManager.handleDeepLink(deepLink: url.absoluteString.lowercased())
+				}
 
 				print("Some sort of URL was received \(url)")
 				self.incomingUrl = url
@@ -62,6 +69,8 @@ struct MeshtasticAppleApp: App {
 					}
 					self.saveChannels = true
 					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+				} else if url.absoluteString.lowercased().contains("meshtastic://") {
+					deepLinkManager.handleDeepLink(deepLink: url.absoluteString.lowercased())
 				} else {
 					saveChannels = false
 					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")

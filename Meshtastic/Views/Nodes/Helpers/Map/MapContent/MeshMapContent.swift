@@ -142,7 +142,7 @@ struct MeshMapContent: MapContent {
 				}
 			}
 			/// Reduced Precision Map Circles
-			if 2...24 ~= position.precisionBits {
+			if 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {

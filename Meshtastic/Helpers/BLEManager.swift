@@ -5,6 +5,14 @@ import SwiftUI
 import MapKit
 import CocoaMQTT
 
+public protocol DeviceConnection: AnyObject {
+	var isSubscribed: Bool { get }
+	var invalidVersion: Bool { get }
+	//var handledDeepLinks: [DeepLink.Type] { get }
+	//func canHandle(deepLink: DeepLink) -> Bool
+	//func handle(deepLink: DeepLink)
+}
+
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
@@ -20,7 +28,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var context: NSManagedObjectContext?
 	
 	static let shared = BLEManager()
-	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
@@ -2632,6 +2639,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			newMessage.adminDescription = adminDescription
 			newMessage.fromUser = fromUser
 			newMessage.toUser = toUser
+			
 			
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)

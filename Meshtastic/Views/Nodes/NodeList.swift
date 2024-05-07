@@ -9,6 +9,7 @@ import CoreLocation
 
 struct NodeList: View {
 	
+	@State var deepLinkManager: DeepLinkManagerNodes
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -40,6 +41,10 @@ struct NodeList: View {
 		animation: .default)
 
 	var nodes: FetchedResults<NodeInfoEntity>
+	
+	init (deepLinkManager: DeepLinkManagerNodes? = nil) {
+		self.deepLinkManager = deepLinkManager ?? .init()
+	}
 	
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
