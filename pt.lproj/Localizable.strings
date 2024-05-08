@@ -11,21 +11,21 @@
 "admin"="Admin";
 "admin.log"="Log das Mensagens do Admin";
 "ago"="há";
-"airtime"="Tampo ao Ár";
+"airtime"="Tempo ao Ár";
 "always.on"="Sempre Ligado";
 "ambient.lighting"="Iluminação Ambiental";
 "ambient.lighting.config"="Configuração Iluminação Ambiental";
-"appsettings"="Definações do App";
+"appsettings"="Definições do App";
 "appsettings.provide.location"="Partilha localização";
 "appsettings.smartposition"="Posição Inteligente";
 "are.you.sure"="Tem a certeza?";
-"ascii.capable"="ASCII Capable";
+"ascii.capable"="Capacidade ASCII";
 "available.radios"="Rádios Disponíveis";
 "automatic.detection"="Deteção Automático";
 "battery.level"="Nível de Bataria";
 "ble.name"="Nome BLE";
 "ble.connection.timeout %d %@"="Falha de conexão após %d tentativas de conectar a %@. Você pode precisar esquecer seu dispositivo em Configurações > Bluetooth.";
-"ble.errorcode.6 %@"="%@ O aplicativo se reconectará automaticamente ao rádio preferido se ele voltar ao alcance.";
+"ble.errorcode.6 %@"="%@ O App vai reconetar automaticamente ao rádio preferido se ele voltar ao alcance.";
 "ble.errorcode.14 %@"="%@ Esse erro geralmente não pode ser corrigido sem esquecer o dispositivo em Configurações > Bluetooth e reconetar ao rádio.";
 "ble.errorcode.pin %@"="%@ Por favor, tente conectar novamente e verifique cuidadosamente o PIN.";
 "bluetooth"="Bluetooth";
@@ -61,7 +61,7 @@
 "config.power.ls.secs"="Intervalo de Dormir Leve";
 "config.power.min.wake.secs"="Intervalo Mínimo de Despertar";
 "config.power.saving"="Poupar a Energia";
-"config.power.saving.description"="Vai por dormir o máximo possível, para o rastereador e o papel do sensor isso incluirá também o rádio lora. Não use essa configuração se deseja usar seu dispositivo com os aplicativos do telefone ou está usando um dispositivo sem um botão do usuário.";
+"config.power.saving.description"="Vai por dormir o máximo possível, para o papel do rastreador e o papel do sensor isso incluirá também o rádio lora. Não use essa configuração se deseja usar seu dispositivo com os aplicativos do telefone ou está usando um dispositivo sem um botão do usuário.";
 "config.power.shutdown.on.power.loss"="Desligar em caso de Perda de Energia";
 "config.power.shutdown.after.secs"="Após";
 "config.power.wait.bluetooth.secs"="Desligar o Bluetooth Após";
@@ -107,7 +107,7 @@
 "direct.messages"="Mensagens Directas";
 "dismiss.keyboard"="Dispensar";
 "display"="Icrã";
-"display.config"="Configuração do Icrã";
+"display.config"="Configuração do Icrãn";
 "distance"="Distância";
 "disconnect"="Desconectar";
 "echo"="Eco";
@@ -198,7 +198,7 @@
 "mesh.log.channel.sent %@ %d"=" "Um Canal Enviado para: %@ Índice do Canal %d";
 "mesh.log.channel.received %d %@"=" "Canal %d recebido de: %@";
 "mesh.log.device.config %@"=" "Configuração do dispositivo recebida: %@";
-"mesh.log.display.config %@"=" "Configuração do icrã recebida: %@";
+"mesh.log.display.config %@"=" "Configuração do icrãn recebida: %@";
 "mesh.log.devicemetadata %@"=" "Solicitando os Metadados do Dispositivo para %@";
 "mesh.log.device.metadata.received %@"=" "Os Metadados do dispositivo recebidos de: %@";
 "mesh.log.detectionsensor.config %@"=" "Configuração do módulo de sensor de detecção recebida: %@";
@@ -254,7 +254,7 @@
 "numbers.punctuation"=" "Números e Pontuação";
 "off"="Desligado";
 "offline"="Offline";
-"on.boot"=" "Apenas na Inicialização";
+"on.boot"=" "No arranque";
 "options"="Opções";
 "password"="Senha";
 "pause"="Pausa";
@@ -264,7 +264,7 @@
 "paxcounter.content.unavailable"=" "Nenhum Log do Contador PAX Disponível";
 "paxcounter.log"=" "Log do Contador PAX";
 "paxcounter.total"="Total de PAX";
-"phone.gps"="GPS do Téléfone";
+"phone.gps"="GPS do Telefone";
 "phone.gps.interval.description"=" "Com que frequência seu telefone enviará sua localização para o dispositivo, as atualizações de localização no mesh são geridas pelo dispositivo.";
 "position"="Posição";
 "position.config"="Configuração de Posição";
@@ -273,7 +273,7 @@
 "radio.configuration"="Configuração de Rádio";
 "range.test"="Teste de Alcance";
 "range.test.blocked"=" "Bloquear Teste de Alcance";
-"range.test.config"="Configuração do teste de Alcanse";
+"range.test.config"="Configuração do teste de Alcance";
 "reply"="Responder";
 "reboot"="Reiniciar";
 "reboot.node"="Reiniciar nó?";
@@ -306,7 +306,7 @@
 "routing.gotnak"=" "Recebido um reconhecimento negativo";
 "routing.timeout"=" "Tempo Esgotado";
 "routing.nointerface"="Sem Interface";
-"routing.maxretransmit"=" "Máximo de Retransmisão Alcançado";
+"routing.maxretransmit"=" "Máximo de Retransmissão Alcançado";
 "routing.nochannel"="Sem Canal";
 "routing.toolarge"="O pacote é grande de mais";
 "routing.noresponse"="Sem Resposta";
@@ -314,7 +314,7 @@
 "routing.badRequest"="="Pedido Ruim";
 "routing.notauthorized"="Não Autorizado";
 "satellite"="Satéllite";
-"satellite.flyover"="Passagem de Satéllite";
+"satellite.flyover"="Passagem de Satélite";
 "save"="Salvar";
 "save.config %@"="Salvar a Configuração para %@";
 "serial"="Serial";
@@ -324,7 +324,7 @@
 "serial.mode.proto"="Protobufs";
 "serial.mode.txtmsg"="Mensagem de Texto";
 "serial.mode.nmea"="Posições NMEA";
-"settings"="Definações";
+"settings"="Definições";
 "share.channels"="Partilhar o Código do QR";
 "share.position"="Partilhar o Posição";
 "subscribed"="Inscrito no mesh";
@@ -333,7 +333,7 @@
 "select.menu.item"="Seleciona um opção do menu";
 "set.region"="Seleciona o Região da LoRa";
 "standard"="Padrão";
-"standard.muted"="Padrão Silemciado";
+"standard.muted"="Padrão Silenciado";
 "start"="Iniciar";
 "storeforward"="="Armazenar e Encaminhar";
 "storeforward.config"="Configuração de Armazenar e Encaminhar";
@@ -345,7 +345,7 @@
 "tapback.thumbsdown"="Polegar para Baixo";
 "tapback.haha"="HaHa";
 "tapback.exclamation"="Ponto de Exclamação";
-"tapback.question"="Ponto de Interrugação";
+"tapback.question"="Ponto de Interrogação";
 "tapback.poop"="Cocó";
 "tapback.wave"="Adeus";
 "telemetry"="Telemetria (Sensores)";
@@ -371,6 +371,6 @@
 "uptime"="Tempo No Ár";
 "user"="Utilizador";
 "user.details"="Dados do Utilizador";
-"voltage"="Voltagem";
-"waiting"="Esparar. . .";
+"voltage"="Tensão";
+"waiting"="À Espara. . .";
 "appsettings.newNodeNotifications"="Notificações de Nó Novo";
