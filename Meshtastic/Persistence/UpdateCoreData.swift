@@ -161,9 +161,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
-			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-				newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
+			
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				
 				if newUserMessage.id.isEmpty {
@@ -217,7 +216,15 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			}
 			
 			if newNode.user == nil {
-				print("Nil User on nodeinfo")
+				let newUser = UserEntity(context: context)
+				newUser.num = Int64(packet.from)
+				let userId = String(format:"%2X", packet.from)
+				newUser.userId = "!\(userId)"
+				let last4 = String(userId.suffix(4))
+				newUser.longName = "Meshtastic \(last4)"
+				newUser.shortName = last4
+				newUser.hwModel = "UNSET"
+				newNode.user = newUser
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
