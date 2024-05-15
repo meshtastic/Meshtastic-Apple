@@ -177,13 +177,9 @@ struct MeshMap: View {
 				self.bleManager.context = context
 			}
 		
-
-		//	if deepLinkManager.waypointId.length > 0 {
 			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
 			//if wayPointEntity.id > 0 {
 			//	position = .camera(MapCamera(centerCoordinate: wayPointEntity.coordinate, distance: 1000, heading: 0, pitch: 60))
-			//}
-		
 			switch selectedMapLayer {
 			case .standard:
 				mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
