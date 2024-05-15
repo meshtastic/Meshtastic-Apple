@@ -37,7 +37,6 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 		AppState.shared.navigationPath = deepLink
 		if targetValue == "map" {
 			AppState.shared.tabSelection = Tab.map
-			
 		} else if targetValue == "message" {
 			AppState.shared.tabSelection = Tab.messages
 		} else if targetValue == "nodes" {

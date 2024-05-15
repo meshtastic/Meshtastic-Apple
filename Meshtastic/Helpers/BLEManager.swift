@@ -5,14 +5,6 @@ import SwiftUI
 import MapKit
 import CocoaMQTT
 
-public protocol DeviceConnection: AnyObject {
-	var isSubscribed: Bool { get }
-	var invalidVersion: Bool { get }
-	//var handledDeepLinks: [DeepLink.Type] { get }
-	//func canHandle(deepLink: DeepLink) -> Bool
-	//func handle(deepLink: DeepLink)
-}
-
 // ---------------------------------------------------------------------------------------
 // Meshtastic BLE Device Manager
 // ---------------------------------------------------------------------------------------
