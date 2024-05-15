@@ -196,8 +196,8 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 								title: "New Node",
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
 								content: "New Node has been discovered",
-								target: "nodeInfo",
-								path: "meshtastic://nodes?num=\(newUser.num)"
+								target: "nodes",
+								path: "meshtastic://nodes?nodenum=\(newUser.num)"
 							)
 						]
 						manager.schedule()
@@ -345,7 +345,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.longitudeI = positionMessage.longitudeI
 					position.altitude = positionMessage.altitude
 					position.satsInView = Int32(positionMessage.satsInView)
-					position.speed = Int32(positionMessage.groundSpeed * UInt32(3.6))
+					position.speed = Int32(positionMessage.groundSpeed)
 					position.heading = Int32(positionMessage.groundTrack)
 					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {

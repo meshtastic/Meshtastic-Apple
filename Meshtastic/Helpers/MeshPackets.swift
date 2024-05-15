@@ -315,7 +315,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
 				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.speed = Int32(nodeInfo.position.groundSpeed * UInt32(3.6)) 
+				position.speed = Int32(nodeInfo.position.groundSpeed) 
 				position.heading = Int32(nodeInfo.position.groundTrack)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				var newPostions = [PositionEntity]()
@@ -738,7 +738,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
 							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
 							target: "nodes",
-							path: "meshtastic://nodes/\(telemetry.nodeTelemetry?.num ?? 0)/devicetelemetrylog"
+							path: "meshtastic://nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
 						)
 					]
 					manager.schedule()
@@ -972,9 +972,10 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
-							path: "meshtastic://open-waypoint?id=\(waypoint.id)"
+							path: "meshtastic://map?waypontid=\(waypoint.id)"
 						)
 					]
+					print("meshtastic://map?waypontid=\(waypoint.id)")
 					manager.schedule()
 				} catch {
 					context.rollback()

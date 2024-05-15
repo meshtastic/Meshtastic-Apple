@@ -13,8 +13,6 @@ import TipKit
 
 struct Messages: View {
 	
-	@State var deepLinkManager: DeepLinkManagerMessages
-
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -28,10 +26,6 @@ struct Messages: View {
 	enum MessagesSidebar {
 		case groupMessages
 		case directMessages
-	}
-	
-	init (deepLinkManager: DeepLinkManagerMessages? = nil) {
-		self.deepLinkManager = deepLinkManager ?? .init()
 	}
 
 	var body: some View {

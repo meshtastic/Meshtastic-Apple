@@ -1008,52 +1008,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
-		do {
-			if #available(iOS 17.0, macOS 14.0, *) {
+		if #available(iOS 17.0, macOS 14.0, *) {
 				
-				if let lastLocation = LocationsHandler.shared.locationsArray.last {
-					
-					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-					positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-					let timestamp = lastLocation.timestamp
-					positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.altitude = Int32(lastLocation.altitude)
-					positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-
-					let currentSpeed = lastLocation.speed
-					if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-						positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-					}
-					let currentHeading = lastLocation.course
-					if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-						positionPacket.groundTrack = UInt32(currentHeading)
-					}
-				}
+			if let lastLocation = LocationsHandler.shared.locationsArray.last {
 				
-			} else {
-				if destNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-					return nil
-				}
-				
-				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-				let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+				let timestamp = lastLocation.timestamp
 				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
 				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-				positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-				let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+				positionPacket.altitude = Int32(lastLocation.altitude)
+				positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+
+				let currentSpeed = lastLocation.speed
 				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-					positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
+					positionPacket.groundSpeed = UInt32(currentSpeed)
 				}
-				let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-				if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				let currentHeading = lastLocation.course
+				if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
 					positionPacket.groundTrack = UInt32(currentHeading)
 				}
 			}
-		} catch {
-			return nil
+			
+		} else {
+			
+			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed)
+			}
+			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
+			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
 		}
 		return positionPacket
 	}

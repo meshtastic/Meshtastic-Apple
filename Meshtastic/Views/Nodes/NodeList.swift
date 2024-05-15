@@ -9,7 +9,7 @@ import CoreLocation
 
 struct NodeList: View {
 	
-	@State var deepLinkManager: DeepLinkManagerNodes
+	@StateObject var appState = AppState.shared
 	@State private var columnVisibility = NavigationSplitViewVisibility.all
 	@State private var selectedNode: NodeInfoEntity?
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -42,12 +42,16 @@ struct NodeList: View {
 
 	var nodes: FetchedResults<NodeInfoEntity>
 	
-	init (deepLinkManager: DeepLinkManagerNodes? = nil) {
-		self.deepLinkManager = deepLinkManager ?? .init()
-	}
-	
 	var body: some View {
 		NavigationSplitView(columnVisibility: $columnVisibility) {
+			
+//			HStack {
+//				Button("Open Node") {
+//					UIApplication
+//						.shared
+//						.open(URL(string: "meshtastic://nodes?nodeNum=530606484")!)
+//				}
+//			}
 			
 			let connectedNodeNum = Int(bleManager.connectedPeripheral != nil ? bleManager.connectedPeripheral?.num ?? 0 : 0)
 			let connectedNode = nodes.first(where: { $0.num == connectedNodeNum })
@@ -208,6 +212,7 @@ struct NodeList: View {
 				.disableAutocorrection(true)
 				.scrollDismissesKeyboard(.immediately)
 			.navigationTitle(String.localizedStringWithFormat("nodes %@".localized, String(nodes.count)))
+			
 			.listStyle(.plain)
 			.confirmationDialog(
 
@@ -218,12 +223,11 @@ struct NodeList: View {
 				Button("Delete Node") {
 					let deleteNode = getNodeInfo(id: deleteNodeId, context: context)
 					if connectedNode != nil {
-						
-					}
-					if deleteNode != nil {
-						let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
-						if !success {
-							print("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+						if deleteNode != nil {
+							let success = bleManager.removeNode(node: deleteNode!, connectedNodeNum: Int64(connectedNodeNum))
+							if !success {
+								print("Failed to delete node \(deleteNode?.user?.longName ?? "unknown".localized)")
+							}
 						}
 					}
 				}
@@ -309,6 +313,23 @@ struct NodeList: View {
 		}
 		.onChange(of: distanceFilter) { _ in
 			searchNodeList()
+		}
+		.onChange(of: (appState.navigationPath)) { newPath in
+			
+			if ((newPath?.hasPrefix("meshtastic://nodes")) != nil) {
+				
+				if let urlComponent = URLComponents(string: newPath ?? "") {
+					let queryItems = urlComponent.queryItems
+					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
+					if nodeNum == nil {
+						print("nodeNum not found")
+					}
+					else {
+						selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
+						AppState.shared.navigationPath = nil
+					}
+				}
+			}
 		}
 		.onAppear {
 			if self.bleManager.context == nil {

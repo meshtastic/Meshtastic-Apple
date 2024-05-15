@@ -33,13 +33,14 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		let userInfo = response.notification.request.content.userInfo
 		let targetValue = userInfo["target"] as? String
-		AppState.shared.navigationPath = userInfo["path"] as? String
-		print("\(AppState.shared.navigationPath ?? "EMPTY")")
+		let deepLink = userInfo["path"] as? String
+		AppState.shared.navigationPath = deepLink
 		if targetValue == "map" {
 			AppState.shared.tabSelection = Tab.map
+			
 		} else if targetValue == "message" {
 			AppState.shared.tabSelection = Tab.messages
-		} else if targetValue == "node" {
+		} else if targetValue == "nodes" {
 			AppState.shared.tabSelection = Tab.nodes
 		}
 		completionHandler()

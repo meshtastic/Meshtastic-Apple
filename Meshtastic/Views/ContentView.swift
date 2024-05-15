@@ -6,12 +6,11 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 struct ContentView: View {
-	@State var deepLinkManager: DeepLinkManager
 
 	@StateObject var appState = AppState.shared
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
-			Messages(deepLinkManager: deepLinkManager.features[0] as? DeepLinkManagerMessages)
+			Messages()
 				.tabItem {
 					Label("messages", systemImage: "message")
 				}
@@ -22,7 +21,7 @@ struct ContentView: View {
 					Label("bluetooth", systemImage: "antenna.radiowaves.left.and.right")
 				}
 				.tag(Tab.ble)
-			NodeList(deepLinkManager: deepLinkManager.features[2] as? DeepLinkManagerNodes)
+			NodeList()
 				.tabItem {
 					Label("nodes", systemImage: "flipphone")
 				}
