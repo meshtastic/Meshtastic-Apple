@@ -11,7 +11,6 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
 		print("🚀 Meshtstic Apple App launched!")
 		// Default User Default Values
-		UserDefaults.standard.register(defaults: ["blockRangeTest" : true])
 		UserDefaults.standard.register(defaults: ["meshMapRecentering" : true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory" : true])
 		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines" : true])
@@ -27,10 +26,11 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 		return true
 	}
+	// Lets us show the notification in the app in the foreground
 	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-		completionHandler(.banner)
+		completionHandler([.list, .banner, .sound])
 	}
-	// This method is called when user clicked on the notification
+	// This method is called when a user clicks on the notification
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		let userInfo = response.notification.request.content.userInfo
 		let targetValue = userInfo["target"] as? String

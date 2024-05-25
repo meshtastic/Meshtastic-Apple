@@ -871,8 +871,8 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
-									target: "message",
-									path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
+									target: "messages",
+									path: "meshtastic://messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
 								)
 							]
 							manager.schedule()
@@ -904,7 +904,7 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
-												target: "message",
+												target: "messages",
 												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()

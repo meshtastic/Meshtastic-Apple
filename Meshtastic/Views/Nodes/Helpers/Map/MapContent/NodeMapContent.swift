@@ -40,6 +40,7 @@ struct NodeMapContent: MapContent {
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
+		
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		
@@ -58,13 +59,17 @@ struct NodeMapContent: MapContent {
 						.stroke(.white, lineWidth: 2)
 				}
 			}
+			let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+			let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+					return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+			})
 			/// Convex Hull
 			if showConvexHull {
-				if lineCoords.count > 0 {
-					let hull = lineCoords.getConvexHull()
+				if loraCoords.count > 0 {
+					let hull = loraCoords.getConvexHull()
 					MapPolygon(coordinates: hull)
-						.stroke(Color(nodeColor.darker()), lineWidth: 3)
-						.foregroundStyle(Color(nodeColor).opacity(0.4))
+						.stroke(.blue, lineWidth: 3)
+						.foregroundStyle(.indigo.opacity(0.4))
 				}
 			}
 			/// Route Lines

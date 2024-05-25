@@ -40,13 +40,14 @@ struct MeshMapContent: MapContent {
 
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		let lineCoords = Array(positions).compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
 		/// Convex Hull
 		if showConvexHull {
-			if lineCoords.count > 0 {
-				let hull = lineCoords.getConvexHull()
+			if loraCoords.count > 0 {
+				let hull = loraCoords.getConvexHull()
 				MapPolygon(coordinates: hull)
 					.stroke(.blue, lineWidth: 3)
 					.foregroundStyle(.indigo.opacity(0.4))

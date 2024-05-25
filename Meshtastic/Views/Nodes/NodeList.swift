@@ -316,9 +316,12 @@ struct NodeList: View {
 		}
 		.onChange(of: (appState.navigationPath)) { newPath in
 			
-			if ((newPath?.hasPrefix("meshtastic://nodes")) != nil) {
+			guard let deepLink = newPath else {
+				return
+			}
+			if deepLink.hasPrefix("meshtastic://nodes") {
 				
-				if let urlComponent = URLComponents(string: newPath ?? "") {
+				if let urlComponent = URLComponents(string: deepLink) {
 					let queryItems = urlComponent.queryItems
 					let nodeNum = queryItems?.first(where: { $0.name == "nodenum" })?.value
 					if nodeNum == nil {
