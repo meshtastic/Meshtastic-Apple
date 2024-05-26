@@ -164,17 +164,11 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				
-				if newUserMessage.id.isEmpty {
-					let newUser = UserEntity(context: context)
-					newUser.num = Int64(packet.from)
-					let userId = String(format:"%2X", packet.from)
-					newUser.userId = "!\(userId)"
-					let last4 = String(userId.suffix(4))
-					newUser.longName = "Meshtastic \(last4)"
-					newUser.shortName = last4
-					newUser.hwModel = "UNSET"
-					newNode.user = newUser
-					
+				if newUserMessage.id.isEmpty  {
+					if packet.from > Int16.max {
+						let newUser = createUser(num: Int64(packet.from), context: context)
+						newNode.user = newUser
+					}
 				} else {
 					
 					let newUser = UserEntity(context: context)
@@ -203,27 +197,14 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					}
 				}
 			} else {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(packet.from)
-				let userId = String(format:"%2X", packet.from)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
-				newNode.user = newUser
+				if packet.from > Int16.max {
+					let newUser = createUser(num: Int64(packet.from), context: context)
+					fetchedNode[0].user = newUser
+				}
 			}
 			
-			if newNode.user == nil {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(packet.from)
-				let userId = String(format:"%2X", packet.from)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
-				newNode.user = newUser
+			if newNode.user == nil && packet.from > Int16.max {
+				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -280,14 +261,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if (fetchedNode[0].user == nil) {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(packet.from)
-				let userId = String(format:"%2X", packet.from)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
+				let newUser = createUser(num: Int64(packet.from), context: context)
 				fetchedNode[0].user! = newUser
 			}
 			do {

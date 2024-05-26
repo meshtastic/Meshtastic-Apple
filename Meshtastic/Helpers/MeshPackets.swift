@@ -294,16 +294,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				newNode.user = newUser
-			} else {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(nodeInfo.num)
-				newUser.numString = String(nodeInfo.num)
-				let userId = String(format:"%2X", nodeInfo.num)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
+			} else if nodeInfo.num > Int16.max {
+				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 				newNode.user = newUser
 			}
 
@@ -369,15 +361,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			} else  {
-				if (fetchedNode[0].user == nil) {
-					let newUser = UserEntity(context: context)
-					newUser.num = Int64(nodeInfo.num)
-					let userId = String(format:"%2X", nodeInfo.num)
-					newUser.userId = "!\(userId)"
-					let last4 = String(userId.suffix(4))
-					newUser.longName = "Meshtastic \(last4)"
-					newUser.shortName = last4
-					newUser.hwModel = "UNSET"
+				if (fetchedNode[0].user == nil && nodeInfo.num > Int16.max) {
+					
+					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 					fetchedNode[0].user = newUser
 				}
 			}
