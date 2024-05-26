@@ -573,13 +573,6 @@
 			path = CoreData;
 			sourceTree = "<group>";
 		};
-		DD17C4D42BE7EC2200D45AC7 /* SwiftData */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = SwiftData;
-			sourceTree = "<group>";
-		};
 		DD47E3CA26F0E50300029299 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -957,7 +950,6 @@
 		DDC4D5662754996200A4208E /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
-				DD17C4D42BE7EC2200D45AC7 /* SwiftData */,
 				DDC4D567275499A500A4208E /* Persistence.swift */,
 				DD964FC52975DBFD007C176F /* QueryCoreData.swift */,
 				DD3CC6C128EB9D4900FA9159 /* UpdateCoreData.swift */,

@@ -120,7 +120,6 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		} else if !includeRoutes {
 			if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-				print(entity.name?.lowercased())
 				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			}
 		}

@@ -1002,26 +1002,26 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		var positionPacket = Position()
 		if #available(iOS 17.0, macOS 14.0, *) {
 				
-			if let lastLocation = LocationsHandler.shared.locationsArray.last {
-				
-				positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-				positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-				let timestamp = lastLocation.timestamp
-				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.altitude = Int32(lastLocation.altitude)
-				positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-
-				let currentSpeed = lastLocation.speed
-				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-					positionPacket.groundSpeed = UInt32(currentSpeed)
-				}
-				let currentHeading = lastLocation.course
-				if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-					positionPacket.groundTrack = UInt32(currentHeading)
-				}
+			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
+				return nil
 			}
-			
+			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+			let timestamp = lastLocation.timestamp
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(lastLocation.altitude)
+			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+
+			let currentSpeed = lastLocation.speed
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed)
+			}
+			let currentHeading = lastLocation.course
+			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+
 		} else {
 			
 			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
