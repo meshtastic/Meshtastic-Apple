@@ -17,11 +17,10 @@ struct CircleText: View {
                 .fill(color)
                 .frame(width: circleSize, height: circleSize)
 			Text(text)
-				.textCase(.uppercase)
+				.frame(width: circleSize * 0.96, height: circleSize * 0.96, alignment: .center)
 				.foregroundColor(color.isLight() ? .black : .white)
-				.font(.system(size: 8000))
-					  .minimumScaleFactor(0.001)
-					  .frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+				.font(.system(size: 3000))
+				.minimumScaleFactor(0.002)
         }
 		.aspectRatio(1, contentMode: .fit)
     }
