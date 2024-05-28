@@ -22,7 +22,9 @@ struct ConnectedDevice: View {
             if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
                 if bluetoothOn {
                     if deviceConnected {
-                        MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
+						if (mqttUplinkEnabled || mqttDownlinkEnabled) {
+							MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
+						}
                         Image(systemName: "antenna.radiowaves.left.and.right.circle.fill")
                             .imageScale(.large)
                             .foregroundColor(.green)
