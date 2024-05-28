@@ -6,9 +6,10 @@ import CoreData
 import TipKit
 #endif
 
+@available(iOS 17.0, *)
 @main
 struct MeshtasticAppleApp: App {
-	
+		
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) var appDelegate
 	let persistenceController = PersistenceController.shared
 	@ObservedObject private var bleManager: BLEManager = BLEManager.shared
@@ -28,7 +29,7 @@ struct MeshtasticAppleApp: App {
 			.environmentObject(bleManager)
 			.sheet(isPresented: $saveChannels) {
 				SaveChannelQRCode(channelSetLink: channelSettings ?? "Empty Channel URL", addChannels: addChannels,  bleManager: bleManager)
-					.presentationDetents([.medium, .large])
+					.presentationDetents([.large])
 					.presentationDragIndicator(.visible)
 			}
 			.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
@@ -62,6 +63,16 @@ struct MeshtasticAppleApp: App {
 					}
 					self.saveChannels = true
 					print("User wants to open a Channel Settings URL: \(self.incomingUrl?.absoluteString ?? "No QR Code Link")")
+				} else if url.absoluteString.lowercased().contains("meshtastic://") {
+					appState.navigationPath = url.absoluteString
+					let path = appState.navigationPath ?? ""
+					if path.starts(with: "meshtastic://map") {
+						AppState.shared.tabSelection = Tab.map
+					} else if path.starts(with: "meshtastic://nodes") {
+						AppState.shared.tabSelection = Tab.nodes
+					}
+					
+					
 				} else {
 					saveChannels = false
 					print("User wants to import a MBTILES offline map file: \(self.incomingUrl?.absoluteString ?? "No Tiles link")")
@@ -157,6 +168,6 @@ class AppState: ObservableObject {
 	@Published var unreadDirectMessages: Int = 0
 	@Published var unreadChannelMessages: Int = 0
 	@Published var firmwareVersion: String = "0.0.0"
-	@Published var connectedNode: NodeInfoEntity?
+	//@Published var connectedNode: NodeInfoEntity?
 	@Published var navigationPath: String?
 }

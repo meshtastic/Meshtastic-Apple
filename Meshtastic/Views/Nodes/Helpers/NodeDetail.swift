@@ -35,7 +35,7 @@ struct NodeDetail: View {
 								Label(
 									title: {
 										Text("\("uptime".localized)")
-											.font(.title2)+Text(": \(components)")
+											.font(.title3)+Text(": \(components)")
 											.font(.title3)
 											.foregroundColor(Color.gray)
 									},

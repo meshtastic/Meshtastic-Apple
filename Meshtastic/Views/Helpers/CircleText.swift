@@ -16,12 +16,20 @@ struct CircleText: View {
             Circle()
                 .fill(color)
                 .frame(width: circleSize, height: circleSize)
+			#if os(macOS)
 			Text(text)
-				.textCase(.uppercase)
+				.frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: .center)
 				.foregroundColor(color.isLight() ? .black : .white)
-				.font(.system(size: 8000))
-					  .minimumScaleFactor(0.001)
-					  .frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+				.font(.system(size: 3000))
+				.minimumScaleFactor(0.001)
+		   #else
+			Text(text)
+				.frame(width: circleSize * 0.95, height: circleSize * 0.95, alignment: .center)
+				.foregroundColor(color.isLight() ? .black : .white)
+				.font(.system(size: 5000))
+				.minimumScaleFactor(0.001)
+		   #endif
+			
         }
 		.aspectRatio(1, contentMode: .fit)
     }

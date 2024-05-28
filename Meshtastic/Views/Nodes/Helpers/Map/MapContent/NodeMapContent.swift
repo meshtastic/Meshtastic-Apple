@@ -40,6 +40,7 @@ struct NodeMapContent: MapContent {
 		let lineCoords = positionArray.compactMap({(position) -> CLLocationCoordinate2D in
 			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
+		
 		/// Node Color from node.num
 		let nodeColor = UIColor(hex: UInt32(node.num))
 		
@@ -49,7 +50,7 @@ struct NodeMapContent: MapContent {
 			let pf = PositionFlags(rawValue: Int(position.nodePosition?.metadata?.positionFlags ?? 771))
 			let headingDegrees = Angle.degrees(Double(position.heading))
 			/// Reduced Precision Map Circle
-			if position.latest && 11...16 ~= position.precisionBits {
+			if position.latest && 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {
@@ -58,13 +59,17 @@ struct NodeMapContent: MapContent {
 						.stroke(.white, lineWidth: 2)
 				}
 			}
+			let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+			let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+					return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+			})
 			/// Convex Hull
 			if showConvexHull {
-				if lineCoords.count > 0 {
-					let hull = lineCoords.getConvexHull()
+				if loraCoords.count > 0 {
+					let hull = loraCoords.getConvexHull()
 					MapPolygon(coordinates: hull)
-						.stroke(Color(nodeColor.darker()), lineWidth: 3)
-						.foregroundStyle(Color(nodeColor).opacity(0.4))
+						.stroke(.blue, lineWidth: 3)
+						.foregroundStyle(.indigo.opacity(0.4))
 				}
 			}
 			/// Route Lines

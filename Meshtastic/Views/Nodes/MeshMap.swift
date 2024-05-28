@@ -35,9 +35,11 @@ struct MeshMap: View {
 	@State var selectedPosition: PositionEntity?
 	@State var editingWaypoint: WaypointEntity?
 	@State var selectedWaypoint: WaypointEntity?
+	@State var selectedWaypointId: String?
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 
+	
 	var body: some View {
 		
 		NavigationStack {
@@ -106,33 +108,33 @@ struct MeshMap: View {
 			.sheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap)
 			}
-			.onChange(of: (appState.navigationPath)) { newPath in
-				
-				if ((newPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
-					guard let url = URL(string: appState.navigationPath ?? "NONE") else {
-						print("Invalid URL")
-						return
-					}
-					guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-					  print("Invalid URL Components")
-					  return
-					}
-					guard let action = components.host, action == "open-waypoint" else {
-					  print("Unknown waypoint URL action")
-					  return
-					}
-					guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
-					  print("Waypoint id not found")
-					  return
-					}
-//					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
-//					  print("Waypoint not found")
+//			.onChange(of: (appState.navigationPath)) { newPath in
+//				
+//				if ((newPath?.hasPrefix("meshtastic://open-waypoint")) != nil) {
+//					guard let url = URL(string: appState.navigationPath ?? "NONE") else {
+//						print("Invalid URL")
+//						return
+//					}
+//					guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+//					  print("Invalid URL Components")
 //					  return
 //					}
-					//showWaypoints = true
-					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
-				}
-			}
+//					guard let action = components.host, action == "open-waypoint" else {
+//					  print("Unknown waypoint URL action")
+//					  return
+//					}
+//					guard let waypointId = components.queryItems?.first(where: { $0.name == "id" })?.value else {
+//					  print("Waypoint id not found")
+//					  return
+//					}
+////					guard let waypoint = waypoints.first(where: { $0.id == Int64(waypointId) }) else {
+////					  print("Waypoint not found")
+////					  return
+////					}
+//					//showWaypoints = true
+//					//position = .camera(MapCamera(centerCoordinate: waypoint.coordinate, distance: 1000, heading: 0, pitch: 60))
+//				}
+//			}
 			.onChange(of: (selectedMapLayer)) { newMapLayer in
 				switch selectedMapLayer {
 				case .standard:
@@ -174,6 +176,10 @@ struct MeshMap: View {
 			if self.bleManager.context == nil {
 				self.bleManager.context = context
 			}
+		
+			//	let wayPointEntity = getWaypoint(id: Int64(deepLinkManager.waypointId) ?? -1, context: context)
+			//if wayPointEntity.id > 0 {
+			//	position = .camera(MapCamera(centerCoordinate: wayPointEntity.coordinate, distance: 1000, heading: 0, pitch: 60))
 			switch selectedMapLayer {
 			case .standard:
 				mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)

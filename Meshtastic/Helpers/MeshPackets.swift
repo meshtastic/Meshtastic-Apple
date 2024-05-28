@@ -294,16 +294,8 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				newUser.isLicensed = nodeInfo.user.isLicensed
 				newUser.role = Int32(nodeInfo.user.role.rawValue)
 				newNode.user = newUser
-			} else {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(nodeInfo.num)
-				newUser.numString = String(nodeInfo.num)
-				let userId = String(format:"%2X", nodeInfo.num)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
+			} else if nodeInfo.num > Int16.max {
+				let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 				newNode.user = newUser
 			}
 
@@ -315,7 +307,7 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				position.longitudeI = nodeInfo.position.longitudeI
 				position.altitude = nodeInfo.position.altitude
 				position.satsInView = Int32(nodeInfo.position.satsInView)
-				position.speed = Int32(nodeInfo.position.groundSpeed * UInt32(3.6)) 
+				position.speed = Int32(nodeInfo.position.groundSpeed) 
 				position.heading = Int32(nodeInfo.position.groundTrack)
 				position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 				var newPostions = [PositionEntity]()
@@ -369,15 +361,9 @@ func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, context: NSManagedObje
 				fetchedNode[0].user!.role = Int32(nodeInfo.user.role.rawValue)
 				fetchedNode[0].user!.hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			} else  {
-				if (fetchedNode[0].user == nil) {
-					let newUser = UserEntity(context: context)
-					newUser.num = Int64(nodeInfo.num)
-					let userId = String(format:"%2X", nodeInfo.num)
-					newUser.userId = "!\(userId)"
-					let last4 = String(userId.suffix(4))
-					newUser.longName = "Meshtastic \(last4)"
-					newUser.shortName = last4
-					newUser.hwModel = "UNSET"
+				if (fetchedNode[0].user == nil && nodeInfo.num > Int16.max) {
+					
+					let newUser = createUser(num: Int64(nodeInfo.num), context: context)
 					fetchedNode[0].user = newUser
 				}
 			}
@@ -738,7 +724,7 @@ func telemetryPacket(packet: MeshPacket, connectedNode: Int64, context: NSManage
 							subtitle: "AKA \(telemetry.nodeTelemetry?.user?.shortName ?? "UNK")",
 							content: "Time to charge your radio, there is \(telemetry.batteryLevel)% battery remaining.",
 							target: "nodes",
-							path: "meshtastic://nodes/\(telemetry.nodeTelemetry?.num ?? 0)/devicetelemetrylog"
+							path: "meshtastic://nodes?nodenum=\(telemetry.nodeTelemetry?.num ?? 0)"
 						)
 					]
 					manager.schedule()
@@ -871,8 +857,8 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 									title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 									subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 									content: messageText!,
-									target: "message",
-									path: "meshtastic://open-dm?userid=\(newMessage.fromUser?.num ?? 0)&id=\(newMessage.messageId)"
+									target: "messages",
+									path: "meshtastic://messages?userNum=\(newMessage.fromUser?.num ?? 0)&messageId=\(newMessage.messageId)"
 								)
 							]
 							manager.schedule()
@@ -904,8 +890,8 @@ func textMessageAppPacket(packet: MeshPacket, wantRangeTestPackets: Bool, connec
 												title: "\(newMessage.fromUser?.longName ?? "unknown".localized)",
 												subtitle: "AKA \(newMessage.fromUser?.shortName ?? "?")",
 												content: messageText!,
-												target: "message",
-												path: "meshtastic://messages/channel/\(newMessage.messageId)")
+												target: "messages",
+												path: "meshtastic://messages?channel=\(newMessage.channel)&messageId=\(newMessage.messageId)")
 										]
 										manager.schedule()
 										print("💬 iOS Notification Scheduled for text message from \(newMessage.fromUser?.longName ?? "unknown".localized)")
@@ -972,9 +958,10 @@ func waypointPacket (packet: MeshPacket, context: NSManagedObjectContext) {
 							subtitle: "\(icon) \(waypoint.name ?? "Dropped Pin")",
 							content: "\(waypoint.longDescription ?? "\(latitude), \(longitude)")",
 							target: "map",
-							path: "meshtastic://open-waypoint?id=\(waypoint.id)"
+							path: "meshtastic://map?waypontid=\(waypoint.id)"
 						)
 					]
+					print("meshtastic://map?waypontid=\(waypoint.id)")
 					manager.schedule()
 				} catch {
 					context.rollback()

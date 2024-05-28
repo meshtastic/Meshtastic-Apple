@@ -120,7 +120,6 @@ public func clearCoreDataDatabase(context: NSManagedObjectContext, includeRoutes
 			deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 		} else if !includeRoutes {
 			if !(entityName.contains("RouteEntity") || entityName.contains("LocationEntity")) {
-				print(entity.name?.lowercased())
 				deleteRequest = NSBatchDeleteRequest(fetchRequest: query)
 			}
 		}
@@ -161,22 +160,15 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 			if let nodeInfoMessage = try? NodeInfo(serializedData: packet.decoded.payload) {
 				newNode.hopsAway = Int32(nodeInfoMessage.hopsAway)
 				newNode.favorite = nodeInfoMessage.isFavorite
-			} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
-				newNode.hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
+			
 			if let newUserMessage = try? User(serializedData: packet.decoded.payload) {
 				
-				if newUserMessage.id.isEmpty {
-					let newUser = UserEntity(context: context)
-					newUser.num = Int64(packet.from)
-					let userId = String(format:"%2X", packet.from)
-					newUser.userId = "!\(userId)"
-					let last4 = String(userId.suffix(4))
-					newUser.longName = "Meshtastic \(last4)"
-					newUser.shortName = last4
-					newUser.hwModel = "UNSET"
-					newNode.user = newUser
-					
+				if newUserMessage.id.isEmpty  {
+					if packet.from > Int16.max {
+						let newUser = createUser(num: Int64(packet.from), context: context)
+						newNode.user = newUser
+					}
 				} else {
 					
 					let newUser = UserEntity(context: context)
@@ -197,27 +189,22 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 								title: "New Node",
 								subtitle: "\(newUser.longName ?? "unknown".localized)",
 								content: "New Node has been discovered",
-								target: "nodeInfo",
-								path: "meshtastic://nodeInfo"
+								target: "nodes",
+								path: "meshtastic://nodes?nodenum=\(newUser.num)"
 							)
 						]
 						manager.schedule()
 					}
 				}
 			} else {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(packet.from)
-				let userId = String(format:"%2X", packet.from)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
-				newNode.user = newUser
+				if packet.from > Int16.max {
+					let newUser = createUser(num: Int64(packet.from), context: context)
+					fetchedNode[0].user = newUser
+				}
 			}
 			
-			if newNode.user == nil {
-				print("Nil User on nodeinfo")
+			if newNode.user == nil && packet.from > Int16.max {
+				newNode.user = createUser(num: Int64(packet.from), context: context)
 			}
 
 			let myInfoEntity = MyInfoEntity(context: context)
@@ -274,14 +261,7 @@ func upsertNodeInfoPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 				fetchedNode[0].hopsAway = Int32(packet.hopStart - packet.hopLimit)
 			}
 			if (fetchedNode[0].user == nil) {
-				let newUser = UserEntity(context: context)
-				newUser.num = Int64(packet.from)
-				let userId = String(format:"%2X", packet.from)
-				newUser.userId = "!\(userId)"
-				let last4 = String(userId.suffix(4))
-				newUser.longName = "Meshtastic \(last4)"
-				newUser.shortName = last4
-				newUser.hwModel = "UNSET"
+				let newUser = createUser(num: Int64(packet.from), context: context)
 				fetchedNode[0].user! = newUser
 			}
 			do {
@@ -338,7 +318,7 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.longitudeI = positionMessage.longitudeI
 					position.altitude = positionMessage.altitude
 					position.satsInView = Int32(positionMessage.satsInView)
-					position.speed = Int32(positionMessage.groundSpeed * UInt32(3.6))
+					position.speed = Int32(positionMessage.groundSpeed)
 					position.heading = Int32(positionMessage.groundTrack)
 					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {

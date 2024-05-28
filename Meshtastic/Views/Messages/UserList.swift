@@ -35,6 +35,7 @@ struct UserList: View {
 
 	private var users: FetchedResults<UserEntity>
 	@State var node: NodeInfoEntity?
+	@State var selectedUserNum: Int64?
 	@State private var userSelection: UserEntity? // Nothing selected by default.
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	
@@ -202,6 +203,10 @@ struct UserList: View {
 			}
 			.onChange(of: distanceFilter) { _ in
 				searchUserList()
+			}
+			.onChange(of: selectedUserNum) { newUserNum in
+				userSelection = users.first(where: { $0.num == newUserNum })
+				print(userSelection)
 			}
 			.onAppear {
 				if self.bleManager.context == nil {

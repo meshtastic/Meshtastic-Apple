@@ -7,11 +7,10 @@
 
 import SwiftUI
 
-class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
+class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
 		print("🚀 Meshtstic Apple App launched!")
 		// Default User Default Values
-		UserDefaults.standard.register(defaults: ["blockRangeTest" : true])
 		UserDefaults.standard.register(defaults: ["meshMapRecentering" : true])
 		UserDefaults.standard.register(defaults: ["meshMapShowNodeHistory" : true])
 		UserDefaults.standard.register(defaults: ["meshMapShowRouteLines" : true])
@@ -27,19 +26,22 @@ class MeshtasticAppDelegate: NSObject, UIApplicationDelegate, UNUserNotification
 		}
 		return true
 	}
+	// Lets us show the notification in the app in the foreground
 	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+		completionHandler([.list, .banner, .sound])
 	}
-	// This method is called when user clicked on the notification
+	// This method is called when a user clicks on the notification
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		let userInfo = response.notification.request.content.userInfo
 		let targetValue = userInfo["target"] as? String
-		AppState.shared.navigationPath = userInfo["path"] as? String
-		print("\(AppState.shared.navigationPath ?? "EMPTY")")
+		let deepLink = userInfo["path"] as? String
+
+		AppState.shared.navigationPath = deepLink
 		if targetValue == "map" {
 			AppState.shared.tabSelection = Tab.map
-		} else if targetValue == "message" {
+		} else if targetValue == "messages" {
 			AppState.shared.tabSelection = Tab.messages
-		} else if targetValue == "node" {
+		} else if targetValue == "nodes" {
 			AppState.shared.tabSelection = Tab.nodes
 		}
 		completionHandler()

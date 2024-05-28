@@ -278,8 +278,6 @@ struct ShareChannels: View {
 							channelSettings.name = ch.name!
 							channelSettings.psk = ch.psk!
 							channelSettings.id = UInt32(ch.id)
-							channelSettings.uplinkEnabled = ch.uplinkEnabled
-							channelSettings.downlinkEnabled = ch.downlinkEnabled
 							channelSet.settings.append(channelSettings)
 					}
 				}

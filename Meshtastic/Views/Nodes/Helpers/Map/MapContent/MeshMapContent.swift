@@ -11,6 +11,7 @@ import MapKit
 @available(iOS 17.0, macOS 14.0, *)
 struct MeshMapContent: MapContent {
 	
+	@StateObject var appState = AppState.shared
 	/// Parameters
 	@Binding var showUserLocation: Bool
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
@@ -39,13 +40,14 @@ struct MeshMapContent: MapContent {
 
 	@MapContentBuilder
 	var meshMap: some MapContent {
-		let lineCoords = Array(positions).compactMap({(position) -> CLLocationCoordinate2D in
-			return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
+		let loraNodes = positions.filter { $0.nodePosition?.viaMqtt ?? true == false }
+		let loraCoords = Array(loraNodes).compactMap({(position) -> CLLocationCoordinate2D in
+				return position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 		})
 		/// Convex Hull
 		if showConvexHull {
-			if lineCoords.count > 0 {
-				let hull = lineCoords.getConvexHull()
+			if loraCoords.count > 0 {
+				let hull = loraCoords.getConvexHull()
 				MapPolygon(coordinates: hull)
 					.stroke(.blue, lineWidth: 3)
 					.foregroundStyle(.indigo.opacity(0.4))
@@ -91,6 +93,7 @@ struct MeshMapContent: MapContent {
 					selectedPosition = (selectedPosition == position ? nil : position)
 				}
 			}
+			
 			
 			/// Node History and Route Lines for favorites
 			if position.nodePosition?.favorite ?? false {
@@ -142,7 +145,7 @@ struct MeshMapContent: MapContent {
 				}
 			}
 			/// Reduced Precision Map Circles
-			if 11...16 ~= position.precisionBits {
+			if 10...19 ~= position.precisionBits {
 				let pp = PositionPrecision(rawValue: Int(position.precisionBits))
 				let radius : CLLocationDistance = pp?.precisionMeters ?? 0
 				if radius > 0.0 {

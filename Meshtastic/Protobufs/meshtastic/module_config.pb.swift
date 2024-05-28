@@ -618,6 +618,14 @@ struct ModuleConfig {
 
     var paxcounterUpdateInterval: UInt32 = 0
 
+    ///
+    /// WiFi RSSI threshold. Defaults to -80
+    var wifiThreshold: Int32 = 0
+
+    ///
+    /// BLE RSSI threshold. Defaults to -80
+    var bleThreshold: Int32 = 0
+
     var unknownFields = SwiftProtobuf.UnknownStorage()
 
     init() {}
@@ -1921,6 +1929,8 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "enabled"),
     2: .standard(proto: "paxcounter_update_interval"),
+    3: .standard(proto: "wifi_threshold"),
+    4: .standard(proto: "ble_threshold"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1931,6 +1941,8 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.enabled) }()
       case 2: try { try decoder.decodeSingularUInt32Field(value: &self.paxcounterUpdateInterval) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.wifiThreshold) }()
+      case 4: try { try decoder.decodeSingularInt32Field(value: &self.bleThreshold) }()
       default: break
       }
     }
@@ -1943,12 +1955,20 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
     if self.paxcounterUpdateInterval != 0 {
       try visitor.visitSingularUInt32Field(value: self.paxcounterUpdateInterval, fieldNumber: 2)
     }
+    if self.wifiThreshold != 0 {
+      try visitor.visitSingularInt32Field(value: self.wifiThreshold, fieldNumber: 3)
+    }
+    if self.bleThreshold != 0 {
+      try visitor.visitSingularInt32Field(value: self.bleThreshold, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ModuleConfig.PaxcounterConfig, rhs: ModuleConfig.PaxcounterConfig) -> Bool {
     if lhs.enabled != rhs.enabled {return false}
     if lhs.paxcounterUpdateInterval != rhs.paxcounterUpdateInterval {return false}
+    if lhs.wifiThreshold != rhs.wifiThreshold {return false}
+    if lhs.bleThreshold != rhs.bleThreshold {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -4,7 +4,9 @@
 
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct ContentView: View {
+
 	@StateObject var appState = AppState.shared
 	var body: some View {
 		TabView(selection: $appState.tabSelection) {
@@ -54,14 +56,21 @@ struct ContentView: View {
 		}
 	}
 }
+//#Preview {
+//	if #available(iOS 17.0, *) {
+//	//	ContentView(deepLinkManager: .init())
+//	} else {
+//		// Fallback on earlier versions
+//	}
+//}
 
-struct ContentView_Previews: PreviewProvider {
-	static var previews: some View {
-		ContentView()
-	}
-}
+//struct ContentView_Previews: PreviewProvider {
+//	static var previews: some View {
+//		ContentView()
+//	}
+//}
 
-enum Tab {
+enum Tab: Hashable {
 	case contacts
 	case messages
 	case map

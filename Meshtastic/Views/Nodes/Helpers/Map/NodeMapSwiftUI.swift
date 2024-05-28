@@ -87,13 +87,13 @@ struct NodeMapSwiftUI: View {
 								switch selectedMapLayer {
 								case .standard:
 									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+									mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 								case .hybrid:
 									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+									mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 								case .satellite:
 									UserDefaults.mapLayer = newMapLayer
-									mapStyle = MapStyle.imagery(elevation: .realistic)
+									mapStyle = MapStyle.imagery(elevation: .flat)
 								case .offline:
 									return
 								}
@@ -118,13 +118,13 @@ struct NodeMapSwiftUI: View {
 						UIApplication.shared.isIdleTimerDisabled = true
 						switch selectedMapLayer {
 						case .standard:
-							mapStyle = MapStyle.standard(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+							mapStyle = MapStyle.standard(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 						case .hybrid:
-							mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+							mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 						case .satellite:
-							mapStyle = MapStyle.imagery(elevation: .realistic)
+							mapStyle = MapStyle.imagery(elevation: .flat)
 						case .offline:
-							mapStyle = MapStyle.hybrid(elevation: .realistic, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
+							mapStyle = MapStyle.hybrid(elevation: .flat, pointsOfInterest: showPointsOfInterest ? .all : .excludingAll, showsTraffic: showTraffic)
 						}
 						mostRecent = node.positions?.lastObject as? PositionEntity
 						if node.positions?.count ?? 0 > 1 {

@@ -12,7 +12,7 @@ import TipKit
 #endif
 
 struct Messages: View {
-
+	
 	@StateObject var appState = AppState.shared
 	@Environment(\.managedObjectContext) var context
 	@EnvironmentObject var bleManager: BLEManager
@@ -66,6 +66,26 @@ struct Messages: View {
 			.navigationTitle("messages")
 			.navigationBarTitleDisplayMode(.large)
 			.navigationBarItems(leading: MeshtasticLogo())
+			.onChange(of: (appState.navigationPath)) { newPath in
+				
+				if ((newPath?.hasPrefix("meshtastic://messages")) != nil) {
+					
+					if let urlComponent = URLComponents(string: newPath ?? "") {
+						let queryItems = urlComponent.queryItems
+						let messageId = queryItems?.first(where: { $0.name == "messageId" })?.value
+						let channel = queryItems?.first(where: { $0.name == "channel" })?.value
+
+						if channel == nil {
+							print("Channel not found")
+						}
+						else {
+							print("Channel \(channel)")
+						//	selectedNode = nodes.first(where: { $0.num == Int64(nodeNum ?? "-1") })
+						//	AppState.shared.navigationPath = nil
+						}
+					}
+				}
+			}
 			.onAppear {
 				if self.bleManager.context == nil {
 					self.bleManager.context = context

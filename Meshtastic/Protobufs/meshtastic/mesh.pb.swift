@@ -279,6 +279,16 @@ enum HardwareModel: SwiftProtobuf.Enum {
   case twcMeshV4 // = 62
 
   ///
+  /// NRF52_PROMICRO_DIY
+  /// Promicro NRF52840 with SX1262/LLCC68, SSD1306 OLED and NEO6M GPS
+  case nrf52PromicroDiy // = 63
+
+  ///
+  /// RadioMaster 900 Bandit Nano, https://www.radiomasterrc.com/products/bandit-nano-expresslrs-rf-module
+  /// ESP32-D0WDQ6 With SX1276/SKY66122, SSD1306 OLED and No GPS
+  case radiomaster900BanditNano // = 64
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -350,6 +360,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case 60: self = .tdLorac
     case 61: self = .cdebyteEoraS3
     case 62: self = .twcMeshV4
+    case 63: self = .nrf52PromicroDiy
+    case 64: self = .radiomaster900BanditNano
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -416,6 +428,8 @@ enum HardwareModel: SwiftProtobuf.Enum {
     case .tdLorac: return 60
     case .cdebyteEoraS3: return 61
     case .twcMeshV4: return 62
+    case .nrf52PromicroDiy: return 63
+    case .radiomaster900BanditNano: return 64
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -487,6 +501,8 @@ extension HardwareModel: CaseIterable {
     .tdLorac,
     .cdebyteEoraS3,
     .twcMeshV4,
+    .nrf52PromicroDiy,
+    .radiomaster900BanditNano,
     .privateHw,
   ]
 }
@@ -2787,6 +2803,8 @@ extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
     60: .same(proto: "TD_LORAC"),
     61: .same(proto: "CDEBYTE_EORA_S3"),
     62: .same(proto: "TWC_MESH_V4"),
+    63: .same(proto: "NRF52_PROMICRO_DIY"),
+    64: .same(proto: "RADIOMASTER_900_BANDIT_NANO"),
     255: .same(proto: "PRIVATE_HW"),
   ]
 }

@@ -92,6 +92,30 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
   ///
   /// RCWL-9620 Doppler Radar Distance Sensor, used for water level detection
   case rcwl9620 // = 16
+
+  ///
+  /// Sensirion High accuracy temperature and humidity
+  case sht4X // = 17
+
+  ///
+  /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
+  case veml7700 // = 18
+
+  ///
+  /// MLX90632 non-contact IR temperature sensor.
+  case mlx90632 // = 19
+
+  ///
+  /// TI OPT3001 Ambient Light Sensor
+  case opt3001 // = 20
+
+  ///
+  /// Lite On LTR-390UV-01 UV Light Sensor
+  case ltr390Uv // = 21
+
+  ///
+  /// AMS TSL25911FN RGB Light Sensor
+  case tsl25911Fn // = 22
   case UNRECOGNIZED(Int)
 
   init() {
@@ -117,6 +141,12 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case 14: self = .ina3221
     case 15: self = .bmp085
     case 16: self = .rcwl9620
+    case 17: self = .sht4X
+    case 18: self = .veml7700
+    case 19: self = .mlx90632
+    case 20: self = .opt3001
+    case 21: self = .ltr390Uv
+    case 22: self = .tsl25911Fn
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -140,6 +170,12 @@ enum TelemetrySensorType: SwiftProtobuf.Enum {
     case .ina3221: return 14
     case .bmp085: return 15
     case .rcwl9620: return 16
+    case .sht4X: return 17
+    case .veml7700: return 18
+    case .mlx90632: return 19
+    case .opt3001: return 20
+    case .ltr390Uv: return 21
+    case .tsl25911Fn: return 22
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -168,6 +204,12 @@ extension TelemetrySensorType: CaseIterable {
     .ina3221,
     .bmp085,
     .rcwl9620,
+    .sht4X,
+    .veml7700,
+    .mlx90632,
+    .opt3001,
+    .ltr390Uv,
+    .tsl25911Fn,
   ]
 }
 
@@ -244,6 +286,14 @@ struct EnvironmentMetrics {
   ///
   /// RCWL9620 Doppler Radar Distance Sensor, used for water level detection. Float value in mm.
   var distance: Float = 0
+
+  ///
+  /// VEML7700 high accuracy ambient light(Lux) digital 16-bit resolution sensor.
+  var lux: Float = 0
+
+  ///
+  /// VEML7700 high accuracy white light(irradiance) not calibrated digital 16-bit resolution sensor.
+  var whiteLux: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -479,6 +529,12 @@ extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
     14: .same(proto: "INA3221"),
     15: .same(proto: "BMP085"),
     16: .same(proto: "RCWL9620"),
+    17: .same(proto: "SHT4X"),
+    18: .same(proto: "VEML7700"),
+    19: .same(proto: "MLX90632"),
+    20: .same(proto: "OPT3001"),
+    21: .same(proto: "LTR390UV"),
+    22: .same(proto: "TSL25911FN"),
   ]
 }
 
@@ -549,6 +605,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     6: .same(proto: "current"),
     7: .same(proto: "iaq"),
     8: .same(proto: "distance"),
+    9: .same(proto: "lux"),
+    10: .standard(proto: "white_lux"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -565,6 +623,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 6: try { try decoder.decodeSingularFloatField(value: &self.current) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.iaq) }()
       case 8: try { try decoder.decodeSingularFloatField(value: &self.distance) }()
+      case 9: try { try decoder.decodeSingularFloatField(value: &self.lux) }()
+      case 10: try { try decoder.decodeSingularFloatField(value: &self.whiteLux) }()
       default: break
       }
     }
@@ -595,6 +655,12 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.distance != 0 {
       try visitor.visitSingularFloatField(value: self.distance, fieldNumber: 8)
     }
+    if self.lux != 0 {
+      try visitor.visitSingularFloatField(value: self.lux, fieldNumber: 9)
+    }
+    if self.whiteLux != 0 {
+      try visitor.visitSingularFloatField(value: self.whiteLux, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -607,6 +673,8 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.current != rhs.current {return false}
     if lhs.iaq != rhs.iaq {return false}
     if lhs.distance != rhs.distance {return false}
+    if lhs.lux != rhs.lux {return false}
+    if lhs.whiteLux != rhs.whiteLux {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

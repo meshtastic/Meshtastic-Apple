@@ -20,7 +20,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var context: NSManagedObjectContext?
 	
 	static let shared = BLEManager()
-	//var userSettings: UserSettings?
 	private var centralManager: CBCentralManager!
 	@Published var peripherals: [Peripheral] = []
 	@Published var connectedPeripheral: Peripheral!
@@ -40,7 +39,6 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	var timeoutTimer: Timer?
 	var timeoutTimerCount = 0
 	var positionTimer: Timer?
-	var lastPosition: CLLocationCoordinate2D?
 	static let emptyNodeNum: UInt32 = 4294967295
 	let mqttManager = MqttClientProxyManager.shared
 	var wantRangeTestPackets = false
@@ -1002,52 +1000,45 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 	
 	public func getPositionFromPhoneGPS(destNum: Int64) -> Position? {
 		var positionPacket = Position()
-		do {
-			if #available(iOS 17.0, macOS 14.0, *) {
+		if #available(iOS 17.0, macOS 14.0, *) {
 				
-				if let lastLocation = LocationsHandler.shared.locationsArray.last {
-					
-					positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
-					positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-					let timestamp = lastLocation.timestamp
-					positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-					positionPacket.altitude = Int32(lastLocation.altitude)
-					positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-
-					let currentSpeed = lastLocation.speed
-					if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-						positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-					}
-					let currentHeading = lastLocation.course
-					if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-						positionPacket.groundTrack = UInt32(currentHeading)
-					}
-				}
-				
-			} else {
-				if destNum <= 0 || LocationHelper.currentLocation.distance(from: LocationHelper.DefaultLocation) == 0.0 {
-					return nil
-				}
-				
-				positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
-				positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
-				let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
-				positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
-				positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
-				positionPacket.satsInView = UInt32(LocationHelper.satsInView)
-				let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
-				if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
-					positionPacket.groundSpeed = UInt32(currentSpeed * 3.6)
-				}
-				let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
-				if currentHeading > 0 && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-					positionPacket.groundTrack = UInt32(currentHeading)
-				}
+			guard let lastLocation = LocationsHandler.shared.locationsArray.last else {
+				return nil
 			}
-		} catch {
-			return nil
+			positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
+			positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
+			let timestamp = lastLocation.timestamp
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(lastLocation.altitude)
+			positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
+
+			let currentSpeed = lastLocation.speed
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed)
+			}
+			let currentHeading = lastLocation.course
+			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
+
+		} else {
+			
+			positionPacket.latitudeI = Int32(LocationHelper.currentLocation.latitude * 1e7)
+			positionPacket.longitudeI = Int32(LocationHelper.currentLocation.longitude * 1e7)
+			let timestamp = LocationHelper.shared.locationManager.location?.timestamp ?? Date()
+			positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+			positionPacket.altitude = Int32(LocationHelper.shared.locationManager.location?.altitude ?? 0)
+			positionPacket.satsInView = UInt32(LocationHelper.satsInView)
+			let currentSpeed = LocationHelper.shared.locationManager.location?.speed ?? 0
+			if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite)  {
+				positionPacket.groundSpeed = UInt32(currentSpeed)
+			}
+			let currentHeading  = LocationHelper.shared.locationManager.location?.course ?? 0
+			if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
+				positionPacket.groundTrack = UInt32(currentHeading)
+			}
 		}
 		return positionPacket
 	}
@@ -1328,33 +1319,43 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 		if isConnected {
 			
 			var i: Int32 = 0
+			var myInfo: MyInfoEntity
 			// Before we get started delete the existing channels from the myNodeInfo
 			if !addChannels {
 				tryClearExistingChannels()
-			} else {
-				// We are trying to add a channel so lets get the last index
-				let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
-				fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
-				do {
-					let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
-					if fetchedMyInfo.count == 1 {
-						if addChannels {
-							i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
-							// Bail out if the index is negative or bigger than our max of 8
-							if i < 0 || i > 8 {
-								return false
-							}
-						}
-					}
-				} catch {
-					print("Failed to find a node MyInfo to save these channels to")
-				}
 			}
+			
 			let decodedString = base64UrlString.base64urlToBase64()
 			if let decodedData = Data(base64Encoded: decodedString) {
 				do {
 					let channelSet: ChannelSet = try ChannelSet(serializedData: decodedData)
 					for cs in channelSet.settings {
+						if addChannels {
+							// We are trying to add a channel so lets get the last index
+							let fetchMyInfoRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest.init(entityName: "MyInfoEntity")
+							fetchMyInfoRequest.predicate = NSPredicate(format: "myNodeNum == %lld", Int64(connectedPeripheral.num))
+							do {
+								let fetchedMyInfo = try context?.fetch(fetchMyInfoRequest) as? [MyInfoEntity] ?? []
+								if fetchedMyInfo.count == 1 {
+									i = Int32(fetchedMyInfo[0].channels?.count ?? -1)
+									myInfo = fetchedMyInfo[0]
+									// Bail out if the index is negative or bigger than our max of 8
+									if i < 0 || i > 8 {
+										return false
+									}
+									// Bail out if there are no channels or if the same channel name already exists
+									guard let mutableChannels = myInfo.channels!.mutableCopy() as? NSMutableOrderedSet else {
+										return false
+									}
+									if mutableChannels.first(where: {($0 as AnyObject).name == cs.name }) is ChannelEntity {
+										return false
+									}
+								}
+							} catch {
+								print("Failed to find a node MyInfo to save these channels to")
+							}
+						}
+						
 						var chan = Channel()
 						if i == 0 {
 							chan.role = Channel.Role.primary
@@ -1364,6 +1365,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 						chan.settings = cs
 						chan.index = i
 						i += 1
+
 						var adminPacket = AdminMessage()
 						adminPacket.setChannel = chan
 						var meshPacket: MeshPacket = MeshPacket()
@@ -2622,6 +2624,7 @@ class BLEManager: NSObject, CBPeripheralDelegate, MqttClientProxyManagerDelegate
 			newMessage.adminDescription = adminDescription
 			newMessage.fromUser = fromUser
 			newMessage.toUser = toUser
+			
 			
 			do {
 				connectedPeripheral.peripheral.writeValue(binaryData, for: TORADIO_characteristic, type: .withResponse)
