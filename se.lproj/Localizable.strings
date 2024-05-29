@@ -137,6 +137,7 @@
 "hybrid"="Hybrid";
 "hybrid.flyover"="Hybrid Flygöversikt";
 "include"="Inkludera";
+"incomplete"="Incomplete";
 "inputevent.none"="Ingen";
 "inputevent.up"="Upp";
 "inputevent.down"="Ner";

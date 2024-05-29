@@ -319,7 +319,11 @@ func upsertPositionPacket (packet: MeshPacket, context: NSManagedObjectContext) 
 					position.altitude = positionMessage.altitude
 					position.satsInView = Int32(positionMessage.satsInView)
 					position.speed = Int32(positionMessage.groundSpeed)
-					position.heading = Int32(positionMessage.groundTrack)
+					let heading = Int32(positionMessage.groundTrack)
+					// Throw out bad haeadings from the device
+					if heading >= 0 && heading <= 360 {
+						position.heading = Int32(positionMessage.groundTrack)
+					}
 					position.precisionBits = Int32(positionMessage.precisionBits)
 					if positionMessage.timestamp != 0 {
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(positionMessage.timestamp)))
